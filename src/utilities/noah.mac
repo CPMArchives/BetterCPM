@@ -1,0 +1,401 @@
+; NOAH foundation: one exact ordinary drive-qualified LBR, read-only LIST.
+; Full selector/batch, ARK, TEST, extraction, updates and overlays are pending.
+; No distribution inclusion until the corresponding qualification is complete.
+        ORG 100H
+        JP NH_START
+        INCLUDE archive.inc
+        INCLUDE lbr.mac
+        INCLUDE cpmfile.inc
+        INCLUDE cpmfile.mac
+NH_START:
+        LD (NH_OLDSP),SP
+        LD SP,NH_STACK_TOP
+        PUSH IX
+        PUSH IY
+        LD HL,81H
+        LD A,(80H)
+        CP 128
+        JP NC,NH_USAGE_ERROR
+        LD B,A
+        CALL NH_VERSION_QUERY
+        JP C,NH_RETURN
+        LD HL,81H
+        LD A,(80H)
+        LD B,A
+        CALL NH_TOKEN
+        JP C,NH_USAGE_ERROR
+        CALL NH_IS_HELP
+        JR NZ,NH_NOT_HELP
+        CALL NH_TOKEN
+        JP NC,NH_USAGE_ERROR
+        LD DE,NH_HELP
+        CALL NH_PRINT
+        JP NH_RETURN
+NH_NOT_HELP:
+        CALL NH_IS_LIST
+        JR NZ,NH_FILENAME
+        CALL NH_TOKEN
+        JP C,NH_USAGE_ERROR
+NH_FILENAME:
+        LD (NH_ARG),DE
+        LD (NH_LENGTH),A
+        CALL NH_TOKEN
+        JP NC,NH_USAGE_ERROR
+        ; Explicitly initialize all context/adapter storage (DS is not zero).
+        LD HL,NH_CONTEXT
+        LD DE,NH_CONTEXT+1
+        LD BC,AS_CONTEXT_SIZE+AP_SIZE-1
+        LD (HL),0
+        LDIR
+        LD IX,NH_CONTEXT
+        LD (IX+AS_ABI),AS_ABI_VERSION
+        LD (IX+AS_SIZE),AS_CONTEXT_SIZE
+        LD HL,NH_ADAPTER
+        LD (IX+AS_USER),L
+        LD (IX+AS_USER+1),H
+        LD HL,(NH_ARG)
+        LD A,(NH_LENGTH)
+        LD B,A
+        LD DE,NH_ADAPTER
+        CALL NH_PARSE_NAME
+        JP C,NH_USAGE_ERROR
+        CALL AC_OPEN
+        JR C,NH_FAILED
+        LD DE,NH_HEADING
+        CALL NH_PRINT
+NH_LIST_LOOP:
+        CALL LBR_NEXT
+        JR C,NH_LIST_END
+        LD HL,NH_CONTEXT+AS_MEMBER
+        LD B,8
+        CALL NH_PRINT_FIELD
+        LD E,' '
+        LD C,2
+        CALL AC_BDOS
+        LD HL,NH_CONTEXT+AS_MEMBER+8
+        LD B,3
+        CALL NH_PRINT_FIELD
+        LD E,' '
+        LD C,2
+        CALL AC_BDOS
+        ; Exact logical byte length, hexadecimal, eight digits.
+        LD HL,NH_CONTEXT+AS_MEMBER+AM_LENGTH+3
+        LD B,4
+NH_LENGTH_LOOP:
+        LD A,(HL)
+        CALL NH_HEX
+        DEC HL
+        DJNZ NH_LENGTH_LOOP
+        LD DE,NH_BYTES
+        CALL NH_PRINT
+        JR NH_LIST_LOOP
+NH_LIST_END:
+        CP AS_END
+        JR NZ,NH_FAILED
+        CALL AC_CLOSE
+        JR C,NH_CLOSE_FAILED
+        LD DE,NH_DONE
+        CALL NH_PRINT
+        JR NH_DMA
+NH_FAILED:
+        LD (NH_ERROR),A
+        LD DE,NH_BAD_ARCHIVE
+        CALL NH_PRINT
+        LD A,(NH_ERROR)
+        CALL NH_HEX
+        LD DE,NH_NEWLINE
+        CALL NH_PRINT
+NH_CLOSE:
+        CALL AC_CLOSE
+        JR NC,NH_DMA
+NH_CLOSE_FAILED:
+        LD DE,NH_CLOSE_ERROR
+        CALL NH_PRINT
+NH_DMA:
+        LD DE,80H
+        LD C,26
+        CALL AC_BDOS
+NH_RETURN:
+        POP IY
+        POP IX
+        LD SP,(NH_OLDSP)
+        RET
+NH_USAGE_ERROR:
+        LD DE,NH_USAGE
+        CALL NH_PRINT
+        JP NH_RETURN
+NH_PRINT:
+        LD C,9
+        JP AC_BDOS
+NH_VERSION_QUERY:
+        LD A,B
+        OR A
+        RET Z
+        LD DE,NH_STACK
+NH_QUERY_COPY:
+        LD A,(HL)
+        CP 9
+        JR NZ,NH_QUERY_CONTROL
+        LD A,' '
+NH_QUERY_CONTROL:
+        CP 20H
+        JR NC,NH_QUERY_STORE
+        LD A,0FFH
+NH_QUERY_STORE:
+        LD (DE),A
+        INC DE
+        INC HL
+        DJNZ NH_QUERY_COPY
+        LD HL,NH_STACK
+        LD A,(80H)
+        LD B,A
+        ; Help takes precedence; both queries ignore all other tail tokens.
+        LD DE,NH_HELP
+        CALL UH_QUERY
+        RET C
+        LD DE,NH_VERSION
+        JP UV_QUERY
+NH_PRINT_FIELD:
+        LD E,(HL)
+        LD C,2
+        CALL AC_BDOS
+        INC HL
+        DJNZ NH_PRINT_FIELD
+        RET
+NH_HEX:
+        PUSH AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        CALL NH_NIBBLE
+        POP AF
+NH_NIBBLE:
+        AND 15
+        ADD A,'0'
+        CP '9'+1
+        JR C,NH_DIGIT
+        ADD A,7
+NH_DIGIT:
+        LD E,A
+        LD C,2
+        JP AC_BDOS
+; Bounded token reader. HL/B remaining tail, DE/A returned token/length.
+NH_TOKEN:
+        LD A,B
+        OR A
+        JR Z,NH_NO_TOKEN
+        LD A,(HL)
+        CP ' '
+        JR Z,NH_SKIP
+        CP 9
+        JR NZ,NH_TOKEN_START
+NH_SKIP:
+        INC HL
+        DEC B
+        JR NH_TOKEN
+NH_TOKEN_START:
+        LD D,H
+        LD E,L
+        LD C,0
+NH_TOKEN_LOOP:
+        LD A,B
+        OR A
+        JR Z,NH_TOKEN_DONE
+        LD A,(HL)
+        CP ' '
+        JR Z,NH_TOKEN_DONE
+        CP 9
+        JR Z,NH_TOKEN_DONE
+        INC HL
+        DEC B
+        INC C
+        JR NH_TOKEN_LOOP
+NH_TOKEN_DONE:
+        LD A,C
+        OR A
+        RET
+NH_NO_TOKEN:
+        SCF
+        RET
+NH_IS_HELP:
+        CP 5
+        RET NZ
+        PUSH HL
+        LD HL,NH_HELP_WORD
+        JR NH_MATCH
+NH_IS_LIST:
+        CP 5
+        RET NZ
+        PUSH HL
+        LD HL,NH_LIST_WORD
+NH_MATCH:
+        PUSH BC
+        PUSH DE
+        PUSH AF
+        LD C,A
+NH_MATCH_LOOP:
+        LD A,(DE)
+        CALL NH_UPPER
+        CP (HL)
+        JR NZ,NH_MATCH_BAD
+        INC HL
+        INC DE
+        DEC C
+        JR NZ,NH_MATCH_LOOP
+        LD A,(HL)
+        OR A
+        JR NZ,NH_MATCH_BAD
+        POP AF
+        POP DE
+        POP BC
+        POP HL
+        CP A
+        RET
+NH_MATCH_BAD:
+        POP AF
+        POP DE
+        POP BC
+        POP HL
+        OR A
+        RET
+NH_UPPER:
+        CP 'a'
+        RET C
+        CP 'z'+1
+        RET NC
+        SUB 32
+        RET
+; One ordinary exact drive/name only. Full DU selection is a later increment.
+NH_PARSE_NAME:
+        PUSH DE
+        EX DE,HL
+        INC HL
+        LD C,11
+        LD A,' '
+NH_FCB_SPACES:
+        LD (HL),A
+        INC HL
+        DEC C
+        JR NZ,NH_FCB_SPACES
+        EX DE,HL
+        POP DE
+        LD A,B
+        CP 2
+        JR C,NH_PARSE_BASE
+        INC HL
+        LD A,(HL)
+        DEC HL
+        CP ':'
+        JR NZ,NH_PARSE_BASE
+        LD A,(HL)
+        CALL NH_UPPER
+        SUB 'A'
+        CP 16
+        JR NC,NH_PARSE_BAD
+        INC A
+        LD (DE),A
+        INC HL
+        INC HL
+        DEC B
+        DEC B
+NH_PARSE_BASE:
+        INC DE
+        LD C,8
+        LD A,B
+        OR A
+        JR Z,NH_PARSE_BAD
+NH_BASE_LOOP:
+        LD A,(HL)
+        CP '.'
+        JR Z,NH_PARSE_EXT
+        CALL NH_NAME_CHAR
+        RET C
+        LD (DE),A
+        INC HL
+        INC DE
+        DEC C
+        DEC B
+        RET Z
+        LD A,C
+        OR A
+        JR NZ,NH_BASE_LOOP
+        LD A,(HL)
+        CP '.'
+        JR NZ,NH_PARSE_BAD
+NH_PARSE_EXT:
+        LD A,C
+        CP 8
+        JR Z,NH_PARSE_BAD
+        INC HL
+        DEC B
+        JR Z,NH_PARSE_BAD
+        LD A,C
+        ADD A,E
+        LD E,A
+        JR NC,NH_EXT_START
+        INC D
+NH_EXT_START:
+        LD C,3
+NH_EXT_LOOP:
+        LD A,(HL)
+        CALL NH_NAME_CHAR
+        RET C
+        LD (DE),A
+        INC HL
+        INC DE
+        DEC C
+        DEC B
+        RET Z
+        LD A,C
+        OR A
+        JR NZ,NH_EXT_LOOP
+NH_PARSE_BAD:
+        SCF
+        RET
+NH_NAME_CHAR:
+        CP 21H
+        JR C,NH_PARSE_BAD
+        CP 7FH
+        JR NC,NH_PARSE_BAD
+        PUSH HL
+        PUSH BC
+        LD HL,NH_BAD_CHARS
+        LD B,15
+NH_BAD_LOOP:
+        CP (HL)
+        JR Z,NH_CHAR_BAD
+        INC HL
+        DJNZ NH_BAD_LOOP
+        POP BC
+        POP HL
+        CALL NH_UPPER
+        OR A
+        RET
+NH_CHAR_BAD:
+        POP BC
+        POP HL
+        SCF
+        RET
+NH_BAD_CHARS: DB '<>.,;:=?*[]/\|"'
+NH_HELP_WORD: DB '/HELP',0
+NH_LIST_WORD: DB '/LIST',0
+; @noah-text@
+; @noah-version-query@
+NH_HEADING: DB 'Member       Bytes (hex)',13,10,'$'
+NH_BYTES: DB ' bytes',13,10,'$'
+NH_DONE: DB 'Listing complete. Contents and CRCs not tested.',13,10,'$'
+NH_BAD_ARCHIVE: DB 'NOAH: Archive/read error ', '$'
+NH_CLOSE_ERROR: DB 'NOAH: Input close failed.',13,10,'$'
+NH_NEWLINE: DB 13,10,'$'
+        LBR_CODE
+        ARCHIVE_CPM_CODE
+NH_OLDSP: DW 0
+NH_ARG: DW 0
+NH_LENGTH: DB 0
+NH_ERROR: DB 0
+NH_CONTEXT: DS AS_CONTEXT_SIZE
+NH_ADAPTER: DS AP_SIZE
+NH_STACK: DS 256
+NH_STACK_TOP:
+        END

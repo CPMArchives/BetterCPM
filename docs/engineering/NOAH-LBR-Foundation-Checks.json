@@ -1,0 +1,51 @@
+{
+  "scope": "Initial development-only NOAH LBR read/list foundation; not full spec or native qualification",
+  "tests": [
+    {
+      "command": "python3 tools/test_lbr.py",
+      "status": "passed",
+      "cases": 100,
+      "library_bytes": 948,
+      "context_bytes": 138
+    },
+    {
+      "command": "python3 tools/test_noah.py",
+      "status": "passed",
+      "cases": 51,
+      "deterministic": true,
+      "max_command_stack_bytes_bdos_intercepted": 28
+    }
+  ],
+  "binary": {
+    "path": "build/utilities/NOAH.COM",
+    "bytes": 3449,
+    "sha256": "9a460e8a755edff77dc8c74e4fb4301054c94b241d436a015bcb35351963eb01"
+  },
+  "source_sha256": {
+    "src/archive/archive.inc": "efc826374294b49578975bcdb9342f2dfff86a5d6d369a67ce012a3100e0eb18",
+    "src/archive/lbr.mac": "32b0ad559d367eebecb52d433714d9a822157a1e525b1134b1a2d3a8225543a0",
+    "src/archive/cpmfile.inc": "3fed2cac0f883beac13b581769af5054a4cd5bffddb211416a31d8406b8c128c",
+    "src/archive/cpmfile.mac": "9e47ecdb9f5354b63bc3074156de85b2226d2d906c524c53a680d97eb9e357db",
+    "src/utilities/noah.mac": "439a56bf5ea194d86e3f6a05b39abb989216a4f10c854b2b88b054f004a5c2b3",
+    "tools/build_noah.py": "a83eb89b8cb9faf9fd63f007c40efbe27651488c3af647f17ff6925c3dd449b8",
+    "tools/test_lbr.py": "cd416b6e6eb69ed68254028112554aad43fc9e3b6e2bbfc3b600d8bf87711b3a",
+    "tools/test_noah.py": "a40cd7bd38d2a67b57c06bd59e3b695ce9810de3bc0640aad10848f06982dbc3",
+    "metadata/utility-versions.tsv": "cf8f006ae81bdc994fa6e1975e1147b000b77bfc6800c2c37202f017273cdfd1",
+    "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325"
+  },
+  "pending": [
+    "Historical LBR interoperability fixtures",
+    "Native ZSM4 and native CP/M/platform execution",
+    "CRC/duplicate/overlap audits",
+    "Full selectors and reporting",
+    "Extraction and safe publication",
+    "ARK native formats/codecs",
+    "Archive updates and NOAH.OVL"
+  ],
+  "core_or_release_disk_changes": false,
+  "notes": [
+    "The compact CPU identity runner skips NOAH because it lacks IY instructions; forgiving /VER and /HELP queries, help precedence, and invalid command cases pass on the full Z80 core in test_noah.py.",
+    "No native CP/M, Model 4 or native assembler qualification is claimed.",
+    "Refreshed after integration with the shared forgiving query contract; NOAH Build 002. Compression Build 004 binaries remain byte-identical to their recorded qualification."
+  ]
+}

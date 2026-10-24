@@ -1,9 +1,14 @@
 # Engineering assessment Part 13: final synthesis and roadmap
 
-Date: 23 October 2026. Status: final synthesis delivered for maintainer review;
-the first engineering assessment is closed as directed. Parts 1–12 were
-approved. This part changes documentation only and authorizes no further
-prototype implementation.
+Date: 23 October 2026. Status: approved by the maintainer on 23 October 2026;
+the first engineering assessment is closed. Parts 1–12 were approved.
+This part changed documentation only. The maintainer subsequently authorized
+the separately scoped cpmsim prototype-completion work defined below.
+
+Subsequent completion record: [checked cpmsim prototype](CPMSIM-PROTOTYPE-COMPLETION.md).
+That separately authorized work closes roadmap priority 1, including a repaired
+cpmsim renderer stack overflow and a frozen acceptance build. The assessment
+findings and remaining adoption priorities below retain their original scope.
 
 ## 1. Conclusion
 
@@ -168,7 +173,7 @@ subsequent authorization, not additional parts of this assessment.
 
 | Order | Workstream | Completion or decision criterion |
 | --- | --- | --- |
-| 1 | Finish the bounded checked cpmsim prototype | Close the specific stack/ownership and failure-path questions below; repair demonstrated defects; freeze and reproduce one accepted snapshot |
+| 1 | Finish the bounded checked cpmsim prototype — completed subsequently | [Completion record](CPMSIM-PROTOTYPE-COMPLETION.md): targeted qualification, demonstrated defect repaired, frozen reproducible snapshot approved by the maintainer on 23 October 2026 |
 | 2 | Integrate the accepted design into normal build tooling | Reconcile current main; replace assessment-only staging transformations with an explicit profile/layout interface; retain consistent private binding and supported legacy behavior |
 | 3 | Qualify adoption by target | Separate Model 4, ROM/XIP and native-build/package work; actual target execution, supported media/configuration coverage and documented installation recovery |
 | 4 | Recover Model 4 upper RAM | Prototype mapping-safe code/state/stack placement and coordinated screen access; measure net TPA after all costs; preserve boot, console, disk and recovery behavior |

@@ -22,8 +22,11 @@ def output(c):
 def main():
     count=0
     for name in identities():
-        # The codecs require the full Z80 harness (IX/IY), tested separately.
+        # The codecs and NOAH require the full Z80 harness (IX/IY).
         if name in ('RCP','SQ','USQ','CR','UNCR','LZH','UNLZH'):continue
+        if name=='NOAH':
+            print('NOAH: identity checks are in tools/test_noah.py (full Z80 core).')
+            continue
         artifact=ROOT/('build/pip-development/PIP.COM' if name=='PIP' else f'build/utilities/{name}.COM')
         image=artifact.read_bytes()
         for tail in ['/VER',' /ver  ','/VER x','x /VER','/VER /VER','/VER /B','\t/VeR\tX','FILE\t/ver']:

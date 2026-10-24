@@ -405,25 +405,18 @@ redistributable existing utility; an unchecked item does not by itself block
   boundary probes. Warm start resets the login vector, so merely accessing B:
   in a previous invocation does not include it in a later all-drive report.
 
-- [ ] During archive-utility design, evaluate a general ARC/BARC command with
-  format-specific overlays and a common interface for member enumeration,
-  metadata, extraction, creation, addition, replacement and deletion. Final name
-  remains undecided. Distinguish archive containers from compression algorithms;
-  let handlers report supported capabilities, including read-only formats.
-  Consider keeping DU/filespec handling, prompts and safe temporary-file
-  replacement/recovery in the main utility. Measure overlay/workspace costs and
-  whether combined format/codec overlays are preferable to separate modules.
-  A possible first increment is listing/extraction for one format before adding
-  updates and further formats. This records design questions, not a frozen API,
-  implementation task. Compression and expansion are to be incorporated into
-  this utility. Also consider retaining familiar SQ/USQ commands for CP/M
-  muscle memory, either as separate utilities or SUBMIT wrappers (for example,
-  `USQ.SUB`) around ARC; availability and argument forwarding remain design
-  questions. Consider
-  general selection such as `ARC /EXPAND README.TQT` and explicit format
-  selection such as `ARC /USQ README.TQT`; these are alternative candidate forms,
-  not finalized syntax. Settle detection/selection rules and the supported
-  SQ/USQ, CR/UNCR and CrLZH formats during the design phase.
+- [ ] Implement Noah’s ARK (`NOAH.COM` with `NOAH.OVL`) for the
+  Utilities Disk. The [consolidated specification](docs/engineering/NOAH%20Specification.md)
+  records settled commands, LBR deleted-data preservation, safe staged updates,
+  standalone SQ/CR/EXPAND and reusable format/codec libraries. From-scratch LBR
+  rebuilds copy active members only; ordinary updates preserve deleted material.
+  Initial read-only LBR reader/exact-file LIST foundation is implemented and
+  CPU-harness tested; see [scope and checks](docs/programmers/Archive%20Read%20Library.md).
+  It is not on the Utilities Disk yet. Behavioral decisions are settled.
+  Satisfy the documented API, provenance, memory and
+  qualification gates; do not equate a finished behavioral spec with implemented
+  code. ZIP and `/LZ` are future additions. Separate SQ/USQ-style commands or
+  SUBMIT wrappers remain optional future conveniences, not initial requirements.
 - [x] Implement `DUMP.COM` against the [initial DRI-compatible specification](docs/engineering/DUMP%20Specification.md): native Z80/ZSM4, ordinary drive-qualified input and `/VER`; enhancements deferred until the clone baseline is established.
 - [ ] Complete review of the enhanced DUMP viewer proposal before implementation.
   Keep the finalized implied-corner `/VER` display. Defer command-line `/FIND=`;
@@ -696,6 +689,15 @@ the final scope freeze, Stages 4 through 7, and the Stage 8 architecture
 reconciliation gate precede the corresponding implementation program.
 
 ## Post-1.0 considerations
+
+- [ ] Explore read-only LBR mounting through an unloadable RSX, using NOAH's
+  reusable LBR format library. Study historical LBRDSK as a reference:
+  [demonstration and source archive links](https://techtinkering.com/articles/advanced-use-of-lbr-files-on-cpm/).
+  Assess BDOS interception, directory enumeration, sequential/random reads,
+  program loading, mount/unmount lifecycle, backing-file changes, error handling
+  and TPA cost. Reject writes explicitly. Writable mounting and automatic member
+  decompression are outside this initial exploration. This is post-1.0 research,
+  not a NOAH 1.0 requirement or an implementation task now.
 
 - [ ] Revisit interactive utilities' dependence on explicitly loaded monitor
   support. DUMP `/P` and VIEW expose the same usability gap: provider/backend
