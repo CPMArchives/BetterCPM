@@ -144,6 +144,13 @@ def main():
         text=m.execute(['RTINY.COM','N6','STINY.ASM','X','P100,106','QL100,106','Z','G'],
                        {tiny:bytes.fromhex('3e21d30200c9')})
         assert 'until ASM Closed' in text and out in m.files,text
+        symbol_file=diskkey(1,'TINY.SYM')
+        for bad in [b'0100 REPLACE\r\nINVALID\r\n',
+                    b''.join(f'{n:04X} S{n:011d}\r\n'.encode() for n in range(300))]:
+            text=m.execute(['E100,.KEEP','RTINY.SYM','DS','G'],{symbol_file:bad})
+            assert 'KEEP' in text and ('invalid metadata' in text or 'capacity' in text),text
+            assert 'REPLACE' not in text,text
+            m.intact()
         for operation in ['make','write','close_output','rename']:
             for existing in [False,True]:
                 files={tiny:bytes.fromhex('3e21d30200c9')}
