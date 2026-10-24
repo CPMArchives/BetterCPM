@@ -43,6 +43,11 @@ class Dasm(Command):
             self.mem[de+2+len(line)]=13
             self.console+='\r\n'+line.decode()+'\r\n'
             return 0
+        if fn==6:
+            if de&255==255:
+                keys=self.break_keys if self.break_keys else self.responses
+                return ord(keys.pop(0)) if keys else 0
+            self.console+=chr(de&255);return 0
         if fn==2:self.console+=chr(self.reg['E'].value);return 0
         if fn==11:return 255 if self.break_keys else 0
         if fn==1:return ord((self.break_keys if self.break_keys else self.responses).pop(0))

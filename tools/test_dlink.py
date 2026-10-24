@@ -34,11 +34,14 @@ class Launcher(Command):
             C.c_int.in_dll(self.lib,'cpu_error').value=1
     def bdos(self,fn,de):
         if fn==29:return self.ro_mask&255
-        if fn==11:return 0
+        if fn==11:return 255 if self.cancel else 0
         if fn==12:return 0x22
         if fn==2:self.console+=chr(de&255);return 0
         if fn==6:
-            if de&255!=255:self.console+=chr(de&255)
+            if de&255==255:
+                if self.cancel:self.cancel=False;return 3
+                return 0
+            self.console+=chr(de&255)
             return 0
         if fn==32:
             if de&255!=255:self.user=de&255
@@ -49,8 +52,8 @@ class Launcher(Command):
         # Shared model classifies the launcher log as output, all other closes
         # use the default close_output failure counter in these tests.
         return super().bdos(fn,de)
-    def run(self,command,files,*,user=0,drive=1,failures=None,tpa=0xd000,late_existing=None,ro_mask=0):
-        self.ro_mask=ro_mask
+    def run(self,command,files,*,user=0,drive=1,failures=None,tpa=0xd000,late_existing=None,ro_mask=0,cancel=False):
+        self.ro_mask=ro_mask;self.cancel=cancel
         self.lib.set_hooks(0xff00,0xfffe,self.hook)
         self.files=dict(files);self.original=dict(files);self.user=user;self.drive=drive
         self.failures=failures or {};self.late_existing=late_existing
@@ -144,6 +147,9 @@ def main():
         assert m.files[late]==b'LATE KEEP' and diskkey(1,'FIXTURE.LOG') not in m.files,text
         text=m.run('C31:FIXTURE',{diskkey(3,'FIXTURE.REL',31):rel,tool:link},ro_mask=4)
         assert 'destination drive is read-only' in text and not m.created,text
+        text=m.run('FIXTURE',{source:rel,tool:link},cancel=True)
+        assert 'cancelled; report not published' in text and diskkey(1,'FIXTURE.LOG') not in m.files,text
+        m.intact()
         for nth in (1,124):
             text=m.run('FIXTURE',{source:rel,tool:link},failures={'read':nth})
             assert diskkey(1,'FIXTURE.LOG') not in m.files,(nth,text)

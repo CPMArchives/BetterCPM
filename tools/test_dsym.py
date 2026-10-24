@@ -33,6 +33,11 @@ class Dsym(Command):
         if function==29 and self.exception is None:
             self.reg['H'].value=self.ro_mask>>8;self.reg['L'].value=self.ro_mask&255
     def bdos(self, fn, de):
+        if fn==6:
+            if de&255==255:
+                self.polls+=1
+                return 3 if self.polls==self.cancel_after else 0
+            self.console+=chr(de&255);return 0
         if fn==29:return self.ro_mask&255
         if fn==2:self.console+=chr(de & 255);return 0
         if fn==32:
@@ -43,6 +48,7 @@ class Dsym(Command):
         return super().bdos(fn,de)
 
     def run(self,*args,**kw):
+        self.polls=0;self.cancel_after=kw.pop('cancel_after',0)
         result=super().run(*args,**kw)
         assert self.user==kw.get('user',0)
         return result
@@ -142,6 +148,10 @@ def main():
         text=m.run(' B31:INPUT.LOG C16:',{diskkey(2,'INPUT.LOG',31):fixture(b'0100 START\n')},user=7,tpa=0xd000)
         assert 'destination drive is read-only' in text and not m.created,text
         m.ro_mask=0
+        for poll in (1,3):
+            text=run(b'0100 START\n',cancel_after=poll)
+            assert 'cancelled; output not published' in text and dest not in m.files,text
+            m.intact()
         text=m.run(' INPUT.SYM',{diskkey(1,'INPUT.SYM'):b'0100 START\r\n'},tpa=0xd000)
         assert 'cannot prove link success' in text and not m.created,text
         print('PASS:',m.cases,'DSYM full-core cases; validation, aliases, low TPA, failures and original preservation')

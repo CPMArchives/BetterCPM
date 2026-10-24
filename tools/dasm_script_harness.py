@@ -10,7 +10,7 @@ import subprocess
 import tempfile
 
 
-def scripted(image, lines, assembler=Path.home()/'bin/z80asm', *, setup_source='', setup_entry=None):
+def scripted(image, lines, assembler=Path.home()/'bin/z80asm', *, setup_source='', setup_entry=None, cleanup_entry=None):
     assert image[0]==0xc3
     base=0xb800
     assert len(image)<base-0x100
@@ -41,6 +41,7 @@ PAINT: LD (HL),0A5H
  CALL {entry}
  LD HL,(OLDBDOS)
  LD (6),HL
+{' CALL '+cleanup_entry if cleanup_entry else ''}
  LD HL,0C000H
  LD B,128
 VERIFY: LD A,(HL)

@@ -397,8 +397,18 @@ UC_PAD:
 
 CODEC_FILE_CLEANUP MACRO
 UC_ERROR:
+        IFDEF   UC_USER_FILES
+        PUSH    DE
+        CALL    UC_CLEANUP
+        LD      DE,80H
+        LD      C,26
+        CALL    UC_BDOS
+        POP     DE
+        CALL    UC_PRINT
+        ELSE
         CALL    UC_PRINT
         CALL    UC_CLEANUP
+        ENDIF
         LD      A,(UC_CLEAN_FAILED)
         OR      A
         JR      Z,UC_EXIT

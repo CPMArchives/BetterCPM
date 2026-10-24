@@ -52,7 +52,7 @@ all three validated tables before committing any. Fault tests cover each create,
 write, close and rename, binary/component/descriptor corruption and cross-user
 session save/load. Retained new scratch and component identities are reported.
 
-The current host campaign passes **161 DASM, 71 DSYM and 39 DLINK full-core cases**, plus
+The current host campaign passes **161 DASM, 73 DSYM and 40 DLINK full-core cases**, plus
 **71 USQ regression cases** after the optional shared file-I/O hook was added.
 These changes are not covered by the earlier native receipts below. They require
 a fresh native build and both-platform campaign before acceptance.
@@ -238,3 +238,7 @@ the archived COM byte-for-byte; the archived binary remains unmodified.
    Rebuild and qualify the actual provisional Utilities artifacts.
 
 These are outstanding requirements, not silently relaxed acceptance criteria.
+
+### Direct-console cancellation correction
+
+DASM work output and confirmed break input use BDOS direct-console function 6, so cooked-console Ctrl-C cannot bypass staged-output cleanup during a listing. DSYM polls for cancellation during input and output; DLINK intercepts child console input, status and output, and refuses to publish a successful log after cancellation. Cleanup restores caller state before diagnostic output. The CP/M command-line editor remains the operating system’s function 10. Final packaged native console qualification is recorded separately.

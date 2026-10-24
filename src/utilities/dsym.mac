@@ -99,6 +99,7 @@ SY_INPUT_SELECTED:
         OR A
         CALL NZ,SY_LOG_HEADER
 SY_RECORD:
+        CALL SY_CANCEL_POLL
         CALL SY_PAIR
         JP C,SY_PARSED
         LD A,(SY_LENGTH)
@@ -241,6 +242,7 @@ SY_PARSED:
         OR A
         JR Z,SY_FINISH
 SY_OUTPUT:
+        CALL SY_CANCEL_POLL
         LD A,(IX+1)
         CALL SY_HEXBYTE
         LD A,(IX+0)
@@ -531,6 +533,19 @@ SY_UPPER:
         OR A
         RET
 
+SY_CANCEL_POLL:
+        PUSH BC
+        PUSH DE
+        LD E,255
+        LD C,6
+        CALL UC_BDOS
+        CP 3
+        POP DE
+        POP BC
+        RET NZ
+        LD DE,SY_CANCEL_MSG
+        JP UC_ERROR
+SY_CANCEL_MSG: DB 'DSYM: cancelled; output not published.',13,10,'$'
 SY_MEDIA_WRITABLE:
         LD C,29
         CALL UC_BDOS

@@ -24,7 +24,7 @@ def main():
             dest='KEEP.ASM' if kind=='file-ro' else 'OUT.ASM'
             lines=['RTINY.COM','N80','S'+dest,'P100,180','QL100,180','Z','G']
             files={'TINY.COM':b'\xc9'*128,'KEEP.ASM':b'KEEP ORIGINAL',
-                'QFAULT.COM':scripted(image,lines,setup_source=setup(kind),setup_entry='HF_START')}
+                'QFAULT.COM':scripted(image,lines,setup_source=setup(kind),setup_entry='HF_START',cleanup_entry='HF_CLEAN')}
             w=a.output/platform/kind
             log,out=campaign(platform,files,['QFAULT'],w,system=a.system,utilities=a.utilities,
                 extract=['KEEP.ASM'],utility_files={'DASM.COM':image})

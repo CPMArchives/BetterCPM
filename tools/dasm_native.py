@@ -21,7 +21,7 @@ SIMULATOR = Path.home()/'projects/git/z80pack/cpmsim/cpmsim'
 
 
 def campaign(platform, files, commands, output, *, system=DEFAULT_SYSTEM,
-             utilities=None, extract=(), interactive=(), emulator=None, utility_files=None, setup=None):
+             utilities=None, extract=(), interactive=(), emulator=None, utility_files=None, setup=None, interactive_frames=None):
     """Run each shell command with a visible completion marker; preserve media."""
     output.mkdir(parents=True, exist_ok=False)
     native = platform == 'trs80gp'
@@ -100,8 +100,9 @@ end
               '-d1',str(output/'b.dmk'),'-itime','60000','-id','300','-it']
         for i in range(len(commands)):
             args += ['-iw',f'DASM STEP {i} DONE','-it']+key_args('\r',25)+['-id','60']
-        for outgoing, wanted, timeout in interactive:
-            args += key_args(outgoing.decode(),25)+['-id','120','-it']
+        for index,(outgoing,wanted,timeout) in enumerate(interactive):
+            frames=interactive_frames[index] if interactive_frames is not None else 120
+            args += key_args(outgoing.decode(),25)+['-id',str(frames),'-it']
         args += ['-ix']
         (output/'invocation.json').write_text(json.dumps(args,indent=2)+'\n')
         launch(args,cwd=output,timeout=1800)
