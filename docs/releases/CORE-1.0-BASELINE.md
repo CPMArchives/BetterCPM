@@ -13,6 +13,29 @@ assessment. Later commits do not silently replace it. This decision does not
 announce completion of the full 1.0 distribution or stop separate documentation
 and utility development.
 
+## Frozen component identities
+
+Confirmed by the maintainer on 24 October 2026. The following combination
+defines core OS 1.0. Every row refers to the exact source at commit
+`3b2d2d7f4fe0472438465165f11fb550d79c8662`, not to a later build carrying
+the same version text.
+
+| Component | Implementation version | Interface/API version | Locked source revision |
+| --- | --- | --- | --- |
+| BDOS | 1.9 | 1.2 | `3b2d2d7` |
+| BIOS | 1.13 | 1.7 | `3b2d2d7` |
+| CCP | 1.4 | 1.0 | `3b2d2d7` |
+| CPX facility | 1.3 | 1.0 | `3b2d2d7` |
+| RSX facility | 1.5 | 1.0 | `3b2d2d7` |
+
+The machine-readable source manifest is `metadata/core-1.0.json`.
+No separate numerical component build identifiers were assigned. This table
+is a historical source manifest and must not track changes to the current
+subsystem version matrix. Later cpmsim work does not alter this definition.
+Identification of qualified platform binaries additionally requires their
+build configuration, toolchain and artifact checksums; this source manifest
+does not assert a new binary qualification.
+
 ## Core and configuration scope
 
 The baseline includes the implemented resident BDOS, BIOS/disk services,

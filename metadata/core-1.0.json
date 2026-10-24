@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "core_version": "1.0",
+  "status": "frozen",
+  "source_commit": "3b2d2d7f4fe0472438465165f11fb550d79c8662",
+  "source_tree": "c08f35045d02e5d0b5de3f0c0914176438c1163e",
+  "components": {
+    "CCP": {
+      "interface_version": "1.0",
+      "implementation_version": "1.4",
+      "source_commit": "3b2d2d7f4fe0472438465165f11fb550d79c8662"
+    },
+    "CPX": {
+      "interface_version": "1.0",
+      "implementation_version": "1.3",
+      "source_commit": "3b2d2d7f4fe0472438465165f11fb550d79c8662"
+    },
+    "BDOS": {
+      "interface_version": "1.2",
+      "implementation_version": "1.9",
+      "source_commit": "3b2d2d7f4fe0472438465165f11fb550d79c8662"
+    },
+    "RSX": {
+      "interface_version": "1.0",
+      "implementation_version": "1.5",
+      "source_commit": "3b2d2d7f4fe0472438465165f11fb550d79c8662"
+    },
+    "BIOS": {
+      "interface_version": "1.7",
+      "implementation_version": "1.13",
+      "source_commit": "3b2d2d7f4fe0472438465165f11fb550d79c8662"
+    }
+  },
+  "binary_qualification": "See docs/releases/CORE-1.0-BASELINE.md; this source manifest does not assign new artifact checksums."
+}
