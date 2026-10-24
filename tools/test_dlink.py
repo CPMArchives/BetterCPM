@@ -21,7 +21,7 @@ class Launcher(Command):
             assert len(self.console)<10000,('unbounded console',self.console[-500:])
             assert kind==0 and self.reg['PC'].value==0xff00
             sp=self.reg['SP'].value
-            assert 0x100<=sp<0xa000 or self.symbols['DL_MAIN_STACK']<=sp<self.symbols['DL_CHILD_TOP'] or 0xdff0<=sp<0xe000,hex(sp)
+            assert self.symbols['DL_MAIN_STACK']<=sp<self.symbols['DL_CHILD_TOP'] or 0xdff0<=sp<0xe000,('BDOS call consumed child stack',hex(sp))
             fn=self.reg['C'].value;de=self.reg['D'].value<<8|self.reg['E'].value
             value=self.bdos(fn,de)
             self.reg['A'].value=value
@@ -62,6 +62,7 @@ class Launcher(Command):
         self.dma,self.console,self.exception=0x80,'',None
         self.mem[:]=bytes(65536)
         self.mem[0x100:0x100+len(self.image)]=self.image
+        self.mem[0:3]=b'\xc3\x00\xfd'
         self.mem[5]=0xc3;self.mem[6:8]=tpa.to_bytes(2,'little')
         self.mem[tpa:tpa+3]=b'\xc3\x00\xff';self.mem[0xff00]=0xc9
         guard=tpa+3
@@ -75,6 +76,7 @@ class Launcher(Command):
         assert self.reg['SP'].value==0xe000 and self.reg['IY'].value==0xbeef
         assert (self.drive,self.user,self.dma)==(drive,user,0x80)
         assert self.word(6)==tpa and self.mem[5]==0xc3
+        assert bytes(self.mem[0:3])==b'\xc3\x00\xfd','BIOS warm-boot vector changed'
         assert bytes(self.mem[guard:0xd800])==bytes([0xa5])*(0xd800-guard)
         if self.mem[0xa000]==0xc3:
             size=self.symbols['DL_LINK_FCB']-0xa000

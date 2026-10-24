@@ -38,7 +38,7 @@ the active ceiling against its complete code, data and stack end plus 256 bytes.
 Its BDOS entry jump is **the first byte at A000H**, so the child's exclusive TPA
 ceiling cannot include any launcher instructions. LINK may use its own stack
 below that boundary. The wrapper supplies an initial child stack and restores
-the caller's BDOS/warm-boot vectors, SP, user, drive and default DMA on orderly
+the caller's BDOS vector, SP, user, drive and default DMA on orderly
 return. It is transient and does not install a persistent RSX.
 
 Console output uses checked private log DMA. Every child file operation selects
@@ -74,3 +74,9 @@ source export, and rejects native unresolved and export-collision reports.
 Independent full-core tests additionally inject loader/capture/file failures,
 exercise users 0/16/31 and check exact TPA cutoffs and resident-code canaries.
 These are emulator/core results; physical Model 4 qualification is separate.
+
+### Model 4 BIOS-vector contract
+
+The page-zero warm-boot vector is preserved throughout child execution: M4SCRN derives the BIOS MCON service from its operand. After validating the entire pinned LINK image, DLINK verifies CALL 0000H at 0252H and JP 0000H at 3643H, then changes only those two operands in the loaded memory copy to its orderly-exit handler. Any mismatch refuses execution. The disk LINK.COM, its CRC/SHA-256, version and source provenance remain unchanged. This transient compatibility adaptation is part of DLINK, not an owned fork or new version of LINK.
+
+Intercepted calls execute on DLINK's private 1 KiB stack. LINK's small internal stack is used only by LINK; it does not carry capture or resident console call frames.

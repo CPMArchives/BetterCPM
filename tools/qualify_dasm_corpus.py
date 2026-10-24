@@ -23,10 +23,12 @@ def main():
     p.add_argument('--from-utilities',action='store_true',help='execute and hash-check the packaged B: tool set')
     p.add_argument('--scripted-input',action='store_true',help='also use the native line-input harness on z80pack')
     p.add_argument('--capacity-only',action='store_true',help='8 KiB input and source output across multiple extents')
+    p.add_argument('--utility-only',action='store_true',help='round-trip the complete maintained DLINK executable as representative input')
     p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp'])
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
     binary=build(Path.home()/'bin/z80asm',a.output/'cross')
-    fixtures={'MAX':bytes(8192)} if a.capacity_only else corpus()
+    if a.utility_only and a.capacity_only:p.error('choose one input selection')
+    fixtures={'TOOL':(Path(__file__).resolve().parents[1]/'build/utilities/DLINK.COM').read_bytes()} if a.utility_only else {'MAX':bytes(8192)} if a.capacity_only else corpus()
     files={'DASM.COM':binary}
     files.update({'IN'+name+'.COM':payload for name,payload in fixtures.items()})
     report={'scope':'byte-enumerated native reconstruction; release acceptance pending',

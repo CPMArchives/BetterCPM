@@ -168,14 +168,6 @@ DL_MODULES_DONE:
  CALL DL_ABSENT
  CALL DL_LOAD_LINK
  CALL DL_MAKE_LOG
- LD HL,0
- LD DE,DL_OLD_ZERO
- LD BC,3
- LDIR
- LD A,0C3H
- LD (0),A
- LD HL,DL_CHILD_DONE
- LD (1),HL
  LD HL,DL_RES_START
  LD (6),HL
  LD A,1
@@ -294,10 +286,6 @@ DL_UNHOOK:
  RET Z
  LD HL,(DL_OLD_BDOS)
  LD (6),HL
- LD HL,DL_OLD_ZERO
- LD DE,0
- LD BC,3
- LDIR
  XOR A
  LD (DL_INSTALLED),A
  RET
@@ -404,6 +392,14 @@ DL_CHAR:
 ; Function-10 is never synthesized. Only the pinned child's console output,
 ; file status and orderly exit are observed; all real I/O still uses BDOS.
 DL_HOOK:
+ ; LINK owns a small internal stack. Run capture and resident console calls
+ ; on our private stack rather than consuming the child's workspace.
+ LD (DL_HOOK_SP),SP
+ LD SP,DL_MAIN_TOP
+ CALL DL_DISPATCH
+ LD SP,(DL_HOOK_SP)
+ RET
+DL_DISPATCH:
  LD A,C
  OR A
  JP Z,DL_CHILD_DONE
@@ -883,7 +879,30 @@ DL_LOAD_RECORD:
  CP 255
  LD DE,DL_LINK_MSG
  JP Z,DL_FAIL
+ ; The Model 4 screen ABI derives BIOS services from (0001H). Never
+ ; replace page-zero warm boot. The full pinned image has already passed CRC;
+ ; adapt only its two known absolute warm-boot operands in this loaded copy.
+ LD A,(0252H)
+ CP 0CDH
+ JP NZ,DL_LINK_PATCH_BAD
+ LD A,(03643H)
+ CP 0C3H
+ JP NZ,DL_LINK_PATCH_BAD
+ LD HL,(0253H)
+ LD A,H
+ OR L
+ JP NZ,DL_LINK_PATCH_BAD
+ LD HL,(03644H)
+ LD A,H
+ OR L
+ JP NZ,DL_LINK_PATCH_BAD
+ LD HL,DL_CHILD_DONE
+ LD (0253H),HL
+ LD (03644H),HL
  JP DL_RESTORE_IO
+DL_LINK_PATCH_BAD:
+ LD DE,DL_LINK_MSG
+ JP DL_FAIL
 DL_LOAD_BAD:
  PUSH DE
  LD DE,DL_LINK_FCB
@@ -1098,12 +1117,12 @@ DL_CHILD_USER: DB 0
 DL_CHILD_DRIVE: DB 0
 DL_CHILD_DMA: DW 80H
 DL_CHILD_FCB: DW 0
-DL_OLD_ZERO: DS 3
 DL_INSTALLED: DB 0
 DL_FUNCTION: DB 0
 DL_FILE_KIND: DB 0
 DL_OWN_COM: DB 0
 DL_OWN_SYM: DB 0
+DL_HOOK_SP: DW 0
 DL_RETURN_HL: DW 0
 DL_OUT_USER: DB 0
 DL_PARSE_USER: DB 0
@@ -1132,7 +1151,7 @@ PN_STARTED: DB 0
 DL_STATE_END:
 DL_LOG_BUFFER: DS 128
 DL_IO_BUFFER: DS 128
-DL_MAIN_STACK: DS 256
+DL_MAIN_STACK: DS 1024
 DL_MAIN_TOP:
 DL_CHILD_STACK: DS 512
 DL_CHILD_TOP:

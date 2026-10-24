@@ -246,3 +246,7 @@ DASM work output and confirmed break input use BDOS direct-console function 6, s
 ### Input-buffer and stack boundary
 
 The command buffer reserves the maximum 80 characters, count and size bytes, and the trailing BDOS carriage return. A full-length command previously wrote its carriage return into the first private-stack byte; the added guard test detects that case. Across all 161 host campaigns the measured private-stack high-water mark is 44 of 512 bytes, with the bottom 32 bytes unchanged. This is observed test coverage, not a proof about arbitrary future code or BIOS stack use.
+
+### Model 4 launcher correction
+
+DLINK preserves page-zero warm boot because the Model 4 screen provider derives its BIOS service from that vector. Its full-image-verified loader redirects only the two known LINK warm-boot operands in the loaded memory copy; the distributed LINK.COM remains byte-identical and externally versioned. Hooked calls use a separate 1 KiB private stack. Host tests enforce both private-stack use and an unchanged BIOS vector. Native receipts distinguish the corrected launcher from superseded failed captures.

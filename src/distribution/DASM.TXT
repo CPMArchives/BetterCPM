@@ -3,6 +3,8 @@ BETTERCP/M DASM TOOL SET (DEVELOPMENT)
 DASM - maintained Richard Conn 1.5 Z80 disassembler adaptation.
 DSYM - complete verified LINK-report conversion to DASM symbols.
 DLINK - checked capture using unchanged B0:LINK.COM 1.3.
+The disk LINK.COM is unchanged. After full-image verification, DLINK redirects
+its two known warm-boot operands in RAM; the BIOS vector stays intact.
 /VER is noncreating, case insensitive and may accompany other arguments.
 
 Keep Utilities as B: and use a writable work disk. Example:

@@ -122,7 +122,7 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
     for name,data,report in reports:
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
         (output/(name+'.json')).write_text(json.dumps(report,indent=2)+'\n')
-        print(f'{output/name}: PROVISIONAL, {len(files)} files; {len(PENDING)} pending selections/implementations')
+        print(f"{output/name}: PROVISIONAL, {len(files)} files; {len(report['pending'])} pending selections/implementations")
     package={**accompanying,**analysis_companions}
     for name,data,report in reports:
         package[name]=data
