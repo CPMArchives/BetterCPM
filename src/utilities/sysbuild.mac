@@ -7,6 +7,7 @@
 ; ********************************************************************************
 
         INCLUDE layout.inc
+        INCLUDE profile.inc
         INCLUDE sysmeta.inc
         ASEG
         ORG     0100H
@@ -26,6 +27,13 @@ SYSBASE EQU     LY_SYS
 ; -------------------------------------------------------------------------------
 
 START:  CALL    UV_CHECK
+        IF BP_CHECKED EQ 1
+        LD SP,03F00H
+        LD DE,P12NO
+        LD C,9
+        CALL 5
+        JP 0
+        ENDIF
         LD      SP,03F00H               ; enter protected-system builder
         LD      DE,BANNER
         CALL    PRINT
@@ -621,4 +629,7 @@ COUNT:  DW 0                            ; record counter
 SCRATCH:DS 128                          ; component scratch buffer
 ; @utility-version SYSBUILD@
 
+        IF BP_CHECKED EQ 1
+P12NO: DB 'Native packaging tool unavailable in checked cpmsim build.',13,10,'$'
+        ENDIF
         END

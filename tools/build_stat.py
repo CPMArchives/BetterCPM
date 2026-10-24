@@ -27,6 +27,10 @@ def main() -> None:
     text = text.replace("        CSEG\n", "        ASEG\n")
     text = text.replace("        .PHASE  0103H\n", "        ORG     0103H\n")
     text = text.replace("        .DEPHASE\n", "")
+    from checked_carriers import selected_contract
+    from checked_build_contract import assembly_constants
+    contract = selected_contract(args.assembler)
+    if contract:text = assembly_constants(contract) + text
     with tempfile.TemporaryDirectory(prefix="bettercpm-stat-") as temporary:
         staged = Path(temporary) / "stat.mac"
         staged.write_text(text, encoding="ascii")

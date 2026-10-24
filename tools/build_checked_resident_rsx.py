@@ -135,6 +135,10 @@ def main():
               'native_compare_address':ds['Z_CMP'],'native_crc_address':bs['Z_CRC'],
               'component_hashes':{name:hashlib.sha256((out/name).read_bytes()).hexdigest()
                                   for name in ('bios.bin','disk.bin','extensions.bin','gateway.bin','tables.bin','control.carrier')},
+              'upstream_hashes':{name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest()
+                                  for name in ('build/bdos/bdos.bin','build/system/fileloader.bin',
+                                               'build/z80pack/command-loader/stage1.carrier',
+                                               'build/z80pack/command-loader/stage2.carrier')},
               'status':'resident/RSX components only; no checked distribution image generated'}
     (out/'resident-rsx-results.json').write_text(json.dumps(result,indent=2)+'\n')
     (out/'resident-rsx-contract.json').write_text(json.dumps(contract,indent=2)+'\n')

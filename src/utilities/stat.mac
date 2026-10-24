@@ -8,6 +8,7 @@
 
 
         INCLUDE layout.inc
+        INCLUDE profile.inc
 
 BDOS            EQU     0005H
 TAIL            EQU     0080H
@@ -2232,6 +2233,9 @@ USNEXT: LD      HL,USERNO               ; usnext
 ; -------------------------------------------------------------------------------
 
 MEMREPORT:                              ; report BetterCP/M memory map
+        IF BP_CHECKED EQ 1
+        CALL P12CHECK
+        ENDIF
         LD      HL,ECB
         LD      A,(HL)
         CP      'B'
@@ -2768,4 +2772,8 @@ STACKTOP:                               ; top of private STAT stack
 SUMMARY:                                ; dynamic summaries above the COM image
 
         .DEPHASE
+        IF BP_CHECKED EQ 1
+P12CONFIG EQU 0
+        INCLUDE private-utility.inc
+        ENDIF
         END     START
