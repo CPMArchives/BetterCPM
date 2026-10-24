@@ -2,6 +2,7 @@
 """Reject acceptance receipts for different binaries, images or failed platforms."""
 import copy,unittest
 from build_utilities_disk import validate_dasm_acceptance,sha
+from collect_dasm_qualification import retained_dependencies
 
 class Acceptance(unittest.TestCase):
  def setUp(self):
@@ -19,4 +20,11 @@ class Acceptance(unittest.TestCase):
     elif kind=='platform':q['platforms']['z80pack']['status']='FAIL'
     else:q['platforms']['z80pack']['system_sha256']=''
     with self.assertRaises(ValueError):validate_dasm_acceptance(q,self.files,'z80pack',b'disk')
+ def test_retained_dependencies(self):
+  current={n:n for n in ('DASM.COM','DSYM.COM','ZSM4.COM','LINK.COM','DLINK.COM')}
+  prior=dict(current);prior['DLINK.COM']='old launcher'
+  self.assertEqual(len(retained_dependencies(current,prior)),4)
+  for name in ('DASM.COM','DSYM.COM','ZSM4.COM','LINK.COM'):
+   changed=dict(prior);changed[name]='different'
+   with self.subTest(name=name),self.assertRaises(ValueError):retained_dependencies(current,changed)
 if __name__=='__main__':unittest.main()

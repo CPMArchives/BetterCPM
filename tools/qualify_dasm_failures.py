@@ -45,7 +45,7 @@ def main():
             assert b'DASM RESIDENT CANARY PASS' in log and b'DASM RESIDENT CANARY FAIL' not in log,log[-3000:]
             expected=b'read-only' if kind in ('file-ro','media-ro') else b'I/O failed'
             assert expected in log,log[-3000:]
-            assert out['KEEP.ASM'].startswith(b'KEEP ORIGINAL')
+            assert out['KEEP.ASM'][:13]==b'KEEP ORIGINAL' and 13<=len(out['KEEP.ASM'])<=128 and set(out['KEEP.ASM'][13:])<={0,26}
             # Probe exact output absence independently from console diagnostics.
             import subprocess
             definition='dasm-system' if platform=='trs80gp' else 'bettercpm-default'

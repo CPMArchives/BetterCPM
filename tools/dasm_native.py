@@ -21,7 +21,7 @@ SIMULATOR = Path.home()/'projects/git/z80pack/cpmsim/cpmsim'
 
 
 def campaign(platform, files, commands, output, *, system=DEFAULT_SYSTEM,
-             utilities=None, extract=(), interactive=(), emulator=None, utility_files=None, setup=None, interactive_frames=None):
+             utilities=None, extract=(), interactive=(), emulator=None, utility_files=None, setup=None, interactive_frames=None, interactive_launch=None, interactive_ready=None):
     """Run each shell command with a visible completion marker; preserve media."""
     output.mkdir(parents=True, exist_ok=False)
     native = platform == 'trs80gp'
@@ -42,6 +42,7 @@ def campaign(platform, files, commands, output, *, system=DEFAULT_SYSTEM,
         stub = '1110010e09cd05000e01cd0500c30000' if native else '110b010e09cd0500c30000'
         files[f'DM{i}.COM'] = bytes.fromhex(stub)+(marker+'\r\n$').encode()
         script += ['CLS', command, f'DM{i}' if native else f'A:DM{i}']
+    if native and interactive_launch:script += ['CLS',interactive_launch]
     files['QUALIFY.SUB'] = ('\r\n'.join(script)+'\r\n\x1a').encode()
     defs = disk_definition(select_fdf(ROOT/'third_party/montezuma/DISK.FDF', DEFAULT_FORMAT))
     defs += '''diskdef dasm-system
@@ -100,9 +101,19 @@ end
               '-d1',str(output/'b.dmk'),'-itime','60000','-id','300','-it']
         for i in range(len(commands)):
             args += ['-iw',f'DASM STEP {i} DONE','-it']+key_args('\r',25)+['-id','60']
+        if interactive_launch:args += ['-iw','*']
         for index,(outgoing,wanted,timeout) in enumerate(interactive):
             frames=interactive_frames[index] if interactive_frames is not None else 120
-            args += key_args(outgoing.decode(),25)+['-id',str(frames),'-it']
+            ready=interactive_ready[index] if interactive_ready is not None else None
+            if outgoing==b'\x03' and ready:
+                # M4_IN debounces by waiting for physical key release before
+                # returning ETX. Hold through a blocking sector operation, then
+                # release before waiting for the application's abort question.
+                args += ['-ik','6','4','-id','1200','-ik','6','0','-id','60','-iw',ready]
+            else:
+                args += key_args(outgoing.decode(),25)
+                if ready:args += ['-iw',ready]
+            args += ['-id',str(frames),'-it']
         args += ['-ix']
         (output/'invocation.json').write_text(json.dumps(args,indent=2)+'\n')
         launch(args,cwd=output,timeout=1800)
