@@ -78,8 +78,8 @@ unchanged to ZSM4. The prior historical, query and BetterCP/M two-platform
 receipts remain applicable to the exact matching executable bytes; no changed
 binary requires a new functional campaign.
 
-The emulator's hash is recorded, but clean pinned cpmsim reconstruction remains
-open. Final Utilities inventory/image acceptance, other utilities affected by
+The [pinned cpmsim reconstruction](CPMSIM%20Reconstruction%20Qualification.md)
+now passes and repeats native parity for all six executables. Final Utilities inventory/image acceptance, other utilities affected by
 the shared version-query change, distribution placement of native-build
 materials and final release hash/evidence closure also remain open. Utilities
 media remain provisional. This is native CP/M tool execution under emulation,

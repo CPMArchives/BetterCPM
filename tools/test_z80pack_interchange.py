@@ -40,80 +40,22 @@ def run_case(image: Path, simulator: Path,
         subprocess.run(["cpmcp", "-T", "raw", "-f", fmt, str(medium),
                         str(source), "0:HOST.DAT"], check=True, cwd=work)
 
-        select = ""
-        for key in selection:
-            select += (f'send -s -- "{key}"\n'
-                       'expect -exact "Your choice:"\n')
-        select = select.rsplit('expect -exact "Your choice:"\n', 1)[0]
-        physical = ""
-        if cylinders == 80:
-            physical = r'''send -s -- "F"
-expect -exact "Your choice:"
-send -s -- "B"
-expect -exact "Physical disk drive 1"
-expect -exact "Your choice:"
-send -s -- "B"
-expect -exact "Track choices:"
-expect -exact "Your choice:"
-send -s -- "D"
-expect -exact "Physical disk drive 1"
-expect -exact "Your choice:"
-send -s -- "\003"
-prompt
-send -s -- "CONFIG\r"
-expect -exact "Your choice:"
-'''
-        script = r'''set timeout 30
-set send_slow {1 .02}
-log_file -noappend [lindex $argv 2]
-expect_before timeout {puts "TEST TIMEOUT"; exit 1}
-proc prompt {} {
- expect {
-  -re {\r+\n[A-D]0>} {}
-  timeout {puts "PROMPT TIMEOUT"; exit 1}
-  eof {puts "UNEXPECTED EXIT"; exit 1}
- }
-}
-spawn [lindex $argv 0] -z -d [lindex $argv 1]
-expect -exact "Booting..."
-prompt
-send -s -- "CONFIG\r"
-expect -exact "Your choice:"
-@PHYSICAL@
-send -s -- "G"
-expect -exact "Choose the letter of the drive to change:"
-expect -exact "Your choice:"
-send -s -- "B"
-expect -exact "Choose the format to be used for drive B"
-expect -exact "Your choice:"
-@SELECT@
-expect -exact {Which physical disk drive is to be used [0-3]?}
-send -s -- "1"
-expect -exact "Disk configuration changed (until cold boot)."
-expect -exact "Push ENTER"
-send -s -- "\r"
-expect -exact "Your choice:"
-send -s -- "\003"
-prompt
-send -s -- "TYPE B:HOST.DAT\r"
-expect -exact "BETTERCPM CPMTOOLS INTERCHANGE PASS"
-prompt
-send -s -- "COPY B:HOST.DAT B:ROUND.DAT\r"
-prompt
-send -s -- "BYE\r"
-expect eof
-'''.replace("@PHYSICAL@", physical).replace("@SELECT@", select)
-        test = work / "interchange.exp"
-        test.write_text(script)
-        env = dict(os.environ)
-        env["PATH"] = str(simulator.parent / "srctools") + os.pathsep + env["PATH"]
-        report = image / f"interchange-{slug}.txt"
-        run = subprocess.run(["expect", str(test), str(simulator),
-                              str(work / "disks"), str(report)], cwd=work, env=env,
-                             capture_output=True, text=True, timeout=240)
-        if run.returncode:
-            raise AssertionError(
-                f"z80pack interchange failed: {report}\n{run.stdout[-2000:]}")
+        # Use current CONFIG's stable command interface, not obsolete menu keys.
+        from test_z80pack_sysgen_install import session
+        names = {'mm-standard-system': 'MM Standard SYSTEM',
+                 'mm-80t-ds-data': 'MM 80T DS DATA',
+                 'ampro-little-board': 'Ampro Little Board 40T SS',
+                 'ampro-little-board-ds': 'Ampro Little Board 40T DS'}
+        sides = 2 if slug in ('mm-80t-ds-data','ampro-little-board-ds') else 1
+        interactions = []
+        for text in (f'CONFIG /PHYSICAL=1 /TRACKS={cylinders} /SIDES={sides} /STEP=6',
+                     f'CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT="{names[slug]}"'):
+            interactions.extend([(text.encode()+b'\r',b'Disk configuration changed (until cold boot).',30),
+                                 (b'',b'A0>_ ',30)])
+        interactions.extend([(b'TYPE B:HOST.DAT\r',MARKER.rstrip(),30),
+                             (b'',b'A0>_ ',30),
+                             (b'COPY B:HOST.DAT B:ROUND.DAT\r',b'A0>_ ',30)])
+        session(simulator, work/'disks', interactions, image/f'interchange-{slug}.txt')
 
         extracted = work / "ROUND.DAT"
         subprocess.run(["cpmcp", "-T", "raw", "-f", fmt, str(medium),

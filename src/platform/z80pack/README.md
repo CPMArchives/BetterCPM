@@ -5,8 +5,10 @@ under another machine. Shared BIOS vectors/state, BDOS, gateway, file loader,
 CCP, CPXs and RSX manager retain the common memory layout. This target uses
 cpmsim console ports 0/1 and record-DMA disk ports 10-17. No TRS-80 port or
 memory-map emulation is required. Variable-format media require the BetterCP/M
-cpmsim geometry interface version 2 from the `bettercpm-disk-geometry` branch
-of the companion z80pack repository.
+cpmsim geometry interface version 2 from the
+[pinned reconstruction profiles](../../../third_party/z80pack/README.md).
+The runtime profile supplies disk support; the qualification profile adds
+ROM protection and stack measurements. Stock upstream cpmsim is insufficient.
 The target READER entry reads cpmsim auxiliary-input port 5.  The host-side
 `cpmsend` helper supplies a normal reader stream; when no sender is attached,
 cpmsim returns CP/M end-of-file (`Ctrl-Z`).

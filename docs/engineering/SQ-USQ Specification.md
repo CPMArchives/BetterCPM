@@ -187,7 +187,8 @@ forgiving `/HELP` and `/VER` query amendment. The historical matrix has
 been rerun against those exact final COM files, checked byte for byte against
 fresh builds; see the [qualification index](Compression-1.0-Qualification.json)
 for their SHA-256 identities. [Native ZSM4/LINK builds](Compression%20Native%20Build%20Qualification.md)
-match those exact bytes. Remaining reconstruction and Utilities disk gates are tracked in the
+match those exact bytes. The [pinned emulator rerun](CPMSIM%20Reconstruction%20Qualification.md) also passes.
+Remaining Utilities disk gates are tracked in the
 [1.0 release checklist](../releases/1.0-ROADMAP.md#compression-utilities--10-feature-freeze-and-release-checklist).
 
 See the [platform qualification record](Compression%20Utilities%20Platform%20Qualification.md):

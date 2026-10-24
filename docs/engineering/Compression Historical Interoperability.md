@@ -53,7 +53,8 @@ bounded and mixed arguments, no file access, state preservation and prompt
 return. Its logs and test sources are included in the bundle. Final COM files are required to match fresh builds before campaign execution.
 
 Separate BetterCP/M two-platform and [native ZSM4/LINK qualification](Compression%20Native%20Build%20Qualification.md)
-now pass for these same executable bytes. Remaining reconstruction and final Utilities disk checks
+now pass for these same executable bytes. The [pinned emulator campaign](CPMSIM%20Reconstruction%20Qualification.md)
+repeats all 178 historical cases successfully. Remaining final Utilities disk checks
 are open in the [1.0 release checklist](../releases/1.0-ROADMAP.md#compression-utilities--10-feature-freeze-and-release-checklist).
 Stock CP/M 2.2 qualification does not close those gates. Any changed executable
 requires refreshed relevant evidence before release; identical rebuilds retain

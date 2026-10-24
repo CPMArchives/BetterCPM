@@ -23,6 +23,7 @@ def main() -> None:
                         default=ROOT / "build/z80pack")
     parser.add_argument("--z80pack-source", type=Path,
                         default=Path.home() / "projects/git/z80pack")
+    parser.add_argument("--simulator", type=Path, help="use an already reconstructed qualification emulator")
     args = parser.parse_args()
     image = args.image_dir.resolve()
     source = args.z80pack_source.expanduser().resolve()
@@ -53,7 +54,7 @@ def main() -> None:
 
     with tempfile.TemporaryDirectory(prefix="bettercpm-rom-xip-") as temporary:
         work = Path(temporary)
-        simulator = build_guarded_simulator(source, work)
+        simulator = args.simulator.resolve() if args.simulator else build_guarded_simulator(source, work)
         prove_guard_primitives(simulator, work)
         stack_report = image / "rom/rom-stack-qualification.json"
         subprocess.run([
