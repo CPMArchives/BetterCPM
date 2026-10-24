@@ -113,4 +113,9 @@ def make_module(*, name: str, version: tuple[int, int], services: list[int],
                      sum(code) & 0xFFFF, primary)
     for index, offset in enumerate(relocations):
         struct.pack_into("<H", header, RELOCATION_OFFSET + index * 2, offset)
+    from checked_carriers import selected_contract, rsx_metadata
+    contract = selected_contract()
+    if contract:
+        metadata = rsx_metadata(name, metadata, contract)
+        header[4] = 3
     return bytes(header) + code + metadata

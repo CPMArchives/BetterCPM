@@ -108,17 +108,13 @@ def carrier_cases(identity):
     try:
         def make(public):
             payload=bytearray(32);payload[10:12]=(0x8010).to_bytes(2,'little')
-            data=bytearray(make_module(name='PROBE',version=(1,0),services=[],linked_base=0x8000,
+            data=bytearray(make_module(name='ECHO' if public else 'TEST',version=(1,0),services=[],linked_base=0x8000,
                 code=bytes(payload),relocations=[10],reconstruction_class='STATELESS' if public else 'STATEFUL',
                 callable_services=[] if public else [(b'TEST',1,0,8,0)],runtime_pointers=[] if public else [12]))
-            off=int.from_bytes(data[30:32],'little');length=int.from_bytes(data[off+8:off+10],'little')
-            data[4]=3;data[off+4]=2;data[off+7]+=1
-            data[off+8:off+10]=(length+20).to_bytes(2,'little')
-            data[off+12:off+12]=bytes((4,18,1,int(not public)))+(bytes(16) if public else identity)
             return data
         results=[]
         def check(label,data,accepted=False,metadata=False):
-            c,before=fixture.phase_one(bytes(data),name=b'PROBE   ')
+            c,before=fixture.phase_one(bytes(data),name=data[32:40])
             phase=1
             if c.a==0 and (accepted or metadata):
                 before=fixture.phase_two(c,len(data));phase=2
