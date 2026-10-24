@@ -1,0 +1,204 @@
+{
+  "status": "PASS",
+  "date": "2026-10-24",
+  "scope": "Native ZSM4 4.7 / LINK 1.3 on stock 62K CP/M 2.2 under the recorded local cpmsim; prepared macro sources",
+  "baseline": "9b10eec4094b3d3d796fb3eca2a1c1d41abd3e3a",
+  "runner_sha256": "7c3ec3557b959fa24c0e98a895ef656bce87ec5320d06addde047f2cbd9155bb",
+  "environment_sha256": {
+    "/Users/nathanael/projects/git/z80pack/cpmsim/cpmsim": "b91a99964db2492b2ad99bde68952a616a12c3d28f342f03341199ba5462a6c4",
+    "/Users/nathanael/projects/git/cpm-compatibility/suite/build-tools/ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+    "/Users/nathanael/projects/git/cpm-compatibility/suite/build-tools/LINK.COM": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677",
+    "/Users/nathanael/bin/z80asm": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc",
+    "/Users/nathanael/projects/git/z80pack/cpmsim/disks/library/cpm22-62khd.dsk": "c0e63f206f6875398817207c00eb99f749d73b319c86329d5947fb2482d28945",
+    "/Users/nathanael/projects/git/z80pack/cpmsim/disks/library/cpm22-1.dsk": "86ac7cb1bdd6bac05fe6299b50f94cb26a047022ce00135fbecf7bbc5d3303d2",
+    "/private/tmp/bettercpm-sq-command-20261023/docs/engineering/Compression-1.0-Qualification.json": "4aa836fccfd96b51e5887796a67b1218e59eb82b498ce979762dbfd32525c09e"
+  },
+  "commands": {
+    "SQ": {
+      "status": "PASS",
+      "bytes": 8035,
+      "sha256": "2517bf6d77631f6f6408a4b2bb7dcca769ae59a7ab0931b4dfe3ffdb2163335d",
+      "record_bytes": 8064,
+      "record_sha256": "9f11d23fd9b91b6210766292b91ec0cf08de85713a23fefe7dc7ef3bf390ee89",
+      "padding_hex": "1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a",
+      "source_sha256": {
+        "src/codec/codec.inc": "64d8478d79311923e05ef1b40d86797d89c7d97c42aa74ae28cb57abfefd356d",
+        "src/codec/codec.mac": "0182e9ed7ce1de3b414937e30b7ef84ab548dd5c749326017fd1360c3050e43e",
+        "src/codec/sq.inc": "72f0341b8908f055c9a536f73512e8917db56996388977fd86fed3620be24946",
+        "src/codec/sq.mac": "8a985270ef97a4baf611c28be247574505f436c58731f9f147bc7009b770d6ea",
+        "src/utilities/common/codecfile.mac": "098f36ff405e6559ca018694d5d3dd8083df5bd0726c0eb8f98ae02cb5741dea",
+        "src/utilities/sq.mac": "4c1d1b768e2c22feb8cd4034f1e895beb83bf57a685cfd4775a38987e622e485",
+        "tools/build_sq.py": "ec8f305bfa12aa74c0521bb355c81208cfe0a35a6632028f0070281601b7bc1d",
+        "tools/codec_version.py": "81fc4ec9bdb96a9ae5a8f5f9834594075857c5f2867c84be840dc7f8ad807bcc",
+        "metadata/utility-versions.tsv": "cf8f006ae81bdc994fa6e1975e1147b000b77bfc6800c2c37202f017273cdfd1",
+        "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+        "src/utilities/common/codecver.inc": "7efb6979f9b403974e4bec08322b9b01562212786daeae6e1cfaab09d732c63f"
+      },
+      "prepared_sha256": {
+        "sq.inc": "6ab8e3473b6606651b2592dfd183a9579adeff8f367b4b6e007224cd0180edc8",
+        "codecver.inc": "87fe136b5a4e9a9d3c78b352404bfeeb3a9de00c799012e99672e4a3274bd52c",
+        "command.mac": "898d56598d2c1a36352871567655b60348c2d0ec68383dbf1c4810ae141506d9",
+        "codec.inc": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+        "cfio.mac": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+        "sq.mac": "ab47eb9aec03d8d75a120e1b113136bf33d918ec8fd679545dbd1df12fff886d",
+        "codec.mac": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76"
+      },
+      "log_sha256": "905c24cb9144d84e039782e95b4825b8b50e9ae03bdcc12e38986fcf6aa6ae36"
+    },
+    "USQ": {
+      "status": "PASS",
+      "bytes": 5310,
+      "sha256": "25fdd2e566cc241a6f7b5623fc4a075a4c1843e45091309315de5bfa7fc247a0",
+      "record_bytes": 5376,
+      "record_sha256": "c7007e98bfdecac246ab9b926a437f03f1d94ed177ef694440be29f0db6aad42",
+      "padding_hex": "1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a",
+      "source_sha256": {
+        "src/codec/codec.inc": "64d8478d79311923e05ef1b40d86797d89c7d97c42aa74ae28cb57abfefd356d",
+        "src/codec/codec.mac": "0182e9ed7ce1de3b414937e30b7ef84ab548dd5c749326017fd1360c3050e43e",
+        "src/codec/usq.inc": "73fc88f4cfb0cfbec4e7865ba157e7b90ae339bd1e03eae348e6990c0e949924",
+        "src/codec/usq.mac": "32566e1c5610b93633f678734fcad263c144ee0e93d8246f9887bd4d80bdd63d",
+        "src/utilities/common/codecfile.mac": "098f36ff405e6559ca018694d5d3dd8083df5bd0726c0eb8f98ae02cb5741dea",
+        "src/utilities/usq.mac": "0a70923ffdba62518ebe6c30015fdb511589f55175dad37e87fddd4f311372b0",
+        "tools/build_usq.py": "04131ff43e9dba4d0bbf751e45468817ffc5433ce10bf4b1c87c6c12f12d2c8c",
+        "tools/codec_version.py": "81fc4ec9bdb96a9ae5a8f5f9834594075857c5f2867c84be840dc7f8ad807bcc",
+        "metadata/utility-versions.tsv": "cf8f006ae81bdc994fa6e1975e1147b000b77bfc6800c2c37202f017273cdfd1",
+        "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+        "src/utilities/common/codecver.inc": "7efb6979f9b403974e4bec08322b9b01562212786daeae6e1cfaab09d732c63f"
+      },
+      "prepared_sha256": {
+        "usq.inc": "1341ade2dba84fee9aa0e756f21797bc77669f14c69c91af3f6dc450732895d9",
+        "codecver.inc": "ea2c182212b0a51d4d5be42660ab16f97d55380543ede9b79b195a46440335a2",
+        "command.mac": "c9b227ae7563876ccdbec3f99555ce250df4f244230a2d9ff7d92a1683a5c1f9",
+        "codec.inc": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+        "cfio.mac": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+        "usq.mac": "e3f96ee5c620f0ce5981d9f670f30d392c30ffa84b4a09bd4758046e6d1723cb",
+        "codec.mac": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76"
+      },
+      "log_sha256": "0df7419140c95a833f2107ebd642a285bbda074e77d58c64eb339b3e5c007ee4"
+    },
+    "CR": {
+      "status": "PASS",
+      "bytes": 29355,
+      "sha256": "8a089b84239004602dfd9ad0c4586c5c94ad73b9f257553521e6004569e381a3",
+      "record_bytes": 29440,
+      "record_sha256": "b9cf115eaa4c2ed25459adcdf4abd9a4a8eba2da15c55acb9f62decdeb43937a",
+      "padding_hex": "1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a",
+      "source_sha256": {
+        "src/codec/codec.inc": "64d8478d79311923e05ef1b40d86797d89c7d97c42aa74ae28cb57abfefd356d",
+        "src/codec/codec.mac": "0182e9ed7ce1de3b414937e30b7ef84ab548dd5c749326017fd1360c3050e43e",
+        "src/codec/cr.inc": "bfbbcbecdab4ff0020e5855e7e9f832ce8d61a64b0f94c386b7c972122085007",
+        "src/codec/cr.mac": "ed03434a995e6891c37b929aecfeae4ffecb0884ece003752e3f852a928fb1d6",
+        "src/utilities/common/codecfile.mac": "098f36ff405e6559ca018694d5d3dd8083df5bd0726c0eb8f98ae02cb5741dea",
+        "src/utilities/cr.mac": "c82905f28b10be7ce360ddd60d0e241df41627f4143d59fe3f52470daa70f950",
+        "tools/build_cr.py": "9fa9394751cc94632151d8d49ff84f92e0057e0984ca6fee5375f184d37a4920",
+        "tools/codec_version.py": "81fc4ec9bdb96a9ae5a8f5f9834594075857c5f2867c84be840dc7f8ad807bcc",
+        "metadata/utility-versions.tsv": "cf8f006ae81bdc994fa6e1975e1147b000b77bfc6800c2c37202f017273cdfd1",
+        "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+        "src/utilities/common/codecver.inc": "7efb6979f9b403974e4bec08322b9b01562212786daeae6e1cfaab09d732c63f"
+      },
+      "prepared_sha256": {
+        "codecver.inc": "096860aed7ea2d7f37c3b9d0f41680c6ebf1df1733ba83e39a44e0e1536419b6",
+        "cr.mac": "d63b8889e275ed7bed51ac079a6ec5c34b1de74d696141e71c34e3737b61fa45",
+        "command.mac": "362edaddf6b05d901ddd31513707fb9582b8559d3a7b8d8f57d7373a7975e006",
+        "codec.inc": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+        "cfio.mac": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+        "cr.inc": "46634e1dd801a789c2c4a9fde311122524711011f3486ef5a7fbdf6816e9916d",
+        "codec.mac": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76"
+      },
+      "log_sha256": "61944df3fdd2ffb7025630bfd9127c22d9a6e52c5a01ce11e5f499ad60d2e56b"
+    },
+    "UNCR": {
+      "status": "PASS",
+      "bytes": 31118,
+      "sha256": "e77200e4a8c36d3e7d455eeaed96c289a06e82a4756f29023a7850374e760be3",
+      "record_bytes": 31232,
+      "record_sha256": "388de5fab23dffad1a3738c13734a89b25eff835bcd092536288b23915cab8bd",
+      "padding_hex": "1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a",
+      "source_sha256": {
+        "src/codec/codec.inc": "64d8478d79311923e05ef1b40d86797d89c7d97c42aa74ae28cb57abfefd356d",
+        "src/codec/codec.mac": "0182e9ed7ce1de3b414937e30b7ef84ab548dd5c749326017fd1360c3050e43e",
+        "src/codec/uncr.inc": "273604aa41590f497ebd8e9a4fcf8cf9687d476a1a3ccdc0fec384be2a886763",
+        "src/codec/uncr.mac": "2f6f91f9f2049a7a5e15fdb0393f09fc1755e70a2e3613565c963beadc7488f4",
+        "src/utilities/common/codecfile.mac": "098f36ff405e6559ca018694d5d3dd8083df5bd0726c0eb8f98ae02cb5741dea",
+        "src/utilities/uncr.mac": "fd68e215ea0a63dfac7eeee518a74c692e8345e14a1f298f6ee50e767d7a9a82",
+        "tools/build_uncr.py": "9689e8fd47970492bd04305e9671ae70d5d87e7b5c0580d7fba099bffebd0c8f",
+        "tools/codec_version.py": "81fc4ec9bdb96a9ae5a8f5f9834594075857c5f2867c84be840dc7f8ad807bcc",
+        "metadata/utility-versions.tsv": "cf8f006ae81bdc994fa6e1975e1147b000b77bfc6800c2c37202f017273cdfd1",
+        "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+        "src/utilities/common/codecver.inc": "7efb6979f9b403974e4bec08322b9b01562212786daeae6e1cfaab09d732c63f"
+      },
+      "prepared_sha256": {
+        "codecver.inc": "95ea9e45b21a493aa29fb9258b4d305ac1f04f2ef0ae5858e381d9c06212cf3c",
+        "command.mac": "f769a22e830a0a8cd92ab121a7b8340748ea8fda57b884e9296a9ff9f886f7ef",
+        "codec.inc": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+        "uncr.inc": "0d9c6593cd64e5bc0e178eb9e597fd65846c63b9095ef65482b3e47af9c6f897",
+        "cfio.mac": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+        "uncr.mac": "c0841f49ce2ce68acfb3db0410fb4c3af74e9d03ee581773bb48260d87cb4bb3",
+        "codec.mac": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76"
+      },
+      "log_sha256": "0aca5e36e05a104626ee138b6dc9bce8485b52c98ecaad619ee118249c99ad60"
+    },
+    "LZH": {
+      "status": "PASS",
+      "bytes": 17137,
+      "sha256": "36eff2d7dfa413ce18699d31291107c588fa84deabf957c7b9c27ec033c45eef",
+      "record_bytes": 17152,
+      "record_sha256": "14899f18f74ab5d7aa2a88b16b00a0d4ae37b16008508befa3299a0f417e6101",
+      "padding_hex": "1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a",
+      "source_sha256": {
+        "src/codec/codec.inc": "64d8478d79311923e05ef1b40d86797d89c7d97c42aa74ae28cb57abfefd356d",
+        "src/codec/codec.mac": "0182e9ed7ce1de3b414937e30b7ef84ab548dd5c749326017fd1360c3050e43e",
+        "src/codec/lzh.inc": "fc0cf2ca93895c2002afcd89328b8f23bd9c85b04038fd3825bdcf71e42a9a26",
+        "src/codec/lzh.mac": "1f2cb8e52101a88c253d67e6a468f00fdd81bcdc10e1230bde849f6ec1083f6c",
+        "src/utilities/common/codecfile.mac": "098f36ff405e6559ca018694d5d3dd8083df5bd0726c0eb8f98ae02cb5741dea",
+        "src/utilities/lzh.mac": "791ff5336f124ece802927552db6cdbc831236a39dbfb77006f1020c4a2afba4",
+        "tools/build_lzh.py": "ec4d1734ea05f484d34ceb670f3571fa115aafba4f6e6cb57b432b1af2e5367c",
+        "tools/codec_version.py": "81fc4ec9bdb96a9ae5a8f5f9834594075857c5f2867c84be840dc7f8ad807bcc",
+        "metadata/utility-versions.tsv": "cf8f006ae81bdc994fa6e1975e1147b000b77bfc6800c2c37202f017273cdfd1",
+        "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+        "src/utilities/common/codecver.inc": "7efb6979f9b403974e4bec08322b9b01562212786daeae6e1cfaab09d732c63f"
+      },
+      "prepared_sha256": {
+        "codecver.inc": "1c97f07f3b1826fcea1218078f7b5965de558f90acbbd7114d2f9e0d9fd8566a",
+        "command.mac": "9b59ef8c771506255b19c1c0cd9ae932c5e8cd42c46b36da5ddd3e3aac27ecf2",
+        "lzh.inc": "00ce3718cd25fa58be634a366116847207e40fe1b3478d68f4e8a7da1525d314",
+        "codec.inc": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+        "cfio.mac": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+        "lzh.mac": "840118f7267df56020faad53ddaf34ab6419d6a0ab1c5b7f6dba8b75e9cdfd32",
+        "codec.mac": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76"
+      },
+      "log_sha256": "7df5482f56942998221d78f43af0fc874ecf2a4e7386a65ac77c601495033790"
+    },
+    "UNLZH": {
+      "status": "PASS",
+      "bytes": 12127,
+      "sha256": "2f21b8e6c81766c407cccdfb08029d39753f40fad4c43ee47050de9b6cd2e89a",
+      "record_bytes": 12160,
+      "record_sha256": "493d9a76a4d9735511a7b685c76d2b23e7f8ed6af7ce2381d1c7a3f00b86ffb5",
+      "padding_hex": "1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a",
+      "source_sha256": {
+        "src/codec/codec.inc": "64d8478d79311923e05ef1b40d86797d89c7d97c42aa74ae28cb57abfefd356d",
+        "src/codec/codec.mac": "0182e9ed7ce1de3b414937e30b7ef84ab548dd5c749326017fd1360c3050e43e",
+        "src/codec/unlzh.inc": "665119b808d9bf0e566927a546b1acee9aa749b024657cf524b705ba586f556b",
+        "src/codec/unlzh.mac": "dc88c79c20430af6e047e3ab85ddd83b513fe9a3985268df89e1f412fc0b68e4",
+        "src/utilities/common/codecfile.mac": "098f36ff405e6559ca018694d5d3dd8083df5bd0726c0eb8f98ae02cb5741dea",
+        "src/utilities/unlzh.mac": "c0317078f55989af7e4945da9eff5b1b205635db3a82f49885368a6353e049aa",
+        "tools/build_unlzh.py": "805bc86b051d2a2c4108af3d95875fb0a277badc2aad774291914134f8168b5d",
+        "tools/codec_version.py": "81fc4ec9bdb96a9ae5a8f5f9834594075857c5f2867c84be840dc7f8ad807bcc",
+        "metadata/utility-versions.tsv": "cf8f006ae81bdc994fa6e1975e1147b000b77bfc6800c2c37202f017273cdfd1",
+        "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+        "src/utilities/common/codecver.inc": "7efb6979f9b403974e4bec08322b9b01562212786daeae6e1cfaab09d732c63f"
+      },
+      "prepared_sha256": {
+        "codecver.inc": "97b3bbd860ac0b06152c2d0375d1df2fb058eefcc3dab39b53f0167d945a9520",
+        "command.mac": "7facdefec7b7c58cb0a625b48bb06c5faf591d5d7b9493d617d80a2afd074832",
+        "codec.inc": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+        "unlzh.mac": "7591bb8a7ac0dd299e3150310a3ac82a53a22713c102c5c6235f0fa4c512f528",
+        "cfio.mac": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+        "codec.mac": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76",
+        "unlzh.inc": "56a854f75970098418bab2c265b27fd9e85e7d1e0fc7679ed2364d0ad2d80da2"
+      },
+      "log_sha256": "53c656145d365d078aebb0baba110403343def1beed3a15d7c133db9f781e94b"
+    }
+  }
+}

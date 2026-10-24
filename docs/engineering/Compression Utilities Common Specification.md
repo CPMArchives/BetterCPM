@@ -15,13 +15,15 @@ Individual commands are the release 1.0 scope. A unified interface, new algorith
 versions, additional format support and convenience features remain post-1.0.
 Qualification defects may still require corrections and retesting. The
 [1.0 release checklist](../releases/1.0-ROADMAP.md#compression-utilities--10-feature-freeze-and-release-checklist)
-tracks the remaining native build, BetterCP/M platform and final disk gates.
+tracks the remaining reconstruction and final disk gates.
 Utilities images remain provisional pending those separate acceptance checks.
 
 The assembly-time macro library has no OS dependencies. The command owns CP/M
-file policy, buffering, filenames, temporary files and publication. Native ZSM4
-assembly and command execution on every BetterCP/M platform are not established
-by the host assembler and stock CP/M 2.2 tests.
+file policy, buffering, filenames, temporary files and publication.
+[Native ZSM4/LINK builds](Compression%20Native%20Build%20Qualification.md) now
+match all six qualified executables using documented source preparation.
+[BetterCP/M platform qualification](Compression%20Utilities%20Platform%20Qualification.md)
+passes separately on cpmsim and Model 4 for the recorded images.
 
 Related specifications: [SQ/USQ](SQ-USQ%20Specification.md),
 [CR/UNCR](CR-UNCR%20Specification.md), [LZH/UNLZH](LZH-UNLZH%20Specification.md).

@@ -3,7 +3,7 @@
 ; All mutable state belongs to IX's context; code may reside in ROM.
 ; Private helpers use ordinary registers; no alternate registers or IY.
 ; From the repository root: python3 tools/test_usq.py
-; Native ZSM4 assembly is not yet qualified.
+; Native ZSM4 parity via tools/qualify_codec_native.py (prepared sources).
 ;
 ; Caller sequence:
 ;   initialize the common prefix and allocate UQ_CONTEXT_SIZE bytes

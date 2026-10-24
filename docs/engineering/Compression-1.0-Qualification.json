@@ -57,7 +57,6 @@
   "final_artifact_mismatch_guard": "PASS: altered final Build 004 COM rejected before campaign",
   "open_release_gates": [
     "clean pinned cpmsim reconstruction and relevant release reruns",
-    "native ZSM4 codec build qualification",
     "final Utilities inventory, image integrity and all component acceptance",
     "review/reaccept other utility receipts affected by shared version-query revision",
     "final COM/image hash manifest and release evidence closure"
@@ -74,5 +73,24 @@
     "round_trips_per_platform": 27,
     "whole_utilities_disk": "PROVISIONAL",
     "model4_geometry_fix": "Pin LibDsk pcw800 mapping; independently verify seeded and final FDF file sectors"
+  },
+  "native_build_qualification": {
+    "status": "PASS",
+    "date": "2026-10-24",
+    "toolchain": "ZSM4 4.7 / LINK 1.3 under stock 62K CP/M 2.2 on recorded local cpmsim",
+    "procedure": "tools/qualify_codec_native.py; prepared-source procedure documented in Compression Native Build Qualification.md",
+    "commands": [
+      "SQ",
+      "USQ",
+      "CR",
+      "UNCR",
+      "LZH",
+      "UNLZH"
+    ],
+    "parity": "All six complete executable byte ranges match qualified Build 004; only verified final CP/M 1Ah record padding excluded",
+    "report": "Compression-Native-Build-evidence.json",
+    "report_sha256": "da64c9c97608eba5a7f751477be0a000a7e5888cc4e62e958fb1f645ae940e49",
+    "bundle": "Compression-Native-Build-evidence.tar.gz",
+    "bundle_sha256": "1e9f922a68d4bebdc3f11abf7e6a6ab54e7b4e26c53fcdbd42bc9d6013617cd5"
   }
 }

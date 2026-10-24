@@ -2,6 +2,7 @@
 ; Adaptive Huffman tree logic follows our independently implemented decoder.
 ; First-byte chains skip impossible candidates; monotone distance bounds
 ; terminate stale links after ring overwrite without explicit list removal.
+; Native ZSM4 parity: tools/qualify_codec_native.py (prepared sources).
 ; Test: python3 tools/test_lzh.py
 LZH_CODE MACRO
 LZH_INIT:
