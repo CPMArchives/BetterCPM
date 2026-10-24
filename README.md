@@ -161,3 +161,5 @@ Historical milestone results in the engineering record document what a particula
 The CP/M compatibility foundation used by BetterCP/M is maintained in the [**CP/M 2.2 Compatibility Suite**](https://github.com/CPMArchives/cpm-2.2-compatibility-suite).
 
 General CP/M diagnostic and system utilities such as SYSINFO are maintained separately in [**CP/M Tools**](https://github.com/CPMArchives/cpm-tools).
+
+The BetterCP/M cpmsim target requires the [pinned emulator reconstruction](third_party/z80pack/README.md), including geometry interface v2. Runtime and ROM-qualification profiles are distinct.

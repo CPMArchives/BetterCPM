@@ -1,0 +1,455 @@
+From a9248a9186405d11ba17250f37301b079bd57f93 Mon Sep 17 00:00:00 2001
+From: Nathanael <nathanael@NathanaeldeMacBook-Air.local>
+Date: Sat, 12 Sep 2026 14:54:07 +0800
+Subject: [PATCH] Generalize cpmsim raw disk geometry
+
+---
+ cpmsim/srcsim/simio.c | 328 +++++++++++++++++++++++++++++++++++++++---
+ cpmsim/srcsim/simio.h |   6 +-
+ 2 files changed, 312 insertions(+), 22 deletions(-)
+
+diff --git a/cpmsim/srcsim/simio.c b/cpmsim/srcsim/simio.c
+index 8eaa2d1e..d27a6990 100644
+--- a/cpmsim/srcsim/simio.c
++++ b/cpmsim/srcsim/simio.c
+@@ -85,6 +85,10 @@
+  *	16 - DMA destination address high
+  *
+  *	17 - FDC sector high
++
++ *      Added for BetterCP/M
++ * 	18 - FDC geometry register select
++ * 	19 - FDC geometry register data
+  *
+  *	20 - MMU initialization
+  *	21 - MMU bank select
+@@ -152,10 +156,34 @@ static const char *TAG = "IO";
+ #define MAX_BUSY_COUNT 10	/* max counter to detect I/O busy waiting
+ 				   on the console status port */
+ 
++
++/*
++ * Extended cpmsim disk geometry interface for BetterCP/M.
++ *
++ * Port 18 selects a geometry register.
++ * Port 19 reads/writes that register for the currently selected drive.
++ */
++#define FDC_GEOM_PORT_VERSION	1
++
++#define FDC_GEOM_TRACKS_LO	0x00
++#define FDC_GEOM_TRACKS_HI	0x01
++#define FDC_GEOM_SECTORS_LO	0x02
++#define FDC_GEOM_SECTORS_HI	0x03
++#define FDC_GEOM_SECSIZE_LO	0x04
++#define FDC_GEOM_SECSIZE_HI	0x05
++#define FDC_GEOM_VERSION	0x7f
++
++#define FDC_MIN_SECTOR_SIZE	128
++#define FDC_MAX_SECTOR_SIZE	1024
++/* ---------------------------------- */
++
+ static BYTE drive;		/* current drive A..P (0..15) */
+ static BYTE track;		/* current track (0..255) */
+ static unsigned int sector;	/* current sector (0..65535) */
+ static BYTE status;		/* status of last I/O operation on FDC */
++
++static BYTE fdc_geom_reg;       /* selected disk geometry register - ADDED FOR BETTERCP/M */
++
+ static BYTE dmadl;		/* current DMA address destination low */
+ static BYTE dmadh;		/* current DMA address destination high */
+ static BYTE timer;		/* 10ms timer */
+@@ -213,7 +241,7 @@ static int sdirection = -1; /* protocol direction, 0 = send 1 = receive */
+ 
+ #endif /* NETWORKING */
+ 
+-dskdef_t disks[16] = {
++/* dskdef_t disks[16] = {
+ 	{ "drivea.dsk", &drivea, 77, 26 },
+ 	{ "driveb.dsk", &driveb, 77, 26 },
+ 	{ "drivec.dsk", &drivec, 77, 26 },
+@@ -230,6 +258,30 @@ dskdef_t disks[16] = {
+ 	{ "driven.dsk", &driven,  0,  0 },
+ 	{ "driveo.dsk", &driveo,  0,  0 },
+ 	{ "drivep.dsk", &drivep, 256, 16384 }
++};*/
++
++/* REPLACEMENT TABLE FOR BETTERCP/M */
++dskdef_t disks[16] = {
++	{ "drivea.dsk", &drivea,  77,    26, 128 },
++	{ "driveb.dsk", &driveb,  77,    26, 128 },
++	{ "drivec.dsk", &drivec,  77,    26, 128 },
++	{ "drived.dsk", &drived,  77,    26, 128 },
++
++	{ "drivee.dsk", &drivee,   0,     0, 128 },
++	{ "drivef.dsk", &drivef,   0,     0, 128 },
++	{ "driveg.dsk", &driveg,   0,     0, 128 },
++	{ "driveh.dsk", &driveh,   0,     0, 128 },
++
++	{ "drivei.dsk", &drivei, 255,   128, 128 },
++	{ "drivej.dsk", &drivej, 255,   128, 128 },
++	{ "drivek.dsk", &drivek, 255,   128, 128 },
++	{ "drivel.dsk", &drivel, 255,   128, 128 },
++
++	{ "drivem.dsk", &drivem,   0,     0, 128 },
++	{ "driven.dsk", &driven,   0,     0, 128 },
++	{ "driveo.dsk", &driveo,   0,     0, 128 },
++
++	{ "drivep.dsk", &drivep, 256, 16384, 128 }
+ };
+ 
+ /*
+@@ -249,6 +301,15 @@ static BYTE fdcs_in(void);
+ static void fdcs_out(BYTE data);
+ static BYTE fdcsh_in(void);
+ static void fdcsh_out(BYTE data);
++
++/* ADDED for BETTERCP/M */
++
++static BYTE fdcg_in(void);
++static void fdcg_out(BYTE data);
++static BYTE fdcv_in(void);
++static void fdcv_out(BYTE data);
++/* --------------------- */
++
+ static BYTE fdco_in(void);
+ static void fdco_out(BYTE data);
+ static BYTE fdcx_in(void);
+@@ -312,6 +373,14 @@ in_func_t *const port_in[256] = {
+ 	[ 15] = dmal_in,
+ 	[ 16] = dmah_in,
+ 	[ 17] = fdcsh_in,
++
++	/* ----------- Added for BetterCP/M */
++
++	[ 18] = fdcg_in,
++	[ 19] = fdcv_in,
++
++	/* ----------- */
++
+ 	[ 20] = mmui_in,
+ 	[ 21] = mmus_in,
+ 	[ 22] = mmuc_in,
+@@ -354,6 +423,12 @@ out_func_t *const port_out[256] = {
+ 	[ 15] = dmal_out,
+ 	[ 16] = dmah_out,
+ 	[ 17] = fdcsh_out,
++
++        /* ------------- Added for BetterCP/M */
++        [ 18] = fdcg_out,
++        [ 19] = fdcv_out,
++        /* ------------- */
++
+ 	[ 20] = mmui_out,
+ 	[ 21] = mmus_out,
+ 	[ 22] = mmuc_out,
+@@ -1695,6 +1770,124 @@ static void fdcsh_out(BYTE data)
+ 	sector = (sector & 0xff) + (data << 8);
+ }
+ 
++/*    ---------------------------------------------    */
++/*    THE FOLLOWING SECTION IS ADDED FOR BETTERCP/M    */
++/*             (approximately 112 lines)               */
++/*
++ * Read currently selected FDC geometry register.
++ */
++static BYTE fdcg_in(void)
++{
++	return fdc_geom_reg;
++}
++
++/*
++ * Select FDC geometry register.
++ */
++static void fdcg_out(BYTE data)
++{
++	fdc_geom_reg = data;
++}
++
++/*
++ * Read one byte of geometry information for the currently selected drive.
++ */
++static BYTE fdcv_in(void)
++{
++	if (drive >= 16)
++		return IO_DATA_UNUSED;
++
++	switch (fdc_geom_reg) {
++	case FDC_GEOM_TRACKS_LO:
++		return (BYTE) (disks[drive].tracks & 0xff);
++
++	case FDC_GEOM_TRACKS_HI:
++		return (BYTE) ((disks[drive].tracks >> 8) & 0xff);
++
++	case FDC_GEOM_SECTORS_LO:
++		return (BYTE) (disks[drive].sectors & 0xff);
++
++	case FDC_GEOM_SECTORS_HI:
++		return (BYTE) ((disks[drive].sectors >> 8) & 0xff);
++
++	case FDC_GEOM_SECSIZE_LO:
++		return (BYTE) (disks[drive].sector_size & 0xff);
++
++	case FDC_GEOM_SECSIZE_HI:
++		return (BYTE) ((disks[drive].sector_size >> 8) & 0xff);
++
++	case FDC_GEOM_VERSION:
++		return (BYTE) FDC_GEOM_PORT_VERSION;
++
++	default:
++		return IO_DATA_UNUSED;
++	}
++}
++
++/*
++ * Write one byte of geometry information for the currently selected drive.
++ *
++ * Geometry configuration changes only the interpretation of the raw image.
++ * It does not create, resize, format, or convert the image file.
++ */
++static void fdcv_out(BYTE data)
++{
++	unsigned int value;
++
++	if (drive >= 16)
++		return;
++
++	switch (fdc_geom_reg) {
++	case FDC_GEOM_TRACKS_LO:
++		disks[drive].tracks =
++		    (disks[drive].tracks & 0xff00U) | data;
++		break;
++
++	case FDC_GEOM_TRACKS_HI:
++		disks[drive].tracks =
++		    (disks[drive].tracks & 0x00ffU) |
++		    ((unsigned int) data << 8);
++		break;
++
++	case FDC_GEOM_SECTORS_LO:
++		disks[drive].sectors =
++		    (disks[drive].sectors & 0xff00U) | data;
++		break;
++
++	case FDC_GEOM_SECTORS_HI:
++		disks[drive].sectors =
++		    (disks[drive].sectors & 0x00ffU) |
++		    ((unsigned int) data << 8);
++		break;
++
++	case FDC_GEOM_SECSIZE_LO:
++		value =
++		    (disks[drive].sector_size & 0xff00U) | data;
++
++		if (value <= FDC_MAX_SECTOR_SIZE)
++			disks[drive].sector_size = value;
++		break;
++
++	case FDC_GEOM_SECSIZE_HI:
++		value =
++		    (disks[drive].sector_size & 0x00ffU) |
++		    ((unsigned int) data << 8);
++
++		if (value <= FDC_MAX_SECTOR_SIZE)
++			disks[drive].sector_size = value;
++		break;
++
++	case FDC_GEOM_VERSION:
++		/* read only */
++		break;
++
++	default:
++		break;
++	}
++}
++
++/*    ---------------------------------------------    */
++
+ /*
+  *	I/O handler for read FDC command:
+  *	always returns 0
+@@ -1719,48 +1912,143 @@ static BYTE fdco_in(void)
+  *	  6 - write error
+  *	  7 - invalid command to FDC
+  */
++
++/*
++ * I/O handler for write FDC command:
++ * transfer one physical sector in the wanted direction,
++ *
++ *   0 = read
++ *   1 = write
++ *
++ * Status:
++ *   0 - ok
++ *   1 - invalid drive
++ *   2 - invalid track
++ *   3 - invalid sector
++ *   4 - seek error
++ *   5 - read error
++ *   6 - write error
++ *   7 - invalid command
++ *   8 - DMA transfer crosses 64K boundary
++ *   9 - invalid disk geometry
++ */
+ static void fdco_out(BYTE data)
+ {
+-	register int i;
++	unsigned int i;
++	unsigned int sector_size;
++	unsigned int dma_addr;
+ 	off_t pos;
+-	static char buf[128];
++	static BYTE buf[FDC_MAX_SECTOR_SIZE];
+ 
++	/*
++	 * Validate drive before indexing disks[].
++	 */
++	if (drive >= 16) {
++		status = 1;
++		return;
++	}
++
++	/*
++	 * Drive must exist and have a mounted image.
++	 */
+ 	if (disks[drive].fd == NULL) {
+ 		status = 1;
+ 		return;
+ 	}
+-	if (track > disks[drive].tracks) {
++
++	sector_size = disks[drive].sector_size;
++
++	/*
++	 * This raw backend currently supports conventional power-of-two
++	 * physical sector sizes from 128 through 1024 bytes.
++	 */
++	if ((disks[drive].tracks == 0) ||
++	    (disks[drive].sectors == 0) ||
++	    ((sector_size != 128) &&
++	     (sector_size != 256) &&
++	     (sector_size != 512) &&
++	     (sector_size != 1024))) {
++		status = 9;
++		return;
++	}
++
++	/*
++	 * tracks is a count, so valid tracks are 0 through tracks - 1.
++	 */
++	if ((unsigned int) track >= disks[drive].tracks) {
+ 		status = 2;
+ 		return;
+ 	}
+-	if (sector > disks[drive].sectors) {
++
++	/*
++	 * Keep stock cpmsim's 1-based physical-sector interface.
++	 */
++        if ((sector == 0) || (sector > disks[drive].sectors)) {
+ 		status = 3;
+ 		return;
+ 	}
+-	pos = (((off_t) track) * ((off_t) disks[drive].sectors) + sector - 1) << 7;
+-	if (lseek(*disks[drive].fd, pos, SEEK_SET) == -1L) {
++
++	dma_addr = ((unsigned int) dmadh << 8) | dmadl;
++
++	/*
++	 * Do not permit a physical-sector DMA operation to wrap around
++	 * address FFFFh.
++	 */
++	if (dma_addr + sector_size > 0x10000U) {
++		status = 8;
++		return;
++	}
++
++	/*
++	 * Raw image layout:
++	 *
++	 *   track 0, sector 1
++	 *   track 0, sector 2
++	 *   ...
++	 *   track 1, sector 1
++	 *   ...
++	 *
++	 * BetterCP/M converts DISK.FDF side/order/skew semantics into
++	 * the linear track and physical-sector ordinal used here.
++	 */
++	pos =
++	    ((((off_t) track) * (off_t) disks[drive].sectors) +
++	     ((off_t) sector - 1)) *
++	    (off_t) sector_size;
++
++	if (lseek(*disks[drive].fd, pos, SEEK_SET) == (off_t) -1) {
+ 		status = 4;
+ 		return;
+ 	}
++
+ 	switch (data) {
+-	case 0:	/* read */
+-		if (read(*disks[drive].fd, buf, 128) != 128)
++	case 0:		/* read */
++		if (read(*disks[drive].fd, buf, sector_size) !=
++		    (ssize_t) sector_size) {
+ 			status = 5;
+-		else {
+-			for (i = 0; i < 128; i++)
+-				dma_write((dmadh << 8) + dmadl + i, buf[i]);
+-			status = 0;
++			return;
+ 		}
++
++		for (i = 0; i < sector_size; i++)
++			dma_write((WORD) (dma_addr + i), buf[i]);
++
++		status = 0;
+ 		break;
+-	case 1:	/* write */
+-		for (i = 0; i < 128; i++)
+-			buf[i] = dma_read((dmadh << 8) + dmadl + i);
+-		if (write(*disks[drive].fd, buf, 128) != 128)
++
++	case 1:		/* write */
++		for (i = 0; i < sector_size; i++)
++			buf[i] = dma_read((WORD) (dma_addr + i));
++
++		if (write(*disks[drive].fd, buf, sector_size) !=
++		    (ssize_t) sector_size) {
+ 			status = 6;
+-		else
+-			status = 0;
++			return;
++		}
++
++		status = 0;
+ 		break;
+-	default:		/* invalid command */
++
++	default:
+ 		status = 7;
+ 		break;
+ 	}
+diff --git a/cpmsim/srcsim/simio.h b/cpmsim/srcsim/simio.h
+index 07bddf49..1c903b5a 100644
+--- a/cpmsim/srcsim/simio.h
++++ b/cpmsim/srcsim/simio.h
+@@ -15,11 +15,13 @@
+ /*
+  *	Structure for the disk images
+  */
++
+ typedef struct dskdef {
+ 	const char *fn;			/* filename */
+ 	int *fd;			/* file descriptor */
+-	unsigned int tracks;		/* number of tracks */
+-	unsigned int sectors;		/* number of sectors */
++	unsigned int tracks;		/* number of linear tracks */
++	unsigned int sectors;		/* physical sectors per track */
++	unsigned int sector_size;	/* bytes per physical sector */
+ } dskdef_t;
+ 
+ extern dskdef_t disks[16];
+-- 
+2.54.0 (Apple Git-157)
+
