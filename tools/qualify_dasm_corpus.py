@@ -20,10 +20,13 @@ def main():
     p.add_argument('--system',type=Path,default=DEFAULT_SYSTEM)
     p.add_argument('--utilities',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True)
+    p.add_argument('--scripted-input',action='store_true',help='also use the native line-input harness on z80pack')
+    p.add_argument('--capacity-only',action='store_true',help='8 KiB input and source output across multiple extents')
     p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp'])
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
     binary=build(Path.home()/'bin/z80asm',a.output/'cross')
-    fixtures=corpus();files={'DASM.COM':binary}
+    fixtures={'MAX':bytes(8192)} if a.capacity_only else corpus()
+    files={'DASM.COM':binary}
     files.update({'IN'+name+'.COM':payload for name,payload in fixtures.items()})
     report={'scope':'byte-enumerated native reconstruction; release acceptance pending',
             'dasm_sha256':hashlib.sha256(binary).hexdigest(),'platforms':{}}
@@ -39,14 +42,18 @@ def main():
                 interactive.append(((command+'\r').encode(),wanted,120))
         selected_files=dict(files)
         commands=['DASM /VER']
-        if platform=='trs80gp':
+        scripted_input=platform=='trs80gp' or a.scripted_input
+        if scripted_input:
             interactive=[]
-            for index,(name,payload) in enumerate(fixtures.items()):
+            lines=[]
+            for name,payload in fixtures.items():
                 end=256+len(payload)
-                selected_files[f'Q{index}.COM']=scripted(binary,[
-                    'RIN'+name+'.COM',f'N{len(payload):X}','S'+name+'.ASM',
-                    f'P100,{end:X}',f'QL100,{end:X}','Z','G'])
-                commands += [f'Q{index}',f'B:ZSM4 {name}={name}.ASM',f'B:LINK {name}[A]']
+                lines += ['RIN'+name+'.COM',f'N{len(payload):X}','S'+name+'.ASM',
+                          f'P100,{end:X}',f'QL100,{end:X}','Z']
+            selected_files['QALL.COM']=scripted(binary,lines+['G'])
+            commands += ['QALL']
+            for name in fixtures:
+                commands += [f'B:ZSM4 {name}={name}.ASM',f'B:LINK {name}[A]']
         log,outputs=campaign(platform,selected_files,commands,a.output/platform,
                              system=a.system,utilities=a.utilities,interactive=interactive,
                              extract=[name+ext for name in fixtures for ext in ('.ASM','.COM')])
@@ -60,7 +67,7 @@ def main():
             assert len(actual)==(len(payload)+127)//128*128
             assert set(actual[len(payload):]) <= {26}
             cases[name]={'bytes':len(payload),'sha256':hashlib.sha256(payload).hexdigest()}
-        report['platforms'][platform]={'status':'PASS','scripted_line_input':platform=='trs80gp','keyboard_qualified':False,'cases':cases}
+        report['platforms'][platform]={'status':'PASS','scripted_line_input':scripted_input,'keyboard_qualified':False,'cases':cases}
         (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
         print('PASS',platform,len(cases),'native opcode/data reconstruction corpora',flush=True)
 
