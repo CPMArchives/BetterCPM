@@ -2,7 +2,7 @@
 
 This manual explains how to use the programs supplied on the BetterCP/M Utilities Disk. For the command prompt, drive and user areas, file management, configuration, and the System Disk commands, see the [BetterCP/M User’s Guide](users_guide.md).
 
-The Utilities Disk is being assembled separately from the System Disk. This manual covers DUMP, the initial DDT debugger adaptation, and the six standalone compression utilities SQ, USQ, CR, UNCR, LZH and UNLZH. Chapters for other utilities will be added as those programs are completed and selected for distribution.
+The Utilities Disk is being assembled separately from the System Disk. This manual covers DUMP, the initial DDT debugger adaptation, the six standalone compression utilities SQ, USQ, CR, UNCR, LZH and UNLZH, and the original ZSM4/LINK development tools. Chapters for other utilities will be added as those programs are completed and selected for distribution.
 
 ## Contents
 
@@ -20,6 +20,7 @@ The Utilities Disk is being assembled separately from the System Disk. This manu
   - [Messages and recovery](#messages-and-recovery)
 
 - [DDT debugger](#ddt-debugger)
+- [Native assembler and linker](#native-assembler-and-linker)
 - [Compression utilities](#compression-utilities)
   - [Shared command rules](#shared-compression-command-rules)
   - [Version identification](#compression-version-identification)
@@ -425,3 +426,11 @@ An additive checksum is a damage check, not a security or authenticity check.
 See the individual command pages for naming rules, supported formats and
 command-specific messages. The [engineering specifications](../engineering/Compression%20Utilities%20Common%20Specification.md)
 describe the reusable macro library and qualification boundaries.
+
+## Native assembler and linker
+
+The Utilities Disk supplies the original [ZSM4 4.7 assembler](ZSM4.md) and
+[Digital Research LINK 1.3 linker](LINK.md). Run them from B: while working
+on a writable drive. Their original command syntax and identities are retained.
+Read `TOOLINFO.TXT`, `ZSM4COPY.TXT` and `LINKCOPY.TXT` for attribution and terms.
+The host Utilities package includes the complete ZSM4 source companion.

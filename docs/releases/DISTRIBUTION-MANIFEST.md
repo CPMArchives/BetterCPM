@@ -48,8 +48,20 @@ All membership or layout changes require discussion with the maintainer.
 - XSUB.COM
 - DUMP.COM: enhanced read-only hex/ASCII viewer with `/P`, required `/40`, `/FROM=`, exact DU access, interactive Find/Go To, sealed DRI `/BARE`, and visually styled `/VER`; [engineering specification](../engineering/DUMP%20Specification.md).
 - General-purpose full-screen editor: adopt an existing program; exact program TBD.
-- ZSM4
-- LINK
+- ZSM4.COM: unmodified ZSM4 4.7, pinned to Hector Peraza revision
+  `96a9ac1081172e1c08291521b77d2a715ec59c8b`; GPL-2.0-or-later.
+- LINK.COM: unmodified Digital Research LINK 1.3, extracted from pinned
+  z80pack `hd-tools.dsk`; CP/M redistribution permission retained.
+- TOOLINFO.TXT, ZSM4COPY.TXT and LINKCOPY.TXT: tool identities, usage,
+  copyright and complete applicable license/permission texts. These selected
+  notices do not settle general on-disk manual placement.
+- The host Utilities package must include `ZSM4-SOURCE.tar.gz` (complete
+  corresponding source and original build material), `Toolchain-Provenance.json`,
+  `LINK-Permission.html` and `TOOLCHAIN-README.txt` alongside both images.
+  `BetterCPM-Utilities-package.zip` bundles both images, reports, companions
+  and `Utilities-SHA256SUMS.txt`. Keep these companions when redistributing;
+  the disk image alone is not the
+  complete toolchain distribution. See [toolchain qualification](../engineering/Utilities%20Toolchain%20Qualification.md).
 - DDT.COM: initial DRI-compatible debugger adaptation with shared line editing and `/VER`; [engineering specification](../engineering/DDT%20Specification.md). Exact historical reproduction is retained separately as the verification baseline. Model 4 real-screen/physical-keyboard, native/cross and BetterCP/M cpmsim qualification pass; [Model 4 evidence](../engineering/DDT%20Model%204%20Qualification.md).
 - Standalone Z80 disassembler: exact program TBD.
 - Noah’s ARK (`NOAH.COM` with `NOAH.OVL`): selected unified archive utility, targeting CP/M `.ARK` and `.LBR` containers. The [engineering specification](../engineering/NOAH%20Specification.md) behavioral baseline is complete; implementation has begun with development-only LBR LIST/TEST/extraction with shared selectors and overwrite prompts; the complete interface remains post-1.0 work. This foundation is not yet included on disk.
@@ -92,8 +104,9 @@ All membership or layout changes require discussion with the maintainer.
 ### Provisional daily Utilities media
 
 `tools/build_utilities_disk.py --build` assembles the currently implemented
-owned components: DUMP.COM, DDT.COM, XSUB.COM and its required BATCHIO.RSX,
-SQ.COM, USQ.COM, CR.COM, UNCR.COM, LZH.COM and UNLZH.COM. DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign passes on disposable current-system media. DDT also passes [Utilities release acceptance](../engineering/DDT%20Utilities%20Release%20Acceptance.md) from B: beside normal System A: on both platforms. `--ddt-acceptance REPORT` binds that component verdict to the exact artifact and image hashes; it does not promote the whole disk. The builder verifies
+selected components: DUMP.COM, DDT.COM, XSUB.COM and its required BATCHIO.RSX,
+SQ.COM, USQ.COM, CR.COM, UNCR.COM, LZH.COM and UNLZH.COM, plus the selected
+ZSM4/LINK binaries and their three notice files (15 files total). DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign passes on disposable current-system media. DDT also passes [Utilities release acceptance](../engineering/DDT%20Utilities%20Release%20Acceptance.md) from B: beside normal System A: on both platforms. `--ddt-acceptance REPORT` binds that component verdict to the exact artifact and image hashes; it does not promote the whole disk. The builder verifies
 file readback and the filesystem, and produces a 332K raw cpmsim image and an
 80T DS 800K data DMK for Model 4. Reports explicitly list pending selections;
 these are provisional daily media, not a fully qualified Utilities release.

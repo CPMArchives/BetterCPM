@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assemble provisional Utilities media from implemented owned components only.
+"""Assemble provisional Utilities media from selected owned and third-party components.
 
 No third-party candidate is silently selected. The report lists remaining
 manifest entries; these development images are not a completed release disk.
@@ -13,20 +13,28 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import zipfile
 ROOT=Path(os.environ.get("BCPM_REPO",Path(__file__).resolve().parents[1])).resolve()
 sys.path.insert(0,str(ROOT/"tools"))
 from fdf_format import select_fdf
 from build_z80pack_image import disk_definition, DEFAULT_FORMAT
 from convert_fdf_image import raw_to_dmk, dmk_to_raw
 COMPONENTS={'DDT.COM':'build/utilities/DDT.COM','DUMP.COM':'build/utilities/DUMP.COM','XSUB.COM':'build/utilities/XSUB.COM','BATCHIO.RSX':'build/rsx/BATCHIO.RSX','SQ.COM':'build/utilities/SQ.COM','USQ.COM':'build/utilities/USQ.COM','UNCR.COM':'build/utilities/UNCR.COM','CR.COM':'build/utilities/CR.COM','UNLZH.COM':'build/utilities/UNLZH.COM','LZH.COM':'build/utilities/LZH.COM'}
-PENDING=['Full-screen editor (selection pending)','ZSM4 (release packaging pending)','LINK (release packaging pending)','Z80 disassembler (selection pending)']
+COMPONENTS.update({'ZSM4.COM':'third_party/zsm4/ZSM4.COM','LINK.COM':'third_party/dri-link/LINK.COM',
+                   'TOOLINFO.TXT':'src/distribution/TOOLINFO.TXT',
+                   'ZSM4COPY.TXT':'src/distribution/ZSM4COPY.TXT',
+                   'LINKCOPY.TXT':'src/distribution/LINKCOPY.TXT'})
+PENDING=['Full-screen editor (selection pending)','Z80 disassembler (selection pending)']
 sha=lambda data:hashlib.sha256(data).hexdigest()
 
 
-def build(output, artifacts=ROOT, ddt_acceptance=None):
+def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None):
+    from toolchain_distribution import companions, validate_acceptance
+    accompanying = companions(artifacts)
     files={name:(artifacts/path).read_bytes() for name,path in COMPONENTS.items()}
     if not all(files.values()):raise ValueError('empty Utilities artifact')
     accepted=json.loads(ddt_acceptance.read_text()) if ddt_acceptance else None
+    tools_accepted=json.loads(toolchain_acceptance.read_text()) if toolchain_acceptance else None
     if accepted is not None:
         if accepted.get('ddt_utilities_acceptance')!='PASS' or accepted.get('ddt_sha256')!=sha(files['DDT.COM']):
             raise ValueError('DDT acceptance does not match current artifact')
@@ -64,11 +72,39 @@ def build(output, artifacts=ROOT, ddt_acceptance=None):
                 raise ValueError('DDT acceptance does not match packaged '+name)
             verdict={'status':'PASS','sha256':sha(files['DDT.COM']),'evidence_sha256':sha(ddt_acceptance.read_bytes())}
         report['component_acceptance']={'DDT.COM':verdict}
+        if tools_accepted is not None:
+            validate_acceptance(tools_accepted,files,report['target'],data,accompanying)
+        for tool in ('ZSM4.COM','LINK.COM'):
+            report['component_acceptance'][tool]={'status':'PASS' if tools_accepted else 'PENDING_RELEASE_ACCEPTANCE','sha256':sha(files[tool])}
+            if tools_accepted:
+                report['component_acceptance'][tool]['evidence_sha256']=sha(toolchain_acceptance.read_bytes())
+                report['component_acceptance'][tool]['paired_system_sha256']=tools_accepted['platforms'][report['target']]['system_sha256']
+        report['toolchain_companions']={n:sha(d) for n,d in accompanying.items()}
+        report['third_party_versions']={'ZSM4.COM':'4.7','LINK.COM':'1.3'}
+    # The complete source companion travels with both images (GPL section 3a).
+    for name,data in accompanying.items():
+        staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
     # Construct and validate both before publishing either named image.
     for name,data,report in reports:
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
         (output/(name+'.json')).write_text(json.dumps(report,indent=2)+'\n')
         print(f'{output/name}: PROVISIONAL, {len(files)} files; {len(PENDING)} pending selections/implementations')
+    package=dict(accompanying)
+    for name,data,report in reports:
+        package[name]=data
+        package[name+'.json']=(output/(name+'.json')).read_bytes()
+    sums=''.join(f'{sha(d)}  {n}\n' for n,d in sorted(package.items())).encode()
+    (output/'Utilities-SHA256SUMS.txt').write_bytes(sums)
+    package['Utilities-SHA256SUMS.txt']=sums
+    # A complete host package keeps GPL corresponding source with both images.
+    archive=output/'BetterCPM-Utilities-package.zip.tmp'
+    with zipfile.ZipFile(archive,'w',compression=zipfile.ZIP_DEFLATED) as zipped:
+        for name,data in sorted(package.items()):
+            info=zipfile.ZipInfo(name,date_time=(1980,1,1,0,0,0))
+            info.compress_type=zipfile.ZIP_DEFLATED
+            info.external_attr=0o100644<<16
+            zipped.writestr(info,data)
+    archive.replace(output/'BetterCPM-Utilities-package.zip')
     return reports
 
 
@@ -78,10 +114,11 @@ def main():
     p.add_argument('--artifacts',type=Path,default=ROOT)
     p.add_argument('--build',action='store_true',help='freshly build owned Utilities components first')
     p.add_argument('--ddt-acceptance',type=Path,help='bind a passing DDT campaign to these exact image hashes')
+    p.add_argument('--toolchain-acceptance',type=Path,help='bind passing native tool campaigns to both exact images and source companions')
     a=p.parse_args()
     if a.build:
         for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh']:subprocess.run([sys.executable,str(a.artifacts.resolve()/'tools'/f'build_{name}.py')],cwd=a.artifacts.resolve(),check=True)
-    build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance)
+    build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance,a.toolchain_acceptance)
 
 
 if __name__=='__main__':main()

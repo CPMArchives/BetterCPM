@@ -1,0 +1,33 @@
+{
+  "component": "Digital Research LINK",
+  "version": "1.3",
+  "copyright": "Copyright (C) 1980 Digital Research",
+  "unmodified": true,
+  "binary_sha256": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677",
+  "binary_bytes": 15616,
+  "upstream": "https://github.com/udo-munk/z80pack",
+  "commit": "b7a6fa36a2ee185a73727dc5b56ac1af40679e81",
+  "disk": "cpmsim/disks/library/hd-tools.dsk",
+  "disk_sha256": "39fefc78d07c463ad4084f5ab959d3e63458f3fbbd2ad9eba86834641a641977",
+  "extraction": {
+    "filesystem": "z80pack-hd",
+    "type": "raw",
+    "entry": "0:LINK.COM"
+  },
+  "compatibility_suite": {
+    "repository": "https://github.com/CPMArchives/cpm-compatibility",
+    "commit": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+    "path": "suite/build-tools/LINK.COM",
+    "comparison": "byte-identical"
+  },
+  "redistribution": {
+    "basis": "Digital Research CP/M development material under the nonexclusive CP/M permission; retained as a separate third-party work, not relicensed as BetterCP/M code",
+    "permission_url": "http://www.cpm.z80.de/license.html",
+    "retrieved": "2026-10-24",
+    "permission_sha256": "99ae9c84442a8e75984fcd68a7557d941b9a5a9b5be57947274d371a98f2da5e",
+    "clarification_email": "2022-07-07",
+    "page_updated": "2022-07-09",
+    "retained_text": "LICENSE",
+    "scope_note": "The grant names CP/M and derivatives; this repository applies it to this DRI CP/M development utility, as does the compatibility suite. No separate LINK-specific grant or source release is claimed."
+  }
+}

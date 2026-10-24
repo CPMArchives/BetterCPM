@@ -15,7 +15,7 @@ EXPECTED = {
     "BetterCP/M": ("-", "1.0", "completed baseline"),
     "CCP": ("2.0", "2.0", "completed"),
     "CPX": ("2.0", "2.0", "completed"),
-    "BDOS": ("1.2", "1.9", "completed"),
+    "BDOS": ("1.2", "1.10", "completed"),
     "RSX": ("2.0", "2.0", "completed"),
     "BIOS": ("1.7", "1.14", "completed"),
 }

@@ -192,7 +192,9 @@ BF_RSCLR:                               ; clear RSX registry
         DJNZ    BF_RSCLR
         INC     A
         LD      (HL),A
-        LD      HL,0
+  ; DJNZ exhausted B. Reuse its zero to fit the growing version descriptor.
+        LD      H,B
+        LD      L,B
         POP     DE
         JR      EX_RET182
 

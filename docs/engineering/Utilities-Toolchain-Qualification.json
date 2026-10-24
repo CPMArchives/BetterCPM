@@ -1,0 +1,2426 @@
+{
+  "status": "PASS",
+  "date": "2026-10-24",
+  "scope": "Packaged ZSM4 4.7 and DRI LINK 1.3 from Utilities B: on both BetterCP/M targets",
+  "baseline_revision": "8864aa58ca7a",
+  "tools_sha256": {
+    "ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+    "LINK.COM": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677"
+  },
+  "companions_sha256": {
+    "ZSM4-SOURCE.tar.gz": "0912b595d0c1184ebe28481e421dff1a1d5807ac92f8bef739d03fc184f5fe3b",
+    "Toolchain-Provenance.json": "63d2da9bf6c33986bfcc506f8aa362a72a27dba5ac98589cda5f1aff52050734",
+    "LINK-Permission.html": "99ae9c84442a8e75984fcd68a7557d941b9a5a9b5be57947274d371a98f2da5e",
+    "TOOLCHAIN-README.txt": "3a34861cdcaf9f77347bc548db7239e144a6bb629d084b08c6e614e27780320f"
+  },
+  "platforms": {
+    "z80pack": {
+      "status": "PASS",
+      "system_sha256": "c6c07791f419321bc661a56d86ba9afc0e68242e8f0ff070e07188a7a5d7563e",
+      "utilities_sha256": "457cd8660e1a74f04b23d4440c2eeb1595ba5f1543ef2650575ecfea551fbb1d",
+      "system_audit_status": "PASS",
+      "cases": {
+        "PROBE": {
+          "status": "PASS",
+          "commands": [
+            "B:ZSM4 MAIN=MAIN",
+            "B:ZSM4 PART=PART",
+            "B:LINK CHECK=MAIN,PART[A]",
+            "CHECK",
+            "B:ZSM4 BAD=BAD",
+            "B:LINK UNRES=MAIN[A]"
+          ],
+          "console_sha256": "0b5b0db931d438de003db3904926010c1aeb26af9d0124fffcfa8911fb791be4",
+          "inputs_sha256": {
+            "MAIN.MAC": "4b1f1b98c3127cd03197d6d75abb7b1445fbdc70b72d66ea4b2bc10cfb5d9160",
+            "PART.MAC": "519fb3e990fa2f8c769b48e135e25a40ccb1c849a76a9080762fc1178f20f104",
+            "PRINT.INC": "16a57715b74f3e626745600b82ef41c24f9df3321d00d02c1a90e8c173f6df5a",
+            "BAD.MAC": "d4dff2a58fd06c1a7e997fb9ab3025fd8e181185c13002b0a0837dc59048b409",
+            "TM0.COM": "8d54d8ffe4c904e2d2c0c5eaedff1ec000759548685dd0549b1dc7eb78f08400",
+            "TM1.COM": "25f55b07b9cf70850a18ade2c6462890f93d642005870275d2d7d660146fdf3e",
+            "TM2.COM": "3506fef74b02026b1da63d158b3a323fa77b72bf6caafda9d88c43702cae5f05",
+            "TM3.COM": "2d0947e44262f8dd93931c4323c830be17a79ff3cff7defe32f3e56107483dc0",
+            "TM4.COM": "f31eb22080a792c1d4fd3e0bc5bfecb947dc93689ad2f0df240039e4daa0b445",
+            "TM5.COM": "5cf5338a2965a6717a32ff76d72c1e5cdc72db88770671cd9cc93cb2d68b7305",
+            "QUALIFY.SUB": "1f1db53d42d26db4d1181cdd6a909e1107e2b8177ef5101a1639696aebf8664d"
+          },
+          "parity": "macro/include, multi-module relocation, code/data and execution; invalid operand and unresolved external rejected",
+          "utilities_unchanged": true,
+          "inputs_unchanged": true,
+          "filesystem": "PASS"
+        },
+        "SQ": {
+          "status": "PASS",
+          "commands": [
+            "B:ZSM4 COMMAND=COMMAND",
+            "B:LINK COMMAND[A]"
+          ],
+          "console_sha256": "8da1250bf768371b724c21f36e75f595360fbacceb6735c619e5aadb3c0c8a23",
+          "inputs_sha256": {
+            "SQ.INC": "6ab8e3473b6606651b2592dfd183a9579adeff8f367b4b6e007224cd0180edc8",
+            "CODECVER.INC": "87fe136b5a4e9a9d3c78b352404bfeeb3a9de00c799012e99672e4a3274bd52c",
+            "COMMAND.MAC": "898d56598d2c1a36352871567655b60348c2d0ec68383dbf1c4810ae141506d9",
+            "CODEC.INC": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+            "CFIO.MAC": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+            "SQ.MAC": "ab47eb9aec03d8d75a120e1b113136bf33d918ec8fd679545dbd1df12fff886d",
+            "CODEC.MAC": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76",
+            "TM0.COM": "c6954d98228e47ecbd5ec7308cc07d9b3ad00f4ba38c8e30a1276a2583db0ca9",
+            "TM1.COM": "1a7cef6f53b6bd38776881a24ef5ab3d92555fd4d558436ddbc54b2082ef386f",
+            "QUALIFY.SUB": "497effd74e3818eb15493dad2e81f7d479fcfed094eb26ae504166558b613d58"
+          },
+          "parity": "exact qualified COM bytes and CP/M padding",
+          "utilities_unchanged": true,
+          "inputs_unchanged": true,
+          "filesystem": "PASS"
+        },
+        "USQ": {
+          "status": "PASS",
+          "commands": [
+            "B:ZSM4 COMMAND=COMMAND",
+            "B:LINK COMMAND[A]"
+          ],
+          "console_sha256": "708a09cb82089aeee98b3ba6ea2db5a759bd32be33d0e646a771a8448bb62641",
+          "inputs_sha256": {
+            "USQ.INC": "1341ade2dba84fee9aa0e756f21797bc77669f14c69c91af3f6dc450732895d9",
+            "CODECVER.INC": "ea2c182212b0a51d4d5be42660ab16f97d55380543ede9b79b195a46440335a2",
+            "COMMAND.MAC": "c9b227ae7563876ccdbec3f99555ce250df4f244230a2d9ff7d92a1683a5c1f9",
+            "CODEC.INC": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+            "CFIO.MAC": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+            "USQ.MAC": "e3f96ee5c620f0ce5981d9f670f30d392c30ffa84b4a09bd4758046e6d1723cb",
+            "CODEC.MAC": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76",
+            "TM0.COM": "ba05e8d9c9ca9c2e57428749139d081c84b42f2923087fe56aef9cad7fcc142b",
+            "TM1.COM": "73473f238265f8568a8061cccf1ce72870f056a276d720a5f863a6856021c0ac",
+            "QUALIFY.SUB": "497effd74e3818eb15493dad2e81f7d479fcfed094eb26ae504166558b613d58"
+          },
+          "parity": "exact qualified COM bytes and CP/M padding",
+          "utilities_unchanged": true,
+          "inputs_unchanged": true,
+          "filesystem": "PASS"
+        },
+        "CR": {
+          "status": "PASS",
+          "commands": [
+            "B:ZSM4 COMMAND=COMMAND",
+            "B:LINK COMMAND[A]"
+          ],
+          "console_sha256": "40cc66dd68b097ede81ef9b92d5de81ae1cc448f5f4e461b53d3c023f99ebd93",
+          "inputs_sha256": {
+            "CODECVER.INC": "096860aed7ea2d7f37c3b9d0f41680c6ebf1df1733ba83e39a44e0e1536419b6",
+            "CR.MAC": "d63b8889e275ed7bed51ac079a6ec5c34b1de74d696141e71c34e3737b61fa45",
+            "COMMAND.MAC": "362edaddf6b05d901ddd31513707fb9582b8559d3a7b8d8f57d7373a7975e006",
+            "CODEC.INC": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+            "CFIO.MAC": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+            "CR.INC": "46634e1dd801a789c2c4a9fde311122524711011f3486ef5a7fbdf6816e9916d",
+            "CODEC.MAC": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76",
+            "TM0.COM": "d69c0c63dce166b13fc4f25cab3a05d26816aeaf2a6b6754d73209ae29722313",
+            "TM1.COM": "46aa6818534698ae81cf3cb3b320713ca816c7731cc67173cf9ff7e47c6db197",
+            "QUALIFY.SUB": "497effd74e3818eb15493dad2e81f7d479fcfed094eb26ae504166558b613d58"
+          },
+          "parity": "exact qualified COM bytes and CP/M padding",
+          "utilities_unchanged": true,
+          "inputs_unchanged": true,
+          "filesystem": "PASS"
+        },
+        "UNCR": {
+          "status": "PASS",
+          "commands": [
+            "B:ZSM4 COMMAND=COMMAND",
+            "B:LINK COMMAND[A]"
+          ],
+          "console_sha256": "133eaa8b14d3e4e7e4771a5a14942f34f9c7c154a7990e6b8a572a49ab928ab0",
+          "inputs_sha256": {
+            "CODECVER.INC": "95ea9e45b21a493aa29fb9258b4d305ac1f04f2ef0ae5858e381d9c06212cf3c",
+            "COMMAND.MAC": "f769a22e830a0a8cd92ab121a7b8340748ea8fda57b884e9296a9ff9f886f7ef",
+            "CODEC.INC": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+            "UNCR.INC": "0d9c6593cd64e5bc0e178eb9e597fd65846c63b9095ef65482b3e47af9c6f897",
+            "CFIO.MAC": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+            "UNCR.MAC": "c0841f49ce2ce68acfb3db0410fb4c3af74e9d03ee581773bb48260d87cb4bb3",
+            "CODEC.MAC": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76",
+            "TM0.COM": "42b7ca7fd79b46c14e37e6fad676485437cacac4c42b3116afed8781f3ed8cd5",
+            "TM1.COM": "bac250e17d65ad6b19a3d7e56dad2be4c9ceb71a74d729ee83c848a42f0192a0",
+            "QUALIFY.SUB": "497effd74e3818eb15493dad2e81f7d479fcfed094eb26ae504166558b613d58"
+          },
+          "parity": "exact qualified COM bytes and CP/M padding",
+          "utilities_unchanged": true,
+          "inputs_unchanged": true,
+          "filesystem": "PASS"
+        },
+        "LZH": {
+          "status": "PASS",
+          "commands": [
+            "B:ZSM4 COMMAND=COMMAND",
+            "B:LINK COMMAND[A]"
+          ],
+          "console_sha256": "af29017ea4928b79ee163c4de1688b5708c2b8e0f82daa83469fa86aba064e2c",
+          "inputs_sha256": {
+            "CODECVER.INC": "1c97f07f3b1826fcea1218078f7b5965de558f90acbbd7114d2f9e0d9fd8566a",
+            "COMMAND.MAC": "9b59ef8c771506255b19c1c0cd9ae932c5e8cd42c46b36da5ddd3e3aac27ecf2",
+            "LZH.INC": "00ce3718cd25fa58be634a366116847207e40fe1b3478d68f4e8a7da1525d314",
+            "CODEC.INC": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+            "CFIO.MAC": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+            "LZH.MAC": "840118f7267df56020faad53ddaf34ab6419d6a0ab1c5b7f6dba8b75e9cdfd32",
+            "CODEC.MAC": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76",
+            "TM0.COM": "1eb00d92e7fc0fce2eba9c8fd1881f846609de0dafa3a734006bb797a69632af",
+            "TM1.COM": "0f044375eac00250f9bfce7be98a8822ec23ee1d7e267713d34e0bc58dc15dfc",
+            "QUALIFY.SUB": "497effd74e3818eb15493dad2e81f7d479fcfed094eb26ae504166558b613d58"
+          },
+          "parity": "exact qualified COM bytes and CP/M padding",
+          "utilities_unchanged": true,
+          "inputs_unchanged": true,
+          "filesystem": "PASS"
+        },
+        "UNLZH": {
+          "status": "PASS",
+          "commands": [
+            "B:ZSM4 COMMAND=COMMAND",
+            "B:LINK COMMAND[A]"
+          ],
+          "console_sha256": "6625aa02a3f3e97aea4363cce7ad4324793c7fb4dcc70a281cabb6ddb5f82627",
+          "inputs_sha256": {
+            "CODECVER.INC": "97b3bbd860ac0b06152c2d0375d1df2fb058eefcc3dab39b53f0167d945a9520",
+            "COMMAND.MAC": "7facdefec7b7c58cb0a625b48bb06c5faf591d5d7b9493d617d80a2afd074832",
+            "CODEC.INC": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+            "UNLZH.MAC": "7591bb8a7ac0dd299e3150310a3ac82a53a22713c102c5c6235f0fa4c512f528",
+            "CFIO.MAC": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+            "CODEC.MAC": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76",
+            "UNLZH.INC": "56a854f75970098418bab2c265b27fd9e85e7d1e0fc7679ed2364d0ad2d80da2",
+            "TM0.COM": "660db092c1a45b5acb4871ddd90f28c2e854ac299ac3bb22320ae0c76df9952c",
+            "TM1.COM": "e88702c84c25073a883db81cacc418afe4c099d5386998b4c72681e44efeacda",
+            "QUALIFY.SUB": "497effd74e3818eb15493dad2e81f7d479fcfed094eb26ae504166558b613d58"
+          },
+          "parity": "exact qualified COM bytes and CP/M padding",
+          "utilities_unchanged": true,
+          "inputs_unchanged": true,
+          "filesystem": "PASS"
+        }
+      },
+      "campaigns": [
+        {
+          "path": "campaigns/utilities-toolchain-qualified-cpmsim",
+          "report_sha256": "47336ce854f948e9a9f04b309bfbf821c2adda12d6187ec67ee5742202c89567",
+          "system_audit_sha256": "1f9709c457e1dfa9e7075bec419eb013fbde0f1b2cbafef0c64181784256a179",
+          "runner_sha256": "e3d6646289a4b67714d38578e7e4c3c834e1591d5036c6fc2ef2861d8104c862",
+          "runner_source": "campaigns/utilities-toolchain-qualified-cpmsim/runner-executed.py",
+          "simulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05",
+          "trs80gp_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f"
+        }
+      ]
+    },
+    "trs80gp": {
+      "status": "PASS",
+      "system_sha256": "37fceca09cc404488e7b274e8a93c690b024767b225451295a742b87bc87d585",
+      "utilities_sha256": "95f8af912173f428f47d434269da65d7778933410b30986d14c943a2285392c1",
+      "system_audit_status": "PASS",
+      "cases": {
+        "PROBE": {
+          "status": "PASS",
+          "commands": [
+            "B:ZSM4 MAIN=MAIN",
+            "B:ZSM4 PART=PART",
+            "B:LINK CHECK=MAIN,PART[A]",
+            "CHECK",
+            "B:ZSM4 BAD=BAD",
+            "B:LINK UNRES=MAIN[A]"
+          ],
+          "console_sha256": "eb08a8b445eac550522db7be68db26b7e1e31536bf9a85cdf6c8c65b5fb9b394",
+          "inputs_sha256": {
+            "MAIN.MAC": "4b1f1b98c3127cd03197d6d75abb7b1445fbdc70b72d66ea4b2bc10cfb5d9160",
+            "PART.MAC": "519fb3e990fa2f8c769b48e135e25a40ccb1c849a76a9080762fc1178f20f104",
+            "PRINT.INC": "16a57715b74f3e626745600b82ef41c24f9df3321d00d02c1a90e8c173f6df5a",
+            "BAD.MAC": "d4dff2a58fd06c1a7e997fb9ab3025fd8e181185c13002b0a0837dc59048b409",
+            "TM0.COM": "930aa14a390ddbfa330bd286ee8ffa3a372dba52ae4af3e6bdb0d53409a614cd",
+            "TM1.COM": "c53cbe2b41a2485503e72ed723f69c0e4b0e14dac444a467ef24250ce0651ad6",
+            "TM2.COM": "97605a3de1ed4808ef036338b91d8f1d044bafbbd8d2fd5471dfc528577bd7ce",
+            "TM3.COM": "de30404d672c8960bb7ca5310cecc061ea0068715443b04dd6778d41b57233e5",
+            "TM4.COM": "dce3dbac6d7f00aa7c20fdc1ab7333a75cf08901850d7c596372fa65b2022659",
+            "TM5.COM": "f199f96348f3948fe5cdb12fd58595368ce80c4b55a9649b76d777cb6b3c46ae",
+            "QUALIFY.SUB": "1f1db53d42d26db4d1181cdd6a909e1107e2b8177ef5101a1639696aebf8664d"
+          },
+          "parity": "macro/include, multi-module relocation, code/data and execution; invalid operand and unresolved external rejected",
+          "utilities_unchanged": true,
+          "inputs_unchanged": true,
+          "filesystem": "PASS"
+        },
+        "SQ": {
+          "status": "PASS",
+          "commands": [
+            "B:ZSM4 COMMAND=COMMAND",
+            "B:LINK COMMAND[A]"
+          ],
+          "console_sha256": "e112e4dae89a25811f1e8af354052288c7023b0755e3f599cee7cda9f7473dfc",
+          "inputs_sha256": {
+            "SQ.INC": "6ab8e3473b6606651b2592dfd183a9579adeff8f367b4b6e007224cd0180edc8",
+            "CODECVER.INC": "87fe136b5a4e9a9d3c78b352404bfeeb3a9de00c799012e99672e4a3274bd52c",
+            "COMMAND.MAC": "898d56598d2c1a36352871567655b60348c2d0ec68383dbf1c4810ae141506d9",
+            "CODEC.INC": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+            "CFIO.MAC": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+            "SQ.MAC": "ab47eb9aec03d8d75a120e1b113136bf33d918ec8fd679545dbd1df12fff886d",
+            "CODEC.MAC": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76",
+            "TM0.COM": "5c7b5e3c75b00c45ea51b8d4d6ff41f419ace7e938b0a0e1c9030bf5cb7c6a51",
+            "TM1.COM": "4ce49eb57fb2351c55800a48bd5079bb3910d0a7a75120cabbdf4fd346212f91",
+            "QUALIFY.SUB": "497effd74e3818eb15493dad2e81f7d479fcfed094eb26ae504166558b613d58"
+          },
+          "parity": "exact qualified COM bytes and CP/M padding",
+          "utilities_unchanged": true,
+          "inputs_unchanged": true,
+          "filesystem": "PASS"
+        },
+        "USQ": {
+          "status": "PASS",
+          "commands": [
+            "B:ZSM4 COMMAND=COMMAND",
+            "B:LINK COMMAND[A]"
+          ],
+          "console_sha256": "1b8abbbcaa73c867b7048fe15be0bf2bf1734b3cf6742cd33ed4cd10bcfb6830",
+          "inputs_sha256": {
+            "USQ.INC": "1341ade2dba84fee9aa0e756f21797bc77669f14c69c91af3f6dc450732895d9",
+            "CODECVER.INC": "ea2c182212b0a51d4d5be42660ab16f97d55380543ede9b79b195a46440335a2",
+            "COMMAND.MAC": "c9b227ae7563876ccdbec3f99555ce250df4f244230a2d9ff7d92a1683a5c1f9",
+            "CODEC.INC": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+            "CFIO.MAC": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+            "USQ.MAC": "e3f96ee5c620f0ce5981d9f670f30d392c30ffa84b4a09bd4758046e6d1723cb",
+            "CODEC.MAC": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76",
+            "TM0.COM": "59a30cf0fd9c920738fd32e903b86b866fcf03d7ecfa6b132ec2dc252487b5e6",
+            "TM1.COM": "6579fc4e2d19e8976924e533e8921a93b603310cf3750e6d9746197076850dea",
+            "QUALIFY.SUB": "497effd74e3818eb15493dad2e81f7d479fcfed094eb26ae504166558b613d58"
+          },
+          "parity": "exact qualified COM bytes and CP/M padding",
+          "utilities_unchanged": true,
+          "inputs_unchanged": true,
+          "filesystem": "PASS"
+        },
+        "CR": {
+          "status": "PASS",
+          "commands": [
+            "B:ZSM4 COMMAND=COMMAND",
+            "B:LINK COMMAND[A]"
+          ],
+          "console_sha256": "3160aa43d66fc461c1e466d9cdbfe1e39be145f9cf7e32adb6ed3b042cd79a20",
+          "inputs_sha256": {
+            "CODECVER.INC": "096860aed7ea2d7f37c3b9d0f41680c6ebf1df1733ba83e39a44e0e1536419b6",
+            "CR.MAC": "d63b8889e275ed7bed51ac079a6ec5c34b1de74d696141e71c34e3737b61fa45",
+            "COMMAND.MAC": "362edaddf6b05d901ddd31513707fb9582b8559d3a7b8d8f57d7373a7975e006",
+            "CODEC.INC": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+            "CFIO.MAC": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+            "CR.INC": "46634e1dd801a789c2c4a9fde311122524711011f3486ef5a7fbdf6816e9916d",
+            "CODEC.MAC": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76",
+            "TM0.COM": "6c2ded94e7fff11975b28a7c47a43c6d80549b5fde46fe0ddaed09b10d62ef80",
+            "TM1.COM": "7f5a77a3425ecb11c94ce90a96d0753c713bb04ce2201e74569db15f03609045",
+            "QUALIFY.SUB": "497effd74e3818eb15493dad2e81f7d479fcfed094eb26ae504166558b613d58"
+          },
+          "parity": "exact qualified COM bytes and CP/M padding",
+          "utilities_unchanged": true,
+          "inputs_unchanged": true,
+          "filesystem": "PASS"
+        },
+        "UNCR": {
+          "status": "PASS",
+          "commands": [
+            "B:ZSM4 COMMAND=COMMAND",
+            "B:LINK COMMAND[A]"
+          ],
+          "console_sha256": "1ec5705bd1049e75d07fee86e7fd0862730d542d4f5d2143718de26a9e385bec",
+          "inputs_sha256": {
+            "CODECVER.INC": "95ea9e45b21a493aa29fb9258b4d305ac1f04f2ef0ae5858e381d9c06212cf3c",
+            "COMMAND.MAC": "f769a22e830a0a8cd92ab121a7b8340748ea8fda57b884e9296a9ff9f886f7ef",
+            "CODEC.INC": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+            "UNCR.INC": "0d9c6593cd64e5bc0e178eb9e597fd65846c63b9095ef65482b3e47af9c6f897",
+            "CFIO.MAC": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+            "UNCR.MAC": "c0841f49ce2ce68acfb3db0410fb4c3af74e9d03ee581773bb48260d87cb4bb3",
+            "CODEC.MAC": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76",
+            "TM0.COM": "3fac322c063ee00bb5fb3745041cfb3d089ed0202fec7c9d504af19c548f2609",
+            "TM1.COM": "79afe1ca6aa6f6f22f9136b72562ae41143ffa3d5bf8eb5fbf842af07d57de5c",
+            "QUALIFY.SUB": "497effd74e3818eb15493dad2e81f7d479fcfed094eb26ae504166558b613d58"
+          },
+          "parity": "exact qualified COM bytes and CP/M padding",
+          "utilities_unchanged": true,
+          "inputs_unchanged": true,
+          "filesystem": "PASS"
+        },
+        "LZH": {
+          "status": "PASS",
+          "commands": [
+            "B:ZSM4 COMMAND=COMMAND",
+            "B:LINK COMMAND[A]"
+          ],
+          "console_sha256": "bdc8848fde46b20154b26eafb3cfbe301fd114877675dc56272870aa81a3e5cb",
+          "inputs_sha256": {
+            "CODECVER.INC": "1c97f07f3b1826fcea1218078f7b5965de558f90acbbd7114d2f9e0d9fd8566a",
+            "COMMAND.MAC": "9b59ef8c771506255b19c1c0cd9ae932c5e8cd42c46b36da5ddd3e3aac27ecf2",
+            "LZH.INC": "00ce3718cd25fa58be634a366116847207e40fe1b3478d68f4e8a7da1525d314",
+            "CODEC.INC": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+            "CFIO.MAC": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+            "LZH.MAC": "840118f7267df56020faad53ddaf34ab6419d6a0ab1c5b7f6dba8b75e9cdfd32",
+            "CODEC.MAC": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76",
+            "TM0.COM": "b0b9986cafa7a19e7ed1a52800c97afb4d9638b4062ea8801d8e0858355b6f92",
+            "TM1.COM": "0f734035b47680bc215dc3de7cbb3883d9ef07ce6ebe04ad8f96f4f37a53c473",
+            "QUALIFY.SUB": "497effd74e3818eb15493dad2e81f7d479fcfed094eb26ae504166558b613d58"
+          },
+          "parity": "exact qualified COM bytes and CP/M padding",
+          "utilities_unchanged": true,
+          "inputs_unchanged": true,
+          "filesystem": "PASS"
+        },
+        "UNLZH": {
+          "status": "PASS",
+          "commands": [
+            "B:ZSM4 COMMAND=COMMAND",
+            "B:LINK COMMAND[A]"
+          ],
+          "console_sha256": "86f52ed86d08b07b05f11070a1a7263293333ad6518367d2734cc7061e43fe46",
+          "inputs_sha256": {
+            "CODECVER.INC": "97b3bbd860ac0b06152c2d0375d1df2fb058eefcc3dab39b53f0167d945a9520",
+            "COMMAND.MAC": "7facdefec7b7c58cb0a625b48bb06c5faf591d5d7b9493d617d80a2afd074832",
+            "CODEC.INC": "2f87e62a8f9cf07a40b315b6845362c679c75f0dc2d10a87c4e7efdd174ad14a",
+            "UNLZH.MAC": "7591bb8a7ac0dd299e3150310a3ac82a53a22713c102c5c6235f0fa4c512f528",
+            "CFIO.MAC": "c600c77798f6f86c52ff9415290ca2dfb71698d3913dabdc9f77c707aa793001",
+            "CODEC.MAC": "4b35de68282eb4eff261cf70eba8c9c600e896e2a0834ed21b58a164de7d9c76",
+            "UNLZH.INC": "56a854f75970098418bab2c265b27fd9e85e7d1e0fc7679ed2364d0ad2d80da2",
+            "TM0.COM": "6fb3c71847caf9943c537be334a38b72aef614f04f307459300ea320c199fb90",
+            "TM1.COM": "6148041932c53a04d7832466076db10f5b3c47e840ed34307a3ece954aa8b1b2",
+            "QUALIFY.SUB": "497effd74e3818eb15493dad2e81f7d479fcfed094eb26ae504166558b613d58"
+          },
+          "parity": "exact qualified COM bytes and CP/M padding",
+          "utilities_unchanged": true,
+          "inputs_unchanged": true,
+          "filesystem": "PASS"
+        }
+      },
+      "campaigns": [
+        {
+          "path": "campaigns/utilities-toolchain-qualified-model4-probe",
+          "report_sha256": "5cd6905f3158bb4095bdc7b636a4ef2ea76ba7a9f24f0bdd1f8cc6a12ad3da73",
+          "system_audit_sha256": "b50bc6ff4cf3ffb75e39bd073c0454dbc57d4df07a99587b3859e9be5fb3443f",
+          "runner_sha256": "e3d6646289a4b67714d38578e7e4c3c834e1591d5036c6fc2ef2861d8104c862",
+          "runner_source": "campaigns/utilities-toolchain-qualified-model4-probe/runner-executed.py",
+          "simulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05",
+          "trs80gp_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f"
+        },
+        {
+          "path": "campaigns/utilities-toolchain-qualified-model4-sq",
+          "report_sha256": "fc798d3a29eb3927c25770622d44e10802aa3ca05774d6b99ed514fcdc986134",
+          "system_audit_sha256": "4ad738a11afdb4532cf8dc94efb229c71581e82dcdfef6842e349d7784358731",
+          "runner_sha256": "e3d6646289a4b67714d38578e7e4c3c834e1591d5036c6fc2ef2861d8104c862",
+          "runner_source": "campaigns/utilities-toolchain-qualified-model4-sq/runner-executed.py",
+          "simulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05",
+          "trs80gp_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f"
+        },
+        {
+          "path": "campaigns/utilities-toolchain-qualified-model4-cr",
+          "report_sha256": "694770c7af6b60860dd30ea5a45059c8ce3a1bffac23dfba763643e365dc48bc",
+          "system_audit_sha256": "9efb06b69c34ab5d30c019c0bd11e0f73e1249c2b2555d4e4ce45d3390b79186",
+          "runner_sha256": "e3d6646289a4b67714d38578e7e4c3c834e1591d5036c6fc2ef2861d8104c862",
+          "runner_source": "campaigns/utilities-toolchain-qualified-model4-cr/runner-executed.py",
+          "simulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05",
+          "trs80gp_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f"
+        },
+        {
+          "path": "campaigns/utilities-toolchain-qualified-model4-lzh",
+          "report_sha256": "78027a5b19676e993318cd3f9e155471ef98b685810280784703a354f7d636cc",
+          "system_audit_sha256": "56da0720fcec3fe4154f598e3a092bab192c97edc4c4d63460efde472c7e700b",
+          "runner_sha256": "e3d6646289a4b67714d38578e7e4c3c834e1591d5036c6fc2ef2861d8104c862",
+          "runner_source": "campaigns/utilities-toolchain-qualified-model4-lzh/runner-executed.py",
+          "simulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05",
+          "trs80gp_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f"
+        }
+      ]
+    }
+  },
+  "independent_inventory": {
+    "status": "PASS",
+    "platforms": {
+      "z80pack": {
+        "files": 15,
+        "user": 0,
+        "allocated_blocks": 97,
+        "free_blocks": 69,
+        "exact_membership": "PASS",
+        "independent_record_readback": "PASS",
+        "allocation": "PASS",
+        "image": "BetterCPM-Utilities-z80pack-332K.dsk",
+        "image_sha256": "457cd8660e1a74f04b23d4440c2eeb1595ba5f1543ef2650575ecfea551fbb1d",
+        "raw_bytes": 368640,
+        "files_sha256": {
+          "DDT.COM": "83da74cb5cd0e105cee410c10e32e2cb86389036e84fc7620b25b403c3327665",
+          "DUMP.COM": "970bd9ae32b9b51a29ebd2d5b9a63cc500c12f323d583575161229150cb11aeb",
+          "XSUB.COM": "24f654d59d2e00c6894d6e9f38cd3028442aec75ce5ff8aa2c6e1dbb10804697",
+          "BATCHIO.RSX": "0347270c05d040e0c7b82d73402803e26baa6a7977880d2764f0700fc1dc5ee0",
+          "SQ.COM": "2517bf6d77631f6f6408a4b2bb7dcca769ae59a7ab0931b4dfe3ffdb2163335d",
+          "USQ.COM": "25fdd2e566cc241a6f7b5623fc4a075a4c1843e45091309315de5bfa7fc247a0",
+          "UNCR.COM": "e77200e4a8c36d3e7d455eeaed96c289a06e82a4756f29023a7850374e760be3",
+          "CR.COM": "8a089b84239004602dfd9ad0c4586c5c94ad73b9f257553521e6004569e381a3",
+          "UNLZH.COM": "2f21b8e6c81766c407cccdfb08029d39753f40fad4c43ee47050de9b6cd2e89a",
+          "LZH.COM": "36eff2d7dfa413ce18699d31291107c588fa84deabf957c7b9c27ec033c45eef",
+          "ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+          "LINK.COM": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677",
+          "TOOLINFO.TXT": "e3d2a9812bf8710c30b218d1e210710493904fd4886dab8ea52f31459a955a21",
+          "ZSM4COPY.TXT": "7d4f2be9be7a1d1fdb705986ce2701619cfcc8825356670aaa1e29a3d12c7d0f",
+          "LINKCOPY.TXT": "d7d6e20ff86b7a2a09ced46db14f722d246374ff8f24a9a3ddbb9332fe8735ad"
+        }
+      },
+      "trs80gp": {
+        "files": 15,
+        "user": 0,
+        "allocated_blocks": 98,
+        "free_blocks": 302,
+        "exact_membership": "PASS",
+        "independent_record_readback": "PASS",
+        "allocation": "PASS",
+        "image": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+        "image_sha256": "95f8af912173f428f47d434269da65d7778933410b30986d14c943a2285392c1",
+        "raw_bytes": 819200,
+        "files_sha256": {
+          "DDT.COM": "83da74cb5cd0e105cee410c10e32e2cb86389036e84fc7620b25b403c3327665",
+          "DUMP.COM": "970bd9ae32b9b51a29ebd2d5b9a63cc500c12f323d583575161229150cb11aeb",
+          "XSUB.COM": "24f654d59d2e00c6894d6e9f38cd3028442aec75ce5ff8aa2c6e1dbb10804697",
+          "BATCHIO.RSX": "0347270c05d040e0c7b82d73402803e26baa6a7977880d2764f0700fc1dc5ee0",
+          "SQ.COM": "2517bf6d77631f6f6408a4b2bb7dcca769ae59a7ab0931b4dfe3ffdb2163335d",
+          "USQ.COM": "25fdd2e566cc241a6f7b5623fc4a075a4c1843e45091309315de5bfa7fc247a0",
+          "UNCR.COM": "e77200e4a8c36d3e7d455eeaed96c289a06e82a4756f29023a7850374e760be3",
+          "CR.COM": "8a089b84239004602dfd9ad0c4586c5c94ad73b9f257553521e6004569e381a3",
+          "UNLZH.COM": "2f21b8e6c81766c407cccdfb08029d39753f40fad4c43ee47050de9b6cd2e89a",
+          "LZH.COM": "36eff2d7dfa413ce18699d31291107c588fa84deabf957c7b9c27ec033c45eef",
+          "ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+          "LINK.COM": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677",
+          "TOOLINFO.TXT": "e3d2a9812bf8710c30b218d1e210710493904fd4886dab8ea52f31459a955a21",
+          "ZSM4COPY.TXT": "7d4f2be9be7a1d1fdb705986ce2701619cfcc8825356670aaa1e29a3d12c7d0f",
+          "LINKCOPY.TXT": "d7d6e20ff86b7a2a09ced46db14f722d246374ff8f24a9a3ddbb9332fe8735ad"
+        }
+      }
+    }
+  },
+  "corresponding_source_verification": {
+    "upstream_commit": "96a9ac1081172e1c08291521b77d2a715ec59c8b",
+    "files": 154,
+    "comparison": "complete archive member set and every file compared with pinned upstream Git objects"
+  },
+  "qualification_limit": "Component acceptance on exact paired media; final Utilities selection, whole-System conformance and protected-XIP release closure remain open.",
+  "compression_reacceptance": {
+    "status": "PASS",
+    "report_sha256": "ce491d56912382e973e62ec480895870ad1207964382e013278a24f3aea122d8",
+    "platforms": {
+      "z80pack": {
+        "status": "PASS",
+        "families": {
+          "SQ": {
+            "round_trips": 9,
+            "original_files_preserved": true,
+            "logged_drive_default": "PASS",
+            "current_user_7": "PASS",
+            "collision_refusals": "PASS",
+            "checksum_and_malformed_refusals": "PASS",
+            "owned_temporary_cleanup": "PASS",
+            "preexisting_temporaries_preserved": true,
+            "filesystem": "PASS",
+            "commands": [
+              {
+                "command": "TYPE C:DEFAULT.TXT",
+                "expected": "logged drive defaults",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ X /VER",
+                "expected": "SQ 1.0 (Build 004)\r\n  - - -\r\n | BetterCP/M Utilities\r\n | Squeeze File Compression\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ /HELP X",
+                "expected": "SQ 1.0 (Build 004)\r\n  - - -\r\n | Squeeze compression\r\n |\r\n |   Usage: SQ [drive:]file [destination-drive:]\r\n\r\n   Options:\r\n     /HELP       Display this help.\r\n     /VER        Display utility identification.\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ X /VER",
+                "expected": "USQ 1.0 (Build 004)\r\n  - - -\r\n | BetterCP/M Utilities\r\n | Squeezed File Expansion\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ /HELP X",
+                "expected": "USQ 1.0 (Build 004)\r\n  - - -\r\n | Squeeze expansion\r\n |\r\n |   Usage: USQ [drive:]file [destination-drive:]\r\n\r\n   Options:\r\n     /HELP       Display this help.\r\n     /VER        Display utility identification.\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR X /VER",
+                "expected": "CR 1.0 (Build 004)\r\n  - - -\r\n | BetterCP/M Utilities\r\n | CRUNCH File Compression\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR /HELP X",
+                "expected": "CR 1.0 (Build 004)\r\n  - - -\r\n | CRUNCH compression\r\n |\r\n |   Usage: CR [drive:]file [destination-drive:]\r\n\r\n   Options:\r\n     /HELP       Display this help.\r\n     /VER        Display utility identification.\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR X /VER",
+                "expected": "UNCR 1.0 (Build 004)\r\n  - - -\r\n | BetterCP/M Utilities\r\n | CRUNCH File Expansion\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR /HELP X",
+                "expected": "UNCR 1.0 (Build 004)\r\n  - - -\r\n | CRUNCH expansion\r\n |\r\n |   Usage: UNCR [drive:]file [destination-drive:]\r\n\r\n   Options:\r\n     /HELP       Display this help.\r\n     /VER        Display utility identification.\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH X /VER",
+                "expected": "LZH 1.0 (Build 004)\r\n  - - -\r\n | BetterCP/M Utilities\r\n | CrLZH File Compression\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH /HELP X",
+                "expected": "LZH 1.0 (Build 004)\r\n  - - -\r\n | CrLZH compression\r\n |\r\n |   Usage: LZH [drive:]file [destination-drive:]\r\n\r\n   Options:\r\n     /HELP       Display this help.\r\n     /VER        Display utility identification.\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH X /VER",
+                "expected": "UNLZH 1.0 (Build 004)\r\n  - - -\r\n | BetterCP/M Utilities\r\n | CrLZH File Expansion\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH /HELP X",
+                "expected": "UNLZH 1.0 (Build 004)\r\n  - - -\r\n | CrLZH expansion\r\n |\r\n |   Usage: UNLZH [drive:]file [destination-drive:]\r\n\r\n   Options:\r\n     /HELP       Display this help.\r\n     /VER        Display utility identification.\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH /VER /HELP X",
+                "expected": "LZH 1.0 (Build 004)\r\n  - - -\r\n | CrLZH compression\r\n |\r\n |   Usage: LZH [drive:]file [destination-drive:]\r\n\r\n   Options:\r\n     /HELP       Display this help.\r\n     /VER        Display utility identification.\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ EMPTY C:",
+                "expected": "SQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ C:EMPTY.QQQ C:",
+                "expected": "USQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ BINARY.BIN C:",
+                "expected": "SQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ C:BINARY.BQN C:",
+                "expected": "USQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ R127.BIN C:",
+                "expected": "SQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ C:R127.BQN C:",
+                "expected": "USQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ R128.BIN C:",
+                "expected": "SQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ C:R128.BQN C:",
+                "expected": "USQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ R129.BIN C:",
+                "expected": "SQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ C:R129.BQN C:",
+                "expected": "USQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ EXTENT.BIN C:",
+                "expected": "SQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ C:EXTENT.BQN C:",
+                "expected": "USQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ BIG.BIN C:",
+                "expected": "SQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ C:BIG.BQN C:",
+                "expected": "USQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ BINARY.BIN C:",
+                "expected": "SQ: output exists; nothing replaced.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ C:BINARY.BQN C:",
+                "expected": "USQ: output exists; nothing replaced.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ C:DEFAULT.TXT",
+                "expected": "SQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ DEFAULT.TQT",
+                "expected": "USQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ BAD.DAT C:",
+                "expected": "USQ: checksum mismatch.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ BROKEN.DAT C:",
+                "expected": "USQ: invalid or truncated",
+                "prompt": "A0>"
+              },
+              {
+                "command": "USER 7",
+                "expected": "A7>",
+                "prompt": "A7>"
+              },
+              {
+                "command": "B0:SQ USER.TXT C:",
+                "expected": "SQ: complete.",
+                "prompt": "A7>"
+              },
+              {
+                "command": "B0:USQ C:USER.TQT C:",
+                "expected": "USQ: complete.",
+                "prompt": "A7>"
+              },
+              {
+                "command": "USER 0",
+                "expected": "A0>",
+                "prompt": "A0>"
+              }
+            ],
+            "data_files": {
+              "EMPTY": {
+                "records": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "BINARY.BIN": {
+                "records": 8,
+                "sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+              },
+              "R127.BIN": {
+                "records": 1,
+                "sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62"
+              },
+              "R128.BIN": {
+                "records": 1,
+                "sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5"
+              },
+              "R129.BIN": {
+                "records": 2,
+                "sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e"
+              },
+              "EXTENT.BIN": {
+                "records": 133,
+                "sha256": "5bb1185ea8f120db358e0bfac63a04c0c10fd21dbbde86cdaf8958ad9e41531a"
+              },
+              "BIG.BIN": {
+                "records": 547,
+                "sha256": "2bdcb41f0f88f1b998afbbbdd09595e842a370a2bc0cd3bfc815c4eb179066a5"
+              }
+            },
+            "system_payload_readback": {
+              "reserved_area_unchanged": true,
+              "payloads_unchanged": true,
+              "files": {
+                "README.TXT": "a6f581c7d797e227f3b9296d856439373d2354a4dd9b19a6e226f20f251d6c80",
+                "STARTUP.SUB": "0d4bbe35067aa74b4b677fc450c319b38587738b44de971984b018ad4c8e22cc",
+                "DIR.COM": "b82bfeefc12a037c98374c34ea5b8891a9e444ebf5d858443b4bc1b451f1a5e2",
+                "ERA.COM": "a4a9df01f8374b59fb1eb0477294dc454128dc579daff3e32cb5f8370a585cbe",
+                "TYPE.COM": "0ac28c044ff426b3a619d5e0c0c77113f360964c3d162a91a434ffb37eed896d",
+                "REN.COM": "1d8a2adeae813a9bf17b7ca3b6b71bea6c533f3f18ace1c56bb35ebbfc880a17",
+                "VER.COM": "41e0b01a1205698f9feb6a0226744d5cca30f5b9a5d96be417ec017957c5e512",
+                "COPY.COM": "ffc8e59c276324ddaede9c8b2ac39b4d9d398bc9c50466a29c1973f5d10259fc",
+                "CONFIG.COM": "ccd5bc19c882e40a8d4b2aebc3572c50abe9ec63ef6d33fe81002613ab166465",
+                "DUP.COM": "a07ef62c7bb16eb9ce22955297c3176d6ec7f880954ce83b91075ebe02ebf54a",
+                "TIME.COM": "eab68816df8abed17290b22059bef156dabb4ec757133b5b61a8822209f662c6",
+                "SYSGEN.COM": "e1256caa7efb393fe9d3505c2bd3478be087f2b374598b87a50b4a5d2f3c4885",
+                "STAT.COM": "852a980fb712bb6815be728657b2ce960cc39b231c3ca5e5145ba5c4a7fd55b6",
+                "SUBMIT.COM": "0bb03ff8fc5329a86e2ef1e32ee62b9720055d0d9210498b3943085c5fb61fc2",
+                "CPX.COM": "0b0e9fdc17d8c32b7cebfd300b3c2388996afd62f836b67b0c2e0cee3f1efe99",
+                "RSX.COM": "c04751ed2653ddc38a5dcc24c8cbce7396abb7b2e9cc1f7ba41b4e375eb9accb",
+                "DISK.FDB": "4dea7bd989580fc13f61e79d47e92466a440799c41b002f4caba65ec8f893c03",
+                "RCP.CPX": "ba3718c0f0c1e554623c6797215cd555708dc2c5e6cddc8e8b24a463491d2e39",
+                "ZPRTC.RSX": "3cbeda28b560cb06e26a57e2ca2dd8218f343b26dc660e2ba4ab727a934511e2",
+                "R3PACK.RSX": "d761fb628e00e1d661642a1b874e918969c48c564751a2a5e0f7060ed6a454ab",
+                "PIP.COM": "dcef9d4d47c23055dda84a94a2a92fa69f3f22e8506d15f674c146c0bfb961f5",
+                "ED.COM": "fe02f1610c04211a38ad28a055cf224f31c5e226dcb3df21585719514d9d2071",
+                "BYE.COM": "1f1c879ea351a1b81c68102f11470d5d1bd1f9a5b2be2ec90b854a609f55f1b5",
+                "ADM3A.RSX": "b4bdae27acc1d9e155178558921b457e5f0a61727f8be3114e17e35757454ef9",
+                "ADMTST.COM": "42d71b5eae882afe6f171550ce6710681b444bbbe9792c22e7a5beed1ebda5d4",
+                "VT52.RSX": "abbf8661158de109e954df214d0023fc9157524fd2c8c9cf1d617bf936dd496d",
+                "VT52TST.COM": "4c8c7487e735f0b42c860b9e005c1532f111c3cc6369eb60871e586b8669c759",
+                "ANSI.RSX": "79b7fe071575d416aeebe08b01f97ed3ce3b1bc9cd0c8928c6e759d2cad76d30",
+                "ANSITST.COM": "9205f7f8b7dbf937fdf6834ea9497edcb1341f3321f21398c2da7ce259db4d94",
+                "ANSISCRN.RSX": "2f5afc75a19e30fbf2b66201096970a44ab1da9750761804023a9b029f03b33e"
+              }
+            },
+            "status": "PASS",
+            "source_system_sha256": "c6c07791f419321bc661a56d86ba9afc0e68242e8f0ff070e07188a7a5d7563e",
+            "test_source_sha256": "26c2b1ad40b5202877dfd8fd3fc08a81a3352d0d75bf78a36625e03cd889354e",
+            "utilities_unchanged": true,
+            "evidence": {
+              "transcript_sha256": "bc651a818d69526be3956e2edfd5519d361eab41ee2b8fc772cb408d1e6806f0"
+            },
+            "private_input_sha256": {
+              "a": "6a158ef3d8a546b7a9f0419c3bbdc524851572b4cd320276ccdb13fcc43c7828",
+              "b": "457cd8660e1a74f04b23d4440c2eeb1595ba5f1543ef2650575ecfea551fbb1d",
+              "c": "19ccf8e604db111986c08494cfc40386d2109c71a0129ce42b8c09416ceec504"
+            },
+            "output_a_sha256": "f52ec62fa9d0f8a8f276ec5c2ec6e1e0923c5017771a5a94eb5e49261a813aa0",
+            "output_c_sha256": "8df3ce70090f275fb58a0b87ef8251f0d9666c3c1817007d40ba41fa403822a9"
+          },
+          "CR": {
+            "round_trips": 9,
+            "original_files_preserved": true,
+            "logged_drive_default": "PASS",
+            "current_user_7": "PASS",
+            "collision_refusals": "PASS",
+            "checksum_and_malformed_refusals": "PASS",
+            "owned_temporary_cleanup": "PASS",
+            "preexisting_temporaries_preserved": true,
+            "filesystem": "PASS",
+            "commands": [
+              {
+                "command": "B:CR EMPTY C:",
+                "expected": "CR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR C:EMPTY.ZZZ C:",
+                "expected": "UNCR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR BINARY.BIN C:",
+                "expected": "CR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR C:BINARY.BZN C:",
+                "expected": "UNCR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR R127.BIN C:",
+                "expected": "CR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR C:R127.BZN C:",
+                "expected": "UNCR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR R128.BIN C:",
+                "expected": "CR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR C:R128.BZN C:",
+                "expected": "UNCR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR R129.BIN C:",
+                "expected": "CR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR C:R129.BZN C:",
+                "expected": "UNCR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR EXTENT.BIN C:",
+                "expected": "CR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR C:EXTENT.BZN C:",
+                "expected": "UNCR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR BIG.BIN C:",
+                "expected": "CR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR C:BIG.BZN C:",
+                "expected": "UNCR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR BINARY.BIN C:",
+                "expected": "CR: output exists; nothing replaced.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR C:BINARY.BZN C:",
+                "expected": "UNCR: output exists; nothing replaced.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR C:DEFAULT.TXT",
+                "expected": "CR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR DEFAULT.TZT",
+                "expected": "UNCR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR BAD.DAT C:",
+                "expected": "UNCR: checksum mismatch.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR BROKEN.DAT C:",
+                "expected": "UNCR: invalid or truncated",
+                "prompt": "A0>"
+              },
+              {
+                "command": "USER 7",
+                "expected": "A7>",
+                "prompt": "A7>"
+              },
+              {
+                "command": "B0:CR USER.TXT C:",
+                "expected": "CR: complete.",
+                "prompt": "A7>"
+              },
+              {
+                "command": "B0:UNCR C:USER.TZT C:",
+                "expected": "UNCR: complete.",
+                "prompt": "A7>"
+              },
+              {
+                "command": "USER 0",
+                "expected": "A0>",
+                "prompt": "A0>"
+              }
+            ],
+            "data_files": {
+              "EMPTY": {
+                "records": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "BINARY.BIN": {
+                "records": 8,
+                "sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+              },
+              "R127.BIN": {
+                "records": 1,
+                "sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62"
+              },
+              "R128.BIN": {
+                "records": 1,
+                "sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5"
+              },
+              "R129.BIN": {
+                "records": 2,
+                "sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e"
+              },
+              "EXTENT.BIN": {
+                "records": 133,
+                "sha256": "5bb1185ea8f120db358e0bfac63a04c0c10fd21dbbde86cdaf8958ad9e41531a"
+              },
+              "BIG.BIN": {
+                "records": 547,
+                "sha256": "2bdcb41f0f88f1b998afbbbdd09595e842a370a2bc0cd3bfc815c4eb179066a5"
+              }
+            },
+            "system_payload_readback": {
+              "reserved_area_unchanged": true,
+              "payloads_unchanged": true,
+              "files": {
+                "README.TXT": "a6f581c7d797e227f3b9296d856439373d2354a4dd9b19a6e226f20f251d6c80",
+                "STARTUP.SUB": "0d4bbe35067aa74b4b677fc450c319b38587738b44de971984b018ad4c8e22cc",
+                "DIR.COM": "b82bfeefc12a037c98374c34ea5b8891a9e444ebf5d858443b4bc1b451f1a5e2",
+                "ERA.COM": "a4a9df01f8374b59fb1eb0477294dc454128dc579daff3e32cb5f8370a585cbe",
+                "TYPE.COM": "0ac28c044ff426b3a619d5e0c0c77113f360964c3d162a91a434ffb37eed896d",
+                "REN.COM": "1d8a2adeae813a9bf17b7ca3b6b71bea6c533f3f18ace1c56bb35ebbfc880a17",
+                "VER.COM": "41e0b01a1205698f9feb6a0226744d5cca30f5b9a5d96be417ec017957c5e512",
+                "COPY.COM": "ffc8e59c276324ddaede9c8b2ac39b4d9d398bc9c50466a29c1973f5d10259fc",
+                "CONFIG.COM": "ccd5bc19c882e40a8d4b2aebc3572c50abe9ec63ef6d33fe81002613ab166465",
+                "DUP.COM": "a07ef62c7bb16eb9ce22955297c3176d6ec7f880954ce83b91075ebe02ebf54a",
+                "TIME.COM": "eab68816df8abed17290b22059bef156dabb4ec757133b5b61a8822209f662c6",
+                "SYSGEN.COM": "e1256caa7efb393fe9d3505c2bd3478be087f2b374598b87a50b4a5d2f3c4885",
+                "STAT.COM": "852a980fb712bb6815be728657b2ce960cc39b231c3ca5e5145ba5c4a7fd55b6",
+                "SUBMIT.COM": "0bb03ff8fc5329a86e2ef1e32ee62b9720055d0d9210498b3943085c5fb61fc2",
+                "CPX.COM": "0b0e9fdc17d8c32b7cebfd300b3c2388996afd62f836b67b0c2e0cee3f1efe99",
+                "RSX.COM": "c04751ed2653ddc38a5dcc24c8cbce7396abb7b2e9cc1f7ba41b4e375eb9accb",
+                "DISK.FDB": "4dea7bd989580fc13f61e79d47e92466a440799c41b002f4caba65ec8f893c03",
+                "RCP.CPX": "ba3718c0f0c1e554623c6797215cd555708dc2c5e6cddc8e8b24a463491d2e39",
+                "ZPRTC.RSX": "3cbeda28b560cb06e26a57e2ca2dd8218f343b26dc660e2ba4ab727a934511e2",
+                "R3PACK.RSX": "d761fb628e00e1d661642a1b874e918969c48c564751a2a5e0f7060ed6a454ab",
+                "PIP.COM": "dcef9d4d47c23055dda84a94a2a92fa69f3f22e8506d15f674c146c0bfb961f5",
+                "ED.COM": "fe02f1610c04211a38ad28a055cf224f31c5e226dcb3df21585719514d9d2071",
+                "BYE.COM": "1f1c879ea351a1b81c68102f11470d5d1bd1f9a5b2be2ec90b854a609f55f1b5",
+                "ADM3A.RSX": "b4bdae27acc1d9e155178558921b457e5f0a61727f8be3114e17e35757454ef9",
+                "ADMTST.COM": "42d71b5eae882afe6f171550ce6710681b444bbbe9792c22e7a5beed1ebda5d4",
+                "VT52.RSX": "abbf8661158de109e954df214d0023fc9157524fd2c8c9cf1d617bf936dd496d",
+                "VT52TST.COM": "4c8c7487e735f0b42c860b9e005c1532f111c3cc6369eb60871e586b8669c759",
+                "ANSI.RSX": "79b7fe071575d416aeebe08b01f97ed3ce3b1bc9cd0c8928c6e759d2cad76d30",
+                "ANSITST.COM": "9205f7f8b7dbf937fdf6834ea9497edcb1341f3321f21398c2da7ce259db4d94",
+                "ANSISCRN.RSX": "2f5afc75a19e30fbf2b66201096970a44ab1da9750761804023a9b029f03b33e"
+              }
+            },
+            "status": "PASS",
+            "source_system_sha256": "c6c07791f419321bc661a56d86ba9afc0e68242e8f0ff070e07188a7a5d7563e",
+            "test_source_sha256": "26c2b1ad40b5202877dfd8fd3fc08a81a3352d0d75bf78a36625e03cd889354e",
+            "utilities_unchanged": true,
+            "evidence": {
+              "transcript_sha256": "1ed1dd46abe2ba5bc677ca9791e31311d4526d29b71320d3558ac16c43862050"
+            },
+            "private_input_sha256": {
+              "a": "aa667df052099e94698a426f80fa450cb6b99b272cee62d85b56cce159a294e2",
+              "b": "457cd8660e1a74f04b23d4440c2eeb1595ba5f1543ef2650575ecfea551fbb1d",
+              "c": "feaade9ef496acc79dc38c354c9ac43b5526517d7c7d8a01d706c65144bc7c14"
+            },
+            "output_a_sha256": "16b3955062b7f238278129948c00cacd532b84ee2fa178ac13f7afe0535fdb90",
+            "output_c_sha256": "3ab76a2165b2015ef4e4d3cdad5d8dff1b09a36d63cdfba8e32d9956cb45c638"
+          },
+          "LZH": {
+            "round_trips": 9,
+            "original_files_preserved": true,
+            "logged_drive_default": "PASS",
+            "current_user_7": "PASS",
+            "collision_refusals": "PASS",
+            "checksum_and_malformed_refusals": "PASS",
+            "owned_temporary_cleanup": "PASS",
+            "preexisting_temporaries_preserved": true,
+            "filesystem": "PASS",
+            "commands": [
+              {
+                "command": "B:LZH EMPTY C:",
+                "expected": "LZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH C:EMPTY.YYY C:",
+                "expected": "UNLZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH BINARY.BIN C:",
+                "expected": "LZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH C:BINARY.BYN C:",
+                "expected": "UNLZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH R127.BIN C:",
+                "expected": "LZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH C:R127.BYN C:",
+                "expected": "UNLZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH R128.BIN C:",
+                "expected": "LZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH C:R128.BYN C:",
+                "expected": "UNLZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH R129.BIN C:",
+                "expected": "LZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH C:R129.BYN C:",
+                "expected": "UNLZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH EXTENT.BIN C:",
+                "expected": "LZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH C:EXTENT.BYN C:",
+                "expected": "UNLZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH BIG.BIN C:",
+                "expected": "LZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH C:BIG.BYN C:",
+                "expected": "UNLZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH BINARY.BIN C:",
+                "expected": "LZH: output exists; nothing replaced.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH C:BINARY.BYN C:",
+                "expected": "UNLZH: output exists; nothing replaced.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH C:DEFAULT.TXT",
+                "expected": "LZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH DEFAULT.TYT",
+                "expected": "UNLZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH BAD.DAT C:",
+                "expected": "UNLZH: checksum mismatch.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH BROKEN.DAT C:",
+                "expected": "UNLZH: invalid or truncated",
+                "prompt": "A0>"
+              },
+              {
+                "command": "USER 7",
+                "expected": "A7>",
+                "prompt": "A7>"
+              },
+              {
+                "command": "B0:LZH USER.TXT C:",
+                "expected": "LZH: complete.",
+                "prompt": "A7>"
+              },
+              {
+                "command": "B0:UNLZH C:USER.TYT C:",
+                "expected": "UNLZH: complete.",
+                "prompt": "A7>"
+              },
+              {
+                "command": "USER 0",
+                "expected": "A0>",
+                "prompt": "A0>"
+              }
+            ],
+            "data_files": {
+              "EMPTY": {
+                "records": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "BINARY.BIN": {
+                "records": 8,
+                "sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+              },
+              "R127.BIN": {
+                "records": 1,
+                "sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62"
+              },
+              "R128.BIN": {
+                "records": 1,
+                "sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5"
+              },
+              "R129.BIN": {
+                "records": 2,
+                "sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e"
+              },
+              "EXTENT.BIN": {
+                "records": 133,
+                "sha256": "5bb1185ea8f120db358e0bfac63a04c0c10fd21dbbde86cdaf8958ad9e41531a"
+              },
+              "BIG.BIN": {
+                "records": 547,
+                "sha256": "2bdcb41f0f88f1b998afbbbdd09595e842a370a2bc0cd3bfc815c4eb179066a5"
+              }
+            },
+            "system_payload_readback": {
+              "reserved_area_unchanged": true,
+              "payloads_unchanged": true,
+              "files": {
+                "README.TXT": "a6f581c7d797e227f3b9296d856439373d2354a4dd9b19a6e226f20f251d6c80",
+                "STARTUP.SUB": "0d4bbe35067aa74b4b677fc450c319b38587738b44de971984b018ad4c8e22cc",
+                "DIR.COM": "b82bfeefc12a037c98374c34ea5b8891a9e444ebf5d858443b4bc1b451f1a5e2",
+                "ERA.COM": "a4a9df01f8374b59fb1eb0477294dc454128dc579daff3e32cb5f8370a585cbe",
+                "TYPE.COM": "0ac28c044ff426b3a619d5e0c0c77113f360964c3d162a91a434ffb37eed896d",
+                "REN.COM": "1d8a2adeae813a9bf17b7ca3b6b71bea6c533f3f18ace1c56bb35ebbfc880a17",
+                "VER.COM": "41e0b01a1205698f9feb6a0226744d5cca30f5b9a5d96be417ec017957c5e512",
+                "COPY.COM": "ffc8e59c276324ddaede9c8b2ac39b4d9d398bc9c50466a29c1973f5d10259fc",
+                "CONFIG.COM": "ccd5bc19c882e40a8d4b2aebc3572c50abe9ec63ef6d33fe81002613ab166465",
+                "DUP.COM": "a07ef62c7bb16eb9ce22955297c3176d6ec7f880954ce83b91075ebe02ebf54a",
+                "TIME.COM": "eab68816df8abed17290b22059bef156dabb4ec757133b5b61a8822209f662c6",
+                "SYSGEN.COM": "e1256caa7efb393fe9d3505c2bd3478be087f2b374598b87a50b4a5d2f3c4885",
+                "STAT.COM": "852a980fb712bb6815be728657b2ce960cc39b231c3ca5e5145ba5c4a7fd55b6",
+                "SUBMIT.COM": "0bb03ff8fc5329a86e2ef1e32ee62b9720055d0d9210498b3943085c5fb61fc2",
+                "CPX.COM": "0b0e9fdc17d8c32b7cebfd300b3c2388996afd62f836b67b0c2e0cee3f1efe99",
+                "RSX.COM": "c04751ed2653ddc38a5dcc24c8cbce7396abb7b2e9cc1f7ba41b4e375eb9accb",
+                "DISK.FDB": "4dea7bd989580fc13f61e79d47e92466a440799c41b002f4caba65ec8f893c03",
+                "RCP.CPX": "ba3718c0f0c1e554623c6797215cd555708dc2c5e6cddc8e8b24a463491d2e39",
+                "ZPRTC.RSX": "3cbeda28b560cb06e26a57e2ca2dd8218f343b26dc660e2ba4ab727a934511e2",
+                "R3PACK.RSX": "d761fb628e00e1d661642a1b874e918969c48c564751a2a5e0f7060ed6a454ab",
+                "PIP.COM": "dcef9d4d47c23055dda84a94a2a92fa69f3f22e8506d15f674c146c0bfb961f5",
+                "ED.COM": "fe02f1610c04211a38ad28a055cf224f31c5e226dcb3df21585719514d9d2071",
+                "BYE.COM": "1f1c879ea351a1b81c68102f11470d5d1bd1f9a5b2be2ec90b854a609f55f1b5",
+                "ADM3A.RSX": "b4bdae27acc1d9e155178558921b457e5f0a61727f8be3114e17e35757454ef9",
+                "ADMTST.COM": "42d71b5eae882afe6f171550ce6710681b444bbbe9792c22e7a5beed1ebda5d4",
+                "VT52.RSX": "abbf8661158de109e954df214d0023fc9157524fd2c8c9cf1d617bf936dd496d",
+                "VT52TST.COM": "4c8c7487e735f0b42c860b9e005c1532f111c3cc6369eb60871e586b8669c759",
+                "ANSI.RSX": "79b7fe071575d416aeebe08b01f97ed3ce3b1bc9cd0c8928c6e759d2cad76d30",
+                "ANSITST.COM": "9205f7f8b7dbf937fdf6834ea9497edcb1341f3321f21398c2da7ce259db4d94",
+                "ANSISCRN.RSX": "2f5afc75a19e30fbf2b66201096970a44ab1da9750761804023a9b029f03b33e"
+              }
+            },
+            "status": "PASS",
+            "source_system_sha256": "c6c07791f419321bc661a56d86ba9afc0e68242e8f0ff070e07188a7a5d7563e",
+            "test_source_sha256": "26c2b1ad40b5202877dfd8fd3fc08a81a3352d0d75bf78a36625e03cd889354e",
+            "utilities_unchanged": true,
+            "evidence": {
+              "transcript_sha256": "79592dccf70d7f4d926f069e2f3da68c28eaec1474e490e732c9b90bd4a3e6c2"
+            },
+            "private_input_sha256": {
+              "a": "649004419e1d4f445743d9d9bf17119005f3c0c04aae273f9de68dfb68375e80",
+              "b": "457cd8660e1a74f04b23d4440c2eeb1595ba5f1543ef2650575ecfea551fbb1d",
+              "c": "f278cb506199c2bb2df7c886b33e560850b3c9345396ad9709c044da13462cd6"
+            },
+            "output_a_sha256": "eb3e6db1af5baf22fc70649a391c1a8f85714fbd3e632e5108066a3ab5263722",
+            "output_c_sha256": "b484a6cd8ea968d45dc237484d8af35043a64ac79535343fbb3b3548df41b82f"
+          }
+        },
+        "system_image": "BetterCPM-Distribution-z80pack-332K.dsk",
+        "system_sha256": "c6c07791f419321bc661a56d86ba9afc0e68242e8f0ff070e07188a7a5d7563e",
+        "utilities_image": "BetterCPM-Utilities-z80pack-332K.dsk",
+        "utilities_sha256": "457cd8660e1a74f04b23d4440c2eeb1595ba5f1543ef2650575ecfea551fbb1d",
+        "emulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05",
+        "source_images_unchanged": true,
+        "utilities_unchanged": true,
+        "system_build_report_sha256": "702b2d897527f1a7e80b6eb4b50791cc9149ef73e696cb2e886b60dc46342820"
+      },
+      "trs80gp": {
+        "status": "PASS",
+        "families": {
+          "SQ": {
+            "round_trips": 9,
+            "original_files_preserved": true,
+            "logged_drive_default": "PASS",
+            "current_user_7": "PASS",
+            "collision_refusals": "PASS",
+            "checksum_and_malformed_refusals": "PASS",
+            "owned_temporary_cleanup": "PASS",
+            "preexisting_temporaries_preserved": true,
+            "filesystem": "PASS",
+            "commands": [
+              {
+                "command": "TYPE C:DEFAULT.TXT",
+                "expected": "logged drive defaults",
+                "prompt": "A0>"
+              },
+              {
+                "command": "RSX LIST",
+                "expected": "ADM3A",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ X /VER",
+                "expected": "SQ 1.0 (Build 004)\r\n  - - -\r\n | BetterCP/M Utilities\r\n | Squeeze File Compression\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ /HELP X",
+                "expected": "SQ 1.0 (Build 004)\r\n  - - -\r\n | Squeeze compression\r\n |\r\n |   Usage: SQ [drive:]file [destination-drive:]\r\n\r\n   Options:\r\n     /HELP       Display this help.\r\n     /VER        Display utility identification.\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ X /VER",
+                "expected": "USQ 1.0 (Build 004)\r\n  - - -\r\n | BetterCP/M Utilities\r\n | Squeezed File Expansion\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ /HELP X",
+                "expected": "USQ 1.0 (Build 004)\r\n  - - -\r\n | Squeeze expansion\r\n |\r\n |   Usage: USQ [drive:]file [destination-drive:]\r\n\r\n   Options:\r\n     /HELP       Display this help.\r\n     /VER        Display utility identification.\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR X /VER",
+                "expected": "CR 1.0 (Build 004)\r\n  - - -\r\n | BetterCP/M Utilities\r\n | CRUNCH File Compression\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR /HELP X",
+                "expected": "CR 1.0 (Build 004)\r\n  - - -\r\n | CRUNCH compression\r\n |\r\n |   Usage: CR [drive:]file [destination-drive:]\r\n\r\n   Options:\r\n     /HELP       Display this help.\r\n     /VER        Display utility identification.\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR X /VER",
+                "expected": "UNCR 1.0 (Build 004)\r\n  - - -\r\n | BetterCP/M Utilities\r\n | CRUNCH File Expansion\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR /HELP X",
+                "expected": "UNCR 1.0 (Build 004)\r\n  - - -\r\n | CRUNCH expansion\r\n |\r\n |   Usage: UNCR [drive:]file [destination-drive:]\r\n\r\n   Options:\r\n     /HELP       Display this help.\r\n     /VER        Display utility identification.\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH X /VER",
+                "expected": "LZH 1.0 (Build 004)\r\n  - - -\r\n | BetterCP/M Utilities\r\n | CrLZH File Compression\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH /HELP X",
+                "expected": "LZH 1.0 (Build 004)\r\n  - - -\r\n | CrLZH compression\r\n |\r\n |   Usage: LZH [drive:]file [destination-drive:]\r\n\r\n   Options:\r\n     /HELP       Display this help.\r\n     /VER        Display utility identification.\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH X /VER",
+                "expected": "UNLZH 1.0 (Build 004)\r\n  - - -\r\n | BetterCP/M Utilities\r\n | CrLZH File Expansion\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH /HELP X",
+                "expected": "UNLZH 1.0 (Build 004)\r\n  - - -\r\n | CrLZH expansion\r\n |\r\n |   Usage: UNLZH [drive:]file [destination-drive:]\r\n\r\n   Options:\r\n     /HELP       Display this help.\r\n     /VER        Display utility identification.\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH /VER /HELP X",
+                "expected": "LZH 1.0 (Build 004)\r\n  - - -\r\n | CrLZH compression\r\n |\r\n |   Usage: LZH [drive:]file [destination-drive:]\r\n\r\n   Options:\r\n     /HELP       Display this help.\r\n     /VER        Display utility identification.\r\n",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ EMPTY C:",
+                "expected": "SQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ C:EMPTY.QQQ C:",
+                "expected": "USQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ BINARY.BIN C:",
+                "expected": "SQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ C:BINARY.BQN C:",
+                "expected": "USQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ R127.BIN C:",
+                "expected": "SQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ C:R127.BQN C:",
+                "expected": "USQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ R128.BIN C:",
+                "expected": "SQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ C:R128.BQN C:",
+                "expected": "USQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ R129.BIN C:",
+                "expected": "SQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ C:R129.BQN C:",
+                "expected": "USQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ EXTENT.BIN C:",
+                "expected": "SQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ C:EXTENT.BQN C:",
+                "expected": "USQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ C:BIG.BIN C:",
+                "expected": "SQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": ":REN /Y C:BIG.BIN SAVED.BIN",
+                "expected": "FILES RENAMED",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ C:BIG.BQN C:",
+                "expected": "USQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ BINARY.BIN C:",
+                "expected": "SQ: output exists; nothing replaced.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ C:BINARY.BQN C:",
+                "expected": "USQ: output exists; nothing replaced.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:SQ C:DEFAULT.TXT",
+                "expected": "SQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ DEFAULT.TQT",
+                "expected": "USQ: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ BAD.DAT C:",
+                "expected": "USQ: checksum mismatch.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:USQ BROKEN.DAT C:",
+                "expected": "USQ: invalid or truncated",
+                "prompt": "A0>"
+              },
+              {
+                "command": "USER 7",
+                "expected": "A7>",
+                "prompt": "A7>"
+              },
+              {
+                "command": "B0:SQ USER.TXT C:",
+                "expected": "SQ: complete.",
+                "prompt": "A7>"
+              },
+              {
+                "command": "B0:USQ C:USER.TQT C:",
+                "expected": "USQ: complete.",
+                "prompt": "A7>"
+              },
+              {
+                "command": "USER 0",
+                "expected": "A0>",
+                "prompt": "A0>"
+              }
+            ],
+            "data_files": {
+              "EMPTY": {
+                "records": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "BINARY.BIN": {
+                "records": 8,
+                "sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+              },
+              "R127.BIN": {
+                "records": 1,
+                "sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62"
+              },
+              "R128.BIN": {
+                "records": 1,
+                "sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5"
+              },
+              "R129.BIN": {
+                "records": 2,
+                "sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e"
+              },
+              "EXTENT.BIN": {
+                "records": 133,
+                "sha256": "5bb1185ea8f120db358e0bfac63a04c0c10fd21dbbde86cdaf8958ad9e41531a"
+              },
+              "BIG.BIN": {
+                "records": 547,
+                "sha256": "2bdcb41f0f88f1b998afbbbdd09595e842a370a2bc0cd3bfc815c4eb179066a5"
+              }
+            },
+            "system_payload_readback": {
+              "reserved_area_unchanged": true,
+              "payloads_unchanged": true,
+              "files": {
+                "README.TXT": "a6f581c7d797e227f3b9296d856439373d2354a4dd9b19a6e226f20f251d6c80",
+                "STARTUP.SUB": "6d90dc33337716f96996318a8da16d6ebed821e88f99227b5adbd9c5b3037806",
+                "DIR.COM": "b82bfeefc12a037c98374c34ea5b8891a9e444ebf5d858443b4bc1b451f1a5e2",
+                "ERA.COM": "a4a9df01f8374b59fb1eb0477294dc454128dc579daff3e32cb5f8370a585cbe",
+                "TYPE.COM": "0ac28c044ff426b3a619d5e0c0c77113f360964c3d162a91a434ffb37eed896d",
+                "REN.COM": "1d8a2adeae813a9bf17b7ca3b6b71bea6c533f3f18ace1c56bb35ebbfc880a17",
+                "VER.COM": "41e0b01a1205698f9feb6a0226744d5cca30f5b9a5d96be417ec017957c5e512",
+                "COPY.COM": "ffc8e59c276324ddaede9c8b2ac39b4d9d398bc9c50466a29c1973f5d10259fc",
+                "CONFIG.COM": "fc2d402b9e93501a02447bc475b2de1b2f236cd9e354a49b3e3053fc8efb8040",
+                "DUP.COM": "a07ef62c7bb16eb9ce22955297c3176d6ec7f880954ce83b91075ebe02ebf54a",
+                "TIME.COM": "eab68816df8abed17290b22059bef156dabb4ec757133b5b61a8822209f662c6",
+                "SYSGEN.COM": "e1256caa7efb393fe9d3505c2bd3478be087f2b374598b87a50b4a5d2f3c4885",
+                "STAT.COM": "852a980fb712bb6815be728657b2ce960cc39b231c3ca5e5145ba5c4a7fd55b6",
+                "SUBMIT.COM": "0bb03ff8fc5329a86e2ef1e32ee62b9720055d0d9210498b3943085c5fb61fc2",
+                "CPX.COM": "0b0e9fdc17d8c32b7cebfd300b3c2388996afd62f836b67b0c2e0cee3f1efe99",
+                "RSX.COM": "c04751ed2653ddc38a5dcc24c8cbce7396abb7b2e9cc1f7ba41b4e375eb9accb",
+                "DISK.FDB": "4dea7bd989580fc13f61e79d47e92466a440799c41b002f4caba65ec8f893c03",
+                "RCP.CPX": "ba3718c0f0c1e554623c6797215cd555708dc2c5e6cddc8e8b24a463491d2e39",
+                "FREHDCLK.RSX": "0fe9c0534f288b6c59f4a7733beca5ae760f175e10fa16d2098af3a1671f9a18",
+                "R3PACK.RSX": "d761fb628e00e1d661642a1b874e918969c48c564751a2a5e0f7060ed6a454ab",
+                "PIP.COM": "dcef9d4d47c23055dda84a94a2a92fa69f3f22e8506d15f674c146c0bfb961f5",
+                "ED.COM": "fe02f1610c04211a38ad28a055cf224f31c5e226dcb3df21585719514d9d2071",
+                "ADM3A.RSX": "b4bdae27acc1d9e155178558921b457e5f0a61727f8be3114e17e35757454ef9",
+                "ADMTST.COM": "42d71b5eae882afe6f171550ce6710681b444bbbe9792c22e7a5beed1ebda5d4",
+                "VT52.RSX": "abbf8661158de109e954df214d0023fc9157524fd2c8c9cf1d617bf936dd496d",
+                "VT52TST.COM": "4c8c7487e735f0b42c860b9e005c1532f111c3cc6369eb60871e586b8669c759",
+                "ANSI.RSX": "79b7fe071575d416aeebe08b01f97ed3ce3b1bc9cd0c8928c6e759d2cad76d30",
+                "ANSITST.COM": "9205f7f8b7dbf937fdf6834ea9497edcb1341f3321f21398c2da7ce259db4d94",
+                "M4SCRN.RSX": "9c210e656b2f3e62a895236d28de9bd989d7554fef7705077485ed68c95e68cd"
+              }
+            },
+            "status": "PASS",
+            "source_system_sha256": "37fceca09cc404488e7b274e8a93c690b024767b225451295a742b87bc87d585",
+            "test_source_sha256": "26c2b1ad40b5202877dfd8fd3fc08a81a3352d0d75bf78a36625e03cd889354e",
+            "utilities_unchanged": true,
+            "evidence": {
+              "screens": [
+                {
+                  "command": "TYPE C:DEFAULT.TXT",
+                  "capture": "trs80-text-1.bin",
+                  "sha256": "02ad329d5f5b522b604d1c6a339339bad0925f98009ee9f35dcccc3894b79228"
+                },
+                {
+                  "command": "RSX LIST",
+                  "capture": "trs80-text-2.bin",
+                  "sha256": "576a59d5d72652b6fd31678b26daa04c503a61fc76e04fdc5264e3ed4b80fce1"
+                },
+                {
+                  "command": "B:SQ X /VER",
+                  "capture": "trs80-text-3.bin",
+                  "sha256": "e9b5f25ddd702562fbba31aa1efffad0d392a6819fcaa2aa55577632eaab00e3"
+                },
+                {
+                  "command": "B:SQ /HELP X",
+                  "capture": "trs80-text-4.bin",
+                  "sha256": "b51eb0d94785eef336222a86aeec830f6063e9ff7ffa681c6e0d8886952e44a5"
+                },
+                {
+                  "command": "B:USQ X /VER",
+                  "capture": "trs80-text-5.bin",
+                  "sha256": "d51d26f702a26c405952cfcd8d601cd9789e3f24f0733042b0ce9f240e30f5a9"
+                },
+                {
+                  "command": "B:USQ /HELP X",
+                  "capture": "trs80-text-6.bin",
+                  "sha256": "a96928dab878c5055fa4a11aa543caeb85f7d174ec1b56c105b5c7732e69056b"
+                },
+                {
+                  "command": "B:CR X /VER",
+                  "capture": "trs80-text-7.bin",
+                  "sha256": "234805507793b565894e195be9f9e1f77f85bb4d6005ea28b672c59ebffbf30b"
+                },
+                {
+                  "command": "B:CR /HELP X",
+                  "capture": "trs80-text-8.bin",
+                  "sha256": "c2eab6eb4852fa5bacd06ac46844b9eadd192e88942fc9190c8fc094f9672eaa"
+                },
+                {
+                  "command": "B:UNCR X /VER",
+                  "capture": "trs80-text-9.bin",
+                  "sha256": "ccc7a92159d1cf6319e96adf690c02a5cbb8ebe629fe3085bd408e18ade94bf6"
+                },
+                {
+                  "command": "B:UNCR /HELP X",
+                  "capture": "trs80-text-10.bin",
+                  "sha256": "6216648a561420171ff6c35540d4fc883c7d18c192f9dcc5f7bd251622b1bea8"
+                },
+                {
+                  "command": "B:LZH X /VER",
+                  "capture": "trs80-text-11.bin",
+                  "sha256": "75efae3b5aef73bca5cec252aa52a126f629f02aa8eaa9cab1653d3bff72e29a"
+                },
+                {
+                  "command": "B:LZH /HELP X",
+                  "capture": "trs80-text-12.bin",
+                  "sha256": "535affdef7917e4083ec938f78ee0504fafa5fd4c6478ff71c009a50a4df38a2"
+                },
+                {
+                  "command": "B:UNLZH X /VER",
+                  "capture": "trs80-text-13.bin",
+                  "sha256": "a7a83f39d0a169060f4c26f346e2a14639163a974d96982e843b9a8c2766f97c"
+                },
+                {
+                  "command": "B:UNLZH /HELP X",
+                  "capture": "trs80-text-14.bin",
+                  "sha256": "bc2dd90ab79ca441532deafb4c01d3355af8b9ba26723215e34ae9cad8517719"
+                },
+                {
+                  "command": "B:LZH /VER /HELP X",
+                  "capture": "trs80-text-15.bin",
+                  "sha256": "d55ebc6631e8ddf757542c5ae8939c6552c529b2c34f994e736b508c691480c1"
+                },
+                {
+                  "command": "B:SQ EMPTY C:",
+                  "capture": "trs80-text-16.bin",
+                  "sha256": "f6a9e2393a14182f061b0ec3446e5aec8b98377679adcc6fe08b43f443a4de6b"
+                },
+                {
+                  "command": "B:USQ C:EMPTY.QQQ C:",
+                  "capture": "trs80-text-17.bin",
+                  "sha256": "f1c657796253f6a2a5c60575ebe8ae96aed708c9249b72bb3450c00a4bba5a08"
+                },
+                {
+                  "command": "B:SQ BINARY.BIN C:",
+                  "capture": "trs80-text-18.bin",
+                  "sha256": "dbbd872733590267902ba21573a7fa860d72aeafff8c1e736cd07451aaffa910"
+                },
+                {
+                  "command": "B:USQ C:BINARY.BQN C:",
+                  "capture": "trs80-text-19.bin",
+                  "sha256": "4a6790c60cc9bd0651f56c1299203e5c37777f4d0786d0b336ed956bebc4eb21"
+                },
+                {
+                  "command": "B:SQ R127.BIN C:",
+                  "capture": "trs80-text-20.bin",
+                  "sha256": "64ecf937af82063f08c09258857fed7b96a573e0678f50fc33e61a33c79e924d"
+                },
+                {
+                  "command": "B:USQ C:R127.BQN C:",
+                  "capture": "trs80-text-21.bin",
+                  "sha256": "f5c31d051b1bdca8e97d81dc851333d77aace3dc7853bb45f4380941bb7d8cdb"
+                },
+                {
+                  "command": "B:SQ R128.BIN C:",
+                  "capture": "trs80-text-22.bin",
+                  "sha256": "080824b1662d7c6cc89afa1b7b9e8ecbbaf919f2fd46a644b4f99690ad3bc2ab"
+                },
+                {
+                  "command": "B:USQ C:R128.BQN C:",
+                  "capture": "trs80-text-23.bin",
+                  "sha256": "f5c847d08811a0d18f19fbb274224b19d630806baf472d3ead741881da50cf24"
+                },
+                {
+                  "command": "B:SQ R129.BIN C:",
+                  "capture": "trs80-text-24.bin",
+                  "sha256": "83d9701caccf8773224e54856caf18f135a66d96965e44e14d87bda28b947d59"
+                },
+                {
+                  "command": "B:USQ C:R129.BQN C:",
+                  "capture": "trs80-text-25.bin",
+                  "sha256": "b1bd5e0242ed107801658c48d2453c0bee22bc8e3a307f2138de4c1a440635ae"
+                },
+                {
+                  "command": "B:SQ EXTENT.BIN C:",
+                  "capture": "trs80-text-26.bin",
+                  "sha256": "338dd9c3be622e767acbe8e44e8618599039ff6ab71ad576906fa887b12a36ec"
+                },
+                {
+                  "command": "B:USQ C:EXTENT.BQN C:",
+                  "capture": "trs80-text-27.bin",
+                  "sha256": "ea96de6b9a88da3d358ff25610e283ab8d746f0f096a0cc4d8885dc8374083e8"
+                },
+                {
+                  "command": "B:SQ C:BIG.BIN C:",
+                  "capture": "trs80-text-28.bin",
+                  "sha256": "1c2b5c6ec7e52071ed7d0d7da282591701d33e6364acb68047efa25e066044c5"
+                },
+                {
+                  "command": ":REN /Y C:BIG.BIN SAVED.BIN",
+                  "capture": "trs80-text-29.bin",
+                  "sha256": "41ced2f2f189c35970421355aa33c3aca3cf86830cfcf311d1ebdc41b510049c"
+                },
+                {
+                  "command": "B:USQ C:BIG.BQN C:",
+                  "capture": "trs80-text-30.bin",
+                  "sha256": "b3f78862f20f14f66508cd4350e828ecb9fc7b48ce3e171b1008685438904ac6"
+                },
+                {
+                  "command": "B:SQ BINARY.BIN C:",
+                  "capture": "trs80-text-31.bin",
+                  "sha256": "f2b9634a75a7351f4fc0b59e66211604bae234b9cfd1a6fdac3a84608a53b9ce"
+                },
+                {
+                  "command": "B:USQ C:BINARY.BQN C:",
+                  "capture": "trs80-text-32.bin",
+                  "sha256": "f47c65fba7e4815f6a8f583016af2358f7b1a77a1c0e44bb5dec45150630862d"
+                },
+                {
+                  "command": "B:SQ C:DEFAULT.TXT",
+                  "capture": "trs80-text-33.bin",
+                  "sha256": "96a2e085ca238e90b86972252aeef0a4e36015af4210b954cf4bc4a7e2ced97b"
+                },
+                {
+                  "command": "B:USQ DEFAULT.TQT",
+                  "capture": "trs80-text-34.bin",
+                  "sha256": "31993ee376313ead46f74830f27fc58f52e706c121a24f44a31af7c51ad18932"
+                },
+                {
+                  "command": "B:USQ BAD.DAT C:",
+                  "capture": "trs80-text-35.bin",
+                  "sha256": "8bf943250949f888538e85106be6d4f492f7a702c107bb6a57662475e85ea09e"
+                },
+                {
+                  "command": "B:USQ BROKEN.DAT C:",
+                  "capture": "trs80-text-36.bin",
+                  "sha256": "03ad97ffcde38484cfd982602b34e947cfd83a152f33cdfbd5f46bd688e719dc"
+                },
+                {
+                  "command": "USER 7",
+                  "capture": "trs80-text-37.bin",
+                  "sha256": "6bca7d95d33ddf92e71fd8f54661f895fad03e08f5228c612a92eac6831d4064"
+                },
+                {
+                  "command": "B0:SQ USER.TXT C:",
+                  "capture": "trs80-text-38.bin",
+                  "sha256": "3dc654b362e92b615b01e832336248c96ed148198ce04d2410f4d96855d2e2a4"
+                },
+                {
+                  "command": "B0:USQ C:USER.TQT C:",
+                  "capture": "trs80-text-39.bin",
+                  "sha256": "228186a9e4dd86ef315aac0135c740a11472ef2754bf1e004853f9e878350146"
+                },
+                {
+                  "command": "USER 0",
+                  "capture": "trs80-text-40.bin",
+                  "sha256": "3847d0b2aee2016ca9d83313c51e9d397cd61e1c74e6155612f483d8c5d1afee"
+                }
+              ],
+              "invocation_sha256": "38c9c69dd6ea75ea971ef66d9abbfedbd20307fc46e9559315062da9375c53b6"
+            },
+            "private_input_sha256": {
+              "a": "f7b8f091f42aae8d767c0c460ebf1c89d6ae85424129ace36d791418c8b3ff01",
+              "b": "6c5b3aa87c559ad82e534dea57c6c04c8bf6f966d74d16bb36a661b51653e9a4",
+              "c": "ef009707541475bedfa76f84826aecb94717c3229a3701afb9fcd3a8cfc5eec1"
+            },
+            "output_a_sha256": "4189b94e3164878e647308ffaac67b2b47c665f058dcf34903079c9638f85a1a",
+            "output_c_sha256": "aa8824173833e3c325a161eaa72d2602e65f583754b06c3bb99e69f77dc13307"
+          },
+          "CR": {
+            "round_trips": 9,
+            "original_files_preserved": true,
+            "logged_drive_default": "PASS",
+            "current_user_7": "PASS",
+            "collision_refusals": "PASS",
+            "checksum_and_malformed_refusals": "PASS",
+            "owned_temporary_cleanup": "PASS",
+            "preexisting_temporaries_preserved": true,
+            "filesystem": "PASS",
+            "commands": [
+              {
+                "command": "B:CR EMPTY C:",
+                "expected": "CR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR C:EMPTY.ZZZ C:",
+                "expected": "UNCR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR BINARY.BIN C:",
+                "expected": "CR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR C:BINARY.BZN C:",
+                "expected": "UNCR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR R127.BIN C:",
+                "expected": "CR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR C:R127.BZN C:",
+                "expected": "UNCR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR R128.BIN C:",
+                "expected": "CR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR C:R128.BZN C:",
+                "expected": "UNCR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR R129.BIN C:",
+                "expected": "CR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR C:R129.BZN C:",
+                "expected": "UNCR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR EXTENT.BIN C:",
+                "expected": "CR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR C:EXTENT.BZN C:",
+                "expected": "UNCR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR BIG.BIN C:",
+                "expected": "CR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR C:BIG.BZN C:",
+                "expected": "UNCR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR BINARY.BIN C:",
+                "expected": "CR: output exists; nothing replaced.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR C:BINARY.BZN C:",
+                "expected": "UNCR: output exists; nothing replaced.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:CR C:DEFAULT.TXT",
+                "expected": "CR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR DEFAULT.TZT",
+                "expected": "UNCR: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR BAD.DAT C:",
+                "expected": "UNCR: checksum mismatch.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNCR BROKEN.DAT C:",
+                "expected": "UNCR: invalid or truncated",
+                "prompt": "A0>"
+              },
+              {
+                "command": "USER 7",
+                "expected": "A7>",
+                "prompt": "A7>"
+              },
+              {
+                "command": "B0:CR USER.TXT C:",
+                "expected": "CR: complete.",
+                "prompt": "A7>"
+              },
+              {
+                "command": "B0:UNCR C:USER.TZT C:",
+                "expected": "UNCR: complete.",
+                "prompt": "A7>"
+              },
+              {
+                "command": "USER 0",
+                "expected": "A0>",
+                "prompt": "A0>"
+              }
+            ],
+            "data_files": {
+              "EMPTY": {
+                "records": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "BINARY.BIN": {
+                "records": 8,
+                "sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+              },
+              "R127.BIN": {
+                "records": 1,
+                "sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62"
+              },
+              "R128.BIN": {
+                "records": 1,
+                "sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5"
+              },
+              "R129.BIN": {
+                "records": 2,
+                "sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e"
+              },
+              "EXTENT.BIN": {
+                "records": 133,
+                "sha256": "5bb1185ea8f120db358e0bfac63a04c0c10fd21dbbde86cdaf8958ad9e41531a"
+              },
+              "BIG.BIN": {
+                "records": 547,
+                "sha256": "2bdcb41f0f88f1b998afbbbdd09595e842a370a2bc0cd3bfc815c4eb179066a5"
+              }
+            },
+            "system_payload_readback": {
+              "reserved_area_unchanged": true,
+              "payloads_unchanged": true,
+              "files": {
+                "README.TXT": "a6f581c7d797e227f3b9296d856439373d2354a4dd9b19a6e226f20f251d6c80",
+                "STARTUP.SUB": "6d90dc33337716f96996318a8da16d6ebed821e88f99227b5adbd9c5b3037806",
+                "DIR.COM": "b82bfeefc12a037c98374c34ea5b8891a9e444ebf5d858443b4bc1b451f1a5e2",
+                "ERA.COM": "a4a9df01f8374b59fb1eb0477294dc454128dc579daff3e32cb5f8370a585cbe",
+                "TYPE.COM": "0ac28c044ff426b3a619d5e0c0c77113f360964c3d162a91a434ffb37eed896d",
+                "REN.COM": "1d8a2adeae813a9bf17b7ca3b6b71bea6c533f3f18ace1c56bb35ebbfc880a17",
+                "VER.COM": "41e0b01a1205698f9feb6a0226744d5cca30f5b9a5d96be417ec017957c5e512",
+                "COPY.COM": "ffc8e59c276324ddaede9c8b2ac39b4d9d398bc9c50466a29c1973f5d10259fc",
+                "CONFIG.COM": "fc2d402b9e93501a02447bc475b2de1b2f236cd9e354a49b3e3053fc8efb8040",
+                "DUP.COM": "a07ef62c7bb16eb9ce22955297c3176d6ec7f880954ce83b91075ebe02ebf54a",
+                "TIME.COM": "eab68816df8abed17290b22059bef156dabb4ec757133b5b61a8822209f662c6",
+                "SYSGEN.COM": "e1256caa7efb393fe9d3505c2bd3478be087f2b374598b87a50b4a5d2f3c4885",
+                "STAT.COM": "852a980fb712bb6815be728657b2ce960cc39b231c3ca5e5145ba5c4a7fd55b6",
+                "SUBMIT.COM": "0bb03ff8fc5329a86e2ef1e32ee62b9720055d0d9210498b3943085c5fb61fc2",
+                "CPX.COM": "0b0e9fdc17d8c32b7cebfd300b3c2388996afd62f836b67b0c2e0cee3f1efe99",
+                "RSX.COM": "c04751ed2653ddc38a5dcc24c8cbce7396abb7b2e9cc1f7ba41b4e375eb9accb",
+                "DISK.FDB": "4dea7bd989580fc13f61e79d47e92466a440799c41b002f4caba65ec8f893c03",
+                "RCP.CPX": "ba3718c0f0c1e554623c6797215cd555708dc2c5e6cddc8e8b24a463491d2e39",
+                "FREHDCLK.RSX": "0fe9c0534f288b6c59f4a7733beca5ae760f175e10fa16d2098af3a1671f9a18",
+                "R3PACK.RSX": "d761fb628e00e1d661642a1b874e918969c48c564751a2a5e0f7060ed6a454ab",
+                "PIP.COM": "dcef9d4d47c23055dda84a94a2a92fa69f3f22e8506d15f674c146c0bfb961f5",
+                "ED.COM": "fe02f1610c04211a38ad28a055cf224f31c5e226dcb3df21585719514d9d2071",
+                "ADM3A.RSX": "b4bdae27acc1d9e155178558921b457e5f0a61727f8be3114e17e35757454ef9",
+                "ADMTST.COM": "42d71b5eae882afe6f171550ce6710681b444bbbe9792c22e7a5beed1ebda5d4",
+                "VT52.RSX": "abbf8661158de109e954df214d0023fc9157524fd2c8c9cf1d617bf936dd496d",
+                "VT52TST.COM": "4c8c7487e735f0b42c860b9e005c1532f111c3cc6369eb60871e586b8669c759",
+                "ANSI.RSX": "79b7fe071575d416aeebe08b01f97ed3ce3b1bc9cd0c8928c6e759d2cad76d30",
+                "ANSITST.COM": "9205f7f8b7dbf937fdf6834ea9497edcb1341f3321f21398c2da7ce259db4d94",
+                "M4SCRN.RSX": "9c210e656b2f3e62a895236d28de9bd989d7554fef7705077485ed68c95e68cd"
+              }
+            },
+            "status": "PASS",
+            "source_system_sha256": "37fceca09cc404488e7b274e8a93c690b024767b225451295a742b87bc87d585",
+            "test_source_sha256": "26c2b1ad40b5202877dfd8fd3fc08a81a3352d0d75bf78a36625e03cd889354e",
+            "utilities_unchanged": true,
+            "evidence": {
+              "screens": [
+                {
+                  "command": "B:CR EMPTY C:",
+                  "capture": "trs80-text-1.bin",
+                  "sha256": "8c3fd105d3e66bdf52b859c8c74bac59bc128b5ca81e35a7cffe82ba4120ec84"
+                },
+                {
+                  "command": "B:UNCR C:EMPTY.ZZZ C:",
+                  "capture": "trs80-text-2.bin",
+                  "sha256": "0d73d100a1873a2098cf4f3d0c1c34efa9fe99d047c45d1345880101fb434755"
+                },
+                {
+                  "command": "B:CR BINARY.BIN C:",
+                  "capture": "trs80-text-3.bin",
+                  "sha256": "34c688af091d006e558d2d9136017f27cafd0d10bfab892d0febc4a747d24c4c"
+                },
+                {
+                  "command": "B:UNCR C:BINARY.BZN C:",
+                  "capture": "trs80-text-4.bin",
+                  "sha256": "5b107dd74bca86bb056ac875598dabf9d40c66a60a9a6646e100ac3c0f6dc597"
+                },
+                {
+                  "command": "B:CR R127.BIN C:",
+                  "capture": "trs80-text-5.bin",
+                  "sha256": "d142d346620e4e959d0c1ebb6ffb11bf22e00090e48adf259641f73612979ba0"
+                },
+                {
+                  "command": "B:UNCR C:R127.BZN C:",
+                  "capture": "trs80-text-6.bin",
+                  "sha256": "4c6cc1844214de020e7b11ba0f97dc6f49ea5fbf397c4c2b76c80b149d07b361"
+                },
+                {
+                  "command": "B:CR R128.BIN C:",
+                  "capture": "trs80-text-7.bin",
+                  "sha256": "09283972562e899f0421cf1c3508d224ed4b8496af6ad9a5ce80de2c69956ac2"
+                },
+                {
+                  "command": "B:UNCR C:R128.BZN C:",
+                  "capture": "trs80-text-8.bin",
+                  "sha256": "8477cdb9679bb561ac337be77a0ecbffea6abc992a5fbbbd0987238a87fe1794"
+                },
+                {
+                  "command": "B:CR R129.BIN C:",
+                  "capture": "trs80-text-9.bin",
+                  "sha256": "61fc368bb29e664a5894716622095ea4085daf61898776ffc50cbf741ea230d8"
+                },
+                {
+                  "command": "B:UNCR C:R129.BZN C:",
+                  "capture": "trs80-text-10.bin",
+                  "sha256": "1cc6bb25f6db282d87840ba6078e2f03270d565f99a9418431f0d2e4aa6481bd"
+                },
+                {
+                  "command": "B:CR EXTENT.BIN C:",
+                  "capture": "trs80-text-11.bin",
+                  "sha256": "e351c5b6e9acacfe28da3e959dc042a68f10bcb9b320ce3b1a06670c34cbfed7"
+                },
+                {
+                  "command": "B:UNCR C:EXTENT.BZN C:",
+                  "capture": "trs80-text-12.bin",
+                  "sha256": "60972362c8b6716ca9d190fe880dbe7a13453eda99f3511fd162e329bd4e6baa"
+                },
+                {
+                  "command": "B:CR BIG.BIN C:",
+                  "capture": "trs80-text-13.bin",
+                  "sha256": "a43a97f349004dde02384fa021fbd19849c03fe911c93cba16909de3bd1c9e53"
+                },
+                {
+                  "command": "B:UNCR C:BIG.BZN C:",
+                  "capture": "trs80-text-14.bin",
+                  "sha256": "f81dc3216b112deab05f8634936e8b74f2f033f5df63de3083f8263d3bbd4fbe"
+                },
+                {
+                  "command": "B:CR BINARY.BIN C:",
+                  "capture": "trs80-text-15.bin",
+                  "sha256": "9bac8a6cfd6bfad8e0f11c3006650d2b0d1dc6a701d16f1637a1961b957a4040"
+                },
+                {
+                  "command": "B:UNCR C:BINARY.BZN C:",
+                  "capture": "trs80-text-16.bin",
+                  "sha256": "5da260948c81e76b7823d8fe813f31a9f23aeea42813a58897821940bc34600f"
+                },
+                {
+                  "command": "B:CR C:DEFAULT.TXT",
+                  "capture": "trs80-text-17.bin",
+                  "sha256": "aa8205b2cfb91eeeea61e7224bb0d9c7b3a4e56d368984e82941d0787f40fa2e"
+                },
+                {
+                  "command": "B:UNCR DEFAULT.TZT",
+                  "capture": "trs80-text-18.bin",
+                  "sha256": "a0c5691c33119879a0fa3f37859eaf40ea83e6c4006cee07cbe1ee3b82f72ba9"
+                },
+                {
+                  "command": "B:UNCR BAD.DAT C:",
+                  "capture": "trs80-text-19.bin",
+                  "sha256": "c3c9d4ec57ffd7b73ebc4ba4800d18fa010d165587c8fed618b8ff7b31c9589b"
+                },
+                {
+                  "command": "B:UNCR BROKEN.DAT C:",
+                  "capture": "trs80-text-20.bin",
+                  "sha256": "116015f95944eea576d1056b056bd7cd2afb40579d8945fa1bfbdf31e2dfe05e"
+                },
+                {
+                  "command": "USER 7",
+                  "capture": "trs80-text-21.bin",
+                  "sha256": "6bca7d95d33ddf92e71fd8f54661f895fad03e08f5228c612a92eac6831d4064"
+                },
+                {
+                  "command": "B0:CR USER.TXT C:",
+                  "capture": "trs80-text-22.bin",
+                  "sha256": "b37cded6ad31dc9f5d1bd38dacd71b8beba39b87aa731b1ef35d3efe660cf941"
+                },
+                {
+                  "command": "B0:UNCR C:USER.TZT C:",
+                  "capture": "trs80-text-23.bin",
+                  "sha256": "e8deafe8ff1fca3c37798a919cdd29d5718442261dc78c457441ba3a378b1b14"
+                },
+                {
+                  "command": "USER 0",
+                  "capture": "trs80-text-24.bin",
+                  "sha256": "3847d0b2aee2016ca9d83313c51e9d397cd61e1c74e6155612f483d8c5d1afee"
+                }
+              ],
+              "invocation_sha256": "75dd600b55c145512b4c48f1e7e9726bcc0c73fd826693f7967e49d0cc7e186d"
+            },
+            "private_input_sha256": {
+              "a": "f43fa211dc35bec7385590de48fb9b150f3c7ce9ce3db05f50cceda9e976f6a6",
+              "b": "6c5b3aa87c559ad82e534dea57c6c04c8bf6f966d74d16bb36a661b51653e9a4",
+              "c": "d6067fdf0787d69b804eb1840a298b822d60e40c1dc3e8fd92ef370ab41718fe"
+            },
+            "output_a_sha256": "de8e3b8f27a2e0caf7473be27428a69f71f7acc2687f33aef683e6a155d44c15",
+            "output_c_sha256": "d891c024472c3ae71e64c354dd96b35f9b737c2caf95c715091ad0dbbe4885dc"
+          },
+          "LZH": {
+            "round_trips": 9,
+            "original_files_preserved": true,
+            "logged_drive_default": "PASS",
+            "current_user_7": "PASS",
+            "collision_refusals": "PASS",
+            "checksum_and_malformed_refusals": "PASS",
+            "owned_temporary_cleanup": "PASS",
+            "preexisting_temporaries_preserved": true,
+            "filesystem": "PASS",
+            "commands": [
+              {
+                "command": "B:LZH EMPTY C:",
+                "expected": "LZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH C:EMPTY.YYY C:",
+                "expected": "UNLZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH BINARY.BIN C:",
+                "expected": "LZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH C:BINARY.BYN C:",
+                "expected": "UNLZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH R127.BIN C:",
+                "expected": "LZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH C:R127.BYN C:",
+                "expected": "UNLZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH R128.BIN C:",
+                "expected": "LZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH C:R128.BYN C:",
+                "expected": "UNLZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH R129.BIN C:",
+                "expected": "LZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH C:R129.BYN C:",
+                "expected": "UNLZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH EXTENT.BIN C:",
+                "expected": "LZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH C:EXTENT.BYN C:",
+                "expected": "UNLZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH BIG.BIN C:",
+                "expected": "LZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH C:BIG.BYN C:",
+                "expected": "UNLZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH BINARY.BIN C:",
+                "expected": "LZH: output exists; nothing replaced.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH C:BINARY.BYN C:",
+                "expected": "UNLZH: output exists; nothing replaced.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:LZH C:DEFAULT.TXT",
+                "expected": "LZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH DEFAULT.TYT",
+                "expected": "UNLZH: complete.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH BAD.DAT C:",
+                "expected": "UNLZH: checksum mismatch.",
+                "prompt": "A0>"
+              },
+              {
+                "command": "B:UNLZH BROKEN.DAT C:",
+                "expected": "UNLZH: invalid or truncated",
+                "prompt": "A0>"
+              },
+              {
+                "command": "USER 7",
+                "expected": "A7>",
+                "prompt": "A7>"
+              },
+              {
+                "command": "B0:LZH USER.TXT C:",
+                "expected": "LZH: complete.",
+                "prompt": "A7>"
+              },
+              {
+                "command": "B0:UNLZH C:USER.TYT C:",
+                "expected": "UNLZH: complete.",
+                "prompt": "A7>"
+              },
+              {
+                "command": "USER 0",
+                "expected": "A0>",
+                "prompt": "A0>"
+              }
+            ],
+            "data_files": {
+              "EMPTY": {
+                "records": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              "BINARY.BIN": {
+                "records": 8,
+                "sha256": "785b0751fc2c53dc14a4ce3d800e69ef9ce1009eb327ccf458afe09c242c26c9"
+              },
+              "R127.BIN": {
+                "records": 1,
+                "sha256": "69c1925db863dffbc35e8d5460d1ba1529d3393a6739a30fce715a913ae44a62"
+              },
+              "R128.BIN": {
+                "records": 1,
+                "sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5"
+              },
+              "R129.BIN": {
+                "records": 2,
+                "sha256": "4fc49e433550028e35f0c1a48288f6f9d5d345f077e144e1253e5543ae2ee92e"
+              },
+              "EXTENT.BIN": {
+                "records": 133,
+                "sha256": "5bb1185ea8f120db358e0bfac63a04c0c10fd21dbbde86cdaf8958ad9e41531a"
+              },
+              "BIG.BIN": {
+                "records": 547,
+                "sha256": "2bdcb41f0f88f1b998afbbbdd09595e842a370a2bc0cd3bfc815c4eb179066a5"
+              }
+            },
+            "system_payload_readback": {
+              "reserved_area_unchanged": true,
+              "payloads_unchanged": true,
+              "files": {
+                "README.TXT": "a6f581c7d797e227f3b9296d856439373d2354a4dd9b19a6e226f20f251d6c80",
+                "STARTUP.SUB": "6d90dc33337716f96996318a8da16d6ebed821e88f99227b5adbd9c5b3037806",
+                "DIR.COM": "b82bfeefc12a037c98374c34ea5b8891a9e444ebf5d858443b4bc1b451f1a5e2",
+                "ERA.COM": "a4a9df01f8374b59fb1eb0477294dc454128dc579daff3e32cb5f8370a585cbe",
+                "TYPE.COM": "0ac28c044ff426b3a619d5e0c0c77113f360964c3d162a91a434ffb37eed896d",
+                "REN.COM": "1d8a2adeae813a9bf17b7ca3b6b71bea6c533f3f18ace1c56bb35ebbfc880a17",
+                "VER.COM": "41e0b01a1205698f9feb6a0226744d5cca30f5b9a5d96be417ec017957c5e512",
+                "COPY.COM": "ffc8e59c276324ddaede9c8b2ac39b4d9d398bc9c50466a29c1973f5d10259fc",
+                "CONFIG.COM": "fc2d402b9e93501a02447bc475b2de1b2f236cd9e354a49b3e3053fc8efb8040",
+                "DUP.COM": "a07ef62c7bb16eb9ce22955297c3176d6ec7f880954ce83b91075ebe02ebf54a",
+                "TIME.COM": "eab68816df8abed17290b22059bef156dabb4ec757133b5b61a8822209f662c6",
+                "SYSGEN.COM": "e1256caa7efb393fe9d3505c2bd3478be087f2b374598b87a50b4a5d2f3c4885",
+                "STAT.COM": "852a980fb712bb6815be728657b2ce960cc39b231c3ca5e5145ba5c4a7fd55b6",
+                "SUBMIT.COM": "0bb03ff8fc5329a86e2ef1e32ee62b9720055d0d9210498b3943085c5fb61fc2",
+                "CPX.COM": "0b0e9fdc17d8c32b7cebfd300b3c2388996afd62f836b67b0c2e0cee3f1efe99",
+                "RSX.COM": "c04751ed2653ddc38a5dcc24c8cbce7396abb7b2e9cc1f7ba41b4e375eb9accb",
+                "DISK.FDB": "4dea7bd989580fc13f61e79d47e92466a440799c41b002f4caba65ec8f893c03",
+                "RCP.CPX": "ba3718c0f0c1e554623c6797215cd555708dc2c5e6cddc8e8b24a463491d2e39",
+                "FREHDCLK.RSX": "0fe9c0534f288b6c59f4a7733beca5ae760f175e10fa16d2098af3a1671f9a18",
+                "R3PACK.RSX": "d761fb628e00e1d661642a1b874e918969c48c564751a2a5e0f7060ed6a454ab",
+                "PIP.COM": "dcef9d4d47c23055dda84a94a2a92fa69f3f22e8506d15f674c146c0bfb961f5",
+                "ED.COM": "fe02f1610c04211a38ad28a055cf224f31c5e226dcb3df21585719514d9d2071",
+                "ADM3A.RSX": "b4bdae27acc1d9e155178558921b457e5f0a61727f8be3114e17e35757454ef9",
+                "ADMTST.COM": "42d71b5eae882afe6f171550ce6710681b444bbbe9792c22e7a5beed1ebda5d4",
+                "VT52.RSX": "abbf8661158de109e954df214d0023fc9157524fd2c8c9cf1d617bf936dd496d",
+                "VT52TST.COM": "4c8c7487e735f0b42c860b9e005c1532f111c3cc6369eb60871e586b8669c759",
+                "ANSI.RSX": "79b7fe071575d416aeebe08b01f97ed3ce3b1bc9cd0c8928c6e759d2cad76d30",
+                "ANSITST.COM": "9205f7f8b7dbf937fdf6834ea9497edcb1341f3321f21398c2da7ce259db4d94",
+                "M4SCRN.RSX": "9c210e656b2f3e62a895236d28de9bd989d7554fef7705077485ed68c95e68cd"
+              }
+            },
+            "status": "PASS",
+            "source_system_sha256": "37fceca09cc404488e7b274e8a93c690b024767b225451295a742b87bc87d585",
+            "test_source_sha256": "26c2b1ad40b5202877dfd8fd3fc08a81a3352d0d75bf78a36625e03cd889354e",
+            "utilities_unchanged": true,
+            "evidence": {
+              "screens": [
+                {
+                  "command": "B:LZH EMPTY C:",
+                  "capture": "trs80-text-1.bin",
+                  "sha256": "44438397eb95feb1b12aa1b8318861a94bcff9b641bb29d06822374fe8533b8b"
+                },
+                {
+                  "command": "B:UNLZH C:EMPTY.YYY C:",
+                  "capture": "trs80-text-2.bin",
+                  "sha256": "5edb422237fd156aa5afd49a908f092cf6a47830be4aa87d9858aff1aff3bd49"
+                },
+                {
+                  "command": "B:LZH BINARY.BIN C:",
+                  "capture": "trs80-text-3.bin",
+                  "sha256": "966e6d2f5d93d43ee65e64825ba77bc0683822bb8a27e3a6463dfa06da19345b"
+                },
+                {
+                  "command": "B:UNLZH C:BINARY.BYN C:",
+                  "capture": "trs80-text-4.bin",
+                  "sha256": "be35ecb6c1ac3b8a4862e54fda24106fe66fb247c73328b12285df2e671659cd"
+                },
+                {
+                  "command": "B:LZH R127.BIN C:",
+                  "capture": "trs80-text-5.bin",
+                  "sha256": "f81cf4c42ca514115205dec9b83e8e44d279eea260b80b043b3d32883fcdc5ab"
+                },
+                {
+                  "command": "B:UNLZH C:R127.BYN C:",
+                  "capture": "trs80-text-6.bin",
+                  "sha256": "546676b63c4aacdbe8f0d9dedffe5a0abbee6e50ab7217526f8c99365f97769f"
+                },
+                {
+                  "command": "B:LZH R128.BIN C:",
+                  "capture": "trs80-text-7.bin",
+                  "sha256": "f0f992e371e03c75b1b6e3654057431fa25ab4479354d324b54bd7e4292ef5aa"
+                },
+                {
+                  "command": "B:UNLZH C:R128.BYN C:",
+                  "capture": "trs80-text-8.bin",
+                  "sha256": "6df04e527447a3b5af3048001eed177f134a4d1e3f3ccc0b0c97a54bf268805e"
+                },
+                {
+                  "command": "B:LZH R129.BIN C:",
+                  "capture": "trs80-text-9.bin",
+                  "sha256": "650ce9c3b705bbb9a3c136da95e1c0c2b3f1c0a4d1bee89b2ba1fced7903f5bf"
+                },
+                {
+                  "command": "B:UNLZH C:R129.BYN C:",
+                  "capture": "trs80-text-10.bin",
+                  "sha256": "06f61d97a9ef4ac0cdb61f89fa2af995b86668f427c3021c904474776f1ec2b9"
+                },
+                {
+                  "command": "B:LZH EXTENT.BIN C:",
+                  "capture": "trs80-text-11.bin",
+                  "sha256": "664e9fdee400c0210e55acfeff6e2fc92c90170bedcbe6e633475043d32c4ae7"
+                },
+                {
+                  "command": "B:UNLZH C:EXTENT.BYN C:",
+                  "capture": "trs80-text-12.bin",
+                  "sha256": "c640f27c3dbc1207297b7bbcb4e8e287db30db422723c0fbf7b023d677d891c7"
+                },
+                {
+                  "command": "B:LZH BIG.BIN C:",
+                  "capture": "trs80-text-13.bin",
+                  "sha256": "b296221b240893cc4b8881ffbf1f317646afd32e9a20492ac9a835007f59e4d7"
+                },
+                {
+                  "command": "B:UNLZH C:BIG.BYN C:",
+                  "capture": "trs80-text-14.bin",
+                  "sha256": "0515fc799b33ff917a2a041c60c6fa4e6442524e754f0727f45df8d0404240d8"
+                },
+                {
+                  "command": "B:LZH BINARY.BIN C:",
+                  "capture": "trs80-text-15.bin",
+                  "sha256": "91853a8044b8a3c74b25085b9b2ffb75d5f1fdc8086177fd619a14c2f40e6623"
+                },
+                {
+                  "command": "B:UNLZH C:BINARY.BYN C:",
+                  "capture": "trs80-text-16.bin",
+                  "sha256": "b74fd6b4706d537f722f5953612007b1c6583cf9864ccfb838061d2992338aec"
+                },
+                {
+                  "command": "B:LZH C:DEFAULT.TXT",
+                  "capture": "trs80-text-17.bin",
+                  "sha256": "81e474d16b67690289c16ed1837f38124c5b2e403a0105653716a12b2048bacf"
+                },
+                {
+                  "command": "B:UNLZH DEFAULT.TYT",
+                  "capture": "trs80-text-18.bin",
+                  "sha256": "03dd5d9161fb9627156052aedc4988f953248bf4a52d97f87dae7753ff5aaa19"
+                },
+                {
+                  "command": "B:UNLZH BAD.DAT C:",
+                  "capture": "trs80-text-19.bin",
+                  "sha256": "2be9a444cd472a8e50d84d162d0c5d667f3a01e8858be445b0bde7c12e17f853"
+                },
+                {
+                  "command": "B:UNLZH BROKEN.DAT C:",
+                  "capture": "trs80-text-20.bin",
+                  "sha256": "05399a97144ad565e7e6d87d3b2b9bdaeaa80c5b48fd80992b5cd702d258d58d"
+                },
+                {
+                  "command": "USER 7",
+                  "capture": "trs80-text-21.bin",
+                  "sha256": "6bca7d95d33ddf92e71fd8f54661f895fad03e08f5228c612a92eac6831d4064"
+                },
+                {
+                  "command": "B0:LZH USER.TXT C:",
+                  "capture": "trs80-text-22.bin",
+                  "sha256": "b39e5c91a12580f5093b942d399c5d6e82a5bddfd8ef9161ae08cacdd8be1754"
+                },
+                {
+                  "command": "B0:UNLZH C:USER.TYT C:",
+                  "capture": "trs80-text-23.bin",
+                  "sha256": "a166151c8b28ee25dc00229a4c8c1fb8d61f139922ab36faf7424dde0b58c7ee"
+                },
+                {
+                  "command": "USER 0",
+                  "capture": "trs80-text-24.bin",
+                  "sha256": "3847d0b2aee2016ca9d83313c51e9d397cd61e1c74e6155612f483d8c5d1afee"
+                }
+              ],
+              "invocation_sha256": "4fefe452b0edd540ad64a005bcf1cd35bae05452198ae41d9ec9e8293801fd7e"
+            },
+            "private_input_sha256": {
+              "a": "df0dd9432a15f66b0fc079d8dde2f02e99ad4956b4289f53e20ee218300bd18b",
+              "b": "6c5b3aa87c559ad82e534dea57c6c04c8bf6f966d74d16bb36a661b51653e9a4",
+              "c": "5d3289f2d892f1f433ff2f44b4d019242e8a195d339523b93b2a5a14ff9ec6a9"
+            },
+            "output_a_sha256": "a1cd9552a2bedddd6d7a634d66ff4c2b62f29a137ced777d3622d5775fa65ee4",
+            "output_c_sha256": "c78356e79e6873e6db07864d4ac8c00ce89679cbf43ee7b44572dd4ce9ad9258"
+          }
+        },
+        "system_image": "BetterCPM-Distribution-trs80gp-80T-DS-System.dmk",
+        "system_sha256": "37fceca09cc404488e7b274e8a93c690b024767b225451295a742b87bc87d585",
+        "utilities_image": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+        "utilities_sha256": "95f8af912173f428f47d434269da65d7778933410b30986d14c943a2285392c1",
+        "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+        "source_images_unchanged": true,
+        "utilities_unchanged": true,
+        "system_build_report_sha256": "a2af7f4d9a0dcea78356d0608a0700f4e48c4cf417de3a4c1e9a5f771f88aa65"
+      }
+    }
+  },
+  "kernel_correction": {
+    "bdos_api": "1.2",
+    "implementation": "1.10",
+    "bdos_bytes": 3436,
+    "bdos_sha256": "588f23def7a09f37dd4675fc09f8c3cda68142da43efcf4100906efff736aacc",
+    "extensions_bytes": 425,
+    "native_parity": {
+      "bdos": "588f23def7a09f37dd4675fc09f8c3cda68142da43efcf4100906efff736aacc",
+      "extensions": "bacadd175cd27986b8509db69ac0b7d90bd7d27910e2f9c44824c0fe07b9d38b"
+    },
+    "make_cases": 225,
+    "sequential_boundary_cases": 36,
+    "random_position_cases": 12,
+    "extent_full_cases": 12,
+    "grouped_activation_cases": 480,
+    "original_core_boundary_regression": "EXPECTED failure; retained log",
+    "private_stack_reservation": 40,
+    "focused_extent_stack_high_water": 32,
+    "rom_packed_bytes": 7939,
+    "rom_spare_bytes": 509,
+    "rom_address_words": 790,
+    "config_overlay_words": 105,
+    "unexplained_or_unresolved_words": 0,
+    "live_protected_xip_acceptance": "not claimed"
+  }
+}

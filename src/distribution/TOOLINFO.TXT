@@ -1,0 +1,21 @@
+UTILITIES NATIVE DEVELOPMENT TOOLS
+
+ZSM4 4.7 - Hector Peraza and prior contributors.
+GNU GPL version 2 or later. Full terms: ZSM4COPY.TXT.
+The distribution includes ZSM4-SOURCE.tar.gz alongside the disk images.
+Retain this complete corresponding-source companion when redistributing.
+Upstream: https://github.com/hperaza/ZSM4
+Revision: 96a9ac1081172e1c08291521b77d2a715ec59c8b
+
+LINK 1.3 - Copyright (C) 1980 Digital Research.
+CP/M redistribution permission: LINKCOPY.TXT.
+These original third-party binaries have not been patched with /VER or /HELP.
+
+Use a writable work drive with these read-only tools on Utilities B:
+  A:
+  B:ZSM4 PROGRAM=PROGRAM
+  B:LINK PROGRAM[A]
+ZSM4 reads PROGRAM.MAC and writes PROGRAM.REL; LINK creates PROGRAM.COM.
+Use CSEG for relocatable code; ORG 100H alone can create a 256-byte gap.
+Full manuals, source and provenance accompany the host distribution.
+
