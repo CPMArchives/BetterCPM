@@ -11,7 +11,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sha=lambda b:hashlib.sha256(b).hexdigest()
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--image',type=Path,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--image',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--utilities',type=Path);a=p.parse_args()
     a.output.mkdir(parents=True,exist_ok=False);w=a.output.resolve()
     original=a.image.read_bytes();raw=extract_raw(original)
     # Replace only private fixture files if already present.
@@ -20,11 +20,16 @@ def main():
         at=directory+i*32
         if raw[at]==0 and bytes(v&127 for v in raw[at+1:at+12]) in (b'DUMP    COM',b'DHEX    BIN',b'STARTUP SUB',b'DQDONE  COM'):raw[at]=0xe5
     payload=bytes(range(256))*8
-    add_file(raw,'DUMP.COM',(ROOT/'build/utilities/DUMP.COM').read_bytes());entry,blocks=add_file(raw,'DHEX.BIN',payload)
+    if not a.utilities:add_file(raw,'DUMP.COM',(ROOT/'build/utilities/DUMP.COM').read_bytes())
+    entry,blocks=add_file(raw,'DHEX.BIN',payload)
     add_file(raw,'DQDONE.COM',bytes.fromhex('110b010e09cd0500c30000')+b'DUMP RETURNED$')
-    add_file(raw,'STARTUP.SUB',b'RSX LOAD M4SCRN\r\nRSX LOAD ADM3A\r\nDUMP DHEX.BIN /P\r\nDUMP DHEX.BIN /40 /P\r\nDQDONE\r\n\x1a')
+    batch=b'RSX LOAD M4SCRN\r\nRSX LOAD ADM3A\r\nDUMP DHEX.BIN /P\r\nDUMP DHEX.BIN /40 /P\r\nDQDONE\r\n\x1a'
+    if a.utilities:batch=batch.replace(b'DUMP DHEX',b'B:DUMP DHEX')
+    add_file(raw,'STARTUP.SUB',batch)
     initial=bytes(raw);image=w/'private.dmk';image.write_bytes(build(raw))
     cmd=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-ktx','-d0',str(image),'-itime','60000']
+    if a.utilities:
+        shutil=__import__('shutil');shutil.copy2(a.utilities,w/'utilities.dmk');cmd += ['-d1',str(w/'utilities.dmk')]
     stages=[]
     def capture(label,wait):
         stages.append(label);cmd.extend(['-iw',wait,'-id','120','-it'])
@@ -65,6 +70,7 @@ def main():
     fs=subprocess.run(['fsck.cpm','-T','raw,pcw800','-f','bettercpm-default','-n',str(w/'after.raw')],cwd=w,capture_output=True,text=True)
     (w/'filesystem.txt').write_text(fs.stdout+fs.stderr);assert fs.returncode==0
     assert a.image.read_bytes()==original,'reference disk changed'
+    if a.utilities:assert (w/'utilities.dmk').read_bytes()==a.utilities.read_bytes()
     result={'status':'PASS','program_sha256':sha((ROOT/'build/utilities/DUMP.COM').read_bytes()),'source_image_sha256':sha(original),'stages':stages,'scope':'Actual Model 4 execution with shipped monitor/backend: wide/compact page cells, Ctrl-C Page Down, Go To with all four WordStar edit keys and software cursor, cross-record forward/backward Find, physical CLEAR cancellation, direct CCP return and unchanged input allocations/attributes and clean independent filesystem check (startup queue activity is separate).'}
     (w/'result.json').write_text(json.dumps(result,indent=2)+'\n');print(w)
 if __name__=='__main__':main()

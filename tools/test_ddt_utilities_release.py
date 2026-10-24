@@ -12,7 +12,7 @@ from build_montezuma_extended_790k import build as dmk
 from test_z80pack_sysgen_install import session
 from trs80gp_launch import run as launch
 from run_trs80_command import DEFAULT_EMULATOR,key_args
-SHA='83da74cb5cd0e105cee410c10e32e2cb86389036e84fc7620b25b403c3327665'
+SHA=None
 TINY=bytes.fromhex('3e05320003c9')
 sha=lambda b:hashlib.sha256(b).hexdigest()
 
@@ -23,7 +23,7 @@ def command(w,*args):
     return r.stdout
 
 
-def cpmsim(w,system,utility,artifacts):
+def cpmsim(w,system,utility,artifacts,simulator):
     disks=w/'disks';disks.mkdir();a=disks/'drivea.dsk';b=disks/'driveb.dsk'
     shutil.copyfile(system,a);shutil.copyfile(utility,b)
     for letter in 'cd':shutil.copyfile(artifacts/f'build/z80pack/disks/drive{letter}.dsk',disks/f'drive{letter}.dsk')
@@ -40,7 +40,7 @@ def cpmsim(w,system,utility,artifacts):
            (b'D300,300\r',b'0300 05',30),(b'',ready,30),(b'XP\r',b'P=0105 ',30),
            (b'100\r',ready,30),(b'U1\r',ready,30),(b'G0\r',prompt,30),
            (b'B:DDT\r',ready,30),(b'\x03',prompt,30)]
-    text=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,steps,w/'transcript.bin')
+    text=session(simulator,disks,steps,w/'transcript.bin')
     assert b'Invalid /VER usage.' not in text and version_text().encode() in text
     assert b.read_bytes()==before,'Utilities changed'
     command(w,'cpmcp','-f','bettercpm-default',a,'0:TINY.COM',w/'TINY-after.COM')
@@ -89,9 +89,11 @@ def model4(w,system,utility):
 
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--system',type=Path,required=True);p.add_argument('--artifacts',type=Path,required=True);p.add_argument('--output',type=Path,required=True);args=p.parse_args()
+    global SHA
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--system',type=Path,required=True);p.add_argument('--artifacts',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim');args=p.parse_args()
     w=args.output.resolve();w.mkdir(parents=True,exist_ok=False)
     defs=disk_definition(select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT))+'''diskdef ddt-system
+ libdsk:format pcw800
  seclen 512
  tracks 160
  sectrk 10
@@ -102,17 +104,17 @@ def main():
  os 2.2
 end
 '''
-    assert sha((args.artifacts/'build/utilities/DDT.COM').read_bytes())==SHA
+    SHA=sha((args.artifacts/'build/utilities/DDT.COM').read_bytes())
     packaged=utilities(w/'packaged',args.artifacts)
     sources={p:p.read_bytes() for p in args.system.glob('*/*') if p.suffix in ('.dsk','.dmk')}
     result={}
     try:
         for target,image,report in packaged:
             platform=report['target'];dest=w/platform;dest.mkdir();(dest/'diskdefs').write_text(defs)
-            system=next(p for p in sources if p.parent.name==platform)
+            system=args.system/platform/json.loads((args.system/platform/'report.json').read_text())['image']
             utility=w/'packaged'/target
             assert next(x for x in report['included'] if x['name']=='DDT.COM')['sha256']==SHA
-            result[platform]=cpmsim(dest,system,utility,args.artifacts) if platform=='z80pack' else model4(dest,system,utility)
+            result[platform]=cpmsim(dest,system,utility,args.artifacts,args.simulator) if platform=='z80pack' else model4(dest,system,utility)
             result[platform]['utilities_image']=target
             result[platform]['utilities_sha256']=sha(image)
             result[platform]['ddt_sha256']=SHA

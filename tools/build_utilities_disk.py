@@ -80,7 +80,7 @@ def main():
     p.add_argument('--ddt-acceptance',type=Path,help='bind a passing DDT campaign to these exact image hashes')
     a=p.parse_args()
     if a.build:
-        for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh']:subprocess.run([sys.executable,str(ROOT/'tools'/f'build_{name}.py')],cwd=ROOT,check=True)
+        for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh']:subprocess.run([sys.executable,str(a.artifacts.resolve()/'tools'/f'build_{name}.py')],cwd=a.artifacts.resolve(),check=True)
     build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance)
 
 
