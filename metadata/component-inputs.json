@@ -6,7 +6,12 @@
       "target": "z80pack",
       "profile": "default",
       "build_mode": "cross",
-      "configuration": {"origin": 256, "assembler_flags": ["-fb"]},
+      "configuration": {
+        "origin": 256,
+        "assembler_flags": [
+          "-fb"
+        ]
+      },
       "files": [
         "src/platform/z80pack/bye.mac",
         "src/utilities/common/version.inc",
@@ -18,6 +23,48 @@
         "tools/checked_carriers.py",
         "tools/checked_build_contract.py",
         "tools/rsx_container.py",
+        "tools/utility_versions.py",
+        "tools/component_registry.py",
+        "tools/component_inputs.py"
+      ]
+    },
+    "utility:DDT": {
+      "status": "pilot",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "payload_origins": [
+          0,
+          256,
+          12544
+        ],
+        "bootstrap_origin": 256,
+        "assembler_flags": [
+          "-fb"
+        ],
+        "parity_flags": [
+          "-8",
+          "-fb"
+        ]
+      },
+      "files": [
+        "src/utilities/ddt.mac",
+        "src/utilities/common/ddtinput.inc",
+        "src/utilities/common/version.inc",
+        "src/utilities/common/ui/input.inc",
+        "src/utilities/common/ui/events.inc",
+        "src/utilities/common/ui/wordstar.inc",
+        "third_party/dri-ddt/DDT0MOV.ASM",
+        "third_party/dri-ddt/DDT1ASM.ASM",
+        "third_party/dri-ddt/DDT2MON.ASM",
+        "tools/build_ddt.py",
+        "tools/ddt_source.py",
+        "tools/shared_ui.py",
         "tools/utility_versions.py",
         "tools/component_registry.py",
         "tools/component_inputs.py"

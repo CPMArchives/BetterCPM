@@ -5,6 +5,7 @@ import argparse,hashlib,json,re,subprocess
 from ddt_source import translate,zero_storage
 from shared_ui import input_source
 from utility_versions import identities
+from component_inputs import capture, classify
 ROOT=Path(__file__).resolve().parents[1]
 BUILD=ROOT/'build/ddt-development'
 ASSEMBLER=Path.home()/'bin/z80asm'
@@ -83,7 +84,12 @@ def main():
     global ASSEMBLER
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,default=BUILD)
     p.add_argument('--assembler',type=Path,default=ASSEMBLER);p.add_argument('--no-install',action='store_true')
+    p.add_argument('--target',choices=('z80pack','trs80gp'),default='z80pack')
+    p.add_argument('--baseline',type=Path,help='explicit raw input-record reference')
     a=p.parse_args();ASSEMBLER=a.assembler.resolve();out=a.output.resolve();out.mkdir(parents=True,exist_ok=True)
+    report_path=out/'build-report.json';report_path.unlink(missing_ok=True)
+    reference=json.loads(a.baseline.read_text()) if a.baseline else None
+    before=capture('utility:DDT',ASSEMBLER,root=ROOT,target=a.target)
     parity={}
     for name in ['DDT0MOV.ASM','DDT1ASM.ASM','DDT2MON.ASM']:
         original_text=original(name)
@@ -107,13 +113,23 @@ def main():
     result=stub+bytes(0x300-len(stub))+images[0]+bitmap
     result+=bytes((-len(result))%128)
     (out/'DDT.COM').write_bytes(result)
-    if not a.no_install:
-        release=ROOT/'build/utilities/DDT.COM';release.parent.mkdir(parents=True,exist_ok=True);release.write_bytes(result)
     report={'status':'PASS','version':version_text(),'file_size':len(result),'payload_size':length,'resident_pages':(length>>8)+1,'bitmap_bytes':len(bitmap),'relocation_marks':len(marks),'startup_bytes':len(stub),'sha256':hashlib.sha256(result).hexdigest(),'translated_core_parity':parity,'historical_reference_sha256':hashlib.sha256((ROOT/'third_party/dri-ddt/DDT.COM').read_bytes()).hexdigest()}
     files=['src/utilities/ddt.mac','src/utilities/common/ddtinput.inc','src/utilities/common/version.inc','src/utilities/common/ui/input.inc','src/utilities/common/ui/wordstar.inc','src/utilities/common/ui/events.inc','metadata/utility-versions.tsv','tools/ddt_source.py','tools/build_ddt.py']
     report['source_sha256']={n:hashlib.sha256((ROOT/n).read_bytes()).hexdigest() for n in files}
     report['assembler_sha256']=hashlib.sha256(ASSEMBLER.read_bytes()).hexdigest()
-    (out/'build-report.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
+    after=capture('utility:DDT',ASSEMBLER,root=ROOT,target=a.target)
+    if before!=after:raise RuntimeError('DDT inputs changed during assembly; no build report emitted')
+    if (out/'DDT.COM').read_bytes()!=result:raise RuntimeError('DDT output changed before build report')
+    provenance=subprocess.run(['git','-C',str(ROOT),'rev-parse','HEAD'],capture_output=True,text=True)
+    report.update(schema=1,component='utility:DDT',identity=dict(zip(('version','revision'),identities()['DDT'])),
+                  artifact={'name':'DDT.COM','bytes':len(result),'sha256':hashlib.sha256(result).hexdigest()},
+                  input_record=before,comparison=classify(before,reference),
+                  qualification='not asserted; PASS covers existing build parity guards only',
+                  provenance={'repository_commit':provenance.stdout.strip() if provenance.returncode==0 else None,
+                              'source_state':'selected input hashes; global cleanliness not asserted'})
+    if not a.no_install:
+        release=ROOT/'build/utilities/DDT.COM';release.parent.mkdir(parents=True,exist_ok=True);release.write_bytes(result)
+    report_path.write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))
 
 
 if __name__=='__main__':main()

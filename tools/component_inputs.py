@@ -24,7 +24,7 @@ def digest(data):
 def source_path(root, relative):
     path = PurePosixPath(relative)
     if (path.is_absolute() or '..' in path.parts or str(path) != relative
-            or not path.parts or path.parts[0] not in ('src', 'tools')):
+            or not path.parts or path.parts[0] not in ('src', 'tools', 'third_party')):
         raise ValueError('invalid selected source path: ' + relative)
     result = root / relative
     if not result.resolve().is_relative_to(root.resolve()):
@@ -44,7 +44,8 @@ def capture(component, assembler, *, root=ROOT, target='z80pack',
         plan = specification['components'][component]
     except KeyError:
         raise ValueError('selected input map pending: ' + component) from None
-    if (target, profile, build_mode) != (plan['target'], plan['profile'], plan['build_mode']):
+    if (target not in plan.get('targets', [plan['target']])
+            or (profile, build_mode) != (plan['profile'], plan['build_mode'])):
         raise ValueError('unsupported component variant')
     registry = load(root/'metadata/component-registry.json')
     version, revision = identity(component, registry)
@@ -70,6 +71,9 @@ def capture(component, assembler, *, root=ROOT, target='z80pack',
 def valid(record):
     try:
         return (record['schema'] == 1 and record['inputs']['schema'] == 1
+                and isinstance(record['inputs']['component'], str)
+                and set(record['inputs']['variant']) == {'target', 'profile', 'build_mode'}
+                and all(isinstance(value, str) for value in record['inputs']['variant'].values())
                 and record['fingerprint'] == digest(canonical(record['inputs']))
                 and type(record['assigned_identity']['revision']) is int
                 and record['assigned_identity']['revision'] > 0

@@ -95,7 +95,7 @@ class InputTests(unittest.TestCase):
 
     def test_unsupported_component(self):
         with self.assertRaisesRegex(ValueError, 'pending'):
-            capture('utility:DDT', self.assembler, root=self.root)
+            capture('utility:STAT', self.assembler, root=self.root)
 
     def test_missing_files_refused(self):
         (self.root/'src/platform/z80pack/bye.mac').unlink()
