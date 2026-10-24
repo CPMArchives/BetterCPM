@@ -26,9 +26,9 @@ class RegistryTests(unittest.TestCase):
     def test_complete_import_and_paths(self):
         self.assertEqual(len(self.data['components']), 51)
         self.assertEqual(len(identities()), 36)
-        self.assertEqual(identities()['DDT'], ('1.0', 2))
+        self.assertEqual(identities()['DDT'], ('1.0', 3))
         self.assertEqual(identities()['PIP'], ('1.0', 29))
-        self.assertEqual(identities()['BYE'], ('1.0', 1))
+        self.assertEqual(identities()['BYE'], ('1.0', 2))
         for key, component in self.data['components'].items():
             self.assertNotIn(key, ('utility:ZSM4', 'utility:LINK'))
             for path in component['roots'] + component['builders']:
@@ -52,7 +52,7 @@ class RegistryTests(unittest.TestCase):
         self.data['components']['utility:PIP']['revision'] += 1
         self.assertEqual(registry.identity('utility:DDT', self.data), before)
         self.data['components']['utility:DDT']['version'] = '2.0'
-        self.assertEqual(registry.identity('utility:DDT', self.data), ('2.0', 2))
+        self.assertEqual(registry.identity('utility:DDT', self.data), ('2.0', 3))
         self.data['components']['utility:DDT']['revision'] = 1000
         self.assertEqual(registry.identity('utility:DDT', self.data), ('2.0', 1000))
 

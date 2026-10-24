@@ -14,12 +14,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def title():
     version, build = identities()['BYE']
-    return identity_title('BYE', version, build, style='legacy')
+    return identity_title('BYE', version, build, style='numeric')
 
 
 def version_text():
     version, revision = identities()['BYE']
-    return identification('BYE', version, revision, 'cpmsim Emulator Exit', style='legacy')
+    return identification('BYE', version, revision, 'cpmsim Emulator Exit', style='numeric')
 
 
 def help_text():

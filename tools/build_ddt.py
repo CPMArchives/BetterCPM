@@ -31,7 +31,7 @@ def original(name):
 
 def version_text():
     version,build=identities()['DDT']
-    return identification('DDT', version, build, 'Dynamic Debugging Tool', style='legacy')
+    return identification('DDT', version, build, 'Dynamic Debugging Tool', style='numeric')
 
 
 def payload_source(base=0,adapt=True):
