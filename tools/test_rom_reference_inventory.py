@@ -40,7 +40,9 @@ EXPECTED_DISCOVERED = {
     "fileloader": 13,
     "tables": 16,
 }
-EXPECTED_CLASSES = {"immutable-rom": 469, "live-ram": 321}
+# Explicit-extent Make replaces two code CALLs with one state-pointer load
+# and the shared Open CALL: one target changes from ROM to RAM, total unchanged.
+EXPECTED_CLASSES = {"immutable-rom": 468, "live-ram": 322}
 EXPECTED_OVERLAY_CLASSES = {"immutable-rom": 3, "live-ram": 102}
 EXPECTED_OVERLAY_REFERENCES = 105
 

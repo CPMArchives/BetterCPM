@@ -22,7 +22,7 @@ EXPECTED_COMPONENTS = {
     "fileloader": 13,
     "gateway": 24,
 }
-EXPECTED_CLASSES = {"immutable-rom": 469, "live-ram": 321}
+EXPECTED_CLASSES = {"immutable-rom": 468, "live-ram": 322}
 
 
 def digest(data: bytes) -> str:
@@ -75,10 +75,10 @@ def main() -> None:
     if manifest["entries"] != {
             "system_init": 0xDF00,
             "system_boot": 0xDF20,
-            "bios_boot": 0xf1c1,
+            "bios_boot": 0xf1bf,
             "bdos": 0xDF9E,
-            "ram_template": 0xF490,
-            "cold_initializer": 0xFDFC}:
+            "ram_template": 0xF48E,
+            "cold_initializer": 0xFDFA}:
         raise AssertionError("accepted executable entry inputs changed")
 
     base = manifest["base"]
