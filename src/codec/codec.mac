@@ -3,7 +3,7 @@
 ; No ORG, segment selection, END, data allocation or self-modifying code.
 ; Z80 MACRO/ENDM syntax; emitted labels are library-internal ABI v1 helpers.
 ; Requires 32 significant symbol characters (z80pack z80asm: -e32).
-; Verified with host z80asm 2.1; native ZSM4 assembly not yet qualified.
+; Verified with host z80asm 2.1; native ZSM4 parity: tools/qualify_codec_native.py.
 ; From the repository root: python3 tools/test_codec.py
 ;
 ; All helpers preserve IX/IY/alternate registers and stack balance.

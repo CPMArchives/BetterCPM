@@ -1,6 +1,6 @@
 ; Independent CRUNCH-20h decoder from the format, not a source adaptation.
 ; Include codec.inc/mac and uncr.inc/mac; emit CODEC_CODE + UNCR_CODE once.
-; z80pack z80asm -e32; native ZSM4 not yet qualified. No allocated storage.
+; z80pack z80asm -e32; native ZSM4 parity: tools/qualify_codec_native.py. No allocated storage.
 ; All state in IX context. No alternate-register instructions, IY or recursion.
 ; Run tools/test_uncr.py for historical corpus and targeted Z80 execution.
 

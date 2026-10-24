@@ -49,8 +49,9 @@ padding. Each family adds a logged-drive default case and a user-7 case.
 ## Release boundary
 
 These are component results for the exact recorded images. The Utilities disk
-as a whole remains **PROVISIONAL**. Clean pinned cpmsim reconstruction, native
-ZSM4 codec assembly qualification, remaining Utilities selections, relevant
+as a whole remains **PROVISIONAL**. [Native ZSM4/LINK qualification](Compression%20Native%20Build%20Qualification.md)
+now passes with identical Build 004 bytes. Clean pinned cpmsim reconstruction,
+remaining Utilities selections, relevant
 final-artifact acceptance for other utilities changed by the shared /VER
 revision and final whole-image checks remain open. A changed executable or
 image requires relevant reacceptance.

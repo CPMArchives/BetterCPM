@@ -1,5 +1,5 @@
 ; Include codec.inc/mac and cr.inc/mac; emit CODEC_CODE + CR_CODE once.
-; z80pack z80asm -e32. Native ZSM4 assembly not yet qualified.
+; z80pack z80asm -e32. Native ZSM4 parity: tools/qualify_codec_native.py.
 ; One-pass CRUNCH-20h encoder, deterministic reset on dictionary capacity.
 ; Output widths follow decoder insertion timing, including final code/EOF.
 ; Test: python3 tools/test_cr.py
