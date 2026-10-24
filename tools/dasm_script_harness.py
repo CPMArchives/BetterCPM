@@ -19,17 +19,41 @@ def scripted(image, lines, assembler=Path.home()/'bin/z80asm'):
     assert all(0<len(line)<=126 for line in lines)
     source=f''' ASEG
  ORG {base}
+ENTRY: JP HOOK
 START: LD (OLDSP),SP
  LD HL,(6)
  LD (OLDBDOS),HL
  LD (CHAIN+1),HL
- LD HL,HOOK
+ LD DE,0C180H
+ OR A
+ SBC HL,DE
+ JR C,LOW_RAM
+ LD HL,0C000H
+ LD B,128
+PAINT: LD (HL),0A5H
+ INC HL
+ DJNZ PAINT
+ LD HL,ENTRY
  LD (6),HL
  LD HL,SCRIPT
  LD (CURSOR),HL
  CALL {entry}
  LD HL,(OLDBDOS)
  LD (6),HL
+ LD HL,0C000H
+ LD B,128
+VERIFY: LD A,(HL)
+ CP 0A5H
+ JR NZ,CANARY_BAD
+ INC HL
+ DJNZ VERIFY
+ LD DE,PASS_MSG
+ JR REPORT
+CANARY_BAD: LD DE,FAIL_MSG
+ JR REPORT
+LOW_RAM: LD DE,LOW_MSG
+REPORT: LD C,9
+ CALL CHAIN
  LD SP,(OLDSP)
  RET
 HOOK: LD A,C
@@ -57,6 +81,9 @@ EXHAUSTED: HALT
 OLDSP: DW 0
 OLDBDOS: DW 0
 CURSOR: DW SCRIPT
+PASS_MSG: DB 'DASM RESIDENT CANARY PASS',13,10,'$'
+FAIL_MSG: DB 'DASM RESIDENT CANARY FAIL',13,10,'$'
+LOW_MSG: DB 'DASM HARNESS INSUFFICIENT ORIGINAL TPA',13,10,'$'
 SCRIPT:
 {chr(10).join(' DB '+','.join(str(x) for x in script[i:i+16]) for i in range(0,len(script),16))}
  END
@@ -68,4 +95,4 @@ SCRIPT:
         wrapper=(w/'h.bin').read_bytes()
         if len(wrapper)>=base:wrapper=wrapper[base:]
     assert base+len(wrapper)<=0xc000, 'script harness exceeds its reserved region'
-    return b'\xc3'+base.to_bytes(2,'little')+image[3:]+bytes(base-0x100-len(image))+wrapper
+    return b'\xc3'+(base+3).to_bytes(2,'little')+image[3:]+bytes(base-0x100-len(image))+wrapper

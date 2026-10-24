@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 import subprocess
 import re
+from component_build import recorded_build
+from utility_versions import strings
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -18,10 +20,11 @@ def source(reference=False):
     if not reference:
         text = text.replace('INCLUDE dasmsafe.inc',
                             (ROOT/'src/utilities/common/dasmsafe.inc').read_text())
-        for include in ('dasmsession.inc','dasmcrc.inc','dasmtables.inc','dasmaddress.inc','dasmrebase.inc','printnum.inc','dasmsymbol.inc','dasmfile.inc','dasmprolog.inc','zsm4words.inc','duselect.inc','filespec.inc'):
+        for include in ('dasmsession.inc','dasmcrc.inc','dasmtables.inc','dasmaddress.inc','dasmrebase.inc','printnum.inc','dasmsymbol.inc','dasmfile.inc','dasmprolog.inc','zsm4words.inc','duselect.inc','filespec.inc','version.inc'):
             text=text.replace('INCLUDE '+include,(ROOT/'src/utilities/common'/include).read_text())
         text=text.replace('\tORG\t$/100H*100H+100H',
                           ' REPT 100H-($ MOD 100H)\n DB 0FFH\n ENDM')
+        text=text.replace('; @dasm-version@',strings('DASM',label='D_VERSION_MSG'))
     # Both assemblers need the workspace EQU dependency chain after ENDALL.
     definitions=[]
     def move(match):
@@ -42,7 +45,7 @@ def validate_native_identifiers(text):
     if collisions:raise ValueError('ZSM4 significant-name collisions: '+repr(collisions))
 
 
-def build(assembler, output, reference=False):
+def _build(assembler, output, reference=False):
     output.mkdir(parents=True, exist_ok=True)
     name = 'dasm-reference' if reference else 'dasm'
     text = source(reference)
@@ -64,10 +67,21 @@ def build(assembler, output, reference=False):
     return image
 
 
+@recorded_build('utility:DASM')
+def build_current(assembler,output):
+    return _build(assembler,output)
+
+def build(assembler,output,reference=False,*,target='z80pack',identity_state='auto'):
+    if reference:return _build(assembler,output,True)
+    return build_current(assembler,output,target=target,identity_state=identity_state)
+
+
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--assembler', type=Path, default=Path.home()/'bin/z80asm')
-    p.add_argument('--output', type=Path, default=ROOT/'build/dasm-development')
+    p.add_argument('--output', type=Path, default=ROOT/'build/utilities')
     p.add_argument('--reference', action='store_true')
+    p.add_argument('--identity-state',choices=('auto','assigned','development'),default='auto')
+    p.add_argument('--target',choices=('z80pack','trs80gp'),default='z80pack')
     a = p.parse_args()
-    print(len(build(a.assembler, a.output, a.reference)), 'bytes')
+    print(len(build(a.assembler, a.output, a.reference,target=a.target,identity_state=a.identity_state)), 'bytes')

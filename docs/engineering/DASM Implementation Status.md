@@ -1,8 +1,8 @@
 # DASM implementation and qualification status
 
 Development checkpoint, 2026-10-25. This is **not release acceptance** and does
-not supersede [the specification](DASM%20Specification.md). DASM and DSYM are
-not yet added to release Utilities Disk images. No physical Model 4 hardware
+not supersede [the specification](DASM%20Specification.md). DASM, DSYM and DLINK are now provisional Utilities members; their final
+release acceptance is still pending. No physical Model 4 hardware
 qualification is claimed.
 
 ## Current source checkpoint (after qualified baseline)
@@ -48,7 +48,7 @@ all three validated tables before committing any. Fault tests cover each create,
 write, close and rename, binary/component/descriptor corruption and cross-user
 session save/load. Retained new scratch and component identities are reported.
 
-The current host campaign passes **145 DASM and 62 DSYM full-core cases**, plus
+The current host campaign passes **161 DASM, 71 DSYM and 39 DLINK full-core cases**, plus
 **71 USQ regression cases** after the optional shared file-I/O hook was added.
 These changes are not covered by the earlier native receipts below. They require
 a fresh native build and both-platform campaign before acceptance.
@@ -70,7 +70,8 @@ a fresh native build and both-platform campaign before acceptance.
   not silently change bytes. ZSM4 numeric JR/DJNZ targets include `+($-$)`:
   ZSM4's expression evaluator otherwise treats a bare numeric target as an
   offset. This was found by native corpus testing, not host reassembly.
-- Private 512-byte stack, BDOS wrapper, startup active-ceiling check, bounded
+- Private 512-byte stack, BDOS wrapper, startup active-ceiling check with measured
+  required/active bounds, early 16-bit read-only-drive-vector refusal, bounded
   8 KiB binary workspace, symbol/control/comment insertion limits, staged
   binary reload, guarded decoder/dump/search accesses and orderly `G` return.
 - Confirmed Ctrl-C abort closes and retains staged output without publishing,
@@ -229,8 +230,7 @@ the archived COM byte-for-byte; the archived binary remains unmodified.
    harness does not replace actual filesystem/emulator tests.
 6. The [baseline functional receipts](DASM%20Development%20Qualification.md) bind
    the current candidate on fresh current System pairs. Requalify after the
-   remaining implementation changes, then integrate owned DASM/DSYM version
-   metadata, notices, source package and
-   disk manifests/builders. Rebuild and qualify actual Utilities Disk artifacts.
+   remaining implementation changes, retain the new owned numeric identities, notices and complete source package.
+   Rebuild and qualify the actual provisional Utilities artifacts.
 
 These are outstanding requirements, not silently relaxed acceptance criteria.

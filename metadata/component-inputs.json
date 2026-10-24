@@ -4733,6 +4733,139 @@
         "native"
       ],
       "native_files": []
+    },
+    "utility:DASM": {
+      "status": "tracked-conservative",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "origin": 256,
+        "assembler_flags": [
+          "-e32",
+          "-fb"
+        ],
+        "bounded_workspace": true
+      },
+      "files": [
+        "metadata/dasm-zsm4-reserved.json",
+        "src/utilities/common/dasmaddress.inc",
+        "src/utilities/common/dasmcrc.inc",
+        "src/utilities/common/dasmfile.inc",
+        "src/utilities/common/dasmprolog.inc",
+        "src/utilities/common/dasmrebase.inc",
+        "src/utilities/common/dasmsafe.inc",
+        "src/utilities/common/dasmsession.inc",
+        "src/utilities/common/dasmsymbol.inc",
+        "src/utilities/common/dasmtables.inc",
+        "src/utilities/common/duselect.inc",
+        "src/utilities/common/filespec.inc",
+        "src/utilities/common/printnum.inc",
+        "src/utilities/common/version.inc",
+        "src/utilities/common/zsm4words.inc",
+        "src/utilities/dasm.mac",
+        "src/utilities/dasmtdl.mac",
+        "src/utilities/dasmzlg.mac",
+        "tools/build_dasm.py",
+        "tools/component_build.py",
+        "tools/component_development.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_registry.py",
+        "tools/utility_versions.py"
+      ],
+      "modes": [
+        "cross",
+        "native"
+      ],
+      "native_files": []
+    },
+    "utility:DSYM": {
+      "status": "tracked-conservative",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "origin": 256,
+        "assembler_flags": [
+          "-e32",
+          "-fb"
+        ],
+        "bounded_workspace": true
+      },
+      "files": [
+        "metadata/dasm-zsm4-reserved.json",
+        "src/utilities/common/codecfile.mac",
+        "src/utilities/common/dsymdu.inc",
+        "src/utilities/common/dsymlog.inc",
+        "src/utilities/common/duselect.inc",
+        "src/utilities/common/filespec.inc",
+        "src/utilities/common/printnum.inc",
+        "src/utilities/common/version.inc",
+        "src/utilities/common/zsm4words.inc",
+        "src/utilities/dsym.mac",
+        "tools/build_dasm.py",
+        "tools/build_dsym.py",
+        "tools/component_build.py",
+        "tools/component_development.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_registry.py",
+        "tools/utility_versions.py"
+      ],
+      "modes": [
+        "cross",
+        "native"
+      ],
+      "native_files": []
+    },
+    "utility:DLINK": {
+      "status": "tracked-conservative",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "origin": 256,
+        "assembler_flags": [
+          "-e32",
+          "-fb"
+        ],
+        "bounded_workspace": true
+      },
+      "files": [
+        "src/utilities/common/dasmcrc.inc",
+        "src/utilities/common/duselect.inc",
+        "src/utilities/common/filespec.inc",
+        "src/utilities/common/printnum.inc",
+        "src/utilities/common/version.inc",
+        "src/utilities/dlink.mac",
+        "third_party/dri-link/LINK.COM",
+        "tools/build_dasm.py",
+        "tools/build_dlink.py",
+        "tools/component_build.py",
+        "tools/component_development.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_registry.py",
+        "tools/utility_versions.py"
+      ],
+      "modes": [
+        "cross",
+        "native"
+      ],
+      "native_files": []
     }
   }
 }

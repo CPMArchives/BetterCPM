@@ -1,7 +1,7 @@
 ; Version-1 session descriptor, exactly one physical 128-byte record.
-; 0: BCDS, version; 8: origin/length; 12: binary FCB identity + user + CRC32;
-; 29: three 19-byte component identities/user/record-count/physical CRC32;
-; 86..123 reserved zero; 124 CRC32 of bytes 0..123.
+; 0: BCDS, version; 8: origin; 10: 32-bit length; 14: binary identity/user/CRC32;
+; 31: three 19-byte component identities/user/record-count/physical CRC32;
+; 88..123 reserved zero; 124 CRC32 of bytes 0..123.
 ; Unique components are published first; the descriptor is published last.
 D_SESSION_SAVE:
  LD HL,(D_END)
@@ -54,18 +54,18 @@ D_SESSION_SAVE:
  LD HL,(D_SES_LENGTH)
  LD (D_DESC+10),HL
  LD HL,D_INPUT_NAME
- LD DE,D_DESC+12
+ LD DE,D_DESC+14
  LD BC,12
  LDIR
  LD A,(D_INPUT_USER)
- LD (D_DESC+24),A
+ LD (D_DESC+26),A
  LD BC,(D_SES_LENGTH)
  LD HL,D_BIN
  CALL D_CRC_RESET
  CALL D_CRC_BUFFER
  CALL D_CRC_FINISH
  LD HL,D_CRC
- LD DE,D_DESC+25
+ LD DE,D_DESC+27
  LD BC,4
  LDIR
 D_SS_COMPONENT:
@@ -211,8 +211,11 @@ D_SL_MAGIC:
  LD HL,D_DESC+5
  LD B,3
  CALL D_SES_ZERO
- LD HL,D_DESC+86
- LD B,38
+ LD HL,D_DESC+12
+ LD B,2
+ CALL D_SES_ZERO ; high length word cannot fit this release
+ LD HL,D_DESC+88
+ LD B,36
  CALL D_SES_ZERO
  LD HL,D_DESC
  LD BC,124
@@ -222,12 +225,12 @@ D_SL_MAGIC:
  LD HL,D_DESC+124
  CALL D_SES_CRC_MATCH
  LD HL,D_INPUT_NAME
- LD DE,D_DESC+12
+ LD DE,D_DESC+14
  CALL D_SAME
  JP NZ,D_SESSION_BAD
  LD A,(D_INPUT_USER)
  LD B,A
- LD A,(D_DESC+24)
+ LD A,(D_DESC+26)
  CP B
  JP NZ,D_SESSION_BAD
  LD DE,(D_DESC+10)
@@ -245,7 +248,7 @@ D_SL_MAGIC:
  CALL D_CRC_RESET
  CALL D_CRC_BUFFER
  CALL D_CRC_FINISH
- LD HL,D_DESC+25
+ LD HL,D_DESC+27
  CALL D_SES_CRC_MATCH
  XOR A
  LD (D_SES_INDEX),A
@@ -365,7 +368,7 @@ D_SES_CRC_BYTE:
  DJNZ D_SES_CRC_BYTE
  RET
 D_SES_COMPONENT:
- LD HL,D_DESC+29
+ LD HL,D_DESC+31
  LD A,(D_SES_INDEX)
  OR A
  RET Z
@@ -423,7 +426,7 @@ D_SI_BINARY:
  CP B
  JP Z,D_SESSION_BAD
 D_SI_COMPONENTS:
- LD HL,D_DESC+29
+ LD HL,D_DESC+31
  LD A,(D_SES_INDEX)
  LD C,A
 D_SI_NEXT:
@@ -614,7 +617,7 @@ D_SESSION_RECOVERY:
  CALL D_BDOS
  LD HL,D_SES_TEMP
  CALL D_PRINT_NAME
- LD HL,D_DESC+29
+ LD HL,D_DESC+31
  LD B,3
 D_SR_COMPONENT:
  PUSH BC

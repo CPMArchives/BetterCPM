@@ -1,6 +1,5 @@
-; Native LINK 1.3 textual symbol converter. LINK's file contains repeated
-; address/name pairs, separated by spaces, tabs or newlines. Output .DSY has
-; one pair per CRLF record, suitable for DASM's R command after explicit naming.
+; Complete checked LINK 1.3 report converter. Bare SYM cannot prove success.
+; Output .DSY contains canonical address/name records for DASM import.
 ; Existing destinations are refused. CODEC_FILE_IO stages and publishes output.
         ASEG
         ORG 100H
@@ -14,12 +13,6 @@ SY_START:
         LD C,32
         CALL UC_BDOS
         LD (SY_OLDUSER),A
-        LD HL,(6)
-        LD DE,SY_END+256
-        OR A
-        SBC HL,DE
-        LD DE,SY_MEMORY
-        JP C,SY_PLAIN_EXIT
         LD HL,SY_STATE
         LD DE,SY_STATE+1
         LD BC,SY_STATE_END-SY_STATE-1
@@ -31,25 +24,16 @@ SY_START:
         LD HL,81H
         LD A,(80H)
         LD B,A
-SY_QUERY_SPACE:
-        LD A,B
-        OR A
-        JR Z,SY_NOTVER
-        LD A,(HL)
-        CP ' '
-        JR NZ,SY_QUERY_LENGTH
-        INC HL
-        DJNZ SY_QUERY_SPACE
-SY_QUERY_LENGTH:
-        LD A,B
-        CP 4
-        JR NZ,SY_NOTVER
-        LD DE,SY_VEROPT
-        LD B,4
-        CALL SY_MATCH
         LD DE,SY_VERSION
-        JP Z,SY_PLAIN_EXIT
-SY_NOTVER:
+        CALL UV_QUERY
+        JP C,UC_EXIT
+        LD HL,(6)
+        LD DE,SY_END+256
+        OR A
+        SBC HL,DE
+        LD DE,SY_MEMORY
+        JP C,SY_PLAIN_EXIT
+        LD HL,81H
         LD A,(HL)
         CP '/'
         LD DE,UC_USAGE
@@ -91,6 +75,7 @@ SY_NOTVER:
         LD DE,SY_ALIAS
         JP Z,UC_ERROR
 SY_NOT_ALIAS:
+        CALL SY_MEDIA_WRITABLE
         LD HL,UC_INPUT+9
         LD DE,SY_LOG_EXT
         LD B,3
@@ -546,6 +531,20 @@ SY_UPPER:
         OR A
         RET
 
+SY_MEDIA_WRITABLE:
+        LD C,29
+        CALL UC_BDOS
+        LD HL,(SY_RESULT_HL)
+        LD A,(UC_DEST)
+        LD B,A
+SY_MEDIA_BIT:
+        SRL H
+        RR L
+        DJNZ SY_MEDIA_BIT
+        RET NC
+        LD DE,SY_MEDIA_MSG
+        JP UC_ERROR
+SY_MEDIA_MSG: DB 'DSYM: destination drive is read-only; nothing created.',13,10,'$'
         CODEC_FILE_IO
         CODEC_FILE_CLEANUP
 ; Track CR, LF and CRLF without counting CRLF twice. Reject counter overflow.
@@ -593,11 +592,12 @@ PN_CHAR:
         POP DE
         POP BC
         RET
+        INCLUDE version.inc
         INCLUDE dsymlog.inc
         INCLUDE printnum.inc
         INCLUDE dsymdu.inc
         INCLUDE zsm4words.inc
-SY_VERSION: DB 'DSYM development - verified LINK 1.3 report to DASM',13,10,'$'
+; @dsym-version@
 SY_VEROPT: DB '/VER'
 SY_EXT: DB 'DSY'
 SY_LOG_EXT: DB 'LOG'
@@ -657,6 +657,7 @@ SY_TOKEN_LINE: DW 0
 SY_DUPLICATES: DW 0
 SY_LAST_CR: DB 0
 PN_STARTED: DB 0
+SY_RESULT_HL: DW 0
 SY_LOG_MODE: DB 0
 SY_PUSHED: DB 0
 SY_SAVED_LENGTH: DB 0

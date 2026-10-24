@@ -870,6 +870,57 @@
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:DASM": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/dasm.mac"
+      ],
+      "builders": [
+        "tools/build_dasm.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "tracked-conservative",
+      "display_format": "numeric",
+      "description": "Z80 Disassembler"
+    },
+    "utility:DSYM": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/dsym.mac"
+      ],
+      "builders": [
+        "tools/build_dsym.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "tracked-conservative",
+      "display_format": "numeric",
+      "description": "Verified LINK Symbol Conversion"
+    },
+    "utility:DLINK": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/dlink.mac"
+      ],
+      "builders": [
+        "tools/build_dlink.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "tracked-conservative",
+      "display_format": "numeric",
+      "description": "Checked LINK Report Capture"
     }
   },
   "legacy_utility_order": [
@@ -910,7 +961,10 @@
     "NOAH",
     "BYE",
     "MOVE",
-    "WARM"
+    "WARM",
+    "DASM",
+    "DSYM",
+    "DLINK"
   ],
   "legacy_subsystem_rows": [
     {

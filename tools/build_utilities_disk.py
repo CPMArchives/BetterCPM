@@ -24,13 +24,17 @@ COMPONENTS.update({'ZSM4.COM':'third_party/zsm4/ZSM4.COM','LINK.COM':'third_part
                    'TOOLINFO.TXT':'src/distribution/TOOLINFO.TXT',
                    'ZSM4COPY.TXT':'src/distribution/ZSM4COPY.TXT',
                    'LINKCOPY.TXT':'src/distribution/LINKCOPY.TXT'})
-PENDING=['Full-screen editor (selection pending)','Z80 disassembler (selection pending)']
+COMPONENTS.update({name+'.COM':'build/utilities/'+name+'.COM' for name in ('DASM','DSYM','DLINK')})
+COMPONENTS.update({'DASM.TXT':'src/distribution/DASM.TXT','DASMCOPY.TXT':'src/distribution/DASMCOPY.TXT'})
+PENDING=['TED full-screen editor (selected; implementation and qualification pending)','DASM tool set final release qualification pending']
 sha=lambda data:hashlib.sha256(data).hexdigest()
 
 
 def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None):
     from toolchain_distribution import companions, validate_acceptance
     accompanying = companions(artifacts)
+    from dasm_distribution import companions as dasm_companions
+    analysis_companions=dasm_companions(artifacts)
     files={name:(artifacts/path).read_bytes() for name,path in COMPONENTS.items()}
     if not all(files.values()):raise ValueError('empty Utilities artifact')
     accepted=json.loads(ddt_acceptance.read_text()) if ddt_acceptance else None
@@ -81,8 +85,11 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
                 report['component_acceptance'][tool]['paired_system_sha256']=tools_accepted['platforms'][report['target']]['system_sha256']
         report['toolchain_companions']={n:sha(d) for n,d in accompanying.items()}
         report['third_party_versions']={'ZSM4.COM':'4.7','LINK.COM':'1.3'}
+        report['dasm_companions']={n:sha(d) for n,d in analysis_companions.items()}
+        for name in ('DASM.COM','DSYM.COM','DLINK.COM'):
+            report['component_acceptance'][name]={'status':'PENDING_RELEASE_ACCEPTANCE','sha256':sha(files[name])}
     # The complete source companion travels with both images (GPL section 3a).
-    for name,data in accompanying.items():
+    for name,data in {**accompanying,**analysis_companions}.items():
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
     # Construct and validate both before publishing either named image.
     for name,data,report in reports:
@@ -97,7 +104,7 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
         (output/(name+'.json')).write_text(json.dumps(report,indent=2)+'\n')
         print(f'{output/name}: PROVISIONAL, {len(files)} files; {len(PENDING)} pending selections/implementations')
-    package=dict(accompanying)
+    package={**accompanying,**analysis_companions}
     for name,data,report in reports:
         package[name]=data
         package[name+'.json']=(output/(name+'.json')).read_bytes()
@@ -125,7 +132,7 @@ def main():
     p.add_argument('--toolchain-acceptance',type=Path,help='bind passing native tool campaigns to both exact images and source companions')
     a=p.parse_args()
     if a.build:
-        for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh']:subprocess.run([sys.executable,str(a.artifacts.resolve()/'tools'/f'build_{name}.py')],cwd=a.artifacts.resolve(),check=True)
+        for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh','dasm','dsym','dlink']:subprocess.run([sys.executable,str(a.artifacts.resolve()/'tools'/f'build_{name}.py')],cwd=a.artifacts.resolve(),check=True)
     build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance,a.toolchain_acceptance)
 
 

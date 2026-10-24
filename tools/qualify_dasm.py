@@ -29,6 +29,7 @@ def main():
     p.add_argument('--system',type=Path,default=DEFAULT_SYSTEM)
     p.add_argument('--utilities',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True)
+    p.add_argument('--from-utilities',action='store_true',help='execute and hash-check the packaged B: tool set')
     p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp'])
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
     cross=build(Path.home()/'bin/z80asm',a.output/'cross')
@@ -58,8 +59,12 @@ def main():
                 'P100,105','QL100,105','Z','G'])
             selected_commands += ['QROUND','B:ZSM4 ROUND=ROUND.ASM','B:LINK ROUND[A]']
             interactive=[]
+        if a.from_utilities:
+            selected_commands=[('B:'+c if c.startswith(('DASM ','DSYM ','DLINK ')) else c) for c in selected_commands]
+            interactive=[(b'B:DASM\r' if c==b'DASM\r' else c,w,t) for c,w,t in interactive]
         log,out=campaign(platform,selected_files,selected_commands,a.output/platform,system=a.system,
                          utilities=a.utilities,interactive=interactive,
+                         utility_files={'DASM.COM':cross,'DSYM.COM':converter,'DLINK.COM':files['DLINK.COM']} if a.from_utilities else None,
                          extract=['DASM.COM','DSYM.COM','SYMTEST.COM','SYMTEST.DSY','ROUND.ASM','ROUND.COM'])
         errors=re.findall(rb'Errors: +([0-9]+)',log)
         # A native screenshot retains earlier lines; assess final build screen

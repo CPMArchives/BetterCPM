@@ -1,0 +1,19 @@
+DASM PROVENANCE AND CREDITS
+
+Maintained adaptation of Richard Conn's DASM 1.5, 16 August 1982.
+Derived from RESOURCE and ZZSOURCE; preserve the Barker and Christensen
+credits in the original sources. Original bytes and SIG/M volume 91 catalog
+remain in the host source companion, with retrieval URLs and SHA-256 hashes.
+
+Historical source:
+https://ftp.trailing-edge.com/pub/oakcpm2/sigm/vol091/
+The maintainer accepts SIG/M historical public-domain redistribution and
+modification practice as the basis for this adaptation. No separate modern
+license is asserted for those historical files. submission.lib is SIG/M's
+unsigned generic form, not Richard Conn's completed submission or signed grant.
+
+BetterCP/M DSYM and DLINK are maintained companion utilities. DRI LINK 1.3
+and ZSM4 4.7 remain unmodified, externally versioned third-party programs.
+Their retained license/permission texts are LINKCOPY.TXT and ZSM4COPY.TXT.
+See DASM.TXT and the complete host source/provenance companions.
+

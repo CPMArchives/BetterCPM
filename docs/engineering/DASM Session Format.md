@@ -7,7 +7,9 @@ must match. Loading restores the saved origin and length; it never silently
 rebinds analysis to another binary. Empty inputs and unknown versions are refused.
 
 The descriptor is exactly one 128-byte physical record. Integer fields and
-CRC values use little-endian byte order. CRC32 is CRC-32/ISO-HDLC, reflected
+CRC values use little-endian byte order. The 32-bit length representation can express 65,536 without wrapping; this
+release rejects a nonzero high length word because its input capacity is 8 KiB.
+CRC32 is CRC-32/ISO-HDLC, reflected
 polynomial EDB88320H, initial/final XOR FFFFFFFFH. It detects corruption, not
 malicious modification. The host test independently checks it with zlib.
 
@@ -17,14 +19,14 @@ malicious modification. The host test independently checks it with zlib.
 | 4 | 1 | Version 1 |
 | 5 | 3 | Reserved, zero |
 | 8 | 2 | Logical origin |
-| 10 | 2 | Nonzero logical input length, at most 8192 |
-| 12 | 12 | Canonical binary drive (1..16) and space-padded 8.3 name |
-| 24 | 1 | Binary user, 0..31 |
-| 25 | 4 | CRC32 of exactly the logical binary bytes |
-| 29 | 19 | Symbol component record |
-| 48 | 19 | Comment component record |
-| 67 | 19 | Control component record |
-| 86 | 38 | Reserved, zero |
+| 10 | 4 | Unsigned logical input length; current admission is 1..8192 |
+| 14 | 12 | Canonical binary drive (1..16) and space-padded 8.3 name |
+| 26 | 1 | Binary user, 0..31 |
+| 27 | 4 | CRC32 of exactly the logical binary bytes |
+| 31 | 19 | Symbol component record |
+| 50 | 19 | Comment component record |
+| 69 | 19 | Control component record |
+| 88 | 36 | Reserved, zero |
 | 124 | 4 | CRC32 of descriptor bytes 0..123 |
 
 Each component record contains a 12-byte canonical drive/name, one user byte,

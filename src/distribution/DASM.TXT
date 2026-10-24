@@ -1,0 +1,60 @@
+BETTERCP/M DASM TOOL SET (DEVELOPMENT)
+
+DASM - maintained Richard Conn 1.5 Z80 disassembler adaptation.
+DSYM - complete verified LINK-report conversion to DASM symbols.
+DLINK - checked capture using unchanged B0:LINK.COM 1.3.
+/VER is noncreating, case insensitive and may accompany other arguments.
+
+Keep Utilities as B: and use a writable work disk. Example:
+  B:ZSM4 PROGRAM=PROGRAM
+  B:DLINK PROGRAM
+  B:DSYM PROGRAM.LOG
+  B:DASM
+  RPROGRAM.COM
+  N5
+  RPROGRAM.DSY
+  SREBUILD.ASM
+  P100,105
+  QL100,105
+  Z
+  G
+  B:ZSM4 REBUILD=REBUILD.ASM
+  B:LINK REBUILD[A]
+This example length 5 must be replaced by the actual logical program length.
+Compare every logical byte; do not execute arbitrary disassembly inputs.
+
+DASM keeps at most 8192 input bytes. Nhex selects logical length; without it,
+all physical file-record bytes are input, including 00/1A/FF. Empty is refused.
+Ohex selects logical origin. End-only bounds may be 10000; crossing is refused.
+P emits source prologue/equates. QL lists silently to the staged ASM output.
+Z completes it; G returns to the caller. H lists interactive commands.
+Eaddr,.NAME adds a symbol, K.NAME deletes; Iaddr,[+|-]delta rebases safely.
+Caddr,type uses BEHISW; S also emits initialized bytes in exact output.
+;addr,text adds a printable comment. R/S .SYM/.CTL/.DOC import/export tables.
+R/S .ALL uses a versioned checksummed session descriptor, published last.
+A session load requires the same binary DU/name and matching logical bytes.
+
+Exact DU operands support drives A..P and users 0..31, e.g. B31:FILE.COM.
+DLINK output base has no extension; modules may omit .REL. Multiple modules:
+  B:DLINK RESULT ONE TWO
+They must share the output user; drives may differ. COM/SYM/LOG must be new.
+DLINK confines writes to the new outputs and its unique report stage. Its
+bounded child TPA does not enable LINK's legacy A disk-scratch option. Use
+DSYM only on a complete DLINK .LOG; bare .SYM cannot prove successful linking.
+Failed link reports, truncated reports and symbol conflicts are refused.
+Default public export significance is six characters; source spelling beyond
+that cannot be recovered. Twelve-character DASM interchange names are allowed.
+
+Source output stays staged until Z. Interrupting listing invalidates pending
+output; it cannot be published as complete. Replacement keeps a unique BAK.
+On error retain the named $$$ stage and BAK copies; do not erase the only
+complete file. Session generations use DSA00000.SYM/DOC/CTL and later numbers;
+failed saves may leave named orphan components while preserving the old graph.
+CP/M renames do not provide power-loss durability or multi-file atomicity.
+
+Normal Model 4 and z80pack resident configurations are supported only within
+the measured active-memory bounds. These are development Utilities images;
+see the host qualification reports for exact passing gates and remaining work.
+Complete source, original imports, build recipes and tests accompany the images
+in BetterCPM-DASM-SOURCE.tar.gz. Keep that companion when redistributing.
+

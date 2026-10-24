@@ -20,6 +20,7 @@ def main():
     p.add_argument('--system',type=Path,default=DEFAULT_SYSTEM)
     p.add_argument('--utilities',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True)
+    p.add_argument('--from-utilities',action='store_true',help='execute and hash-check the packaged B: tool set')
     p.add_argument('--scripted-input',action='store_true',help='also use the native line-input harness on z80pack')
     p.add_argument('--capacity-only',action='store_true',help='8 KiB input and source output across multiple extents')
     p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp'])
@@ -54,8 +55,12 @@ def main():
             commands += ['QALL']
             for name in fixtures:
                 commands += [f'B:ZSM4 {name}={name}.ASM',f'B:LINK {name}[A]']
+        if a.from_utilities:
+            commands=[('B:'+c if c.startswith('DASM ') else c) for c in commands]
+            interactive=[(b'B:DASM\r' if c==b'DASM\r' else c,w,t) for c,w,t in interactive]
         log,outputs=campaign(platform,selected_files,commands,a.output/platform,
                              system=a.system,utilities=a.utilities,interactive=interactive,
+                             utility_files={'DASM.COM':binary} if a.from_utilities else None,
                              extract=[name+ext for name in fixtures for ext in ('.ASM','.COM')])
         errors=re.findall(rb'Errors: +([0-9]+)',log)
         assert errors and set(errors)=={b'0'},errors

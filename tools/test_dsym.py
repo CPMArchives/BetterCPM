@@ -8,6 +8,7 @@ import tempfile
 from build_dsym import build
 from dsym_reference import convert, convert_log
 from generate_dasm_words import generate
+from utility_versions import banner
 from test_usq import SHIM
 from test_usq_com import Command, diskkey, padded
 
@@ -25,7 +26,14 @@ def fixture(raw):
 
 
 class Dsym(Command):
+    ro_mask=0
+    def callback(self,kind):
+        function=self.reg['C'].value
+        super().callback(kind)
+        if function==29 and self.exception is None:
+            self.reg['H'].value=self.ro_mask>>8;self.reg['L'].value=self.ro_mask&255
     def bdos(self, fn, de):
+        if fn==29:return self.ro_mask&255
         if fn==2:self.console+=chr(de & 255);return 0
         if fn==32:
             if de & 255 !=255:self.user=de & 255
@@ -79,7 +87,7 @@ def main():
         text=m.run(' INPUT.LOG',{source:fixture(b'0100 START\n')},tpa=0x1000)
         assert 'insufficient' in text and not m.created
         text=m.run('/VER',{},tpa=0xd000)
-        assert 'DSYM development' in text and not m.created
+        assert banner('DSYM') in text and not m.created
         text=run(b'0100 FIRST\r\n0101 SECOND\r\n0100 first\n')
         assert 'imported 2; coalesced 1; rejected 0; complete' in text,text
         text=run(b'0100 FIRST\r\n\r\n0101 9BAD\n')
@@ -121,6 +129,19 @@ def main():
             text=m.run(' B31:INPUT.LOG C16:',{src:fixture(b'0100 START\n')},user=7,tpa=0xd000,failures={fail:1})
             assert 'complete' not in text and diskkey(3,'INPUT.DSY',16) not in m.files
             m.intact()
+        for count in (255,256):
+            data=b''.join(f'{i:04X} NAME{i:04X}\n'.encode() for i in range(count))
+            text=run(data)
+            assert ('complete' in text)==(count==255),text
+            if count==255:assert m.files[dest]==padded(convert(data))
+            else:assert dest not in m.files
+        for query in ('/ver',' /VER  ','X /VER','/VER X','/VER /VER','FILE\t/vEr'):
+            text=m.run(query,{},user=31,tpa=0x6000)
+            assert banner('DSYM') in text and not m.created,text
+        m.ro_mask=4
+        text=m.run(' B31:INPUT.LOG C16:',{diskkey(2,'INPUT.LOG',31):fixture(b'0100 START\n')},user=7,tpa=0xd000)
+        assert 'destination drive is read-only' in text and not m.created,text
+        m.ro_mask=0
         text=m.run(' INPUT.SYM',{diskkey(1,'INPUT.SYM'):b'0100 START\r\n'},tpa=0xd000)
         assert 'cannot prove link success' in text and not m.created,text
         print('PASS:',m.cases,'DSYM full-core cases; validation, aliases, low TPA, failures and original preservation')

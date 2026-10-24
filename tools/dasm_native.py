@@ -10,6 +10,7 @@ from add_cpm_file_to_dmk import extract_raw, add_file, FILESYSTEM_FIRST_SECTOR, 
 from build_montezuma_extended_790k import build as make_dmk
 from build_z80pack_image import disk_definition, DEFAULT_FORMAT
 from fdf_format import select_fdf
+from convert_fdf_image import dmk_to_raw
 from test_z80pack_sysgen_install import session
 from run_trs80_command import DEFAULT_EMULATOR, key_args
 from trs80gp_launch import run as launch
@@ -20,7 +21,7 @@ SIMULATOR = Path.home()/'projects/git/z80pack/cpmsim/cpmsim'
 
 
 def campaign(platform, files, commands, output, *, system=DEFAULT_SYSTEM,
-             utilities=None, extract=(), interactive=(), emulator=None):
+             utilities=None, extract=(), interactive=(), emulator=None, utility_files=None, setup=None):
     """Run each shell command with a visible completion marker; preserve media."""
     output.mkdir(parents=True, exist_ok=False)
     native = platform == 'trs80gp'
@@ -70,6 +71,22 @@ end
         host.write_bytes(data)
         target=system_raw if not native and (name.startswith('DM') or name=='QUALIFY.SUB') else raw
         tool('cpmcp','-T','raw','-f',definition,target,host,'0:'+name)
+    utility_members={}
+    if utility_files:
+        utility_raw=output/'utilities-audit.raw'
+        if native:
+            fmt=select_fdf(ROOT/'third_party/montezuma/DISK-INT.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
+            utility_raw.write_bytes(dmk_to_raw(ub,fmt))
+        else:utility_raw.write_bytes(ub)
+        utility_definition='bettercpm-mm-80t-ds-data' if native else 'bettercpm-default'
+        for member,expected in utility_files.items():
+            extracted=output/('utilities-'+member)
+            tool('cpmcp','-T','raw','-f',utility_definition,utility_raw,'0:'+member,extracted)
+            actual=extracted.read_bytes()
+            assert actual[:len(expected)]==expected and len(actual)==(len(expected)+127)//128*128,('packaged member mismatch',member)
+            assert set(actual[len(expected):])<={0,26},('packaged padding mismatch',member)
+            utility_members[member]=hashlib.sha256(actual).hexdigest()
+    if setup:setup(raw,definition,output)
     if native:
         data = bytearray(raw.read_bytes())
         for i in range(DIRECTORY_ENTRIES):
@@ -122,7 +139,7 @@ end
     assert original.read_bytes()==image and utility.read_bytes()==ub
     evidence={'platform':platform,'system_sha256':hashlib.sha256(image).hexdigest(),
               'utilities_sha256':hashlib.sha256(ub).hexdigest(),
-              'commands':commands,'input_hashes':{n:hashlib.sha256(v).hexdigest() for n,v in files.items()},
+              'commands':commands,'utilities_members':utility_members,'input_hashes':{n:hashlib.sha256(v).hexdigest() for n,v in files.items()},
               'emulator_sha256':hashlib.sha256((emulator if native else SIMULATOR).read_bytes()).hexdigest(),
               'outputs':{n:hashlib.sha256(v).hexdigest() for n,v in recovered.items()},
               'console_sha256':hashlib.sha256(log).hexdigest(),'original_media_unchanged':True}

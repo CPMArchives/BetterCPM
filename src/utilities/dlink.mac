@@ -2,6 +2,15 @@
 ; The complete captured final-address report is validated separately by DSYM.
  ASEG
  ORG 100H
+ LD A,(80H)
+ CP 128
+ JR NC,DL_BOOT_MEMORY
+ LD B,A
+ LD HL,81H
+ LD DE,DL_VERSION_TEXT
+ CALL UV_QUERY
+ RET C
+DL_BOOT_MEMORY:
  LD HL,(6)
  LD DE,DL_RES_END+256
  OR A
@@ -18,6 +27,8 @@ DL_LOW_RAM:
  CALL 5
  RET
 DL_LOW_MSG: DB 'DLINK: insufficient active TPA.',13,10,'$'
+; @dlink-version@
+ INCLUDE version.inc
 DL_PACKED:
  .PHASE 0A000H
 DL_RES_START:
@@ -147,6 +158,7 @@ DL_MODULE_VALID:
  POP AF
  JR DL_MODULE
 DL_MODULES_DONE:
+ CALL DL_MEDIA_WRITABLE
  ; No A option: the pinned linker's legacy disk scratch path is not enabled.
  LD HL,DL_OUT_COM
  CALL DL_ABSENT
@@ -251,6 +263,7 @@ DL_BDOS:
  PUSH IX
  PUSH IY
  CALL DL_CHAIN
+ LD (DL_RETURN_HL),HL
  POP IY
  POP IX
  POP HL
@@ -969,6 +982,20 @@ DL_COMPARE:
  INC DE
  DJNZ DL_COMPARE
  RET
+DL_MEDIA_WRITABLE:
+ LD C,29
+ CALL DL_BDOS
+ LD HL,(DL_RETURN_HL)
+ LD A,(DL_OUT_COM)
+ LD B,A
+DL_MEDIA_BIT:
+ SRL H
+ RR L
+ DJNZ DL_MEDIA_BIT
+ RET NC
+ LD DE,DL_MEDIA_MSG
+ JP DL_FAIL
+DL_MEDIA_MSG: DB 'DLINK: destination drive is read-only; nothing created.',13,10,'$'
  INCLUDE duselect.inc
  INCLUDE filespec.inc
  INCLUDE dasmcrc.inc
@@ -1008,6 +1035,7 @@ DL_FUNCTION: DB 0
 DL_FILE_KIND: DB 0
 DL_OWN_COM: DB 0
 DL_OWN_SYM: DB 0
+DL_RETURN_HL: DW 0
 DL_OUT_USER: DB 0
 DL_PARSE_USER: DB 0
 DL_PARSE_DRIVE: DB 0

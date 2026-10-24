@@ -153,6 +153,15 @@
     ],
     "module:BATCHIO": [
       "build/rsx/BATCHIO.RSX"
+    ],
+    "utility:DASM": [
+      "build/utilities/DASM.COM"
+    ],
+    "utility:DSYM": [
+      "build/utilities/DSYM.COM"
+    ],
+    "utility:DLINK": [
+      "build/utilities/DLINK.COM"
     ]
   }
 }

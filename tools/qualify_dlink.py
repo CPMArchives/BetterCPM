@@ -17,6 +17,7 @@ def main():
     p.add_argument('--system',type=Path,default=DEFAULT_SYSTEM)
     p.add_argument('--utilities',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True)
+    p.add_argument('--from-utilities',action='store_true',help='execute and hash-check the packaged B: tool set')
     p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp'])
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
     launcher=build_link(Path.home()/'bin/z80asm',a.output/'cross')
@@ -34,7 +35,9 @@ def main():
     names=['DLINK.COM','DSYM.COM','PASS.COM','PASS.LOG','PASS.DSY','ONE.REL','TWO.REL','BAD.REL','BAD.LOG','LONG.REL','LONG.LOG']
     expected=b'0100 ALIAS\r\n0105 HELLO\r\nFFFF LAST\r\n0100 LONGSY\r\n0100 START\r\n0104 TARGET\r\n0000 ZERO\r\n\x1a'
     for platform in a.platforms:
-        log,outputs=campaign(platform,files,commands,a.output/platform,system=a.system,utilities=a.utilities,extract=names)
+        selected=[('B:'+c if c.startswith(('DLINK ','DSYM ')) else c) for c in commands] if a.from_utilities else commands
+        log,outputs=campaign(platform,files,selected,a.output/platform,system=a.system,utilities=a.utilities,extract=names,
+            utility_files={'DLINK.COM':launcher,'DSYM.COM':converter} if a.from_utilities else None)
         errors=re.findall(rb'Errors: +([0-9]+)',log)
         assert errors and set(errors)=={b'0'},errors
         for name,binary in [('DLINK.COM',launcher),('DSYM.COM',converter)]:

@@ -52,12 +52,17 @@ All membership or layout changes require discussion with the maintainer.
   bounded memory ownership and source-text preservation. Implementation and
   both-platform qualification are pending; no TED binary is included yet. See
   [engineering specification](../engineering/TED%20Specification.md).
-- DASM.COM: selected adaptation of Richard Conn's DASM 1.5 from SIG/M volume
-  91, with ZSM4-compatible Zilog output, native symbol conversion, recoverable
-  file publication and bounded transient-memory ownership. Implementation,
-  [development implementation](../engineering/DASM%20Implementation%20Status.md) exists;
-  release acceptance, converter packaging and both-platform disk qualification are pending; no DASM
-  binary is included yet. See [engineering specification](../engineering/DASM%20Specification.md).
+- DASM.COM: maintained Richard Conn 1.5 adaptation with ZSM4-compatible output,
+  checked logical bounds and recoverable individual/session publication.
+- DSYM.COM: native conversion of complete verified final-address LINK reports.
+- DLINK.COM: checked transient capture using the unchanged B0:LINK.COM 1.3.
+- DASM.TXT and DASMCOPY.TXT: invocation, limits, recovery and historical credits.
+  These are development Utilities members; full release qualification remains
+  pending. See [implementation status](../engineering/DASM%20Implementation%20Status.md)
+  and [engineering specification](../engineering/DASM%20Specification.md).
+- The host package includes `BetterCPM-DASM-SOURCE.tar.gz`, a complete tracked
+  source snapshot with per-file hashes, `DASM-Provenance.json` and
+  `DASM-SOURCE-README.txt`. Keep these with the images.
 - ZSM4.COM: unmodified ZSM4 4.7, pinned to Hector Peraza revision
   `96a9ac1081172e1c08291521b77d2a715ec59c8b`; GPL-2.0-or-later.
 - LINK.COM: unmodified Digital Research LINK 1.3, extracted from pinned
@@ -73,7 +78,6 @@ All membership or layout changes require discussion with the maintainer.
   the disk image alone is not the
   complete toolchain distribution. See [toolchain qualification](../engineering/Utilities%20Toolchain%20Qualification.md).
 - DDT.COM: initial DRI-compatible debugger adaptation with shared line editing and `/VER`; [engineering specification](../engineering/DDT%20Specification.md). Exact historical reproduction is retained separately as the verification baseline. Model 4 real-screen/physical-keyboard, native/cross and BetterCP/M cpmsim qualification pass; [Model 4 evidence](../engineering/DDT%20Model%204%20Qualification.md).
-- Standalone Z80 disassembler: exact program TBD.
 - Noah’s ARK (`NOAH.COM` with `NOAH.OVL`): selected unified archive utility, targeting CP/M `.ARK` and `.LBR` containers. The [engineering specification](../engineering/NOAH%20Specification.md) behavioral baseline is complete; implementation has begun with development-only LBR LIST/TEST/extraction with shared selectors and overwrite prompts; the complete interface remains post-1.0 work. This foundation is not yet included on disk.
 - SQ.COM and USQ.COM: standalone Z80 squeeze/unsqueeze commands using the
   common codec ABI, two-pass SQ input, optional destination drive and temporary

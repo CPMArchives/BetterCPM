@@ -17,6 +17,7 @@ UC_BDOS:
         PUSH    IY
         IFDEF   UC_USER_FILES
         CALL    SY_USER_BDOS
+        LD      (SY_RESULT_HL),HL
         ELSE
         CALL    5
         ENDIF

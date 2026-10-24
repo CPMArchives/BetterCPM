@@ -10,11 +10,15 @@ from build_dasm import build
 from test_usq import SHIM
 from test_usq_com import Command, diskkey, padded
 from generate_dasm_words import generate
+from utility_versions import banner
 
 
 class Dasm(Command):
     def callback(self,kind):
+        function=self.reg['C'].value
         super().callback(kind)
+        if function==29 and self.exception is None:
+            self.reg['H'].value=self.ro_mask>>8;self.reg['L'].value=self.ro_mask&255
         if self.exception is not None:
             self.reg['PC'].value=0xffff
             self.mem[0xffff]=0x76
@@ -29,6 +33,7 @@ class Dasm(Command):
                             UC_STACK_TOP=self.symbols['OLDST'],UC_INPUT=0x5c)
 
     def bdos(self,fn,de):
+        if fn==29:return self.ro_mask&255
         if fn==10:
             if not self.lines:raise AssertionError(('unexpected command input',self.console[-500:]))
             line=self.lines.pop(0).encode()
@@ -62,6 +67,7 @@ class Dasm(Command):
         if fn==16 and de in self.opened and self.opened[de][0][2].endswith('.$$$'):
             if self.fail('close_output'):return 255
         value=super().bdos(fn,de)
+        if fn==15 and value!=255 and self.fcbkey(de) in self.fcb_attrs:self.mem[de+10]|=0x80
         if fn==16 and value!=255:self.closed_fcb[de]=closing_key
         if fn==17 and value!=255:
             at=self.dma+value*32
@@ -70,10 +76,11 @@ class Dasm(Command):
             if self.fcbkey(de) in self.readonly:self.mem[at+9]|=0x80
         return value
 
-    def execute(self,lines,files=None,*,tpa=0xd000,failures=None,responses=(),break_keys=(),readonly=(),startup=None):
+    def execute(self,lines,files=None,*,tpa=0xd000,failures=None,responses=(),break_keys=(),readonly=(),startup=None,fcb_attrs=(),ro_mask=0):
+        self.ro_mask=ro_mask
         self.lines=list(lines);self.responses=list(responses);self.break_keys=list(break_keys)
         self.closed_fcb={};self.stale_closes=[]
-        self.readonly=set(readonly)
+        self.readonly=set(readonly);self.fcb_attrs=set(fcb_attrs)
         self.lib.set_hooks(5,0xfffe,self.hook)
         self.files=dict(files or {});self.original=dict(self.files)
         self.drive,self.user=1,0
@@ -255,9 +262,9 @@ def main():
         text=m.execute(['N1','SA0:TINY.ASM','P100,101','QL100,101','Z','G'],
                        {startup_source:b'\xc9'},startup='a31:tiny.asm')
         assert b'0C9H' in m.files[out] and m.files[startup_source]==b'\xc9',(text,m.files)
-        for query in ['/ver',' /VER  ','\t/ver\t']:
+        for query in ['/ver',' /VER  ','\t/ver\t','X /VER','/VER X','/VER /VER','FILE\t/vEr']:
             text=m.execute([],startup=query,tpa=0x6000)
-            assert 'DASM development' in text and not m.created,text
+            assert banner('DASM') in text and not m.created,text
         text=m.execute(['RTINY.COM','N4','RTINY.SYM','STINY.ASM','P100,104','QL100,104','Z','G'],
                        {tiny:bytes.fromhex('210101c9'),sym_in:b'0100 START\r\n0100 ALIAS\r\n0101 INSIDE\r\n00AF DATAAF\r\nFFFF LAST\r\n'})
         assembly=m.files[out].split(b'\x1a',1)[0]
@@ -328,7 +335,7 @@ def main():
         descriptor=saved[session]
         assert len(descriptor)==128 and descriptor[:5]==b'BCDS\x01',descriptor
         assert int.from_bytes(descriptor[124:],'little')==zlib.crc32(descriptor[:124])
-        assert int.from_bytes(descriptor[25:29],'little')==zlib.crc32(payload)
+        assert int.from_bytes(descriptor[27:31],'little')==zlib.crc32(payload)
         assert descriptor[8:12]==bytes.fromhex('00120400')
         text=m.execute(['RTINY.COM','RTINY.ALL','SOUT.SYM','SOUT.DOC','SOUT.CTL',
                         'STINY.ASM','P1200,1204','QL1200,1204','Z','G'],saved)
@@ -352,7 +359,7 @@ def main():
             assert m.files[diskkey(1,'OUT.SYM')].split(b'\x1a',1)[0]==b'0100 KEEP\r\n',(corruption,text)
         for component_index in range(3):
             files=dict(saved); bad=bytearray(descriptor)
-            at=29+19*component_index
+            at=31+19*component_index
             bad[at+12]=32
             bad[124:128]=zlib.crc32(bad[:124]).to_bytes(4,'little')
             files[session]=bytes(bad)
@@ -390,6 +397,28 @@ def main():
         dense=(b'ABCDEFGH\0')*300
         text=m.execute(['RTINY.COM',f'N{len(dense):X}','C100,I',f'A100,{256+len(dense):X}','SOUT.CTL','G'],{tiny:dense})
         assert 'capacity exceeded' in text and m.files[ctl].split(b'\x1a',1)[0]==b'0100,I\r\n',text[-1200:]
+        attributed=diskkey(1,'BINARY.ASM')
+        text=m.execute(['N1','SBINARY.ASM','G'],{attributed:b'\xc9'},startup='BINARY.ASM',fcb_attrs=[attributed])
+        assert 'aliases the loaded binary' in text and m.files[attributed]==b'\xc9' and not m.created,text
+        for classification,payload in (('W',b'\xc9'),('W',b'\0\0\xc9'),('S',b'\0\x1a\xff')):
+            end=256+len(payload)
+            text=m.execute(['RTINY.COM',f'N{len(payload):X}','C100,'+classification,'STINY.ASM',
+                            f'P100,{end:X}',f'QL100,{end:X}','Z','G'],{tiny:payload})
+            asm=m.files[out].split(b'\x1a',1)[0]
+            path=w/'data.asm';path.write_bytes(asm)
+            result=subprocess.run([str(Path.home()/'bin/z80asm'),'-e12','-fb','-o'+str(w/'data.bin'),str(path)],capture_output=True)
+            assert result.returncode==0 and (w/'data.bin').read_bytes()==payload,(classification,text,asm)
+        for payload in (b'ABCDEFGH',b'ABC',b'ABCDEFGHIJK'):
+            end=256+len(payload)
+            text=m.execute(['RTINY.COM',f'N{len(payload):X}',f'A100,{end:X}','SOUT.CTL','G'],{tiny:payload})
+            assert 'outside loaded input' not in text,text
+        text=m.execute(['RTINY.COM','N1','OFFFF','?','G'],{tiny:b'\xc9'})
+        assert 'End exclusive = 10000' in text and f'Required ceiling = {m.minimum_tpa:04X}' in text,text
+        text=m.execute(['RTINY.COM','N8','OFFF8','AFFF8,10000','SOUT.CTL','G'],{tiny:b'ABCDEFGH'})
+        assert 'outside loaded input' not in text and m.files[ctl].split(b'\x1a',1)[0]==b'FFF8,B\r\n',text
+        for drive,mask in (('A',1),('B',2),('P',0x8000)):
+            text=m.execute(['S'+drive+'31:OUT.ASM','G'],ro_mask=mask)
+            assert 'destination drive is read-only' in text and not m.created,text
         for operation in ['make','write','close_output','rename']:
             for existing in [False,True]:
                 files={tiny:bytes.fromhex('3e21d30200c9')}
