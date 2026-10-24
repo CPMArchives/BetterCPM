@@ -304,11 +304,18 @@ def validate_files(raw, out, files, g):
     return result
 
 
+def development_identity():
+    """Default builds identify current development separately from frozen core."""
+    from version_metadata import rows
+    core=next(row['implementation_version'] for row in rows()
+              if row['component']=='BetterCP/M')
+    return f'BetterCP/M development (after core {core})'
+
+
 def boot(target, image, out, root, simulator, emulator):
-    from version_metadata import rows as version_rows
     from utility_versions import banner as utility_banner
     ed_identity = utility_banner('ED')
-    identity = 'BetterCP/M ' + next(row['implementation_version'] for row in version_rows() if row['component'] == 'BetterCP/M')
+    identity = development_identity()
     if target == 'z80pack':
         from test_z80pack_sysgen_install import session
         disks = out / 'disks'

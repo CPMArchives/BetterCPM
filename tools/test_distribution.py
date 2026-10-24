@@ -4,10 +4,16 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from build_distribution import capacity, selected_files, current_build, digest, publish_named, publish_generation, validate_config_fingerprint
+from build_distribution import capacity, selected_files, current_build, digest, publish_named, publish_generation, validate_config_fingerprint, development_identity
 
 
 class DistributionGates(unittest.TestCase):
+    def test_default_identity_distinguishes_development_from_frozen_core(self):
+        expected='BetterCP/M development (after core 1.0)'
+        self.assertEqual(development_identity(),expected)
+        source=(Path(__file__).resolve().parents[1]/'src/cpx/rcp.mac').read_text()
+        self.assertIn("'"+expected+"'",source)
+
     def test_planned_missing_is_reported(self):
         m={'system_disk':[{'name':'WHEREIS.COM','targets':['z80pack'],
                            'status':'planned','reason':'not implemented'}]}
