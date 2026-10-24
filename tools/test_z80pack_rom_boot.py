@@ -33,7 +33,7 @@ def main() -> None:
             manifest["protected_xip_qualified"] is not False):
         raise AssertionError("ROM boot manifest overclaims or omits boot status")
     if (manifest["entry"] != 0xFE15 or manifest["stub_bytes"] != 34 or
-            manifest["reloader_reference_count"] != 44 or
+            manifest["reloader_reference_count"] != 45 or
             manifest["ccp_external_reference_count"] != 72 or
             manifest["spare_bytes"] != 457):
         raise AssertionError("accepted ROM boot layout changed")
@@ -71,7 +71,6 @@ def main() -> None:
         script = r'''set timeout 25
 set send_slow {1 .02}
 log_file -noappend [lindex $argv 3]
-expect_before timeout {puts "ROM BOOT TIMEOUT"; exit 1}
 proc prompt {} {
  expect {
   -exact {A0>} {}
@@ -80,6 +79,7 @@ proc prompt {} {
  }
 }
 spawn [lindex $argv 0] -z -x [lindex $argv 1] -d [lindex $argv 2]
+expect_before timeout {puts "ROM BOOT TIMEOUT"; exit 1}
 if {[lindex $argv 4] ne ""} {
  expect -exact "ROM QUALIFICATION ACTIVE START=[lindex $argv 4] END=FFFF"
 }

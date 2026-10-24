@@ -42,7 +42,7 @@ python3 tools/build_qualified_cpmsim.py --source /path/to/z80pack \
   --output /private/tmp/cpmsim-runtime --profile runtime
 python3 tools/build_qualified_cpmsim.py --source /path/to/z80pack \
   --output /private/tmp/cpmsim-qualification --profile qualification
-python3 tools/test_qualified_cpmsim.py --runtime /private/tmp/cpmsim-runtime \
+python3 tools/test_qualified_cpmsim.py --source /path/to/z80pack --runtime /private/tmp/cpmsim-runtime \
   --qualification /private/tmp/cpmsim-qualification --output /private/tmp/cpmsim-probes
 ```
 
