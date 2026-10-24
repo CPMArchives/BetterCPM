@@ -10,6 +10,14 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def assembly_constants(contract: dict, pack_crc: int = 0) -> str:
+    identity = bytes.fromhex(contract['compatibility_id'])
+    if len(identity) != 16 or not 0 <= pack_crc <= 65535:
+        raise ValueError('invalid checked build constants')
+    return (''.join(f'BP_ID{i} EQU {value}\n' for i, value in enumerate(identity))+
+            f'BP_PACK_CRC EQU 0{pack_crc:04X}H\n')
+
+
 def load_contract(root: Path, assembler: Path) -> dict:
     root = root.resolve()
     context, _, _ = read_context(root/CONTEXT_RELATIVE, root/'src/system/layout.inc')

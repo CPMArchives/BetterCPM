@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 from pathlib import Path
-from system_layout import LAYOUT, expand_layout
+from system_layout import LAYOUT, expand_layout, CONTEXT
 
 from build_ccp import assemble
 
@@ -20,6 +20,8 @@ def main() -> None:
     parser.add_argument("--assembler", type=Path,
                         default=Path("/Users/nathanael/bin/z80asm"))
     args = parser.parse_args()
+    if CONTEXT:
+        parser.error('use build_checked_resident_rsx.py to bind the checked entry to its finished pack')
     BUILD.mkdir(parents=True, exist_ok=True)
     text = SOURCE.read_text(encoding="ascii").replace(
         "        CSEG\n        .PHASE  ", "        ASEG\n        ORG     ").replace(

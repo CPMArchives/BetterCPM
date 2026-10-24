@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+        INCLUDE profile.inc
 ; @rsx-container-slots@
 
 ; ********************************************************************************
@@ -11,7 +12,11 @@
 ; normalization, layout, snapshot, and pointer-repair preparation has passed.
 ; Commit then consists only of bounded memory operations and final publication.
 
+        IF BP_CHECKED EQ 1
+RVBASE          EQU     LY_CFG
+        ELSE
 RVBASE          EQU     LY_RSX
+        ENDIF
 RV_WORKHIGH     EQU     07000H          ; transaction RAM stays below resident moves
 RSTCOUNT        EQU     LY_RSTA
 RSTABLE         EQU     LY_RSTA+1
@@ -151,7 +156,11 @@ RV_HIGHOK:                              ; use the effective workspace ceiling
         EX      DE,HL
         LD      D,H                     ; retain the effective caller ceiling
         LD      E,L
+        IF BP_CHECKED EQ 1
+        LD      BC,1000H                ; overlay workspace plus manager stack band
+        ELSE
         LD      BC,0F00H                ; overlay workspace plus manager stack band
+        ENDIF
         OR      A
         SBC     HL,BC
         JP      C,RV_BAD
@@ -192,6 +201,20 @@ RV_HIGHOK:                              ; use the effective workspace ceiling
         OR      A
         SBC     HL,DE
         JP      NC,RV_BAD
+        IF BP_CHECKED EQ 1
+        LD      A,(RSTCOUNT)
+        OR      A
+        JR      Z,RV_NOBACK
+        LD      HL,(RV_HREQ+2)
+        LD      DE,0B00H
+        ADD     HL,DE
+        LD      (LY_CBACK),HL
+        EX      DE,HL
+        LD      HL,LY_RSX
+        LD      BC,03F4H
+        LDIR
+RV_NOBACK:
+        ENDIF
         LD      HL,(RV_HREQ+2)
         LD      BC,0400H
         ADD     HL,BC
@@ -302,7 +325,11 @@ RI_ENTRY:                               ; enter position-independent staged read
         PUSH    IX
         POP     BC
         PUSH    DE
+        IF BP_CHECKED EQ 1
+        LD      DE,0200H
+        ELSE
         LD      DE,0100H
+        ENDIF
         ADD     HL,DE
         PUSH    HL
         POP     IX
@@ -348,37 +375,207 @@ RI_NAME:                                ; open the container at selected record
         LD      (IX+18),A
         PUSH    IX
         POP     HL
+        IF BP_CHECKED EQ 1
+        LD      DE,RI_PACK-RI_ENTRY-0200H
+        ELSE
         LD      DE,RI_PACK-RI_ENTRY-0100H
+        ENDIF
         ADD     HL,DE
         LD      A,1
         CALL    LY_FILE
+        IF BP_CHECKED EQ 1
+        JR Z,RIX1
+        LD HL,RI_FAIL-RI_ENTRY-0200H
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        JP (HL)
+RIX1:
+        ELSE
         JR      NZ,RI_FAIL
+        ENDIF
         LD      A,(LY_FCB+15)
+        IF BP_CHECKED EQ 1
+        CP      124                     ; exact packed length within extent zero
+        JR Z,RIX2
+        LD HL,RI_FAIL-RI_ENTRY-0200H
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        JP (HL)
+RIX2:
+        ELSE
         CP      120                     ; exact packed length within extent zero
         JR      NZ,RI_FAIL
+        ENDIF
         LD      A,(IX+18)
         CP      113
+        IF BP_CHECKED EQ 1
+        JR C,RIX3
+        LD HL,RI_FAIL-RI_ENTRY-0200H
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        JP (HL)
+RIX3:
+        ELSE
         JR      NC,RI_FAIL
+        ENDIF
         AND     7
+        IF BP_CHECKED EQ 1
+        JR Z,RIX4
+        LD HL,RI_FAIL-RI_ENTRY-0200H
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        JP (HL)
+RIX4:
+        ELSE
         JR      NZ,RI_FAIL
         LD      A,(IX+18)
         LD      (LY_FCB+32),A
+        ENDIF
         PUSH    IX
         POP     HL
+        IF BP_CHECKED EQ 1
+        LD      DE,0600H
+        ELSE
         LD      DE,0500H
+        ENDIF
         OR      A
         SBC     HL,DE
         PUSH    HL
         CALL    LY_FILE+3
-        JR      NZ,RI_READFAIL
-        CALL    LY_FILE+3
-        JR      NZ,RI_READFAIL
+        IF BP_CHECKED EQ 1
+        JR Z,RIX5
+        LD HL,RI_READFAIL-RI_ENTRY-0200H
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        JP (HL)
+RIX5:
+        LD      A,(LY_FCB+32)
+        CP      4
+        JR Z,RIX6
+        LD HL,RI_READFAIL-RI_ENTRY-0200H
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        JP (HL)
+RIX6:
+        POP     DE
+        PUSH    DE
+        LD      BC,0200H
+        CALL    LY_CCRC
+RI_EXPECT: LD DE,BP_PACK_CRC
+        OR      A
+        SBC     HL,DE
+        JR Z,RIX7
+        LD HL,RI_READFAIL-RI_ENTRY-0200H
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        JP (HL)
+RIX7:
+        POP     HL
+        PUSH    HL
+        LD      DE,8
+        ADD     HL,DE
+        PUSH    IX
+        POP     DE
+        EX      DE,HL
+        LD      BC,RI_ID-RI_ENTRY-0200H
+        ADD     HL,BC
+        EX      DE,HL
+        LD      B,16
+RI_IDENT:
+        LD      A,(DE)
+        CP      (HL)
+        JR Z,RIX8
+        LD HL,RI_READFAIL-RI_ENTRY-0200H
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        JP (HL)
+RIX8:
+        INC     DE
+        INC     HL
+        DJNZ    RI_IDENT
+        POP     HL
+        PUSH    HL
         LD      A,(IX+18)
+        ADD     A,40
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      (IX+19),A
+        INC     HL
+        LD      A,(HL)
+        LD      (IX+20),A
+        LD      A,(IX+18)
+        ADD     A,4
+        LD      (LY_FCB+32),A
+        POP     HL
+        PUSH    HL
+        ELSE
+        JR      NZ,RI_READFAIL
+        ENDIF
+        CALL    LY_FILE+3
+        IF BP_CHECKED EQ 1
+        JR Z,RIX9
+        LD HL,RI_READFAIL-RI_ENTRY-0200H
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        JP (HL)
+RIX9:
+        CALL    LY_FILE+3
+        JR Z,RIX10
+        LD HL,RI_READFAIL-RI_ENTRY-0200H
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        JP (HL)
+RIX10:
+        ELSE
+        JR      NZ,RI_READFAIL
+        ENDIF
+        LD      A,(IX+18)
+        IF BP_CHECKED EQ 1
+        ADD     A,12
+        ELSE
         ADD     A,8
+        ENDIF
         LD      C,A
         LD      A,(LY_FCB+32)
         CP      C
+        IF BP_CHECKED EQ 1
+        JR Z,RIX11
+        LD HL,RI_READFAIL-RI_ENTRY-0200H
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        JP (HL)
+RIX11:
+        POP     DE
+        PUSH    DE
+        LD      BC,0400H
+        CALL    LY_CCRC
+        LD      E,(IX+19)
+        LD      D,(IX+20)
+        OR      A
+        SBC     HL,DE
+        JR Z,RIX12
+        LD HL,RI_READFAIL-RI_ENTRY-0200H
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        JP (HL)
+RIX12:
+        ELSE
         JR      NZ,RI_READFAIL           ; reject a partially padded block
+        ENDIF
         POP     HL
         LD      A,(IX+0)
         OR      A
@@ -427,6 +624,9 @@ RI_RETURN:                              ; restore the caller frame and dispatch
         RET     Z
         JP      LY_RSX
 RI_PACK: DB 'R3PACK  '
+        IF BP_CHECKED EQ 1
+RI_ID: DB BP_ID0,BP_ID1,BP_ID2,BP_ID3,BP_ID4,BP_ID5,BP_ID6,BP_ID7,BP_ID8,BP_ID9,BP_ID10,BP_ID11,BP_ID12,BP_ID13,BP_ID14,BP_ID15
+        ENDIF
 RI_END:                                 ; end the copied reader code
 
         .DEPHASE

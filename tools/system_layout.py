@@ -29,11 +29,13 @@ def expand_layout(text: str) -> str:
                   lambda _: LAYOUT_TEXT.rstrip(),
         text, flags=re.MULTILINE | re.IGNORECASE)
     if re.search(r'^\s*INCLUDE\s+profile\.inc\s*$', text, re.MULTILINE | re.IGNORECASE):
-        if not CONTEXT:
-            raise ValueError('profile.inc requires a prepared build context')
         text = re.sub(r'^\s*INCLUDE\s+profile\.inc\s*$',
-                      lambda _: CONTEXT[2].rstrip(), text,
+                      lambda _: CONTEXT[2].rstrip() if CONTEXT else 'BP_CHECKED EQU 0', text,
                       flags=re.MULTILINE | re.IGNORECASE)
+    for name in ('checked-load.inc', 'checked-crc.inc', 'checked-identity.inc'):
+        text = re.sub(r'^\s*INCLUDE\s+'+re.escape(name)+r'\s*$',
+                      lambda _, name=name: (ROOT/'src/platform/z80pack'/name).read_text(encoding='ascii'),
+                      text, flags=re.MULTILINE | re.IGNORECASE)
     if '; @bounded-filespec@' in text:
         text = text.replace('; @bounded-filespec@',
             (ROOT / 'src/utilities/common/filespec.inc').read_text(encoding='ascii'))

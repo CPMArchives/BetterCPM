@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 
 from rsx_container import PACK_NAME, pack
 from build_ccp import assemble
-from system_layout import LAYOUT, expand_layout
+from system_layout import LAYOUT, expand_layout, CONTEXT
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILD = ROOT / "build/system"
@@ -15,8 +16,11 @@ BUILD = ROOT / "build/system"
 
 def source(name: str, symbol: str, address: int) -> str:
     text = (ROOT / "src/system" / name).read_text(encoding="ascii")
-    start = next(line for line in text.splitlines() if line.startswith(symbol))
-    text = text.replace(start, f"{symbol:<16}EQU     0{address:04X}H")
+    text, count = re.subn(r'^'+re.escape(symbol)+r'\s+EQU[^\n]*',
+                         lambda _: f"{symbol:<16}EQU     0{address:04X}H", text,
+                         flags=re.MULTILINE)
+    if not count:
+        raise ValueError(f'{name}: missing link-origin symbol {symbol}')
     return expand_layout(text).replace(
         "        CSEG\n        .PHASE  ", "        ASEG\n        ORG     ").replace(
             "        .DEPHASE\n", "")
@@ -36,6 +40,8 @@ def main() -> None:
     parser.add_argument("--assembler", type=Path,
                         default=Path("/Users/nathanael/bin/z80asm"))
     args = parser.parse_args()
+    if CONTEXT:
+        parser.error('use build_checked_resident_rsx.py for checked overlay packs')
     BUILD.mkdir(parents=True, exist_ok=True)
     cfg = LAYOUT["CONFIG"]
     rsx = LAYOUT["RSX"]
@@ -43,7 +49,7 @@ def main() -> None:
     entry = build(args.assembler, "r3entry", "r3entry.mac", "RVBASE", rsx)
     entry_source = (ROOT / "src/system/r3entry.mac").read_text(encoding="ascii")
     helper = entry_source[entry_source.index("RI_ENTRY:"):entry_source.index("RI_END:")]
-    io = assemble(args.assembler, "        INCLUDE layout.inc\n        ASEG\n        ORG 0\n" + helper + "        END\n",
+    io = assemble(args.assembler, "        INCLUDE layout.inc\n        INCLUDE profile.inc\n        ASEG\n        ORG 0\n" + helper + "        END\n",
                   BUILD / "rsxio.bin", BUILD / "rsxio.lst", 0)
     if len(io) > 256 or len(entry) > 1012:
         raise ValueError("transaction entry exceeds its execution slot")

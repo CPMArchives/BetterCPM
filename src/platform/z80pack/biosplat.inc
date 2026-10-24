@@ -70,6 +70,9 @@ Z_CLS:  DB 27,'[2J',27,'[H',0           ; ANSI clear-screen string
 ; = their CPMSIM disk carriers through the common resident disk interface.       =
 ; ================================================================================
 
+        IF BP_CHECKED EQ 1
+        INCLUDE checked-load.inc
+        ELSE
 PL_RELOAD:                              ; load command-environment reloader
         LD SP,0100H
         LD HL,LY_LOAD
@@ -105,3 +108,4 @@ Z_HALT:                                 ; report load failure and halt
         OUT (1),A
         HALT
         JR Z_HALT
+        ENDIF

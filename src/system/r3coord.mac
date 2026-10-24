@@ -1,4 +1,5 @@
         INCLUDE layout.inc
+        INCLUDE profile.inc
 ; @rsx-container-slots@
 ; Stage-3 bounded carrier-loading coordinator.
 ;
@@ -49,7 +50,11 @@ RC_ENTRY:
         INC     HL
         LD      D,(HL)
         EX      DE,HL
+        IF BP_CHECKED EQ 1
+        LD      DE,1000H                ; overlay workspace plus manager stack band
+        ELSE
         LD      DE,0F00H                ; overlay workspace plus manager stack band
+        ENDIF
         OR      A
         SBC     HL,DE
         JP      C,RC_BAD
@@ -94,7 +99,11 @@ RC_MLOOP:
         LD      A,(HL)
         CP      1
         JR      Z,RC_V1
+        IF BP_CHECKED EQ 1
+        CP      3
+        ELSE
         CP      2
+        ENDIF
         JP      NZ,RC_BAD
         LD      (RC_FMT),A
         LD      HL,(RC_LOW)

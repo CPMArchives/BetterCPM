@@ -110,6 +110,10 @@ def main():
  if CONTEXT and not (args.resident_only and args.ram_only):
   p.error('checked-profile disk generation is pending; only --resident-only --ram-only --system-tracks-only is supported')
  if args.ram_only and not args.system_tracks_only:p.error('--ram-only requires --system-tracks-only')
+ checked_constants=''
+ if CONTEXT:
+  from checked_build_contract import load_contract,assembly_constants
+  checked_constants=assembly_constants(load_contract(ROOT,args.assembler))
  fmt=select_fdf(args.fdf,args.format)
  record_map=fmt.raw_record_map()
  if fmt.reserved_records < 160:raise SystemExit(f'{fmt.name}: reserved area has {fmt.reserved_records} records; 160 required')
@@ -119,7 +123,7 @@ def main():
  disks=out/'disks'
  if disks.exists():raise SystemExit(f'{disks} exists; use a new --output to preserve test media')
  def asm(name,text,base,limit):
-  data=assemble(args.assembler,normalized(text),out/(name+'.bin'),out/(name+'.lst'),base)
+  data=assemble(args.assembler,checked_constants+normalized(text),out/(name+'.bin'),out/(name+'.lst'),base)
   if not data or len(data)>limit:raise ValueError(f'{name}: {len(data)} bytes exceeds {limit}')
   return data
  def read(path):return (ROOT/path).read_text()
