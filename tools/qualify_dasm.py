@@ -30,6 +30,7 @@ def main():
     p.add_argument('--utilities',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--from-utilities',action='store_true',help='execute and hash-check the packaged B: tool set')
+    p.add_argument('--native-build-witness',type=Path,help='reuse only verified native DASM/DSYM build outputs and source from a retained campaign')
     p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp'])
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
     cross=build(Path.home()/'bin/z80asm',a.output/'cross')
@@ -53,6 +54,28 @@ def main():
                      (b'B:LINK ROUND[A]\r',prompt,30)]
         selected_files=dict(files)
         selected_commands=list(commands)
+        witness=None
+        if platform=='trs80gp' and a.native_build_witness:
+            import shutil
+            witness={}
+            destination=a.output/'native-build-witness';destination.mkdir()
+            for name,expected in (('DASM.COM',cross),('DSYM.COM',converter)):
+                data=(a.native_build_witness/('after-'+name)).read_bytes()
+                assert data[:len(expected)]==expected and len(data)==(len(expected)+127)//128*128
+                assert set(data[len(expected):])<={26}
+                selected_files[name]=data
+                (destination/name).write_bytes(data)
+                witness[name]=hashlib.sha256(data).hexdigest()
+            for name in ('DASM.MAC','DSYM.MAC'):
+                data=(a.native_build_witness/name).read_bytes()
+                assert data==files[name],('native build source changed',name)
+                (destination/name).write_bytes(data)
+                witness[name]=hashlib.sha256(data).hexdigest()
+            for i in range(1,5):
+                data=(a.native_build_witness/f'trs80-text-{i}.bin').read_bytes()
+                if i in (1,3):assert b'Errors: 0' in data
+                (destination/f'trs80-text-{i}.bin').write_bytes(data)
+            selected_commands=selected_commands[4:]
         if platform=='trs80gp':
             selected_files['QROUND.COM']=scripted(cross,[
                 'RSYMTEST.COM','N5','RSYMTEST.DSY','C104,H','SROUND.ASM',
@@ -86,7 +109,7 @@ def main():
         assert b'ASEG' in out['ROUND.ASM'] and b'HELLO' in out['ROUND.ASM']
         report['platforms'][platform]={'status':'PASS','native_cross_parity':True,
             'symbol_conversion':True,'scripted_line_input':platform=='trs80gp','keyboard_qualified':False,'round_trip_bytes':5,'logical_bytes':expected.hex(),
-            'execution_report':platform+'/execution.json'}
+            'execution_report':platform+'/execution.json','native_build_witness':witness}
         (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
         print('PASS',platform,'native build, symbol conversion and 5-byte round trip',flush=True)
     report['status']='PASS'

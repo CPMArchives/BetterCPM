@@ -26,7 +26,20 @@ def main():
             files={'TINY.COM':b'\xc9'*128,'KEEP.ASM':b'KEEP ORIGINAL',
                 'QFAULT.COM':scripted(image,lines,setup_source=setup(kind),setup_entry='HF_START',cleanup_entry='HF_CLEAN')}
             w=a.output/platform/kind
+            def prefill(raw,definition,folder):
+                # Preallocate most free data through cpmtools; the native helper
+                # still performs real sequential writes until BDOS reports full.
+                import subprocess,re,hashlib
+                listing=subprocess.run(['cpmls','-T','raw','-f',definition,'-D',str(raw)],cwd=folder,check=True,capture_output=True).stdout
+                free=int(re.search(rb'(\d+)K Free',listing)[1])*1024
+                amount=max(0,(free-16384)//2048*2048)
+                payload=bytes([0xa5])*amount
+                host=folder/'PREFILL.DAT';host.write_bytes(payload)
+                subprocess.run(['cpmcp','-T','raw','-f',definition,str(raw),str(host),'0:PREFILL.DAT'],cwd=folder,check=True,capture_output=True)
+                subprocess.run(['fsck.cpm','-T','raw','-f',definition,'-n',str(raw)],cwd=folder,check=True,capture_output=True)
+                (folder/'prefill.json').write_text(json.dumps({'bytes':amount,'sha256':hashlib.sha256(payload).hexdigest(),'native_remaining_bytes_at_most':16384},indent=2)+'\n')
             log,out=campaign(platform,files,['QFAULT'],w,system=a.system,utilities=a.utilities,
+                setup=prefill if kind=='data' else None,
                 extract=['KEEP.ASM'],utility_files={'DASM.COM':image})
             assert b'DASM FILESYSTEM FIXTURE READY' in log and b'DASM FILESYSTEM FIXTURE FAILED' not in log,log[-3000:]
             assert b'DASM RESIDENT CANARY PASS' in log and b'DASM RESIDENT CANARY FAIL' not in log,log[-3000:]
