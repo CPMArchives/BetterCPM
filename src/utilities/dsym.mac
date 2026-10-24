@@ -1,0 +1,541 @@
+; Native LINK 1.3 textual symbol converter. LINK's file contains repeated
+; address/name pairs, separated by spaces, tabs or newlines. Output .DSY has
+; one pair per CRLF record, suitable for DASM's R command after explicit naming.
+; Existing destinations are refused. CODEC_FILE_IO stages and publishes output.
+        ASEG
+        ORG 100H
+        JP SY_START
+        INCLUDE codecfile.mac
+SY_START:
+        LD (UC_OLDSP),SP
+        LD SP,UC_STACK_TOP
+        LD HL,(6)
+        LD DE,SY_END+256
+        OR A
+        SBC HL,DE
+        LD DE,SY_MEMORY
+        JP C,SY_PLAIN_EXIT
+        LD HL,SY_STATE
+        LD DE,SY_STATE+1
+        LD BC,SY_STATE_END-SY_STATE-1
+        LD (HL),0
+        LDIR
+        LD HL,81H
+        LD A,(80H)
+        LD B,A
+SY_QUERY_SPACE:
+        LD A,B
+        OR A
+        JR Z,SY_NOTVER
+        LD A,(HL)
+        CP ' '
+        JR NZ,SY_QUERY_LENGTH
+        INC HL
+        DJNZ SY_QUERY_SPACE
+SY_QUERY_LENGTH:
+        LD A,B
+        CP 4
+        JR NZ,SY_NOTVER
+        LD DE,SY_VEROPT
+        LD B,4
+        CALL SY_MATCH
+        LD DE,SY_VERSION
+        JP Z,SY_PLAIN_EXIT
+SY_NOTVER:
+        LD A,(HL)
+        CP '/'
+        LD DE,UC_USAGE
+        JP Z,SY_PLAIN_EXIT
+        LD HL,UC_TEMP_NAME
+        LD DE,UC_TEMP+1
+        LD BC,11
+        LDIR
+        LD C,25
+        CALL UC_BDOS
+        INC A
+        LD (UC_DRIVE),A
+        LD (UC_DEST),A
+        CALL UC_PARSE
+        LD DE,UC_USAGE
+        JP C,UC_ERROR
+        LD HL,UC_INPUT
+        LD DE,UC_FINAL
+        LD BC,12
+        LDIR
+        LD A,(UC_DEST)
+        LD (UC_FINAL),A
+        LD HL,SY_EXT
+        LD DE,UC_FINAL+9
+        LD BC,3
+        LDIR
+        LD HL,UC_INPUT
+        LD DE,UC_FINAL
+        CALL UC_SAME_NAME
+        LD DE,SY_ALIAS
+        JP Z,UC_ERROR
+        LD DE,UC_INPUT
+        LD C,15
+        CALL UC_BDOS
+        CP 255
+        LD DE,UC_NO_INPUT
+        JP Z,UC_ERROR
+        LD A,1
+        LD (UC_INPUT_OPEN),A
+        LD HL,SY_TABLE
+        LD (SY_NEXT),HL
+SY_RECORD:
+        CALL SY_TOKEN
+        JP C,SY_PARSED
+        LD A,(SY_LENGTH)
+        CP 4
+        JP NZ,SY_INVALID
+        LD HL,SY_TOKENBUF
+        LD DE,0
+        LD B,4
+SY_HEX:
+        LD A,(HL)
+        SUB '0'
+        CP 10
+        JR C,SY_NIBBLE
+        SUB 7
+        CP 10
+        JP C,SY_INVALID
+        CP 16
+        JP NC,SY_INVALID
+SY_NIBBLE:
+        EX DE,HL
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        OR L
+        LD L,A
+        EX DE,HL
+        INC HL
+        DJNZ SY_HEX
+        LD (SY_ADDRESS),DE
+        CALL SY_TOKEN
+        JP C,SY_INVALID
+        LD A,(SY_TOKENBUF)
+        CALL SY_LETTER
+        JP C,SY_INVALID
+        LD HL,SY_TOKENBUF
+        LD A,(SY_LENGTH)
+        LD B,A
+SY_IDENTIFIER:
+        LD A,(HL)
+        CALL SY_LETTER
+        JR NC,SY_ID_OK
+        LD A,(HL)
+        CP '0'
+        JP C,SY_INVALID
+        CP '9'+1
+        JP NC,SY_INVALID
+SY_ID_OK:
+        INC HL
+        DJNZ SY_IDENTIFIER
+        ; Scan fixed records by name. Equal names require equal addresses.
+        LD IX,SY_TABLE
+        LD A,(SY_COUNT)
+        LD C,A
+SY_LOOKUP:
+        LD A,C
+        OR A
+        JR Z,SY_APPEND
+        LD A,(SY_LENGTH)
+        CP (IX+2)
+        JR NZ,SY_NEXT_RECORD
+        LD B,A
+        PUSH IX
+        POP DE
+        INC DE
+        INC DE
+        INC DE
+        LD HL,SY_TOKENBUF
+SY_NAME_COMPARE:
+        LD A,(DE)
+        CP (HL)
+        JR NZ,SY_NEXT_RECORD
+        INC DE
+        INC HL
+        DJNZ SY_NAME_COMPARE
+        LD HL,(SY_ADDRESS)
+        LD A,L
+        CP (IX+0)
+        JP NZ,SY_INVALID
+        LD A,H
+        CP (IX+1)
+        JP NZ,SY_INVALID
+        JP SY_RECORD
+SY_NEXT_RECORD:
+        LD DE,15
+        ADD IX,DE
+        DEC C
+        JR SY_LOOKUP
+SY_APPEND:
+        LD A,(SY_COUNT)
+        CP 255
+        JP Z,SY_INVALID
+        INC A
+        LD (SY_COUNT),A
+        LD HL,(SY_NEXT)
+        LD DE,(SY_ADDRESS)
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        INC HL
+        LD A,(SY_LENGTH)
+        LD (HL),A
+        INC HL
+        EX DE,HL
+        LD HL,SY_TOKENBUF
+        LD BC,12
+        LDIR
+        LD (SY_NEXT),DE
+        JP SY_RECORD
+SY_PARSED:
+        PUSH IY
+        CALL SY_SORT
+        POP IY
+        LD DE,UC_INPUT
+        LD C,16
+        CALL UC_BDOS
+        CP 255
+        LD DE,UC_CLOSE_MSG
+        JP Z,UC_ERROR
+        XOR A
+        LD (UC_INPUT_OPEN),A
+        CALL UC_MAKE_TEMP
+        JP C,UC_ERROR
+        LD HL,UC_OUT_BUFFER
+        LD (UC_OUT_PTR),HL
+        LD IX,SY_TABLE
+        LD A,(SY_COUNT)
+        LD B,A
+        OR A
+        JR Z,SY_FINISH
+SY_OUTPUT:
+        LD A,(IX+1)
+        CALL SY_HEXBYTE
+        LD A,(IX+0)
+        CALL SY_HEXBYTE
+        LD A,' '
+        CALL SY_PUT
+        PUSH BC
+        LD B,(IX+2)
+        PUSH IX
+        POP HL
+        INC HL
+        INC HL
+        INC HL
+SY_NAME_OUTPUT:
+        LD A,(HL)
+        CALL SY_PUT
+        INC HL
+        DJNZ SY_NAME_OUTPUT
+        POP BC
+        LD A,13
+        CALL SY_PUT
+        LD A,10
+        CALL SY_PUT
+        LD DE,15
+        ADD IX,DE
+        DJNZ SY_OUTPUT
+SY_FINISH:
+        LD A,26
+        CALL SY_PUT
+        CALL UC_FINAL_RECORD
+        LD DE,UC_WRITE_MSG
+        JP C,UC_ERROR
+        LD DE,UC_TEMP
+        LD C,16
+        CALL UC_BDOS
+        CP 255
+        LD DE,UC_CLOSE_MSG
+        JP Z,UC_ERROR
+        XOR A
+        LD (UC_TEMP_OPEN),A
+        LD DE,UC_FINAL
+        CALL UC_EXISTS
+        LD DE,UC_EXISTS_MSG
+        JP NZ,UC_ERROR
+        LD HL,UC_TEMP
+        LD DE,UC_RENAME
+        LD BC,12
+        LDIR
+        LD HL,UC_FINAL
+        LD DE,UC_RENAME+16
+        LD BC,12
+        LDIR
+        LD DE,UC_RENAME
+        LD C,23
+        CALL UC_BDOS
+        CP 255
+        LD DE,UC_RENAME_MSG
+        JP Z,UC_ERROR
+        XOR A
+        LD (UC_TEMP_LIVE),A
+        LD DE,SY_SUCCESS
+        JP UC_ERROR
+SY_PLAIN_EXIT:
+        CALL UC_PRINT
+        JP UC_EXIT
+SY_INVALID:
+        LD DE,SY_FORMAT
+        JP UC_ERROR
+; Sort fixed records by canonical name. Aliases retain their own records.
+SY_SORT:
+        LD A,(SY_COUNT)
+        CP 2
+        RET C
+SY_SORT_PASS:
+        XOR A
+        LD (SY_CHANGED),A
+        LD A,(SY_COUNT)
+        DEC A
+        LD (SY_REMAIN),A
+        LD IX,SY_TABLE
+SY_SORT_PAIR:
+        PUSH IX
+        POP HL
+        LD DE,15
+        ADD HL,DE
+        PUSH HL
+        POP IY
+        PUSH IX
+        POP HL
+        INC HL
+        INC HL
+        INC HL
+        PUSH IY
+        POP DE
+        INC DE
+        INC DE
+        INC DE
+        LD B,12
+SY_SORT_COMPARE:
+        LD A,(DE)
+        CP (HL)
+        JR C,SY_SORT_SWAP
+        JR NZ,SY_SORT_ADVANCE
+        INC HL
+        INC DE
+        DJNZ SY_SORT_COMPARE
+        JR SY_SORT_ADVANCE
+SY_SORT_SWAP:
+        PUSH IX
+        POP HL
+        PUSH IY
+        POP DE
+        LD B,15
+SY_SORT_BYTE:
+        LD A,(DE)
+        LD C,(HL)
+        LD (HL),A
+        LD A,C
+        LD (DE),A
+        INC HL
+        INC DE
+        DJNZ SY_SORT_BYTE
+        LD A,1
+        LD (SY_CHANGED),A
+SY_SORT_ADVANCE:
+        LD DE,15
+        ADD IX,DE
+        LD HL,SY_REMAIN
+        DEC (HL)
+        JR NZ,SY_SORT_PAIR
+        LD A,(SY_CHANGED)
+        OR A
+        JR NZ,SY_SORT_PASS
+        RET
+SY_LETTER:
+        CP '_'
+        RET Z
+        CP 'A'
+        RET C
+        CP 'Z'+1
+        CCF
+        RET
+SY_MATCH:
+        LD A,(DE)
+        CP (HL)
+        RET NZ
+        INC HL
+        INC DE
+        DJNZ SY_MATCH
+        RET
+SY_PUT:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        CALL UC_WRITE
+        POP HL
+        POP DE
+        POP BC
+        RET NC
+        LD DE,UC_WRITE_MSG
+        JP UC_ERROR
+SY_HEXBYTE:
+        PUSH AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        CALL SY_HEXDIGIT
+        POP AF
+SY_HEXDIGIT:
+        AND 15
+        ADD A,'0'
+        CP '9'+1
+        JR C,SY_PUT
+        ADD A,7
+        JR SY_PUT
+; Tokenizer: NC = token, C = clean end. Physical EOF is accepted only at a
+; token boundary. Once ^Z occurs only ^Z and text whitespace may follow.
+SY_TOKEN:
+        XOR A
+        LD (SY_LENGTH),A
+        LD HL,SY_TOKENBUF
+        LD B,12
+SY_CLEAR:
+        LD (HL),0
+        INC HL
+        DJNZ SY_CLEAR
+SY_SKIP:
+        CALL SY_GET
+        RET C
+        CP 26
+        JR Z,SY_END_TEXT
+        CP ' '
+        JR Z,SY_SKIP
+        CP 9
+        JR Z,SY_SKIP
+        CP 13
+        JR Z,SY_SKIP
+        CP 10
+        JR Z,SY_SKIP
+        LD HL,SY_TOKENBUF
+SY_TOKEN_CHAR:
+        LD B,A
+        LD A,(SY_LENGTH)
+        CP 12
+        JP Z,SY_INVALID
+        INC A
+        LD (SY_LENGTH),A
+        LD (HL),B
+        INC HL
+        PUSH HL
+        CALL SY_GET
+        POP HL
+        JR C,SY_TOKEN_DONE
+        CP 26
+        JR Z,SY_END_TOKEN
+        CP ' '
+        JR Z,SY_TOKEN_DONE
+        CP 9
+        JR Z,SY_TOKEN_DONE
+        CP 13
+        JR Z,SY_TOKEN_DONE
+        CP 10
+        JR Z,SY_TOKEN_DONE
+        JR SY_TOKEN_CHAR
+SY_END_TOKEN:
+        LD A,1
+        LD (SY_TEXT_END),A
+SY_TOKEN_DONE:
+        OR A
+        RET
+SY_END_TEXT:
+        LD A,1
+        LD (SY_TEXT_END),A
+        JR SY_SKIP
+SY_GET:
+        CALL UC_READ
+        JR NC,SY_GOT
+        OR A
+        LD DE,UC_READ_MSG
+        JP NZ,UC_ERROR
+        SCF
+        RET
+SY_GOT:
+        LD B,A
+        LD A,(SY_TEXT_END)
+        OR A
+        LD A,B
+        JR Z,SY_UPPER
+        CP 26
+        JR Z,SY_GET
+        CP ' '
+        JR Z,SY_GET
+        CP 9
+        JR Z,SY_GET
+        CP 13
+        JR Z,SY_GET
+        CP 10
+        JP NZ,SY_INVALID
+        JR SY_GET
+SY_UPPER:
+        CALL UC_UPPER
+        OR A
+        RET
+
+        CODEC_FILE_IO
+        CODEC_FILE_CLEANUP
+SY_VERSION: DB 'DSYM development - LINK 1.3 symbols to DASM',13,10,'$'
+SY_VEROPT: DB '/VER'
+SY_EXT: DB 'DSY'
+UC_USAGE: DB 'Usage: DSYM [drive:]file.SYM [destination-drive:]',13,10
+          DB 'LINK 1.3 address/name pairs; output is file.DSY.',13,10
+          DB 'At most 255 names, 12 characters; existing output is refused.',13,10,'$'
+SY_SUCCESS: DB 'DSYM: complete.',13,10,'$'
+SY_FORMAT: DB 'DSYM: invalid, conflicting or excessive symbols; output not published.',13,10,'$'
+SY_ALIAS: DB 'DSYM: output aliases input.',13,10,'$'
+SY_MEMORY: DB 'DSYM: insufficient transient memory.',13,10,'$'
+UC_NO_INPUT: DB 'DSYM: cannot open input.',13,10,'$'
+UC_EXISTS_MSG: DB 'DSYM: output exists; nothing replaced.',13,10,'$'
+UC_CREATE_MSG: DB 'DSYM: cannot create temporary.',13,10,'$'
+UC_READ_MSG: DB 'DSYM: read failed.',13,10,'$'
+UC_WRITE_MSG: DB 'DSYM: write failed.',13,10,'$'
+UC_CLOSE_MSG: DB 'DSYM: close failed.',13,10,'$'
+UC_RENAME_MSG: DB 'DSYM: cannot publish output.',13,10,'$'
+UC_CLEAN_MSG: DB 'DSYM: cleanup failed; inspect DSYnnnnn.$$$.',13,10,'$'
+UC_LEGAL: DB '!#$%&',27H,'()-@^_{}~'
+UC_LEGAL_END:
+UC_TEMP_NAME: DB 'DSY00000$$$'
+UC_OLDSP: DW 0
+SY_STATE:
+UC_DRIVE: DB 0
+UC_DEST: DB 0
+UC_INPUT_OPEN: DB 0
+UC_TEMP_OPEN: DB 0
+UC_TEMP_LIVE: DB 0
+UC_CLEAN_FAILED: DB 0
+UC_ARG_PTR: DW 0
+UC_ARG_LEN: DB 0
+UC_IN_PTR: DW 0
+UC_IN_LEFT: DB 0
+UC_OUT_PTR: DW 0
+UC_OUT_USED: DB 0
+UC_INPUT: DS 36
+UC_FINAL: DS 36
+UC_SEARCH: DS 36
+UC_RENAME: DS 36
+UC_TEMP: DS 36
+SY_COUNT: DB 0
+SY_NEXT: DW 0
+SY_LENGTH: DB 0
+SY_ADDRESS: DW 0
+SY_TEXT_END: DB 0
+SY_CHANGED: DB 0
+SY_REMAIN: DB 0
+SY_TOKENBUF: DS 12
+SY_STATE_END:
+UC_SEARCH_BUFFER: DS 128
+UC_IN_BUFFER: DS 128
+UC_OUT_BUFFER: DS 128
+SY_TABLE: DS 15*255
+UC_STACK: DS 512
+UC_STACK_TOP:
+SY_END:
+        END

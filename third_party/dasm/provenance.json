@@ -1,0 +1,39 @@
+{
+  "upstream": "Richard Conn DASM 1.5",
+  "source_date": "1982-08-16",
+  "sigm_volume": 91,
+  "volume_release": "1982-12-18",
+  "retrieved": "2026-10-25",
+  "url": "https://ftp.trailing-edge.com/pub/oakcpm2/sigm/vol091/",
+  "redistribution_basis": "Maintainer accepted SIG/M historical public-domain distribution and modification practice; no separate modern license asserted. submission.lib is an unsigned template, not Conn\u2019s submission.",
+  "files": {
+    "read.me": {
+      "bytes": 1152,
+      "sha256": "ad163b0050fbedeefad80dd3c3883264ac111fa9d871fa7106f49728ede1bb28"
+    },
+    "dasmzlg.mac": {
+      "bytes": 15489,
+      "sha256": "efa1bfa58be9ece24ada7c6a8468d28d3ef9b8eb649805e1a575b9e7635c2508"
+    },
+    "submission.lib": {
+      "bytes": 1434,
+      "sha256": "1e6cd0caa5ced80215b3686ed76337004020812e54572cd07d924b5c8d97e35d"
+    },
+    "dasm.mac": {
+      "bytes": 71797,
+      "sha256": "7bc88b9d74cea16c9c45fc0fd4e934b96f00d2f370c99e29d93453ea33329402"
+    },
+    "dasmtdl.mac": {
+      "bytes": 11861,
+      "sha256": "87ec3a25382e971da2462070cc06b672caf58c542ecd88065ec33741ef8a35c4"
+    },
+    "-catalog.091": {
+      "bytes": 910,
+      "sha256": "ee54e4e8f97fd3ea9636ec9aed6516fba87a861c79295ad016ac660c8aaddb06"
+    },
+    "dasm.com": {
+      "bytes": 9472,
+      "sha256": "0c5d67e0f3f5e95d88e76999495034f2b1021d43d0299edf5aa9b0e317a98e2e"
+    }
+  }
+}

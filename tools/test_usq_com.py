@@ -28,7 +28,7 @@ def padded(data):
 
 
 class Command:
-    def __init__(self, library, image, listing):
+    def __init__(self, library, image, listing, required_symbols=None):
         self.lib, self.image = library, image
         self.mem = (C.c_ubyte * 65536).in_dll(library, "memory")
         self.reg = {}
@@ -40,7 +40,7 @@ class Command:
         for name in ("F", "F_"):
             self.reg[name] = C.c_int.in_dll(library, name)
         self.symbols = {}
-        for name in ("UC_OLDSP", "UC_STACK", "UC_STACK_TOP", "UC_CONTEXT", "UC_INPUT", "UC_TEMP"):
+        for name in (required_symbols or ("UC_OLDSP", "UC_STACK", "UC_STACK_TOP", "UC_CONTEXT", "UC_INPUT", "UC_TEMP")):
             match = re.search(rf"^([0-9a-f]{{4}}).*\b{name}:\s", listing, re.M | re.I)
             assert match, name
             self.symbols[name] = int(match[1], 16)
@@ -160,7 +160,7 @@ class Command:
             return 3
         raise AssertionError(("unexpected BDOS function", fn))
 
-    def run(self, command, files, drive=1, user=0, failures=None, late_existing=None):
+    def run(self, command, files, drive=1, user=0, failures=None, late_existing=None, tpa=None):
         self.lib.set_hooks(5, 0xFFFE, self.hook)
         self.files = dict(files)
         self.original = dict(files)
@@ -173,6 +173,8 @@ class Command:
         self.mem[:] = bytes(65536)
         self.mem[0x100:0x100 + len(self.image)] = self.image
         self.mem[5] = 0xC9               # BDOS returns through a real RET
+        if tpa is not None:
+            self.mem[6:8] = tpa.to_bytes(2, 'little')
         tail = command.encode("ascii")
         assert len(tail) <= 127
         self.mem[0x80] = len(tail)
