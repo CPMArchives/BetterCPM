@@ -7,7 +7,7 @@ import shutil
 import subprocess
 import tempfile
 
-from codec_version import prepare_version, version_text as codec_version_text
+from codec_version import prepare_version, version_text as codec_version_text, recorded_build
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -16,6 +16,7 @@ def version_text():
     return codec_version_text("UNLZH")
 
 
+@recorded_build('UNLZH')
 def build(assembler, destination):
     destination = Path(destination)
     destination.mkdir(parents=True, exist_ok=True)
@@ -42,8 +43,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--assembler", type=Path, default=Path.home() / "bin/z80asm")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "build/utilities")
+    parser.add_argument('--identity-state',choices=('auto','assigned','development'),default='auto')
+    parser.add_argument('--target',choices=('z80pack','trs80gp'),default='z80pack')
     args = parser.parse_args()
-    image = build(args.assembler, args.output_dir)
+    image = build(args.assembler, args.output_dir, identity_state=args.identity_state, target=args.target)
     print(f"{len(image)} bytes; SHA-256 {hashlib.sha256(image).hexdigest()}")
     print(args.output_dir / "UNLZH.COM")
 

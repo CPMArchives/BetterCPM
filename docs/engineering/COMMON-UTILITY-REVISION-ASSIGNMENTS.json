@@ -1,0 +1,1036 @@
+{
+  "schema": 1,
+  "scope": "default cross target assignments; second target input captures do not claim native/physical execution qualification",
+  "records": {
+    "BYE": {
+      "schema": 1,
+      "status": "explicit revision assignment; not qualification",
+      "component": "utility:BYE",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      },
+      "identity": {
+        "version": "1.0",
+        "revision": 2
+      },
+      "proposal": {
+        "schema": 1,
+        "status": "revision-proposal; not acceptance",
+        "component": "utility:BYE",
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        },
+        "reference_identity": {
+          "revision": 2,
+          "version": "1.0"
+        },
+        "candidate_identity": {
+          "revision": 2,
+          "version": "1.0"
+        },
+        "proposed_identity": {
+          "version": "1.0",
+          "revision": 2
+        },
+        "executable_changed": false,
+        "selected_inputs_changed": true,
+        "reference_report_sha256": "12e7a27e21932ff32a2048691268a1714f3ada68b6ef143df547c42ef4a2e763",
+        "candidate_report_sha256": "00a7f98e4c4d9a6e5b6d31640fa8a66c931db4da40ef59a226a5bc98bc59301b",
+        "reference_artifact_sha256": "a319551ef804c9babb57037cddb1053d58e9e0c215d9f2829b5fcf1c9043e2ac",
+        "candidate_artifact_sha256": "a319551ef804c9babb57037cddb1053d58e9e0c215d9f2829b5fcf1c9043e2ac",
+        "candidate_input_fingerprint": "4751b19c7d2d97cc9eccb55689f59626b38699649e2da5bbd17992e33d8aed4a"
+      },
+      "final_report_sha256": "00a7f98e4c4d9a6e5b6d31640fa8a66c931db4da40ef59a226a5bc98bc59301b",
+      "artifact": {
+        "bytes": 1069,
+        "name": "BYE.COM",
+        "sha256": "a319551ef804c9babb57037cddb1053d58e9e0c215d9f2829b5fcf1c9043e2ac"
+      },
+      "input_record": {
+        "assigned_identity": {
+          "revision": 2,
+          "version": "1.0"
+        },
+        "fingerprint": "4751b19c7d2d97cc9eccb55689f59626b38699649e2da5bbd17992e33d8aed4a",
+        "inputs": {
+          "component": "utility:BYE",
+          "configuration": {
+            "assembler_flags": [
+              "-fb"
+            ],
+            "origin": 256
+          },
+          "files": {
+            "src/platform/z80pack/bye.mac": "1976c742ad6a96b00248fd28f2244a8d5beb33ac6be3aab0eb204cb58f2945c7",
+            "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+            "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+            "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+            "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+            "tools/build_z80pack_bye.py": "23e13dc3fa739bfdebbcd0a9e1e6d06455028d4c460a8f5bc1a0dfec01ed9578",
+            "tools/checked_build_contract.py": "3012cc25bdf79fbeed850e02c8673740498370952425c1ca3a3a26ec35eba193",
+            "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+            "tools/component_development.py": "77cd629b08894f396b787dbf68cd295b644bf639b3d94d109e19da79e1f57847",
+            "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+            "tools/component_inputs.py": "9951845f3edf49ff12a07b41032051502f0b2d6af21b4d00f9d0bbcc32778713",
+            "tools/component_registry.py": "3e4f82a3cba1e4d5666dd2adfa663190f1c5349fe6bc9d572132906da6e276cf",
+            "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+            "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+            "tools/utility_versions.py": "5b86b68502a25f16ba5b961b534cd9fda35ce3b0043e976f98fab4f5ac2c0054"
+          },
+          "identity_fields": {
+            "api_version": null,
+            "version": "1.0"
+          },
+          "schema": 1,
+          "toolchain": {
+            "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+          },
+          "variant": {
+            "build_mode": "cross",
+            "profile": "default",
+            "target": "z80pack"
+          }
+        },
+        "schema": 1,
+        "status": "pilot-input-capture"
+      },
+      "provenance": {
+        "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc",
+        "repository_commit": null,
+        "source_state": "selected input hashes; global cleanliness not asserted"
+      }
+    },
+    "DDT": {
+      "schema": 1,
+      "status": "explicit revision assignment; not qualification",
+      "component": "utility:DDT",
+      "variant": {
+        "target": "z80pack",
+        "profile": "default",
+        "build_mode": "cross"
+      },
+      "identity": {
+        "version": "1.0",
+        "revision": 3
+      },
+      "proposal": {
+        "schema": 1,
+        "status": "revision-proposal; not acceptance",
+        "component": "utility:DDT",
+        "variant": {
+          "target": "z80pack",
+          "profile": "default",
+          "build_mode": "cross"
+        },
+        "reference_identity": {
+          "version": "1.0",
+          "revision": 3
+        },
+        "candidate_identity": {
+          "version": "1.0",
+          "revision": 3
+        },
+        "proposed_identity": {
+          "version": "1.0",
+          "revision": 3
+        },
+        "executable_changed": false,
+        "selected_inputs_changed": true,
+        "reference_report_sha256": "7d7e4fc4f4a7ba303f230f918caee27460986eef015e19fb73ec72f202297d20",
+        "candidate_report_sha256": "cdf55d5f1f76b1280630de548fc6325448662daee1f6e799db74e72e84c37dc7",
+        "reference_artifact_sha256": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467",
+        "candidate_artifact_sha256": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467",
+        "candidate_input_fingerprint": "ba3384d1e7882dea31cbd7a140fc8f75ae007a470928d58ee5185cf6c800acc5"
+      },
+      "final_report_sha256": "81a40fbe9216a4d23ae4550b45e9be2d64de15588a32b5b1088ad6781ee7ea75",
+      "artifact": {
+        "name": "DDT.COM",
+        "bytes": 6528,
+        "sha256": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467"
+      },
+      "input_record": {
+        "schema": 1,
+        "status": "pilot-input-capture",
+        "assigned_identity": {
+          "version": "1.0",
+          "revision": 3
+        },
+        "inputs": {
+          "schema": 1,
+          "component": "utility:DDT",
+          "variant": {
+            "target": "z80pack",
+            "profile": "default",
+            "build_mode": "cross"
+          },
+          "identity_fields": {
+            "version": "1.0",
+            "api_version": null
+          },
+          "configuration": {
+            "payload_origins": [
+              0,
+              256,
+              12544
+            ],
+            "bootstrap_origin": 256,
+            "assembler_flags": [
+              "-fb"
+            ],
+            "parity_flags": [
+              "-8",
+              "-fb"
+            ]
+          },
+          "files": {
+            "src/utilities/common/ddtinput.inc": "12af6ff657ca74d41ca4f87929c9b0d0524876481a5c1f51edffc81f8dde1f15",
+            "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+            "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+            "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+            "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+            "src/utilities/ddt.mac": "712e92e5abae33ed1406a7d2ad915ed89a144ba2055bf08e391ac2939cd5c301",
+            "third_party/dri-ddt/DDT0MOV.ASM": "177203dfc92136cd78191f475413c0b9a82b0e815ee956b99ccd70098d47516f",
+            "third_party/dri-ddt/DDT1ASM.ASM": "a79c505b027233e53551aac08a66c72a1a689c1c270d6ed450aae52fcf8d47d2",
+            "third_party/dri-ddt/DDT2MON.ASM": "a685b7e94931ac08f8fc976bd7a2699c1224dd9dc2ad02424cc1b2278571ede8",
+            "tools/build_ddt.py": "31ea39043ad8721a34608c50e712425b1ee426e9b3fc7ac666f9298d926195d6",
+            "tools/component_development.py": "77cd629b08894f396b787dbf68cd295b644bf639b3d94d109e19da79e1f57847",
+            "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+            "tools/component_inputs.py": "9951845f3edf49ff12a07b41032051502f0b2d6af21b4d00f9d0bbcc32778713",
+            "tools/component_registry.py": "3e4f82a3cba1e4d5666dd2adfa663190f1c5349fe6bc9d572132906da6e276cf",
+            "tools/ddt_source.py": "a689abcc5d84d56829d357b5908d5c800efc957bf2db1886700d074cd913ca78",
+            "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+            "tools/utility_versions.py": "5b86b68502a25f16ba5b961b534cd9fda35ce3b0043e976f98fab4f5ac2c0054"
+          },
+          "toolchain": {
+            "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+          }
+        },
+        "fingerprint": "ba3384d1e7882dea31cbd7a140fc8f75ae007a470928d58ee5185cf6c800acc5"
+      },
+      "provenance": {
+        "repository_commit": null,
+        "source_state": "selected input hashes; global cleanliness not asserted"
+      }
+    },
+    "SQ": {
+      "schema": 1,
+      "status": "explicit revision assignment; not qualification",
+      "component": "utility:SQ",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      },
+      "identity": {
+        "version": "1.0",
+        "revision": 5
+      },
+      "proposal": {
+        "schema": 1,
+        "status": "revision-proposal; not acceptance",
+        "component": "utility:SQ",
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        },
+        "reference_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "candidate_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "proposed_identity": {
+          "version": "1.0",
+          "revision": 5
+        },
+        "executable_changed": false,
+        "selected_inputs_changed": true,
+        "reference_report_sha256": "5516623513b76e9ff5b78ec42d0bc4588e979155a4ad3d202f4e93b920b06aa9",
+        "candidate_report_sha256": "91d6a99deea1404d60ecc1eda643c43a1e63dcb758609d22dd0d573cf3bb1d11",
+        "reference_artifact_sha256": "cb2d04803788218190999744d5500ef0f53d958810f1a9cb6703f51d1387bea1",
+        "candidate_artifact_sha256": "cb2d04803788218190999744d5500ef0f53d958810f1a9cb6703f51d1387bea1",
+        "candidate_input_fingerprint": "e98b75321f61437336ae339215e4c255335b7d1481969b1f987391086acc95e8"
+      },
+      "final_report_sha256": "91d6a99deea1404d60ecc1eda643c43a1e63dcb758609d22dd0d573cf3bb1d11",
+      "artifact": {
+        "bytes": 8023,
+        "name": "SQ.COM",
+        "sha256": "cb2d04803788218190999744d5500ef0f53d958810f1a9cb6703f51d1387bea1"
+      },
+      "input_record": {
+        "assigned_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "fingerprint": "e98b75321f61437336ae339215e4c255335b7d1481969b1f987391086acc95e8",
+        "inputs": {
+          "component": "utility:SQ",
+          "configuration": {
+            "assembler_flags": [
+              "-e32",
+              "-fb"
+            ],
+            "origin": 256
+          },
+          "files": {
+            "src/codec/codec.inc": "64d8478d79311923e05ef1b40d86797d89c7d97c42aa74ae28cb57abfefd356d",
+            "src/codec/codec.mac": "0182e9ed7ce1de3b414937e30b7ef84ab548dd5c749326017fd1360c3050e43e",
+            "src/codec/sq.inc": "72f0341b8908f055c9a536f73512e8917db56996388977fd86fed3620be24946",
+            "src/codec/sq.mac": "8a985270ef97a4baf611c28be247574505f436c58731f9f147bc7009b770d6ea",
+            "src/utilities/common/codecfile.mac": "098f36ff405e6559ca018694d5d3dd8083df5bd0726c0eb8f98ae02cb5741dea",
+            "src/utilities/common/codecver.inc": "7efb6979f9b403974e4bec08322b9b01562212786daeae6e1cfaab09d732c63f",
+            "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+            "src/utilities/sq.mac": "4c1d1b768e2c22feb8cd4034f1e895beb83bf57a685cfd4775a38987e622e485",
+            "tools/build_sq.py": "794395aa8d53eb93fc692f8d207421a9ccd7259b174aa75ac9ebd51e8fdafeeb",
+            "tools/codec_version.py": "e6fc65642b197963eb6f534486c0aace85a4906fd7936ad67e5390ad53c9c421",
+            "tools/component_development.py": "77cd629b08894f396b787dbf68cd295b644bf639b3d94d109e19da79e1f57847",
+            "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+            "tools/component_inputs.py": "9951845f3edf49ff12a07b41032051502f0b2d6af21b4d00f9d0bbcc32778713",
+            "tools/component_registry.py": "3e4f82a3cba1e4d5666dd2adfa663190f1c5349fe6bc9d572132906da6e276cf",
+            "tools/utility_versions.py": "5b86b68502a25f16ba5b961b534cd9fda35ce3b0043e976f98fab4f5ac2c0054"
+          },
+          "identity_fields": {
+            "api_version": null,
+            "version": "1.0"
+          },
+          "schema": 1,
+          "toolchain": {
+            "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+          },
+          "variant": {
+            "build_mode": "cross",
+            "profile": "default",
+            "target": "z80pack"
+          }
+        },
+        "schema": 1,
+        "status": "pilot-input-capture"
+      },
+      "provenance": {
+        "repository_commit": null
+      }
+    },
+    "USQ": {
+      "schema": 1,
+      "status": "explicit revision assignment; not qualification",
+      "component": "utility:USQ",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      },
+      "identity": {
+        "version": "1.0",
+        "revision": 5
+      },
+      "proposal": {
+        "schema": 1,
+        "status": "revision-proposal; not acceptance",
+        "component": "utility:USQ",
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        },
+        "reference_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "candidate_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "proposed_identity": {
+          "version": "1.0",
+          "revision": 5
+        },
+        "executable_changed": false,
+        "selected_inputs_changed": true,
+        "reference_report_sha256": "105cd6929d5d1e911aa278c85f760966471f4b8acb669b05fdb51438450303c0",
+        "candidate_report_sha256": "6f39d0954ae78abd72236e9ec780356a2a4be4c4a302b17a8b619f3b86079e0c",
+        "reference_artifact_sha256": "7ec6c04258b0fc6d1871ed1ec26251eea7290e8c6c7576fad27f1cedf7c08f89",
+        "candidate_artifact_sha256": "7ec6c04258b0fc6d1871ed1ec26251eea7290e8c6c7576fad27f1cedf7c08f89",
+        "candidate_input_fingerprint": "7b36fa390121ae9059282f509e9b22fe36b44740b6c5691265d84c62ddef6acf"
+      },
+      "final_report_sha256": "6f39d0954ae78abd72236e9ec780356a2a4be4c4a302b17a8b619f3b86079e0c",
+      "artifact": {
+        "bytes": 5298,
+        "name": "USQ.COM",
+        "sha256": "7ec6c04258b0fc6d1871ed1ec26251eea7290e8c6c7576fad27f1cedf7c08f89"
+      },
+      "input_record": {
+        "assigned_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "fingerprint": "7b36fa390121ae9059282f509e9b22fe36b44740b6c5691265d84c62ddef6acf",
+        "inputs": {
+          "component": "utility:USQ",
+          "configuration": {
+            "assembler_flags": [
+              "-e32",
+              "-fb"
+            ],
+            "origin": 256
+          },
+          "files": {
+            "src/codec/codec.inc": "64d8478d79311923e05ef1b40d86797d89c7d97c42aa74ae28cb57abfefd356d",
+            "src/codec/codec.mac": "0182e9ed7ce1de3b414937e30b7ef84ab548dd5c749326017fd1360c3050e43e",
+            "src/codec/usq.inc": "73fc88f4cfb0cfbec4e7865ba157e7b90ae339bd1e03eae348e6990c0e949924",
+            "src/codec/usq.mac": "32566e1c5610b93633f678734fcad263c144ee0e93d8246f9887bd4d80bdd63d",
+            "src/utilities/common/codecfile.mac": "098f36ff405e6559ca018694d5d3dd8083df5bd0726c0eb8f98ae02cb5741dea",
+            "src/utilities/common/codecver.inc": "7efb6979f9b403974e4bec08322b9b01562212786daeae6e1cfaab09d732c63f",
+            "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+            "src/utilities/usq.mac": "0a70923ffdba62518ebe6c30015fdb511589f55175dad37e87fddd4f311372b0",
+            "tools/build_usq.py": "e64b0c3d622206779c09947404fa8decc63540446bbcce0a090744e4fb3658da",
+            "tools/codec_version.py": "e6fc65642b197963eb6f534486c0aace85a4906fd7936ad67e5390ad53c9c421",
+            "tools/component_development.py": "77cd629b08894f396b787dbf68cd295b644bf639b3d94d109e19da79e1f57847",
+            "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+            "tools/component_inputs.py": "9951845f3edf49ff12a07b41032051502f0b2d6af21b4d00f9d0bbcc32778713",
+            "tools/component_registry.py": "3e4f82a3cba1e4d5666dd2adfa663190f1c5349fe6bc9d572132906da6e276cf",
+            "tools/utility_versions.py": "5b86b68502a25f16ba5b961b534cd9fda35ce3b0043e976f98fab4f5ac2c0054"
+          },
+          "identity_fields": {
+            "api_version": null,
+            "version": "1.0"
+          },
+          "schema": 1,
+          "toolchain": {
+            "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+          },
+          "variant": {
+            "build_mode": "cross",
+            "profile": "default",
+            "target": "z80pack"
+          }
+        },
+        "schema": 1,
+        "status": "pilot-input-capture"
+      },
+      "provenance": {
+        "repository_commit": null
+      }
+    },
+    "CR": {
+      "schema": 1,
+      "status": "explicit revision assignment; not qualification",
+      "component": "utility:CR",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      },
+      "identity": {
+        "version": "1.0",
+        "revision": 5
+      },
+      "proposal": {
+        "schema": 1,
+        "status": "revision-proposal; not acceptance",
+        "component": "utility:CR",
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        },
+        "reference_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "candidate_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "proposed_identity": {
+          "version": "1.0",
+          "revision": 5
+        },
+        "executable_changed": false,
+        "selected_inputs_changed": true,
+        "reference_report_sha256": "846708f0a70c5509d3db808dd05ee43032ef9b0a795cdc644fc6f37f908b45c3",
+        "candidate_report_sha256": "bd2581f779950325937f54eecc088acfc555765c9d1f094f7eb3ce566f052f7b",
+        "reference_artifact_sha256": "65b9b9f3edd1c07e8d6d352803bb008ba18a5747f19f5a0f799d3e3646012fba",
+        "candidate_artifact_sha256": "65b9b9f3edd1c07e8d6d352803bb008ba18a5747f19f5a0f799d3e3646012fba",
+        "candidate_input_fingerprint": "1d75dc17391886b4b68f7d48b93c5cc64f30a167c650010c1da36b26bd074f10"
+      },
+      "final_report_sha256": "bd2581f779950325937f54eecc088acfc555765c9d1f094f7eb3ce566f052f7b",
+      "artifact": {
+        "bytes": 29343,
+        "name": "CR.COM",
+        "sha256": "65b9b9f3edd1c07e8d6d352803bb008ba18a5747f19f5a0f799d3e3646012fba"
+      },
+      "input_record": {
+        "assigned_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "fingerprint": "1d75dc17391886b4b68f7d48b93c5cc64f30a167c650010c1da36b26bd074f10",
+        "inputs": {
+          "component": "utility:CR",
+          "configuration": {
+            "assembler_flags": [
+              "-e32",
+              "-fb"
+            ],
+            "origin": 256
+          },
+          "files": {
+            "src/codec/codec.inc": "64d8478d79311923e05ef1b40d86797d89c7d97c42aa74ae28cb57abfefd356d",
+            "src/codec/codec.mac": "0182e9ed7ce1de3b414937e30b7ef84ab548dd5c749326017fd1360c3050e43e",
+            "src/codec/cr.inc": "bfbbcbecdab4ff0020e5855e7e9f832ce8d61a64b0f94c386b7c972122085007",
+            "src/codec/cr.mac": "ed03434a995e6891c37b929aecfeae4ffecb0884ece003752e3f852a928fb1d6",
+            "src/utilities/common/codecfile.mac": "098f36ff405e6559ca018694d5d3dd8083df5bd0726c0eb8f98ae02cb5741dea",
+            "src/utilities/common/codecver.inc": "7efb6979f9b403974e4bec08322b9b01562212786daeae6e1cfaab09d732c63f",
+            "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+            "src/utilities/cr.mac": "c82905f28b10be7ce360ddd60d0e241df41627f4143d59fe3f52470daa70f950",
+            "tools/build_cr.py": "095eb045d64fdcf2e4d3796d1cf11d700b58237f6ec5c2fafa59e71c32e02a73",
+            "tools/codec_version.py": "e6fc65642b197963eb6f534486c0aace85a4906fd7936ad67e5390ad53c9c421",
+            "tools/component_development.py": "77cd629b08894f396b787dbf68cd295b644bf639b3d94d109e19da79e1f57847",
+            "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+            "tools/component_inputs.py": "9951845f3edf49ff12a07b41032051502f0b2d6af21b4d00f9d0bbcc32778713",
+            "tools/component_registry.py": "3e4f82a3cba1e4d5666dd2adfa663190f1c5349fe6bc9d572132906da6e276cf",
+            "tools/utility_versions.py": "5b86b68502a25f16ba5b961b534cd9fda35ce3b0043e976f98fab4f5ac2c0054"
+          },
+          "identity_fields": {
+            "api_version": null,
+            "version": "1.0"
+          },
+          "schema": 1,
+          "toolchain": {
+            "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+          },
+          "variant": {
+            "build_mode": "cross",
+            "profile": "default",
+            "target": "z80pack"
+          }
+        },
+        "schema": 1,
+        "status": "pilot-input-capture"
+      },
+      "provenance": {
+        "repository_commit": null
+      }
+    },
+    "UNCR": {
+      "schema": 1,
+      "status": "explicit revision assignment; not qualification",
+      "component": "utility:UNCR",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      },
+      "identity": {
+        "version": "1.0",
+        "revision": 5
+      },
+      "proposal": {
+        "schema": 1,
+        "status": "revision-proposal; not acceptance",
+        "component": "utility:UNCR",
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        },
+        "reference_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "candidate_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "proposed_identity": {
+          "version": "1.0",
+          "revision": 5
+        },
+        "executable_changed": false,
+        "selected_inputs_changed": true,
+        "reference_report_sha256": "e6feec41482b13cf22fba6a51bb50699eaf84a2cbca30b4171d81468f0b91f92",
+        "candidate_report_sha256": "ab27cf6c7560ea670dc0c1f6145bddcee80be252b51a4bdee5ceb616e8a39347",
+        "reference_artifact_sha256": "cb43eaaf942bee59a34decf1d1c362fd88a5cd83404e8b4c11db56b3512c645b",
+        "candidate_artifact_sha256": "cb43eaaf942bee59a34decf1d1c362fd88a5cd83404e8b4c11db56b3512c645b",
+        "candidate_input_fingerprint": "eae4b092c2a983fc88b1395e5a0fd76b3c545bccac3c3e53cc57ed7f6b907e73"
+      },
+      "final_report_sha256": "ab27cf6c7560ea670dc0c1f6145bddcee80be252b51a4bdee5ceb616e8a39347",
+      "artifact": {
+        "bytes": 31106,
+        "name": "UNCR.COM",
+        "sha256": "cb43eaaf942bee59a34decf1d1c362fd88a5cd83404e8b4c11db56b3512c645b"
+      },
+      "input_record": {
+        "assigned_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "fingerprint": "eae4b092c2a983fc88b1395e5a0fd76b3c545bccac3c3e53cc57ed7f6b907e73",
+        "inputs": {
+          "component": "utility:UNCR",
+          "configuration": {
+            "assembler_flags": [
+              "-e32",
+              "-fb"
+            ],
+            "origin": 256
+          },
+          "files": {
+            "src/codec/codec.inc": "64d8478d79311923e05ef1b40d86797d89c7d97c42aa74ae28cb57abfefd356d",
+            "src/codec/codec.mac": "0182e9ed7ce1de3b414937e30b7ef84ab548dd5c749326017fd1360c3050e43e",
+            "src/codec/uncr.inc": "273604aa41590f497ebd8e9a4fcf8cf9687d476a1a3ccdc0fec384be2a886763",
+            "src/codec/uncr.mac": "2f6f91f9f2049a7a5e15fdb0393f09fc1755e70a2e3613565c963beadc7488f4",
+            "src/utilities/common/codecfile.mac": "098f36ff405e6559ca018694d5d3dd8083df5bd0726c0eb8f98ae02cb5741dea",
+            "src/utilities/common/codecver.inc": "7efb6979f9b403974e4bec08322b9b01562212786daeae6e1cfaab09d732c63f",
+            "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+            "src/utilities/uncr.mac": "fd68e215ea0a63dfac7eeee518a74c692e8345e14a1f298f6ee50e767d7a9a82",
+            "tools/build_uncr.py": "db455ed07a3b689b28cca48eb9d5608977ea42895f9b10c3c3bd60a6f14c8ce7",
+            "tools/codec_version.py": "e6fc65642b197963eb6f534486c0aace85a4906fd7936ad67e5390ad53c9c421",
+            "tools/component_development.py": "77cd629b08894f396b787dbf68cd295b644bf639b3d94d109e19da79e1f57847",
+            "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+            "tools/component_inputs.py": "9951845f3edf49ff12a07b41032051502f0b2d6af21b4d00f9d0bbcc32778713",
+            "tools/component_registry.py": "3e4f82a3cba1e4d5666dd2adfa663190f1c5349fe6bc9d572132906da6e276cf",
+            "tools/utility_versions.py": "5b86b68502a25f16ba5b961b534cd9fda35ce3b0043e976f98fab4f5ac2c0054"
+          },
+          "identity_fields": {
+            "api_version": null,
+            "version": "1.0"
+          },
+          "schema": 1,
+          "toolchain": {
+            "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+          },
+          "variant": {
+            "build_mode": "cross",
+            "profile": "default",
+            "target": "z80pack"
+          }
+        },
+        "schema": 1,
+        "status": "pilot-input-capture"
+      },
+      "provenance": {
+        "repository_commit": null
+      }
+    },
+    "LZH": {
+      "schema": 1,
+      "status": "explicit revision assignment; not qualification",
+      "component": "utility:LZH",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      },
+      "identity": {
+        "version": "1.0",
+        "revision": 5
+      },
+      "proposal": {
+        "schema": 1,
+        "status": "revision-proposal; not acceptance",
+        "component": "utility:LZH",
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        },
+        "reference_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "candidate_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "proposed_identity": {
+          "version": "1.0",
+          "revision": 5
+        },
+        "executable_changed": false,
+        "selected_inputs_changed": true,
+        "reference_report_sha256": "23cbc225963be671ba2ef331446d75c2b69cb33fdf815a37cd303070f5448351",
+        "candidate_report_sha256": "1d9cd3b7f70186def4cb5f90b590ab5e0fa7ff349bd32b5a0f06a8160cfb6007",
+        "reference_artifact_sha256": "e6e84e0cf90a8f149e9f2d9899530afcc2e0a51a437de9741609bfb6baa66739",
+        "candidate_artifact_sha256": "e6e84e0cf90a8f149e9f2d9899530afcc2e0a51a437de9741609bfb6baa66739",
+        "candidate_input_fingerprint": "9aab9f41d51a897a93d1b3ec8cc28a8b6c2d4fd3d8e069bf3b307ad89f183522"
+      },
+      "final_report_sha256": "1d9cd3b7f70186def4cb5f90b590ab5e0fa7ff349bd32b5a0f06a8160cfb6007",
+      "artifact": {
+        "bytes": 17125,
+        "name": "LZH.COM",
+        "sha256": "e6e84e0cf90a8f149e9f2d9899530afcc2e0a51a437de9741609bfb6baa66739"
+      },
+      "input_record": {
+        "assigned_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "fingerprint": "9aab9f41d51a897a93d1b3ec8cc28a8b6c2d4fd3d8e069bf3b307ad89f183522",
+        "inputs": {
+          "component": "utility:LZH",
+          "configuration": {
+            "assembler_flags": [
+              "-e32",
+              "-fb"
+            ],
+            "origin": 256
+          },
+          "files": {
+            "src/codec/codec.inc": "64d8478d79311923e05ef1b40d86797d89c7d97c42aa74ae28cb57abfefd356d",
+            "src/codec/codec.mac": "0182e9ed7ce1de3b414937e30b7ef84ab548dd5c749326017fd1360c3050e43e",
+            "src/codec/lzh.inc": "fc0cf2ca93895c2002afcd89328b8f23bd9c85b04038fd3825bdcf71e42a9a26",
+            "src/codec/lzh.mac": "1f2cb8e52101a88c253d67e6a468f00fdd81bcdc10e1230bde849f6ec1083f6c",
+            "src/utilities/common/codecfile.mac": "098f36ff405e6559ca018694d5d3dd8083df5bd0726c0eb8f98ae02cb5741dea",
+            "src/utilities/common/codecver.inc": "7efb6979f9b403974e4bec08322b9b01562212786daeae6e1cfaab09d732c63f",
+            "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+            "src/utilities/lzh.mac": "791ff5336f124ece802927552db6cdbc831236a39dbfb77006f1020c4a2afba4",
+            "tools/build_lzh.py": "48befa2fd82f7bedf770338989680e8b0ccfb12773ec193fc6e661958c395750",
+            "tools/codec_version.py": "e6fc65642b197963eb6f534486c0aace85a4906fd7936ad67e5390ad53c9c421",
+            "tools/component_development.py": "77cd629b08894f396b787dbf68cd295b644bf639b3d94d109e19da79e1f57847",
+            "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+            "tools/component_inputs.py": "9951845f3edf49ff12a07b41032051502f0b2d6af21b4d00f9d0bbcc32778713",
+            "tools/component_registry.py": "3e4f82a3cba1e4d5666dd2adfa663190f1c5349fe6bc9d572132906da6e276cf",
+            "tools/utility_versions.py": "5b86b68502a25f16ba5b961b534cd9fda35ce3b0043e976f98fab4f5ac2c0054"
+          },
+          "identity_fields": {
+            "api_version": null,
+            "version": "1.0"
+          },
+          "schema": 1,
+          "toolchain": {
+            "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+          },
+          "variant": {
+            "build_mode": "cross",
+            "profile": "default",
+            "target": "z80pack"
+          }
+        },
+        "schema": 1,
+        "status": "pilot-input-capture"
+      },
+      "provenance": {
+        "repository_commit": null
+      }
+    },
+    "UNLZH": {
+      "schema": 1,
+      "status": "explicit revision assignment; not qualification",
+      "component": "utility:UNLZH",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      },
+      "identity": {
+        "version": "1.0",
+        "revision": 5
+      },
+      "proposal": {
+        "schema": 1,
+        "status": "revision-proposal; not acceptance",
+        "component": "utility:UNLZH",
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        },
+        "reference_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "candidate_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "proposed_identity": {
+          "version": "1.0",
+          "revision": 5
+        },
+        "executable_changed": false,
+        "selected_inputs_changed": true,
+        "reference_report_sha256": "ae2ca728d0adf642acaae8b119afa44069e79a61eb543ddc3df75ddbd8deb17b",
+        "candidate_report_sha256": "f5a96b12e64342c3f5d42ef0008d095ba9ca150d77d93bae83af639729b986a5",
+        "reference_artifact_sha256": "76c7105e8a85887dae009bd31a791566df4143c883cc38455fc61e5d33f86f8a",
+        "candidate_artifact_sha256": "76c7105e8a85887dae009bd31a791566df4143c883cc38455fc61e5d33f86f8a",
+        "candidate_input_fingerprint": "a8feb3d1fd7e63eb244a4da3883848501b67c668229c3c907f953cf18d9d3d31"
+      },
+      "final_report_sha256": "f5a96b12e64342c3f5d42ef0008d095ba9ca150d77d93bae83af639729b986a5",
+      "artifact": {
+        "bytes": 12115,
+        "name": "UNLZH.COM",
+        "sha256": "76c7105e8a85887dae009bd31a791566df4143c883cc38455fc61e5d33f86f8a"
+      },
+      "input_record": {
+        "assigned_identity": {
+          "revision": 5,
+          "version": "1.0"
+        },
+        "fingerprint": "a8feb3d1fd7e63eb244a4da3883848501b67c668229c3c907f953cf18d9d3d31",
+        "inputs": {
+          "component": "utility:UNLZH",
+          "configuration": {
+            "assembler_flags": [
+              "-e32",
+              "-fb"
+            ],
+            "origin": 256
+          },
+          "files": {
+            "src/codec/codec.inc": "64d8478d79311923e05ef1b40d86797d89c7d97c42aa74ae28cb57abfefd356d",
+            "src/codec/codec.mac": "0182e9ed7ce1de3b414937e30b7ef84ab548dd5c749326017fd1360c3050e43e",
+            "src/codec/unlzh.inc": "665119b808d9bf0e566927a546b1acee9aa749b024657cf524b705ba586f556b",
+            "src/codec/unlzh.mac": "dc88c79c20430af6e047e3ab85ddd83b513fe9a3985268df89e1f412fc0b68e4",
+            "src/utilities/common/codecfile.mac": "098f36ff405e6559ca018694d5d3dd8083df5bd0726c0eb8f98ae02cb5741dea",
+            "src/utilities/common/codecver.inc": "7efb6979f9b403974e4bec08322b9b01562212786daeae6e1cfaab09d732c63f",
+            "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+            "src/utilities/unlzh.mac": "c0317078f55989af7e4945da9eff5b1b205635db3a82f49885368a6353e049aa",
+            "tools/build_unlzh.py": "57d76f7673ac42beda94843806db02ac96be092f5dc6a55f7b80d57ab02b54f4",
+            "tools/codec_version.py": "e6fc65642b197963eb6f534486c0aace85a4906fd7936ad67e5390ad53c9c421",
+            "tools/component_development.py": "77cd629b08894f396b787dbf68cd295b644bf639b3d94d109e19da79e1f57847",
+            "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+            "tools/component_inputs.py": "9951845f3edf49ff12a07b41032051502f0b2d6af21b4d00f9d0bbcc32778713",
+            "tools/component_registry.py": "3e4f82a3cba1e4d5666dd2adfa663190f1c5349fe6bc9d572132906da6e276cf",
+            "tools/utility_versions.py": "5b86b68502a25f16ba5b961b534cd9fda35ce3b0043e976f98fab4f5ac2c0054"
+          },
+          "identity_fields": {
+            "api_version": null,
+            "version": "1.0"
+          },
+          "schema": 1,
+          "toolchain": {
+            "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+          },
+          "variant": {
+            "build_mode": "cross",
+            "profile": "default",
+            "target": "z80pack"
+          }
+        },
+        "schema": 1,
+        "status": "pilot-input-capture"
+      },
+      "provenance": {
+        "repository_commit": null
+      }
+    },
+    "TIME": {
+      "schema": 1,
+      "status": "explicit revision assignment; not qualification",
+      "component": "utility:TIME",
+      "variant": {
+        "target": "z80pack",
+        "profile": "default",
+        "build_mode": "cross"
+      },
+      "identity": {
+        "version": "1.0",
+        "revision": 4
+      },
+      "proposal": {
+        "schema": 1,
+        "status": "revision-proposal; not acceptance",
+        "component": "utility:TIME",
+        "variant": {
+          "target": "z80pack",
+          "profile": "default",
+          "build_mode": "cross"
+        },
+        "reference_identity": {
+          "version": "1.0",
+          "revision": 3
+        },
+        "candidate_identity": {
+          "revision": 3,
+          "version": "1.0"
+        },
+        "proposed_identity": {
+          "version": "1.0",
+          "revision": 4
+        },
+        "executable_changed": true,
+        "selected_inputs_changed": true,
+        "reference_report_sha256": "3db585fad55cdc2223182fc15c0fc8f6dfec5dfa0d873c27d767ba0053ddd12e",
+        "candidate_report_sha256": "37aa27889ff07017188681bc7bb16e50d304436415c1597cab99836460de7c77",
+        "reference_artifact_sha256": "eab68816df8abed17290b22059bef156dabb4ec757133b5b61a8822209f662c6",
+        "candidate_artifact_sha256": "0d280ece632858b2cb77b5b35162edfd8d3921a0e8d35a266f933790b319bccc",
+        "candidate_input_fingerprint": "24584ab5bc7119ae06009078bdea5ebd5f87bf179b8027d07c7cbc72c9ca34dd"
+      },
+      "final_report_sha256": "3cbe84a8880e5887ae0acf2e9a8b5c543bb5db7cfcc5ea03efcd213404cd91e7",
+      "artifact": {
+        "bytes": 1414,
+        "name": "TIME.COM",
+        "sha256": "1f6ec3ca18546cd7647b36d9ac3e63a9e326dd26a0464d2b2a3b3638b831977e"
+      },
+      "input_record": {
+        "assigned_identity": {
+          "revision": 4,
+          "version": "1.0"
+        },
+        "fingerprint": "24584ab5bc7119ae06009078bdea5ebd5f87bf179b8027d07c7cbc72c9ca34dd",
+        "inputs": {
+          "component": "utility:TIME",
+          "configuration": {
+            "assembler_flags": [
+              "-fb"
+            ],
+            "origin": 259
+          },
+          "files": {
+            "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+            "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+            "src/utilities/time.mac": "ff913832916a5e6462a949dac8ad1714554d25f3606b5ac9d0b1c6de25e910f0",
+            "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+            "tools/build_time.py": "ce3832f83fe1d4beb3fd96579515afff8a2169fa2d46d35724b05f7e84225886",
+            "tools/checked_build_contract.py": "3012cc25bdf79fbeed850e02c8673740498370952425c1ca3a3a26ec35eba193",
+            "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+            "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+            "tools/component_development.py": "77cd629b08894f396b787dbf68cd295b644bf639b3d94d109e19da79e1f57847",
+            "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+            "tools/component_inputs.py": "9951845f3edf49ff12a07b41032051502f0b2d6af21b4d00f9d0bbcc32778713",
+            "tools/component_registry.py": "3e4f82a3cba1e4d5666dd2adfa663190f1c5349fe6bc9d572132906da6e276cf",
+            "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+            "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+            "tools/utility_versions.py": "5b86b68502a25f16ba5b961b534cd9fda35ce3b0043e976f98fab4f5ac2c0054"
+          },
+          "identity_fields": {
+            "api_version": null,
+            "version": "1.0"
+          },
+          "schema": 1,
+          "selected_metadata": {
+            "description": "Clock Display and Setting",
+            "display_format": "numeric"
+          },
+          "toolchain": {
+            "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+          },
+          "variant": {
+            "build_mode": "cross",
+            "profile": "default",
+            "target": "z80pack"
+          }
+        },
+        "schema": 1,
+        "status": "pilot-input-capture"
+      },
+      "provenance": {
+        "repository_commit": null
+      }
+    },
+    "STAT": {
+      "schema": 1,
+      "status": "explicit revision assignment; not qualification",
+      "component": "utility:STAT",
+      "variant": {
+        "target": "z80pack",
+        "profile": "default",
+        "build_mode": "cross"
+      },
+      "identity": {
+        "version": "1.0",
+        "revision": 4
+      },
+      "proposal": {
+        "schema": 1,
+        "status": "revision-proposal; not acceptance",
+        "component": "utility:STAT",
+        "variant": {
+          "target": "z80pack",
+          "profile": "default",
+          "build_mode": "cross"
+        },
+        "reference_identity": {
+          "version": "1.0",
+          "revision": 3
+        },
+        "candidate_identity": {
+          "revision": 3,
+          "version": "1.0"
+        },
+        "proposed_identity": {
+          "version": "1.0",
+          "revision": 4
+        },
+        "executable_changed": true,
+        "selected_inputs_changed": true,
+        "reference_report_sha256": "0b1429eeb867f904f7f145d0210cd86dafda791dab65060c9ae5f66dae69906f",
+        "candidate_report_sha256": "4e988ff66db47a7dd27eeb69f8893fe2cc1cab9babcc0eec91f1149eea705a8b",
+        "reference_artifact_sha256": "852a980fb712bb6815be728657b2ce960cc39b231c3ca5e5145ba5c4a7fd55b6",
+        "candidate_artifact_sha256": "590c043f9d841eded7bb5994bcc3aca368dc61ae2bff849a0498adfdf9496586",
+        "candidate_input_fingerprint": "8de871c4903f8997f1bc574a04a1a8a83f93fea27b54912f195c0212dbdf6f28"
+      },
+      "final_report_sha256": "9cdc1afe31273415ce468cb9f1ef98e664e6b86a0d20fd8a3c069a95ab12d811",
+      "artifact": {
+        "bytes": 7072,
+        "name": "STAT.COM",
+        "sha256": "aa86514fad2c8be05a29932622669785584a5ae28fd4212983bd376b2891d40c"
+      },
+      "input_record": {
+        "assigned_identity": {
+          "revision": 4,
+          "version": "1.0"
+        },
+        "fingerprint": "8de871c4903f8997f1bc574a04a1a8a83f93fea27b54912f195c0212dbdf6f28",
+        "inputs": {
+          "component": "utility:STAT",
+          "configuration": {
+            "assembler_flags": [
+              "-fb"
+            ],
+            "origin": 259
+          },
+          "files": {
+            "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+            "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+            "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+            "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+            "src/utilities/stat.mac": "c552a22305d27eec3a91b27e2bcc310a0d3d6f48034a8b9ccf9970552ba4edc0",
+            "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+            "tools/build_stat.py": "15d4028c5a70a9a99d2ad6b70c7cc4b8f6353624cbf7eaea594407b1f9cea948",
+            "tools/checked_build_contract.py": "3012cc25bdf79fbeed850e02c8673740498370952425c1ca3a3a26ec35eba193",
+            "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+            "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+            "tools/component_development.py": "77cd629b08894f396b787dbf68cd295b644bf639b3d94d109e19da79e1f57847",
+            "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+            "tools/component_inputs.py": "9951845f3edf49ff12a07b41032051502f0b2d6af21b4d00f9d0bbcc32778713",
+            "tools/component_registry.py": "3e4f82a3cba1e4d5666dd2adfa663190f1c5349fe6bc9d572132906da6e276cf",
+            "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+            "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+            "tools/utility_versions.py": "5b86b68502a25f16ba5b961b534cd9fda35ce3b0043e976f98fab4f5ac2c0054"
+          },
+          "identity_fields": {
+            "api_version": null,
+            "version": "1.0"
+          },
+          "schema": 1,
+          "selected_metadata": {
+            "description": "File, Disk and System Information",
+            "display_format": "numeric"
+          },
+          "toolchain": {
+            "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+          },
+          "variant": {
+            "build_mode": "cross",
+            "profile": "default",
+            "target": "z80pack"
+          }
+        },
+        "schema": 1,
+        "status": "pilot-input-capture"
+      },
+      "provenance": {
+        "repository_commit": null
+      }
+    }
+  }
+}

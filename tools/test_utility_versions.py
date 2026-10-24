@@ -3,7 +3,9 @@
 from pathlib import Path
 import re
 from test_bios import Z80
-from utility_versions import banner, identities
+from utility_versions import banner, identities, display_development
+from component_registry import load
+from component_identity import identification
 ROOT=Path(__file__).resolve().parents[1]
 def address(listing,name):
     equ=re.search(r"\b"+re.escape(name)+r"\s+EQU\s+0?([0-9a-f]+)H",listing,re.I)
@@ -37,6 +39,9 @@ def main():
                 identity=importlib.import_module('build_'+name.lower()).version_text()
             else:identity=banner(name)+'\r\n'
             expected=identity
+            row=load()['components']['utility:'+name]
+            if name not in ('DUMP','DDT','SQ','USQ','CR','UNCR','LZH','UNLZH') and row.get('display_format')=='numeric':
+                expected=identification(name,row['version'],row['revision'],row['description'],development=display_development('utility:'+name))
             assert output(c)==expected,(name,tail,output(c));count+=1
     image=(ROOT/'build/cpx/rcp.bin').read_bytes()
     listing=(ROOT/'build/cpx/rcp.lst').read_text()

@@ -10,6 +10,8 @@ from build_ccp import assemble
 from build_cpx_module import relocation_offsets
 from build_rsx_module import make_module
 
+from component_registry import module_version
+
 ROOT = Path(__file__).resolve().parents[1]
 UTIL = ROOT / "build/utilities"
 RSX = ROOT / "build/rsx"
@@ -50,7 +52,7 @@ def main() -> None:
                      "RSXBASE         EQU     08101H"),
         RSX / "batchio-alt.bin", RSX / "batchio-alt.lst", ALTERNATE_BASE)
     offsets = relocation_offsets(code, alternate, ALTERNATE_BASE - LINK_BASE)
-    carrier = make_module(name="BATCHIO", version=(1, 0), services=[10],
+    carrier = make_module(name="BATCHIO", version=module_version('BATCHIO'), services=[10],
                           linked_base=LINK_BASE, code=code,
                           relocations=offsets, entry_offset=8,
                           format_version=2)

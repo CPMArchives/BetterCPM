@@ -9,18 +9,15 @@ import tempfile
 from pathlib import Path
 
 from system_layout import expand_layout
+from component_build import recorded_build
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/utilities/time.mac"
 BUILD = ROOT / "build/utilities"
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--assembler", type=Path,
-                        default=Path("/Users/nathanael/bin/z80asm"))
-    args = parser.parse_args()
-    BUILD.mkdir(parents=True, exist_ok=True)
+@recorded_build('utility:TIME')
+def build(assembler, destination):
     text = expand_layout(SOURCE.read_text(encoding="ascii")).replace(
         "        CSEG\n", "        ASEG\n").replace(
         "        .PHASE  0103H\n", "        ORG     0103H\n").replace(
@@ -29,15 +26,26 @@ def main() -> None:
         staged = Path(temporary) / SOURCE.name
         staged.write_text(text, encoding="ascii")
         raw = Path(temporary) / "time.bin"
-        subprocess.run([str(args.assembler), "-fb", f"-o{raw}",
-                        f"-l{BUILD / 'time.lst'}", staged.name],
+        subprocess.run([str(assembler), "-fb", f"-o{raw}",
+                        f"-l{destination / 'time.lst'}", staged.name],
                        check=True, cwd=staged.parent)
         data = bytes((0xC3, 0x03, 0x01)) + raw.read_bytes()
-    output = BUILD / "TIME.COM"
+    output = destination / "TIME.COM"
     output.write_bytes(data)
-    print(f"{hashlib.sha256(data).hexdigest()}  {output.relative_to(ROOT)}")
-    print(f"TIME bytes: {len(data)}")
+
+    return data
 
 
-if __name__ == "__main__":
+def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--assembler',type=Path,default=Path.home()/'bin/z80asm')
+    parser.add_argument('--output-dir',type=Path,default=BUILD)
+    parser.add_argument('--target',choices=('z80pack','trs80gp'),default='z80pack')
+    parser.add_argument('--identity-state',choices=('auto','assigned','development'),default='auto')
+    args=parser.parse_args()
+    data=build(args.assembler,args.output_dir,target=args.target,identity_state=args.identity_state)
+    print(f'TIME: {len(data)} bytes')
+
+
+if __name__ == '__main__':
     main()

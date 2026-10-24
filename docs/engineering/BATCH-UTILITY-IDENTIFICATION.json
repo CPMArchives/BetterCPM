@@ -1,0 +1,297 @@
+{
+  "schema": 1,
+  "utility_checks": [
+    {
+      "utility": "STAT",
+      "version": "1.0",
+      "revision": 4,
+      "artifact": "build/utilities/STAT.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "COPY",
+      "version": "1.0",
+      "revision": 8,
+      "artifact": "build/utilities/COPY.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "DIR",
+      "version": "1.0",
+      "revision": 9,
+      "artifact": "build/utilities/DIR.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "CONFIG",
+      "version": "1.0",
+      "revision": 17,
+      "artifact": "build/utilities/CONFIG.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "DUP",
+      "version": "1.0",
+      "revision": 8,
+      "artifact": "build/utilities/DUP.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "TIME",
+      "version": "1.0",
+      "revision": 4,
+      "artifact": "build/utilities/TIME.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "SYSGEN",
+      "version": "1.0",
+      "revision": 9,
+      "artifact": "build/utilities/SYSGEN.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "SUBMIT",
+      "version": "1.0",
+      "revision": 4,
+      "artifact": "build/utilities/SUBMIT.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "XSUB",
+      "version": "1.0",
+      "revision": 4,
+      "artifact": "build/utilities/XSUB.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "CPX",
+      "version": "1.0",
+      "revision": 5,
+      "artifact": "build/utilities/CPX.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "RSX",
+      "version": "1.0",
+      "revision": 5,
+      "artifact": "build/utilities/RSX.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "USER",
+      "version": "1.0",
+      "revision": 7,
+      "artifact": "build/utilities/USER.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "CLS",
+      "version": "1.0",
+      "revision": 8,
+      "artifact": "build/utilities/CLS.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "VER",
+      "version": "1.0",
+      "revision": 9,
+      "artifact": "build/utilities/VER.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "RCP",
+      "version": "1.0",
+      "revision": 16,
+      "artifact": "build/cpx/RCP.CPX",
+      "identification_found": true
+    },
+    {
+      "utility": "SYSBUILD",
+      "version": "1.0",
+      "revision": 4,
+      "artifact": "build/utilities/SYSBUILD.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "RESPACK",
+      "version": "1.0",
+      "revision": 4,
+      "artifact": "build/utilities/RESPACK.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "RLMBUILD",
+      "version": "1.0",
+      "revision": 4,
+      "artifact": "build/utilities/RLMBUILD.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "ERA",
+      "version": "1.0",
+      "revision": 6,
+      "artifact": "build/utilities/ERA.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "REN",
+      "version": "1.0",
+      "revision": 10,
+      "artifact": "build/utilities/REN.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "TYPE",
+      "version": "1.0",
+      "revision": 8,
+      "artifact": "build/utilities/TYPE.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "PIP",
+      "version": "1.0",
+      "revision": 30,
+      "artifact": "build/utilities/PIP.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "ADMTST",
+      "version": "1.0",
+      "revision": 5,
+      "artifact": "build/utilities/ADMTST.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "VT52TST",
+      "version": "1.0",
+      "revision": 5,
+      "artifact": "build/utilities/VT52TST.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "ANSITST",
+      "version": "1.0",
+      "revision": 4,
+      "artifact": "build/utilities/ANSITST.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "ED",
+      "version": "1.0",
+      "revision": 4,
+      "artifact": "build/utilities/ED.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "DUMP",
+      "version": "1.0",
+      "revision": 5,
+      "artifact": "build/utilities/DUMP.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "DDT",
+      "version": "1.0",
+      "revision": 3,
+      "artifact": "build/utilities/DDT.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "SQ",
+      "version": "1.0",
+      "revision": 5,
+      "artifact": "build/utilities/SQ.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "USQ",
+      "version": "1.0",
+      "revision": 5,
+      "artifact": "build/utilities/USQ.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "CR",
+      "version": "1.0",
+      "revision": 5,
+      "artifact": "build/utilities/CR.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "UNCR",
+      "version": "1.0",
+      "revision": 5,
+      "artifact": "build/utilities/UNCR.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "LZH",
+      "version": "1.0",
+      "revision": 5,
+      "artifact": "build/utilities/LZH.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "UNLZH",
+      "version": "1.0",
+      "revision": 5,
+      "artifact": "build/utilities/UNLZH.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "NOAH",
+      "version": "1.0",
+      "revision": 5,
+      "artifact": "build/utilities/NOAH.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "BYE",
+      "version": "1.0",
+      "revision": 2,
+      "artifact": "build/z80pack-tools/BYE.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "MOVE",
+      "version": "1.0",
+      "revision": 1,
+      "artifact": "build/utilities/MOVE.COM",
+      "identification_found": true
+    },
+    {
+      "utility": "WARM",
+      "version": "1.0",
+      "revision": 1,
+      "artifact": "build/utilities/WARM.COM",
+      "identification_found": true
+    }
+  ],
+  "executed_queries": [
+    "WARM",
+    "DIR",
+    "MOVE",
+    "USER",
+    "CLS",
+    "VER",
+    "COPY",
+    "ERA",
+    "REN",
+    "TYPE",
+    "SUBMIT",
+    "XSUB",
+    "TIME",
+    "STAT",
+    "SYSGEN",
+    "CPX",
+    "RSX",
+    "DUP",
+    "CONFIG",
+    "SYSBUILD",
+    "RESPACK",
+    "RLMBUILD"
+  ],
+  "query_exceptions": [],
+  "scope": "build and identification only"
+}

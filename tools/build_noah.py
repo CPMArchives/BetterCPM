@@ -7,14 +7,14 @@ import shutil
 import subprocess
 import tempfile
 from utility_versions import identities
+from component_identity import identification
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def version_text():
     version, counter = identities()['NOAH']
-    return (f"NOAH {version} (Build {counter:03d})\r\n  - - -\r\n"
-            " | BetterCP/M Utilities\r\n | Noah's ARK - development build\r\n")
+    return identification('NOAH',version,counter,'Archive Utility - Development')
 
 
 def build(assembler, destination):

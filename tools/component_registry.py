@@ -50,7 +50,7 @@ def load(path=None):
                     raise ValueError('invalid dependency root: ' + relative)
     order = data['legacy_utility_order']
     assigned = {key.split(':')[1] for key, row in data['components'].items()
-                if key.startswith('utility:') and row['tracking'] == 'existing'}
+                if key.startswith('utility:') and row['tracking'] in ('existing', 'initial')}
     if len(order) != len(set(order)) or set(order) != assigned:
         raise ValueError('legacy utility projection membership mismatch')
     for row in data['legacy_subsystem_rows']:
@@ -109,6 +109,13 @@ def projections(data=None):
             ['component', 'identity', 'interface_version', 'implementation_version', 'status', 'notes'],
             subsystem_rows(data)),
     }
+
+
+def module_version(name):
+    data = load()['components']
+    key = 'utility:RCP' if name.upper() == 'RCP' else 'module:' + name.upper()
+    row = data.get(key)
+    return tuple(map(int,row['version'].split('.'))) if row and row['version'] else None
 
 
 def main():

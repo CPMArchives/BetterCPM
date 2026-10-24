@@ -63,6 +63,8 @@ def capture(component, assembler, *, root=ROOT, target='z80pack',
         'configuration': plan['configuration'], 'files': files,
         'toolchain': {'assembler_sha256': digest(Path(assembler).read_bytes())},
     }
+    if plan.get('registry_fields'):
+        inputs['selected_metadata'] = {name: selected[name] for name in plan['registry_fields']}
     return {'schema': 1, 'status': 'pilot-input-capture',
             'assigned_identity': {'version': version, 'revision': revision},
             'inputs': inputs, 'fingerprint': digest(canonical(inputs))}

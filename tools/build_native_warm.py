@@ -12,6 +12,8 @@ from build_native_trs80 import (
     blank, cpm_text, run,
 )
 
+from system_layout import expand_layout
+
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/utilities/warm.mac"
 BUILD = ROOT / "build/utilities"
@@ -37,7 +39,7 @@ def main() -> None:
         for drive in "bcd":
             blank(args.disk_template, disks / f"drive{drive}.dsk")
         staged = work / "WARM.MAC"
-        staged.write_bytes(cpm_text(SOURCE))
+        staged.write_bytes(expand_layout(SOURCE.read_text()).replace('\n','\r\n').encode('ascii')+b'\x1a')
         run("cpmcp", "-f", "ibm-3740", str(disks / "drivec.dsk"),
             str(staged), "0:WARM.MAC")
         for tool in ("ZSM4.COM", "LINK.COM"):

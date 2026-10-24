@@ -19,8 +19,11 @@ BDOS    EQU     0005H
 ; ================================================================================
 
 START:                                  ; request warm boot
+        CALL    UV_CHECK
         LD      C,0
         JP      BDOS
+
+; @utility-version WARM@
 
         .DEPHASE
         END     START

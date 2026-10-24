@@ -1,14 +1,29 @@
 """Deterministic utility identities; counters advance only for released revisions."""
 from pathlib import Path
 import re
-from component_identity import title
+from component_identity import title, identification
 ROOT = Path(__file__).resolve().parents[1]
 def identities():
     from component_registry import utility_identities
     return utility_identities()
 
+def display_development(owner):
+    from component_inputs import ROOT as input_root
+    import json
+    plans = json.loads((input_root/'metadata/component-inputs.json').read_text())['components']
+    if owner not in plans:
+        return False  # Assigned identity only; automatic input tracking is not implemented for this owner.
+    from component_build import selected_display
+    return selected_display(owner)['development']
+
 def banner(name, resident=False):
     version, build = identities()['RCP' if resident else name]
+    from component_registry import load
+    owner = 'utility:' + ('RCP' if resident else name)
+    row = load()['components'][owner]
+    if row.get('display_format') == 'numeric':
+        from component_build import selected_display
+        return title(name, version, build, development=display_development(owner))
     checked_id = None
     from checked_carriers import selected_contract
     contract = selected_contract()
@@ -17,6 +32,15 @@ def banner(name, resident=False):
     return title(name, version, build, style='legacy-common', resident=resident, checked_id=checked_id)
 
 def strings(name, resident=False, label='UV_TEXT'):
+    from component_registry import load
+    owner = 'utility:' + ('RCP' if resident else name)
+    row = load()['components'][owner]
+    if row.get('display_format') == 'numeric' and not resident:
+        from component_build import selected_display
+        version, revision = identities()['RCP' if resident else name]
+        text = identification(name, version, revision, row['description'], development=display_development(owner))
+        lines = [label+':'] + ["        DB '"+line.replace("'","''")+"',13,10" for line in text.splitlines()] + ["        DB '$'"]
+        return '\n'.join(lines)+'\n'
     return f"{label}:\n        DB '{banner(name, resident)}',13,10,'$'\n"
 
 def expand_versions(text):
@@ -33,7 +57,7 @@ def expand_versions(text):
         if 'CPXBASE         EQU     00100H' in text:
             data += ''.join(strings(n, False, 'UV_T'+n) for n in ['DIR','USER','CLS','VER','COPY'])
             # MOVE remains transitional, with RCP identity until its own contract is completed.
-            data += strings('MOVE', True, 'UV_TMOVE')
+            data += strings('MOVE', False, 'UV_TMOVE')
         resident = 'CPXBASE         EQU     00100H' not in text
         if resident:
             # Standalone tail wrapper is unused by RCP; keep carrier relocations bounded.
