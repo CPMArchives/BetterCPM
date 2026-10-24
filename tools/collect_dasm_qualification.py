@@ -11,7 +11,11 @@ def main():
  inventory=json.loads(a.inventory.read_text());assert inventory['status']=='PASS'
  binaries={n:{'sha256':sha((ROOT/'build/utilities'/n).read_bytes()),'bytes':(ROOT/'build/utilities'/n).stat().st_size} for n in ('DASM.COM','DSYM.COM','DLINK.COM')}
  receipt={'schema':1,'dasm_acceptance':'PASS','scope':'Model 4/trs80gp and z80pack/cpmsim emulators; no physical hardware or whole Utilities release claim','binaries':binaries,'external_tools':{n:{'version':v,'sha256':sha((ROOT/path).read_bytes())} for n,v,path in [('ZSM4.COM','4.7','third_party/zsm4/ZSM4.COM'),('LINK.COM','1.3','third_party/dri-link/LINK.COM')]},'host_full_core_cases':{'DASM':161,'DSYM':73,'DLINK':40,'USQ_regression':71},'platforms':{}}
- evidence={'inventory.json':a.inventory.read_bytes()};roots=set()
+ host=(a.campaign_root/(a.prefix+'-host.txt')).read_bytes()
+ for token in (b'161 DASM',b'73 DSYM',b'40 DLINK',b'71 standalone USQ',b'44 of 512 bytes'):
+  assert token in host,('missing host verdict',token)
+ receipt['stack_observed_high_water_bytes']=44
+ evidence={'inventory.json':a.inventory.read_bytes(),'host-tests.txt':host};roots=set()
  for platform in ('z80pack','trs80gp'):
   proof={'status':'PASS','gates':{}}
   for gate,template in gates.items():
