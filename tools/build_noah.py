@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build NOAH's read-only LBR foundation (not yet a release-disk utility)."""
+"""Build NOAH's LBR reader/test/extraction increment (not yet a release-disk utility)."""
 import argparse
 import hashlib
 from pathlib import Path
@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def version_text():
     version, counter = identities()['NOAH']
     return (f"NOAH {version} (Build {counter:03d})\r\n  - - -\r\n"
-            " | BetterCP/M Utilities\r\n | Noah's ARK - development foundation\r\n")
+            " | BetterCP/M Utilities\r\n | Noah's ARK - development build\r\n")
 
 
 def build(assembler, destination):
@@ -22,8 +22,8 @@ def build(assembler, destination):
     destination.mkdir(parents=True, exist_ok=True)
     texts = {
         'NH_VERSION': version_text(),
-        'NH_USAGE': 'NOAH: Invalid or unsupported usage.\r\nUsage: NOAH [/LIST] [drive:]file\r\nUse NOAH /HELP for current scope.\r\n',
-        'NH_HELP': 'NOAH read-only LBR foundation\r\nUsage: NOAH [/LIST] [drive:]file\r\n/VER   Identification\r\n/HELP  Help\r\nOne exact file, current user only.\r\nARK, selectors, extraction, updates and overlays are pending.\r\nListing does not test CRCs or member contents.\r\n',
+        'NH_USAGE': 'NOAH: Invalid or unsupported usage.\r\nUsage: NOAH [/LIST|/TEST] [drive:]file\r\n       NOAH /EXTRACT [drive:]file [destination-drive:]\r\nUse NOAH /HELP for current scope.\r\n',
+        'NH_HELP': 'NOAH LBR reader development build\r\nUsage: NOAH [/LIST|/TEST] [drive:]file\r\n       NOAH /EXTRACT [drive:]file [destination-drive:]\r\nAliases: /T /X. /VER and /HELP ignore other arguments; /HELP takes precedence.\r\nOne exact archive, current user only; all active members.\r\nExisting outputs are reported and skipped; no overwrites yet.\r\nARK, full selectors, overwrite UI, updates and overlays are pending.\r\nLIST does not test contents. TEST/EXTRACT audit structure and CRCs.\r\n',
     }
     emitted = []
     for label, text in texts.items():
@@ -37,8 +37,9 @@ def build(assembler, destination):
         emitted.append('        DB 36')
     with tempfile.TemporaryDirectory(prefix='bettercpm-noah-') as temp:
         work = Path(temp)
-        for name in ('archive.inc', 'lbr.mac', 'cpmfile.inc', 'cpmfile.mac'):
+        for name in ('archive.inc', 'lbr.mac', 'lbraudit.inc', 'lbraudit.mac', 'cpmfile.inc', 'cpmfile.mac'):
             shutil.copy2(ROOT / 'src/archive' / name, work / name)
+        shutil.copy2(ROOT / 'src/utilities/common/noahextract.inc', work / 'noahextract.inc')
         source = (ROOT / 'src/utilities/noah.mac').read_text()
         query = (ROOT / 'src/utilities/common/version.inc').read_text()
         query = query[query.index('\nUV_QUERY:') + 1:]

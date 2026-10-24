@@ -1,7 +1,9 @@
 # Archive read library — initial LBR implementation
 
-This is the first NOAH implementation increment, not the complete archive API
-or a release qualification. The normative behavior remains in the
+This records the first NOAH implementation increment, not the complete archive API
+or a release qualification. A subsequent [integrity/extraction increment](../engineering/NOAH%20LBR%20Integrity%20and%20Extraction.md)
+adds TEST and new-file extraction; the sizes and scope below describe Build 001.
+The normative behavior remains in the
 [NOAH specification](../engineering/NOAH%20Specification.md).
 
 The library is original Z80 code derived from the published

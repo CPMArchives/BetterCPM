@@ -1,0 +1,313 @@
+LBR_AUDIT_CODE MACRO
+LBR_AUDIT:
+        XOR A
+        LD (IY+LA_CHECKED),A
+        LD (IY+LA_CHECKED+1),A
+        LD (IY+LA_CHECKED+2),A
+        LD (IY+LA_CHECKED+3),A
+        LD (IY+LA_UNCHECKED),A
+        LD (IY+LA_UNCHECKED+1),A
+        LD (IY+LA_UNCHECKED+2),A
+        LD (IY+LA_UNCHECKED+3),A
+        CALL LBR_OPEN
+        RET C
+        LD A,(IX+AS_ENTRY+16)
+        LD (IY+LA_EXPECTED),A
+        LD A,(IX+AS_ENTRY+17)
+        LD (IY+LA_EXPECTED+1),A
+        LD A,(IX+AS_ENTRY+14)
+        LD (IY+LA_RECORDS),A
+        LD A,(IX+AS_ENTRY+15)
+        LD (IY+LA_RECORDS+1),A
+        LD (IY+LA_FIRST),1
+        CALL LA_STREAM_CRC
+        RET C
+        CALL LA_CHECK_CRC
+        RET C
+LA_NEXT:
+        CALL LBR_NEXT
+        JR NC,LA_MEMBER_FOUND
+        CP AS_END
+        RET NZ
+        OR A
+        RET
+LA_MEMBER_FOUND:
+        LD A,(IX+AS_ENTRY+12)
+        LD (IY+LA_START),A
+        LD A,(IX+AS_ENTRY+13)
+        LD (IY+LA_START+1),A
+        LD A,(IX+AS_ENTRY+14)
+        LD (IY+LA_LENGTH),A
+        LD A,(IX+AS_ENTRY+15)
+        LD (IY+LA_LENGTH+1),A
+        PUSH IX
+        POP HL
+        LD DE,AS_MEMBER
+        ADD HL,DE
+        PUSH IY
+        POP DE
+        LD BC,AM_SIZE
+        LDIR
+        LD HL,32
+        LD BC,0
+        LD (IY+LA_SCAN),L
+        LD (IY+LA_SCAN+1),H
+        LD (IY+LA_SCAN+2),C
+        LD (IY+LA_SCAN+3),B
+LA_PAIR_LOOP:
+        ; Compare the prior-entry scan with this member's stable ID.
+        PUSH IY
+        POP HL
+        LD DE,LA_SCAN
+        ADD HL,DE
+        PUSH IY
+        POP DE
+        PUSH HL
+        LD HL,AM_ID
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD B,4
+LA_PAIR_END_CHECK:
+        LD A,(DE)
+        CP (HL)
+        JR NZ,LA_PAIR_READ
+        INC HL
+        INC DE
+        DJNZ LA_PAIR_END_CHECK
+        JP LA_PAYLOAD
+LA_PAIR_READ:
+        LD L,(IY+LA_SCAN)
+        LD H,(IY+LA_SCAN+1)
+        LD C,(IY+LA_SCAN+2)
+        LD B,(IY+LA_SCAN+3)
+        LD DE,AS_OFFSET
+        CALL LB_STORE32
+        LD DE,32
+        ADD HL,DE
+        JR NC,LA_SCAN_STORE
+        INC BC
+LA_SCAN_STORE:
+        LD (IY+LA_SCAN),L
+        LD (IY+LA_SCAN+1),H
+        LD (IY+LA_SCAN+2),C
+        LD (IY+LA_SCAN+3),B
+        CALL LB_ENTRY_REQUEST
+        CALL LB_TRANSFER
+        RET C
+        LD A,(IX+AS_ENTRY)
+        OR A
+        JR NZ,LA_PAIR_LOOP
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY+1
+        ADD HL,DE
+        PUSH IY
+        POP DE
+        LD B,11
+LA_NAME_COMPARE:
+        LD A,(HL)
+        CP 'a'
+        JR C,LA_COMPARE_CHAR
+        CP 'z'+1
+        JR NC,LA_COMPARE_CHAR
+        SUB 32
+LA_COMPARE_CHAR:
+        LD C,A
+        LD A,(DE)
+        CP C
+        JR NZ,LA_REGION
+        INC HL
+        INC DE
+        DJNZ LA_NAME_COMPARE
+        LD A,AS_DUPLICATE
+        JP LB_FAIL
+LA_REGION:
+        LD A,(IY+LA_LENGTH)
+        OR (IY+LA_LENGTH+1)
+        JP Z,LA_PAIR_LOOP
+        LD A,(IX+AS_ENTRY+14)
+        OR (IX+AS_ENTRY+15)
+        JP Z,LA_PAIR_LOOP
+        ; Difference between starts is 16-bit even if an end exceeds 65535.
+        LD L,(IX+AS_ENTRY+12)
+        LD H,(IX+AS_ENTRY+13)
+        LD E,(IY+LA_START)
+        LD D,(IY+LA_START+1)
+        OR A
+        SBC HL,DE
+        JR C,LA_PRIOR_FIRST
+        LD E,(IY+LA_LENGTH)
+        LD D,(IY+LA_LENGTH+1)
+        JR LA_REGION_COMPARE
+LA_PRIOR_FIRST:
+        LD A,L
+        CPL
+        LD L,A
+        LD A,H
+        CPL
+        LD H,A
+        INC HL
+        LD E,(IX+AS_ENTRY+14)
+        LD D,(IX+AS_ENTRY+15)
+LA_REGION_COMPARE:
+        OR A
+        SBC HL,DE
+        JP NC,LA_PAIR_LOOP
+        LD A,AS_OVERLAP
+        JP LB_FAIL
+LA_PAYLOAD:
+        LD L,(IY+AM_OFFSET)
+        LD H,(IY+AM_OFFSET+1)
+        LD C,(IY+AM_OFFSET+2)
+        LD B,(IY+AM_OFFSET+3)
+        LD DE,AS_OFFSET
+        CALL LB_STORE32
+        LD A,(IY+AM_CRC)
+        LD (IY+LA_EXPECTED),A
+        LD A,(IY+AM_CRC+1)
+        LD (IY+LA_EXPECTED+1),A
+        LD A,(IY+LA_LENGTH)
+        LD (IY+LA_RECORDS),A
+        LD A,(IY+LA_LENGTH+1)
+        LD (IY+LA_RECORDS+1),A
+        LD (IY+LA_FIRST),0
+        CALL LA_STREAM_CRC
+        RET C
+        CALL LA_CHECK_CRC
+        RET C
+        JP LA_NEXT
+
+LA_STREAM_CRC:
+        XOR A
+        LD (IY+LA_CRC),A
+        LD (IY+LA_CRC+1),A
+LA_CRC_RECORD:
+        LD A,(IY+LA_RECORDS)
+        OR (IY+LA_RECORDS+1)
+        RET Z
+        PUSH IY
+        POP HL
+        LD DE,LA_BUFFER
+        ADD HL,DE
+        LD (IX+AS_BUFFER),L
+        LD (IX+AS_BUFFER+1),H
+        LD (IX+AS_COUNT),128
+        LD (IX+AS_COUNT+1),0
+        CALL LB_TRANSFER
+        RET C
+        LD A,(IY+LA_FIRST)
+        OR A
+        JR Z,LA_CRC_READY
+        ; Directory CRC is computed with its own CRC word zeroed.
+        PUSH IY
+        POP HL
+        LD DE,LA_BUFFER+16
+        ADD HL,DE
+        LD (HL),0
+        INC HL
+        LD (HL),0
+        LD (IY+LA_FIRST),0
+LA_CRC_READY:
+        PUSH IY
+        POP HL
+        LD DE,LA_BUFFER
+        ADD HL,DE
+        LD E,(IY+LA_CRC)
+        LD D,(IY+LA_CRC+1)
+        LD BC,128
+        CALL LBR_CRC16
+        LD (IY+LA_CRC),E
+        LD (IY+LA_CRC+1),D
+        LD L,(IX+AS_OFFSET)
+        LD H,(IX+AS_OFFSET+1)
+        LD C,(IX+AS_OFFSET+2)
+        LD B,(IX+AS_OFFSET+3)
+        LD DE,128
+        ADD HL,DE
+        JR NC,LA_CRC_OFFSET
+        INC BC
+LA_CRC_OFFSET:
+        LD DE,AS_OFFSET
+        CALL LB_STORE32
+        LD L,(IY+LA_RECORDS)
+        LD H,(IY+LA_RECORDS+1)
+        DEC HL
+        LD (IY+LA_RECORDS),L
+        LD (IY+LA_RECORDS+1),H
+        JR LA_CRC_RECORD
+LA_CHECK_CRC:
+        LD E,(IY+LA_EXPECTED)
+        LD D,(IY+LA_EXPECTED+1)
+        LD A,D
+        OR E
+        JR Z,LA_CRC_UNKNOWN
+        LD L,(IY+LA_CRC)
+        LD H,(IY+LA_CRC+1)
+        OR A
+        SBC HL,DE
+        JR Z,LA_CRC_ACCEPT
+        LD A,AS_CHECK
+        JP LB_FAIL
+LA_CRC_ACCEPT:
+        LD L,(IY+LA_CHECKED)
+        LD H,(IY+LA_CHECKED+1)
+        INC HL
+        LD (IY+LA_CHECKED),L
+        LD (IY+LA_CHECKED+1),H
+        LD A,H
+        OR L
+        JR NZ,LA_CHECK_COUNTED
+        INC (IY+LA_CHECKED+2)
+        JR NZ,LA_CHECK_COUNTED
+        INC (IY+LA_CHECKED+3)
+LA_CHECK_COUNTED:
+        OR A
+        RET
+LA_CRC_UNKNOWN:
+        LD L,(IY+LA_UNCHECKED)
+        LD H,(IY+LA_UNCHECKED+1)
+        INC HL
+        LD (IY+LA_UNCHECKED),L
+        LD (IY+LA_UNCHECKED+1),H
+        LD A,H
+        OR L
+        JR NZ,LA_UNKNOWN_COUNTED
+        INC (IY+LA_UNCHECKED+2)
+        JR NZ,LA_UNKNOWN_COUNTED
+        INC (IY+LA_UNCHECKED+3)
+LA_UNKNOWN_COUNTED:
+        OR A
+        RET
+; XMODEM/CCITT CRC: DE=initial CRC, HL=bytes, BC=count; DE=result.
+; Polynomial 1021h, init 0000h, no reflection/final xor. Zero count is legal.
+LBR_CRC16:
+        LD A,B
+        OR C
+        RET Z
+LA_CRC_BYTE:
+        LD A,(HL)
+        XOR D
+        LD D,A
+        INC HL
+        PUSH BC
+        LD B,8
+LA_CRC_BIT:
+        SLA E
+        RL D
+        JR NC,LA_CRC_BIT_NEXT
+        LD A,D
+        XOR 10H
+        LD D,A
+        LD A,E
+        XOR 21H
+        LD E,A
+LA_CRC_BIT_NEXT:
+        DJNZ LA_CRC_BIT
+        POP BC
+        DEC BC
+        LD A,B
+        OR C
+        JR NZ,LA_CRC_BYTE
+        RET
+        ENDM
