@@ -7,18 +7,19 @@ from pathlib import Path
 from build_ccp import assemble
 from utility_versions import identities
 from component_inputs import capture, classify, digest
+from component_identity import title as identity_title, identification
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def title():
     version, build = identities()['BYE']
-    return f'BYE {version} (Build {build:03d})'
+    return identity_title('BYE', version, build, style='legacy')
 
 
 def version_text():
-    return (title() + '\r\n  - - -\r\n | BetterCP/M Utilities\r\n'
-            ' | cpmsim Emulator Exit\r\n')
+    version, revision = identities()['BYE']
+    return identification('BYE', version, revision, 'cpmsim Emulator Exit', style='legacy')
 
 
 def help_text():

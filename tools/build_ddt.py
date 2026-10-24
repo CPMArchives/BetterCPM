@@ -6,6 +6,7 @@ from ddt_source import translate,zero_storage
 from shared_ui import input_source
 from utility_versions import identities
 from component_inputs import capture, classify
+from component_identity import identification
 ROOT=Path(__file__).resolve().parents[1]
 BUILD=ROOT/'build/ddt-development'
 ASSEMBLER=Path.home()/'bin/z80asm'
@@ -30,7 +31,7 @@ def original(name):
 
 def version_text():
     version,build=identities()['DDT']
-    return f'DDT {version} (Build {build:03d})\r\n  - - -\r\n | BetterCP/M Utilities\r\n | Dynamic Debugging Tool\r\n'
+    return identification('DDT', version, build, 'Dynamic Debugging Tool', style='legacy')
 
 
 def payload_source(base=0,adapt=True):

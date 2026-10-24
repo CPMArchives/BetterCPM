@@ -25,7 +25,8 @@
         "tools/rsx_container.py",
         "tools/utility_versions.py",
         "tools/component_registry.py",
-        "tools/component_inputs.py"
+        "tools/component_inputs.py",
+        "tools/component_identity.py"
       ]
     },
     "utility:DDT": {
@@ -67,7 +68,8 @@
         "tools/shared_ui.py",
         "tools/utility_versions.py",
         "tools/component_registry.py",
-        "tools/component_inputs.py"
+        "tools/component_inputs.py",
+        "tools/component_identity.py"
       ]
     }
   }
