@@ -18,6 +18,8 @@ def source(reference=False):
     if not reference:
         text = text.replace('INCLUDE dasmsafe.inc',
                             (ROOT/'src/utilities/common/dasmsafe.inc').read_text())
+        for include in ('dasmrebase.inc','printnum.inc','dasmsymbol.inc','dasmfile.inc','dasmprolog.inc','zsm4words.inc','duselect.inc','filespec.inc'):
+            text=text.replace('INCLUDE '+include,(ROOT/'src/utilities/common'/include).read_text())
         text=text.replace('\tORG\t$/100H*100H+100H',
                           ' REPT 100H-($ MOD 100H)\n DB 0FFH\n ENDM')
     # Both assemblers need the workspace EQU dependency chain after ENDALL.
@@ -30,10 +32,20 @@ def source(reference=False):
     return text
 
 
+def validate_native_identifiers(text):
+    """Pinned ZSM4 IDMAX is 15; reject ambiguous internal spellings."""
+    names=re.findall(r'^\s*([A-Za-z_][A-Za-z0-9_]*)\s*(?::|\s+EQU\b|\s+MACRO\b)',text,re.M|re.I)
+    groups={}
+    for name in names:groups.setdefault(name.upper()[:15],set()).add(name.upper())
+    collisions=[sorted(names) for names in groups.values() if len(names)>1]
+    if collisions:raise ValueError('ZSM4 significant-name collisions: '+repr(collisions))
+
+
 def build(assembler, output, reference=False):
     output.mkdir(parents=True, exist_ok=True)
     name = 'dasm-reference' if reference else 'dasm'
     text = source(reference)
+    validate_native_identifiers(text)
     prepared = output / (name+'.mac')
     prepared.write_text(text, encoding='ascii')
     binary = output / (name+'.bin')

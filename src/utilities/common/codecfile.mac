@@ -15,7 +15,11 @@ UC_BDOS:
         PUSH    HL
         PUSH    IX
         PUSH    IY
+        IFDEF   UC_USER_FILES
+        CALL    SY_USER_BDOS
+        ELSE
         CALL    5
+        ENDIF
         POP     IY
         POP     IX
         POP     HL

@@ -9,6 +9,7 @@ import tempfile
 from build_dasm import build
 from test_usq import SHIM
 from test_usq_com import Command, diskkey, padded
+from generate_dasm_words import generate
 
 
 class Dasm(Command):
@@ -21,6 +22,9 @@ class Dasm(Command):
 
     def __init__(self,library,image,listing):
         super().__init__(library,image,listing,required_symbols=('D_OLDSP','OLDST','D_START','D_STATE'))
+        boundary=re.search(r'^([0-9a-f]{4}).*\bD_MEM_END\s+EQU',listing,re.M|re.I)
+        assert boundary
+        self.minimum_tpa=int(boundary[1],16)+256
         self.symbols.update(UC_STACK=self.symbols['OLDST']-512,
                             UC_STACK_TOP=self.symbols['OLDST'],UC_INPUT=0x5c)
 
@@ -46,17 +50,30 @@ class Dasm(Command):
             if key not in self.files:return 255
             self.mem[de+33:de+36]=((len(self.files[key])+127)//128).to_bytes(3,'little')
             return 0
+        if fn in (16,20,21) and de in self.opened:
+            assert self.opened[de][0][1]==self.user,('wrong user for open FCB',fn,self.user,self.opened[de])
+        if fn==16 and de not in self.opened and de in self.closed_fcb:
+            key=self.fcbkey(de)
+            if key!=self.closed_fcb[de] and key in self.files:
+                self.files[key]=b'CORRUPTED BY STALE FCB CLOSE'
+                self.stale_closes.append(key)
+                return 0
+        closing_key=self.fcbkey(de) if fn==16 else None
         if fn==16 and de in self.opened and self.opened[de][0][2].endswith('.$$$'):
             if self.fail('close_output'):return 255
         value=super().bdos(fn,de)
+        if fn==16 and value!=255:self.closed_fcb[de]=closing_key
         if fn==17 and value!=255:
             at=self.dma+value*32
             self.mem[at:at+32]=bytes(32)
             self.mem[at+1:at+12]=bytes(self.mem[de+1:de+12])
+            if self.fcbkey(de) in self.readonly:self.mem[at+9]|=0x80
         return value
 
-    def execute(self,lines,files=None,*,tpa=0xd000,failures=None,responses=(),break_keys=()):
+    def execute(self,lines,files=None,*,tpa=0xd000,failures=None,responses=(),break_keys=(),readonly=(),startup=None):
         self.lines=list(lines);self.responses=list(responses);self.break_keys=list(break_keys)
+        self.closed_fcb={};self.stale_closes=[]
+        self.readonly=set(readonly)
         self.lib.set_hooks(5,0xfffe,self.hook)
         self.files=dict(files or {});self.original=dict(self.files)
         self.drive,self.user=1,0
@@ -69,6 +86,9 @@ class Dasm(Command):
         self.mem[5]=0xc9;self.mem[6:8]=tpa.to_bytes(2,'little')
         guard_start=max(tpa,0x100+len(self.image))
         self.mem[guard_start:0xd800]=bytes([0xa5])*max(0,0xd800-guard_start)
+        if startup:
+            tail=(' '+startup).encode();self.mem[0x80]=len(tail)
+            self.mem[0x81:0x81+len(tail)]=tail
         self.reg['SP'].value=0xe000;self.reg['IY'].value=0xbeef
         result=self.lib.test_run(0x100,30000000)
         assert self.exception is None,self.exception
@@ -77,12 +97,14 @@ class Dasm(Command):
         assert self.reg['IY'].value==0xbeef
         assert (self.drive,self.user,self.dma)==(1,0,0x80)
         assert bytes(self.mem[guard_start:0xd800])==bytes([0xa5])*max(0,0xd800-guard_start), 'resident-memory canary changed'
+        assert not self.stale_closes,self.stale_closes
         assert not self.lines,self.lines
         self.cases+=1
         return self.console
 
 
 def main():
+    generate(check=True)
     z80pack=Path.home()/'projects/git/z80pack';core=z80pack/'z80core'
     with tempfile.TemporaryDirectory(prefix='dasm-test-') as temporary:
         w=Path(temporary);image=build(Path.home()/'bin/z80asm',w)
@@ -110,9 +132,9 @@ def main():
         for bad_length in ['N0','N2001']:
             text=m.execute(['RTINY.COM',bad_length,'G'],{tiny:bytes(8192)})
             assert 'outside' in text or 'Command Error' in text,text
-        for limit in [0x9800,0x97ff]:
-            text=m.execute(['G'] if limit==0x9800 else [],tpa=limit)
-            assert ('insufficient' in text)==(limit<0x9800),text
+        for limit in [m.minimum_tpa,m.minimum_tpa-1]:
+            text=m.execute(['G'] if limit==m.minimum_tpa else [],tpa=limit)
+            assert ('insufficient' in text)==(limit<m.minimum_tpa),text
         for data in [b'',bytes(8193)]:
             text=m.execute(['RTINY.COM','G'],{tiny:data})
             assert 'outside' in text or 'capacity' in text,text
@@ -144,13 +166,127 @@ def main():
         text=m.execute(['RTINY.COM','N6','STINY.ASM','X','P100,106','QL100,106','Z','G'],
                        {tiny:bytes.fromhex('3e21d30200c9')})
         assert 'until ASM Closed' in text and out in m.files,text
+        sym_in=diskkey(1,'TINY.SYM');sym_out=diskkey(1,'OUT.SYM')
+        raw=(b'0101 zed\r\n0100 alpha_long\r\n0100 Alpha\r\n0100 ALPHA\r\n')
+        expected=b'0100 ALPHA\r\n0100 ALPHA_LONG\r\n0101 ZED\r\n'
+        text=m.execute(['RTINY.SYM','SOUT.SYM','G'],{sym_in:raw})
+        assert m.files[sym_out].split(b'\x1a',1)[0]==expected,(text,m.files[sym_out])
+        text=m.execute(['RTINY.SYM','E100,.BETA','E100,.ALPHA','E200,.ALPHA','SOUT.SYM','G'],{sym_in:raw})
+        assert 'conflicting symbol' in text,text
+        assert m.files[sym_out].split(b'\x1a',1)[0]==expected.replace(b'0101 ZED',b'0100 BETA\r\n0101 ZED'),m.files[sym_out]
+        for bad in [b'0100 ALPHA\r\n0101 alpha\r\n',b'0100 LD\r\n']:
+            text=m.execute(['E100,.KEEP','RTINY.SYM','SOUT.SYM','G'],{sym_in:bad})
+            assert m.files[sym_out].split(b'\x1a',1)[0]==b'0100 KEEP\r\n',(text,m.files[sym_out])
+        for reserved in ['LD','HL','NZ','OR','MACRO']:
+            text=m.execute(['E100,.KEEP','E100,.'+reserved,'SOUT.SYM','G'])
+            assert 'reserved ZSM4' in text,text
+            assert m.files[sym_out].split(b'\x1a',1)[0]==b'0100 KEEP\r\n',m.files[sym_out]
+        text=m.execute(['RTINY.COM','N2','RTINY.SYM','STINY.ASM','P.ALPHA,.ZED','QL.ALPHA,.ZED','Z','G'],
+                       {tiny:b'\xc9\x00',sym_in:raw})
+        assert b'ORG\t0100H' in m.files[out],(text,m.files[out])
+        assert b'0C9H' in m.files[out],m.files[out]
         symbol_file=diskkey(1,'TINY.SYM')
         for bad in [b'0100 REPLACE\r\nINVALID\r\n',
                     b''.join(f'{n:04X} S{n:011d}\r\n'.encode() for n in range(300))]:
-            text=m.execute(['E100,.KEEP','RTINY.SYM','DS','G'],{symbol_file:bad})
+            text=m.execute(['E100,.KEEP','RTINY.SYM','SRETAIN.SYM','G'],{symbol_file:bad})
             assert 'KEEP' in text and ('invalid metadata' in text or 'capacity' in text),text
-            assert 'REPLACE' not in text,text
+            assert m.files[diskkey(1,'RETAIN.SYM')].split(b'\x1a',1)[0]==b'0100 KEEP\r\n',m.files
             m.intact()
+        for suffix,raw,expected in [
+            ('CTL',b'0104,H\r\n0100,I\r\n0104,H\r\n',b'0100,I\r\n0104,H\r\n'),
+            ('DOC',b'0104 Mixed Case\r\n0100 First\r\n0104 Mixed Case\r\n',b'0100 First\r\n0104 Mixed Case\r\n')]:
+            src=diskkey(1,'TINY.'+suffix);dst=diskkey(1,'OUT.'+suffix)
+            text=m.execute(['RTINY.'+suffix,'SOUT.'+suffix,'G'],{src:raw})
+            assert m.files[dst].split(b'\x1a',1)[0]==expected,(text,m.files[dst])
+            m.intact()
+        for suffix,raw in [('CTL',b'0100,I\r\n0100,H\r\n'),
+                           ('DOC',b'0100 First\r\n0100 Second\r\n')]:
+            text=m.execute(['E100,.KEEP','RTINY.'+suffix,'SOUT.SYM','G'],
+                           {diskkey(1,'TINY.'+suffix):raw})
+            assert 'conflicting metadata' in text,text
+            assert m.files[sym_out].split(b'\x1a',1)[0]==b'0100 KEEP\r\n',m.files[sym_out]
+        text=m.execute([';100,MiXeD case; literal quotes \"hello\"','SOUT.DOC','G'])
+        assert m.files[diskkey(1,'OUT.DOC')].split(b'\x1a',1)[0]==b'0100 MiXeD case; literal quotes \"hello\"\r\n',m.files
+        for bad in [';100,*NOP',';100,bad\nINJECT']:
+            text=m.execute([';100,Keep Original',bad,'SOUT.DOC','G'])
+            assert m.files[diskkey(1,'OUT.DOC')].split(b'\x1a',1)[0]==b'0100 Keep Original\r\n',m.files
+        text=m.execute(['e100,._Mixed','K._mixed+bad','SOUT.SYM','G'])
+        assert m.files[sym_out].split(b'\x1a',1)[0]==b'0100 _MIXED\r\n',m.files
+        text=m.execute(['e100,._Mixed','k._mixed','SOUT.SYM','G'])
+        assert m.files[sym_out].split(b'\x1a',1)[0]==b'',m.files
+        text=m.execute(['rb:tiny.com','n1','g'],{diskkey(2,'TINY.COM'):b'\xc9'})
+        assert 'Command Error' not in text,text
+        m.intact()
+        for bad in ['C100,Hjunk','C100,X']:
+            text=m.execute(['C100,i',bad,'SOUT.CTL','G'])
+            assert m.files[diskkey(1,'OUT.CTL')].split(b'\x1a',1)[0]==b'0100,I\r\n',m.files
+        text=m.execute(['STINY.ASM','G'],{out:b'\xc9'},startup='TINY.ASM')
+        assert 'aliases' in text and m.files[out]==b'\xc9' and not m.created,(text,m.files)
+        text=m.execute(['STINY.ASM','G'],{out:b'KEEP'},readonly=[out])
+        assert 'read-only' in text and m.files[out]==b'KEEP' and not m.created,(text,m.files)
+        text=m.execute(['STINY.ASM','G'],{out:b'KEEP'},responses=['N'])
+        assert m.files[out]==b'KEEP' and not m.created,(text,m.files)
+        user_out=diskkey(1,'OUT.ASM',7)
+        text=m.execute(['RTINY.COM','N6','SA7:OUT.ASM','P100,106','QL100,106','Z','G'],
+                       {tiny:bytes.fromhex('3e21d30200c9')})
+        assert user_out in m.files and b'ASEG' in m.files[user_out],(text,m.files)
+        unrelated=diskkey(1,'DAS00000.$$$')
+        text=m.execute(['RTINY.COM','N6','SA7:OUT.ASM','P100,106','L0','Z','G'],
+                       {tiny:bytes.fromhex('3e21d30200c9'),unrelated:b'UNRELATED USER ZERO'})
+        assert user_out not in m.files and m.files[unrelated]==b'UNRELATED USER ZERO',(text,m.files)
+        m.intact()
+        text=m.execute(['SA7:OUT.ASM','G'],{user_out:b'KEEP7'},readonly=[user_out])
+        assert m.files[user_out]==b'KEEP7' and not m.created,(text,m.files)
+        for user in [0,7,15,16,31]:
+            source=diskkey(2,'SOURCE.COM',user);destination=diskkey(1,'OUT.ASM',user)
+            text=m.execute([f'RB{user}:SOURCE.COM','N1',f'SA{user}:OUT.ASM','P100,101','QL100,101','Z','G'],{source:b'\xc9'})
+            assert destination in m.files and b'0C9H' in m.files[destination],(user,text,m.files)
+            m.intact()
+        for bad in ['RA32:SOURCE.COM','R[A0-A1]:SOURCE.COM','RA1:LONGERTHAN8.COM','SA31:BAD NAME.ASM']:
+            text=m.execute([bad,'G'])
+            assert 'Command Error' in text and not m.created,(bad,text)
+        text=m.execute(['RTINY.COM','N6','SA31:OUT.ASM','L0','Z','G'],{tiny:bytes.fromhex('3e21d30200c9')})
+        assert 'A31:DAS00000.$$$' in text,text
+        text=m.execute(['E100,.KEEP','E10000,.WRAP','SOUT.SYM','G'])
+        assert m.files[sym_out].split(b'\x1a',1)[0]==b'0100 KEEP\r\n',m.files
+        startup_source=diskkey(1,'TINY.ASM',31)
+        text=m.execute(['SA31:TINY.ASM','G'],{startup_source:b'\xc9'},startup='a31:tiny.asm')
+        assert 'aliases' in text and m.files[startup_source]==b'\xc9' and not m.created,(text,m.files)
+        text=m.execute(['N1','SA0:TINY.ASM','P100,101','QL100,101','Z','G'],
+                       {startup_source:b'\xc9'},startup='a31:tiny.asm')
+        assert b'0C9H' in m.files[out] and m.files[startup_source]==b'\xc9',(text,m.files)
+        for query in ['/ver',' /VER  ','\t/ver\t']:
+            text=m.execute([],startup=query,tpa=0x6000)
+            assert 'DASM development' in text and not m.created,text
+        text=m.execute(['RTINY.COM','N4','RTINY.SYM','STINY.ASM','P100,104','QL100,104','Z','G'],
+                       {tiny:bytes.fromhex('210101c9'),sym_in:b'0100 START\r\n0100 ALIAS\r\n0101 INSIDE\r\n00AF DATAAF\r\nFFFF LAST\r\n'})
+        assembly=m.files[out].split(b'\x1a',1)[0]
+        assert all(name in assembly for name in [b'START',b'ALIAS',b'INSIDE',b'DATAAF',b'LAST']),assembly
+        assert b'00AFH' in assembly and b'0FFFFH' in assembly,assembly
+        (w/'symbols.asm').write_bytes(assembly)
+        result=subprocess.run([str(Path.home()/'bin/z80asm'),'-e12','-fb','-o'+str(w/'symbols.bin'),str(w/'symbols.asm')],capture_output=True)
+        assert result.returncode==0,(result.stdout,assembly)
+        assert (w/'symbols.bin').read_bytes()==bytes.fromhex('210101c9')
+        text=m.execute(['RTINY.COM','N1','STINY.ASM','P100,ZZ','Z','G'],{tiny:b'\xc9'})
+        assert b'ORG' not in m.files[out],(text,m.files[out])
+        symbols=b'0100 START\r\nFFFF LAST\r\n'
+        for command in ('I100,1','I100,+1','I0,-101','I100,10000','I100,1 X'):
+            text=m.execute(['RTINY.SYM',command,'SOUT.SYM','G'],{sym_in:symbols})
+            assert m.files[diskkey(1,'OUT.SYM')].split(b'\x1a',1)[0]==b'FFFF LAST\r\n0100 START\r\n',(command,text,m.files)
+        text=m.execute(['RTINY.SYM','I100,-1','SOUT.SYM','G'],{sym_in:symbols})
+        assert m.files[diskkey(1,'OUT.SYM')].split(b'\x1a',1)[0]==b'FFFE LAST\r\n00FF START\r\n',text
+        for metadata in (b'\t0100\tstart  \r0101 second\r',
+                         b' 0100 start\r\n\r\n0101 second\n',
+                         b'0101 second\n0100 start\n0100 START\n'):
+            text=m.execute(['RTINY.SYM','SOUT.SYM','G'],{sym_in:metadata})
+            assert m.files[diskkey(1,'OUT.SYM')].split(b'\x1a',1)[0]==b'0101 SECOND\r\n0100 START\r\n',(metadata,text,m.files)
+            assert 'imported 2; coalesced' in text,text
+        text=m.execute(['RTINY.SYM','G'],{sym_in:b'0100 FIRST\r\n\r\nINVALID\r\n'})
+        assert 'invalid metadata at line 3' in text,text
+        for key in ('q','\x03'):
+            text=m.execute(['RTINY.COM','N1','STINY.ASM','P100,101','QL100,101','Z','G'],
+                           {tiny:b'\xc9'},break_keys=[key]+(['N'] if key=='\x03' else []))
+            assert out not in m.files and any(k[2].endswith('.$$$') for k in m.files),text
         for operation in ['make','write','close_output','rename']:
             for existing in [False,True]:
                 files={tiny:bytes.fromhex('3e21d30200c9')}

@@ -8,6 +8,9 @@ created exclusively; an existing destination is never replaced.
 import argparse
 from pathlib import Path
 import re
+import json
+RESERVED={word.encode() for word in json.loads((Path(__file__).resolve().parents[1]/
+          'metadata/dasm-zsm4-reserved.json').read_text())['words']}
 
 
 def convert(data):
@@ -24,6 +27,8 @@ def convert(data):
             raise ValueError('address must contain four hexadecimal digits')
         if not re.fullmatch(rb'[A-Z_][A-Z0-9_]{0,11}',name):
             raise ValueError('illegal or overlength symbol')
+        if name in RESERVED:
+            raise ValueError('reserved symbol '+name.decode('ascii'))
         value=int(address,16)
         if name in symbols and symbols[name]!=value:
             raise ValueError('conflicting symbol '+name.decode('ascii'))

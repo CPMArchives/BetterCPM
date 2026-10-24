@@ -5,6 +5,36 @@ not supersede [the specification](DASM%20Specification.md). DASM and DSYM are
 not yet added to release Utilities Disk images. No physical Model 4 hardware
 qualification is claimed.
 
+## Current source checkpoint (after qualified baseline)
+
+The maintained source now additionally provides lexical symbol lookup/import,
+alias preservation, exact duplicate coalescing, name/value conflict rejection,
+and a generated 224-word reserved-vocabulary guard from the pinned ZSM4 source.
+Internal identifiers are checked for collisions in the first 15 characters.
+All names receive EQU declarations in generated source, including aliases and
+symbols inside instruction operands; hexadecimal literals are unambiguous.
+
+DASM preserves annotation case, rejects unsupported control bytes before edits,
+validates control types and trailing arguments, and accepts shared exact DU
+operands with users 0..31. Metadata accepts horizontal whitespace and CR/LF/CRLF;
+syntax errors report a line number, and successful imports report imported and
+coalesced counts. Symbol rebasing uses a validation pass before any value changes,
+accepts an explicit + or - magnitude and refuses address overflow. Interruption
+also poisons pending source output when Ctrl-C is declined or another key stops
+listing, so a subsequent Z cannot publish an interrupted file.
+
+The file state separates an open staged FCB from a retained staged identity.
+Close and rename failures cannot close a stale renamed FCB. Every file close
+selects its owning user, including input cleanup after errors; rejected or
+read-only output requests leave no phantom pending transaction. DSYM now uses
+shared single-DU parsing and restores the caller's user after each file operation,
+with line-number and imported/coalesced/rejected diagnostics.
+
+The current host campaign passes **101 DASM and 51 DSYM full-core cases**, plus
+**71 USQ regression cases** after the optional shared file-I/O hook was added.
+These changes are not covered by the earlier native receipts below. They require
+a fresh native build and both-platform campaign before acceptance.
+
 ## Implemented
 
 - Preserved original SIG/M 91 DASM source, both mnemonic tables, binary,
@@ -67,7 +97,7 @@ B:ZSM4 OUTPUT=OUTPUT.ASM
 B:LINK OUTPUT[A]
 ```
 
-`DSYM INPUT.SYM [destination-drive:]` writes `INPUT.DSY`; load it with
+`DSYM [DU:]INPUT.SYM [destination-DU:]` writes `INPUT.DSY`; load it with
 `RINPUT.DSY` after loading the binary. Its source is the final LINK symbol
 file, not an assembler-relative symbol table. A default LINK fixture with
 CSEG and DSEG yielded `0100 START<TAB>0104 HELLO<TAB><CRLF>` and linked bytes
@@ -78,11 +108,11 @@ CSEG and DSEG yielded `0100 START<TAB>0104 HELLO<TAB><CRLF>` and linked bytes
 | H, ?, DS, C, ; | Inherited help/statistics/table inspection; broader UI qualification pending |
 | L, QL, D, F | Retained listing/dump/search with input bounds; pagination/cancel campaign pending |
 | A, B | Inherited data recognition and automatic symbol generation, bounded insertion; broader behavioral qualification pending |
-| E, K, ;address,text | Symbol/comment editing retained with validation; reserved-word rules and full atomic-validation audit pending |
-| Caddress,type | Control classifications retained; import ordering/collision work pending |
-| O, I | Inherited offset/rebase workflow; wrap-safe logical-address redesign pending |
+| E, K, ;address,text | Symbol/comment editing retained with validation; reserved-word validation implemented; remaining atomic-validation audit pending |
+| Caddress,type | Control classifications retained; imports sorted with conflict rejection |
+| O, I | Rebase validated in two passes; logical-origin redesign remains pending |
 | P, Sname.ASM, Z | Absolute source prologue, staged listing output and explicit publication |
-| R/S .SYM/.CTL/.DOC | Individual component operations; import normalization/order/collision requirements incomplete |
+| R/S .SYM/.CTL/.DOC | Individual component operations; normalized/sorted imports; remaining session work pending |
 | R .DSY | Canonical native converter output |
 | R/S .ALL | Explicitly refused: descriptor-based session transaction is not implemented |
 | U | Fixed comment arena only; arbitrary relocation refused |
@@ -127,16 +157,16 @@ not a Python implementation of DASM or DSYM. The corpus enumerates byte values
 in base, CB, ED, DD, FD, DD-CB and FD-CB contexts, plus raw data. This is broad
 reconstruction coverage, **not every possible instruction stream**.
 
-## Measured development layout
+## Measured qualified-baseline layout
 
-The current DASM image is 14,080 bytes, SHA-256
+The qualified baseline DASM image is 14,080 bytes, SHA-256
 `73049f2e30b85bccd31f79ee453f1994abbae43d37c18306bd121a084eaf00f8`.
 Its arena declarations place control storage at 3800..3DFF, live symbol storage at
 3E00..4DFF, input at 4F00..6EFF, comments at 6F00..76FF and temporary staging
 at 7700..96FF. The startup check therefore requires active BDOS entry/ceiling
 word 0006H to be at least **9800H**, including the 256-byte margin. This is a
 fixed-capacity implementation; it refuses a smaller TPA rather than shrinking
-its arenas. The symbol insertion guard ends at INITOFF (4E00H), preserving the unused
+its arenas. In that baseline, the symbol insertion guard ends at INITOFF (4E00H), preserving the unused
 4E00..4EFF gap and the declared 4 KiB symbol budget.
 
 Full-core edge tests accept an 8,192-byte file, refuse 8,193 bytes, reject
@@ -176,7 +206,7 @@ the archived COM byte-for-byte; the archived binary remains unmodified.
    TPA diagnostics on both platform personalities.
 4. Add verified LINK success evidence: failed LINK runs still emit valid-looking
    SYM pairs, including unresolved names at 0000H. Current DSYM cannot detect
-   that from SYM alone. Extend DSYM to the shared drive/user grammar and line/count diagnostics;
+   that from SYM alone. DSYM now has shared DU selection and line/count diagnostics;
    qualify multi-module exports, absolute equates, long-name/significance and
    unresolved-external negative fixtures against native LINK.
 5. Complete the specified full file-failure/media-full/recovery matrix and

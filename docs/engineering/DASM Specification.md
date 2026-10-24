@@ -124,8 +124,11 @@ Check quoted apostrophes, empty strings, control bytes, high-bit bytes,
 indexed displacements, relative targets, conditions and symbol expressions.
 Never allow line wrapping or pagination text into assembly output.
 
-DASM's maximum 12-character symbols match ZSM4's 12 significant source-symbol
-characters. Detect collisions under ZSM4 comparison rules, reserved words and
+DASM retains its maximum 12-character symbols, within the pinned ZSM4 source
+identifier limit of 15 characters (`IDMAX` in zsm.inc). Audit internal maintained
+labels for collisions in their first 15 characters. Native probes confirm that
+the default REL/public export limit is separately six characters. Detect
+collisions under ZSM4 comparison rules, reserved words and
 illegal identifiers. Object/export symbol significance is a separate toolchain
 setting; do not assume that all 12 characters survive external-symbol export.
 

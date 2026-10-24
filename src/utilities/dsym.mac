@@ -5,10 +5,15 @@
         ASEG
         ORG 100H
         JP SY_START
+UC_USER_FILES EQU 1
         INCLUDE codecfile.mac
 SY_START:
         LD (UC_OLDSP),SP
         LD SP,UC_STACK_TOP
+        LD E,255
+        LD C,32
+        CALL UC_BDOS
+        LD (SY_OLDUSER),A
         LD HL,(6)
         LD DE,SY_END+256
         OR A
@@ -20,6 +25,9 @@ SY_START:
         LD BC,SY_STATE_END-SY_STATE-1
         LD (HL),0
         LDIR
+        LD HL,1
+        LD (SY_LINE),HL
+        LD (SY_TOKEN_LINE),HL
         LD HL,81H
         LD A,(80H)
         LD B,A
@@ -55,7 +63,11 @@ SY_NOTVER:
         INC A
         LD (UC_DRIVE),A
         LD (UC_DEST),A
-        CALL UC_PARSE
+        LD (SY_LOGDRIVE),A
+        LD A,(SY_OLDUSER)
+        LD (SY_SRCUSER),A
+        LD (SY_DSTUSER),A
+        CALL SY_PARSE
         LD DE,UC_USAGE
         JP C,UC_ERROR
         LD HL,UC_INPUT
@@ -71,8 +83,14 @@ SY_NOTVER:
         LD HL,UC_INPUT
         LD DE,UC_FINAL
         CALL UC_SAME_NAME
+        JR NZ,SY_NOT_ALIAS
+        LD A,(SY_SRCUSER)
+        LD B,A
+        LD A,(SY_DSTUSER)
+        CP B
         LD DE,SY_ALIAS
         JP Z,UC_ERROR
+SY_NOT_ALIAS:
         LD DE,UC_INPUT
         LD C,15
         CALL UC_BDOS
@@ -134,6 +152,11 @@ SY_IDENTIFIER:
 SY_ID_OK:
         INC HL
         DJNZ SY_IDENTIFIER
+        LD HL,SY_TOKENBUF
+        LD A,(SY_LENGTH)
+        LD B,A
+        CALL RW_RESERVED
+        JP C,SY_INVALID
         ; Scan fixed records by name. Equal names require equal addresses.
         LD IX,SY_TABLE
         LD A,(SY_COUNT)
@@ -166,6 +189,12 @@ SY_NAME_COMPARE:
         LD A,H
         CP (IX+1)
         JP NZ,SY_INVALID
+        LD HL,(SY_DUPLICATES)
+        INC HL
+        LD A,H
+        OR L
+        JP Z,SY_INVALID
+        LD (SY_DUPLICATES),HL
         JP SY_RECORD
 SY_NEXT_RECORD:
         LD DE,15
@@ -275,12 +304,26 @@ SY_FINISH:
         JP Z,UC_ERROR
         XOR A
         LD (UC_TEMP_LIVE),A
+        LD DE,SY_IMPORTED
+        CALL UC_PRINT
+        LD A,(SY_COUNT)
+        LD L,A
+        LD H,0
+        CALL PN_U16
+        LD DE,SY_COALESCED
+        CALL UC_PRINT
+        LD HL,(SY_DUPLICATES)
+        CALL PN_U16
         LD DE,SY_SUCCESS
         JP UC_ERROR
 SY_PLAIN_EXIT:
         CALL UC_PRINT
         JP UC_EXIT
 SY_INVALID:
+        LD DE,SY_LINE_MSG
+        CALL UC_PRINT
+        LD HL,(SY_TOKEN_LINE)
+        CALL PN_U16
         LD DE,SY_FORMAT
         JP UC_ERROR
 ; Sort fixed records by canonical name. Aliases retain their own records.
@@ -415,6 +458,8 @@ SY_SKIP:
         JR Z,SY_SKIP
         CP 10
         JR Z,SY_SKIP
+        LD HL,(SY_LINE)
+        LD (SY_TOKEN_LINE),HL
         LD HL,SY_TOKENBUF
 SY_TOKEN_CHAR:
         LD B,A
@@ -459,6 +504,7 @@ SY_GET:
         SCF
         RET
 SY_GOT:
+        CALL SY_TRACK_LINE
         LD B,A
         LD A,(SY_TEXT_END)
         OR A
@@ -482,14 +528,65 @@ SY_UPPER:
 
         CODEC_FILE_IO
         CODEC_FILE_CLEANUP
+; Track CR, LF and CRLF without counting CRLF twice. Reject counter overflow.
+SY_TRACK_LINE:
+        PUSH AF
+        PUSH HL
+        CP 13
+        JR Z,SY_LINE_CR
+        CP 10
+        JR NZ,SY_LINE_OTHER
+        LD A,(SY_LAST_CR)
+        OR A
+        JR NZ,SY_LINE_OTHER
+        JR SY_LINE_INC
+SY_LINE_CR:
+        LD A,1
+        LD (SY_LAST_CR),A
+        JR SY_LINE_INC_CR
+SY_LINE_INC:
+        XOR A
+        LD (SY_LAST_CR),A
+SY_LINE_INC_CR:
+        LD HL,(SY_LINE)
+        INC HL
+        LD A,H
+        OR L
+        JP Z,SY_INVALID
+        LD (SY_LINE),HL
+        JR SY_LINE_RETURN
+SY_LINE_OTHER:
+        XOR A
+        LD (SY_LAST_CR),A
+SY_LINE_RETURN:
+        POP HL
+        POP AF
+        RET
+PN_CHAR:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD E,A
+        LD C,2
+        CALL UC_BDOS
+        POP HL
+        POP DE
+        POP BC
+        RET
+        INCLUDE printnum.inc
+        INCLUDE dsymdu.inc
+        INCLUDE zsm4words.inc
 SY_VERSION: DB 'DSYM development - LINK 1.3 symbols to DASM',13,10,'$'
 SY_VEROPT: DB '/VER'
 SY_EXT: DB 'DSY'
-UC_USAGE: DB 'Usage: DSYM [drive:]file.SYM [destination-drive:]',13,10
+UC_USAGE: DB 'Usage: DSYM [DU:]file.SYM [destination-DU:]',13,10
           DB 'LINK 1.3 address/name pairs; output is file.DSY.',13,10
           DB 'At most 255 names, 12 characters; existing output is refused.',13,10,'$'
-SY_SUCCESS: DB 'DSYM: complete.',13,10,'$'
-SY_FORMAT: DB 'DSYM: invalid, conflicting or excessive symbols; output not published.',13,10,'$'
+SY_IMPORTED: DB 'DSYM: imported $'
+SY_COALESCED: DB '; coalesced $'
+SY_SUCCESS: DB '; rejected 0; complete.',13,10,'$'
+SY_LINE_MSG: DB 'DSYM: invalid symbols at line $'
+SY_FORMAT: DB '; rejected 1; invalid, conflicting or excessive symbols; output not published.',13,10,'$'
 SY_ALIAS: DB 'DSYM: output aliases input.',13,10,'$'
 SY_MEMORY: DB 'DSYM: insufficient transient memory.',13,10,'$'
 UC_NO_INPUT: DB 'DSYM: cannot open input.',13,10,'$'
@@ -504,7 +601,17 @@ UC_LEGAL: DB '!#$%&',27H,'()-@^_{}~'
 UC_LEGAL_END:
 UC_TEMP_NAME: DB 'DSY00000$$$'
 UC_OLDSP: DW 0
+SY_OLDUSER: DB 0
 SY_STATE:
+SY_LOGDRIVE: DB 0
+SY_SRCUSER: DB 0
+SY_DSTUSER: DB 0
+SY_DUDRIVE: DB 0
+SY_DUUSER: DB 0
+SY_TAILPTR: DW 0
+SY_TAILLEFT: DB 0
+DU_MAP: DS 64
+DU_WORK: DS 12
 UC_DRIVE: DB 0
 UC_DEST: DB 0
 UC_INPUT_OPEN: DB 0
@@ -522,6 +629,11 @@ UC_FINAL: DS 36
 UC_SEARCH: DS 36
 UC_RENAME: DS 36
 UC_TEMP: DS 36
+SY_LINE: DW 0
+SY_TOKEN_LINE: DW 0
+SY_DUPLICATES: DW 0
+SY_LAST_CR: DB 0
+PN_STARTED: DB 0
 SY_COUNT: DB 0
 SY_NEXT: DW 0
 SY_LENGTH: DB 0
