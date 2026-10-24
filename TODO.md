@@ -827,3 +827,9 @@ reconciliation gate precede the corresponding implementation program.
   prove working-tree isolation and rerun compression, disk interchange and XIP
   checks (2026-10-24). See [evidence](docs/engineering/CPMSIM%20Reconstruction%20Qualification.md).
   Final release-media and other component acceptance remain separate.
+
+- [x] Reaccept shared /VER changes for current shipped utilities and qualify the
+  current ten-file Utilities candidates (2026-10-24), with paired platform
+  component evidence, exact file/image hashes and independent disk audits.
+  [Record](docs/engineering/Utility%20Release%20Reacceptance.md).
+  Full inventory selections/packaging and whole-release closure remain open.
