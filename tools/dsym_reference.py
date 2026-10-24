@@ -14,7 +14,7 @@ def convert(data):
     meaningful, marker, padding = data.partition(b'\x1a')
     if marker and padding.strip(b'\x1a \t\r\n'):
         raise ValueError('meaningful input after text terminator')
-    tokens=meaningful.split()
+    tokens=re.split(rb'[ \t\r\n]+',meaningful.strip(b' \t\r\n')) if meaningful.strip(b' \t\r\n') else []
     if len(tokens)%2:
         raise ValueError('incomplete address/name pair')
     symbols={}

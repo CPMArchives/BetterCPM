@@ -101,6 +101,14 @@ python3 tools/qualify_dasm.py --system SYSTEM_ROOT --utilities UTILITIES_ROOT --
 python3 tools/qualify_dasm_corpus.py --system SYSTEM_ROOT --utilities UTILITIES_ROOT --output NEW_OUTPUT
 ```
 
+On Model 4, a temporary test-only wrapper supplies BDOS function-10 input,
+lowers the active TPA ceiling to its interceptor, and restores the original
+BDOS vector on return. The disassembler core differs only in its entry jump;
+its original entry is called by the wrapper. All file operations use real
+BetterCP/M. The wrapper itself has a native z80pack reconstruction smoke test.
+This avoids timing-dependent physical-key injection and does not qualify the
+keyboard, terminal line editor or cancellation.
+
 The native runners need cpmtools, the existing BetterCP/M disposable System
 artifact reports, the packaged Utilities images containing ZSM4/LINK, z80pack
 and/or trs80gp. Pass explicit artifact roots: the development default is a

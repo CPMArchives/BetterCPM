@@ -34,14 +34,6 @@ def build(assembler, output, reference=False):
     output.mkdir(parents=True, exist_ok=True)
     name = 'dasm-reference' if reference else 'dasm'
     text = source(reference)
-    # Munk's assembler requires EQU expressions to be defined in order.
-    # Moving these declarations changes no emitted bytes or native sources.
-    definitions = []
-    def postpone(match):
-        definitions.append(match[0])
-        return ''
-    text = re.sub(r'(?m)^(?:CTLTBL|SYMTAB|INITOFF|COMTBL|D_BIN|D_BIN_LIMIT|D_CMT_LIMIT|D_STAGE|D_MEM_END)\s+EQU[^\n]*\n', postpone, text)
-    text = re.sub(r'(?m)^\s*END\s*$', '\n'+''.join(definitions)+'\n END\n', text)
     prepared = output / (name+'.mac')
     prepared.write_text(text, encoding='ascii')
     binary = output / (name+'.bin')

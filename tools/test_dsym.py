@@ -31,6 +31,7 @@ def main():
         m.intact()
         for raw in [b'0100 LOWER\n0100 lower\n',b'0000 ZERO\rFFFF LAST',b'1234 A\t1234 B']:
             assert 'complete' in run(raw),m.console
+            assert m.files[dest]==padded(convert(raw)),(raw,m.files[dest])
             m.intact()
         for raw in [b'0100',b'010Z BAD',b'0100 9BAD',b'0100 TOOLONGSYMBOLX',
                     b'0100 SAME\n0101 SAME',b'0100 A\x1a0101 B',b'100 A',b'10000 A',

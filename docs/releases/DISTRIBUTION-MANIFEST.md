@@ -55,7 +55,8 @@ All membership or layout changes require discussion with the maintainer.
 - DASM.COM: selected adaptation of Richard Conn's DASM 1.5 from SIG/M volume
   91, with ZSM4-compatible Zilog output, native symbol conversion, recoverable
   file publication and bounded transient-memory ownership. Implementation,
-  converter packaging and both-platform qualification are pending; no DASM
+  [development implementation](../engineering/DASM%20Implementation%20Status.md) exists;
+  release acceptance, converter packaging and both-platform disk qualification are pending; no DASM
   binary is included yet. See [engineering specification](../engineering/DASM%20Specification.md).
 - ZSM4.COM: unmodified ZSM4 4.7, pinned to Hector Peraza revision
   `96a9ac1081172e1c08291521b77d2a715ec59c8b`; GPL-2.0-or-later.
@@ -271,7 +272,8 @@ modification. Preserve upstream provenance and credits with the adaptation.
 [The engineering specification](../engineering/DASM%20Specification.md) defines
 ZSM4 compatibility, native symbol conversion, file safety, memory ownership
 and round-trip acceptance on both platforms. This resolves disassembler
-selection in earlier checkpoints; implementation, packaging and qualification
-remain pending. Existing Utilities images and their acceptance evidence are
+selection in earlier checkpoints. A [development implementation](../engineering/DASM%20Implementation%20Status.md)
+and native symbol converter now exist; full specification acceptance,
+packaging and disk qualification remain pending. Existing Utilities images and their acceptance evidence are
 unchanged. ZSM4 and Digital Research LINK retain their third-party identities
 and versions.

@@ -11,6 +11,7 @@ from pathlib import Path
 import re
 from build_dasm import source, build
 from build_dsym import source as dsym_source, build as build_dsym
+from dasm_script_harness import scripted
 from dasm_native import campaign, cpm_text, compact_source, DEFAULT_SYSTEM
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -47,7 +48,15 @@ def main():
                      (b'Z\r',b'\r\n*',30),(b'G\r',prompt,30),
                      (b'B:ZSM4 ROUND=ROUND.ASM\r',prompt,30),
                      (b'B:LINK ROUND[A]\r',prompt,30)]
-        log,out=campaign(platform,files,commands,a.output/platform,system=a.system,
+        selected_files=dict(files)
+        selected_commands=list(commands)
+        if platform=='trs80gp':
+            selected_files['QROUND.COM']=scripted(cross,[
+                'RSYMTEST.COM','N5','RSYMTEST.DSY','C104,H','SROUND.ASM',
+                'P100,105','QL100,105','Z','G'])
+            selected_commands += ['QROUND','B:ZSM4 ROUND=ROUND.ASM','B:LINK ROUND[A]']
+            interactive=[]
+        log,out=campaign(platform,selected_files,selected_commands,a.output/platform,system=a.system,
                          utilities=a.utilities,interactive=interactive,
                          extract=['DASM.COM','DSYM.COM','SYMTEST.COM','SYMTEST.DSY','ROUND.ASM','ROUND.COM'])
         errors=re.findall(rb'Errors: +([0-9]+)',log)
@@ -69,7 +78,7 @@ def main():
         assert set(out['ROUND.COM'][5:]) <= {26}
         assert b'ASEG' in out['ROUND.ASM'] and b'HELLO' in out['ROUND.ASM']
         report['platforms'][platform]={'status':'PASS','native_cross_parity':True,
-            'symbol_conversion':True,'round_trip_bytes':5,'logical_bytes':expected.hex(),
+            'symbol_conversion':True,'scripted_line_input':platform=='trs80gp','keyboard_qualified':False,'round_trip_bytes':5,'logical_bytes':expected.hex(),
             'execution_report':platform+'/execution.json'}
         (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
         print('PASS',platform,'native build, symbol conversion and 5-byte round trip',flush=True)

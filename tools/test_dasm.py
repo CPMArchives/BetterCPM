@@ -67,6 +67,8 @@ class Dasm(Command):
         self.mem[:]=bytes(65536)
         self.mem[0x100:0x100+len(self.image)]=self.image
         self.mem[5]=0xc9;self.mem[6:8]=tpa.to_bytes(2,'little')
+        guard_start=max(tpa,0x100+len(self.image))
+        self.mem[guard_start:0xd800]=bytes([0xa5])*max(0,0xd800-guard_start)
         self.reg['SP'].value=0xe000;self.reg['IY'].value=0xbeef
         result=self.lib.test_run(0x100,30000000)
         assert self.exception is None,self.exception
@@ -74,6 +76,7 @@ class Dasm(Command):
         assert self.reg['SP'].value==0xe000
         assert self.reg['IY'].value==0xbeef
         assert (self.drive,self.user,self.dma)==(1,0,0x80)
+        assert bytes(self.mem[guard_start:0xd800])==bytes([0xa5])*max(0,0xd800-guard_start), 'resident-memory canary changed'
         assert not self.lines,self.lines
         self.cases+=1
         return self.console
@@ -102,6 +105,14 @@ def main():
             text=m.execute(['RTINY.COM','S'+name,'G'],{tiny:b'\xc9'})
             assert 'aliases' in text or 'Command Error' in text,(name,text)
             m.intact()
+        text=m.execute(['RTINY.COM','N2000','G'],{tiny:bytes(8192)})
+        assert 'capacity' not in text and 'outside' not in text,text
+        for bad_length in ['N0','N2001']:
+            text=m.execute(['RTINY.COM',bad_length,'G'],{tiny:bytes(8192)})
+            assert 'outside' in text or 'Command Error' in text,text
+        for limit in [0x9800,0x97ff]:
+            text=m.execute(['G'] if limit==0x9800 else [],tpa=limit)
+            assert ('insufficient' in text)==(limit<0x9800),text
         for data in [b'',bytes(8193)]:
             text=m.execute(['RTINY.COM','G'],{tiny:data})
             assert 'outside' in text or 'capacity' in text,text

@@ -26,7 +26,7 @@ DASM:	CALL	HSYM		;write a symbol if it exists, then put PC
 	INC	HL
 	DEC	B
 	CALL	NWLN0
-DASM1:	LD	HL,(PC)							
+DASM1:	LD	HL,(PC)
 	EX	DE,HL		;DE hold the PC
 	LD	HL,(OFFSET)
 	ADD	HL,DE		;HL is now the biased PC
@@ -68,7 +68,7 @@ OLDPC:	PUSH	DE
 	POP	DE
 	PUSH	HL		;push address
 	LD	HL,(BIASED)
-	RET			;'return' to routine 
+	RET			;'return' to routine
 ;
 ;  GO TO JUMP TABLE + 3*(OPCODE TYPE).
 ;
@@ -104,7 +104,7 @@ JMPTBL:	JP	TZERO
 	JP	T28		;  mvi	d(ii),n
 	JP	T29		;  the 4 byte 'cb' series
 	JP	T30		;  inc/dec/repeat group
-	JP	T31		;  4 byte direct store	
+	JP	T31		;  4 byte direct store
 ;
 GTCD:	LD	DE,6
 ;
@@ -119,7 +119,7 @@ NXTCD:	ADD	HL,DE
 	INC	HL
 	LD	A,(HL)		;get type
 	LD	(OPCTP),A
-	RET	
+	RET
 ;
 ;  TYPE THE OPCODE MNEMONIC.
 ;
@@ -131,7 +131,7 @@ TYPEC1:	INC	HL
 	DJNZ	TYPEC1
 	LD	HL,(PC)
 	LD	A,(OPCTP)
-	RET	
+	RET
 ;
 ;  SIMPLE ONE BYTE INSTRUCTIONS.
 ;
@@ -239,9 +239,9 @@ TNINE:	LD	E,0EH
 ;
 TTEN:	CALL	TAB
 	LD	A,(HL)
-	RRA	
-	RRA	
-	RRA	
+	RRA
+	RRA
+	RRA
 	AND	7
 	OR	'0'
 	CALL	COUT
@@ -258,9 +258,9 @@ T12:	CALL	TAB		;bit, res, set
 	CALL	PBIT
 	JR	T11PT
 PBIT:	LD	A,(HL)
-	RRA	
-	RRA	
-	RRA	
+	RRA
+	RRA
+	RRA
 	AND	7
 	ADD	A,'0'
 	JP	COUT
@@ -285,7 +285,7 @@ T15:	INC	HL		;the 'cb' series
 	LD	B,(HL)
 	LD	(BIASED),HL	;new current byte
 	LD	HL,OPC2-6
-	CALL	GTCD		;octyp is either 1, 10h or 0ch	
+	CALL	GTCD		;octyp is either 1, 10h or 0ch
 	CALL	TYPEOC
 	JP	OLDPC
 T16:	LD	HL,(PC)		;a 'db', so back up the pc
@@ -294,7 +294,7 @@ T16:	LD	HL,(PC)		;a 'db', so back up the pc
 	LD	HL,(BIASED)
 	DEC	HL		;back up here too
 	JP	PRDB
-T17:	LD	E,'X'		;the 'dd' series 
+T17:	LD	E,'X'		;the 'dd' series
 T170:	PUSH	DE
 	INC	HL
 	LD	(BIASED),HL	;second byte of instruction
@@ -414,7 +414,7 @@ T301:	CALL	COUT
 T31:	LD	E,'H'
 	CALL	PXREG
 	LD	A,D
-	RRCA	
+	RRCA
 	LD	D,A
 	LD	A,'C'
 	DEC	D
@@ -446,8 +446,8 @@ PRDB:	CALL	PSTG
 ;...PRINT THE CONDITION CODE LETTERS FOR THIS INSTRUCTION.
 ;
 PRNTCND:	LD	A,(HL)
-	RRA	
-	RRA	
+	RRA
+	RRA
 	AND	E
 	LD	HL,CNDTAB
 	CALL	SKIP
@@ -457,7 +457,7 @@ PRNTCND:	LD	A,(HL)
 	LD	A,(HL)
 	CP	'.'
 	CALL	NZ,COUT
-	RET	
+	RET
 ;
 ;...PRINT A LEADING QUOTE AND THEN THE ASCII
 ;  (PRINT '' FOR ').
@@ -476,9 +476,9 @@ PASCII:	PUSH	AF
 ;...PRINT THE FALUE FOR A DOUBLE REGISTER.
 ;
 PXREG:	LD	A,(HL)
-	RRA	
-	RRA	
-	RRA	
+	RRA
+	RRA
+	RRA
 	AND	6
 	LD	D,A
 	CP	4
@@ -505,14 +505,14 @@ TAGN:	CP	6
 	JP	COUT
 PPSW:	CALL	PSTG
 	DEFB	'PSW',0
-	RET	
+	RET
 ;
 ;...READ A BYTE AND PRINT ITS DEST. REGISTER.
 ;
 PREG1:	LD	A,(HL)
-	RRA	
-	RRA	
-	RRA	
+	RRA
+	RRA
+	RRA
 	JR	PREG
 ;
 ;...READ A BYTE AND PRINT ITS SOURCE REGISTER.
@@ -530,7 +530,7 @@ SKIP:	ADD	A,L
 	LD	L,A
 	RET	NC
 	INC	H
-	RET	
+	RET
 ;
 ;...PRINT THE VALUE IN A AS HEX,
 ;   WITH A LEADING ZERO IF NECESSARY.
@@ -574,7 +574,7 @@ NOBLD:	LD	A,D
 	CALL	PHEX
 NOBLD0:	LD	A,'H'
 NOBLD1:	CALL	COUT
-	RET	
+	RET
 NOBLD2:	LD	A,E
 	CP	0AH
 	JR	C,NOBLD3
@@ -589,7 +589,7 @@ PRNT:	LD	A,(HL)
 	CALL	COUT
 	INC	HL
 	DJNZ	PRNT
-	RET	
+	RET
 ;
 ;  OPCODE TABLES
 ;

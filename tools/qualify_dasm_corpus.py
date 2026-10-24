@@ -12,6 +12,7 @@ import re
 from build_dasm import build
 from dasm_native import campaign, DEFAULT_SYSTEM
 from test_dasm import corpus
+from dasm_script_harness import scripted
 
 
 def main():
@@ -36,7 +37,17 @@ def main():
                             f'B:ZSM4 {name}={name}.ASM',f'B:LINK {name}[A]']:
                 wanted=prompt if command=='G' or command.startswith('B:') else b'\r\n*'
                 interactive.append(((command+'\r').encode(),wanted,120))
-        log,outputs=campaign(platform,files,['DASM /VER'],a.output/platform,
+        selected_files=dict(files)
+        commands=['DASM /VER']
+        if platform=='trs80gp':
+            interactive=[]
+            for index,(name,payload) in enumerate(fixtures.items()):
+                end=256+len(payload)
+                selected_files[f'Q{index}.COM']=scripted(binary,[
+                    'RIN'+name+'.COM',f'N{len(payload):X}','S'+name+'.ASM',
+                    f'P100,{end:X}',f'QL100,{end:X}','Z','G'])
+                commands += [f'Q{index}',f'B:ZSM4 {name}={name}.ASM',f'B:LINK {name}[A]']
+        log,outputs=campaign(platform,selected_files,commands,a.output/platform,
                              system=a.system,utilities=a.utilities,interactive=interactive,
                              extract=[name+ext for name in fixtures for ext in ('.ASM','.COM')])
         errors=re.findall(rb'Errors: +([0-9]+)',log)
@@ -49,7 +60,7 @@ def main():
             assert len(actual)==(len(payload)+127)//128*128
             assert set(actual[len(payload):]) <= {26}
             cases[name]={'bytes':len(payload),'sha256':hashlib.sha256(payload).hexdigest()}
-        report['platforms'][platform]={'status':'PASS','cases':cases}
+        report['platforms'][platform]={'status':'PASS','scripted_line_input':platform=='trs80gp','keyboard_qualified':False,'cases':cases}
         (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
         print('PASS',platform,len(cases),'native opcode/data reconstruction corpora',flush=True)
 
