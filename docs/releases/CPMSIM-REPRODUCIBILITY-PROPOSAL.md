@@ -4,7 +4,10 @@ BetterCP/M 1.0 currently uses `z80pack/cpmsim` as one of its two required qualif
 
 This must be made a formal part of the BetterCP/M 1.0 release process.
 
-**Status:** Accepted 1.0 release requirement; implementation pending.
+**Status:** Implemented and qualified for the recorded profiles on 2026-10-24.
+See the [reconstruction record](../engineering/CPMSIM%20Reconstruction%20Qualification.md)
+and [pinned procedure](../../third_party/z80pack/README.md). Final RC media
+acceptance remains separate. The requirements below are retained as the contract.
 
 ### Goal
 
