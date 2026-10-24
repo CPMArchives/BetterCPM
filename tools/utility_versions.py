@@ -1,18 +1,10 @@
 """Deterministic utility identities; counters advance only for released revisions."""
 from pathlib import Path
-import csv
 import re
 ROOT = Path(__file__).resolve().parents[1]
 def identities():
-    with (ROOT / 'metadata/utility-versions.tsv').open(encoding='ascii') as source:
-        rows = list(csv.DictReader(source, delimiter='\t'))
-    result = {}
-    for row in rows:
-        name, version, build = row['utility'], row['version'], int(row['build'])
-        if name in result or not re.fullmatch(r'[A-Z][A-Z0-9]+', name) or not re.fullmatch(r'\d+\.\d+', version) or build < 1:
-            raise ValueError('invalid utility identity: ' + str(row))
-        result[name] = (version, build)
-    return result
+    from component_registry import utility_identities
+    return utility_identities()
 
 def banner(name, resident=False):
     version, build = identities()['RCP' if resident else name]

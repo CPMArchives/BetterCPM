@@ -2,7 +2,6 @@
 """Generate the resident subsystem-version descriptor from the TSV matrix."""
 from __future__ import annotations
 
-import csv
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,8 +12,8 @@ RSX_INCLUDE = ROOT / "src/utilities/rsxvers.inc"
 
 
 def rows() -> list[dict[str, str]]:
-    with MATRIX.open(newline="", encoding="utf-8") as source:
-        return list(csv.DictReader(source, delimiter="\t"))
+    from component_registry import subsystem_rows
+    return subsystem_rows()
 
 
 LABELS = {"CCP": "C", "CPX": "X", "BDOS": "D", "RSX": "R", "BIOS": "I"}

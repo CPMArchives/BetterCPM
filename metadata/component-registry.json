@@ -1,0 +1,917 @@
+{
+  "schema": 1,
+  "tracking_started": "2026-10-24",
+  "stage": "registry import; executable identity migration pending",
+  "components": {
+    "utility:STAT": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/stat.mac"
+      ],
+      "builders": [
+        "tools/build_stat.py"
+      ],
+      "revision": 3,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:COPY": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/cpx/rcp.mac"
+      ],
+      "builders": [
+        "tools/build_rcp_transients.py"
+      ],
+      "revision": 7,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:DIR": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/cpx/rcp.mac"
+      ],
+      "builders": [
+        "tools/build_rcp_transients.py"
+      ],
+      "revision": 8,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:CONFIG": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/config.mac"
+      ],
+      "builders": [
+        "tools/build_config.py"
+      ],
+      "revision": 16,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:DUP": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/dup.mac"
+      ],
+      "builders": [
+        "tools/build_dup.py"
+      ],
+      "revision": 7,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:TIME": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/time.mac"
+      ],
+      "builders": [
+        "tools/build_time.py"
+      ],
+      "revision": 3,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:SYSGEN": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/sysgen.mac"
+      ],
+      "builders": [
+        "tools/build_disk_utilities.py"
+      ],
+      "revision": 8,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:SUBMIT": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/submit.mac"
+      ],
+      "builders": [
+        "tools/build_batch.py"
+      ],
+      "revision": 3,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:XSUB": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/xsub.mac"
+      ],
+      "builders": [
+        "tools/build_batch.py"
+      ],
+      "revision": 3,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:CPX": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/cpx.mac"
+      ],
+      "builders": [
+        "tools/build_cpx_utility.py"
+      ],
+      "revision": 4,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:RSX": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/rsx.mac"
+      ],
+      "builders": [
+        "tools/build_rsx_utilities.py"
+      ],
+      "revision": 4,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:USER": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Unassigned/deferred",
+      "roots": [
+        "src/cpx/rcp.mac"
+      ],
+      "builders": [
+        "tools/build_rcp_transients.py"
+      ],
+      "revision": 6,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:CLS": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Unassigned/deferred",
+      "roots": [
+        "src/cpx/rcp.mac"
+      ],
+      "builders": [
+        "tools/build_rcp_transients.py"
+      ],
+      "revision": 7,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:VER": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/cpx/rcp.mac"
+      ],
+      "builders": [
+        "tools/build_rcp_transients.py"
+      ],
+      "revision": 8,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:RCP": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/cpx/rcp.mac"
+      ],
+      "builders": [
+        "tools/build_rcp_cpx.py"
+      ],
+      "revision": 15,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "migration_issue": "Carrier implementation 0.2 differs from canonical registry 1.0; carrier changes deferred."
+    },
+    "utility:SYSBUILD": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Native build",
+      "roots": [
+        "src/utilities/sysbuild.mac"
+      ],
+      "builders": [
+        "tools/build_disk_utilities.py"
+      ],
+      "revision": 3,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:RESPACK": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Native build",
+      "roots": [
+        "src/utilities/respack.mac"
+      ],
+      "builders": [
+        "tools/build_disk_utilities.py"
+      ],
+      "revision": 3,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:RLMBUILD": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Native build",
+      "roots": [
+        "src/utilities/rlmbuild.mac"
+      ],
+      "builders": [
+        "tools/build_disk_utilities.py"
+      ],
+      "revision": 3,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:ERA": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/era.mac"
+      ],
+      "builders": [
+        "tools/build_era.py"
+      ],
+      "revision": 5,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:REN": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/ren.mac"
+      ],
+      "builders": [
+        "tools/build_ren.py"
+      ],
+      "revision": 9,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:TYPE": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/type.mac"
+      ],
+      "builders": [
+        "tools/build_type.py"
+      ],
+      "revision": 7,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:PIP": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/pip.mac"
+      ],
+      "builders": [
+        "tools/build_pip.py"
+      ],
+      "revision": 29,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:ADMTST": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/admtst.mac"
+      ],
+      "builders": [
+        "tools/build_adm3a.py"
+      ],
+      "revision": 4,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:VT52TST": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/vt52tst.mac"
+      ],
+      "builders": [
+        "tools/build_vt52.py"
+      ],
+      "revision": 4,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:ANSITST": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/ansitst.mac"
+      ],
+      "builders": [
+        "tools/build_ansi.py"
+      ],
+      "revision": 3,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:ED": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/ed.mac"
+      ],
+      "builders": [
+        "tools/build_ed.py"
+      ],
+      "revision": 3,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:DUMP": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/dump.mac"
+      ],
+      "builders": [
+        "tools/build_dump.py"
+      ],
+      "revision": 4,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:DDT": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/ddt.mac"
+      ],
+      "builders": [
+        "tools/build_ddt.py"
+      ],
+      "revision": 2,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:SQ": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/sq.mac"
+      ],
+      "builders": [
+        "tools/build_sq.py"
+      ],
+      "revision": 4,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:USQ": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/usq.mac"
+      ],
+      "builders": [
+        "tools/build_usq.py"
+      ],
+      "revision": 4,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:CR": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/cr.mac"
+      ],
+      "builders": [
+        "tools/build_cr.py"
+      ],
+      "revision": 4,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:UNCR": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/uncr.mac"
+      ],
+      "builders": [
+        "tools/build_uncr.py"
+      ],
+      "revision": 4,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:LZH": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/lzh.mac"
+      ],
+      "builders": [
+        "tools/build_lzh.py"
+      ],
+      "revision": 4,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:UNLZH": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/unlzh.mac"
+      ],
+      "builders": [
+        "tools/build_unlzh.py"
+      ],
+      "revision": 4,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:NOAH": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Unassigned/deferred",
+      "roots": [
+        "src/utilities/noah.mac"
+      ],
+      "builders": [
+        "tools/build_noah.py"
+      ],
+      "revision": 4,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:BYE": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/platform/z80pack/bye.mac"
+      ],
+      "builders": [
+        "tools/build_z80pack_bye.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "existing",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:MOVE": {
+      "kind": "transitional utility",
+      "version": null,
+      "placement": "Unassigned",
+      "roots": [
+        "src/cpx/rcp.mac"
+      ],
+      "builders": [
+        "tools/build_rcp_transients.py"
+      ],
+      "revision": null,
+      "api_version": null,
+      "tracking": "pending",
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "migration_issue": "Currently inherits RCP; independent assignment requires review."
+    },
+    "utility:WARM": {
+      "kind": "utility",
+      "version": null,
+      "placement": "Development/unassigned",
+      "roots": [
+        "src/utilities/warm.mac"
+      ],
+      "builders": [
+        "tools/build_warm.py",
+        "tools/build_native_warm.py"
+      ],
+      "revision": null,
+      "api_version": null,
+      "tracking": "pending",
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "migration_issue": "Establish implementation version and first tracked revision; do not invent history."
+    },
+    "subsystem:BDOS": {
+      "kind": "subsystem",
+      "version": "1.10",
+      "placement": "System",
+      "roots": [
+        "src/bdos/unified.mac"
+      ],
+      "builders": [
+        "tools/build_bdos.py",
+        "tools/build_native_bdos.py"
+      ],
+      "revision": 1,
+      "api_version": "1.2",
+      "tracking": "initial",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "subsystem:BIOS": {
+      "kind": "subsystem",
+      "version": "1.14",
+      "placement": "System",
+      "roots": [
+        "src/bios/bios.mac",
+        "src/bios/disk.mac",
+        "src/bios/tables.mac",
+        "src/platform/trs80m4/boot.mac",
+        "src/platform/trs80m4/stage1.mac",
+        "src/platform/z80pack/boot.mac",
+        "src/platform/z80pack/romboot.mac",
+        "src/platform/z80pack/rominit.mac"
+      ],
+      "builders": [
+        "tools/build_bios.py",
+        "tools/build_trs80_boot.py",
+        "tools/build_z80pack_boot.py",
+        "tools/build_z80pack_rom_boot.py"
+      ],
+      "revision": 1,
+      "api_version": "1.7",
+      "tracking": "initial",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "subsystem:CCP": {
+      "kind": "subsystem",
+      "version": "2.0",
+      "placement": "System",
+      "roots": [
+        "src/ccp/ccp.mac",
+        "src/platform/trs80m4/ccprelod.mac",
+        "src/platform/trs80m4/ccprload.mac",
+        "src/system/command-stage1.mac",
+        "src/system/command-stage2.mac"
+      ],
+      "builders": [
+        "tools/build_ccp.py",
+        "tools/build_ccpreload.py",
+        "tools/build_checked_command_loader.py"
+      ],
+      "revision": 1,
+      "api_version": "2.0",
+      "tracking": "initial",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "subsystem:CPX": {
+      "kind": "subsystem",
+      "version": "2.0",
+      "placement": "System",
+      "roots": [
+        "src/system/extens.mac"
+      ],
+      "builders": [
+        "tools/build_system.py",
+        "tools/build_cpx_module.py"
+      ],
+      "revision": 1,
+      "api_version": "2.0",
+      "tracking": "initial",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "subsystem:RSX": {
+      "kind": "subsystem",
+      "version": "2.0",
+      "placement": "System",
+      "roots": [
+        "src/system/r3carr.mac",
+        "src/system/r3comit.mac",
+        "src/system/r3coord.mac",
+        "src/system/r3drop.mac",
+        "src/system/r3entry.mac",
+        "src/system/r3final.mac",
+        "src/system/r3kctx.mac",
+        "src/system/r3keep.mac",
+        "src/system/r3kpre.mac",
+        "src/system/r3meta.mac",
+        "src/system/r3ovload.mac",
+        "src/system/r3prep.mac",
+        "src/system/r3prof.mac",
+        "src/system/r3pst.mac",
+        "src/system/r3snap.mac",
+        "src/system/rsxmover.mac",
+        "src/system/rsxplan.mac",
+        "src/system/rsxresol.mac",
+        "src/system/rsxsched.mac",
+        "src/system/rsxslots.mac",
+        "src/platform/trs80m4/rsxsel.mac",
+        "src/platform/z80pack/rsxsel.mac"
+      ],
+      "builders": [
+        "tools/build_rsxloader.py",
+        "tools/build_rsxresolver.py",
+        "tools/build_rsx_runtime_overlays.py",
+        "tools/build_checked_resident_rsx.py"
+      ],
+      "revision": 1,
+      "api_version": "2.0",
+      "tracking": "initial",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "module:ZPRTC": {
+      "kind": "loadable module",
+      "version": "0.2",
+      "placement": "System",
+      "roots": [
+        "src/rsx/zprtc.mac"
+      ],
+      "builders": [
+        "tools/build_zprtc_rsx.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "module:FREHDCLK": {
+      "kind": "loadable module",
+      "version": "0.2",
+      "placement": "System",
+      "roots": [
+        "src/rsx/frehdclk.mac"
+      ],
+      "builders": [
+        "tools/build_frehd_time_rsx.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "module:ADM3A": {
+      "kind": "loadable module",
+      "version": "1.1",
+      "placement": "System",
+      "roots": [
+        "src/rsx/adm3a.mac"
+      ],
+      "builders": [
+        "tools/build_adm3a.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "module:VT52": {
+      "kind": "loadable module",
+      "version": "1.3",
+      "placement": "System",
+      "roots": [
+        "src/rsx/vt52.mac"
+      ],
+      "builders": [
+        "tools/build_vt52.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "module:ANSI": {
+      "kind": "loadable module",
+      "version": "1.1",
+      "placement": "System",
+      "roots": [
+        "src/rsx/ansi.mac"
+      ],
+      "builders": [
+        "tools/build_ansi.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "module:M4SCRN": {
+      "kind": "loadable module",
+      "version": "1.7",
+      "placement": "System",
+      "roots": [
+        "src/rsx/screen/model4.mac"
+      ],
+      "builders": [
+        "tools/build_screen_backends.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "module:ANSISCRN": {
+      "kind": "loadable module",
+      "version": "1.7",
+      "placement": "System",
+      "roots": [
+        "src/rsx/screen/ansi-host.mac"
+      ],
+      "builders": [
+        "tools/build_screen_backends.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "module:BATCHIO": {
+      "kind": "loadable module",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/rsx/batchio.mac"
+      ],
+      "builders": [
+        "tools/build_batch.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    }
+  },
+  "legacy_utility_order": [
+    "STAT",
+    "COPY",
+    "DIR",
+    "CONFIG",
+    "DUP",
+    "TIME",
+    "SYSGEN",
+    "SUBMIT",
+    "XSUB",
+    "CPX",
+    "RSX",
+    "USER",
+    "CLS",
+    "VER",
+    "RCP",
+    "SYSBUILD",
+    "RESPACK",
+    "RLMBUILD",
+    "ERA",
+    "REN",
+    "TYPE",
+    "PIP",
+    "ADMTST",
+    "VT52TST",
+    "ANSITST",
+    "ED",
+    "DUMP",
+    "DDT",
+    "SQ",
+    "USQ",
+    "CR",
+    "UNCR",
+    "LZH",
+    "UNLZH",
+    "NOAH",
+    "BYE"
+  ],
+  "legacy_subsystem_rows": [
+    {
+      "component": "BetterCP/M",
+      "identity": "Core OS",
+      "interface_version": "-",
+      "implementation_version": "1.0",
+      "status": "completed baseline",
+      "notes": "Last frozen core milestone only: 3b2d2d7; current subsystem rows are post-1.0 development and do not redefine core 1.0; next core version and package core selection undecided"
+    },
+    {
+      "component": "CCP",
+      "identity": "Command environment",
+      "status": "completed",
+      "notes": "Checked BCM2 carrier and streaming command reload; command calling convention unchanged; legacy format retained in default profile",
+      "component_ref": "subsystem:CCP"
+    },
+    {
+      "component": "CPX",
+      "identity": "Command Processor Extension facility",
+      "status": "completed",
+      "notes": "Checked BCPX2 carrier admission with CRC and public/private build binding; BCPX1 retained in default profile",
+      "component_ref": "subsystem:CPX"
+    },
+    {
+      "component": "BDOS",
+      "identity": "Basic Disk Operating System",
+      "status": "completed",
+      "notes": "Make distinguishes physical extents by EXM/S2; sequential writes eagerly prepare the next extent at CR=128 for DRI LINK; public interface unchanged",
+      "component_ref": "subsystem:BDOS"
+    },
+    {
+      "component": "RSX",
+      "identity": "Resident System Extension facility",
+      "status": "completed",
+      "notes": "Checked BRSX3/BMET2 admission, streamed reconstruction and private pack binding; BRSX2 retained in default profile",
+      "component_ref": "subsystem:RSX"
+    },
+    {
+      "component": "BIOS",
+      "identity": "Basic Input/Output System",
+      "status": "completed",
+      "notes": "Checked cpmsim reload, CRC and private identity services; public BIOS and disk ABI unchanged",
+      "component_ref": "subsystem:BIOS"
+    },
+    {
+      "component": "TIME provider",
+      "identity": "Optional callable resident clock service",
+      "interface_version": "1.0",
+      "implementation_version": "-",
+      "status": "planned",
+      "notes": "Hardware providers use the adopted TIME ABI; implementation version begins with the first qualified provider"
+    },
+    {
+      "component": "Extended Services RSX",
+      "identity": "BetterCP/M extended-services namespace",
+      "interface_version": "-",
+      "implementation_version": "-",
+      "status": "planned",
+      "notes": "Assign separate API and implementation versions when completed"
+    }
+  ]
+}
