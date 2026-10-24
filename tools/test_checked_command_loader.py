@@ -12,7 +12,6 @@ import struct
 import types
 
 from build_checked_command_loader import build_stages
-from build_cpx_module import make_module
 from build_z80pack_image import symbols
 from checked_build_contract import load_contract
 from system_layout import LAYOUT as L
@@ -100,8 +99,14 @@ def module_fixture(cpx, identity, public):
     payload = bytearray(32);payload[8] = 0xC9
     payload[10:12] = (0x8010).to_bytes(2, 'little')
     if cpx:
-        old = make_module(name='PROBE', version=(1, 0), commands=['PROBE'],
-                          linked_base=0x8000, code=bytes(payload), relocations=[10])
+        # Independent BCPX1 fixture: do not call the selected-profile builder.
+        header = bytearray(512)
+        struct.pack_into('<4sBBBBHHHHHHHHHHHH8sBBBBH', header, 0,
+                         b'BCPX', 1, 1, 1, 0, 0, 0x8000, 32, 256,
+                         8, 0xFFFF, 0xFFFF, 1, 512, 512, 48, 544,
+                         b'PROBE   ', 1, 0, 1, 0, sum(payload)&0xFFFF)
+        header[48:50] = (10).to_bytes(2, 'little')
+        old = bytes(header) + payload + b'PROBE   '
     else:
         header = bytearray(1024)
         header[:16] = struct.pack('<4sBBHHHHH', b'BCM1', 1, 2, 0x8000, 32, 256, 0, 1)

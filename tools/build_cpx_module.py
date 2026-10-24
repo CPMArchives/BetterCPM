@@ -79,4 +79,7 @@ def make_module(*, name: str, version: tuple[int, int], commands: list[str],
                      len(commands), 0, sum(code) & 0xFFFF)
     for index, offset in enumerate(relocations):
         struct.pack_into("<H", header, RELOCATION_OFFSET + index * 2, offset)
-    return bytes(header) + code + metadata
+    from checked_carriers import selected_contract, command_carrier
+    data = bytes(header) + code + metadata
+    contract = selected_contract()
+    return command_carrier(data, name, 'cpx', contract) if contract else data
