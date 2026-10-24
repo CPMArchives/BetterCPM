@@ -39,11 +39,52 @@ def convert(data):
                     for name,value in sorted(symbols.items()))+b'\x1a'
 
 
+def convert_log(data):
+    """Strict complete LINK 1.3 console-map report, never a bare SYM file."""
+    meaningful,marker,padding=data.partition(b'\x1a')
+    if marker and padding.strip(b'\x1a \t\r\n'):
+        raise ValueError('meaningful input after text terminator')
+    tokens=meaningful.upper().split()
+    index=0
+    def take():
+        nonlocal index
+        if index==len(tokens):raise ValueError('incomplete link report')
+        value=tokens[index];index+=1;return value
+    def expect(word):
+        if take()!=word:raise ValueError('unknown or failed link report')
+    def number(width):
+        value=take()
+        if not re.fullmatch(rb'[0-9A-F]{'+str(width).encode()+rb'}',value):
+            raise ValueError('invalid link report number')
+        return int(value,16)
+    def section():
+        count=number(4)
+        if count:
+            match=re.fullmatch(rb'\(([0-9A-F]{4})-([0-9A-F]{4})\)',take())
+            if not match or int(match[2],16)-int(match[1],16)+1!=count:
+                raise ValueError('invalid link report range')
+    expect(b'LINK');expect(b'1.3')
+    pairs=[]
+    while True:
+        name=take()
+        if name==b'ABSOLUTE':break
+        address=take()
+        pairs.append(address+b' '+name+b'\r\n')
+    section()
+    for name in (b'CODE',b'DATA',b'COMMON'):
+        expect(name);expect(b'SIZE');section()
+    expect(b'USE');expect(b'FACTOR');number(2)
+    expect(b'DLINK');expect(b'END')
+    if index!=len(tokens):raise ValueError('trailing link report tokens')
+    return convert(b''.join(pairs))
+
+
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('input',type=Path)
     parser.add_argument('output',type=Path)
     args=parser.parse_args()
-    output=convert(args.input.read_bytes())
+    if args.input.suffix.upper()!='.LOG':parser.error('complete DLINK .LOG report required')
+    output=convert_log(args.input.read_bytes())
     with args.output.open('xb') as stream:
         stream.write(output)

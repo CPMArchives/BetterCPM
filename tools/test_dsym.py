@@ -6,10 +6,22 @@ import shutil
 import subprocess
 import tempfile
 from build_dsym import build
-from dsym_reference import convert
+from dsym_reference import convert, convert_log
 from generate_dasm_words import generate
 from test_usq import SHIM
 from test_usq_com import Command, diskkey, padded
+
+
+def fixture(raw):
+    meaningful,marker,padding=raw.partition(b'\x1a')
+    records=[]
+    for line in meaningful.splitlines():
+        tokens=line.split()
+        records.append(b' '.join(tokens[i+1]+b' '+tokens[i] if i+1<len(tokens) else tokens[i]
+                                 for i in range(0,len(tokens),2))+b'\r\n')
+    return (b'LINK 1.3\n'+b''.join(records)+
+        b'ABSOLUTE 0000\r\nCODE SIZE 0000\r\nDATA SIZE 0000\r\nCOMMON SIZE 0000\r\nUSE FACTOR 00\r\nDLINK END\r\n'+
+        (b'\x1a'+padding if marker else b''))
 
 
 class Dsym(Command):
@@ -41,8 +53,8 @@ def main():
                         str(core/'simglb.c'),*map(str,sorted(core.glob('simz80*.c'))),'-o',str(w/'core.so')],check=True)
         m=Dsym(C.CDLL(str(w/'core.so')),image,(w/'dsym.lst').read_text(),
                   required_symbols=('UC_OLDSP','UC_STACK','UC_STACK_TOP','UC_INPUT','UC_TEMP'))
-        source=diskkey(1,'INPUT.SYM');dest=diskkey(1,'INPUT.DSY')
-        def run(data, **kw):return m.run(' INPUT.SYM',{source:data},tpa=0xd000,**kw)
+        source=diskkey(1,'INPUT.LOG');dest=diskkey(1,'INPUT.DSY')
+        def run(data, **kw):return m.run(' INPUT.LOG',{source:fixture(data)},tpa=0xd000,**kw)
         raw=b'0100 START\t0104 HELLO\t\r\n\x1a'
         assert 'complete' in run(raw),m.console
         assert m.files[dest]==padded(convert(raw)), repr(m.files[dest])
@@ -61,36 +73,56 @@ def main():
             assert 'complete' not in run(b'0100 START\n',failures={fail:1}),fail
             assert dest not in m.files,(fail,m.files)
             m.intact()
-        text=m.run(' INPUT.SYM',{source:b'0100 START\n',dest:b'KEEP'},tpa=0xd000)
+        text=m.run(' INPUT.LOG',{source:fixture(b'0100 START\n'),dest:b'KEEP'},tpa=0xd000)
         assert 'exists' in text and m.files[dest]==b'KEEP'
         m.intact()
-        text=m.run(' INPUT.SYM',{source:b'0100 START\n'},tpa=0x1000)
+        text=m.run(' INPUT.LOG',{source:fixture(b'0100 START\n')},tpa=0x1000)
         assert 'insufficient' in text and not m.created
         text=m.run('/VER',{},tpa=0xd000)
         assert 'DSYM development' in text and not m.created
         text=run(b'0100 FIRST\r\n0101 SECOND\r\n0100 first\n')
         assert 'imported 2; coalesced 1; rejected 0; complete' in text,text
         text=run(b'0100 FIRST\r\n\r\n0101 9BAD\n')
-        assert 'invalid symbols at line 3' in text,text
+        assert 'invalid symbols at line 4' in text,text
+        report=(b'LINK 1.3 \n\r\r\nSTART    0100   HELLO    0104   \r\n\r\n'
+                b'ABSOLUTE     0000\r\nCODE SIZE    0004 (0100-0103)\r\n'
+                b'DATA SIZE    0001 (0104-0104)\r\nCOMMON SIZE  0000\r\n'
+                b'USE FACTOR     00\r\nDLINK END\r\n')
+        log_source=diskkey(1,'INPUT.LOG')
+        text=m.run(' INPUT.LOG',{log_source:report},tpa=0xd000)
+        assert 'complete' in text and m.files[dest]==padded(convert_log(report)),text
+        for bad in (report.replace(b'1.3',b'1.2'),report.replace(b'0100-0103',b'0100-0104'),
+                    report.replace(b'START    0100',b'UNDEFINED SYMBOLS: START    0100'),
+                    report.replace(b'START    0100',b'MULTIPLE DEFINITION: START    0100'),
+                    report.replace(b'DLINK END',b''),report+b'EXTRA',
+                    report[:report.index(b'USE FACTOR')],
+                    b'0100 START\r\n',report.replace(b'CODE SIZE',b'CODE ERROR')):
+            text=m.run(' INPUT.LOG',{log_source:bad},tpa=0xd000)
+            assert 'invalid' in text and dest not in m.files,text
+            try:convert_log(bad)
+            except ValueError:pass
+            else:raise AssertionError(('reference accepted malformed report',bad))
         for caller in (0,7,31):
             for srcuser,dstuser in ((0,31),(16,7),(31,0)):
-                src=diskkey(2,'INPUT.SYM',srcuser); dst=diskkey(3,'INPUT.DSY',dstuser)
+                src=diskkey(2,'INPUT.LOG',srcuser); dst=diskkey(3,'INPUT.DSY',dstuser)
                 decoy=diskkey(3,'INPUT.DSY',caller)
-                files={src:b'0100 START\n'}
+                files={src:fixture(b'0100 START\n')}
                 if decoy!=dst:files[decoy]=b'KEEP'
-                text=m.run(f' B{srcuser}:INPUT.SYM C{dstuser}:',files,user=caller,tpa=0xd000)
+                text=m.run(f' B{srcuser}:INPUT.LOG C{dstuser}:',files,user=caller,tpa=0xd000)
                 assert 'complete' in text,text
                 assert m.files[dst]==padded(b'0100 START\r\n\x1a')
                 m.intact()
-        for arg in ('B32:INPUT.SYM','[B0,B1]:INPUT.SYM','B0:INPUT.SYM [C0,C1]:',
-                    'B0:INPUT.SYM C0:EXTRA','B0:INPUT.SYM C0: EXTRA'):
-            text=m.run(' '+arg,{diskkey(2,'INPUT.SYM'):b'0100 START\n'},tpa=0xd000)
+        for arg in ('B32:INPUT.LOG','[B0,B1]:INPUT.LOG','B0:INPUT.LOG [C0,C1]:',
+                    'B0:INPUT.LOG C0:EXTRA','B0:INPUT.LOG C0: EXTRA'):
+            text=m.run(' '+arg,{diskkey(2,'INPUT.LOG'):fixture(b'0100 START\n')},tpa=0xd000)
             assert 'Usage:' in text and not m.created,(arg,text)
         for fail in ('open','read','make','write','close_input','close_output','rename'):
-            src=diskkey(2,'INPUT.SYM',31)
-            text=m.run(' B31:INPUT.SYM C16:',{src:b'0100 START\n'},user=7,tpa=0xd000,failures={fail:1})
+            src=diskkey(2,'INPUT.LOG',31)
+            text=m.run(' B31:INPUT.LOG C16:',{src:fixture(b'0100 START\n')},user=7,tpa=0xd000,failures={fail:1})
             assert 'complete' not in text and diskkey(3,'INPUT.DSY',16) not in m.files
             m.intact()
+        text=m.run(' INPUT.SYM',{diskkey(1,'INPUT.SYM'):b'0100 START\r\n'},tpa=0xd000)
+        assert 'cannot prove link success' in text and not m.created,text
         print('PASS:',m.cases,'DSYM full-core cases; validation, aliases, low TPA, failures and original preservation')
 
 

@@ -1,0 +1,15 @@
+{
+  "generator": "Unchanged ZSM4 4.7, B:ZSM4 SYMTEST=SYMTEST",
+  "qualification": "b933619 native z80pack campaign on current paired System media",
+  "zsm4_sha256": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+  "files": {
+    "SYMTEST.REL": {
+      "bytes": 256,
+      "sha256": "6d40e3aa1d65228e6864ae5c6359890eeaff8dce5a2a8fd7e4fa37e561ab3b74"
+    },
+    "SYMTEST.MAC": {
+      "bytes": 81,
+      "sha256": "5ba771c9f7c9bc1340737988c929fa22cc50b8a554b0b4fb22211ef940356058"
+    }
+  }
+}

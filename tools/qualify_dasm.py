@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 import re
 from build_dasm import source, build
+from build_dlink import build as build_dlink
 from build_dsym import source as dsym_source, build as build_dsym
 from dasm_script_harness import scripted
 from dasm_native import campaign, cpm_text, compact_source, DEFAULT_SYSTEM
@@ -32,10 +33,11 @@ def main():
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
     cross=build(Path.home()/'bin/z80asm',a.output/'cross')
     converter=build_dsym(Path.home()/'bin/z80asm',a.output/'cross')
-    files={'DASM.MAC':native_source(source()),'DSYM.MAC':native_source(dsym_source()),
+    files={'DLINK.COM':build_dlink(Path.home()/'bin/z80asm',a.output/'cross'),
+           'DASM.MAC':native_source(source()),'DSYM.MAC':native_source(dsym_source()),
            'SYMTEST.MAC':cpm_text(' CSEG\n PUBLIC START,HELLO\nSTART: LD DE,HELLO\n RET\n DSEG\nHELLO: DB 0\n END\n')}
     commands=['B:ZSM4 DASM=DASM','B:LINK DASM[A]','B:ZSM4 DSYM=DSYM','B:LINK DSYM[A]',
-              'B:ZSM4 SYMTEST=SYMTEST','B:LINK SYMTEST[A]','DSYM SYMTEST.SYM','DASM /VER']
+              'B:ZSM4 SYMTEST=SYMTEST','DLINK SYMTEST','DSYM SYMTEST.LOG','DASM /VER']
     report={'status':'IN_PROGRESS','scope':'native integration gate; full release acceptance pending',
             'cross_sha256':hashlib.sha256(cross).hexdigest(),'converter_sha256':hashlib.sha256(converter).hexdigest(),
             'platforms':{}}

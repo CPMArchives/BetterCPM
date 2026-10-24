@@ -48,7 +48,7 @@ all three validated tables before committing any. Fault tests cover each create,
 write, close and rename, binary/component/descriptor corruption and cross-user
 session save/load. Retained new scratch and component identities are reported.
 
-The current host campaign passes **145 DASM and 51 DSYM full-core cases**, plus
+The current host campaign passes **145 DASM and 62 DSYM full-core cases**, plus
 **71 USQ regression cases** after the optional shared file-I/O hook was added.
 These changes are not covered by the earlier native receipts below. They require
 a fresh native build and both-platform campaign before acceptance.
@@ -87,14 +87,14 @@ a fresh native build and both-platform campaign before acceptance.
 - Metadata reads stage complete tables and commit after successful validation
   and close. Malformed records, oversized tables and meaningful data after a
   text terminator are rejected. Arbitrary comment-assembly injection is refused.
-- DSYM accepts the observed LINK 1.3 four-hex-digit/name pairs, case folds,
+- DSYM accepts complete checked LINK 1.3 reports, case folds,
   sorts names, coalesces identical duplicates and rejects conflicting names,
   malformed input, overlength identifiers and more than 255 unique names.
   Aliases and values 0000/FFFF survive conversion. New-only `.DSY` publication
   prevents replacement of the `.SYM` input or an existing output.
 - Host reference converter `tools/dsym_reference.py` implements that identified
-  dialect, with exclusive output creation. It does not parse REL objects,
-  arbitrary listings or unresolved external symbols.
+  dialect, with exclusive output creation. It does not parse REL objects or arbitrary listings. Its public command requires a
+  complete report; the bare-pair helper is only an internal reference grammar.
 
 ## Development command contract
 
@@ -115,9 +115,9 @@ B:ZSM4 OUTPUT=OUTPUT.ASM
 B:LINK OUTPUT[A]
 ```
 
-`DSYM [DU:]INPUT.SYM [destination-DU:]` writes `INPUT.DSY`; load it with
-`RINPUT.DSY` after loading the binary. Its source is the final LINK symbol
-file, not an assembler-relative symbol table. A default LINK fixture with
+`DSYM [DU:]INPUT.LOG [destination-DU:]` writes `INPUT.DSY`; load it with
+`RINPUT.DSY` after loading the binary. Its source is a complete DLINK final-address report, as described in
+[DASM Symbol Conversion](DASM%20Symbol%20Conversion.md). A bare SYM is refused. A default LINK fixture with
 CSEG and DSEG yielded `0100 START<TAB>0104 HELLO<TAB><CRLF>` and linked bytes
 `11 04 01 C9 00`; conversion must preserve those final addresses.
 
@@ -148,6 +148,7 @@ python3 tools/build_dasm.py
 python3 tools/build_dsym.py
 python3 tools/test_dasm.py
 python3 tools/test_dsym.py
+python3 tools/test_dlink.py
 python3 tools/test_usq_com.py
 python3 tools/qualify_dasm.py --system SYSTEM_ROOT --utilities UTILITIES_ROOT --output NEW_OUTPUT
 python3 tools/qualify_dasm_corpus.py --system SYSTEM_ROOT --utilities UTILITIES_ROOT --output NEW_OUTPUT
@@ -193,7 +194,7 @@ zero/overlong logical lengths, accept the exact 9800H startup ceiling and refuse
 remain untouched in every command campaign. This supplements, rather than
 replaces, the required resident-module campaign on real platform media.
 
-DSYM is 7,158 bytes, SHA-256
+The qualified-baseline DSYM is 7,158 bytes, SHA-256
 `14633f5eb500f2b9955a901d97d386b46fda51dd699e4253ebe7aaa07a22ac94`.
 Its fixed table holds at most 255 names of at most 12 characters; it makes its
 own active-TPA check before opening files.
@@ -220,11 +221,9 @@ the archived COM byte-for-byte; the archived binary remains unmodified.
    filesystem/emulator media, beyond the independent full-core fault model.
 3. Complete resident-module canaries, active TPA diagnostics and ordinary console
    cancellation/pagination/backspace on both platform personalities.
-4. Add verified LINK success evidence: failed LINK runs still emit valid-looking
-   SYM pairs, including unresolved names at 0000H. Current DSYM cannot detect
-   that from SYM alone. DSYM now has shared DU selection and line/count diagnostics;
-   qualify multi-module exports, absolute equates, long-name/significance and
-   unresolved-external negative fixtures against native LINK.
+4. Qualify the new DLINK capture and strict DSYM report workflow on both targets.
+   The native z80pack multi-module/negative campaign passes. Complete its Model 4
+   campaign and the remaining native caller-state/media-failure witnesses.
 5. Complete the specified full file-failure/media-full/recovery matrix and
    terminal interaction campaign on both targets. The automated BDOS fault
    harness does not replace actual filesystem/emulator tests.

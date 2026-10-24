@@ -91,6 +91,15 @@ SY_NOTVER:
         LD DE,SY_ALIAS
         JP Z,UC_ERROR
 SY_NOT_ALIAS:
+        LD HL,UC_INPUT+9
+        LD DE,SY_LOG_EXT
+        LD B,3
+        CALL SY_MATCH
+        LD DE,SY_UNVERIFIED
+        JP NZ,UC_ERROR
+        LD A,1
+        LD (SY_LOG_MODE),A
+SY_INPUT_SELECTED:
         LD DE,UC_INPUT
         LD C,15
         CALL UC_BDOS
@@ -101,8 +110,11 @@ SY_NOT_ALIAS:
         LD (UC_INPUT_OPEN),A
         LD HL,SY_TABLE
         LD (SY_NEXT),HL
+        LD A,(SY_LOG_MODE)
+        OR A
+        CALL NZ,SY_LOG_HEADER
 SY_RECORD:
-        CALL SY_TOKEN
+        CALL SY_PAIR
         JP C,SY_PARSED
         LD A,(SY_LENGTH)
         CP 4
@@ -132,7 +144,7 @@ SY_NIBBLE:
         INC HL
         DJNZ SY_HEX
         LD (SY_ADDRESS),DE
-        CALL SY_TOKEN
+        CALL SY_NAME_TOKEN
         JP C,SY_INVALID
         LD A,(SY_TOKENBUF)
         CALL SY_LETTER
@@ -437,6 +449,14 @@ SY_HEXDIGIT:
 ; Tokenizer: NC = token, C = clean end. Physical EOF is accepted only at a
 ; token boundary. Once ^Z occurs only ^Z and text whitespace may follow.
 SY_TOKEN:
+        LD A,(SY_PUSHED)
+        OR A
+        JR Z,SY_TOKEN_NEW
+        XOR A
+        LD (SY_PUSHED),A
+        OR A
+        RET
+SY_TOKEN_NEW:
         XOR A
         LD (SY_LENGTH),A
         LD HL,SY_TOKENBUF
@@ -573,20 +593,23 @@ PN_CHAR:
         POP DE
         POP BC
         RET
+        INCLUDE dsymlog.inc
         INCLUDE printnum.inc
         INCLUDE dsymdu.inc
         INCLUDE zsm4words.inc
-SY_VERSION: DB 'DSYM development - LINK 1.3 symbols to DASM',13,10,'$'
+SY_VERSION: DB 'DSYM development - verified LINK 1.3 report to DASM',13,10,'$'
 SY_VEROPT: DB '/VER'
 SY_EXT: DB 'DSY'
-UC_USAGE: DB 'Usage: DSYM [DU:]file.SYM [destination-DU:]',13,10
-          DB 'LINK 1.3 address/name pairs; output is file.DSY.',13,10
+SY_LOG_EXT: DB 'LOG'
+UC_USAGE: DB 'Usage: DSYM [DU:]file.LOG [destination-DU:]',13,10
+          DB 'Complete DLINK report only; output is file.DSY.',13,10
           DB 'At most 255 names, 12 characters; existing output is refused.',13,10,'$'
 SY_IMPORTED: DB 'DSYM: imported $'
 SY_COALESCED: DB '; coalesced $'
 SY_SUCCESS: DB '; rejected 0; complete.',13,10,'$'
 SY_LINE_MSG: DB 'DSYM: invalid symbols at line $'
 SY_FORMAT: DB '; rejected 1; invalid, conflicting or excessive symbols; output not published.',13,10,'$'
+SY_UNVERIFIED: DB 'DSYM: bare SYM cannot prove link success; use DLINK and file.LOG.',13,10,'$'
 SY_ALIAS: DB 'DSYM: output aliases input.',13,10,'$'
 SY_MEMORY: DB 'DSYM: insufficient transient memory.',13,10,'$'
 UC_NO_INPUT: DB 'DSYM: cannot open input.',13,10,'$'
@@ -634,6 +657,11 @@ SY_TOKEN_LINE: DW 0
 SY_DUPLICATES: DW 0
 SY_LAST_CR: DB 0
 PN_STARTED: DB 0
+SY_LOG_MODE: DB 0
+SY_PUSHED: DB 0
+SY_SAVED_LENGTH: DB 0
+SY_SAVED_NAME: DS 12
+SY_SECTION_SIZE: DW 0
 SY_COUNT: DB 0
 SY_NEXT: DW 0
 SY_LENGTH: DB 0

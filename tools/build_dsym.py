@@ -12,7 +12,7 @@ ROOT=Path(__file__).resolve().parents[1]
 
 def source():
     text=(ROOT/'src/utilities/dsym.mac').read_text()
-    for name in ('codecfile.mac','dsymdu.inc','printnum.inc','duselect.inc','filespec.inc','zsm4words.inc'):
+    for name in ('codecfile.mac','dsymdu.inc','dsymlog.inc','printnum.inc','duselect.inc','filespec.inc','zsm4words.inc'):
         text=text.replace('        INCLUDE '+name,
                           (ROOT/'src/utilities/common'/name).read_text())
     definitions=[]
