@@ -26,7 +26,8 @@
         "tools/utility_versions.py",
         "tools/component_registry.py",
         "tools/component_inputs.py",
-        "tools/component_identity.py"
+        "tools/component_identity.py",
+        "tools/component_development.py"
       ]
     },
     "utility:DDT": {
@@ -69,7 +70,8 @@
         "tools/utility_versions.py",
         "tools/component_registry.py",
         "tools/component_inputs.py",
-        "tools/component_identity.py"
+        "tools/component_identity.py",
+        "tools/component_development.py"
       ]
     }
   }

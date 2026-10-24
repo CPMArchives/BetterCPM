@@ -1,0 +1,171 @@
+{
+  "records": {
+    "utility:BYE|z80pack|default|cross": {
+      "assigned_identity": {
+        "revision": 2,
+        "version": "1.0"
+      },
+      "fingerprint": "b82d746344cd83a3898ff7bbf5b56d3ef2edfb856bb9e4728aa3f9b30f597df4",
+      "inputs": {
+        "component": "utility:BYE",
+        "configuration": {
+          "assembler_flags": [
+            "-fb"
+          ],
+          "origin": 256
+        },
+        "files": {
+          "src/platform/z80pack/bye.mac": "1976c742ad6a96b00248fd28f2244a8d5beb33ac6be3aab0eb204cb58f2945c7",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_z80pack_bye.py": "23e13dc3fa739bfdebbcd0a9e1e6d06455028d4c460a8f5bc1a0dfec01ed9578",
+          "tools/checked_build_contract.py": "3012cc25bdf79fbeed850e02c8673740498370952425c1ca3a3a26ec35eba193",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_development.py": "77cd629b08894f396b787dbf68cd295b644bf639b3d94d109e19da79e1f57847",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "bbeb937996aef0d16687b8c5571e2fd1f3f0462d8fe7a80a6751cb72ed5ccc45",
+          "tools/component_registry.py": "3e4f82a3cba1e4d5666dd2adfa663190f1c5349fe6bc9d572132906da6e276cf",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_versions.py": "8f6424ca10065b2b233a93cec750542458a5bb4dfdbdbc0087a45365ec3db9e9"
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        }
+      },
+      "schema": 1,
+      "status": "pilot-input-capture"
+    },
+    "utility:DDT|trs80gp|default|cross": {
+      "assigned_identity": {
+        "revision": 3,
+        "version": "1.0"
+      },
+      "fingerprint": "caf5340d1d3ad261856b6959545ec2b8830fe77505ec15e6c8ce8a0b3c763672",
+      "inputs": {
+        "component": "utility:DDT",
+        "configuration": {
+          "assembler_flags": [
+            "-fb"
+          ],
+          "bootstrap_origin": 256,
+          "parity_flags": [
+            "-8",
+            "-fb"
+          ],
+          "payload_origins": [
+            0,
+            256,
+            12544
+          ]
+        },
+        "files": {
+          "src/utilities/common/ddtinput.inc": "12af6ff657ca74d41ca4f87929c9b0d0524876481a5c1f51edffc81f8dde1f15",
+          "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+          "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+          "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/ddt.mac": "712e92e5abae33ed1406a7d2ad915ed89a144ba2055bf08e391ac2939cd5c301",
+          "third_party/dri-ddt/DDT0MOV.ASM": "177203dfc92136cd78191f475413c0b9a82b0e815ee956b99ccd70098d47516f",
+          "third_party/dri-ddt/DDT1ASM.ASM": "a79c505b027233e53551aac08a66c72a1a689c1c270d6ed450aae52fcf8d47d2",
+          "third_party/dri-ddt/DDT2MON.ASM": "a685b7e94931ac08f8fc976bd7a2699c1224dd9dc2ad02424cc1b2278571ede8",
+          "tools/build_ddt.py": "31ea39043ad8721a34608c50e712425b1ee426e9b3fc7ac666f9298d926195d6",
+          "tools/component_development.py": "77cd629b08894f396b787dbf68cd295b644bf639b3d94d109e19da79e1f57847",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "bbeb937996aef0d16687b8c5571e2fd1f3f0462d8fe7a80a6751cb72ed5ccc45",
+          "tools/component_registry.py": "3e4f82a3cba1e4d5666dd2adfa663190f1c5349fe6bc9d572132906da6e276cf",
+          "tools/ddt_source.py": "a689abcc5d84d56829d357b5908d5c800efc957bf2db1886700d074cd913ca78",
+          "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+          "tools/utility_versions.py": "8f6424ca10065b2b233a93cec750542458a5bb4dfdbdbc0087a45365ec3db9e9"
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "trs80gp"
+        }
+      },
+      "schema": 1,
+      "status": "pilot-input-capture"
+    },
+    "utility:DDT|z80pack|default|cross": {
+      "assigned_identity": {
+        "revision": 3,
+        "version": "1.0"
+      },
+      "fingerprint": "7b3cadb61473645a93ea678e4b8df4ef04f73ed5f8cc4341c264054a47836161",
+      "inputs": {
+        "component": "utility:DDT",
+        "configuration": {
+          "assembler_flags": [
+            "-fb"
+          ],
+          "bootstrap_origin": 256,
+          "parity_flags": [
+            "-8",
+            "-fb"
+          ],
+          "payload_origins": [
+            0,
+            256,
+            12544
+          ]
+        },
+        "files": {
+          "src/utilities/common/ddtinput.inc": "12af6ff657ca74d41ca4f87929c9b0d0524876481a5c1f51edffc81f8dde1f15",
+          "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+          "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+          "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/ddt.mac": "712e92e5abae33ed1406a7d2ad915ed89a144ba2055bf08e391ac2939cd5c301",
+          "third_party/dri-ddt/DDT0MOV.ASM": "177203dfc92136cd78191f475413c0b9a82b0e815ee956b99ccd70098d47516f",
+          "third_party/dri-ddt/DDT1ASM.ASM": "a79c505b027233e53551aac08a66c72a1a689c1c270d6ed450aae52fcf8d47d2",
+          "third_party/dri-ddt/DDT2MON.ASM": "a685b7e94931ac08f8fc976bd7a2699c1224dd9dc2ad02424cc1b2278571ede8",
+          "tools/build_ddt.py": "31ea39043ad8721a34608c50e712425b1ee426e9b3fc7ac666f9298d926195d6",
+          "tools/component_development.py": "77cd629b08894f396b787dbf68cd295b644bf639b3d94d109e19da79e1f57847",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "bbeb937996aef0d16687b8c5571e2fd1f3f0462d8fe7a80a6751cb72ed5ccc45",
+          "tools/component_registry.py": "3e4f82a3cba1e4d5666dd2adfa663190f1c5349fe6bc9d572132906da6e276cf",
+          "tools/ddt_source.py": "a689abcc5d84d56829d357b5908d5c800efc957bf2db1886700d074cd913ca78",
+          "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+          "tools/utility_versions.py": "8f6424ca10065b2b233a93cec750542458a5bb4dfdbdbc0087a45365ec3db9e9"
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        }
+      },
+      "schema": 1,
+      "status": "pilot-input-capture"
+    }
+  },
+  "schema": 1
+}
