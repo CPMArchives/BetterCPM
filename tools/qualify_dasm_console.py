@@ -28,9 +28,10 @@ def main():
         frames=[1200,300,180,180,300,300,600,180,300,300,0,1800,300]
         commands=['A:RSX LOAD ZPRTC','A:RSX LIST','B:DASM /VER'] if platform=='z80pack' else ['RSX LIST','B:DASM /VER']
         if a.work_candidate:steps=[(b'DASM\r' if c==b'B:DASM\r' else c,w,t) for c,w,t in steps]
-        launch=None;ready=None
+        launch=None;ready=None;followup=None
         if platform=='trs80gp':
             launch='DASM' if a.work_candidate else 'B:DASM'
+            followup='QPOST'
             def completed(command):
                 text='*'+command
                 return text+' '*(80-len(text))+'*'
@@ -45,22 +46,23 @@ def main():
                 (b'P100,1100\r','ORG',120),(b'QL100,1100\r',None,0),
                 (b'\x03','Abort (Y/N)?',60),
                 (b'Y','cancelled; output not published',1800),
-                (b'B:DASM /VER\r','DASM 1.0',1200)]
+                (b'','DASM POSTEXIT COMMAND PASS',1200)]
             steps=[(c,b'',60) for c,w,f in native]
             ready=[w for c,w,f in native];frames=[f for c,w,f in native]
         files={'TINY.COM':b'\0\0\0\xc9','LONG.COM':bytes(4096),'ABORT.ASM':b'KEEP ORIGINAL'}
+        if platform=='trs80gp':files['QPOST.COM']=bytes.fromhex('1109010e09cd0500c9')+b'DASM POSTEXIT COMMAND PASS\r\n$'
         if a.work_candidate:files['DASM.COM']=image
         log,out=campaign(platform,files,
             commands,a.output/platform,system=a.system,utilities=a.utilities,interactive=steps,
-            interactive_frames=frames,interactive_launch=launch,interactive_ready=ready,extract=['ABORT.ASM'],utility_files=None if a.work_candidate else {'DASM.COM':image})
+            interactive_frames=frames,interactive_launch=launch,interactive_ready=ready,interactive_followup=followup,extract=['ABORT.ASM'],utility_files=None if a.work_candidate else {'DASM.COM':image})
         assert out['ABORT.ASM'][:13]==b'KEEP ORIGINAL' and 13<=len(out['ABORT.ASM'])<=128 and set(out['ABORT.ASM'][13:])<={0,26}
         assert b'cancelled; output not published' in log.lower(),log[-4000:]
         assert b'0100' in log and b'0101' in log and b'0102' in log and b'0103' in log
         assert b'outside loaded input' not in log and b'Command Error' not in log,log[-4000:]
         if platform=='z80pack':assert b'ZPRTC' in log and b'51K' in log
-        else:assert b'M4SCRN' in log and b'ADM3A' in log
+        else:assert b'M4SCRN' in log and b'ADM3A' in log and b'DASM POSTEXIT COMMAND PASS' in log
         report['platforms'][platform]={'status':'DIAGNOSTIC_PASS' if a.work_candidate else 'PASS','backspace':True,'successive_two_line_pages':True,
-            'confirmed_ctrl_c':True,'original_output_preserved':True,'ordinary_console_input':True,
+            'confirmed_ctrl_c':True,'original_output_preserved':True,'ordinary_console_input':True,'postexit_command_probe':platform=='trs80gp',
             'resident_profile':'M4SCRN+ADM3A' if platform=='trs80gp' else 'ZPRTC',
             'execution_report':platform+'/execution.json'}
         (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')

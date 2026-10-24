@@ -21,7 +21,7 @@ SIMULATOR = Path.home()/'projects/git/z80pack/cpmsim/cpmsim'
 
 
 def campaign(platform, files, commands, output, *, system=DEFAULT_SYSTEM,
-             utilities=None, extract=(), interactive=(), emulator=None, utility_files=None, setup=None, interactive_frames=None, interactive_launch=None, interactive_ready=None):
+             utilities=None, extract=(), interactive=(), emulator=None, utility_files=None, setup=None, interactive_frames=None, interactive_launch=None, interactive_ready=None, interactive_followup=None):
     """Run each shell command with a visible completion marker; preserve media."""
     output.mkdir(parents=True, exist_ok=False)
     native = platform == 'trs80gp'
@@ -42,7 +42,9 @@ def campaign(platform, files, commands, output, *, system=DEFAULT_SYSTEM,
         stub = '1110010e09cd05000e01cd0500c30000' if native else '110b010e09cd0500c30000'
         files[f'DM{i}.COM'] = bytes.fromhex(stub)+(marker+'\r\n$').encode()
         script += ['CLS', command, f'DM{i}' if native else f'A:DM{i}']
-    if native and interactive_launch:script += ['CLS',interactive_launch]
+    if native and interactive_launch:
+        script += ['CLS',interactive_launch]
+        if interactive_followup:script += [interactive_followup]
     files['QUALIFY.SUB'] = ('\r\n'.join(script)+'\r\n\x1a').encode()
     defs = disk_definition(select_fdf(ROOT/'third_party/montezuma/DISK.FDF', DEFAULT_FORMAT))
     defs += '''diskdef dasm-system
