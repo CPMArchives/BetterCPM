@@ -2,6 +2,7 @@
 from pathlib import Path
 
 from utility_versions import identities
+from component_identity import identification, title
 
 ROOT = Path(__file__).resolve().parents[1]
 DESCRIPTIONS = {
@@ -16,8 +17,7 @@ DESCRIPTIONS = {
 
 def version_text(command):
     version, build = identities()[command]
-    return (f'{command} {version} (Build {build:03d})\r\n  - - -\r\n'
-            f' | BetterCP/M Utilities\r\n | {DESCRIPTIONS[command]}\r\n')
+    return identification(command, version, build, DESCRIPTIONS[command], style='legacy')
 
 
 HELP_PURPOSES = {
@@ -37,7 +37,7 @@ def usage_text(command):
 
 def help_text(command):
     version, build = identities()[command]
-    return (f'{command} {version} (Build {build:03d})\r\n  - - -\r\n'
+    return (title(command, version, build, style='legacy') + '\r\n  - - -\r\n'
             f' | {HELP_PURPOSES[command]}\r\n |\r\n'
             f' |   Usage: {command} [drive:]file [destination-drive:]\r\n\r\n'
             '   Options:\r\n'

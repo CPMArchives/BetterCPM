@@ -1,6 +1,7 @@
 """Deterministic utility identities; counters advance only for released revisions."""
 from pathlib import Path
 import re
+from component_identity import title
 ROOT = Path(__file__).resolve().parents[1]
 def identities():
     from component_registry import utility_identities
@@ -8,12 +9,12 @@ def identities():
 
 def banner(name, resident=False):
     version, build = identities()['RCP' if resident else name]
-    detail = f'Resident, RCP Build {build:03d}' if resident else f'Build {build:03d}'
+    checked_id = None
     from checked_carriers import selected_contract
     contract = selected_contract()
     if contract and not resident and name in ('CONFIG','STAT','SYSGEN','SYSBUILD','RESPACK','RLMBUILD','DIR','USER','CLS','VER','COPY','MOVE'):
-        detail = 'Checked ' + contract['compatibility_id'][:8]
-    return f'BetterCP/M {name} {version} ({detail})'
+        checked_id = contract['compatibility_id']
+    return title(name, version, build, style='legacy-common', resident=resident, checked_id=checked_id)
 
 def strings(name, resident=False, label='UV_TEXT'):
     return f"{label}:\n        DB '{banner(name, resident)}',13,10,'$'\n"
