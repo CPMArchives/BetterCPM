@@ -73,6 +73,286 @@
         "tools/component_identity.py",
         "tools/component_development.py"
       ]
+    },
+    "utility:SQ": {
+      "status": "pilot",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "origin": 256,
+        "assembler_flags": [
+          "-e32",
+          "-fb"
+        ]
+      },
+      "files": [
+        "src/codec/codec.inc",
+        "src/codec/codec.mac",
+        "src/codec/sq.inc",
+        "src/codec/sq.mac",
+        "src/utilities/sq.mac",
+        "src/utilities/common/codecfile.mac",
+        "src/utilities/common/codecver.inc",
+        "src/utilities/common/version.inc",
+        "tools/build_sq.py",
+        "tools/codec_version.py",
+        "tools/utility_versions.py",
+        "tools/component_registry.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_development.py"
+      ]
+    },
+    "utility:USQ": {
+      "status": "pilot",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "origin": 256,
+        "assembler_flags": [
+          "-e32",
+          "-fb"
+        ]
+      },
+      "files": [
+        "src/codec/codec.inc",
+        "src/codec/codec.mac",
+        "src/codec/usq.inc",
+        "src/codec/usq.mac",
+        "src/utilities/usq.mac",
+        "src/utilities/common/codecfile.mac",
+        "src/utilities/common/codecver.inc",
+        "src/utilities/common/version.inc",
+        "tools/build_usq.py",
+        "tools/codec_version.py",
+        "tools/utility_versions.py",
+        "tools/component_registry.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_development.py"
+      ]
+    },
+    "utility:CR": {
+      "status": "pilot",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "origin": 256,
+        "assembler_flags": [
+          "-e32",
+          "-fb"
+        ]
+      },
+      "files": [
+        "src/codec/codec.inc",
+        "src/codec/codec.mac",
+        "src/codec/cr.inc",
+        "src/codec/cr.mac",
+        "src/utilities/cr.mac",
+        "src/utilities/common/codecfile.mac",
+        "src/utilities/common/codecver.inc",
+        "src/utilities/common/version.inc",
+        "tools/build_cr.py",
+        "tools/codec_version.py",
+        "tools/utility_versions.py",
+        "tools/component_registry.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_development.py"
+      ]
+    },
+    "utility:UNCR": {
+      "status": "pilot",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "origin": 256,
+        "assembler_flags": [
+          "-e32",
+          "-fb"
+        ]
+      },
+      "files": [
+        "src/codec/codec.inc",
+        "src/codec/codec.mac",
+        "src/codec/uncr.inc",
+        "src/codec/uncr.mac",
+        "src/utilities/uncr.mac",
+        "src/utilities/common/codecfile.mac",
+        "src/utilities/common/codecver.inc",
+        "src/utilities/common/version.inc",
+        "tools/build_uncr.py",
+        "tools/codec_version.py",
+        "tools/utility_versions.py",
+        "tools/component_registry.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_development.py"
+      ]
+    },
+    "utility:LZH": {
+      "status": "pilot",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "origin": 256,
+        "assembler_flags": [
+          "-e32",
+          "-fb"
+        ]
+      },
+      "files": [
+        "src/codec/codec.inc",
+        "src/codec/codec.mac",
+        "src/codec/lzh.inc",
+        "src/codec/lzh.mac",
+        "src/utilities/lzh.mac",
+        "src/utilities/common/codecfile.mac",
+        "src/utilities/common/codecver.inc",
+        "src/utilities/common/version.inc",
+        "tools/build_lzh.py",
+        "tools/codec_version.py",
+        "tools/utility_versions.py",
+        "tools/component_registry.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_development.py"
+      ]
+    },
+    "utility:UNLZH": {
+      "status": "pilot",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "origin": 256,
+        "assembler_flags": [
+          "-e32",
+          "-fb"
+        ]
+      },
+      "files": [
+        "src/codec/codec.inc",
+        "src/codec/codec.mac",
+        "src/codec/unlzh.inc",
+        "src/codec/unlzh.mac",
+        "src/utilities/unlzh.mac",
+        "src/utilities/common/codecfile.mac",
+        "src/utilities/common/codecver.inc",
+        "src/utilities/common/version.inc",
+        "tools/build_unlzh.py",
+        "tools/codec_version.py",
+        "tools/utility_versions.py",
+        "tools/component_registry.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_development.py"
+      ]
+    },
+    "utility:TIME": {
+      "status": "pilot",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "origin": 259,
+        "assembler_flags": [
+          "-fb"
+        ]
+      },
+      "registry_fields": [
+        "display_format",
+        "description"
+      ],
+      "files": [
+        "tools/system_layout.py",
+        "tools/build_profiles.py",
+        "tools/checked_carriers.py",
+        "tools/checked_build_contract.py",
+        "tools/rsx_container.py",
+        "tools/utility_versions.py",
+        "tools/component_registry.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_development.py",
+        "tools/component_build.py",
+        "src/system/layout.inc",
+        "src/utilities/common/version.inc",
+        "tools/build_time.py",
+        "src/utilities/time.mac"
+      ]
+    },
+    "utility:STAT": {
+      "status": "pilot",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "origin": 259,
+        "assembler_flags": [
+          "-fb"
+        ]
+      },
+      "registry_fields": [
+        "display_format",
+        "description"
+      ],
+      "files": [
+        "tools/system_layout.py",
+        "tools/build_profiles.py",
+        "tools/checked_carriers.py",
+        "tools/checked_build_contract.py",
+        "tools/rsx_container.py",
+        "tools/utility_versions.py",
+        "tools/component_registry.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_development.py",
+        "tools/component_build.py",
+        "src/system/layout.inc",
+        "src/utilities/common/version.inc",
+        "tools/build_stat.py",
+        "src/utilities/stat.mac",
+        "src/utilities/common/duselect.inc",
+        "src/utilities/common/private-utility.inc"
+      ]
     }
   }
 }

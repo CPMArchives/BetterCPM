@@ -11,6 +11,8 @@ from build_cpx_module import relocation_offsets
 from build_ccp import assemble
 from build_rsx_module import make_module
 
+from component_registry import module_version
+
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/rsx/zprtc.mac"
 BUILD = ROOT / "build/rsx"
@@ -41,7 +43,7 @@ def main() -> None:
     listing = (BUILD / "zprtc.lst").read_text(errors="replace")
     service = int(re.search(r"^([0-9a-f]{4}).*\bZP_SERVICE:", listing,
                             re.M | re.I).group(1), 16) - LINK_BASE
-    carrier = make_module(name="ZPRTC", version=(0, 2), services=[],
+    carrier = make_module(name="ZPRTC", version=module_version('ZPRTC'), services=[],
                           linked_base=LINK_BASE, code=code,
                           relocations=relocations, entry_offset=8,
                           format_version=2,

@@ -1,0 +1,670 @@
+{
+  "schema": 1,
+  "source_commit": null,
+  "scope": "current default cross builds; core/module revisions catalogued without changing carrier schemas; not a frozen disk release",
+  "components": [
+    {
+      "component": "utility:STAT",
+      "version": "1.0",
+      "revision": 4,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/STAT.COM",
+          "bytes": 7072,
+          "sha256": "aa86514fad2c8be05a29932622669785584a5ae28fd4212983bd376b2891d40c"
+        }
+      ]
+    },
+    {
+      "component": "utility:COPY",
+      "version": "1.0",
+      "revision": 8,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/COPY.COM",
+          "bytes": 11926,
+          "sha256": "a1bfd487f34c9b2ecb6e87625b505ddde1a4bef7e9adb5214d7102192d2804e7"
+        }
+      ]
+    },
+    {
+      "component": "utility:DIR",
+      "version": "1.0",
+      "revision": 9,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/DIR.COM",
+          "bytes": 9706,
+          "sha256": "7b19dc025c4926b32d8ec08d672981b25bdaae0e433f1f646eb4d80cbb4aed8f"
+        }
+      ]
+    },
+    {
+      "component": "utility:CONFIG",
+      "version": "1.0",
+      "revision": 17,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/CONFIG.COM",
+          "bytes": 15516,
+          "sha256": "3b12c887fb6dba57302e664dd3fbaa71c51efc50f13c4f7d981f4e88e4981175"
+        }
+      ]
+    },
+    {
+      "component": "utility:DUP",
+      "version": "1.0",
+      "revision": 8,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/DUP.COM",
+          "bytes": 8587,
+          "sha256": "c9059a864d1f2d4cb36944fe9b3093fb9cf533f1248d2a1f800327222a05a8f3"
+        }
+      ]
+    },
+    {
+      "component": "utility:TIME",
+      "version": "1.0",
+      "revision": 4,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/TIME.COM",
+          "bytes": 1414,
+          "sha256": "1f6ec3ca18546cd7647b36d9ac3e63a9e326dd26a0464d2b2a3b3638b831977e"
+        }
+      ]
+    },
+    {
+      "component": "utility:SYSGEN",
+      "version": "1.0",
+      "revision": 9,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/SYSGEN.COM",
+          "bytes": 5816,
+          "sha256": "a4e2d28badef0be06c9a43f037e6f96ba72a709372b523d17c96f8c4248d0c76"
+        }
+      ]
+    },
+    {
+      "component": "utility:SUBMIT",
+      "version": "1.0",
+      "revision": 4,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/SUBMIT.COM",
+          "bytes": 3541,
+          "sha256": "d0a8a97f19ec0d35d9680d438c97e398bd24ad4af3787fcd9a2d2f22cf4b2810"
+        }
+      ]
+    },
+    {
+      "component": "utility:XSUB",
+      "version": "1.0",
+      "revision": 4,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/XSUB.COM",
+          "bytes": 368,
+          "sha256": "7ad7eb5d68639b4669830565fee214dd3e4baf68c1b80e3c3dead9b8459f1448"
+        }
+      ]
+    },
+    {
+      "component": "utility:CPX",
+      "version": "1.0",
+      "revision": 5,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/CPX.COM",
+          "bytes": 927,
+          "sha256": "36ae170f66bc9bb6b39c949fab2c64aea1101fd3de0c9831e0dfcc41d9c8a99a"
+        }
+      ]
+    },
+    {
+      "component": "utility:RSX",
+      "version": "1.0",
+      "revision": 5,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/RSX.COM",
+          "bytes": 1001,
+          "sha256": "41fb95d102df90b394ab1835a4acd3f960dbfb1eda27365bff0ed2a8f5e21b9b"
+        }
+      ]
+    },
+    {
+      "component": "utility:USER",
+      "version": "1.0",
+      "revision": 7,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/USER.COM",
+          "bytes": 5117,
+          "sha256": "b11af2f3fc7bef9acd8dd4e1cb7e81d26a6db7f3e4df171c8f80de9cfab66782"
+        }
+      ]
+    },
+    {
+      "component": "utility:CLS",
+      "version": "1.0",
+      "revision": 8,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/CLS.COM",
+          "bytes": 5117,
+          "sha256": "c492cd3afd1e00e300f1fd5f37892c0707ef7ec128b9555bd26ec18dd5d50193"
+        }
+      ]
+    },
+    {
+      "component": "utility:VER",
+      "version": "1.0",
+      "revision": 9,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/VER.COM",
+          "bytes": 5117,
+          "sha256": "33931080eeb764ba5bd5d2406464744428bdf24c24229403c7f2966a15037340"
+        }
+      ]
+    },
+    {
+      "component": "utility:RCP",
+      "version": "1.0",
+      "revision": 16,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/cpx/RCP.CPX",
+          "bytes": 8436,
+          "sha256": "23482f826ce37b7486368b67e0d7c654be48002ca01debf1d5d718f1df3bb0b4"
+        }
+      ]
+    },
+    {
+      "component": "utility:SYSBUILD",
+      "version": "1.0",
+      "revision": 4,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/SYSBUILD.COM",
+          "bytes": 2007,
+          "sha256": "3b4c9ab2d3d7724664e749444ed150925bb1ea94d411d7dc92e0bf788aa44679"
+        }
+      ]
+    },
+    {
+      "component": "utility:RESPACK",
+      "version": "1.0",
+      "revision": 4,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/RESPACK.COM",
+          "bytes": 1196,
+          "sha256": "d288ea3a9ddb36596819859ef8a4fed94ee5b1f76d8e7d36993c3aa0530390be"
+        }
+      ]
+    },
+    {
+      "component": "utility:RLMBUILD",
+      "version": "1.0",
+      "revision": 4,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/RLMBUILD.COM",
+          "bytes": 992,
+          "sha256": "9560c0b9c8ab5d6afcbbf231f9b332dba29efb9029ffd8cf20ff04e20765a6ce"
+        }
+      ]
+    },
+    {
+      "component": "utility:ERA",
+      "version": "1.0",
+      "revision": 6,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/ERA.COM",
+          "bytes": 7889,
+          "sha256": "04574b4388c640644e4275b7b940807be4cec2a845e2bc4b5804134295a49924"
+        }
+      ]
+    },
+    {
+      "component": "utility:REN",
+      "version": "1.0",
+      "revision": 10,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/REN.COM",
+          "bytes": 5876,
+          "sha256": "fa9cc7e939a944a8e1a45215a38b7969b27005f00e0f9a168aa180c2a38de127"
+        }
+      ]
+    },
+    {
+      "component": "utility:TYPE",
+      "version": "1.0",
+      "revision": 8,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/TYPE.COM",
+          "bytes": 4393,
+          "sha256": "1933d595fdf55c503b02918d537c4d660282ba66ce9b133f0989c6e7aba02222"
+        }
+      ]
+    },
+    {
+      "component": "utility:PIP",
+      "version": "1.0",
+      "revision": 30,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/PIP.COM",
+          "bytes": 14497,
+          "sha256": "8a2dc07cd6cf71fe21ecd0665a905c0ef73d54e048086169c00374bb4ce43ee7"
+        }
+      ]
+    },
+    {
+      "component": "utility:ADMTST",
+      "version": "1.0",
+      "revision": 5,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/ADMTST.COM",
+          "bytes": 1639,
+          "sha256": "8467af273234369623fd7b4faf665d10c4e060619a2b3233dd02749cef8eaa9f"
+        }
+      ]
+    },
+    {
+      "component": "utility:VT52TST",
+      "version": "1.0",
+      "revision": 5,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/VT52TST.COM",
+          "bytes": 1003,
+          "sha256": "1ff4e0e03657aadc69507b4a74c667440e8b45808b183f87bcbd23ecbc2fdd53"
+        }
+      ]
+    },
+    {
+      "component": "utility:ANSITST",
+      "version": "1.0",
+      "revision": 4,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/ANSITST.COM",
+          "bytes": 708,
+          "sha256": "a471f2d8ee40c7d507683cc74fab5815d35248bb23ac792085ac2edb388bb1c0"
+        }
+      ]
+    },
+    {
+      "component": "utility:ED",
+      "version": "1.0",
+      "revision": 4,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/ED.COM",
+          "bytes": 8575,
+          "sha256": "819bcc4c9188fd278c46635255f6511a0dca4a6de7de51b6a304f538b5edc0ce"
+        }
+      ]
+    },
+    {
+      "component": "utility:DUMP",
+      "version": "1.0",
+      "revision": 5,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/DUMP.COM",
+          "bytes": 14128,
+          "sha256": "e8b8263d528329542f3315f0c223d2fe34c784d7776c8d961240c17256779095"
+        }
+      ]
+    },
+    {
+      "component": "utility:DDT",
+      "version": "1.0",
+      "revision": 3,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/DDT.COM",
+          "bytes": 6528,
+          "sha256": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467"
+        }
+      ]
+    },
+    {
+      "component": "utility:SQ",
+      "version": "1.0",
+      "revision": 5,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/SQ.COM",
+          "bytes": 8023,
+          "sha256": "cb2d04803788218190999744d5500ef0f53d958810f1a9cb6703f51d1387bea1"
+        }
+      ]
+    },
+    {
+      "component": "utility:USQ",
+      "version": "1.0",
+      "revision": 5,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/USQ.COM",
+          "bytes": 5298,
+          "sha256": "7ec6c04258b0fc6d1871ed1ec26251eea7290e8c6c7576fad27f1cedf7c08f89"
+        }
+      ]
+    },
+    {
+      "component": "utility:CR",
+      "version": "1.0",
+      "revision": 5,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/CR.COM",
+          "bytes": 29343,
+          "sha256": "65b9b9f3edd1c07e8d6d352803bb008ba18a5747f19f5a0f799d3e3646012fba"
+        }
+      ]
+    },
+    {
+      "component": "utility:UNCR",
+      "version": "1.0",
+      "revision": 5,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/UNCR.COM",
+          "bytes": 31106,
+          "sha256": "cb43eaaf942bee59a34decf1d1c362fd88a5cd83404e8b4c11db56b3512c645b"
+        }
+      ]
+    },
+    {
+      "component": "utility:LZH",
+      "version": "1.0",
+      "revision": 5,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/LZH.COM",
+          "bytes": 17125,
+          "sha256": "e6e84e0cf90a8f149e9f2d9899530afcc2e0a51a437de9741609bfb6baa66739"
+        }
+      ]
+    },
+    {
+      "component": "utility:UNLZH",
+      "version": "1.0",
+      "revision": 5,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/UNLZH.COM",
+          "bytes": 12115,
+          "sha256": "76c7105e8a85887dae009bd31a791566df4143c883cc38455fc61e5d33f86f8a"
+        }
+      ]
+    },
+    {
+      "component": "utility:NOAH",
+      "version": "1.0",
+      "revision": 5,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/NOAH.COM",
+          "bytes": 19674,
+          "sha256": "7a42c790727d8f15ff97861e49d10b4b8aedcd981c3e7c74f9f627f9e9ad8692"
+        }
+      ]
+    },
+    {
+      "component": "utility:BYE",
+      "version": "1.0",
+      "revision": 2,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/z80pack-tools/BYE.COM",
+          "bytes": 1069,
+          "sha256": "a319551ef804c9babb57037cddb1053d58e9e0c215d9f2829b5fcf1c9043e2ac"
+        }
+      ]
+    },
+    {
+      "component": "utility:MOVE",
+      "version": "1.0",
+      "revision": 1,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/MOVE.COM",
+          "bytes": 5117,
+          "sha256": "a8ba28b8f209ee5e5e3da819d63c86597381893869cd9c1c3e58f0f7b51b87f5"
+        }
+      ]
+    },
+    {
+      "component": "utility:WARM",
+      "version": "1.0",
+      "revision": 1,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/utilities/WARM.COM",
+          "bytes": 225,
+          "sha256": "be3ff6deb8955eba5cb1b4130ec45c3ce929ad2e5a93870e0e50e63bbfcf9446"
+        }
+      ]
+    },
+    {
+      "component": "subsystem:BDOS",
+      "version": "1.10",
+      "revision": 1,
+      "api_version": "1.2",
+      "artifacts": [
+        {
+          "path": "build/bdos/bdos.bin",
+          "bytes": 3436,
+          "sha256": "588f23def7a09f37dd4675fc09f8c3cda68142da43efcf4100906efff736aacc"
+        }
+      ]
+    },
+    {
+      "component": "subsystem:BIOS",
+      "version": "1.14",
+      "revision": 1,
+      "api_version": "1.7",
+      "artifacts": [
+        {
+          "path": "build/bios/bios.bin",
+          "bytes": 757,
+          "sha256": "4e98264086f5cf017d08f46fc49774fd8405b509cb97431d0db1bfade5c1b173"
+        }
+      ]
+    },
+    {
+      "component": "subsystem:CCP",
+      "version": "2.0",
+      "revision": 1,
+      "api_version": "2.0",
+      "artifacts": [
+        {
+          "path": "build/ccp/ccp.rlm",
+          "bytes": 6506,
+          "sha256": "fe599299533e8b461f1a8a9620a3ce2c2ac00fe5d4a4fae479ded47160dd2852"
+        }
+      ]
+    },
+    {
+      "component": "subsystem:CPX",
+      "version": "2.0",
+      "revision": 1,
+      "api_version": "2.0",
+      "artifacts": [
+        {
+          "path": "build/system/extensions.bin",
+          "bytes": 424,
+          "sha256": "2b667fbe53b50475403078b819fe643fab8016ce82e967b23a39ac9506db1647"
+        }
+      ]
+    },
+    {
+      "component": "subsystem:RSX",
+      "version": "2.0",
+      "revision": 1,
+      "api_version": "2.0",
+      "artifacts": [
+        {
+          "path": "build/system/R3PACK.RSX",
+          "bytes": 15360,
+          "sha256": "d761fb628e00e1d661642a1b874e918969c48c564751a2a5e0f7060ed6a454ab"
+        }
+      ]
+    },
+    {
+      "component": "module:ZPRTC",
+      "version": "0.2",
+      "revision": 1,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/rsx/ZPRTC.RSX",
+          "bytes": 807,
+          "sha256": "3cbeda28b560cb06e26a57e2ca2dd8218f343b26dc660e2ba4ab727a934511e2"
+        }
+      ]
+    },
+    {
+      "component": "module:FREHDCLK",
+      "version": "0.2",
+      "revision": 1,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/rsx/FREHDCLK.RSX",
+          "bytes": 906,
+          "sha256": "0fe9c0534f288b6c59f4a7733beca5ae760f175e10fa16d2098af3a1671f9a18"
+        }
+      ]
+    },
+    {
+      "component": "module:ADM3A",
+      "version": "1.1",
+      "revision": 1,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/rsx/ADM3A.RSX",
+          "bytes": 1028,
+          "sha256": "b4bdae27acc1d9e155178558921b457e5f0a61727f8be3114e17e35757454ef9"
+        }
+      ]
+    },
+    {
+      "component": "module:VT52",
+      "version": "1.3",
+      "revision": 1,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/rsx/VT52.RSX",
+          "bytes": 1095,
+          "sha256": "abbf8661158de109e954df214d0023fc9157524fd2c8c9cf1d617bf936dd496d"
+        }
+      ]
+    },
+    {
+      "component": "module:ANSI",
+      "version": "1.1",
+      "revision": 1,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/rsx/ANSI.RSX",
+          "bytes": 2002,
+          "sha256": "79b7fe071575d416aeebe08b01f97ed3ce3b1bc9cd0c8928c6e759d2cad76d30"
+        }
+      ]
+    },
+    {
+      "component": "module:M4SCRN",
+      "version": "1.7",
+      "revision": 1,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/rsx/M4SCRN.RSX",
+          "bytes": 1718,
+          "sha256": "9c210e656b2f3e62a895236d28de9bd989d7554fef7705077485ed68c95e68cd"
+        }
+      ]
+    },
+    {
+      "component": "module:ANSISCRN",
+      "version": "1.7",
+      "revision": 1,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/rsx/ANSISCRN.RSX",
+          "bytes": 1901,
+          "sha256": "2f5afc75a19e30fbf2b66201096970a44ab1da9750761804023a9b029f03b33e"
+        }
+      ]
+    },
+    {
+      "component": "module:BATCHIO",
+      "version": "1.0",
+      "revision": 1,
+      "api_version": null,
+      "artifacts": [
+        {
+          "path": "build/rsx/BATCHIO.RSX",
+          "bytes": 1029,
+          "sha256": "0347270c05d040e0c7b82d73402803e26baa6a7977880d2764f0700fc1dc5ee0"
+        }
+      ]
+    }
+  ]
+}

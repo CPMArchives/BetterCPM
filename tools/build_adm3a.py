@@ -8,6 +8,8 @@ from build_cpx_module import relocation_offsets
 from build_rsx_module import make_module
 from utility_versions import expand_versions
 
+from component_registry import module_version
+
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT/'build/monitor-development'
 
@@ -24,7 +26,7 @@ def main():
     relocs=relocation_offsets(code,alternate,0x101)
     table=(OUT/'adm3a.lst').read_text(errors='replace')
     entry=int(re.search(r'^([0-9a-f]{4})\s+.*\bAM_ENTRY:',table,re.M)[1],16)-0x8000
-    carrier=make_module(name='ADM3A',version=(1,1),services=[],linked_base=0x8000,
+    carrier=make_module(name='ADM3A',version=module_version('ADM3A'),services=[],linked_base=0x8000,
                         code=code,relocations=relocs,reconstruction_class='STATEFUL',
                         callable_services=[(b'MCON',1,1,entry,4)])
     (OUT/'ADM3A.RSX').write_bytes(carrier)

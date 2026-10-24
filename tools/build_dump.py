@@ -5,14 +5,14 @@ import hashlib
 from pathlib import Path
 from build_ccp import assemble
 from utility_versions import identities
+from component_identity import identification
 ROOT = Path(__file__).resolve().parents[1]
 BUILD = ROOT / 'build/utilities'
 
 
 def version_text():
     version, build = identities()['DUMP']
-    return (f'DUMP {version} (Build {build:03d})\r\n  - - -\r\n'
-            ' | BetterCP/M Utilities\r\n | Hexadecimal File Display\r\n')
+    return identification('DUMP',version,build,'Hexadecimal File Display')
 
 
 def expanded_source():

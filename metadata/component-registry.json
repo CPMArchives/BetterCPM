@@ -13,10 +13,12 @@
       "builders": [
         "tools/build_stat.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "File, Disk and System Information"
     },
     "utility:COPY": {
       "kind": "utility",
@@ -28,10 +30,12 @@
       "builders": [
         "tools/build_rcp_transients.py"
       ],
-      "revision": 7,
+      "revision": 8,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "File Copying"
     },
     "utility:DIR": {
       "kind": "utility",
@@ -43,10 +47,12 @@
       "builders": [
         "tools/build_rcp_transients.py"
       ],
-      "revision": 8,
+      "revision": 9,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "Directory Listing"
     },
     "utility:CONFIG": {
       "kind": "utility",
@@ -58,10 +64,12 @@
       "builders": [
         "tools/build_config.py"
       ],
-      "revision": 16,
+      "revision": 17,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "System Configuration"
     },
     "utility:DUP": {
       "kind": "utility",
@@ -73,10 +81,12 @@
       "builders": [
         "tools/build_dup.py"
       ],
-      "revision": 7,
+      "revision": 8,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "Disk Duplication"
     },
     "utility:TIME": {
       "kind": "utility",
@@ -88,10 +98,12 @@
       "builders": [
         "tools/build_time.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "Clock Display and Setting"
     },
     "utility:SYSGEN": {
       "kind": "utility",
@@ -103,10 +115,12 @@
       "builders": [
         "tools/build_disk_utilities.py"
       ],
-      "revision": 8,
+      "revision": 9,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "System Installation"
     },
     "utility:SUBMIT": {
       "kind": "utility",
@@ -118,10 +132,12 @@
       "builders": [
         "tools/build_batch.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "Command File Execution"
     },
     "utility:XSUB": {
       "kind": "utility",
@@ -133,10 +149,12 @@
       "builders": [
         "tools/build_batch.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "Batch Program Input Support"
     },
     "utility:CPX": {
       "kind": "utility",
@@ -148,10 +166,12 @@
       "builders": [
         "tools/build_cpx_utility.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "Command Processor Extension Management"
     },
     "utility:RSX": {
       "kind": "utility",
@@ -163,10 +183,12 @@
       "builders": [
         "tools/build_rsx_utilities.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "Resident Extension Management"
     },
     "utility:USER": {
       "kind": "utility",
@@ -178,10 +200,12 @@
       "builders": [
         "tools/build_rcp_transients.py"
       ],
-      "revision": 6,
+      "revision": 7,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "User Area Selection"
     },
     "utility:CLS": {
       "kind": "utility",
@@ -193,10 +217,12 @@
       "builders": [
         "tools/build_rcp_transients.py"
       ],
-      "revision": 7,
+      "revision": 8,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "Clear Screen"
     },
     "utility:VER": {
       "kind": "utility",
@@ -208,10 +234,12 @@
       "builders": [
         "tools/build_rcp_transients.py"
       ],
-      "revision": 8,
+      "revision": 9,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "System Version Information"
     },
     "utility:RCP": {
       "kind": "utility",
@@ -223,11 +251,12 @@
       "builders": [
         "tools/build_rcp_cpx.py"
       ],
-      "revision": 15,
+      "revision": 16,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
-      "migration_issue": "Carrier implementation 0.2 differs from canonical registry 1.0; carrier changes deferred."
+      "display_format": "numeric",
+      "description": "Resident Command Package"
     },
     "utility:SYSBUILD": {
       "kind": "utility",
@@ -239,10 +268,12 @@
       "builders": [
         "tools/build_disk_utilities.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "System Image Construction"
     },
     "utility:RESPACK": {
       "kind": "utility",
@@ -254,10 +285,12 @@
       "builders": [
         "tools/build_disk_utilities.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "Resident Image Packing"
     },
     "utility:RLMBUILD": {
       "kind": "utility",
@@ -269,10 +302,12 @@
       "builders": [
         "tools/build_disk_utilities.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "Relocatable Module Construction"
     },
     "utility:ERA": {
       "kind": "utility",
@@ -284,10 +319,12 @@
       "builders": [
         "tools/build_era.py"
       ],
-      "revision": 5,
+      "revision": 6,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "File Deletion"
     },
     "utility:REN": {
       "kind": "utility",
@@ -299,10 +336,12 @@
       "builders": [
         "tools/build_ren.py"
       ],
-      "revision": 9,
+      "revision": 10,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "File Renaming"
     },
     "utility:TYPE": {
       "kind": "utility",
@@ -314,10 +353,12 @@
       "builders": [
         "tools/build_type.py"
       ],
-      "revision": 7,
+      "revision": 8,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "Text File Display"
     },
     "utility:PIP": {
       "kind": "utility",
@@ -329,10 +370,12 @@
       "builders": [
         "tools/build_pip.py"
       ],
-      "revision": 29,
+      "revision": 30,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "File and Device Transfers"
     },
     "utility:ADMTST": {
       "kind": "utility",
@@ -344,10 +387,12 @@
       "builders": [
         "tools/build_adm3a.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "ADM-3A Terminal Test"
     },
     "utility:VT52TST": {
       "kind": "utility",
@@ -359,10 +404,12 @@
       "builders": [
         "tools/build_vt52.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "VT52 Terminal Test"
     },
     "utility:ANSITST": {
       "kind": "utility",
@@ -374,10 +421,12 @@
       "builders": [
         "tools/build_ansi.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "ANSI Terminal Test"
     },
     "utility:ED": {
       "kind": "utility",
@@ -389,10 +438,12 @@
       "builders": [
         "tools/build_ed.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "Line Text Editor"
     },
     "utility:DUMP": {
       "kind": "utility",
@@ -404,10 +455,12 @@
       "builders": [
         "tools/build_dump.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "Hexadecimal File Display"
     },
     "utility:DDT": {
       "kind": "utility",
@@ -434,7 +487,7 @@
       "builders": [
         "tools/build_sq.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -449,7 +502,7 @@
       "builders": [
         "tools/build_usq.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -464,7 +517,7 @@
       "builders": [
         "tools/build_cr.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -479,7 +532,7 @@
       "builders": [
         "tools/build_uncr.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -494,7 +547,7 @@
       "builders": [
         "tools/build_lzh.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -509,7 +562,7 @@
       "builders": [
         "tools/build_unlzh.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -524,10 +577,12 @@
       "builders": [
         "tools/build_noah.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
-      "dependency_status": "roots-only; selected dependency closure pending"
+      "dependency_status": "roots-only; selected dependency closure pending",
+      "display_format": "numeric",
+      "description": "Archive Utility - Development"
     },
     "utility:BYE": {
       "kind": "utility",
@@ -546,7 +601,7 @@
     },
     "utility:MOVE": {
       "kind": "transitional utility",
-      "version": null,
+      "version": "1.0",
       "placement": "Unassigned",
       "roots": [
         "src/cpx/rcp.mac"
@@ -554,15 +609,16 @@
       "builders": [
         "tools/build_rcp_transients.py"
       ],
-      "revision": null,
+      "revision": 1,
       "api_version": null,
-      "tracking": "pending",
+      "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending",
-      "migration_issue": "Currently inherits RCP; independent assignment requires review."
+      "display_format": "numeric",
+      "description": "File Moving"
     },
     "utility:WARM": {
       "kind": "utility",
-      "version": null,
+      "version": "1.0",
       "placement": "Development/unassigned",
       "roots": [
         "src/utilities/warm.mac"
@@ -571,11 +627,12 @@
         "tools/build_warm.py",
         "tools/build_native_warm.py"
       ],
-      "revision": null,
+      "revision": 1,
       "api_version": null,
-      "tracking": "pending",
+      "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending",
-      "migration_issue": "Establish implementation version and first tracked revision; do not invent history."
+      "display_format": "numeric",
+      "description": "Warm Boot Request"
     },
     "subsystem:BDOS": {
       "kind": "subsystem",
@@ -851,7 +908,9 @@
     "LZH",
     "UNLZH",
     "NOAH",
-    "BYE"
+    "BYE",
+    "MOVE",
+    "WARM"
   ],
   "legacy_subsystem_rows": [
     {

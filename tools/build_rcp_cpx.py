@@ -11,6 +11,8 @@ from pathlib import Path
 from build_ccp import assemble
 from build_cpx_module import make_module, relocation_offsets
 
+from component_registry import module_version
+
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/cpx/rcp.mac"
 BUILD = ROOT / "build/cpx"
@@ -37,7 +39,7 @@ def main() -> None:
                          ALTERNATE_BASE)
     offsets = relocation_offsets(data, alternate, ALTERNATE_BASE - LINK_BASE)
     module_data = make_module(
-        name="RCP", version=(0, 2),
+        name="RCP", version=module_version('RCP'),
         commands=["DIR", "ERA", "TYPE", "REN", "USER", "CLS", "VER",
                   "COPY", "MOVE"],
         linked_base=LINK_BASE, code=data, relocations=offsets)

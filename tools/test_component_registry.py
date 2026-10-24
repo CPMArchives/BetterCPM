@@ -25,9 +25,9 @@ class RegistryTests(unittest.TestCase):
 
     def test_complete_import_and_paths(self):
         self.assertEqual(len(self.data['components']), 51)
-        self.assertEqual(len(identities()), 36)
+        self.assertEqual(len(identities()), 38)
         self.assertEqual(identities()['DDT'], ('1.0', 3))
-        self.assertEqual(identities()['PIP'], ('1.0', 29))
+        self.assertEqual(identities()['PIP'], ('1.0', 30))
         self.assertEqual(identities()['BYE'], ('1.0', 2))
         for key, component in self.data['components'].items():
             self.assertNotIn(key, ('utility:ZSM4', 'utility:LINK'))
@@ -41,11 +41,9 @@ class RegistryTests(unittest.TestCase):
             self.assertEqual((registry.ROOT / relative).read_bytes(), text.encode())
         self.assertEqual(next(x for x in rows() if x['component'] == 'BDOS')['implementation_version'], '1.10')
 
-    def test_pending_is_not_silently_assigned(self):
+    def test_new_utility_assignments(self):
         for name in ('MOVE', 'WARM'):
-            with self.assertRaisesRegex(ValueError, 'pending'):
-                registry.identity('utility:' + name, self.data)
-            self.assertNotIn(name, identities())
+            self.assertEqual(registry.identity('utility:' + name, self.data), ('1.0', 1))
 
     def test_component_projection_is_independent(self):
         before = registry.identity('utility:DDT', self.data)

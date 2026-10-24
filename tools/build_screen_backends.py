@@ -6,6 +6,8 @@ from pathlib import Path
 from build_ccp import assemble
 from build_cpx_module import relocation_offsets
 from build_rsx_module import make_module
+from component_registry import module_version
+
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'build/screen-backends'
 
@@ -31,7 +33,7 @@ def main():
         relocs=relocation_offsets(code,alt,0x101)
         listing=(OUT/(name+'.lst')).read_text(errors='replace')
         callback=int(re.search(r'^([0-9a-f]{4})\s+.*\b'+entry+':',listing,re.M)[1],16)-0x8000
-        carrier=make_module(name=name,version=(1,7),services=[],linked_base=0x8000,
+        carrier=make_module(name=name,version=module_version(name),services=[],linked_base=0x8000,
             code=code,relocations=relocs,reconstruction_class='STATEFUL',
             callable_services=[(b'SCRN',1,1,callback,bits)])
         (OUT/(name+'.RSX')).write_bytes(carrier)

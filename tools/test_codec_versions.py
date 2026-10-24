@@ -119,9 +119,9 @@ def main():
             image=builder.build(args.assembler,work/'large')
             m=VersionCommand(lib,image,(work/'large/sq.lst').read_text(errors='replace'))
             check(m,'/VER',version_text('SQ'))
-            assert 'SQ 2.3 (Build 1001)' in m.console
+            assert 'SQ 2.3 (1001)' in m.console
             check(m,'/HELP',help_text('SQ'))
-            assert 'SQ 2.3 (Build 1001)' in m.console
+            assert 'SQ 2.3 (1001)' in m.console
             total+=m.cases
         print(f'PASS: {total} full-Z80 version/help/parser cases across six commands;')
         print('console-only query paths, bounded tails, unchanged files/FCBs/context, ABI and deterministic metadata expansion checked.')
