@@ -22,8 +22,8 @@ def build(assembler, destination):
     destination.mkdir(parents=True, exist_ok=True)
     texts = {
         'NH_VERSION': version_text(),
-        'NH_USAGE': 'NOAH: Invalid or unsupported usage.\r\nUsage: NOAH [/LIST|/TEST] [drive:]file\r\n       NOAH /EXTRACT [drive:]file [destination-drive:]\r\nUse NOAH /HELP for current scope.\r\n',
-        'NH_HELP': 'NOAH LBR reader development build\r\nUsage: NOAH [/LIST|/TEST] [drive:]file\r\n       NOAH /EXTRACT [drive:]file [destination-drive:]\r\nAliases: /T /X. /VER and /HELP ignore other arguments; /HELP takes precedence.\r\nOne exact archive, current user only; all active members.\r\nExisting outputs are reported and skipped; no overwrites yet.\r\nARK, full selectors, overwrite UI, updates and overlays are pending.\r\nLIST does not test contents. TEST/EXTRACT audit structure and CRCs.\r\n',
+        'NH_USAGE': 'NOAH: Invalid or unsupported usage.\r\nUsage: NOAH [/LIST|/TEST] archives [member]\r\n       NOAH /EXTRACT archives [destination:pattern]\r\nUse NOAH /HELP for current scope.\r\n',
+        'NH_HELP': 'NOAH LBR reader development build\r\nUsage: NOAH [/LIST|/TEST] archives [member]\r\n       NOAH /EXTRACT archives [destination:pattern]\r\nAliases: /T /X. /VER and /HELP ignore other arguments; /HELP takes precedence.\r\nShared archive filespecs: wildcards, DU sets and attribute predicates.\r\nArchive order: drive, user, filename; frozen limit 512 archives.\r\nMember names are 8.3 patterns; README means exact extensionless README.\r\nExtraction destination is one DU, default caller DU.\r\nOverwrite: Y/N/All/Cancel, default No; ESC or Ctrl-C cancels.\r\n/Y approves ordinary replacement; /R and /SYS enable separate protection prompts.\r\n/Y always skips protected outputs; input archives are never replaced.\r\nARK, codecs, archive updates, /Q and recovery UI are pending.\r\nLIST does not test contents. TEST/EXTRACT audit structure and CRCs.\r\n',
     }
     emitted = []
     for label, text in texts.items():
@@ -39,7 +39,23 @@ def build(assembler, destination):
         work = Path(temp)
         for name in ('archive.inc', 'lbr.mac', 'lbraudit.inc', 'lbraudit.mac', 'cpmfile.inc', 'cpmfile.mac'):
             shutil.copy2(ROOT / 'src/archive' / name, work / name)
-        shutil.copy2(ROOT / 'src/utilities/common/noahextract.inc', work / 'noahextract.inc')
+        for name in ('noahextract.inc', 'noahselect.inc', 'noahinput.inc', 'noahpublish.inc'):
+            shutil.copy2(ROOT / 'src/utilities/common' / name, work / name)
+        from shared_ui import controller_source, UI
+        binding = (work / 'noahinput.inc').read_text()
+        binding = binding.replace('; @choice-modules@', (UI / 'events.inc').read_text() + '\n' + controller_source(text=False, choice=True))
+        (work / 'noahinput.inc').write_text(binding)
+        common = ROOT / 'src/utilities/common'
+        grammar = 'DU_MAP: DS 64\nDU_WORK: DS 12\n'
+        grammar += ''.join((common / n).read_text() + '\n' for n in ('duselect.inc', 'filespec.inc', 'operandqual.inc'))
+        attrs = (common / 'attrselect.inc').read_text()
+        grammar += attrs[:attrs.index('; Destination modification list:')]
+        grammar += (common / 'rcpselect.inc').read_text()
+        rcp = (ROOT / 'src/cpx/rcp.mac').read_text()
+        start = rcp.index('BC_PFCB:')
+        grammar += rcp[start:rcp.index('; ================================================================================', start)]
+        grammar += 'BC_ALL: DB \'*.*\'\nBC_INPTR: DW 0\nBC_INLEN: DB 0\nBC_FCBPTR: DW 0\n'
+        (work / 'noahgrammar.inc').write_text(grammar)
         source = (ROOT / 'src/utilities/noah.mac').read_text()
         query = (ROOT / 'src/utilities/common/version.inc').read_text()
         query = query[query.index('\nUV_QUERY:') + 1:]
@@ -47,7 +63,11 @@ def build(assembler, destination):
         help_query = help_query.replace("'/ver'", "'/help'")
         source = source.replace('; @noah-version-query@', query + '\n' + help_query)
         (work / 'command.mac').write_text(source.replace('; @noah-text@', '\n'.join(emitted)))
-        subprocess.run([str(assembler), '-e32', '-sn', '-fb', '-onoah.bin', '-lnoah.lst', 'command.mac'], cwd=work, check=True)
+        try:
+            subprocess.run([str(assembler), '-e32', '-sn', '-fb', '-onoah.bin', '-lnoah.lst', 'command.mac'], cwd=work, check=True)
+        except subprocess.CalledProcessError:
+            shutil.copy2(work / 'noah.lst', destination / 'noah.lst')
+            raise
         image = (work / 'noah.bin').read_bytes()
         if image[:0x100] == bytes(0x100):
             image = image[0x100:]

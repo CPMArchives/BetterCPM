@@ -10,6 +10,14 @@ AC_OPEN:
         SCF
         RET
 AC_OPEN_NEW:
+        LD E,0FFH
+        LD C,32
+        CALL AC_BDOS
+        PUSH IY
+        POP HL
+        LD DE,AP_OWNER
+        ADD HL,DE
+        LD (HL),A
         PUSH IY
         POP DE
         LD C,15
@@ -58,7 +66,7 @@ AC_CLOSE:
         PUSH IY
         POP DE
         LD C,16
-        CALL AC_BDOS
+        CALL AC_OWNED_CALL
         CP 0FFH
         JR Z,AC_OPEN_FAIL
         LD (IY+AP_OPENED),0
@@ -90,6 +98,34 @@ AC_BDOS:
         POP HL
         POP DE
         POP BC
+        RET
+AC_OWNED_CALL:
+        PUSH BC
+        LD E,0FFH
+        LD C,32
+        CALL AC_BDOS
+        PUSH IY
+        POP HL
+        LD DE,AP_RETURN_USER
+        ADD HL,DE
+        LD (HL),A
+        DEC HL
+        LD E,(HL)
+        LD C,32
+        CALL AC_BDOS
+        POP BC
+        PUSH IY
+        POP DE
+        CALL AC_BDOS
+        PUSH AF
+        PUSH IY
+        POP HL
+        LD DE,AP_RETURN_USER
+        ADD HL,DE
+        LD E,(HL)
+        LD C,32
+        CALL AC_BDOS
+        POP AF
         RET
 AC_READ:
         PUSH IY
@@ -189,7 +225,7 @@ AC_RECORD_SHIFT:
         PUSH IY
         POP DE
         LD C,33
-        CALL AC_BDOS
+        CALL AC_OWNED_CALL
         OR A
         JP NZ,AC_READ_FAIL
         ; chunk = min(left, 128-skip).

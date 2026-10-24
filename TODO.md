@@ -410,10 +410,10 @@ redistributable existing utility; an unchecked item does not by itself block
   records settled commands, LBR deleted-data preservation, safe staged updates,
   standalone SQ/CR/EXPAND and reusable format/codec libraries. From-scratch LBR
   rebuilds copy active members only; ordinary updates preserve deleted material.
-  LBR LIST/TEST and staged new-file extraction are implemented for one exact
-  archive/current user, with CPU fault-harness and stock CP/M checks; see
-  [scope and checks](docs/engineering/NOAH%20LBR%20Integrity%20and%20Extraction.md).
-  Full selectors, overwrite/recovery UI, ARK, archive updates and overlays remain.
+  LBR LIST/TEST and staged extraction now include shared archive selectors,
+  member filters, frozen batches and shared overwrite/protection prompts; see
+  [scope and checks](docs/engineering/NOAH%20Selectors%20and%20Overwrite.md).
+  Retry/Skip/Abort recovery UI, /Q, codecs, ARK, archive updates and overlays remain.
   It is not on the Utilities Disk yet. Behavioral decisions are settled.
   Satisfy the documented API, provenance, memory and
   qualification gates; do not equate a finished behavioral spec with implemented

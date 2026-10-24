@@ -3,6 +3,8 @@
 This records the first NOAH implementation increment, not the complete archive API
 or a release qualification. A subsequent [integrity/extraction increment](../engineering/NOAH%20LBR%20Integrity%20and%20Extraction.md)
 adds TEST and new-file extraction; the sizes and scope below describe Build 001.
+For shared selectors, choices, publication/rollback and cross-user adapter changes,
+see the [Build 003 integration notes](../engineering/NOAH%20Selectors%20and%20Overwrite.md).
 The normative behavior remains in the
 [NOAH specification](../engineering/NOAH%20Specification.md).
 
