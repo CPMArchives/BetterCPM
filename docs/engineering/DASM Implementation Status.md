@@ -174,14 +174,18 @@ the archived COM byte-for-byte; the archived binary remains unmodified.
 3. Complete wrap-safe logical addressing, empty-input policy, cancellation and
    restart recovery, exact capacity edges, resident-module canaries and active
    TPA diagnostics on both platform personalities.
-4. Extend DSYM to the shared drive/user grammar and line/count diagnostics;
+4. Add verified LINK success evidence: failed LINK runs still emit valid-looking
+   SYM pairs, including unresolved names at 0000H. Current DSYM cannot detect
+   that from SYM alone. Extend DSYM to the shared drive/user grammar and line/count diagnostics;
    qualify multi-module exports, absolute equates, long-name/significance and
    unresolved-external negative fixtures against native LINK.
 5. Complete the specified full file-failure/media-full/recovery matrix and
    terminal interaction campaign on both targets. The automated BDOS fault
    harness does not replace actual filesystem/emulator tests.
-6. Bind final native-build and corpus evidence to the final source/binary hashes,
-   then integrate owned DASM/DSYM version metadata, notices, source package and
+6. The [baseline functional receipts](DASM%20Development%20Qualification.md) bind
+   the current candidate on fresh current System pairs. Requalify after the
+   remaining implementation changes, then integrate owned DASM/DSYM version
+   metadata, notices, source package and
    disk manifests/builders. Rebuild and qualify actual Utilities Disk artifacts.
 
 These are outstanding requirements, not silently relaxed acceptance criteria.

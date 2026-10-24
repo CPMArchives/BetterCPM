@@ -1,0 +1,252 @@
+{
+  "status": "PARTIAL_IMPLEMENTATION_NOT_RELEASE_ACCEPTANCE",
+  "date": "2026-10-25",
+  "functional_gates": "PASS for recorded candidate and paired media",
+  "full_specification_accepted": false,
+  "utilities_release_integrated": false,
+  "physical_hardware_tested": false,
+  "keyboard_qualified": false,
+  "source_revision": "c28eadb0aa1dac21d671f0d3ccef1c66fc7f9446",
+  "candidate": {
+    "DASM": {
+      "bytes": 14080,
+      "sha256": "73049f2e30b85bccd31f79ee453f1994abbae43d37c18306bd121a084eaf00f8"
+    },
+    "DSYM": {
+      "bytes": 7158,
+      "sha256": "14633f5eb500f2b9955a901d97d386b46fda51dd699e4253ebe7aaa07a22ac94"
+    }
+  },
+  "host_tests": {
+    "DASM_campaigns": 43,
+    "DSYM_cases": 25,
+    "USQ_regressions": 71,
+    "distribution_gates": 14
+  },
+  "campaigns": {
+    "native-integration": {
+      "status": "PASS",
+      "scope": "native integration gate; full release acceptance pending",
+      "cross_sha256": "73049f2e30b85bccd31f79ee453f1994abbae43d37c18306bd121a084eaf00f8",
+      "converter_sha256": "14633f5eb500f2b9955a901d97d386b46fda51dd699e4253ebe7aaa07a22ac94",
+      "platforms": {
+        "z80pack": {
+          "status": "PASS",
+          "native_cross_parity": true,
+          "symbol_conversion": true,
+          "scripted_line_input": false,
+          "keyboard_qualified": false,
+          "round_trip_bytes": 5,
+          "logical_bytes": "110401c900",
+          "execution_report": "z80pack/execution.json"
+        },
+        "trs80gp": {
+          "status": "PASS",
+          "native_cross_parity": true,
+          "symbol_conversion": true,
+          "scripted_line_input": true,
+          "keyboard_qualified": false,
+          "round_trip_bytes": 5,
+          "logical_bytes": "110401c900",
+          "execution_report": "trs80gp/execution.json"
+        }
+      }
+    },
+    "corpus-z80pack-interactive": {
+      "scope": "byte-enumerated native reconstruction; release acceptance pending",
+      "dasm_sha256": "73049f2e30b85bccd31f79ee453f1994abbae43d37c18306bd121a084eaf00f8",
+      "platforms": {
+        "z80pack": {
+          "status": "PASS",
+          "scripted_line_input": false,
+          "keyboard_qualified": false,
+          "cases": {
+            "BASE": {
+              "bytes": 1536,
+              "sha256": "8f16c2f1d9f1a96ffac1f382c0232236f10262c7885796f4284aa47361bd785b"
+            },
+            "CB": {
+              "bytes": 1024,
+              "sha256": "5193311b93539b8fff33624c48b199e88bbd56e6117fefa100a586bc98ce9277"
+            },
+            "ED": {
+              "bytes": 1536,
+              "sha256": "f9c5c509f098d490c3526509536bd9f642222d497675af6e4f335b082fa1aec4"
+            },
+            "RAW": {
+              "bytes": 263,
+              "sha256": "df7a7aa0f6da7776aafa67ea1d851eb2c9d7ab90bd85f9375d88a3f3a813f4c0"
+            },
+            "DD": {
+              "bytes": 1536,
+              "sha256": "f7b11b72229ba29fd496715c4aedb1bee6b8dad0f37d41745a90fe5f35361d1b"
+            },
+            "DDCB": {
+              "bytes": 1536,
+              "sha256": "5f2d94548a1abd296a6c10d75d191233bb00b29fd135d1ba80aed1ff38888516"
+            },
+            "FD": {
+              "bytes": 1536,
+              "sha256": "007890a0524c4b1907edd8d2e26cb46393a0fa1f063ab90e4d247d93338b5aed"
+            },
+            "FDCB": {
+              "bytes": 1536,
+              "sha256": "6724ef6e494bf1549bbe1eab084d8fa28d8c79745d5527109d6960635db5be4f"
+            }
+          }
+        }
+      }
+    },
+    "corpus-z80pack-reload": {
+      "scope": "byte-enumerated native reconstruction; release acceptance pending",
+      "dasm_sha256": "73049f2e30b85bccd31f79ee453f1994abbae43d37c18306bd121a084eaf00f8",
+      "platforms": {
+        "z80pack": {
+          "status": "PASS",
+          "scripted_line_input": true,
+          "keyboard_qualified": false,
+          "cases": {
+            "BASE": {
+              "bytes": 1536,
+              "sha256": "8f16c2f1d9f1a96ffac1f382c0232236f10262c7885796f4284aa47361bd785b"
+            },
+            "CB": {
+              "bytes": 1024,
+              "sha256": "5193311b93539b8fff33624c48b199e88bbd56e6117fefa100a586bc98ce9277"
+            },
+            "ED": {
+              "bytes": 1536,
+              "sha256": "f9c5c509f098d490c3526509536bd9f642222d497675af6e4f335b082fa1aec4"
+            },
+            "RAW": {
+              "bytes": 263,
+              "sha256": "df7a7aa0f6da7776aafa67ea1d851eb2c9d7ab90bd85f9375d88a3f3a813f4c0"
+            },
+            "DD": {
+              "bytes": 1536,
+              "sha256": "f7b11b72229ba29fd496715c4aedb1bee6b8dad0f37d41745a90fe5f35361d1b"
+            },
+            "DDCB": {
+              "bytes": 1536,
+              "sha256": "5f2d94548a1abd296a6c10d75d191233bb00b29fd135d1ba80aed1ff38888516"
+            },
+            "FD": {
+              "bytes": 1536,
+              "sha256": "007890a0524c4b1907edd8d2e26cb46393a0fa1f063ab90e4d247d93338b5aed"
+            },
+            "FDCB": {
+              "bytes": 1536,
+              "sha256": "6724ef6e494bf1549bbe1eab084d8fa28d8c79745d5527109d6960635db5be4f"
+            }
+          }
+        }
+      }
+    },
+    "corpus-model4-reload": {
+      "scope": "byte-enumerated native reconstruction; release acceptance pending",
+      "dasm_sha256": "73049f2e30b85bccd31f79ee453f1994abbae43d37c18306bd121a084eaf00f8",
+      "platforms": {
+        "trs80gp": {
+          "status": "PASS",
+          "scripted_line_input": true,
+          "keyboard_qualified": false,
+          "cases": {
+            "BASE": {
+              "bytes": 1536,
+              "sha256": "8f16c2f1d9f1a96ffac1f382c0232236f10262c7885796f4284aa47361bd785b"
+            },
+            "CB": {
+              "bytes": 1024,
+              "sha256": "5193311b93539b8fff33624c48b199e88bbd56e6117fefa100a586bc98ce9277"
+            },
+            "ED": {
+              "bytes": 1536,
+              "sha256": "f9c5c509f098d490c3526509536bd9f642222d497675af6e4f335b082fa1aec4"
+            },
+            "RAW": {
+              "bytes": 263,
+              "sha256": "df7a7aa0f6da7776aafa67ea1d851eb2c9d7ab90bd85f9375d88a3f3a813f4c0"
+            },
+            "DD": {
+              "bytes": 1536,
+              "sha256": "f7b11b72229ba29fd496715c4aedb1bee6b8dad0f37d41745a90fe5f35361d1b"
+            },
+            "DDCB": {
+              "bytes": 1536,
+              "sha256": "5f2d94548a1abd296a6c10d75d191233bb00b29fd135d1ba80aed1ff38888516"
+            },
+            "FD": {
+              "bytes": 1536,
+              "sha256": "007890a0524c4b1907edd8d2e26cb46393a0fa1f063ab90e4d247d93338b5aed"
+            },
+            "FDCB": {
+              "bytes": 1536,
+              "sha256": "6724ef6e494bf1549bbe1eab084d8fa28d8c79745d5527109d6960635db5be4f"
+            }
+          }
+        }
+      }
+    },
+    "capacity": {
+      "scope": "byte-enumerated native reconstruction; release acceptance pending",
+      "dasm_sha256": "73049f2e30b85bccd31f79ee453f1994abbae43d37c18306bd121a084eaf00f8",
+      "platforms": {
+        "z80pack": {
+          "status": "PASS",
+          "scripted_line_input": false,
+          "keyboard_qualified": false,
+          "cases": {
+            "MAX": {
+              "bytes": 8192,
+              "sha256": "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47"
+            }
+          }
+        },
+        "trs80gp": {
+          "status": "PASS",
+          "scripted_line_input": true,
+          "keyboard_qualified": false,
+          "cases": {
+            "MAX": {
+              "bytes": 8192,
+              "sha256": "9f1dcbc35c350d6027f98be0f5c8b43b42ca52b7604459c0c42be3aa88913d47"
+            }
+          }
+        }
+      }
+    }
+  },
+  "source_hashes": {
+    "maintained-source/dasm.mac": "6799324c6a76ca5351967480795fe9168cd136d1dc2ab6af9ac19479b8bfbf86",
+    "maintained-source/dasmtdl.mac": "009d48f42a3eb24151bbc95ebe219180f56621c9b8b1bbf019e34b3b235a19f5",
+    "maintained-source/dasmzlg.mac": "385fd94c580d951f195b7aa5aab312724164907b6115dc513c045c2ccf6ab407",
+    "maintained-source/dsym.mac": "f4d28c1d96583e3f3ae5c79f6688fff4e36e636937a08e0b8876603b3cfee901",
+    "maintained-source/common/dasmsafe.inc": "0e65889cef806ed9c5b44d4b2ad6aa2b3a8574ee11a3422ed005e0bd8898afe9",
+    "maintained-source/common/codecfile.mac": "098f36ff405e6559ca018694d5d3dd8083df5bd0726c0eb8f98ae02cb5741dea",
+    "runners/build_dasm.py": "122c4ca9420bc3bf97b986edfdebb3d71b4ddeda6f91406b2c045962df70e08d",
+    "runners/build_dsym.py": "646e26f496010b33abfe82481f93df805f57cb7aaab4d1fce4d679195fc076bf",
+    "runners/dasm_native.py": "6caa7f25690ee64182995c7f774cd982d76af056de3510dd0f261bc26639fdae",
+    "runners/dasm_script_harness.py": "593a8b23eb3536354f15e99350681d09067db400db17bc92aa51cc300fdd6e8a",
+    "runners/dsym_reference.py": "bdf6c01b26100170dacf95ae7f4d7ff12dc499f511125d4326351578c047c2f1",
+    "runners/qualify_dasm.py": "d8565fdafcc7b905135e8dbdf09f5c0bcbad87444f6c2e68cb67c22cfed76917",
+    "runners/qualify_dasm_corpus.py": "16435634c08a9b8c6995a4932bde211cf3f4255a1f68df39f4a8f8dc3b9e7b0d",
+    "runners/test_dasm.py": "247b9293874df4cc588644782d656979c2412b79405944305d4c4e0a526b9398",
+    "runners/test_dsym.py": "7b1251cc68c5718cdd9b5e6d5a75b0d95c82d095ac9137d495ffecabb12888fe",
+    "runners/test_usq.py": "b8d79ed5778ed0dff05530c54b820967d5acc6815f836081008671e54ffd494e",
+    "runners/test_usq_com.py": "d0b420015e18d713787608106e317d0cc6a4b4cc599f2eec1074a0d5680328a1",
+    "runners/trs80gp_launch.py": "0b2e0a54c484b89d79eefa98c87b435d52a2cb638132f28fa303c772f4791012",
+    "runners/test_z80pack_sysgen_install.py": "706887d21acc82e345bf4fda78893058a2f90ee1bdb9305f6489e5eb4d10b224"
+  },
+  "link_dialect_findings": {
+    "same_value_equate_and_label": "ZSM4 accepted with zero errors",
+    "public_export_significant_characters": 6,
+    "failed_LINK_still_writes_syntactically_valid_SYM": true,
+    "DSYM_link_success_verification": "not implemented in this baseline"
+  },
+  "open_requirements": "See DASM Implementation Status.md; sessions, metadata normalization/conflicts, wrap-safe rebasing, expanded file/terminal/resident tests, final Utilities packaging remain outstanding.",
+  "evidence_archive": {
+    "file": "DASM-Development-Evidence.tar.gz",
+    "bytes": 4315186,
+    "sha256": "8740224cf65849ebd14276d32d4d391cd0c56cb61fd85e4299d220947400d668"
+  }
+}
