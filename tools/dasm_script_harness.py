@@ -10,7 +10,7 @@ import subprocess
 import tempfile
 
 
-def scripted(image, lines, assembler=Path.home()/'bin/z80asm'):
+def scripted(image, lines, assembler=Path.home()/'bin/z80asm', *, setup_source='', setup_entry=None):
     assert image[0]==0xc3
     base=0xb800
     assert len(image)<base-0x100
@@ -33,6 +33,7 @@ START: LD (OLDSP),SP
 PAINT: LD (HL),0A5H
  INC HL
  DJNZ PAINT
+{' CALL '+setup_entry if setup_entry else ''}
  LD HL,ENTRY
  LD (6),HL
  LD HL,SCRIPT
@@ -86,6 +87,7 @@ FAIL_MSG: DB 'DASM RESIDENT CANARY FAIL',13,10,'$'
 LOW_MSG: DB 'DASM HARNESS INSUFFICIENT ORIGINAL TPA',13,10,'$'
 SCRIPT:
 {chr(10).join(' DB '+','.join(str(x) for x in script[i:i+16]) for i in range(0,len(script),16))}
+{setup_source}
  END
 '''
     with tempfile.TemporaryDirectory(prefix='dasm-script-') as folder:

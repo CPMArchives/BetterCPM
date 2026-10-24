@@ -1,4 +1,4 @@
-; Version-1 session descriptor, exactly one physical 128-byte record.
+; Version-2 session descriptor, exactly one physical 128-byte record.
 ; 0: BCDS, version; 8: origin; 10: 32-bit length; 14: binary identity/user/CRC32;
 ; 31: three 19-byte component identities/user/record-count/physical CRC32;
 ; 88..123 reserved zero; 124 CRC32 of bytes 0..123.
@@ -498,7 +498,7 @@ D_SES_CLOSE:
 D_SESSION_BAD:
  LD DE,D_SES_BAD
  JP D_ERROR_MSG
-D_SES_MAGIC: DB 'BCDS',1
+D_SES_MAGIC: DB 'BCDS',2
 D_SES_EXTS: DB 'SYMDOCCTL'
 D_SES_NAME: DB 'DSA00000SYM'
 D_SES_SAVED: DB 'DASM: session saved; descriptor published last.',13,10,'$'

@@ -26,6 +26,8 @@ Compare every logical byte; do not execute arbitrary disassembly inputs.
 DASM keeps at most 8192 input bytes. Nhex selects logical length; without it,
 all physical file-record bytes are input, including 00/1A/FF. Empty is refused.
 Ohex selects logical origin. End-only bounds may be 10000; crossing is refused.
+Non-0100 origins use PHASE; linked bytes are flat at 100H, not runnable there.
+For one logical byte an explicit 1Ah padding byte works around LINK output.
 P emits source prologue/equates. QL lists silently to the staged ASM output.
 Z completes it; G returns to the caller. H lists interactive commands.
 Eaddr,.NAME adds a symbol, K.NAME deletes; Iaddr,[+|-]delta rebases safely.

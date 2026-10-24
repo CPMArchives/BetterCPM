@@ -35,7 +35,7 @@ def main():
         'QANALY.COM':scripted(image,lines+['G'])}
     commands=['B:DASM /VER','QANALY']
     for name,(origin,payload) in cases.items():
-        commands += [f'B:ZSM4 {name}={name}.ASM',f'B:LINK {name}[P{origin:X},A]']
+        commands += [f'B:ZSM4 {name}={name}.ASM',f'B:LINK {name}[A]']
     names=['SESSION.ALL','DSA00000.SYM','DSA00000.DOC','DSA00000.CTL','OUT.SYM','OUT.DOC','OUT.CTL']
     names += [name+ext for name in cases for ext in ('.ASM','.REL','.COM')]
     report={'scope':'native mixed-data/session/origin gate; release acceptance pending','platforms':{}}
@@ -49,7 +49,7 @@ def main():
             assert restored[:len(payload)]==payload,(platform,name,restored[:24].hex())
             assert len(restored)==(len(payload)+127)//128*128 and set(restored[len(payload):])<={26},(platform,name,len(restored))
         descriptor=out['SESSION.ALL']
-        assert len(descriptor)==128 and descriptor[:5]==b'BCDS\x01'
+        assert len(descriptor)==128 and descriptor[:5]==b'BCDS\x02'
         assert int.from_bytes(descriptor[124:],'little')==zlib.crc32(descriptor[:124])
         assert int.from_bytes(descriptor[10:14],'little')==4 and int.from_bytes(descriptor[8:10],'little')==0x1200
         assert int.from_bytes(descriptor[27:31],'little')==zlib.crc32(binary)

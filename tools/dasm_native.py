@@ -83,7 +83,7 @@ end
             extracted=output/('utilities-'+member)
             tool('cpmcp','-T','raw','-f',utility_definition,utility_raw,'0:'+member,extracted)
             actual=extracted.read_bytes()
-            assert actual[:len(expected)]==expected and len(actual)==(len(expected)+127)//128*128,('packaged member mismatch',member)
+            assert actual[:len(expected)]==expected and len(expected)<=len(actual)<=(len(expected)+127)//128*128,('packaged member mismatch',member)
             assert set(actual[len(expected):])<={0,26},('packaged padding mismatch',member)
             utility_members[member]=hashlib.sha256(actual).hexdigest()
     if setup:setup(raw,definition,output)

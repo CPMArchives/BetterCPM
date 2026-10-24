@@ -1,10 +1,13 @@
-# DASM session format 1
+# DASM session format 2
 
 `Sname.ALL` saves the current logical input interval and analysis. `Rname.ALL`
 requires that the same canonical drive/user/binary name is already loaded.
 The stored logical length must fit its readable extent, and its logical CRC32
 must match. Loading restores the saved origin and length; it never silently
 rebinds analysis to another binary. Empty inputs and unknown versions are refused.
+
+The earlier development format 1 used a 16-bit length and different offsets;
+it is refused without changing live analysis.
 
 The descriptor is exactly one 128-byte physical record. Integer fields and
 CRC values use little-endian byte order. The 32-bit length representation can express 65,536 without wrapping; this
@@ -16,7 +19,7 @@ malicious modification. The host test independently checks it with zlib.
 | Offset | Bytes | Meaning |
 | --- | --- | --- |
 | 0 | 4 | ASCII BCDS |
-| 4 | 1 | Version 1 |
+| 4 | 1 | Version 2 |
 | 5 | 3 | Reserved, zero |
 | 8 | 2 | Logical origin |
 | 10 | 4 | Unsigned logical input length; current admission is 1..8192 |

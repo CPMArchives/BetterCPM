@@ -33,13 +33,17 @@ with line-number and imported/coalesced/rejected diagnostics.
 Logical origin is now selected with `Ohex`; the buffer bias is private. P and
 explicit listing ranges accept the end-exclusive `10000`, reject overflow and
 validate both bounds before changing PC or writing source. The final four bytes
-at the top of the address space use literal DB output. FFFF is a usable control,
+at the top of the address space use literal DB output. Non-0100H origins use
+ORG 100H plus PHASE/DEPHASE for a packed reconstruction. Native LINK drops a
+one-byte absolute image; that case emits one explicit 1Ah padding byte after
+the declared logical interval. All qualification comparisons retain the logical
+length and validate padding separately. FFFF is a usable control,
 comment and symbol address, with type/length zero as the table terminator.
 The S classification also emits initialized DB bytes in exact reconstruction.
 Automatic A/B analysis snapshots its control/symbol tables and restores them on
 capacity or range refusal, including dense-label and dense-data campaigns.
 
-Version-1 `.ALL` save/load now uses the descriptor described in
+Version-2 `.ALL` save/load now uses the descriptor described in
 [DASM Session Format](DASM%20Session%20Format.md). It records logical origin and
 length, canonical binary identity/logical CRC32 and three unique component
 identities/physical record counts/CRCs. Saves preflight the descriptor destination,

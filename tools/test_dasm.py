@@ -190,7 +190,7 @@ def main():
             assert m.files[sym_out].split(b'\x1a',1)[0]==b'0100 KEEP\r\n',m.files[sym_out]
         text=m.execute(['RTINY.COM','N2','RTINY.SYM','STINY.ASM','P.ALPHA,.ZED','QL.ALPHA,.ZED','Z','G'],
                        {tiny:b'\xc9\x00',sym_in:raw})
-        assert b'ORG\t0100H' in m.files[out],(text,m.files[out])
+        assert b'ORG\t100H' in m.files[out],(text,m.files[out])
         assert b'0C9H' in m.files[out],m.files[out]
         symbol_file=diskkey(1,'TINY.SYM')
         for bad in [b'0100 REPLACE\r\nINVALID\r\n',
@@ -304,9 +304,9 @@ def main():
             path=w/'origin.asm';path.write_bytes(asm)
             result=subprocess.run([str(Path.home()/'bin/z80asm'),'-e12','-fb','-o'+str(w/'origin.bin'),str(path)],capture_output=True)
             assert result.returncode==0,(origin,result.stdout,asm)
-            assert (w/'origin.bin').read_bytes()==payload,(origin,asm,(w/'origin.bin').read_bytes())
+            assert (w/'origin.bin').read_bytes()==payload+(b'\x1a' if len(payload)==1 else b''),(origin,asm,(w/'origin.bin').read_bytes())
         text=m.execute(['RTINY.COM','N2','OFFFF','STINY.ASM','P100,102','QL100,102','Z','G'],{tiny:b'\0\xc9'})
-        assert 'outside loaded input' in text and b'ORG\t0100H' in m.files[out],text
+        assert 'outside loaded input' in text and b'ORG\t100H' in m.files[out],text
         text=m.execute(['RTINY.COM','N1','OFFFF','STINY.ASM','PFFFF,10000','QLFFFF,10001','Z','G'],{tiny:b'\xc9'})
         assert b'0C9H' not in m.files[out] and 'Command Error' in text,text
         ctl=diskkey(1,'OUT.CTL'); doc=diskkey(1,'OUT.DOC')
@@ -333,7 +333,7 @@ def main():
         saved=dict(m.files)
         import zlib
         descriptor=saved[session]
-        assert len(descriptor)==128 and descriptor[:5]==b'BCDS\x01',descriptor
+        assert len(descriptor)==128 and descriptor[:5]==b'BCDS\x02',descriptor
         assert int.from_bytes(descriptor[124:],'little')==zlib.crc32(descriptor[:124])
         assert int.from_bytes(descriptor[27:31],'little')==zlib.crc32(payload)
         assert descriptor[8:12]==bytes.fromhex('00120400')
@@ -343,7 +343,7 @@ def main():
         assert m.files[diskkey(1,'OUT.SYM')].split(b'\x1a',1)[0]==b'FFFF LAST\r\n1200 START\r\n',text
         assert m.files[doc].split(b'\x1a',1)[0]==b'1200 Case Preserved\r\n',text
         assert m.files[ctl].split(b'\x1a',1)[0]==b'1200,I\r\n',text
-        assert b'ORG\t1200H' in m.files[out],m.files[out]
+        assert b'.PHASE\t1200H' in m.files[out],m.files[out]
         # Every failed component/hash/descriptor load retains the prior live table.
         for corruption in ('descriptor','binary','component','version'):
             files=dict(saved)
@@ -407,7 +407,7 @@ def main():
             asm=m.files[out].split(b'\x1a',1)[0]
             path=w/'data.asm';path.write_bytes(asm)
             result=subprocess.run([str(Path.home()/'bin/z80asm'),'-e12','-fb','-o'+str(w/'data.bin'),str(path)],capture_output=True)
-            assert result.returncode==0 and (w/'data.bin').read_bytes()==payload,(classification,text,asm)
+            assert result.returncode==0 and (w/'data.bin').read_bytes()==payload+(b'\x1a' if len(payload)==1 else b''),(classification,text,asm)
         for payload in (b'ABCDEFGH',b'ABC',b'ABCDEFGHIJK'):
             end=256+len(payload)
             text=m.execute(['RTINY.COM',f'N{len(payload):X}',f'A100,{end:X}','SOUT.CTL','G'],{tiny:payload})

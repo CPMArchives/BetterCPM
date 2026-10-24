@@ -115,14 +115,19 @@ automatic production of relocatable modules.
 Qualify the exact LINK command for absolute output. Document the treatment of
 ORG 100H, leading gaps and CP/M record padding. Do not copy a relocatable CSEG
 recipe into this workflow without proving the resulting addresses and bytes.
-Non-0100H origins require an explicitly qualified output/extraction procedure;
-do not describe an arbitrary-origin image as a directly runnable COM program.
+Non-0100H logical origins use ORG 100H with .PHASE/.DEPHASE, retaining logical
+symbol/operand values while packing output at 0100H for native LINK. Do not
+describe that flat byte reconstruction as a runnable arbitrary-origin program.
+Native tests found that LINK P origins can add a jump/gap, reject origin zero
+or mishandle FFFFH; they are not the reconstruction procedure.
 
 Generated numeric literals must be unambiguous to ZSM4, including a leading
 zero where a hexadecimal literal would otherwise begin with A through F.
 Check quoted apostrophes, empty strings, control bytes, high-bit bytes,
 indexed displacements, relative targets, conditions and symbol expressions.
-Never allow line wrapping or pagination text into assembly output.
+Never allow line wrapping or pagination text into assembly output. The pinned
+LINK drops a one-byte absolute image; emit an explicit 1Ah record-padding byte
+after that logical interval and validate it separately, without trimming input.
 
 DASM retains its maximum 12-character symbols, within the pinned ZSM4 source
 identifier limit of 15 characters (`IDMAX` in zsm.inc). Audit internal maintained
