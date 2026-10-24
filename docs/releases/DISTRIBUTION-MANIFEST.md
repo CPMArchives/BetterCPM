@@ -213,3 +213,19 @@ Utilities media remain PROVISIONAL; this campaign does not close whole-disk acce
 
 [Native ZSM4/LINK qualification](../engineering/Compression%20Native%20Build%20Qualification.md)
 passes for all six Build 004 commands with exact executable parity.
+
+## Current ten-file inventory acceptance — 2026-10-24
+
+The maintainer selected qualification of the current implemented inventory while
+keeping unresolved selections open. [Acceptance and evidence](../engineering/Utility%20Release%20Reacceptance.md)
+cover exact ten-file membership/user 0, independent FDF allocation and executable
+readback, filesystem integrity, Model 4 conversion, and all included components
+on the recorded System/Utilities pairs. The shared query change is reaccepted
+for current shipped utilities. Both Utilities images remain byte-identical to
+the compression-qualified images; their current hash manifest is retained.
+
+This is current-inventory acceptance, not final approval of the complete release
+inventory. Full-screen editor/disassembler selection, ZSM4/LINK packaging and
+on-disk documentation/native-build materials remain open. NOAH's complete
+interface is selected post-1.0 work; its development foundation stays excluded.
+The builder reports it as deferred rather than an unselected 1.0 archive tool.

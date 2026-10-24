@@ -57,3 +57,12 @@ to exact System/Utilities disk images. The query evidence is not a substitute
 for every other utility's platform/component acceptance. Earlier DDT and other
 component receipts continue to qualify their original binary/image hashes;
 changed artifacts require relevant reacceptance in the release checklist.
+
+## Current-artifact reacceptance
+
+The [follow-up record](Utility%20Release%20Reacceptance.md) reaccepts the shared
+query change on current shipped artifacts, including 28 real-media queries per
+platform and relevant functional/component checks. It retains the original
+receipts above, resolves the selected harness failures explicitly, and qualifies
+the current ten-file Utilities inventory while keeping missing selections and
+whole-release acceptance open.

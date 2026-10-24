@@ -51,3 +51,8 @@ python3 tools/build_utilities_disk.py \
 Replace `release-GENERATION` with the directory printed by the System builder. The acceptance harness records source and packaged-image hashes, emulator output, fixtures and post-run checks. Rebuilding Utilities with the same artifacts must match those hashes to bind the verdict. Changes to any packaged component require acceptance evidence for the resulting new media.
 
 `DDT-Utilities-evidence.json` and `DDT-Utilities-evidence.tar.gz` retain the tested image hashes, passing campaign, image-bound package reports, proof-rejection checks, System validation summaries and the unchanged historical rebuild result. The manifest and user manual link this component acceptance while retaining whole-disk provisional status.
+
+The [current-artifact reacceptance](Utility%20Release%20Reacceptance.md) repeats
+this campaign on the recorded current System/Utilities pairs and binds DDT
+Build 002 to the unchanged Utilities image hashes. The current inventory passes;
+full disk selection and frozen-release closure remain separate.

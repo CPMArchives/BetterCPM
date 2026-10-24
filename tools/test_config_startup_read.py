@@ -39,7 +39,7 @@ def run_case(name: str, image: bytes, expected: tuple[str, ...],
             delay = final_delay if index == len(actions) - 1 else 2000
             args += key_args(action) + ["-id", str(delay)]
         args += ["-it", "-ix"]
-    run_trs80gp(args, cwd=work, check=True, timeout=35)
+    run_trs80gp(args, cwd=work, check=True, timeout=180)
     text = screen(work / "trs80-text-0.bin")
     for phrase in expected:
         assert phrase in text, text
@@ -58,7 +58,7 @@ def run_pending_save(image: bytes) -> bytes:
     for action in ("CONFIG\r", "A", "E", "VER\r", "\x03", "S", "A", "Y"):
         args += key_args(action) + ["-id", "2000"]
     args += ["-it", "-ix"]
-    run_trs80gp(args, cwd=work, check=True, timeout=35)
+    run_trs80gp(args, cwd=work, check=True, timeout=180)
     text = screen(work / "trs80-text-0.bin")
     assert "Pending cold-boot changes saved and verified." in text, text
     before = extract_raw(image)

@@ -56,8 +56,7 @@
   },
   "final_artifact_mismatch_guard": "PASS: altered final Build 004 COM rejected before campaign",
   "open_release_gates": [
-    "final Utilities inventory, image integrity and all component acceptance",
-    "review/reaccept other utility receipts affected by shared version-query revision",
+    "final Utilities inventory selections/packaging and whole-release disk acceptance",
     "final COM/image hash manifest and release evidence closure"
   ],
   "limitations": "Stock CP/M 2.2 exchange/query qualification is not BetterCP/M two-platform or whole-disk release acceptance.",
@@ -105,5 +104,15 @@
     "historical_cases": 178,
     "query_commands": 90,
     "native_parity_commands": 6
+  },
+  "utility_reacceptance_and_current_inventory": {
+    "status": "PASS_CURRENT_INVENTORY",
+    "full_release": "PROVISIONAL",
+    "report": "Utility-Release-Reacceptance.json",
+    "report_sha256": "5fa5a211d8eaf438cf082bf1650d884ac8ce0a8275371ff73b044bd0c38abcd7",
+    "bundle": "Utility-Release-Reacceptance.tar.gz",
+    "bundle_sha256": "8542311ff290072fd0a75c1f64ee4951cd8f55a4ae0f5a261a5ed67637a10f7c",
+    "hash_manifest": "Utilities-Current-Inventory-SHA256SUMS.txt",
+    "hash_manifest_sha256": "6ad671e2b925fe4f521b72984fd75f2945fc5607c258c7726fdf512140e74a6d"
   }
 }
