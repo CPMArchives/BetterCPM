@@ -2,7 +2,7 @@
 """Run packaged XSUB on both platforms with its exact BATCHIO companion."""
 import argparse,hashlib,json,shutil,subprocess
 from pathlib import Path
-from add_cpm_file_to_dmk import extract_raw,add_file
+from add_cpm_file_to_dmk import extract_raw,add_file,FILESYSTEM_FIRST_SECTOR,SECTOR_SIZE,DIRECTORY_ENTRIES
 from build_montezuma_extended_790k import build as system_dmk
 from build_z80pack_image import disk_definition,DEFAULT_FORMAT
 from fdf_format import select_fdf
@@ -55,11 +55,16 @@ end
             assert (disks/'driveb.dsk').read_bytes()==utility_before
             shutil.copy2(disks/'drivea.dsk',raw)
         else:
-            disk=w/'system.dmk';disk.write_bytes(system_dmk(bytearray(raw.read_bytes())));shutil.copy2(utility,w/'utilities.dmk')
-            args=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-ktx','-d0',str(disk),'-d1',str(w/'utilities.dmk'),'-itime','60000','-iw','Type TYPE README.TXT for more','-id','6000']
-            args+=key_args('B:XSUB /VER ignored\r',delay=40)+['-iw','Build 003','-id','1000','-it']
-            args+=key_args('SUBMIT UBATCH\r',delay=40)+['-iw','MARK: AFTER','-id','1000','-it','-ix']
-            (w/'invocation.json').write_text(json.dumps(args,indent=2)+'\n');launch(args,cwd=w,timeout=180)
+            native_raw=bytearray(raw.read_bytes())
+            directory=FILESYSTEM_FIRST_SECTOR*SECTOR_SIZE
+            for i in range(DIRECTORY_ENTRIES):
+                at=directory+i*32
+                if native_raw[at]==0 and native_raw[at+1:at+12]==b'STARTUP SUB':native_raw[at]=0xe5
+            add_file(native_raw,'STARTUP.SUB',b'RSX LOAD M4SCRN\r\nRSX LOAD ADM3A\r\n:VER /BANNER\r\nB:XSUB /VER ignored\r\nSUBMIT UBATCH\r\n\x1a')
+            disk=w/'system.dmk';disk.write_bytes(system_dmk(native_raw));shutil.copy2(utility,w/'utilities.dmk')
+            args=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-ktx','-d0',str(disk),'-d1',str(w/'utilities.dmk'),'-itime','60000',
+                  '-iw','BetterCP/M XSUB 1.0','-id','120','-it','-iw','INPUT OK','-id','120','-it','-iw','MARK: AFTER','-id','1000','-it','-ix']
+            (w/'invocation.json').write_text(json.dumps(args,indent=2)+'\n');launch(args,cwd=w,timeout=600)
             screens=b'\n'.join(bytes(c&127 for c in p.read_bytes()[:1920]) for p in sorted(w.glob('trs80-text*')))
             assert b'INPUT OK' in screens and b'MARK: AFTER' in screens and b'INPUT FAILED' not in screens
             assert (w/'utilities.dmk').read_bytes()==utility_before

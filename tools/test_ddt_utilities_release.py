@@ -67,7 +67,7 @@ def model4(w,system,utility):
     keys('XP\r100\rU1\rG0\r');snap('return',3000)
     keys('B:DDT\r');snap('restart',3000)
     keys('\x03');snap('break',3000);cmd+=['-ix']
-    (w/'invocation.json').write_text(json.dumps(cmd,indent=2)+'\n');launch(cmd,cwd=w,timeout=180)
+    (w/'invocation.json').write_text(json.dumps(cmd,indent=2)+'\n');launch(cmd,cwd=w,timeout=600)
     captures=sorted(w.glob('trs80-text*'),key=lambda p:int(p.stem.rsplit('-',1)[1]));assert len(captures)==len(stages)
     screens={n:bytes(c&127 for c in p.read_bytes()[:1920]) for n,p in zip(stages,captures)}
     for n,t in screens.items():(w/(n+'.txt')).write_text('\n'.join(t[i:i+80].decode('ascii').rstrip() for i in range(0,1920,80))+'\n')

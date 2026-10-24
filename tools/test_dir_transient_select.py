@@ -15,6 +15,7 @@ from trs80gp_launch import run
 
 def main():
     p=argparse.ArgumentParser()
+    p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim')
     p.add_argument('--platform',choices=('z80pack','model4'),required=True)
     p.add_argument('--report',type=Path,required=True)
     p.add_argument('--image-dir',type=Path)
@@ -180,7 +181,7 @@ def main():
         cases=extent_expectations(directory(disk,report/'diskdefs'))
         before={path.name:path.read_bytes() for path in (report/'disks').glob('*.dsk')}
         for i,(command,required,excluded) in enumerate(cases):
-            text=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',report/'disks',
+            text=session(a.simulator,report/'disks',
                 [(b'CPX UNLOAD RCP\r',b'A0>_ ',60),(command.encode()+b'\r',b'A0>_ ',60)],
                 report/f'case-{i}.txt').decode(errors='replace')
             # Check only output after the completed command echo.
