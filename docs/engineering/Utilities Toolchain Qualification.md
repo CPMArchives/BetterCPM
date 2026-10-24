@@ -222,6 +222,31 @@ Its internal SHA256SUMS.json verifies every other archive member.
 | cpmsim | `c6c07791f419321bc661a56d86ba9afc0e68242e8f0ff070e07188a7a5d7563e` | `457cd8660e1a74f04b23d4440c2eeb1595ba5f1543ef2650575ecfea551fbb1d` |
 | Model 4 | `37fceca09cc404488e7b274e8a93c690b024767b225451295a742b87bc87d585` | `95f8af912173f428f47d434269da65d7778933410b30986d14c943a2285392c1` |
 
+## Integration with current main — 2026-10-24
+
+The PR 485 merge resolution incorporates main `42be00b`, retaining its core
+1.0 milestone identity, current CCP/CPX/RSX 2.0 and BIOS 1.14 identities, and
+this branch's current BDOS implementation 1.10. The separate frozen
+`metadata/core-1.0.json` retains BDOS 1.9 at its original source revision.
+
+This integration does not transfer the archived campaigns to newly built
+merged Systems. The PASS evidence above remains bound to the exact
+`8864aa58ca7a` generation and hashes listed here. The current-main checked
+components and version text require their own paired-media reacceptance;
+package core selection and final release acceptance remain open. The evidence
+archive and its checksum are retained byte for byte.
+
+Merge validation passes the subsystem/frozen-version consistency checks,
+compiled VER banner and version-stack checks, 225 Make cases, 36 sequential
+boundary cases and 12 random-position cases, four toolchain-distribution
+suites, three checked-distribution suites and 11 build-profile tests.
+RCP/transients and the resident System assemble from the merged source. BDOS
+remains 3,436 bytes with the qualified core hash; the updated core-version
+text makes the extension unit 424 bytes. This is a build/focused-regression
+check, not a new ROM-ownership or physical-emulator campaign. The initial VER
+check read an old local 0.90 executable; rebuilding it from merged source
+made the exact banner/invalid-option checks pass.
+
 ## Reproduction
 
 ```sh

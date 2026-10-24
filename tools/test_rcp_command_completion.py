@@ -46,7 +46,7 @@ def main() -> None:
     require("A7>" in output, "transient USER.COM did not select user 7")
 
     output = run("VER")
-    require("BetterCP/M 0.90" in output, "RCP VER did not report the version")
+    require("BetterCP/M 1.0" in output, "RCP VER did not report the version")
     output = run("VER /V", run_delay=800)
     for line in (
         "Command environment: API 1.0; implementation 1.4",
@@ -57,7 +57,7 @@ def main() -> None:
     require("Extension facility" not in output,
             "VER /V reported manager-owned CPX/RSX versions")
     output = run("A:VER")
-    require("BetterCP/M 0.90" in output, "transient VER.COM did not match VER")
+    require("BetterCP/M 1.0" in output, "transient VER.COM did not match VER")
     output = run("A:VER /V", run_delay=800)
     require("Basic Disk Operating System: API 1.2; implementation 1.6" in output,
             "transient VER.COM did not share verbose subsystem reporting")

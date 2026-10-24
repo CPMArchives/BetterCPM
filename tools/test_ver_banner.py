@@ -10,7 +10,7 @@ EXPECTED = "\r\n" + "\r\n".join([
     " - - -" + " " * 50 + "- - - ",
     "|" + " " * 60 + "|",
     "|" + "BetterCP/M".center(60) + "|",
-    ("Release " + RELEASE).center(62).rstrip(),
+    ("Core OS " + RELEASE).center(62).rstrip(),
     "",
     "CP/M 2.2 Compatible System".center(62).rstrip(),
     "",

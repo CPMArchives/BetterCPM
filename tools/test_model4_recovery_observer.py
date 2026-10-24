@@ -11,7 +11,7 @@ class RecoveryObserver(unittest.TestCase):
         self.assertTrue(all(recovery_checks(self.healthy).values()))
 
     def test_startup_banner_is_not_recovery(self):
-        self.assertFalse(all(recovery_checks('BetterCP/M 0.90\nA0>\n').values()))
+        self.assertFalse(all(recovery_checks('BetterCP/M 1.0\nA0>\n').values()))
 
     def test_caller_return_is_not_recovery(self):
         self.assertFalse(all(recovery_checks('OBSERVED: Function 10 returned to CONSTEST.\n'+self.healthy).values()))

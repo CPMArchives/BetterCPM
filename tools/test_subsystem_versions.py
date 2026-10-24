@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import json
 from pathlib import Path
 
 from version_metadata import (CPX_INCLUDE, INCLUDE, RSX_INCLUDE, render,
@@ -11,12 +12,17 @@ from version_metadata import (CPX_INCLUDE, INCLUDE, RSX_INCLUDE, render,
 ROOT = Path(__file__).resolve().parents[1]
 MATRIX = ROOT / "metadata/subsystem-versions.tsv"
 EXPECTED = {
-    "BetterCP/M": ("-", "0.90", "completed baseline"),
-    "CCP": ("1.0", "1.4", "completed"),
-    "CPX": ("1.0", "1.3", "completed"),
+    "BetterCP/M": ("-", "1.0", "completed baseline"),
+    "CCP": ("2.0", "2.0", "completed"),
+    "CPX": ("2.0", "2.0", "completed"),
     "BDOS": ("1.2", "1.10", "completed"),
-    "RSX": ("1.0", "1.5", "completed"),
-    "BIOS": ("1.7", "1.13", "completed"),
+    "RSX": ("2.0", "2.0", "completed"),
+    "BIOS": ("1.7", "1.14", "completed"),
+}
+FROZEN = {
+    "BDOS": ("1.2", "1.9"), "BIOS": ("1.7", "1.13"),
+    "CCP": ("1.0", "1.4"), "CPX": ("1.0", "1.3"),
+    "RSX": ("1.0", "1.5"),
 }
 
 
@@ -26,6 +32,19 @@ def require(condition: bool, message: str) -> None:
 
 
 def main() -> None:
+    frozen = json.loads((ROOT / "metadata/core-1.0.json").read_text())
+    pin = "3b2d2d7f4fe0472438465165f11fb550d79c8662"
+    require(frozen['core_version'] == '1.0' and frozen['status'] == 'frozen'
+            and frozen['source_commit'] == pin
+            and frozen['source_tree'] == 'c08f35045d02e5d0b5de3f0c0914176438c1163e',
+            'frozen core 1.0 identity changed')
+    require(set(frozen['components']) == set(FROZEN),
+            'frozen core 1.0 component membership changed')
+    for name, versions in FROZEN.items():
+        row = frozen['components'][name]
+        require((row['interface_version'], row['implementation_version']) == versions
+                and row['source_commit'] == pin,
+                f'frozen core 1.0 {name} identity changed')
     with MATRIX.open(newline="", encoding="utf-8") as source:
         rows = {row["component"]: row for row in csv.DictReader(source,
                                                                   delimiter="\t")}
@@ -42,6 +61,9 @@ def main() -> None:
             "src/utilities/cpxvers.inc is stale")
     require(RSX_INCLUDE.read_text(encoding="ascii") == render_manager("RSX", "RS_VERSION"),
             "src/utilities/rsxvers.inc is stale")
+    package = json.loads((ROOT / 'metadata/release-package.json').read_text())
+    require(package['version'] == '1.0' and package['status'] == 'in-progress',
+            'release-package target/completion must remain distinct from core OS version')
     banner = f"BetterCP/M {rows['BetterCP/M']['implementation_version']}"
     # The visible system banner is owned by the resident command package; the
     # compact core CCP contains no user-facing sign-on text.
