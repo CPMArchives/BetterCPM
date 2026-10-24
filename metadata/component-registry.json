@@ -419,7 +419,7 @@
       "builders": [
         "tools/build_ddt.py"
       ],
-      "revision": 2,
+      "revision": 3,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -539,7 +539,7 @@
       "builders": [
         "tools/build_z80pack_bye.py"
       ],
-      "revision": 1,
+      "revision": 2,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
