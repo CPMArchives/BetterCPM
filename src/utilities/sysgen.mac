@@ -7,6 +7,7 @@
 ; ********************************************************************************
 
         INCLUDE layout.inc
+        INCLUDE profile.inc
         ASEG
         ORG 0100H
 BDOS    EQU 5
@@ -20,6 +21,9 @@ SYSBASE EQU LY_SYS
 
         CALL    UV_CHECK                ; standalone utility identity
         LD SP,03F00H
+        IF BP_CHECKED EQ 1
+        CALL P12CHECK
+        ENDIF
         LD HL,(6)
         LD DE,IMAGE+SYSRECS*128
         OR A
@@ -107,7 +111,11 @@ LOADFILE:                               ; load SYSTEM.SYS package
         LD C,15
         CALL BDOS
         INC A
+        IF BP_CHECKED EQ 1
+        JP Z,LFERR
+        ELSE
         JR Z,LFERR
+        ENDIF
         LD DE,PKGHEADER
         LD C,26
         CALL BDOS
@@ -115,17 +123,29 @@ LOADFILE:                               ; load SYSTEM.SYS package
         LD C,20
         CALL BDOS
         OR A
+        IF BP_CHECKED EQ 1
+        JP NZ,LFERR
+        ELSE
         JR NZ,LFERR
+        ENDIF
         LD HL,PKGHEADER
         LD DE,PKGMAGIC
         LD B,10
 
 LFCMP:  LD A,(DE)                       ; lfcmp
         CP (HL)
+        IF BP_CHECKED EQ 1
+        JP NZ,LFERR
+        ELSE
         JR NZ,LFERR
+        ENDIF
         INC DE
         INC HL
         DJNZ LFCMP
+        IF BP_CHECKED EQ 1
+        CALL P11HCHK
+        JP NZ,LFERR
+        ENDIF
         LD HL,PKGHEADER+16
         LD DE,SOURCE
         LD BC,64
@@ -144,7 +164,11 @@ LFRD:   PUSH BC                         ; lfrd
         POP HL
         POP BC
         OR A
+        IF BP_CHECKED EQ 1
+        JP NZ,LFERR
+        ELSE
         JR NZ,LFERR
+        ENDIF
         LD DE,128
         ADD HL,DE
         DJNZ LFRD
@@ -152,10 +176,22 @@ LFRD:   PUSH BC                         ; lfrd
         LD C,20
         CALL BDOS
         CP 1
+        IF BP_CHECKED EQ 1
+        JP NZ,LFERR
+        ELSE
         JR NZ,LFERR
+        ENDIF
         LD DE,XARG1
         LD C,16
         CALL BDOS
+        IF BP_CHECKED EQ 1
+        INC A
+        JP Z,LFERR
+        CALL P11FCRC
+        JP NZ,LFERR
+        CALL P11CHECK
+        JP NZ,LFERR
+        ENDIF
         XOR A
         RET
 
@@ -398,6 +434,12 @@ COUNTED:LD A,H                          ; counted
         JP SOURCEBAD
 
 IMAGEOK:                                ; imageok
+        IF BP_CHECKED EQ 1
+        CALL P11CHECK
+        JP NZ,PKGBAD
+        CALL P11FILES
+        JP NZ,P11FBAD
+        ENDIF
         CALL PATCHTARGET
         JP NZ,PKGBAD
         JP WRIMAGE
@@ -1087,7 +1129,11 @@ ABIMSG:DB 'SYSGEN requires BetterCP/M disk BIOS ABI 5.',13,10,0 ; abimsg
 
 MAGIC:  DB 'BDCF',5,4,4,64              ; magic
 
-PKGMAGIC:DB 'BCSY',1,1,160,0             ; pkgmagic
+        IF BP_CHECKED EQ 1
+PKGMAGIC:DB 'BCSY',2,2,160,0
+        ELSE
+PKGMAGIC:DB 'BCSY',1,1,160,0
+        ENDIF             ; pkgmagic
          DW LY_SYS
 
 DEST:   DB 0                            ; dest
@@ -1124,8 +1170,13 @@ BOOTBIND:DS 64                          ; bootbind
 
 REQ:    DS 80                           ; configuration API request
         INCLUDE sysgen-export.inc
+; @checked-package-guard@
 ; @utility-version SYSGEN@
 
 ; @sysgen-choice@
 ; @monitor-console@
+        IF BP_CHECKED EQ 1
+P12CONFIG EQU 0
+        INCLUDE private-utility.inc
+        ENDIF
         END

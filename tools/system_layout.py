@@ -36,6 +36,9 @@ def expand_layout(text: str) -> str:
         text = re.sub(r'^\s*INCLUDE\s+'+re.escape(name)+r'\s*$',
                       lambda _, name=name: (ROOT/'src/platform/z80pack'/name).read_text(encoding='ascii'),
                       text, flags=re.MULTILINE | re.IGNORECASE)
+    text = re.sub(r'^\s*INCLUDE\s+private-utility\.inc\s*$',
+                  lambda _: (ROOT/'src/utilities/common/private-utility.inc').read_text(),
+                  text, flags=re.MULTILINE | re.IGNORECASE)
     if '; @bounded-filespec@' in text:
         text = text.replace('; @bounded-filespec@',
             (ROOT / 'src/utilities/common/filespec.inc').read_text(encoding='ascii'))

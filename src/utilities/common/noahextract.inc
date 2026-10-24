@@ -1,9 +1,8 @@
-; NOAH development extraction: all active members, one destination drive/current
-; user, NEW OUTPUTS ONLY. Existing outputs are explicitly skipped; overwrite UI,
-; full DU/selectors and recovery interaction are later increments. All archive
-; integrity checks run before entering here. No archive or existing output is
-; modified. Every created output is staged, closed, reopened and byte-compared
-; against a second archive read before a checked rename publishes it.
+; NOAH extraction: shared archive selection/member pattern and one destination
+; DU. The source adapter switches into its owner user for reads and restores
+; destination user before output I/O. NO_AUTHORIZE/NO_PUBLISH handle collision,
+; protection, backup/rollback and cleanup without overwriting selected inputs.
+; Every output is staged, closed, reopened and byte-compared before publication.
 NX_EXTRACT:
         XOR A
         LD HL,NX_TOTAL
@@ -36,14 +35,10 @@ NX_ZERO_COUNTS:
 NX_TOTAL_DECREMENT:
         DEC HL
         LD (NX_TOTAL),HL
-        LD A,(NH_DEST)
-        OR A
-        JR NZ,NX_DEST_SET
-        LD C,25
+        LD A,(NH_DUSER)
+        LD E,A
+        LD C,32
         CALL AC_BDOS
-        INC A
-        LD (NH_DEST),A
-NX_DEST_SET:
         CALL LBR_OPEN
         JP C,NX_ARCHIVE_ERROR
 NX_NEXT:
@@ -55,6 +50,8 @@ NX_NEXT:
         JP Z,NX_SUMMARY
         JP NX_ARCHIVE_ERROR
 NX_MEMBER:
+        CALL NS_MEMBER_MATCH
+        JP NZ,NX_NEXT
         XOR A
         LD (NX_TEMP_OPEN),A
         LD (NX_VERIFY_OPEN),A
@@ -66,18 +63,16 @@ NX_MEMBER:
         LD (HL),0
         LDIR
         LD A,(NH_DEST)
+        INC A
         LD (NX_FINAL),A
         LD HL,NH_CONTEXT+AS_MEMBER
         LD DE,NX_FINAL+1
         LD BC,11
         LDIR
-        LD HL,NX_FINAL
-        CALL NX_EXISTS
-        JR Z,NX_NEW_OUTPUT
-        LD HL,NX_FINAL
-        CALL NX_PRINT_FCB
-        LD DE,NX_EXISTS_TEXT
-        CALL NH_PRINT
+        CALL NO_AUTHORIZE
+        JP C,NX_MEMBER_ERROR
+        OR A
+        JR NZ,NX_NEW_OUTPUT
         LD HL,NX_SKIPPED
         CALL NX_INC_COUNT
         JP NX_NEXT
@@ -192,27 +187,8 @@ NX_VERIFY_EOF:
         LD (NX_VERIFY_OPEN),A
         CALL NX_POLL
         JP C,NX_MEMBER_ERROR
-        LD A,1
-        LD (NX_KEEP),A
-        LD HL,NX_FINAL
-        CALL NX_EXISTS
-        JP NZ,NX_OUTPUT_ERROR
-        LD HL,NX_TEMP
-        LD DE,NX_RENAME
-        LD BC,12
-        LDIR
-        LD HL,NX_FINAL
-        LD DE,NX_RENAME+16
-        LD BC,12
-        LDIR
-        LD DE,NX_RENAME
-        LD C,23
-        CALL AC_BDOS
-        CP 0FFH
-        JP Z,NX_OUTPUT_ERROR
-        XOR A
-        LD (NX_LIVE),A
-        LD (NX_KEEP),A
+        CALL NO_PUBLISH
+        JP C,NX_OUTPUT_ERROR
         LD HL,NX_FINAL
         CALL NX_PRINT_FCB
         LD DE,NX_EXTRACTED_TEXT
@@ -229,6 +205,8 @@ NX_STAMP_SCAN:
         DJNZ NX_STAMP_SCAN
         JP Z,NX_NEXT
         CALL AC_SET_STAMP
+        LD A,1
+        LD (NS_WARNINGS),A
         LD DE,NX_STAMP_TEXT
         CALL NH_PRINT
         JP NX_NEXT
@@ -246,6 +224,8 @@ NX_RESULT_READY:
         LD A,(NX_RESULT)
         CP AS_CANCEL
         JP Z,NX_STOP
+        LD A,1
+        LD (NS_ARC_FAILED),A
         LD HL,NX_FAILED
         CALL NX_INC_COUNT
         LD HL,NX_FINAL
@@ -254,6 +234,8 @@ NX_RESULT_READY:
         CALL NH_PRINT
         JP NX_SUMMARY
 NX_ARCHIVE_ERROR:
+        LD A,1
+        LD (NS_ARC_FAILED),A
         LD DE,NX_ARCHIVE_TEXT
         CALL NH_PRINT
         JP NX_SUMMARY
@@ -261,6 +243,19 @@ NX_STOP:
         LD DE,NX_CANCEL_TEXT
         CALL NH_PRINT
 NX_SUMMARY:
+        LD HL,NX_TOTAL
+        LD B,4
+        XOR A
+NX_ANY_SELECTED:
+        OR (HL)
+        INC HL
+        DJNZ NX_ANY_SELECTED
+        JR NZ,NX_SUMMARY_COUNTS
+        LD A,1
+        LD (NS_WARNINGS),A
+        LD DE,NS_NO_MEMBERS
+        CALL NH_PRINT
+NX_SUMMARY_COUNTS:
         LD HL,NX_TOTAL
         LD DE,NX_UNPROCESSED
         LD BC,4
@@ -357,6 +352,7 @@ NX_EXISTS:
         RET
 NX_TEMP_PAIR:
         LD A,(NH_DEST)
+        INC A
         LD (NX_TEMP),A
         LD HL,NX_TEMP+1
         LD B,11
@@ -410,6 +406,12 @@ NX_DIGITS_READY:
         LD DE,NX_BACKUP+9
         LD BC,3
         LDIR
+        LD HL,NX_TEMP
+        CALL NS_IS_INPUT
+        JR Z,NX_NEXT_PAIR
+        LD HL,NX_BACKUP
+        CALL NS_IS_INPUT
+        JR Z,NX_NEXT_PAIR
         LD HL,NX_TEMP
         CALL NX_SAME_FINAL
         JR Z,NX_NEXT_PAIR
@@ -481,6 +483,9 @@ NX_CLEAN_LIVE:
         CP 0FFH
         RET NZ
 NX_RETAIN:
+        LD HL,NX_TEMP
+        CALL NX_EXISTS
+        RET Z
         LD DE,NX_RETAIN_TEXT
         CALL NH_PRINT
         LD HL,NX_TEMP
@@ -489,12 +494,11 @@ NX_RETAIN:
         JP NH_PRINT
 NX_PRINT_FCB:
         LD A,(HL)
-        ADD A,'A'-1
+        DEC A
+        LD D,A
+        LD A,(NH_DUSER)
         LD E,A
-        LD C,2
-        CALL AC_BDOS
-        LD E,':'
-        CALL AC_BDOS
+        CALL NS_PRINT_DU
         INC HL
         LD B,8
         CALL NX_NAME_FIELD

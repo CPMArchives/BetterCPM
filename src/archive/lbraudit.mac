@@ -1,6 +1,16 @@
 LBR_AUDIT_CODE MACRO
 LBR_AUDIT:
+        LD HL,0
+LBR_AUDIT_SELECTED:
+        ; Optional HL predicate: IX member context/IY workspace, A=0 skip,
+        ; A!=0 checksum this member. Preserve IX/IY/alternate bank/SP.
+        LD (IY+LA_FILTER),L
+        LD (IY+LA_FILTER+1),H
         XOR A
+        LD (IY+LA_NOT_SELECTED),A
+        LD (IY+LA_NOT_SELECTED+1),A
+        LD (IY+LA_NOT_SELECTED+2),A
+        LD (IY+LA_NOT_SELECTED+3),A
         LD (IY+LA_CHECKED),A
         LD (IY+LA_CHECKED+1),A
         LD (IY+LA_CHECKED+2),A
@@ -157,6 +167,23 @@ LA_REGION_COMPARE:
         LD A,AS_OVERLAP
         JP LB_FAIL
 LA_PAYLOAD:
+        LD L,(IY+LA_FILTER)
+        LD H,(IY+LA_FILTER+1)
+        LD A,H
+        OR L
+        JR Z,LA_PAYLOAD_SELECTED
+        CALL LB_INDIRECT
+        OR A
+        JR NZ,LA_PAYLOAD_SELECTED
+        INC (IY+LA_NOT_SELECTED)
+        JP NZ,LA_NEXT
+        INC (IY+LA_NOT_SELECTED+1)
+        JP NZ,LA_NEXT
+        INC (IY+LA_NOT_SELECTED+2)
+        JP NZ,LA_NEXT
+        INC (IY+LA_NOT_SELECTED+3)
+        JP LA_NEXT
+LA_PAYLOAD_SELECTED:
         LD L,(IY+AM_OFFSET)
         LD H,(IY+AM_OFFSET+1)
         LD C,(IY+AM_OFFSET+2)

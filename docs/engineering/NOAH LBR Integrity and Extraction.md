@@ -1,6 +1,7 @@
 # NOAH LBR integrity and extraction increment
 
 This follows the [reader foundation](../programmers/Archive%20Read%20Library.md).
+Build 002 is recorded here; the later [selector/overwrite increment](NOAH%20Selectors%20and%20Overwrite.md) extends its command scope.
 It implements another bounded part of the [NOAH specification](NOAH%20Specification.md),
 not full release conformance. NOAH remains a development command outside the
 Utilities Disk build. No resident code, BIOS/BDOS service or TPA boundary changes.

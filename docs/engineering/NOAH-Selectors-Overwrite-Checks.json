@@ -1,0 +1,67 @@
+{
+  "scope": "NOAH 1.0 Build 003 development qualification",
+  "date": "2026-10-24",
+  "base_commit": "29665d9",
+  "checks": [
+    {
+      "command": "python3 tools/test_lbr.py",
+      "status": "passed",
+      "cases": 123,
+      "reader_audit_bytes": 1621,
+      "reader_context_bytes": 138,
+      "audit_workspace_bytes": 224
+    },
+    {
+      "command": "python3 tools/test_noah.py",
+      "status": "passed",
+      "cases": 128,
+      "deterministic_build": true,
+      "maximum_observed_stack_bytes_with_BDOS_intercepted": 32
+    },
+    {
+      "command": "python3 tools/test_noah_cpm.py",
+      "status": "passed",
+      "commands": 17,
+      "environment": "stock CP/M 2.2 under cpmsim; disposable images",
+      "independent_filesystem_check": "fsck.cpm -n on both final private images",
+      "protection_check": "Test-only PROTECT.COM sets RO through BDOS 30; explicit [RO] prompt required. Stock template has no STAT.COM."
+    }
+  ],
+  "binary": {
+    "path": "build/utilities/NOAH.COM",
+    "bytes": 19574,
+    "sha256": "ef7f526319b828005f9ac9bea335a2bdcc3dde4874c185f970671fd364554588"
+  },
+  "selection": {
+    "maximum_archives": 512,
+    "identity_bytes": 13,
+    "queue_bytes": 6656,
+    "supported_drives": "A-D",
+    "user_range": "0-31 in CPU model; lower users in stock CP/M smoke"
+  },
+  "adapter_context_bytes": 178,
+  "source_sha256": {
+    "src/archive/cpmfile.inc": "7fc7fbf76f6aacd7359bebcf2c2c8f2f1de5bb55a507aa49bcde7eafe7342738",
+    "src/archive/cpmfile.mac": "8a11b22e3e62666ff37173ebea8ac2c2d7ec1309ae92db446d88e7af9e09b752",
+    "src/archive/lbraudit.inc": "ad95bae205ace25a3c751279094a3c4530c055ecbd3af390f23a3f911760297a",
+    "src/archive/lbraudit.mac": "5fe95ae2d84e945c770e5ebefbd617cefd4013e7ed39161b2227cabede760bf2",
+    "src/utilities/noah.mac": "70a80edfd429a637a560b0ec259dde5204bf245cb70b909fc508478c90156ac9",
+    "src/utilities/common/noahextract.inc": "41c534d21900466a09cd166f43df36030f6f17d7e2d86be43031cd3a69381b2f",
+    "src/utilities/common/noahinput.inc": "4f533e3c229e3b0ffe76158ea93dce1dd925e0f2cc5a10bc0c7f210833fb3efe",
+    "src/utilities/common/noahpublish.inc": "94d397e9c7aec9ed43b79904c5bf4dbe8a473cea61a72f5312dd8e5d9f3cd80d",
+    "src/utilities/common/noahselect.inc": "200cc6b95beb46e16267d1ea203576d023e13b3724307e9a12514bf7a9f1589b",
+    "tools/build_noah.py": "26f6405f616875a3fd1110597411c97c3755418eec1b2b122488d4e1758c25dc",
+    "tools/test_lbr.py": "ed94be0340abe38316c7e9fe12dbb1b155bf41529a2dd875666d2a6c4ae2ba04",
+    "tools/test_noah.py": "df3223ebe3b63217634300362697968c9adcb7c1c27a6ce66aac6e21196a2937",
+    "tools/test_noah_cpm.py": "446d0c3efb476884657fc3da2dd3ec8c8c5f61ae1de9e237770b6c56672ae2b4",
+    "metadata/utility-versions.tsv": "01ec38795fe8bdf959bd452a36f1f28f013dc72b01d6759923b9f6e7b9764c40"
+  },
+  "core_or_distribution_disk_changes": false,
+  "pending": [
+    "Native BetterCP/M and Model 4 qualification",
+    "Native ZSM4 expansion",
+    "Historical LBR interoperability and garbage directory CRC policy",
+    "Interactive R/S/A recovery and exhaustive media failures",
+    "Timestamp services, /Q, codecs, ARK, archive updates and overlays"
+  ]
+}

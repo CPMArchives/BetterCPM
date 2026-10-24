@@ -29,6 +29,9 @@ COMPONENTS = (
 
 
 def compose() -> tuple[bytes, dict[str, bytes]]:
+    from system_layout import CONTEXT
+    if CONTEXT:
+        raise ValueError('use build_checked_package.py for checked RAM packaging')
     payload = bytearray(PAYLOAD_SIZE)
     exported = {}
     for name, relative, offset, capacity in COMPONENTS:
@@ -60,6 +63,11 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=DEFAULT_OUT)
     args = parser.parse_args()
+    from system_layout import CONTEXT
+    if CONTEXT:
+        from build_checked_package import main as checked_main
+        checked_main()
+        return
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     package, components = compose()

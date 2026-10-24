@@ -121,8 +121,16 @@ XEXPORTGO:
         JR Z,XREADOK
         LD (STATUS),A
         JP SOURCEBAD
-XREADOK:CALL XHEADER
+XREADOK:
+        IF BP_CHECKED EQ 1
+        CALL P11CHECK
         JP NZ,PKGBAD
+        ENDIF
+        CALL XHEADER
+        JP NZ,PKGBAD
+        IF BP_CHECKED EQ 1
+        CALL P11HEAD
+        ENDIF
         LD A,(XARG2)
         OR A
         JR NZ,XDRIVE
