@@ -7,6 +7,7 @@
 ; ********************************************************************************
 
         INCLUDE layout.inc
+        INCLUDE profile.inc
         ASEG
         ORG 0100H
 FDBMODE EQU 1
@@ -24,6 +25,9 @@ CF_VGATE:
         CALL UV_CHECK                  ; standalone identity before any disk access
 CF_VDONE:
         LD SP,04000H
+        IF BP_CHECKED EQ 1
+        CALL P12CHECK
+        ENDIF
         CALL CF_PARSE
         JP C,CF_USAGE
         LD HL,(6)
@@ -3143,4 +3147,8 @@ UILIMITMSG EQU CI_LIMIT
 UI_PUT EQU CI_PUT
 UI_MARK EQU CI_MARKER
 UI_COLUMNS EQU 79
+        IF BP_CHECKED EQ 1
+P12CONFIG EQU 1
+        INCLUDE private-utility.inc
+        ENDIF
         END

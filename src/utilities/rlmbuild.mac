@@ -6,6 +6,8 @@
 ; * base word plus 0101H and 0237H respectively.                                *
 ; ********************************************************************************
 
+        INCLUDE layout.inc
+        INCLUDE profile.inc
         INCLUDE ccpmeta.inc
         ASEG
         ORG     0100H
@@ -28,6 +30,13 @@ LINKBASE EQU    0BB00H
 ; -------------------------------------------------------------------------------
 
 START:  CALL    UV_CHECK
+        IF BP_CHECKED EQ 1
+        LD SP,03F00H
+        LD DE,P12NO
+        LD C,9
+        CALL 5
+        JP 0
+        ENDIF
         LD      SP,03F00H               ; enter CCP relocatable-module builder
         LD      DE,BANNER
         CALL    PRINT
@@ -352,4 +361,7 @@ OLDWORD:DW 0                            ; base linked word
 EXPECT: DW 0                            ; expected alternate linked word
 ; @utility-version RLMBUILD@
 
+        IF BP_CHECKED EQ 1
+P12NO: DB 'Native packaging tool unavailable in checked cpmsim build.',13,10,'$'
+        ENDIF
         END

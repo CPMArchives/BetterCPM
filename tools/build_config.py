@@ -10,4 +10,7 @@ def expanded_source():
  for name in ('validation','iobyte'):
   text=text.replace('; @config-'+name+'@',(ROOT/'build/utilities'/('config-'+name+'.inc')).read_text())
  text=text.replace('; @monitor-console@',(ROOT/'src/utilities/common/monitorconsole.inc').read_text())
+ from system_layout import CONTEXT
+ if CONTEXT:
+  text=text.replace('Requires BetterCP/M disk BIOS ABI 5 (four drives).', 'Requires matching BetterCP/M private build.')
  return expand_config_ui(text)
