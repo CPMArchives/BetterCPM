@@ -63,7 +63,7 @@ def main():
         (b'',prompt,10),
         (b'RSX UNLOAD ANSI\r',prompt,30),
         (b'RSX LIST\r',b'TPA available: 53K',10),
-        (b'BYE\r',b'System halted',10)]
+        (b'BYE /Y\r',b'System halted',10)]
     commands.insert(3,(b'RSX LOAD ANSISCRN\r',prompt,30))
     index=next(i for i,command in enumerate(commands) if command[0]==b'ANSITST\r')
     commands.insert(index,(b'RSX LIST\r',prompt,10))

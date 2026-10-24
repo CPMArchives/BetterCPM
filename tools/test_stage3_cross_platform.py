@@ -73,7 +73,7 @@ def run_cpmsim(image: Path, simulator: Path,
             for item in expected:
                 lines.append(f"expect -exact {tcl_quote(item)}")
             lines.append("prompt")
-        lines.extend(('send -s -- "BYE\\r"', "expect eof"))
+        lines.extend(('send -s -- "BYE /Y\\r"', "expect eof"))
         script = work / "stage3.exp"
         script.write_text("\n".join(lines) + "\n")
         environment = dict(os.environ)

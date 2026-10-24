@@ -1,12 +1,118 @@
-; cpmsim-only host exit command. The z80pack hardware-control port accepts
-; AAh to unlock, followed by 80h to stop the simulator. No BDOS/BIOS change.
+; cpmsim-only exit utility. Query dispatch precedes all input and port I/O.
         ASEG
-        ORG     0100H
-        LD      A,0AAH
-        OUT     (0A0H),A
-        LD      A,080H
-        OUT     (0A0H),A
+        ORG 0100H
+        LD (OLDSP),SP
+        LD SP,STACKTOP
+        PUSH IX
+        PUSH IY
+        LD A,(0080H)
+        CP 128
+        JP NC,BADARGS
+        LD B,A
+        LD HL,0081H
+        LD DE,HELPTEXT
+        CALL UH_QUERY
+        JP C,DONE
+        LD DE,VERTEXT
+        CALL UV_QUERY
+        JP C,DONE
+; Validate the entire tail before acting on /Y. Space/TAB delimiters only.
+        LD A,(0080H)
+        LD B,A
+        LD HL,0081H
+        XOR A
+        LD (YESFLAG),A
+SCAN:   LD A,B
+        OR A
+        JR Z,PARSED
+        LD A,(HL)
+        CP ' '
+        JR Z,SPACE
+        CP 9
+        JR Z,SPACE
+        CP '/'
+        JR NZ,BADARGS
+        INC HL
+        DEC B
+        JR Z,BADARGS
+        LD A,(HL)
+        AND 0DFH
+        CP 'Y'
+        JR NZ,BADARGS
+        INC HL
+        DEC B
+        LD A,1
+        LD (YESFLAG),A
+        LD A,B
+        OR A
+        JR Z,PARSED
+        LD A,(HL)
+        CP ' '
+        JR Z,SPACE
+        CP 9
+        JR NZ,BADARGS
+SPACE:  INC HL
+        DEC B
+        JR SCAN
+PARSED: LD A,(YESFLAG)
+        OR A
+        JR NZ,SHUTDOWN
+ASK:    LD DE,PROMPT
+        CALL PRINT
+READKEY:
+        LD C,6
+        LD E,0FFH
+        CALL 00005H
+        OR A
+        JR Z,READKEY
+        CP 13
+        JR Z,CANCEL
+        CP 10
+        JR Z,CANCEL
+        CP 27
+        JR Z,CANCEL
+        CP 3
+        JR Z,CANCEL
+        AND 0DFH
+        CP 'Y'
+        JR Z,CONFIRM
+        CP 'N'
+        JR Z,CANCEL
+        LD DE,NEWLINE
+        CALL PRINT
+        JR ASK
+CONFIRM:
+        LD DE,YESLINE
+        CALL PRINT
+SHUTDOWN:
+        LD A,0AAH
+        OUT (0A0H),A
+        LD A,080H
+        OUT (0A0H),A
         DI
         HALT
+        JR DONE
+CANCEL: LD DE,NOLINE
+        CALL PRINT
+        JR DONE
+BADARGS:
+        LD DE,USAGE
+        CALL PRINT
+DONE:   POP IY
+        POP IX
+        LD SP,(OLDSP)
         RET
+PRINT:  LD C,9
+        JP 00005H
+PROMPT: DB 'Exit cpmsim? [y/N] $'
+YESLINE:DB 'Y',13,10,'$'
+NOLINE: DB 'N',13,10,'$'
+NEWLINE:DB 13,10,'$'
+USAGE:  DB 'Usage: BYE [/Y]',13,10,'Use BYE /HELP for help.',13,10,'$'
+; @bye-text@
+; @bye-queries@
+OLDSP:  DS 2
+YESFLAG:DS 1
+STACK:  DS 256
+STACKTOP:
         END

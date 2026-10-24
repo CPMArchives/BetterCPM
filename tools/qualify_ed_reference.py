@@ -56,7 +56,7 @@ def main():
             if case.endswith('-Q'):
                 commands.extend([(b'Q\r',b'(Y/N)?',10),(b'Y',prompt,10)])
             else:commands.append((b'E\r',prompt,10))
-        commands.append((b'A:BYE\r',b'System halted',10))
+        commands.append((b'A:BYE /Y\r',b'System halted',10))
         trace=session(args.simulator,disks,commands,here/'transcript.bin',initial_prompt=b'A>' if args.stock_cpm else b'A0>_ ')
         if case=='collision':assert b'FILE EXISTS, ERASE IT' in trace
         if case.startswith('new'):assert b'NEW FILE' in trace

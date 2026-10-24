@@ -51,7 +51,7 @@ def main():
         before=hashlib.sha256(bdisk.read_bytes()).hexdigest()
         commands=[(b'EDDEV B7:CASE.TXT\r',b'A0>_ ' if case=='directory-full' else b'*',15)]
         if case!='directory-full':commands.extend([(b'iNEW\x1a\r',b'*',10),(b'E\r',b'A0>_ ',15)])
-        commands.append((b'BYE\r',b'System halted',10))
+        commands.append((b'BYE /Y\r',b'System halted',10))
         trace=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,commands,here/'transcript.bin')
         assert trace.count(b'DISK OR DIRECTORY FULL')==1 and b'BREAK' not in trace
         def extract(name):

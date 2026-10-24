@@ -84,7 +84,7 @@ send -- "K"
 send -- "Y"
 must_exact "0471 stage 1 saved"
 must_regex {\\r\\nA0>}
-send -- "BYE\\r"
+send -- "BYE /Y\\r"
 expect eof
 """
         try:
@@ -102,7 +102,7 @@ expect eof
 send -- "Y"
 must_exact "READER returned R; absent READER returned Ctrl-Z"
 must_regex {\\r\\nA0>}
-send -- "BYE\\r"
+send -- "BYE /Y\\r"
 expect eof
 """
         run_expect(simulator, image / "disks", stage2, image / "reader-stage2.txt")

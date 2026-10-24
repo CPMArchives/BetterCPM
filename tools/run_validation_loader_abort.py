@@ -59,7 +59,7 @@ DATA: DB {','.join(map(str,code))}
               (b'A0:STATE\r',f'STATE D=01 U=1F TOP={L["TPA"]:04X}'.encode(),30),
               (b'',prompt,30),(b'CPX LIST\r',b'RCP',30),(b'',prompt,30),
               (b'RSX LIST\r',b'No RSXs loaded',30),(b'',prompt,30),
-              (b'BYE\r',b'System halted',10)]
+              (b'BYE /Y\r',b'System halted',10)]
     transcript=session(a.simulator.resolve(),disks,commands,trace)
     assert b'FULL-TPA RET ENTERED' not in transcript and b'PATTERN OR RETURN FAILED' not in transcript
     assert transcript.count(b'Bad Sector')==1 and sha(original)==report['sha256']

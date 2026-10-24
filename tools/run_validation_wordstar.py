@@ -51,7 +51,7 @@ def main():
         (b'RSX UNLOAD ANSISCRN\r',prompt,30),
         (b'RSX LIST\r',b'TPA available: 53K',30),
         (b'',prompt,30),
-        (b'BYE\r',b'System halted',10)],work/'transcript.bin')
+        (b'BYE /Y\r',b'System halted',10)],work/'transcript.bin')
     assert b'No RSXs loaded' in trace and b'TPA available: 53K' in trace
     rendered=trace[trace.index(b'\x1b[1;1H'):trace.index(b'RSX UNLOAD VT52')]
     assert b'\x1b[' in rendered and b'\x1bY' not in rendered

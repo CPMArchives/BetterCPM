@@ -49,7 +49,7 @@ def main():
         (b'VT52 EDIT CHECK\x0b\x18',monitor_prompt,30),
         (b'RSX UNLOAD VT52\r',prompt,30),
         (b'RSX UNLOAD ANSISCRN\r',prompt,30),
-        (b'BYE\r',b'System halted',10)],work/'transcript.bin')
+        (b'BYE /Y\r',b'System halted',10)],work/'transcript.bin')
     rendered=trace[trace.index(b'\x1b[1;1H'):trace.index(b'RSX UNLOAD VT52')]
     assert b'\x1b[' in rendered and b'\x1bY' not in rendered
     saved=work/'saved.txt'

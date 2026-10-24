@@ -23,7 +23,7 @@ def main():
     count=0
     for name in identities():
         # The codecs and NOAH require the full Z80 harness (IX/IY).
-        if name in ('RCP','SQ','USQ','CR','UNCR','LZH','UNLZH'):continue
+        if name in ('RCP','SQ','USQ','CR','UNCR','LZH','UNLZH','BYE'):continue
         if name=='NOAH':
             print('NOAH: identity checks are in tools/test_noah.py (full Z80 core).')
             continue

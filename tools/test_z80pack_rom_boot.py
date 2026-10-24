@@ -139,7 +139,7 @@ send -s -- "RSX LIST\r"
 expect -exact "No RSXs loaded"
 expect -exact "TPA available: 53K"
 prompt
-send -s -- "BYE\r"
+send -s -- "BYE /Y\r"
 expect eof
 '''
         test = work / "test.exp"

@@ -341,7 +341,7 @@ expect {
  timeout {exit 1}
  eof {exit 1}
 }
-send -- "BYE\r"
+send -- "BYE /Y\r"
 expect {
  eof {}
  timeout {exit 1}

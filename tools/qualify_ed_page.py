@@ -33,7 +33,7 @@ def main():
             # barrier before T's keyboard-interruption polls can see new input.
             (b'B\r',b'    1: *',10),
             (line+b'\r',b'*',10),(b'i|\x1a\r',b'*',10),
-            (b'E\r',b'A>',10),(b'BYE\r',b'System halted',10)],here/'transcript.bin',initial_prompt=b'A>')
+            (b'E\r',b'A>',10),(b'BYE /Y\r',b'System halted',10)],here/'transcript.bin',initial_prompt=b'A>')
         start=trace.index(b'*'+line+b'\r');start=trace.index(b'\n',start)+1
         finish=trace.index(b'*',start)
         actual=re.sub(rb' {0,4}[0-9]*: $',b'',trace[start:finish]).replace(b'\r\r\n',b'\r\n')

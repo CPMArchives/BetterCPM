@@ -78,7 +78,7 @@ def main():
         (b'RSX UNLOAD ADM3A\r',prompt,30),
         (b'RSX UNLOAD ANSISCRN\r',prompt,30),
         (b'RSX LIST\r',b'TPA available: 53K',10),
-        (b'BYE\r',b'System halted',10)],work/'transcript.bin',rom_image=rom_image,rom_start='DF00' if rom_image else None)
+        (b'BYE /Y\r',b'System halted',10)],work/'transcript.bin',rom_image=rom_image,rom_start='DF00' if rom_image else None)
     if rom_image:
         assert b'ROM QUALIFICATION ACTIVE START=DF00' in trace
         assert b'ROM WRITE VIOLATION' not in trace

@@ -136,7 +136,7 @@ def main() -> None:
         install = session(simulator, work / "disks", [
             (b"SYSGEN A: B:\r", b"Proceed (Y/N)?", 30),
             (b"Y", b"System installed and verified.", 60),
-            (b"BYE\r", b"System halted", 30),
+            (b"BYE /Y\r", b"System halted", 30),
         ])
         after = target.read_bytes()
         assert after[:reserved] != before[:reserved], "system area was unchanged"

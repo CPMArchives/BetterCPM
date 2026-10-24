@@ -46,7 +46,7 @@ def main():
                          (b'Y' if name=='save' else b'N',b'Push ENTER for menu.' if name=='save' else b'Your choice: [',20)]
             if name=='save':commands.append((b'\r',b'Your choice: [',20))
             commands.append((b'\x03',b'Your choice: [',20))
-        commands += [(b'\x03',b'A0>_ ',20),(b'STATE\r',b'A0>_ ',20),(b'BYE\r',b'System halted',10)]
+        commands += [(b'\x03',b'A0>_ ',20),(b'STATE\r',b'A0>_ ',20),(b'BYE /Y\r',b'System halted',10)]
         trace=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,commands,here/'transcript.bin')
         after=image.read_bytes();actual=b''.join(after[at:at+128] for at in offsets)
         assert parse(actual,system_base=LAYOUT['SYSTEM'])==want,(name,trace)

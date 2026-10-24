@@ -47,7 +47,7 @@ def main():
             if case=='head':commands.extend([(b'H\r',b'*',10),(b'iAGAIN\x1a\r',b'*',10)])
             exitdu=b'A7' if case=='head' else outdrive.upper().encode()+b'19'
             commands.extend([(b'E\r',exitdu+b'>_ ',10),(b'A0:\r',b'A0>_ ',10)])
-        commands.append((b'BYE\r',b'System halted',10))
+        commands.append((b'BYE /Y\r',b'System halted',10))
         trace=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,commands,here/'transcript.bin')
         assert b'LIFECYCLE FAILED' not in trace and b'DISK OR DIRECTORY FULL' not in trace
         assert get('a',0,'CASE.TXT')==b'Caller sentinel'

@@ -55,7 +55,7 @@ send -- "\003"
 expect -exact "Configuration options:"
 send -- "\003"
 prompt
-send -- "BYE\r"
+send -- "BYE /Y\r"
 expect eof
 '''
         (work / "test.exp").write_text(script)

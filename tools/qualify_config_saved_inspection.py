@@ -58,7 +58,7 @@ def main():
         image.write_bytes(data);before=bytes(data)
         trace=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,
                       [(b'SETUP\r',b'SYSGEN PROBE PASS',20),(b'\r',b'A0>_ ',20),
-                       (b'CONFIG /SHOW\r',b'A0>_ ',30),(b'BYE\r',b'System halted',10)],here/'transcript.bin')
+                       (b'CONFIG /SHOW\r',b'A0>_ ',30),(b'BYE /Y\r',b'System halted',10)],here/'transcript.bin')
         assert image.read_bytes()==before,(name,'inspection changed image')
         assert b'Push ENTER' not in trace and b'(Y/N)?' not in trace,trace
         if name=='different':

@@ -18,7 +18,7 @@ def main():
   if name=='ADM3A':steps += [(b' ',b'No ENTER is required.',30),(b'A:[]',b'ADMTST keyboard checks passed.',30)]
   else:steps += [(b' ',name.encode()+b' monitor exercise complete.',30)]
   steps += [(b'',prompt,30),(f'RSX UNLOAD {name}\r'.encode(),prompt,30)]
- steps += [(b'RSX UNLOAD ANSISCRN\r',prompt,30),(b'RSX LIST\r',b'TPA available: 53K',30),(b'',prompt,30),(b'BYE\r',b'System halted',30)]
+ steps += [(b'RSX UNLOAD ANSISCRN\r',prompt,30),(b'RSX LIST\r',b'TPA available: 53K',30),(b'',prompt,30),(b'BYE /Y\r',b'System halted',30)]
  trace=session(a.simulator,disks,steps,w/'transcript.bin')
  for name in ('ADM3A','VT52','ANSI'):assert name.encode()+b' : BDOS 255' in trace
  assert b'No MCON provider loaded' not in trace and b'No RSXs loaded' in trace and b'TPA available: 53K' in trace

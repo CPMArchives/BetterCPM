@@ -111,7 +111,7 @@ def main():
         yield (b'',prompt,30)
         yield (b'RSX LIST\r',b'No RSXs loaded',30)
         yield (b'',prompt,30)
-        yield (b'BYE\r',b'System halted',10)
+        yield (b'BYE /Y\r',b'System halted',10)
     try:
         transcript=session(args.simulator.resolve(),disks,commands(),trace)
     except Exception as error:

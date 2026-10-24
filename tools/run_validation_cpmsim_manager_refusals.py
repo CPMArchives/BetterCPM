@@ -71,7 +71,7 @@ def main():
     command('RSX UNLOAD ANSI', None)
     command('RSX UNLOAD ANSISCRN', None)
     command('RSX LIST', b'No RSXs loaded')
-    steps.append((b'BYE\r', b'System halted', 30))
+    steps.append((b'BYE /Y\r', b'System halted', 30))
     sim = Path.home() / 'projects/git/z80pack/cpmsim/cpmsim'
     if a.recover_malformed_cpx:
         cases = []
@@ -88,7 +88,7 @@ def main():
         command('RSX UNLOAD ANSI', None)
         command('RSX UNLOAD ANSISCRN', None)
         command('RSX LIST', b'TPA available: 53K')
-        steps.append((b'BYE\r', b'System halted', 30))
+        steps.append((b'BYE /Y\r', b'System halted', 30))
     if a.malformed_cpx:
         steps = [(b'CPX LOAD BAD\r', prompt, 30)]
     try:

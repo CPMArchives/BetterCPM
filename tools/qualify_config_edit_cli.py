@@ -43,7 +43,7 @@ def main():
         if name=='map-invalid':command=b'CONFIG /EDIT=B /SLOT=0 /ID=1\r'
         if name=='mixed-valid':command=b'CONFIG /EDIT=B /SPT=35 /SLOT=1 /CODE=0\r'
         commands=[(b'STATE\r',b'A0>_ ',20),(command,b'A0>_ ',20),
-                  (b'STATE\r',b'A0>_ ',20),(b'BYE\r',b'System halted',10)]
+                  (b'STATE\r',b'A0>_ ',20),(b'BYE /Y\r',b'System halted',10)]
         if name=='mixed-valid':commands.insert(0,(b'RSX LOAD FDF\r',b'A0>_ ',20))
         trace=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,commands,here/'transcript.bin')
         states=[bytes.fromhex(s.decode()) for s in re.findall(rb'STATE ([0-9A-F]{560})',trace)]
@@ -62,7 +62,7 @@ def main():
         if name in ('edit','sector-id','mixed-valid'):
             assert b'until cold boot' in trace,trace
             cold=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,
-                         [(b'STATE\r',b'A0>_ ',20),(b'BYE\r',b'System halted',10)],here/'cold.bin')
+                         [(b'STATE\r',b'A0>_ ',20),(b'BYE /Y\r',b'System halted',10)],here/'cold.bin')
             state=bytes.fromhex(re.findall(rb'STATE ([0-9A-F]{560})',cold)[0].decode())
             assert state==old,'workbench edit persisted across cold boot'
         results.append({'case':name,'result':'PASS'})

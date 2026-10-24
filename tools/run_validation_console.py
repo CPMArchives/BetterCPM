@@ -49,7 +49,7 @@ def main():
                      (b'Y',f'{case:04d}  P  R'.encode(),30),(b'',b'A0>_ ',30)]
     expected=b'OBSERVED:\r\nA\r\nB\r\nEXPECTED:\r\nA\r\nB\r\n'+confirmation
     commands += [(b'CONSTEST /0058\r',expected,30),(b'Y',b'0058  P  R',30),
-                 (b'',b'A0>_ ',30),(b'BYE\r',b'System halted',10)]
+                 (b'',b'A0>_ ',30),(b'BYE /Y\r',b'System halted',10)]
     # session sends each Y only after its exact independent observation matches.
     session(args.simulator.resolve(),disks,commands,work/'transcript.bin')
     assert sha(original)==report['sha256']

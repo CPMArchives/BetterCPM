@@ -31,7 +31,7 @@ def main():
             (b'EDREF CASE.TXT\r',b'*',10),(setup+b'\r',b'*',10),
             (b'B\r',b'    1: *',10),(command+b'\r',b'*',10),
             (b'i|\x1a\r',b'*',10),(b'E\r',b'A>',10),
-            (b'BYE\r',b'System halted',10)],here/'transcript.bin',initial_prompt=b'A>')
+            (b'BYE /Y\r',b'System halted',10)],here/'transcript.bin',initial_prompt=b'A>')
         saved=here/'saved.txt'
         subprocess.run(['cpmcp','-f','ibm-3740',str(image),'0:case.txt',str(saved)],cwd=here,check=True)
         cpu,_,_,_,run=context(1024)

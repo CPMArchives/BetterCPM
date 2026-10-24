@@ -45,7 +45,7 @@ BAD: DB 'IOBYTE LEAKED',13,10,'$'
             commands=[(b'IOS\r',b'A0>_ ',30)]
             for command in [b'PIO PRN:=SRC.TXT\r',b'PIO PTP:=SRC.TXT\r',b'PIO B:READ.TXT=PTR:\r',b'PIO CRT:=SRC.TXT\r']:
                 commands += [(command,b'A0>_ ',30),(b'IOC\r',b'A0>_ ',30)]
-            commands += [(b'BYE\r',b'System halted',30)]
+            commands += [(b'BYE /Y\r',b'System halted',30)]
             # This cpmsim build uses named pipes, not auxiliaryin.txt.
             # Queue a complete bounded stream after the emulator opens its reader.
             def feed():

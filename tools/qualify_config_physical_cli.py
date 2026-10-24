@@ -125,7 +125,7 @@ def main():
         image.write_bytes(data);before=bytes(data)
         trace=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,
                       [(b'STATE\r',b'A0>_ ',20),(command,b'A0>_ ',20),
-                       (b'STATE\r',b'A0>_ ',20),(b'BYE\r',b'System halted',10)],here/'transcript.bin')
+                       (b'STATE\r',b'A0>_ ',20),(b'BYE /Y\r',b'System halted',10)],here/'transcript.bin')
         states=[bytes.fromhex(s.decode()) for s in re.findall(rb'STATE ([0-9A-F]{560})',trace)]
         assert len(states)==2,trace
         old,new=states;expected=bytearray(old)
@@ -145,7 +145,7 @@ def main():
         assert b'Push ENTER' not in trace and b'(Y/N)?' not in trace,trace
         if name=='compound':
             cold=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,
-                         [(b'STATE\r',b'A0>_ ',20),(b'BYE\r',b'System halted',10)],here/'cold.bin')
+                         [(b'STATE\r',b'A0>_ ',20),(b'BYE /Y\r',b'System halted',10)],here/'cold.bin')
             assert bytes.fromhex(re.findall(rb'STATE ([0-9A-F]{560})',cold)[0].decode())==old,cold
         results.append({'case':name,'result':'PASS'})
     (work/'results.json').write_text(json.dumps(results,indent=2)+'\n')

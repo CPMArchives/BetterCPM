@@ -51,7 +51,7 @@ def main():
         commands=[]
         if name=='bind':commands.append((b'CONFIG /PHYSICAL=1 /TRACKS=80\r',b'A0>_ ',20))
         commands += [(b'STATE\r',b'A0>_ ',20),(command,b'A0>_ ',20),
-                     (b'STATE\r',b'A0>_ ',20),(b'BYE\r',b'System halted',10)]
+                     (b'STATE\r',b'A0>_ ',20),(b'BYE /Y\r',b'System halted',10)]
         trace=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,commands,here/'transcript.bin')
         states=[bytes.fromhex(s.decode()) for s in re.findall(rb'STATE ([0-9A-F]{560})',trace)]
         assert len(states)==2,trace
@@ -68,7 +68,7 @@ def main():
         if name=='missing':assert b'Cannot open DISK.FDB' in trace,trace
         if name=='bind':
             cold=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,
-                         [(b'STATE\r',b'A0>_ ',20),(b'BYE\r',b'System halted',10)],here/'cold.bin')
+                         [(b'STATE\r',b'A0>_ ',20),(b'BYE /Y\r',b'System halted',10)],here/'cold.bin')
             state=bytes.fromhex(re.findall(rb'STATE ([0-9A-F]{560})',cold)[0].decode())
             assert state[24:]==old[24:],'logical binding persisted across cold boot'
         results.append({'case':name,'result':'PASS'})

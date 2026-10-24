@@ -115,7 +115,7 @@ def main():
     if args.disk_required:
         commands += [(command.encode()+b'\r',b'Enter its configured drive letter, or Q to quit (B-P or Q): ',30)]
     outgoing=b'D' if args.disk_required else command.encode()+b'\r'
-    commands += [(outgoing,b'Summary:',120),(b'',prompt,30),(b'BYE\r',b'System halted',10)]
+    commands += [(outgoing,b'Summary:',120),(b'',prompt,30),(b'BYE /Y\r',b'System halted',10)]
     initial_disks={disk.name:sha(disk) for disk in sorted(disks.glob('*.dsk'))}
     trace=session(args.simulator.resolve(),disks,commands,work/'transcript.bin')
     if args.disk_required:

@@ -163,7 +163,7 @@ prompt
 send -s -- "RSX LIST\\r"
 expect -exact "TPA available: 53K"
 prompt
-send -s -- "BYE\\r"
+send -s -- "BYE /Y\\r"
 expect eof
 '''
   (w/'test.exp').write_text(script)

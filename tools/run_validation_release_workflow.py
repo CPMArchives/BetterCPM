@@ -48,13 +48,13 @@ def main():
  command('RSX LOAD ANSISCRN')
  for name in ('ADM3A','VT52','ANSI'):
   command('RSX LOAD '+name);command('RSX LIST');command('TYPE B9:BACKUP.TXT');command('RSX UNLOAD '+name)
- command('RSX UNLOAD ANSISCRN');command('RSX LIST',b'TPA available: 53K');steps.append((b'',prompt,30));command('BYE',b'System halted')
+ command('RSX UNLOAD ANSISCRN');command('RSX LIST',b'TPA available: 53K');steps.append((b'',prompt,30));command('BYE /Y',b'System halted')
  trace=session(a.simulator,disks,steps,w/'session-1.bin')
  assert b'B7:NOTES.TXT' in trace and b'B9:BACKUP.TXT' in trace and b'R/O' in trace
  assert trace.count(b'EDITED ORIGINAL NOTES')>=4
  for name in ('ADM3A','VT52','ANSI'):assert name.encode()+b' : BDOS 255' in trace
  assert b'BATCH WORKFLOW COMPLETE' in trace and b'No RSXs loaded' in trace and b'TPA available: 53K' in trace
- boot=session(a.simulator,disks,[(b'RSX LIST\r',b'TPA available: 53K',30),(b'',prompt,30),(b':TYPE B9:BACKUP.TXT\r',b'EDITED ORIGINAL NOTES',30),(b'',prompt,30),(b'BYE\r',b'System halted',30)],w/'session-2-cold.bin');assert b'No RSXs loaded' in boot
+ boot=session(a.simulator,disks,[(b'RSX LIST\r',b'TPA available: 53K',30),(b'',prompt,30),(b':TYPE B9:BACKUP.TXT\r',b'EDITED ORIGINAL NOTES',30),(b'',prompt,30),(b'BYE /Y\r',b'System halted',30)],w/'session-2-cold.bin');assert b'No RSXs loaded' in boot
  listing=subprocess.check_output(['cpmls','-T','raw','-f','bettercpm-default',str(b)],cwd=w,text=True);(w/'b-directory.txt').write_text(listing)
  for user,name,expected in [(0,'KEEP.TXT',sentinel),(7,'NOTES.TXT',b'EDITED '+old),(7,'NOTES.BAK',old),(9,'BACKUP.TXT',b'EDITED '+old)]:
   exported=w/f'after-{user}-{name}';subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(b),f'{user}:{name}',str(exported)],cwd=w,check=True,capture_output=True);assert exported.read_bytes().split(b'\x1a')[0]==expected.split(b'\x1a')[0]

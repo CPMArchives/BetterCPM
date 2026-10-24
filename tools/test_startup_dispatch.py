@@ -79,7 +79,7 @@ spawn [lindex $argv 0] -z -d [lindex $argv 1]
 expect -exact {A0>_ }
 send -- "WARM\\r"
 expect -exact {A0>_ }
-send -- "BYE\\r"
+send -- "BYE /Y\\r"
 expect eof
 """)
             run = subprocess.run(

@@ -46,7 +46,7 @@ def main():
         else:commands += [(f'A0:{name} /{item}\r'.encode(),b'Enter its configured drive letter, or Q to quit (B-P or Q): ',30),(b'D',diagnostic,30)]
         # BetterCP/M spec 74 uses immediate WBOOT, unlike DRI's acknowledgement
         # workflow. Do not inject a key into a command processor already resumed.
-        commands += [(b'',prompt,30),(b'A0:STATE\r',expected,30),(b'',prompt,30),(b'VER\r',b'BetterCP/M 0.90',30),(b'',prompt,30),(b'BYE\r',b'System halted',10)]
+        commands += [(b'',prompt,30),(b'A0:STATE\r',expected,30),(b'',prompt,30),(b'VER\r',b'BetterCP/M 0.90',30),(b'',prompt,30),(b'BYE /Y\r',b'System halted',10)]
         try:output=session(a.simulator.resolve(),disks,commands,trace)
         except Exception as error:
             assert sha(original)==report['sha256']

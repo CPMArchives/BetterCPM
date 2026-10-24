@@ -3,6 +3,7 @@
 from pathlib import Path
 import argparse,re,struct,subprocess,sys,json,hashlib
 from build_ccp import assemble
+from build_z80pack_bye import build as build_bye
 from fdf_format import select_fdf
 from system_layout import LAYOUT as L, CONTEXT
 from cpm_tools_bundle import files as cpm_tools_files
@@ -290,7 +291,7 @@ def main():
  hello=bytes([0x11,0x0b,1,0x0e,9,0xcd,5,0,0xc3,0,0])+b'BetterCP/M on z80pack\r\n$'
  files.append(('HELLO.COM',hello))
  # cpmsim hardware control: unlock, then halt the emulator cleanly.
- files.append(('BYE.COM',bytes((0x3e,0xaa,0xd3,160,0x3e,0x80,0xd3,160,0x76))))
+ files.append(('BYE.COM',build_bye(args.assembler,out/'tools')))
  start=fmt.reserved_records*128;block=fmt.directory_blocks;entry=0
  for name,data in files:
   stem,suffix=name.split('.');payload=data.ljust((len(data)+127)//128*128,b'\x1a')

@@ -52,7 +52,7 @@ def main():
                (b':TYPE A3:LONG.TXT /P\r',MORE,30)]
         steps += [(key,MORE,30) for key in (b'\x03',b',',b' ',b'.')]
         steps += [(b'.',b'\x07',30),(b'\x12',MORE,30),(b'\x11',b'A0>',30),
-                  (b'RSX UNLOAD ANSI\r',b'A0>',30),(b'RSX UNLOAD ANSISCRN\r',b'A0>',30),(b'BYE\r',b'System halted',30)]
+                  (b'RSX UNLOAD ANSI\r',b'A0>',30),(b'RSX UNLOAD ANSISCRN\r',b'A0>',30),(b'BYE /Y\r',b'System halted',30)]
         t=session(a.simulator,d,steps,w/'transcript.bin')
         assert t.count(b'PAGE ROW 00')==2 and t.count(b'PAGE ROW 54')==1 and b'HIDDEN' not in t
         assert get(w,d,'a',3,'LONG.TXT')[:len(payload)]==payload
@@ -61,7 +61,7 @@ def main():
         for name,data in [('ONE.DOC',b'FIRST\r\n\x1a'),('TWO.DOC',b'SECOND\r\n\x1a')]:put(w,d,'a',3,name,data)
         t=session(a.simulator,d,[(b'RSX LOAD ANSISCRN\r',b'A0>',30),(b'RSX LOAD ANSI\r',b'A0>',30),
             (b':TYPE A3:*.DOC /P\r',MORE,30),(b'>',MORE,30),(b'<',MORE,30),(b'\x11',b'A0>',30),
-            (b'RSX UNLOAD ANSI\r',b'A0>',30),(b'RSX UNLOAD ANSISCRN\r',b'A0>',30),(b'BYE\r',b'System halted',30)],w/'transcript.bin')
+            (b'RSX UNLOAD ANSI\r',b'A0>',30),(b'RSX UNLOAD ANSISCRN\r',b'A0>',30),(b'BYE /Y\r',b'System halted',30)],w/'transcript.bin')
         positions=[];start=0
         while (at:=t.find(MORE,start))>=0:positions.append(at);start=at+len(MORE)
         assert len(positions)==3
@@ -82,7 +82,7 @@ def main():
             elif mode=='head':steps += [(b'H\r',b'*',30),(b'IAGAIN\x1a\r',b'*',30),(b'E\r',b'B7>',30)]
             else:steps += [(b'E\r',b'B7>',30)]
             if mode!='quit':steps += [(b'A0:\r',b'A0>',30)]
-            steps += [(b'BYE\r',b'System halted',30)];session(a.simulator,d,steps,w/'transcript.bin')
+            steps += [(b'BYE /Y\r',b'System halted',30)];session(a.simulator,d,steps,w/'transcript.bin')
             expected=old[:-1] if mode=='quit' else (b'AGAINNEW'+old[:-1] if mode=='head' else b'NEW'+old[:-1])
             assert get(w,d,'b',7,'CASE.TXT').split(b'\x1a')[0]==expected
             assert get(w,d,'b',0,'CASE.TXT').split(b'\x1a')[0]==sentinel[:-1]
@@ -98,13 +98,13 @@ def main():
         for answer in (b'N',b'Y'):
             label='config-startup-'+answer.decode();w,d=prepare(label);image=d/'drivea.dsk'
             before=image.read_bytes();old=b''.join(before[at:at+128] for at in offsets)
-            t=session(a.simulator,d,[(b'CONFIG /STARTUP="VER /VER"\r',b'(Y/N)? ',30),(answer,b'A0>',30),(b'BYE\r',b'System halted',30)],w/'transcript.bin')
+            t=session(a.simulator,d,[(b'CONFIG /STARTUP="VER /VER"\r',b'(Y/N)? ',30),(answer,b'A0>',30),(b'BYE /Y\r',b'System halted',30)],w/'transcript.bin')
             after=image.read_bytes();actual=b''.join(after[at:at+128] for at in offsets)
             assert parse(actual,system_base=LAYOUT['SYSTEM'])==('VER /VER' if answer==b'Y' else parse(old,system_base=LAYOUT['SYSTEM']))
             if answer==b'N':assert actual==old
             else:
                 assert b'saved and verified' in t
-                boot=session(a.simulator,d,[(b'BYE\r',b'System halted',30)],w/'cold-boot.bin')
+                boot=session(a.simulator,d,[(b'BYE /Y\r',b'System halted',30)],w/'cold-boot.bin')
                 assert b'BetterCP/M VER 1.0 (Resident, RCP Build ' in boot
             finish(w,d,label,'Declined/confirmed protected startup record; confirmed command executes on next cold boot; shipped files unchanged')
     (a.output/'application-summary.json').write_text(json.dumps(results,indent=2)+'\n')

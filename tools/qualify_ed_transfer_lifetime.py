@@ -39,7 +39,7 @@ def main():
         if case.endswith('O'):commands.extend([(b'O\r',b'(Y/N)?',10),(b'Y',b'*',10)])
         else:commands.append((b'H\r',b'*',10))
         prompt=bprompt if case=='split-O' else aprompt
-        commands.extend([(b'r\r',b'*',10),(b'E\r',prompt,10),(b'A:BYE\r',b'System halted',10)])
+        commands.extend([(b'r\r',b'*',10),(b'E\r',prompt,10),(b'A:BYE /Y\r',b'System halted',10)])
         trace=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,commands,here/'transcript.bin',initial_prompt=aprompt)
         assert b'LIFECYCLE FAILED' not in trace and b'DISK OR DIRECTORY FULL' not in trace
         snapshot={'missing_R':b'BREAK "O"' in trace,'files':{}}

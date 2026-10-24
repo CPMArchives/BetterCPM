@@ -124,7 +124,7 @@ expect -exact "B3>_ "
 send -s "a:stat b:\r"
 expect -exact "Bytes Remaining On B: 240K"
 expect -exact "B3>_ "
-send -s "bye\r"
+send -s "bye /Y\r"
 expect eof
 '''
     guards = r'''proc mustexact {pattern} {

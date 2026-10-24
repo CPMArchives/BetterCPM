@@ -35,7 +35,7 @@ def main():
               (b'RSX LOAD ANSISCRN\r',prompt,30),(b'RSX LOAD ANSI\r',prompt,30),
               (b'RSX LIST\r',prompt,30),(b'RSX UNLOAD ANSI\r',prompt,30),
               (b'RSX UNLOAD ANSISCRN\r',prompt,30),(b'RSX LIST\r',prompt,30),
-              (b'BYE\r',b'System halted',30)]
+              (b'BYE /Y\r',b'System halted',30)]
     trace=session(sim,w/'disks',steps,w/'transcript.bin')
     for name in ('VER','TIME','SUBMIT','CPX','RSX'):assert banner(name).encode() in trace,name
     assert trace.index(b'PARAMETER CONTENT PASSED')<trace.index(b'BATCH RUN FINISHED')

@@ -77,7 +77,7 @@ MSG: DB 'IOBYTE=','$'
              (b'Y',b'Your choice: [',20),(b'\x03',b'A0>_ ',20)]
   commands += [(b'IOGET\r',b'A0>_ ',20),(b'STATE\r',b'A0>_ ',20)]
   if name in ('save','menu'):commands.append((b'CONFIG /SHOW\r',b'A0>_ ',30))
-  commands.append((b'BYE\r',b'System halted',10))
+  commands.append((b'BYE /Y\r',b'System halted',10))
   trace=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,commands,here/'transcript.bin')
   assert re.findall(rb'\rIOBYTE=([0-9A-F]{2})',trace)==[b'95',b'95'],trace
   states=re.findall(rb'STATE ([0-9A-F]{560})',trace);assert len(states)==2 and states[0]==states[1]
@@ -86,7 +86,7 @@ MSG: DB 'IOBYTE=','$'
    expected[at]=85;assert b'Cannot inspect' not in trace and b'Saved physical-drive profiles:' in trace,trace
   assert image.read_bytes()==bytes(expected),(name,'unexpected disk changes')
   if name in ('save','menu'):
-   cold=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,[(b'IOGET\r',b'A0>_ ',20),(b'IOGET\r',b'A0>_ ',20),(b'BYE\r',b'System halted',10)],here/'cold.bin')
+   cold=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,[(b'IOGET\r',b'A0>_ ',20),(b'IOGET\r',b'A0>_ ',20),(b'BYE /Y\r',b'System halted',10)],here/'cold.bin')
    assert re.findall(rb'\rIOBYTE=([0-9A-F]{2})',cold)==[b'55',b'55'],cold
    if name=='save':
     saveall=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,
@@ -94,11 +94,11 @@ MSG: DB 'IOBYTE=','$'
       (b'CONFIG\r',b'Your choice: [',20),(b'H',b'Your choice: [',20),
       (b'B',b'(Y/N)? ',30),(b'Y',b'Push ENTER for menu.',30),
       (b'\r',b'Your choice: [',20),(b'\x03',b'A0>_ ',20),
-      (b'BYE\r',b'System halted',10)],here/'saveall.bin')
+      (b'BYE /Y\r',b'System halted',10)],here/'saveall.bin')
     assert b'All current settings saved and verified.' in saveall,saveall
     final=image.read_bytes();assert final[at]==85,'save-all erased saved cold default'
     follow=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,
-     [(b'IOGET\r',b'A0>_ ',20),(b'CONFIG /SHOW\r',b'A0>_ ',30),(b'BYE\r',b'System halted',10)],here/'saveall-cold.bin')
+     [(b'IOGET\r',b'A0>_ ',20),(b'CONFIG /SHOW\r',b'A0>_ ',30),(b'BYE /Y\r',b'System halted',10)],here/'saveall-cold.bin')
     assert re.findall(rb'\rIOBYTE=([0-9A-F]{2})',follow)==[b'55']
     assert b'Saved physical-drive profiles:' in follow and b'Cannot inspect' not in follow
 

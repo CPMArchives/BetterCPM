@@ -81,7 +81,7 @@ def main():
             for host,name in [(bye,'BYE.COM'),(binary,'EDTEST.COM'),(seed,'CASE.TXT')]:tool('cpmcp','-f','ibm-3740',str(disk),str(host),'0:'+name)
             trace=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,[
                 (b'EDTEST CASE.TXT\r',b'*',10),(b'iNEW\x1a\r',b'*',10),
-                (command.encode()+b'\r',b'A>',10),(b'BYE\r',b'System halted',10)],here/'transcript.bin',initial_prompt=b'A>')
+                (command.encode()+b'\r',b'A>',10),(b'BYE /Y\r',b'System halted',10)],here/'transcript.bin',initial_prompt=b'A>')
             listing=tool('cpmls','-f','ibm-3740',str(disk)).decode()
             # This one-record fixture deliberately inspects directory entries:
             # DRI can create duplicate names, which cpmcp refuses to extract.

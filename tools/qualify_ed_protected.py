@@ -49,7 +49,7 @@ def main():
         if args.save_readonly:
             commands.extend([(b'iCHANGE\x1a\r',b'*',10),(b'E\r',b'File R/O',10),(b'\r',prompt,10)])
         elif attr!='s':commands.extend([(b'iCHANGE\x1a\r',b'*',10),(b'Q\r',b'(Y/N)?',10),(b'Y',prompt,10)])
-        commands.append((b'BYE\r',b'System halted',10))
+        commands.append((b'BYE /Y\r',b'System halted',10))
         trace=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,commands,here/'transcript.bin',initial_prompt=prompt)
         if attr=='s':assert b'"SYSTEM" FILE NOT ACCESSIBLE' in trace and b'READ/ONLY' not in trace
         else:assert b'** FILE IS READ/ONLY **' in trace and b'NOT ACCESSIBLE' not in trace

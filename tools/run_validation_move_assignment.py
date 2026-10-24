@@ -45,7 +45,7 @@ def main():
                 'MOVE B0:RESTORED.TXT=C3:ONE.TXT', 'MOVE B5:=C4:RENAMED.TXT']
     sim = Path.home() / 'projects/git/z80pack/cpmsim/cpmsim'
     steps = [(c.encode() + b'\r', b'A0>_ ', 30) for c in commands]
-    steps += [(b'BYE\r', b'System halted', 30)]
+    steps += [(b'BYE /Y\r', b'System halted', 30)]
     trace = session(sim, w / 'disks', steps, w / 'transcript.bin')
     assert b'INVALID' not in trace and b'NOT FOUND' not in trace and b'\r\n?\r\n' not in trace
     expected = {('b', 0, 'RESTORED.TXT'), ('b', 5, 'RENAMED.TXT')}

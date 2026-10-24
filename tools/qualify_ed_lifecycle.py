@@ -135,7 +135,7 @@ def main():
             if case in ('head','split-head'):commands.extend([(b'H\r',b'*',10),(b'iagain\x1a\r',b'*',10)])
             prompt=(b'B0>_ ' if case=='split' else b'A0>_ ') if args.better else (b'B>' if case=='split' else b'A>')
             commands.append((b'E\r',prompt,10))
-        commands.append((b'A:BYE\r',b'System halted',10))
+        commands.append((b'A:BYE /Y\r',b'System halted',10))
         session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,commands,here/'transcript.bin',initial_prompt=b'A0>_ ' if args.better else b'A>')
         assert b'LIFECYCLE FAILED' not in (here/'transcript.bin').read_bytes()
         def extract(drive,name):

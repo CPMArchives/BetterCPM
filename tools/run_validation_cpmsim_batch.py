@@ -39,7 +39,7 @@ def main():
         steps=[(b'SUBMIT V031\r',b'BATCH RETURN COMPLETED',90),(b'',b'A0>_ ',30),(b'RSX LIST\r',b'A0>_ ',30)]
         if xsub:steps += [(b'INPUT\rBATCHFULL\r',b'INPUT OK',30),(b'',b'A0>_ ',30),(b'RSX LIST\r',b'A0>_ ',30),
                           (b'INPUT0\rBATCHFULL\r',b'INPUT OK',30),(b'',b'A0>_ ',30),(b'RSX LIST\r',b'A0>_ ',30)]
-        steps += [(b'BYE\r',b'System halted',30)]
+        steps += [(b'BYE /Y\r',b'System halted',30)]
         trace=session(sim,w/'disks',steps,w/'transcript.bin')
         assert (b'FULLIN OK' if xsub else b'FULLTPA OK') in trace and b'FAILED' not in trace
         assert b'TPA available: 53K' in trace,trace[-3000:]

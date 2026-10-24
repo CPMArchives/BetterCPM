@@ -267,7 +267,7 @@ def main():
     trace=session(simulator,disks,[
         (b'RSX LOAD ANSISCRN\r',prompt,30),(b'SCXTEST\r',b'SCXEND',30),
         (b'',prompt,30),(b'RSX UNLOAD ANSISCRN\r',prompt,30),
-        (b'RSX LIST\r',b'TPA available: 53K',30),(b'BYE\r',b'System halted',30)],work/'transcript.bin',rom_image=rom_image,rom_start='DF00' if rom_image else None)
+        (b'RSX LIST\r',b'TPA available: 53K',30),(b'BYE /Y\r',b'System halted',30)],work/'transcript.bin',rom_image=rom_image,rom_start='DF00' if rom_image else None)
     if rom_image:
         assert b'ROM QUALIFICATION ACTIVE START=DF00' in trace and b'ROM WRITE VIOLATION' not in trace
     assert b'SCX CHECK FAILED' not in trace and b'No RSXs loaded' in trace

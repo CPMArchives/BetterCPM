@@ -28,7 +28,7 @@ def main():
         commands=[(b'EDREF CASE.TXT\r',b'*',10)]
         if line==b'0Z':commands.extend([(line+b'\r',b'0Z\r\n',10),(bytes([key]),b'*',10)])
         else:commands.append((line+b'\r'+(bytes([key]) if interrupt else b''),b'*',10))
-        commands.extend([(b'Q\r',b'(Y/N)?',10),(b'Y',b'A>',10),(b'BYE\r',b'System halted',10)])
+        commands.extend([(b'Q\r',b'(Y/N)?',10),(b'Y',b'A>',10),(b'BYE /Y\r',b'System halted',10)])
         trace=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,commands,here/'transcript.bin',initial_prompt=b'A>')
         c,s,call,state,run,out,polls=machine(ready_after=0 if interrupt else None,key=key if key is not None else ord('x'))
         (bad,flag),_=run(line)

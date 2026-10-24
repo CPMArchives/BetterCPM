@@ -55,13 +55,13 @@ def main():
             commands += [(b'I',b'READ CALLER RESUMED after operator ignore.',30),
                          (b'',b'Bad Sector',30),
                          (b'I',b'FAULT PROVIDER COMPLETED BOTH CALLS',30),
-                         (b'',b'A0>_ ',30),(b'BYE\r',b'System halted',10)]
+                         (b'',b'A0>_ ',30),(b'BYE /Y\r',b'System halted',10)]
             trace=session(a.simulator.resolve(),disks,commands,run/'transcript.bin')
             assert b'WRITE CALLER RESUMED after operator ignore.' in trace
             assert b'SETUP OR PROVIDER COUNT FAILED' not in trace
         else:
             commands += [(b'\x03',b'A0>_ ',30),(b'VER\r',b'BetterCP/M 0.90',30),
-                         (b'',b'A0>_ ',30),(b'BYE\r',b'System halted',10)]
+                         (b'',b'A0>_ ',30),(b'BYE /Y\r',b'System halted',10)]
             trace=session(a.simulator.resolve(),disks,commands,run/'transcript.bin')
             assert b'READ CALLER RESUMED' not in trace
         results[scenario]={'status':'PASS','image_after_sha256':sha(image),'transcript_sha256':sha(run/'transcript.bin')}

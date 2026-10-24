@@ -302,7 +302,7 @@ expect -exact "RDR: is PTR:"
 expect -exact "PUN: is PTP:"
 expect -exact "LST: is CRT:"
 prompt
-send -s "bye\r"
+send -s "bye /Y\r"
 expect eof
 '''
 
@@ -344,7 +344,7 @@ expect {
  eof {exit 1}
 }
 expect -exact "B0>_ "
-send -s "bye\r"
+send -s "bye /Y\r"
 expect eof
 '''
     empty_body = body[:body.index('send -s')] + empty_body.replace('expect -exact ', 'mustexact ')

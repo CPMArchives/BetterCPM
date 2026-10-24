@@ -60,7 +60,7 @@ def main():
             yield(command.encode()+b'\r',prompt,30)
         yield(b'SAVE 1 ECOSAVE.COM\r',prompt,30)
         yield(b'A:\r',b'A0>_ ',30)
-        yield(b'BYE\r',b'System halted',10)
+        yield(b'BYE /Y\r',b'System halted',10)
     try:session(a.simulator.resolve(),disks,commands(),trace)
     except Exception as error:
         assert sha(original)==report['sha256'], 'reference image changed during incomplete run'
@@ -68,7 +68,7 @@ def main():
     saved=work/'ECOSAVE.COM';cpm('cpmcp','-T','raw','-f','bettercpm-default',str(scratch),'0:ECOSAVE.COM',str(saved))
     assert saved.read_bytes()==bytes(range(256)), 'SAVE did not map exactly the complete page at 0100h'
     results.append({'item':'0575','bytes':256,'independent_saved_file_sha256':sha(saved),'status':'PASS'})
-    cleanup=[(b'B:\r',b'B0>_ ',30),(b'ERA ECOSAVE.COM\r',b'B0>_ ',30),(b'ERA BYTE.TXT\r',b'B0>_ ',30),(b'A:\r',b'A0>_ ',30),(b'ERA STATE.COM\r',b'A0>_ ',30),(b'BYE\r',b'System halted',10)]
+    cleanup=[(b'B:\r',b'B0>_ ',30),(b'ERA ECOSAVE.COM\r',b'B0>_ ',30),(b'ERA BYTE.TXT\r',b'B0>_ ',30),(b'A:\r',b'A0>_ ',30),(b'ERA STATE.COM\r',b'A0>_ ',30),(b'BYE /Y\r',b'System halted',10)]
     session(a.simulator.resolve(),disks,cleanup,work/'cleanup.bin')
     listing=cpm('cpmls','-T','raw','-f','bettercpm-default',str(scratch)).decode();(work/'scratch-directory.txt').write_text(listing)
     assert not listing.strip(),'scratch files remain: '+listing

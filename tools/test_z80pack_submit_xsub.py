@@ -217,7 +217,7 @@ expect -exact {C5>_ }
 send -s -- "DIR B:$$$.SUB\r"
 expect -exact "NO FILE"
 expect -exact {C5>_ }
-send -s -- "BYE\r"
+send -s -- "BYE /Y\r"
 expect eof
 ''')
     print("PASS: A0 queue from B3, user-changing script, XSUB input and cleanup")
@@ -242,7 +242,7 @@ prompt
 send -s -- "DIR $$$.SUB\r"
 expect -exact "NO FILE"
 prompt
-send -s -- "BYE\r"
+send -s -- "BYE /Y\r"
 expect eof
 ''',
     )
@@ -263,7 +263,7 @@ prompt
 send -s -- "DIR $$$.SUB\r"
 expect -exact "NO FILE"
 prompt
-send -s -- "BYE\r"
+send -s -- "BYE /Y\r"
 expect eof
 ''',
     )

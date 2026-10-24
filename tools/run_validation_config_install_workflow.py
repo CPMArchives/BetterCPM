@@ -30,12 +30,12 @@ def main():
  def payload(data):return b''.join(data[offset(i):offset(i)+128] for i in range(160))
  C.write_bytes(b'\xa5'*reserved+C.read_bytes()[reserved:]);beforeC=C.read_bytes();(w/'target-before.dsk').write_bytes(beforeC);(w/'source-before.dsk').write_bytes(A.read_bytes())
  prompt=b'A0>_ '
- steps=[(b'IO95\r',prompt,30),(b'CONFIG /STARTUP="VER /VER"\r',b'(Y/N)? ',30),(b'Y',prompt,60),(b'CONFIG /IOBYTE=85\r',b'(Y/N)? ',30),(b'Y',prompt,60),(b'IO95\r',prompt,30),(b'CONFIG /SHOW\r',prompt,60),(b'SYSGEN A: B:LIB090.SYS\r',prompt,90),(b'SYSGEN B:LIB090.SYS C:\r',b'Proceed (Y/N)?',30),(b'Y',prompt,90),(b'BYE\r',b'System halted',30)]
+ steps=[(b'IO95\r',prompt,30),(b'CONFIG /STARTUP="VER /VER"\r',b'(Y/N)? ',30),(b'Y',prompt,60),(b'CONFIG /IOBYTE=85\r',b'(Y/N)? ',30),(b'Y',prompt,60),(b'IO95\r',prompt,30),(b'CONFIG /SHOW\r',prompt,60),(b'SYSGEN A: B:LIB090.SYS\r',prompt,90),(b'SYSGEN B:LIB090.SYS C:\r',b'Proceed (Y/N)?',30),(b'Y',prompt,90),(b'BYE /Y\r',b'System halted',30)]
  trace=session(a.simulator,disks,steps,w/'save-export-install.bin');assert trace.count(b'LIVE IOBYTE 95 PASS')==2 and b'IOBYTE CHECK FAIL' not in trace;assert b'Disk-boot IOBYTE saved; live unchanged.' in trace and b'Package exported and verified.' in trace and b'System installed and verified.' in trace
  actual=A.read_bytes();startup=b''.join(actual[offset(i):offset(i)+128] for i in (1,2));assert parse(startup,system_base=LAYOUT['SYSTEM'])=='VER /VER'
  package=w/'LIB090-exported.SYS';subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(B),'0:LIB090.SYS',str(package)],cwd=w,check=True,capture_output=True);data=package.read_bytes();assert len(data)==20608 and data[:8]==b'BCSY\x01\x01\xa0\x00' and data[128:]==payload(actual)
  assert C.read_bytes()[reserved:]==beforeC[reserved:];(w/'installed.dsk').write_bytes(C.read_bytes());boot=w/'reboot';(boot/'disks').mkdir(parents=True);shutil.copy2(w/'diskdefs',boot/'diskdefs');bootimage=boot/'disks/drivea.dsk';shutil.copy2(C,bootimage)
- cold=session(a.simulator,boot/'disks',[(b'IO55\r',prompt,30),(b'CONFIG /SHOW\r',prompt,60),(b'TYPE A7:KEEP.TXT\r',prompt,30),(b'BYE\r',b'System halted',30)],w/'installed-cold-boot.bin')
+ cold=session(a.simulator,boot/'disks',[(b'IO55\r',prompt,30),(b'CONFIG /SHOW\r',prompt,60),(b'TYPE A7:KEEP.TXT\r',prompt,30),(b'BYE /Y\r',b'System halted',30)],w/'installed-cold-boot.bin')
  assert b'BetterCP/M VER 1.0 (Resident, RCP Build ' in cold and b'LIVE IOBYTE 55 PASS' in cold and b'IOBYTE CHECK FAIL' not in cold and b'INSTALLED WORKFLOW SENTINEL' in cold;assert bootimage.read_bytes()==C.read_bytes(),'read-only installed boot changed media'
  shipped=audit(a.baseline,report,w,A)
  for label,image in [('package',B),('installed',C),('reboot',bootimage)]:

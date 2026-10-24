@@ -103,7 +103,7 @@ def main():
     target.write_bytes(b'\xa5' * len(before))
     trace = session(args.simulator, disks, [
         (b'DUP /FORMAT B:\r', b'[Y/N]', 30),
-        (b'N', b'A0>_ ', 30), (b'BYE\r', b'System halted', 30)],
+        (b'N', b'A0>_ ', 30), (b'BYE /Y\r', b'System halted', 30)],
         work / 'decline.bin')
     assert target.read_bytes() == b'\xa5' * len(before)
     assert source.read_bytes() == before
@@ -112,7 +112,7 @@ def main():
         (b'DUP /FORMAT B:\r', b'[Y/N]', 30),
         (b'Y', b'A0>_ ', 120),
         (b'DUP /CHECK B:\r', b'A0>_ ', 120),
-        (b'BYE\r', b'System halted', 30)], work / 'format-check.bin')
+        (b'BYE /Y\r', b'System halted', 30)], work / 'format-check.bin')
     assert b'protected system disk' in trace and b'Format complete.' in trace
     assert b'Unreadable sectors: 00000' in trace
     assert source.read_bytes() == before
@@ -124,14 +124,14 @@ def main():
     before, old = source.read_bytes(), target.read_bytes()
     session(args.simulator, disks, [
         (b'DUP /COPY A: B:\r', b'[Y/N]', 30),
-        (b'N', b'A0>_ ', 30), (b'BYE\r', b'System halted', 30)],
+        (b'N', b'A0>_ ', 30), (b'BYE /Y\r', b'System halted', 30)],
         work / 'decline.bin')
     assert target.read_bytes() == old and source.read_bytes() == before
     trace = session(args.simulator, disks, [
         (b'DUP /COPY A: B:\r', b'[Y/N]', 30),
         (b'Y', b'A0>_ ', 120),
         (b'DUP /CHECK B:\r', b'A0>_ ', 120),
-        (b'BYE\r', b'System halted', 30)], work / 'copy-check.bin')
+        (b'BYE /Y\r', b'System halted', 30)], work / 'copy-check.bin')
     assert b'Copy complete; destination verified.' in trace
     assert b'Unreadable sectors: 00000' in trace
     assert source.read_bytes() == before and target.read_bytes() == before
@@ -142,7 +142,7 @@ def main():
     before, old_target = source.read_bytes(), target.read_bytes()
     trace = session(args.simulator, disks, [
         (b'SYSGEN A: B:BASE090.SYS\r', b'A0>_ ', 90),
-        (b'BYE\r', b'System halted', 30)], work / 'export.bin')
+        (b'BYE /Y\r', b'System halted', 30)], work / 'export.bin')
     assert b'Package exported and verified.' in trace
     package = extract(work, target, 'BASE090.SYS')
     assert len(package) == 161 * 128 and package[:8] == b'BCSY\x01\x01\xa0\x00'
@@ -153,12 +153,12 @@ def main():
     exported = target.read_bytes()
     trace = session(args.simulator, disks, [
         (b'SYSGEN A: B:BASE090.SYS\r', b'Replace existing package (Y/N)?', 30),
-        (b'N', b'A0>_ ', 30), (b'BYE\r', b'System halted', 30)],
+        (b'N', b'A0>_ ', 30), (b'BYE /Y\r', b'System halted', 30)],
         work / 'decline-replacement.bin')
     assert target.read_bytes() == exported and source.read_bytes() == before
     trace = session(args.simulator, disks, [
         (b'SYSGEN A: B:BASE090.SYS\r', b'Replace existing package (Y/N)?', 30),
-        (b'Y', b'A0>_ ', 90), (b'BYE\r', b'System halted', 30)],
+        (b'Y', b'A0>_ ', 90), (b'BYE /Y\r', b'System halted', 30)],
         work / 'replace.bin')
     assert b'Package exported and verified.' in trace
     assert extract(work, target, 'BASE090.SYS') == package
@@ -174,12 +174,12 @@ def main():
     old_installed = installed.read_bytes()
     trace = session(args.simulator, disks, [
         (b'SYSGEN B:BASE090.SYS C:\r', b'Proceed (Y/N)?', 30),
-        (b'N', b'A0>_ ', 30), (b'BYE\r', b'System halted', 30)],
+        (b'N', b'A0>_ ', 30), (b'BYE /Y\r', b'System halted', 30)],
         work / 'decline-install.bin')
     assert installed.read_bytes() == old_installed
     trace = session(args.simulator, disks, [
         (b'SYSGEN B:BASE090.SYS C:\r', b'Proceed (Y/N)?', 30),
-        (b'Y', b'A0>_ ', 90), (b'BYE\r', b'System halted', 30)],
+        (b'Y', b'A0>_ ', 90), (b'BYE /Y\r', b'System halted', 30)],
         work / 'install.bin')
     assert b'System installed and verified.' in trace
     assert source.read_bytes() == before
@@ -194,7 +194,7 @@ def main():
         shutil.copy2(disks / f'drive{drive}.dsk', boot / f'disks/drive{drive}.dsk')
     trace = session(args.simulator, boot / 'disks', [
         (b':VER /BANNER\r', b'A0>_ ', 30),
-        (b'BYE\r', b'System halted', 30)], work / 'cold-boot.bin')
+        (b'BYE /Y\r', b'System halted', 30)], work / 'cold-boot.bin')
     assert trace.count(b'CP/M 2.2 Compatible System') >= 2
     finish(work, disks, 'sysgen-roundtrip', 'Named 161-record export matches all 160 source records; decline/replace; declined/confirmed reinstall preserves user-7 sentinel and entire filesystem; installed disk cold-boots')
 

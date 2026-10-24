@@ -41,7 +41,7 @@ def main():
         subprocess.run(['cpmcp','-f','ibm-3740',str(image),str(oracle),'0:EDREF.COM'],cwd=here,check=True)
         commands=[(b'EDREF CASE.TXT\r',b'*',10),((b'I' if upper else b'i')+b'\r',b'    1:  ',10)]
         commands += [(data,wanted,10) for data,wanted in steps]
-        commands += [(b'\x1a',b'     : *',10),(b'E\r',b'A>',10),(b'BYE\r',b'System halted',10)]
+        commands += [(b'\x1a',b'     : *',10),(b'E\r',b'A>',10),(b'BYE /Y\r',b'System halted',10)]
         session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,commands,here/'transcript.bin',initial_prompt=b'A>')
         saved=here/'saved.txt';subprocess.run(['cpmcp','-f','ibm-3740',str(image),'0:case.txt',str(saved)],cwd=here,check=True)
         keys=b''.join(data for data,_ in steps)+b'\x1a'

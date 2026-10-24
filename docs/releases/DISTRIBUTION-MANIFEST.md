@@ -37,7 +37,7 @@ All membership or layout changes require discussion with the maintainer.
 - RCP.CPX: required resident command package.
 - CPX.COM and RSX.COM: extension managers.
 - R3PACK.RSX: required RSX-manager runtime container.
-- BYE.COM: cpmsim-only simulator exit command.
+- BYE.COM: cpmsim-only simulator exit command with confirmation, `/Y`, `/VER` and `/HELP`; [command reference](../user/BYE.md).
 - ZPRTC.RSX: cpmsim clock provider only.
 - ADM3A.RSX: MM-style ADM-3A monitor provider for Model 4 only.
 - ADMTST.COM: ADM-3A visual, cursor, bell and keyboard test utility, Model 4 only.

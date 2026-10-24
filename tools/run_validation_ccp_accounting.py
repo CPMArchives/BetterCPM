@@ -206,7 +206,7 @@ HEX:""",1)
         yield(b'',prompt,30)
         assert b'OR-0420 PASS:' in trace.read_bytes() and b'OR-0420 FAIL' not in trace.read_bytes() and b'OR-0519 FAIL' not in trace.read_bytes()
         checks.append('Actual buffered-input/DMA guard and A/B/A BIOS-DPH versus BDOS resource pointers')
-        yield(b'BYE\r',b'System halted',10)
+        yield(b'BYE /Y\r',b'System halted',10)
     simulator=Path.home()/'projects/git/z80pack/cpmsim/cpmsim'
     try:session(simulator,disks,commands(),trace)
     except Exception as e:(w/'incomplete.json').write_text(json.dumps({'error':str(e),'checks':checks,'observations':observations},indent=2)+'\n');raise

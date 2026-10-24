@@ -35,7 +35,7 @@ def main():
             yield(b'Y',b'OR-0143 RESET AND CREATE PASS' if mode=='reset' else b'Disk R/O',30)
             yield(b'',b'B0>_ ',30)
             yield(b'VER\r',b'BetterCP/M 0.90',30);yield(b'',b'B0>_ ',30)
-            yield(b'A:\r',b'A0>_ ',30);yield(b'BYE\r',b'System halted',10)
+            yield(b'A:\r',b'A0>_ ',30);yield(b'BYE /Y\r',b'System halted',10)
         output=session(simulator,disks,commands(),trace);assert b'OR-0143 REPLACEMENT READ AND PROTECTED' in output and b'OR-0143 FAIL' not in output and b'OR-0143 FIXTURE' not in output
         after=(disks/'driveb.dsk').read_bytes()
         if mode=='write':assert after==new,'read-only rejection changed replacement media'

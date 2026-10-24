@@ -111,7 +111,7 @@ def main() -> None:
                 expect("Your choice:")
                 os.write(terminal, b"\003")
             expect("A0>_ ")
-            os.write(terminal, b"BYE\r")
+            os.write(terminal, b"BYE /Y\r")
             expect("System halted")
         finally:
             try:

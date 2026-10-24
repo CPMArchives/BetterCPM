@@ -39,7 +39,7 @@ def main():
         (b'RSX UNLOAD ANSI\r',prompt,30),
         (b'RSX UNLOAD ANSISCRN\r',prompt,30),
         (b'RSX LIST\r',b'TPA available: 53K',10),
-        (b'BYE\r',b'System halted',10)],work/'transcript.bin')
+        (b'BYE /Y\r',b'System halted',10)],work/'transcript.bin')
     import pyte
     for columns,rows in ((80,25),(100,40)):
         screen=pyte.Screen(columns,rows);stream=pyte.Stream(screen)

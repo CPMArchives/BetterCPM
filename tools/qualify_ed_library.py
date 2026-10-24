@@ -29,7 +29,7 @@ def main():
         session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,[
             (b'EDREF CASE.TXT\r',b'*',10),(b'ipreSUF\x1aB3C'+line+b'\r',b'*',10),
             (b'i|\x1a\r',b'*',10),(b'E\r',b'A>',10),
-            (b'BYE\r',b'System halted',10)],here/'transcript.bin',initial_prompt=b'A>')
+            (b'BYE /Y\r',b'System halted',10)],here/'transcript.bin',initial_prompt=b'A>')
         saved=here/'saved.txt'
         subprocess.run(['cpmcp','-f','ibm-3740',str(image),'0:case.txt',str(saved)],cwd=here,check=True)
         (result,(text,cursor)),_=read(line,key=(2,7,b'X$$$$$$$LIB') if line==b'r' else (2,7,b'HEADER  LIB'))

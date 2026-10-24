@@ -77,7 +77,7 @@ prompt
 send -s -- "IOKEEP\r"
 expect -exact "IOKEEP PASS"
 prompt
-send -s -- "BYE\r"
+send -s -- "BYE /Y\r"
 expect eof
 '''
     for attempt in range(2):

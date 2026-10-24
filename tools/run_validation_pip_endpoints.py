@@ -49,7 +49,7 @@ def main():
         commands = [(b'IOS\r', b'A0>_ ', 30)]
         for command in (f'{program} PRN:=S7INPUT.TXT', f'{program} PTP:=S7INPUT.TXT', f'{program} B:READ.TXT=PTR:', f'{program} CRT:=S7INPUT.TXT'):
             commands.extend([(command.encode() + b'\r', b'A0>_ ', 60), (b'IOC\r', b'A0>_ ', 30)])
-        commands.append((b'BYE\r', b'System halted', 30))
+        commands.append((b'BYE /Y\r', b'System halted', 30))
         (w / 'commands.json').write_text(json.dumps([(x.decode(),y.decode(),z) for x,y,z in commands],indent=2)+'\n')
         # An unlimited-speed simulator can finish in milliseconds. Queue the
         # bounded input before launch and retain a FIFO handle so it survives

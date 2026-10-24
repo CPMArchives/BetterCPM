@@ -60,7 +60,7 @@ prompt
 send -s -- "DIR B:BIGFILE.DAT\r"
 expect -exact "B: BIGFILE  DAT"
 prompt
-send -s -- "BYE\r"
+send -s -- "BYE /Y\r"
 expect eof
 ''')
         environment = dict(os.environ)

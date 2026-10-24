@@ -43,7 +43,7 @@ def main():
         else:steps += [(b' ',name.encode()+b' monitor exercise complete.',30)]
         steps += [(b'',prompt,30),(f'RSX UNLOAD {name}\r'.encode(),prompt,30),
                   (b'RSX UNLOAD ANSISCRN\r',prompt,30),(b'RSX LIST\r',b'TPA available: 53K',30),
-                  (b'',prompt,30),(b'BYE\r',b'System halted',30)]
+                  (b'',prompt,30),(b'BYE /Y\r',b'System halted',30)]
         trace=session(a.simulator,disks,steps,work/'transcript.bin')
         assert name.encode()+b' : BDOS 255' in trace and b'ANSISCRN : BDOS 255' in trace
         assert b'No RSXs loaded' in trace and b'TPA available: 53K' in trace

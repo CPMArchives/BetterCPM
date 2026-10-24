@@ -22,7 +22,7 @@ def main():
             (b'DUP /COPY A: B:\r',b'[Y/N]',30),
             (b'Y',b'A0>_ ',120),
             (b'DUP /CHECK B:\r',b'A0>_ ',120),
-            (b'BYE\r',b'System halted',30)],report/'cpmsim.txt')
+            (b'BYE /Y\r',b'System halted',30)],report/'cpmsim.txt')
         assert b'Copy complete; destination verified.' in transcript
         assert b'Unreadable sectors: 00000' in transcript
         assert b'protected system disk' in transcript

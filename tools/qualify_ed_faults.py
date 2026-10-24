@@ -26,7 +26,7 @@ def main():
         if function==20:commands.append((b'a\r',b'A0>_ ',10))
         elif function==21:commands.extend([(b'#a\r',b'*',10),(b'#w\r',b'A0>_ ',10)])
         else:commands.extend([(b'iNEW\x1a\r',b'*',10),(b'E\r',b'A0>_ ',10)])
-        commands.append((b'BYE\r',b'System halted',10))
+        commands.append((b'BYE /Y\r',b'System halted',10))
         trace=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,commands,here/'transcript.bin')
         assert b'DISK OR DIRECTORY FULL' in trace and b'BREAK' not in trace
         def extract(name):

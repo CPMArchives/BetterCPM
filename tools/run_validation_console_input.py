@@ -180,7 +180,7 @@ def main():
         yield (b'VER\r', b'A0>_ ', 30)
         assert b'BetterCP/M' in trace.read_bytes()[len(before):]
         observed.append({'case': 117, 'keys_hex': '4b03', 'oracle': 'CCP return without Function 10 return diagnostic, then VER recovery'})
-        yield (b'BYE\r', b'System halted', 10)
+        yield (b'BYE /Y\r', b'System halted', 10)
     session(args.simulator.resolve(), disks, commands(), trace)
     assert sha(original) == report['sha256']
     result = {'baseline_sha256': report['sha256'], 'program_sha256': sha(program), 'simulator_sha256': sha(args.simulator), 'pyte_module': pyte.__file__, 'pyte_version': version('pyte'), 'cases': observed, 'pass': len(observed), 'required_pass': len(observed)-1, 'profile_pass': 1, 'oracle': 'literal returned buffers and independently rendered final input echo before confirmation', 'scope': 'cpmsim Functions 1, 6 and 10 selected input recipes; blocking observation limited to the recorded silence interval; no native Model 4 claim'}

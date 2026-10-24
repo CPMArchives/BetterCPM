@@ -55,7 +55,7 @@ def main():
             (b'A:\r', b'A0>_ ', 30),
             (b'SYSGEN B:BASE090.SYS C:\r', b'Proceed (Y/N)?', 30),
             (b'N', b'A0>_ ', 30),
-            (b'BYE\r', b'System halted', 30)], report/'export.txt')
+            (b'BYE /Y\r', b'System halted', 30)], report/'export.txt')
         assert src.read_bytes() == original
         assert c.read_bytes() == old_c
         package_path = w/'BASE090.SYS'
@@ -79,7 +79,7 @@ def main():
         installed = session(args.simulator, w/'disks', [
             (b'SYSGEN B:BASE090.SYS C:\r', b'Proceed (Y/N)?', 30),
             (b'Y', b'A0>_ ', 90),
-            (b'BYE\r', b'System halted', 30)], report/'install.txt')
+            (b'BYE /Y\r', b'System halted', 30)], report/'install.txt')
         assert b'System installed and verified.' in installed
         assert src.read_bytes() == original
         # All target bytes outside represented system records are unchanged.
@@ -95,7 +95,7 @@ def main():
         filesystem = fmt.reserved_records*128
         bootable[filesystem:] = original[filesystem:]
         src.write_bytes(bootable)
-        session(args.simulator, w/'disks', [(b'BYE\r',b'System halted',30)], report/'cold-boot.txt')
+        session(args.simulator, w/'disks', [(b'BYE /Y\r',b'System halted',30)], report/'cold-boot.txt')
     print('PASS: named export exact bytes/saved startup, replacement decline, named reinstall, filesystem preservation and cold boot')
 
 

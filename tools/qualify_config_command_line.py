@@ -40,7 +40,7 @@ def main():
         image.write_bytes(data);before=bytes(data)
         commands=[(command,b'(Y/N)? ' if answer else b'A0>_ ',20)]
         if answer:commands.append((answer,b'A0>_ ',20))
-        commands.append((b'BYE\r',b'System halted',10))
+        commands.append((b'BYE /Y\r',b'System halted',10))
         trace=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,commands,here/'transcript.bin')
         after=image.read_bytes();actual=b''.join(after[at:at+128] for at in offsets)
         assert parse(actual,system_base=LAYOUT['SYSTEM'])==want,(name,trace)
