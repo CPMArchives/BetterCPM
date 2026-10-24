@@ -921,6 +921,24 @@
       "dependency_status": "tracked-conservative",
       "display_format": "numeric",
       "description": "Checked LINK Report Capture"
+    },
+    "utility:TED": {
+      "kind": "utility",
+      "version": null,
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/ted/main.mac"
+      ],
+      "builders": [
+        "tools/build_ted.py",
+        "tools/build_native_ted.py"
+      ],
+      "revision": null,
+      "api_version": null,
+      "tracking": "pending",
+      "dependency_status": "pending",
+      "display_format": "numeric",
+      "description": "Full-screen Text Editor (development foundation; not qualified)"
     }
   },
   "legacy_utility_order": [

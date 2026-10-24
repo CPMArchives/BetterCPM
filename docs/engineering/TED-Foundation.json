@@ -1,0 +1,109 @@
+{
+  "schema": 1,
+  "status": "PARTIAL_IMPLEMENTATION",
+  "editor_qualified": false,
+  "scope": "startup, workspace/cache foundation, native build/parity and legacy prompt exit only",
+  "upstream_commit": "7da2e1e39ae4cb57b45d84cf715b88fabbeadd17",
+  "upstream_archive_sha256": "2f6b6b5a840a573d1999083b66b5da1ada26cecc2fdc323fa81f5240fdda8562",
+  "base_repository_commit": "dd3c74d9fc6592072b1a8786d564eee84f644825",
+  "source_binding": "actual input hashes; base commit does not assert a clean source tree",
+  "source_inputs": {
+    "src/utilities/ted/COPYING": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+    "src/utilities/ted/README.md": "023eb63fcd3c2b086df37f2541c456f3352c02d92e4e4b4ce9cbc2dc71ef74d5",
+    "src/utilities/ted/ast.inc": "9864f0578053e5cb531d9a0263e8b5553eab3b9e5203f03a32bbdf4c4a6d8efc",
+    "src/utilities/ted/cmds.mac": "20a167b1f343d18e7c30fdcfdf9e12bd8f40ea5cd6a6cf25a76f5065362e7983",
+    "src/utilities/ted/cpmio.mac": "5e894a617cc0c591e6afde1e7570eed3d9d168396b60105cf02004c8ce602731",
+    "src/utilities/ted/dcb.inc": "f59920819e07b6c290ddb9c109ce482f21d6e6eb6e6f088bd321b290f1f8a3f8",
+    "src/utilities/ted/errors.inc": "21e3ba74c18717de438340e709e621447c1493a506bcdd533609029576f5ff82",
+    "src/utilities/ted/fcb.inc": "0353dba9411d86f7b115389546df215994e2a6bedd6b519837fdb432c7c82042",
+    "src/utilities/ted/fileio.mac": "c6b71b45e8731ff37a8a7f25f803923c40e952895060f9b27ab55ba8ffb421ce",
+    "src/utilities/ted/main.mac": "1d543a47c8b1c6efdba5149da219f471e80045f6d5bd28494afbfacc31824c85",
+    "src/utilities/ted/qio.inc": "60e0e168a7dc99152c5fa85c7a98d69df68c7187aa696a76d1606fe846bdddbf",
+    "src/utilities/ted/scrn.mac": "aaa7a3ce758452aa23a6bc0112df9ffc8d06e93674ec6edfb772df2c6c5473d4",
+    "src/utilities/ted/sysfn.inc": "12cbd25a84869df0bcc1dd1060d423fb58ab7d73096ad44ad21d92e7fe1240ae",
+    "src/utilities/ted/tcb.inc": "f0778a0273cb139c27d39616f0ac20132893383770bb743fb0b33d86034bc12e",
+    "src/utilities/ted/ted.inc": "5e7d34eb5f6c95e6954f6073f2b0464cca9d942667ef40169f5063baea717f62",
+    "src/utilities/ted/termdef.mac": "f668e78e54b58f122d24e9e44282edd321eb2f6a976fb9079032ec1806b95886",
+    "tools/build_ted.py": "3ec9cd8cf1fba12d27ba89b3f3907939e5e8d2639741f86ed3c16f43e26f18a6",
+    "tools/build_native_ted.py": "dbe2fe450e9c5db43565701d0cfcdd71c684ff1a366860fcd5ae4d3b0deb90ca",
+    "tools/test_ted_foundation.py": "665812520c0a01a9a01134ab008e9c840b1d834e6520fc983935d490f56a2b74",
+    "tools/collect_ted_foundation.py": "eee75c4b92d997f54c79c621dc5ddd51db96b0447bb9ecfc816f1ee700ff8ed1",
+    "tools/dasm_native.py": "8fe9348a846319a5a7710296324b7442ad56930e81ab5325e33a5bda014c30a9",
+    "tools/test_usq.py": "b8d79ed5778ed0dff05530c54b820967d5acc6815f836081008671e54ffd494e",
+    "tools/test_usq_com.py": "d0b420015e18d713787608106e317d0cc6a4b4cc599f2eec1074a0d5680328a1",
+    "tools/run_trs80_command.py": "a365076ef0b4543a0cdf99df030749b9f64837f822e6b5e978657cfebc430fd7",
+    "tools/trs80gp_launch.py": "0b2e0a54c484b89d79eefa98c87b435d52a2cb638132f28fa303c772f4791012",
+    "tools/test_z80pack_sysgen_install.py": "706887d21acc82e345bf4fda78893058a2f90ee1bdb9305f6489e5eb4d10b224",
+    "third_party/ted/provenance.json": "5b3ae03695ab7c342321cb0d5c5b80032714d8d0d78cb22d009932ddf9c1ea2e"
+  },
+  "payload": {
+    "bytes": 12648,
+    "sha256": "15f750e41babe5486030b4d47106a84ac4a120367279f2eef9fd2a02d29f5c43"
+  },
+  "host_gate": {
+    "status": "PASS",
+    "scope": "startup and workspace foundation only",
+    "editor_qualified": false,
+    "cases": 21,
+    "static_end": 12904,
+    "executable_sha256": "15f750e41babe5486030b4d47106a84ac4a120367279f2eef9fd2a02d29f5c43",
+    "prepared_source_sha256": "84939d2bcdf85531cb68e3e38764d22c961fc41ae05fe193a4d21f3e6c0be5f5",
+    "host_assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc",
+    "core_inputs": {
+      "z80core/simglb.c": "308fb22d26ae1b630fcc70f676d8c6260b9038949adcf3d41981d89abd1afe1d",
+      "z80core/simz80-cb.c": "a72e2c55588ba26521aab6876bc98c10d10c9b0d3f9a32b689e25e8dfa9a0543",
+      "z80core/simz80-dd.c": "f546c5d82518e1f52e3833a71e356bb0fb910821fa99ac4fa06af5e3bf1f1de1",
+      "z80core/simz80-ddcb.c": "91457c6538f7831f23f967543c8c26315270c3a53fbd1ce8500ada2b0cc7e2f3",
+      "z80core/simz80-ed.c": "5c9e8da0a03f3cab2726c59d5b0ef202adb26f0785bfdea74107330ccaaee1ff",
+      "z80core/simz80-fd.c": "e573e282b516ab75eef12705d0efca7ee671c630c462d695ca4f75bcc2609484",
+      "z80core/simz80-fdcb.c": "fffc90bfec6a05bbb6c157cb261b083b573ff092b70fbc2a138542f08a852e93",
+      "z80core/simz80.c": "8f27786b283c14b23f6d876b36f46f1a9b9faab03a13087eb83f97b60d35b752"
+    },
+    "shim_sha256": "3d0be290bde8c63743fc6ec3cc80f6ff42233965db38c6977eea1257af1467ad",
+    "minimum_ceiling": 15468,
+    "reserved_map_bytes": 2048,
+    "minimum_cache_bytes": 516,
+    "private_stack_bytes": 1024,
+    "native_stack_measurement": "NOT_RUN"
+  },
+  "native_gate": {
+    "status": "PASS",
+    "scope": "native build and legacy prompt startup/exit only",
+    "editor_qualified": false,
+    "cross_sha256": "15f750e41babe5486030b4d47106a84ac4a120367279f2eef9fd2a02d29f5c43",
+    "platforms": {
+      "z80pack": {
+        "status": "PASS",
+        "native_cross_parity": true,
+        "legacy_prompt_exit": true,
+        "editor_qualified": false,
+        "execution_report": "z80pack/execution.json"
+      },
+      "trs80gp": {
+        "status": "PASS",
+        "native_cross_parity": true,
+        "legacy_prompt_exit": true,
+        "editor_qualified": false,
+        "execution_report": "trs80gp/execution.json"
+      }
+    }
+  },
+  "archive": {
+    "name": "TED-Foundation-Evidence.tar.gz",
+    "bytes": 1190882,
+    "sha256": "784deaf3de5efb04d3f9b0386a73b046adc4b677f5ee4909840e17b655c46b1c",
+    "manifest_entries": 80
+  },
+  "not_qualified": [
+    "WordStar commands/oracle",
+    "text preservation",
+    "4095-byte lines",
+    "DU/attributes/aliases",
+    "transactional publisher and recovery",
+    "real full-media failures",
+    "native stack bounds",
+    "ANSI full-screen editing",
+    "final Utilities membership/source companions",
+    "physical hardware"
+  ]
+}

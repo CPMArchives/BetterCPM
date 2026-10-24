@@ -24,7 +24,7 @@ class RegistryTests(unittest.TestCase):
                 registry.load(path)
 
     def test_complete_import_and_paths(self):
-        self.assertEqual(len(self.data['components']), 54)
+        self.assertEqual(len(self.data['components']), 55)
         self.assertEqual(len(identities()), 41)
         self.assertEqual(identities()['DDT'], ('1.0', 3))
         self.assertEqual(identities()['PIP'], ('1.0', 30))
@@ -44,6 +44,12 @@ class RegistryTests(unittest.TestCase):
     def test_new_utility_assignments(self):
         for name in ('MOVE', 'WARM', 'DASM', 'DSYM', 'DLINK'):
             self.assertEqual(registry.identity('utility:' + name, self.data), ('1.0', 1))
+
+    def test_ted_foundation_is_not_a_published_identity(self):
+        self.assertEqual(self.data['components']['utility:TED']['tracking'], 'pending')
+        self.assertNotIn('TED', identities())
+        with self.assertRaisesRegex(ValueError, 'pending'):
+            registry.identity('utility:TED', self.data)
 
     def test_component_projection_is_independent(self):
         before = registry.identity('utility:DDT', self.data)

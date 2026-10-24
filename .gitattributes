@@ -1,3 +1,4 @@
 
 # Preserve exact historical CP/M source bytes, including CRLF.
 third_party/dri-dump/DUMP.ASM -text -whitespace
+third_party/ted/** -text -whitespace
