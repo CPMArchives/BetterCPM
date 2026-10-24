@@ -2,7 +2,7 @@ component	identity	interface_version	implementation_version	status	notes
 BetterCP/M	System release	-	0.90	completed baseline	System release identity; not an aggregate API version
 CCP	Command environment	1.0	1.4	completed	CCP-owned stack and disposable warm-boot loader
 CPX	Command Processor Extension facility	1.0	1.3	completed	Versioned name-based profile control
-BDOS	Basic Disk Operating System	1.2	1.10	completed	Function 22 admits new physical extents while rejecting duplicates by EXM group and S2; DRI LINK compatibility; public interface unchanged
+BDOS	Basic Disk Operating System	1.2	1.10	completed	Make distinguishes physical extents by EXM/S2; sequential writes eagerly prepare the next extent at CR=128 for DRI LINK; public interface unchanged
 RSX	Resident System Extension facility	1.0	1.5	completed	On-demand manager and stack; active allocation reported in TPA
 BIOS	Basic Input/Output System	1.7	1.13	completed	Disk ABI 5; shared geometry/length helpers and repacked resident allocation; restored MM CLEAR/ESC and Ctrl-CLEAR/DEL
 TIME provider	Optional callable resident clock service	1.0	-	planned	Hardware providers use the adopted TIME ABI; implementation version begins with the first qualified provider

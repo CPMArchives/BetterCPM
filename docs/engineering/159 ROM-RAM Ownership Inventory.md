@@ -118,19 +118,21 @@ the accepted allocation or public interface.
 
 ## Native toolchain qualification correction — 2026-10-24
 
-BDOS implementation 1.10 corrects explicit physical-extent Make handling for
-DRI LINK. Its live state and private stack move down two bytes; the extension
-live state moves down one byte after a register-equivalent compact clear path
-accommodates the longer version string. The authoritative TSV is refreshed
-against emitted anchors. State sizes, stack reservation, relocation totals and
-ROM/RAM ownership classes are unchanged. This records source/address upkeep;
-it does not transfer an older ROM/XIP execution receipt to the changed core.
-See [toolchain qualification](Utilities%20Toolchain%20Qualification.md).
+BDOS implementation 1.10 corrects physical-extent Make handling and eager
+sequential-write rollover, while random writes retain their original position.
+The shared iterator now handles Open's EXM comparison; S2 filtering remains in
+Open. This avoids duplicate comparisons and keeps the correction inside the
+existing allocation. Live state and the private stack move down eighteen bytes;
+extension live state moves down one byte after a register-equivalent zeroing
+sequence accommodates the longer version string. The authoritative ownership
+and ROM-template TSVs are refreshed against emitted anchors. State sizes,
+stack reservation, relocation totals and ownership classes are unchanged.
 
-The compact core reduces immutable ROM source by two bytes, to 5,518. The
-measured packed image uses 7,955 bytes with 493 spare. All 790 packed address
-words and 105 CONFIG overlay words remain checked; reusing Open replaces one
-code-target operand with a live-state pointer (468 ROM / 322 RAM targets).
-All 809 layout words remain accounted, with no unresolved or unexplained
-changes. The build guards retain exact measured counts and updated entry
-addresses; no capacity, ownership or operand-coverage guard was removed.
+The core uses 3,436 bytes. Immutable ROM source is 5,502 bytes; the measured
+packed image uses 7,939 bytes with 509 spare. All 790 packed address words and
+105 CONFIG overlay words remain checked (470 ROM / 320 RAM targets). All 809
+layout words remain accounted with no unresolved or unexplained changes. Exact
+size, entry-address and operand-coverage guards are retained and refreshed from
+generated artifacts. This records source/address upkeep, not transfer of an
+older protected-XIP execution receipt to the changed core.
+See [toolchain qualification](Utilities%20Toolchain%20Qualification.md).

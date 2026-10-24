@@ -1078,8 +1078,10 @@ UB_ACTCLEAN:
 UB_OPENCORE:                            ; opencore
         CALL    UB_FCTX
         JP      NZ,UB_BAD
+
+UB_OPENSCAN:                            ; context already prepared by Open/Make
         XOR     A
-        LD      C,11
+        LD      C,12                    ; iterator compares names and EXM groups
         CALL    UB_ITINIT
 
 UB_OPNEXT:                              ; opnext
@@ -1087,26 +1089,11 @@ UB_OPNEXT:                              ; opnext
         RET     C
         LD      (UB_ITRET),A
         PUSH    HL
-        LD      DE,12
+        LD      DE,14
         ADD     HL,DE
-        LD      A,(HL)
-        LD      C,A                     ; the shared mask below also removes EX high bits
-        LD      A,(UB_DPBC+4)           ; EXM
-        CPL
-        AND     01FH
-        LD      B,A
-        LD      A,C
-        AND     B
-        LD      C,A
-        LD      A,(IX+12)               ; IX is the active caller FCB
-        AND     B
-        CP      C
-        JR      NZ,UB_OPMISS
         LD      A,(IX+14)
         AND     03FH
         LD      C,A                     ; requested S2, excluding private dirty bit
-        INC     HL                      ; retain entry+12 instead of rebuilding entry+14
-        INC     HL
         LD      A,(HL)
         AND     03FH
         CP      C
@@ -1198,8 +1185,7 @@ UB_MAKECORE:                            ; makecore
         INC     HL
         CALL    UA_NAME
         JR      Z,UB_MBAD
-        LD      DE,(UB_ITFCB)
-        CALL    UB_OPENCORE
+        CALL    UB_OPENSCAN
         JR      NC,UB_MBAD              ; reject a duplicate physical extent
         CALL    UB_MKFREE
         JR      C,UB_MBAD
@@ -1597,6 +1583,17 @@ UB_REOF:                                ; reof
 UB_WRITE:                               ; write sequential record
         XOR     A
         LD      (UB_ZMODE),A
+        CALL    UB_WCORE
+        OR      A
+        RET     NZ
+  ; Prepare the following extent immediately after a successful full write,
+  ; as stock CP/M does. LINK explicitly closes/reopens that next extent.
+  ; Random writes enter WCORE directly and must not advance their extent.
+        LD      A,(IX+32)
+        CP      128
+        CALL    Z,UB_NEXTEX             ; A=128 is a nonzero write selector
+        XOR     A                       ; this record succeeded even if growth cannot
+        RET
 
 UB_WCORE:                               ; wcore
         CALL    UB_MCTX                 ; same drive selection and R/O gate as Make
@@ -1607,8 +1604,7 @@ UB_WCORE:                               ; wcore
         LD      A,(IX+32)
         CP      128
         JR      NZ,UB_WCUR
-        LD      A,1
-        CALL    UB_NEXTEX
+        CALL    UB_NEXTEX               ; CR=128 already selects write mode
         JR      NC,UB_WCUR
         AND     3                       ; extent-full 5 -> sequential-full 1; blocks-full stays 2
         RET
@@ -1689,10 +1685,8 @@ UB_WXFER:                               ; wxfer
         JR      C,UB_WDONE
         LD      (IX+15),A
 
-UB_WDONE:                               ; wdone
-        LD      A,(IX+14)               ; mark allocation/record state dirty
-        AND     07FH
-        LD      (IX+14),A
+UB_WDONE:                               ; complete one shared record write
+        RES     7,(IX+14)               ; mark allocation/record state dirty
         XOR     A
         RET
 
@@ -1891,7 +1885,7 @@ UR_POSITION:
         RET
 
   ; Activate the requested extent, creating it only for a write. A=0 read,
-  ; A=1 write. This is shared by random access and sequential rollover.
+  ; A nonzero write. This is shared by random access and sequential rollover.
 
 ; -------------------------------------------------------------------------------
 ; Extent Activation

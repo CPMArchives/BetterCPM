@@ -181,6 +181,8 @@ class Z80:
                     target = (self.ix + displacement) & 65535
                     if opcode >= 0xC0 and opcode & 7 == 6:
                         self.mem[target] |= 1 << ((opcode >> 3) & 7)
+                    elif opcode >= 0x80 and opcode & 7 == 6:
+                        self.mem[target] &= ~(1 << ((opcode >> 3) & 7))
                     else:
                         assert 0x46 <= opcode <= 0x7E and opcode & 7 == 6
                         self.z = not (self.mem[target] & (1 << ((opcode - 0x40) // 8)))
