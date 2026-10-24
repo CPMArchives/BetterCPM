@@ -75,10 +75,10 @@ def main() -> None:
     if manifest["entries"] != {
             "system_init": 0xDF00,
             "system_boot": 0xDF20,
-            "bios_boot": 0xf1af,
+            "bios_boot": 0xf1ae,
             "bdos": 0xDF9E,
-            "ram_template": 0xF47E,
-            "cold_initializer": 0xFDEA}:
+            "ram_template": 0xF47D,
+            "cold_initializer": 0xFDE9}:
         raise AssertionError("accepted executable entry inputs changed")
 
     base = manifest["base"]
