@@ -46,6 +46,12 @@ AS_IO           EQU 4
 AS_CONFIG       EQU 5
 AS_STATE        EQU 6
 AS_RANGE        EQU 7
+AS_CHECK        EQU 8
+AS_DUPLICATE    EQU 9
+AS_OVERLAP      EQU 10
+AS_CANCEL       EQU 11
+AS_OUTPUT       EQU 12
+AS_UNSUPPORTED  EQU 13
 
 ; Caller-owned copyable member metadata at IX+AS_MEMBER, valid until NEXT,
 ; OPEN or CLOSE. No pointer into a replaceable overlay is returned.

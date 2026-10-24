@@ -3,8 +3,8 @@
 **Program:** `NOAH.COM` with `NOAH.OVL`  
 **Distribution:** BetterCP/M Utilities Disk  
 **Status:** Consolidated behavioral baseline, 2026-10-23. No substantive user-policy decisions remain open; binary interfaces and measured limits must pass the
-implementation gates in section 16. An initial read-only LBR library and exact-file
-listing command exist; see [implementation scope and checks](../programmers/Archive%20Read%20Library.md).
+implementation gates in section 16. LBR reader/listing, integrity audit and new-file
+extraction increments exist; see [current implementation scope and checks](NOAH%20LBR%20Integrity%20and%20Extraction.md).
 Full specification conformance and release qualification are not claimed.
 
 This document supersedes the chronological NOAH decision draft. Settled behavior

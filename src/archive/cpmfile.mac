@@ -17,10 +17,14 @@ AC_OPEN_NEW:
         CP 0FFH
         JR Z,AC_OPEN_FAIL
         LD (IY+AP_OPENED),1
+        ; DRI function 35 returns the size in R0..R2, not a defined A.
+        ; Clear the result first: an unavailable result stays zero and cannot
+        ; describe a valid LBR (which must contain a directory record).
+        LD (IY+33),0
+        LD (IY+34),0
+        LD (IY+35),0
         LD C,35
         CALL AC_BDOS
-        OR A
-        JR NZ,AC_OPEN_FAIL
         LD L,(IY+33)
         LD H,(IY+34)
         LD C,(IY+35)
@@ -61,6 +65,13 @@ AC_CLOSE:
 AC_CLOSED:
         POP IY
         JP LBR_CLOSE
+; Capability-aware metadata stubs: CP/M 2.2 has no file timestamp service.
+; C/AS_UNSUPPORTED is a real unsupported result, never successful restoration.
+AC_GET_STAMP:
+AC_SET_STAMP:
+        LD A,AS_UNSUPPORTED
+        SCF
+        RET
 AC_WORK:
         LD L,(IX+AS_USER)
         LD H,(IX+AS_USER+1)

@@ -1,0 +1,65 @@
+{
+  "scope": "NOAH Build 002: exact-file LBR integrity audit and staged new-file extraction; not full specification/release qualification",
+  "foundation_commit": "1b0d41c",
+  "checks": [
+    {
+      "command": "python3 tools/test_lbr.py",
+      "status": "passed",
+      "cases": 123,
+      "reader_plus_audit_bytes": 1560,
+      "reader_context_bytes": 138,
+      "audit_workspace_bytes": 224
+    },
+    {
+      "command": "python3 tools/test_noah.py",
+      "status": "passed",
+      "cases": 81,
+      "deterministic_build": true,
+      "maximum_command_stack_bytes_bdos_intercepted": 30
+    },
+    {
+      "command": "python3 tools/test_noah_cpm.py",
+      "status": "passed",
+      "commands": 7,
+      "platform": "stock CP/M 2.2 / z80pack cpmsim",
+      "media": "private disposable copies; no daily disks",
+      "coverage": [
+        "TEST",
+        "new-file extraction",
+        "CRC rejection before MAKE",
+        "empty member",
+        "binary 1Ah and LUDEF padding",
+        "sequential extents and >64K",
+        "collision/recovery-file/source preservation"
+      ]
+    }
+  ],
+  "binary": {
+    "bytes": 6953,
+    "sha256": "5b51da3ca37bbba8f8ce007cc5f07a0d59e8310f0ed53f768ad60772720a1a93"
+  },
+  "source_sha256": {
+    "src/archive/archive.inc": "529a44919d2adf0634bd049706c09bbd4cad6043829835f0e000697b3c40c4c0",
+    "src/archive/lbr.mac": "32b0ad559d367eebecb52d433714d9a822157a1e525b1134b1a2d3a8225543a0",
+    "src/archive/lbraudit.inc": "10abad031ab8449f24703ad582c0a49f9011f756a85630c7ffabeb9d42028a07",
+    "src/archive/lbraudit.mac": "6f13930f2f0ff412476e88cad94e1ebe34fb749491a60748068879577e4b14df",
+    "src/archive/cpmfile.inc": "3fed2cac0f883beac13b581769af5054a4cd5bffddb211416a31d8406b8c128c",
+    "src/archive/cpmfile.mac": "5733f4d0b8fcf942803132b717f2feaf71fc9c1dfeeb5114d980d7ab639b30de",
+    "src/utilities/noah.mac": "2038c6de2df71142a4efb71b68abac5801d7d540bf56dac554d6f3cf8a33eab6",
+    "src/utilities/common/noahextract.inc": "d0918f8512f1c5ed91814964560874005cad46b38a2b4840d2defe922a73dfba",
+    "tools/build_noah.py": "ce8b7bff0efcae82aec236158dd9555eacbc0669469767a527123ae89020b489",
+    "tools/test_lbr.py": "ed94be0340abe38316c7e9fe12dbb1b155bf41529a2dd875666d2a6c4ae2ba04",
+    "tools/test_noah.py": "de6b9aefbc6b55808036baf73028962bbf113a3661138beac2702d5e9c611169",
+    "tools/test_noah_cpm.py": "abf906a6af35275260651cef9279c5b79594045ec7b2db360b36dfc127e87143",
+    "metadata/utility-versions.tsv": "ef6144811aaf6b02c255929fc28096bfa35c83183d3299b26ebe480602448198"
+  },
+  "core_or_distribution_disk_changes": false,
+  "pending": [
+    "BetterCP/M and native Model 4 execution",
+    "Native ZSM4 expansion",
+    "Independent historical LBR artifacts, including early garbage directory CRC behavior",
+    "Full selectors, member filters, overwrite/protection/recovery UI",
+    "Full metadata and source-stability qualification",
+    "ARK, codec integration, archive updates and overlays"
+  ]
+}

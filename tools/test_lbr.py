@@ -5,6 +5,7 @@ Builds a temporary z80pack core; never touches emulator disks. This checks the
 read ABI, not archive CRC testing, write support or release qualification.
 """
 import argparse
+import binascii
 import ctypes as C
 from pathlib import Path
 import shutil
@@ -16,7 +17,7 @@ import tempfile
 from test_usq import SHIM, Machine
 
 ROOT = Path(__file__).resolve().parents[1]
-ENTRIES = ('LBR_OPEN', 'LBR_NEXT', 'LBR_READ', 'LBR_CLOSE', 'READ_CB', 'WRITE_CB')
+ENTRIES = ('LBR_OPEN', 'LBR_NEXT', 'LBR_READ', 'LBR_CLOSE', 'READ_CB', 'WRITE_CB', 'LBR_AUDIT', 'LBR_CRC16')
 SIZE = 138
 
 
@@ -246,6 +247,73 @@ def tests(m):
         assert m.call('LBR_OPEN') == 5 and m.reads == 0
 
 
+def with_crcs(raw):
+    """Independent LUDEF/XMODEM oracle, including stored pad bytes."""
+    data = bytearray(raw)
+    sectors = int.from_bytes(data[14:16], 'little')
+    for position in range(32, sectors * 128, 32):
+        if data[position] != 0:
+            continue
+        start, length = struct.unpack_from('<HH', data, position + 12)
+        crc = binascii.crc_hqx(data[start * 128:(start + length) * 128], 0)
+        struct.pack_into('<H', data, position + 16, crc)
+    data[16:18] = bytes(2)
+    struct.pack_into('<H', data, 16, binascii.crc_hqx(data[:sectors * 128], 0))
+    return bytes(data)
+
+
+def audit_tests(m):
+    def audit(raw):
+        m.configure(raw)
+        m.regs['IY'].value = 0xA003
+        m.mem[0xA002:0xA003 + 225] = bytes([0xA5]) * 226
+        status = m.call('LBR_AUDIT')
+        assert m.mem[0xA002] == m.mem[0xA003 + 224] == 0xA5
+        return status
+
+    good = with_crcs(archive([entry(pad=3)], bytes(range(128))))
+    assert audit(good) == 0
+    assert int.from_bytes(bytes(m.mem[0xA003 + 70:0xA003 + 74]), 'little') == 2
+    assert int.from_bytes(bytes(m.mem[0xA003 + 74:0xA003 + 78]), 'little') == 0
+    assert audit(archive([entry()], bytes(128))) == 0
+    assert int.from_bytes(bytes(m.mem[0xA003 + 74:0xA003 + 78]), 'little') == 2
+    assert audit(with_crcs(archive())) == 0
+    # Empty members have mathematically zero CRC; do not invent availability.
+    assert audit(with_crcs(archive([entry(records=0)]))) == 0
+    assert int.from_bytes(bytes(m.mem[0xA003 + 74:0xA003 + 78]), 'little') == 1
+    for position in (20, 35, 127, 128, 255):
+        bad = bytearray(good)
+        bad[position] ^= 1
+        assert audit(bad) == 8, position
+    assert audit(with_crcs(archive([entry(records=0), entry(records=0)]))) == 9
+    assert audit(with_crcs(archive([entry(b'file    bin', records=0), entry(records=0)]))) == 9
+    for left, right in ((entry(records=2), entry(b'TWO     BIN', 2)),
+                        (entry(start=2), entry(b'TWO     BIN', 1, 2)),
+                        (entry(), entry(b'TWO     BIN'))):
+        assert audit(with_crcs(archive([left, right], bytes(3 * 128)))) == 10
+    assert audit(with_crcs(archive([entry(), entry(b'TWO     BIN', 2)], bytes(2 * 128)))) == 0
+    # Deleted entries have no defined pointers and never enter the overlap audit.
+    assert audit(with_crcs(archive([bytes([0xFE]) + bytes([0xFF]) * 31, entry()], bytes(128)))) == 0
+    m.configure(good)
+    m.regs['IY'].value = 0xA003
+    m.read_error = 128
+    assert m.call('LBR_AUDIT') == 4
+    assert m.call('LBR_NEXT') == 4
+    # Known-answer CRC and seeded chunks, independent of archive fixture writer.
+    rng = random.Random(472)
+    for size in (0, 1, 9, 128, 257, 511):
+        data = b'123456789' if size == 9 else bytes(rng.randrange(256) for _ in range(size))
+        m.configure(archive())
+        m.mem[0x6000:0x6000 + size] = data
+        initial = rng.randrange(65536)
+        m.regs['H'].value, m.regs['L'].value = 0x60, 0
+        m.regs['D'].value, m.regs['E'].value = initial >> 8, initial & 255
+        m.regs['B'].value, m.regs['C'].value = size >> 8, size & 255
+        assert m.core.test_run(m.symbols['LBR_CRC16'], 3000000) >= 0
+        actual = m.regs['D'].value * 256 + m.regs['E'].value
+        assert actual == binascii.crc_hqx(data, initial)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--assembler', type=Path, default=Path.home() / 'bin/z80asm')
@@ -262,18 +330,19 @@ def main():
         subprocess.run([args.cc, '-shared', '-fPIC', '-O2', f'-I{work}', f'-I{core}',
                         str(work / 'shim.c'), str(core / 'simglb.c'),
                         *map(str, sorted(core.glob('simz80*.c'))), '-o', str(work / 'core.so')], check=True)
-        for name in ('archive.inc', 'lbr.mac'):
+        for name in ('archive.inc', 'lbr.mac', 'lbraudit.inc', 'lbraudit.mac'):
             shutil.copy2(ROOT / 'src/archive' / name, work / name)
         (work / 'test.mac').write_text('        ORG 100H\n        INCLUDE archive.inc\n'
-            '        INCLUDE lbr.mac\n' + ''.join(f'        DW {n}\n' for n in ENTRIES)
-            + '        LBR_CODE\nREAD_CB: RET\nWRITE_CB: RET\n        END\n')
+            '        INCLUDE lbr.mac\n        INCLUDE lbraudit.inc\n        INCLUDE lbraudit.mac\n' + ''.join(f'        DW {n}\n' for n in ENTRIES)
+            + '        LBR_CODE\n        LBR_AUDIT_CODE\nREAD_CB: RET\nWRITE_CB: RET\n        END\n')
         subprocess.run([str(args.assembler), '-e32', '-fb', '-otest.bin', '-ltest.lst', 'test.mac'], cwd=work, check=True)
         image = (work / 'test.bin').read_bytes()
         if image[:0x100] == bytes(0x100):
             image = image[0x100:]
         m = Reader(C.CDLL(str(work / 'core.so')), image)
         tests(m)
-        print(f'PASS: {m.cases} LBR cases; {len(image) - 14} library bytes; {SIZE}-byte context.')
+        audit_tests(m)
+        print(f'PASS: {m.cases} LBR cases; {len(image) - len(ENTRIES) * 2 - 2} library bytes; {SIZE}-byte context.')
         print('Read ABI, metadata, bounds, faults, register preservation and canaries checked.')
 
 

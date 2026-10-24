@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import tempfile
 from build_noah import build, version_text
-from test_lbr import archive, entry
+from test_lbr import archive, entry, with_crcs
 from test_usq import SHIM
 from test_usq_com import Command, diskkey, padded
 
@@ -30,7 +30,7 @@ class Noah(Command):
             match = re.search(rf'^([0-9a-f]{{4}}).*\b{name}:\s', listing, re.M | re.I)
             assert match, name
             self.symbols[old] = int(match[1], 16)
-        for name in ('AC_OPEN', 'AC_CLOSE', 'LBR_NEXT', 'LBR_READ', 'NH_CONTEXT'):
+        for name in ('AC_OPEN', 'AC_CLOSE', 'LBR_NEXT', 'LBR_READ', 'NH_CONTEXT', 'NX_TEMP', 'NX_VERIFY'):
             match = re.search(rf'\b{name}[ \t]+([0-9a-f]{{4}})\b', listing, re.I)
             assert match, name
             self.symbols[name] = int(match[1], 16)
@@ -42,6 +42,10 @@ class Noah(Command):
         self.max_stack = 0
 
     def run(self, *args, **kwargs):
+        self.cancel_poll = kwargs.pop('cancel_poll', None)
+        self.tamper = kwargs.pop('tamper', False)
+        self.polls = 0
+        self.write_allowed = bool(args and args[0].split() and args[0].split()[0].upper() in ('/X', '/EXTRACT'))
         result = super().run(*args, **kwargs)
         minimum = C.c_ushort.in_dll(self.lib, 'minimum_sp').value
         self.max_stack = max(self.max_stack, self.symbols['UC_STACK_TOP'] - minimum)
@@ -49,7 +53,26 @@ class Noah(Command):
         return result
 
     def bdos(self, fn, de):
-        assert fn in (2, 9, 15, 16, 26, 33, 35), ('not a read-only operation', fn)
+        writes = (19, 21, 22, 23)
+        assert self.write_allowed or fn not in writes, ('not a read-only operation', fn)
+        assert fn in (2, 6, 9, 15, 16, 17, 19, 20, 21, 22, 23, 25, 26, 33, 35), fn
+        if fn == 6:
+            self.events.append((fn, de))
+            self.polls += 1
+            return 3 if self.polls == self.cancel_poll else 0
+        if fn == 20 and self.fail('verify_read'):
+            self.events.append((fn, de))
+            return 2
+        if fn == 15 and de == self.symbols['NX_VERIFY'] and self.tamper:
+            key = self.fcbkey(de)
+            if key in self.files and self.files[key]:
+                if self.tamper == 'append':
+                    self.files[key] += bytes(128)
+                elif self.tamper == 'truncate':
+                    self.files[key] = self.files[key][:-128]
+                else:
+                    self.files[key] = bytes([self.files[key][0] ^ 1]) + self.files[key][1:]
+            self.tamper = False
         if fn == 2:
             self.events.append((fn, de))
             self.console += chr(de & 255)
@@ -60,7 +83,7 @@ class Noah(Command):
                 return 255
             data = padded(self.files[self.fcbkey(de)])
             self.mem[de + 33:de + 36] = (len(data) // 128).to_bytes(3, 'little')
-            return 0
+            return 255  # DRI function 35 has no defined accumulator result.
         if fn == 33:
             self.events.append((fn, de))
             if self.fail('read'):
@@ -128,12 +151,13 @@ def tests(m):
     for tail in ('/VER FILE', 'FILE /VER', '/VER /VER'):
         assert m.run(tail, {}) == 'Invalid /VER usage.\r\n'
         assert [f for f, _ in m.events] == [9]
-    assert 'read-only LBR foundation' in m.run('/HELP', {})
+    assert 'LBR reader development build' in m.run('/HELP', {})
     assert [f for f, _ in m.events] == [9]
-    for tail in ('', '/HELP X', '*.LBR', '/TEST TEXTS.LBR', 'B7:TEXTS.LBR',
+    for tail in ('', '/HELP X', '*.LBR', 'B7:TEXTS.LBR',
                  'A:TEXTS.LBR OTHER', '/LIST', 'ABC.LONG', '.LBR', 'TOOLONG99.LBR',
                  'A..LBR', 'A/B.LBR', '/VERBOSE', 'Q:TEXTS.LBR', '/L', '/LISTX',
-                 '/HEL', '/HELPX', '/HELP\0', 'X' * 127):
+                 '/HEL', '/HELPX', '/HELP\0', 'X' * 127, '/TEST FILE C:',
+                 '/EXTRACT FILE C: EXTRA', '/X FILE B7:', '/X FILE Q:', '/X FILE *.TXT'):
         assert 'Usage:' in m.run(tail, {source: raw}), tail
         assert not any(fn in (15, 33, 35) for fn, _ in m.events)
         m.intact()
@@ -151,6 +175,124 @@ def tests(m):
     output = m.run('BAD.LBR', {diskkey(1, 'BAD.LBR'): damaged})
     assert 'FILE     BIN' in output and 'error' in output
     assert 'Listing complete' not in output
+    m.intact()
+
+
+def extraction_tests(m):
+    source = diskkey(2, 'TEXTS.LBR', 7)
+    payload = bytes(range(128)) + b'Y' * 128
+    raw = with_crcs(archive([entry(b'README  TXT', 1, 1, 3),
+                            entry(b'EMPTY      ', records=0),
+                            entry(b'BINARY  BIN', 2, 1)], payload))
+    for tail in ('/TEST B:TEXTS.LBR', '/T B:TEXTS.LBR'):
+        output = m.run(tail, {source: raw}, user=7)
+        assert 'Structure/readability checked' in output, output
+        assert 'verified (hex): 00000003; unavailable/ambiguous: 00000001' in output
+        assert not m.created and not m.deleted and not m.renamed
+        m.intact()
+    for tail in ('/EXTRACT B:TEXTS.LBR C:', '/X B:TEXTS.LBR C:', '/x b:texts.lbr c:'):
+        output = m.run(tail, {source: raw}, user=7)
+        assert m.files[diskkey(3, 'README.TXT', 7)] == payload[:125] + b'\x1a' * 3
+        assert m.files[diskkey(3, 'EMPTY', 7)] == b''
+        assert m.files[diskkey(3, 'BINARY.BIN', 7)] == b'Y' * 128
+        assert 'Extracted (hex): 00000003; skipped: 00000000; failed: 00000000' in output
+        assert 'Unprocessed (hex): 00000000' in output and not m.opened
+        assert all(not k[2].endswith(('.TMP', '.BAK')) for k in m.files)
+        m.intact()
+    # Default destination is logged drive, NOT the archive drive.
+    m.run('/X B:TEXTS.LBR', {source: raw}, drive=1, user=7)
+    assert diskkey(1, 'README.TXT', 7) in m.files and diskkey(2, 'README.TXT', 7) not in m.files
+    # Existing destinations, including the archive itself, are never replaced.
+    existing = diskkey(1, 'README.TXT', 7)
+    output = m.run('/X B:TEXTS.LBR', {source: raw, existing: b'KEEP ORIGINAL'}, user=7)
+    assert 'A:README.TXT: exists; skipped.' in output
+    assert 'skipped: 00000001' in output
+    m.intact()
+    same = with_crcs(archive([entry(b'TEXTS   LBR')], bytes(128)))
+    output = m.run('/X B:TEXTS.LBR B:', {source: same}, user=7)
+    assert 'exists; skipped' in output and not m.created
+    m.intact()
+    # Recovery namespace respects both TMP and BAK, and can never equal final.
+    single = with_crcs(archive([entry(b'README  TXT')], bytes(range(128))))
+    keep = {diskkey(1, 'README00.TMP', 7): b'KEEP TEMP',
+            diskkey(1, 'README01.BAK', 7): b'KEEP BACKUP'}
+    m.run('/X B:TEXTS.LBR', {source: single, **keep}, user=7)
+    assert m.created == [diskkey(1, 'README02.TMP', 7)]
+    m.intact()
+    for ext in (b'TMP', b'BAK'):
+        special = with_crcs(archive([entry(b'BETTRC00' + ext)], bytes(128)))
+        m.run('/X B:TEXTS.LBR', {source: special}, user=7)
+        assert m.created == [diskkey(1, 'BETTRC01.TMP', 7)]
+        m.intact()
+    full = {diskkey(1, f'README{i:02}.BAK', 7): b'KEEP' for i in range(100)}
+    output = m.run('/X B:TEXTS.LBR', {source: single, **full}, user=7)
+    assert 'failed: 00000001' in output and not m.created
+    m.intact()
+    # Corrupt/unsafe archives must fail before any output MAKE.
+    duplicate = with_crcs(archive([entry(records=0), entry(records=0)]))
+    overlap = with_crcs(archive([entry(), entry(b'TWO     BIN')], bytes(128)))
+    damaged = bytearray(single)
+    damaged[-1] ^= 1
+    for invalid in (duplicate, overlap, bytes(damaged)):
+        output = m.run('/X B:TEXTS.LBR', {source: invalid}, user=7)
+        assert 'error' in output and not m.created and not m.renamed
+        m.intact()
+    # All published outputs have been closed, reopened and compared, including
+    # CP/M padding. A corrupt temporary must never be published.
+    for tamper in (True, 'append', 'truncate'):
+        output = m.run('/X B:TEXTS.LBR', {source: single}, user=7, tamper=tamper)
+        assert 'failed: 00000001' in output and not m.renamed
+        assert set(m.files) == {source}
+        m.intact()
+    for failure, nth in (('make', 1), ('write', 1), ('close_output', 1),
+                         ('open', 2), ('verify_read', 1)):
+        output = m.run('/X B:TEXTS.LBR', {source: single}, user=7, failures={failure: nth})
+        assert 'failed: 00000001' in output and not m.renamed, (failure, output)
+        assert set(m.files) == {source} and not m.opened, (failure, m.files)
+        m.intact()
+    # Inject an archive read error specifically AFTER staging has begun.
+    m.run('/X B:TEXTS.LBR', {source: single}, user=7)
+    make_index = next(i for i, (fn, _) in enumerate(m.events) if fn == 22)
+    copy_read = sum(fn == 33 for fn, _ in m.events[:make_index]) + 1
+    output = m.run('/X B:TEXTS.LBR', {source: single}, user=7, failures={'read': copy_read})
+    assert 'failed: 00000001' in output and set(m.files) == {source} and not m.opened
+    m.intact()
+    # A publication failure retains a VERIFIED temporary and names it.
+    output = m.run('/X B:TEXTS.LBR', {source: single}, user=7, failures={'rename': 1})
+    temp = diskkey(1, 'README00.TMP', 7)
+    assert 'Temporary retained: A:README00.TMP' in output and temp in m.files
+    assert m.files[temp] == bytes(range(128)) and diskkey(1, 'README.TXT', 7) not in m.files
+    m.intact()
+    # A target appearing at publication is preserved, along with verified TMP.
+    destination = diskkey(1, 'README.TXT', 7)
+    output = m.run('/X B:TEXTS.LBR', {source: single}, user=7,
+                   late_existing=(destination, b'FOREIGN FILE'))
+    assert m.files[destination] == b'FOREIGN FILE' and temp in m.files and not m.renamed
+    assert 'Temporary retained:' in output
+    m.intact()
+    output = m.run('/X B:TEXTS.LBR', {source: single}, user=7,
+                   failures={'write': 1, 'delete': 1})
+    assert 'Temporary retained:' in output and temp in m.files and not m.renamed
+    m.intact()
+    # Controlled cancellation during preflight and after MAKE. The latter
+    # cleans staging and accounts the current member as unprocessed.
+    m.run('/X B:TEXTS.LBR', {source: single}, user=7)
+    make_index = next(i for i, (fn, _) in enumerate(m.events) if fn == 22)
+    after_make = sum(fn == 6 for fn, _ in m.events[:make_index]) + 1
+    for poll in (1, after_make, after_make + 1, after_make + 2):
+        output = m.run('/X B:TEXTS.LBR', {source: single}, user=7, cancel_poll=poll)
+        assert 'cancelled' in output, (poll, output)
+        assert set(m.files) == {source} and not m.opened and not m.renamed, (poll, m.files)
+        if poll >= after_make:
+            assert 'failed: 00000000' in output and 'Unprocessed (hex): 00000001' in output
+        m.intact()
+    output = m.run('/TEST B:TEXTS.LBR', {source: single}, user=7, cancel_poll=1)
+    assert 'cancelled' in output and 'Structure/readability checked' not in output
+    # Optional timestamps are not silently claimed restored on CP/M 2.2.
+    stamped = bytearray(single)
+    stamped[32 + 18] = 1
+    output = m.run('/X B:TEXTS.LBR', {source: with_crcs(stamped)}, user=7)
+    assert 'Timestamp not restored' in output
     m.intact()
 
 
@@ -177,6 +319,7 @@ def main():
                         *map(str, sorted(core.glob('simz80*.c'))), '-o', str(work / 'core.so')], check=True)
         m = Noah(C.CDLL(str(work / 'core.so')), image, (work / 'noah.lst').read_text(errors='replace'))
         tests(m)
+        extraction_tests(m)
         print(f'PASS: {m.cases} NOAH command/adapter cases; {len(image)} bytes; deterministic build.')
         print(f'Maximum measured command stack: {m.max_stack} bytes (BDOS intercepted).')
 
