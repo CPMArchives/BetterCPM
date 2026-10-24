@@ -242,3 +242,7 @@ These are outstanding requirements, not silently relaxed acceptance criteria.
 ### Direct-console cancellation correction
 
 DASM work output and confirmed break input use BDOS direct-console function 6, so cooked-console Ctrl-C cannot bypass staged-output cleanup during a listing. DSYM polls for cancellation during input and output; DLINK intercepts child console input, status and output, and refuses to publish a successful log after cancellation. Cleanup restores caller state before diagnostic output. The CP/M command-line editor remains the operating system’s function 10. Final packaged native console qualification is recorded separately.
+
+### Input-buffer and stack boundary
+
+The command buffer reserves the maximum 80 characters, count and size bytes, and the trailing BDOS carriage return. A full-length command previously wrote its carriage return into the first private-stack byte; the added guard test detects that case. Across all 161 host campaigns the measured private-stack high-water mark is 44 of 512 bytes, with the bottom 32 bytes unchanged. This is observed test coverage, not a proof about arbitrary future code or BIOS stack use.

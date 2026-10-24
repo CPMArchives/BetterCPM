@@ -10,7 +10,7 @@ import subprocess
 import tempfile
 
 
-def scripted(image, lines, assembler=Path.home()/'bin/z80asm', *, setup_source='', setup_entry=None, cleanup_entry=None):
+def scripted(image, lines, assembler=Path.home()/'bin/z80asm', *, setup_source='', setup_entry=None, cleanup_entry=None, ceiling=None):
     assert image[0]==0xc3
     base=0xb800
     assert len(image)<base-0x100
@@ -34,7 +34,7 @@ PAINT: LD (HL),0A5H
  INC HL
  DJNZ PAINT
 {' CALL '+setup_entry if setup_entry else ''}
- LD HL,ENTRY
+ LD HL,{base if ceiling is None else ceiling}
  LD (6),HL
  LD HL,SCRIPT
  LD (CURSOR),HL
@@ -98,4 +98,8 @@ SCRIPT:
         wrapper=(w/'h.bin').read_bytes()
         if len(wrapper)>=base:wrapper=wrapper[base:]
     assert base+len(wrapper)<=0xc000, 'script harness exceeds its reserved region'
-    return b'\xc3'+(base+3).to_bytes(2,'little')+image[3:]+bytes(base-0x100-len(image))+wrapper
+    result=bytearray(b'\xc3'+(base+3).to_bytes(2,'little')+image[3:]+bytes(base-0x100-len(image))+wrapper)
+    if ceiling is not None:
+        assert 0x100+len(image)<=ceiling<base-3
+        result[ceiling-0x100:ceiling-0x100+3]=b'\xc3'+base.to_bytes(2,'little')
+    return bytes(result)

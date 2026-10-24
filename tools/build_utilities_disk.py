@@ -30,7 +30,18 @@ PENDING=['TED full-screen editor (selected; implementation and qualification pen
 sha=lambda data:hashlib.sha256(data).hexdigest()
 
 
-def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None):
+def validate_dasm_acceptance(receipt,files,target,image):
+    proof=receipt['platforms'][target]
+    if (receipt.get('dasm_acceptance')!='PASS' or proof.get('status')!='PASS'
+        or proof['utilities_sha256']!=sha(image)
+        or not proof.get('system_sha256')
+        or any(receipt['binaries'][name]['sha256']!=sha(files[name])
+               for name in ('DASM.COM','DSYM.COM','DLINK.COM'))):
+        raise ValueError('DASM acceptance does not match packaged '+target)
+    return proof
+
+
+def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None, dasm_acceptance=None):
     from toolchain_distribution import companions, validate_acceptance
     accompanying = companions(artifacts)
     from dasm_distribution import companions as dasm_companions
@@ -42,6 +53,7 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
     if accepted is not None:
         if accepted.get('ddt_utilities_acceptance')!='PASS' or accepted.get('ddt_sha256')!=sha(files['DDT.COM']):
             raise ValueError('DDT acceptance does not match current artifact')
+    dasm_accepted=json.loads(dasm_acceptance.read_text()) if dasm_acceptance else None
     reports=[]
     output.mkdir(parents=True,exist_ok=True)
     for target in ['z80pack','trs80gp']:
@@ -87,7 +99,14 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
         report['third_party_versions']={'ZSM4.COM':'4.7','LINK.COM':'1.3'}
         report['dasm_companions']={n:sha(d) for n,d in analysis_companions.items()}
         for name in ('DASM.COM','DSYM.COM','DLINK.COM'):
-            report['component_acceptance'][name]={'status':'PENDING_RELEASE_ACCEPTANCE','sha256':sha(files[name])}
+            verdict={'status':'PENDING_RELEASE_ACCEPTANCE','sha256':sha(files[name])}
+            if dasm_accepted is not None:
+                proof=validate_dasm_acceptance(dasm_accepted,files,report['target'],data)
+                verdict.update(status='PASS',evidence_sha256=sha(dasm_acceptance.read_bytes()),
+                               paired_system_sha256=proof['system_sha256'])
+            report['component_acceptance'][name]=verdict
+        if dasm_accepted is not None:
+            report['pending']=[x for x in PENDING if not x.startswith('DASM ')]
     # The complete source companion travels with both images (GPL section 3a).
     for name,data in {**accompanying,**analysis_companions}.items():
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
@@ -130,10 +149,11 @@ def main():
     p.add_argument('--build',action='store_true',help='freshly build owned Utilities components first')
     p.add_argument('--ddt-acceptance',type=Path,help='bind a passing DDT campaign to these exact image hashes')
     p.add_argument('--toolchain-acceptance',type=Path,help='bind passing native tool campaigns to both exact images and source companions')
+    p.add_argument('--dasm-acceptance',type=Path,help='bind both-platform DASM qualification to exact binaries and disk images')
     a=p.parse_args()
     if a.build:
         for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh','dasm','dsym','dlink']:subprocess.run([sys.executable,str(a.artifacts.resolve()/'tools'/f'build_{name}.py')],cwd=a.artifacts.resolve(),check=True)
-    build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance,a.toolchain_acceptance)
+    build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance,a.toolchain_acceptance,a.dasm_acceptance)
 
 
 if __name__=='__main__':main()

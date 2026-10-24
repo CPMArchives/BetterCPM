@@ -95,6 +95,8 @@ class Dasm(Command):
         self.dma,self.console,self.exception=0x80,'',None
         self.mem[:]=bytes(65536)
         self.mem[0x100:0x100+len(self.image)]=self.image
+        stack=self.symbols['UC_STACK'];top=self.symbols['UC_STACK_TOP']
+        self.mem[stack:top]=bytes([0xa5])*(top-stack)
         self.mem[5]=0xc9;self.mem[6:8]=tpa.to_bytes(2,'little')
         guard_start=max(tpa,0x100+len(self.image))
         self.mem[guard_start:0xd800]=bytes([0xa5])*max(0,0xd800-guard_start)
@@ -109,6 +111,10 @@ class Dasm(Command):
         assert self.reg['IY'].value==0xbeef
         assert (self.drive,self.user,self.dma)==(1,0,0x80)
         assert bytes(self.mem[guard_start:0xd800])==bytes([0xa5])*max(0,0xd800-guard_start), 'resident-memory canary changed'
+        touched=[i for i in range(stack,top) if self.mem[i]!=0xa5]
+        used=top-min(touched) if touched else 0
+        self.stack_high_water=max(getattr(self,'stack_high_water',0),used)
+        assert bytes(self.mem[stack:stack+32])==bytes([0xa5])*32,('private stack guard changed',[(hex(i),self.mem[i]) for i in range(stack,stack+32) if self.mem[i]!=0xa5])
         assert not self.stale_closes,self.stale_closes
         assert not self.lines,self.lines
         self.cases+=1
@@ -451,7 +457,7 @@ def main():
             rebuilt=(w/(name+'.bin')).read_bytes()
             assert rebuilt==payload,(name,len(payload),len(rebuilt),
                 [(i,a,b) for i,(a,b) in enumerate(zip(payload,rebuilt)) if a!=b][:12])
-        print('PASS:',m.cases,'DASM full-core command campaigns')
+        print('PASS:',m.cases,'DASM full-core command campaigns; private stack high water',m.stack_high_water,'of 512 bytes, 32-byte guard intact')
 
 
 def corpus():
