@@ -2,6 +2,11 @@
 
 Status: adopted
 
+The accepted [component revision tracking policy](COMPONENT-REVISION-TRACKING.md)
+adds independent subsystem revisions and supersedes the transitional development
+banner rule below. Implementation of that migration remains pending; no frozen
+core identity or current numeric assignment changes through this policy record.
+
 This specification defines how BetterCP/M identifies the versions of the
 operating system and its independently evolving subsystems. It adds release
 identification only; it does not change subsystem boundaries, interfaces, or

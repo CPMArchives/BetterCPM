@@ -1,5 +1,10 @@
 # Utility Version and Build Identification
 
+The accepted [component revision tracking policy](COMPONENT-REVISION-TRACKING.md)
+supersedes the build terminology and display below for the pending migration.
+Existing counters and historical qualification identities remain unchanged;
+the implementation described below still uses `Build NNN` until migrated.
+
 ## Adopted 1.0 contract
 
 The common query contract recognizes an exact, case-insensitive `/VER` token
