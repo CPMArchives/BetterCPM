@@ -53,12 +53,8 @@ qualification receipts.
 
 ## Scope limits
 
-The identification migration is complete for the selected utility inventory.
-Automatic input/development tracking remains implemented only for the components
-already mapped in earlier increments. Newly migrated unmapped utilities display
-their assigned identities; they do not claim automated pristine-input detection.
-Native source preparation shares the new identities, but native execution and
-checked-profile qualification have not been rerun. Immutable disk/release
-manifests and the remaining dependency-tracking work are separate from this
-batch and are not represented as completed here. Historical records remain
-untouched. This batch is uncommitted and unpushed pending review.
+This document records the identification migration delivered in PR #496.
+The subsequent completion batch is documented in `VERSIONING-COMPLETION.md`;
+it adds the remaining input maps, build records and external release manifests.
+Native execution and checked-profile release qualification remain separate from
+versioning implementation. Historical records remain untouched.

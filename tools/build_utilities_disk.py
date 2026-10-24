@@ -86,6 +86,14 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
     # Construct and validate both before publishing either named image.
     for name,data,report in reports:
+        from release_metadata import disk_record
+        source_state=artifacts/'build-state.json'
+        if source_state.is_file():report['source']=json.loads(source_state.read_text())['source']
+        else:
+            provenance=subprocess.run(['git','-C',str(artifacts),'rev-parse','HEAD'],capture_output=True,text=True)
+            report['source']={'revision':provenance.stdout.strip() if provenance.returncode==0 else None}
+        report['release_record']=disk_record(report,data,root=artifacts)
+    for name,data,report in reports:
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
         (output/(name+'.json')).write_text(json.dumps(report,indent=2)+'\n')
         print(f'{output/name}: PROVISIONAL, {len(files)} files; {len(PENDING)} pending selections/implementations')

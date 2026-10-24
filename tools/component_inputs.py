@@ -1,7 +1,7 @@
 """Capture selected input records without assigning revisions or changing builds.
 
 An explicit baseline is a comparison reference, not a qualification receipt.
-Unsupported components/profiles fail closed; pilot maps do not certify builds.
+Unsupported components/profiles fail closed; input maps do not certify builds.
 """
 from pathlib import Path, PurePosixPath
 import argparse
@@ -24,7 +24,7 @@ def digest(data):
 def source_path(root, relative):
     path = PurePosixPath(relative)
     if (path.is_absolute() or '..' in path.parts or str(path) != relative
-            or not path.parts or path.parts[0] not in ('src', 'tools', 'third_party')):
+            or not path.parts or path.parts[0] not in ('src', 'tools', 'third_party', 'metadata')):
         raise ValueError('invalid selected source path: ' + relative)
     result = root / relative
     if not result.resolve().is_relative_to(root.resolve()):
@@ -33,10 +33,19 @@ def source_path(root, relative):
 
 
 def capture(component, assembler, *, root=ROOT, target='z80pack',
-            profile='default', build_mode='cross'):
+            profile='default', build_mode='cross', toolchain=None, configuration=None, checked_context=None):
     root = Path(root)
-    if os.environ.get('BETTERCPM_BUILD_CONTEXT'):
-        raise ValueError('prepared checked contexts are not supported by this pilot')
+    context = None
+    context_path = checked_context or os.environ.get('BETTERCPM_BUILD_CONTEXT')
+    if context_path:
+        from build_profiles import read_context
+        try:
+            context = read_context(Path(context_path), root/'src/system/layout.inc')[0]
+        except (OSError, ValueError) as error:
+            raise ValueError('invalid checked context: '+str(error)) from error
+        if context['target'] != target:
+            raise ValueError('checked context target differs from component target')
+        profile = context['profile']
     specification = json.loads((root/'metadata/component-inputs.json').read_text())
     if specification['schema'] != 1:
         raise ValueError('unsupported input-map schema')
@@ -45,14 +54,18 @@ def capture(component, assembler, *, root=ROOT, target='z80pack',
     except KeyError:
         raise ValueError('selected input map pending: ' + component) from None
     if (target not in plan.get('targets', [plan['target']])
-            or (profile, build_mode) != (plan['profile'], plan['build_mode'])):
+            or (not context and profile != plan['profile'])
+            or build_mode not in plan.get('modes', [plan['build_mode']])):
         raise ValueError('unsupported component variant')
     registry = load(root/'metadata/component-registry.json')
     version, revision = identity(component, registry)
+    if build_mode == 'native' and not (toolchain or {}).get('linker'):
+        raise ValueError('native capture requires an explicit linker binary')
     if not plan['files'] or len(plan['files']) != len(set(plan['files'])):
         raise ValueError('empty or duplicate selected input paths')
+    selected_files = plan['files'] + (plan.get('native_files', []) if build_mode == 'native' else [])
     files = {name: digest(source_path(root, name).read_bytes())
-             for name in sorted(plan['files'])}
+             for name in sorted(set(selected_files))}
     # Never hash the whole registry: other component rows are unrelated inputs.
     # The assigned revision is envelope context, outside its own input hash.
     selected = registry['components'][component]
@@ -65,7 +78,19 @@ def capture(component, assembler, *, root=ROOT, target='z80pack',
     }
     if plan.get('registry_fields'):
         inputs['selected_metadata'] = {name: selected[name] for name in plan['registry_fields']}
-    return {'schema': 1, 'status': 'pilot-input-capture',
+    if plan.get('identity_dependencies'):
+        inputs['identity_dependencies'] = {}
+        for key in plan['identity_dependencies']:
+            row = registry['components'][key]
+            fields = ('version','api_version','display_format','description') if key == component else ('version','revision','api_version','display_format','description')
+            inputs['identity_dependencies'][key] = {field:row.get(field) for field in fields}
+    if context:
+        inputs['configuration'] = dict(inputs['configuration'], checked_profile=context)
+    if configuration:
+        inputs['configuration'] = dict(inputs['configuration'], invocation=configuration)
+    for name, path in sorted((toolchain or {}).items()):
+        inputs['toolchain'][name+'_sha256'] = digest(Path(path).read_bytes())
+    return {'schema': 1, 'status': 'selected-input-capture',
             'assigned_identity': {'version': version, 'revision': revision},
             'inputs': inputs, 'fingerprint': digest(canonical(inputs))}
 
@@ -104,11 +129,13 @@ def main():
     parser.add_argument('--target', default='z80pack')
     parser.add_argument('--profile', default='default')
     parser.add_argument('--build-mode', default='cross')
+    parser.add_argument('--toolchain', action='append', default=[], metavar='NAME=PATH')
     parser.add_argument('--baseline', type=Path)
     args = parser.parse_args()
     try:
         record = capture(args.component, args.assembler, target=args.target,
-                         profile=args.profile, build_mode=args.build_mode)
+                         profile=args.profile, build_mode=args.build_mode,
+                         toolchain=dict(item.split('=',1) for item in args.toolchain))
         baseline = json.loads(args.baseline.read_text()) if args.baseline else None
         result = {'record': record, 'comparison': classify(record, baseline)}
     except (ValueError, OSError, KeyError) as error:

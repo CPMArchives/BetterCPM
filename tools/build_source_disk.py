@@ -352,6 +352,9 @@ def main() -> None:
 
     build_doc, sources_doc = build_docs(mapping, tools)
     files.extend(((0, "BUILD.DOC", build_doc), (0, "SOURCES.DOC", sources_doc)))
+    # Prepared identity data travels with native sources; no Git is needed in CP/M.
+    files.append((0, 'VERSIONS.JSN', text_file(json.dumps({key:{field:row.get(field) for field in ('version','revision','api_version')} for key,row in json.loads((ROOT/'metadata/component-registry.json').read_text())['components'].items()},sort_keys=True).encode())))
+    files.append((0, 'IDINPUTS.JSN', text_file(json.dumps({key:row['fingerprint'] for key,row in json.loads((ROOT/'metadata/component-baselines.json').read_text())['records'].items()},sort_keys=True).encode())))
     raw = install_files(files)
     recovered = extract_files(raw)
     for user, name, content in files:

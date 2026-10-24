@@ -10,6 +10,17 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def compatibility_inputs(inputs):
+    """Bind runtime admission to resident ABI/loader producers, not every utility/test."""
+    source_prefixes = ('src/bdos/', 'src/bios/', 'src/ccp/', 'src/system/', 'src/platform/')
+    tool_prefixes = ('tools/build_bdos', 'tools/build_bios', 'tools/build_ccp',
+                     'tools/build_rsx', 'tools/build_system', 'tools/checked_',
+                     'tools/system_layout', 'tools/build_profiles', 'tools/rsx_container')
+    return {name:value for name,value in inputs.items()
+            if (name.startswith(source_prefixes) and not name.endswith(('bye.mac','.md')))
+            or (name.startswith(tool_prefixes) and name.endswith('.py'))}
+
+
 def assembly_constants(contract: dict, pack_crc: int = 0) -> str:
     identity = bytes.fromhex(contract['compatibility_id'])
     if len(identity) != 16 or not 0 <= pack_crc <= 65535:
@@ -29,7 +40,8 @@ def load_contract(root: Path, assembler: Path) -> dict:
                for folder in ('src', 'tools', 'metadata', 'third_party')
                for p in sorted((root/folder).rglob('*'))
                if p.is_file() and '__pycache__' not in p.parts and p.suffix != '.pyc'}
-    if current != source['inputs']:
+    current = compatibility_inputs(current)
+    if current != compatibility_inputs(source['inputs']):
         raise ValueError('prepared source closure changed; prepare a fresh profile')
     assembler_sha = sha(assembler)
     if assembler_sha != source['assembler_sha256']:

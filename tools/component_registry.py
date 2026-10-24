@@ -124,7 +124,12 @@ def main():
     group.add_argument('--check', action='store_true')
     group.add_argument('--write', action='store_true')
     args = parser.parse_args()
-    for relative, text in projections().items():
+    from version_metadata import render, render_manager
+    views = projections()
+    views.update({'src/bdos/versions.inc': render(),
+                  'src/utilities/cpxvers.inc': render_manager('CPX', 'CX_VERSION'),
+                  'src/utilities/rsxvers.inc': render_manager('RSX', 'RS_VERSION')})
+    for relative, text in views.items():
         path = ROOT / relative
         if args.write:
             path.write_text(text, encoding='utf-8')
