@@ -519,9 +519,12 @@ directory utility unless it provides genuine additional value.
   `LOAD.COM` command-name conflict and the current stem-plus-class-extension
   profile format before approving any interface or arbitrary role-oriented
   extension. This is post-1.0 investigation, not a 1.0 implementation task.
-- [ ] Before distributing Digital Research LINK 1.3, record the exact binary
-  hash, z80pack and compatibility-suite provenance, and applicable
-  redistribution permission in the BetterCP/M third-party inventory.
+- [x] Record Digital Research LINK 1.3 binary identity, pinned z80pack archive
+  extraction, compatibility-suite equality and retained CP/M redistribution
+  permission in `third_party/dri-link/provenance.json`. ZSM4 4.7 is pinned
+  with complete corresponding source and GPL terms in `third_party/zsm4/`.
+  Utilities packaging includes both tools, on-disk notices and source companions;
+  see [qualification](docs/engineering/Utilities%20Toolchain%20Qualification.md).
 
 ## Configuration, installation, and disk formats
 

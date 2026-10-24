@@ -1,0 +1,23 @@
+{
+  "component": "ZSM4",
+  "version": "4.7",
+  "copyright": "Hector Peraza and prior contributors; original notices retained in source",
+  "license": "GPL-2.0-or-later",
+  "upstream": "https://github.com/hperaza/ZSM4",
+  "commit": "96a9ac1081172e1c08291521b77d2a715ec59c8b",
+  "binary_path": "bin/zsm4.com",
+  "unmodified": true,
+  "corresponding_source": "source.tar.gz",
+  "archive": "Complete git archive of the pinned revision, with zsm4-source/ prefix; gzip mtime zero",
+  "files_sha256": {
+    "LICENSE": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+    "source.tar.gz": "0912b595d0c1184ebe28481e421dff1a1d5807ac92f8bef739d03fc184f5fe3b",
+    "ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8"
+  },
+  "compatibility_suite": {
+    "repository": "https://github.com/CPMArchives/cpm-compatibility",
+    "commit": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+    "path": "suite/build-tools/ZSM4.COM",
+    "comparison": "byte-identical"
+  }
+}

@@ -1180,9 +1180,10 @@ UB_PUBLISH:                             ; publish FCB range without changing cal
         LD      (HL),A
         JP      UB_DIRWRITE
 
-  ; Function 22 uses the common exact-name scan to reject duplicates, then the
-  ; same iterator in free-entry mode. The loaded cache entry is the mutation
-  ; target; one dirty flush publishes the initialized extent.
+  ; Function 22 rejects an existing physical extent, not every matching name.
+  ; DRI LINK creates additional extents explicitly on EXM=0 media. Reuse Open
+  ; lookup so EXM grouping and S2 are identical to normal extent activation.
+  ; A successful free-entry flush publishes the initialized new extent.
 
 ; -------------------------------------------------------------------------------
 ; Make
@@ -1197,11 +1198,9 @@ UB_MAKECORE:                            ; makecore
         INC     HL
         CALL    UA_NAME
         JR      Z,UB_MBAD
-        XOR     A
-        LD      C,11
-        CALL    UB_ITINIT
-        CALL    UB_ITER
-        JR      NC,UB_MBAD              ; any existing extent makes the name duplicate
+        LD      DE,(UB_ITFCB)
+        CALL    UB_OPENCORE
+        JR      NC,UB_MBAD              ; reject a duplicate physical extent
         CALL    UB_MKFREE
         JR      C,UB_MBAD
         RET
