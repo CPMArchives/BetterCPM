@@ -25,9 +25,11 @@ undo, repeat-find or new opening screen. See the command matrix in
 - `publisher.mac` implements staged writes, checked close/readback, original
   identity/attribute checks, unique retained backup and bounded rollback.
   Publication never erases a destination to make room for its replacement.
+- `lines.mac` composes whole-line transfers with at most eight segments and
+  supplies only required separators at new boundaries.
 - `commands.mac`, `search.mac` and `operations.mac` adapt TED operation semantics
   to preserving storage. The obsolete lossy record engine remains separately
-  identifiable in the maintained upstream modules and is not the COM entry.
+  identifiable in the maintained upstream modules and is not linked into the live COM.
 - `frontend.mac` uses callable SCRN 1.1 and MCON 1.2, explicitly loaded before
   TED. No app-driven extension loading, terminal query, video-memory access or
   keyboard-matrix access occurs. The private stack is 2048 bytes with a 32-byte

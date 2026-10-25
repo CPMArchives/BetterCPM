@@ -58,7 +58,7 @@ class Workspace(Publisher):
     def invoke(self, entry):
         self.reg['SP'].value = self.symbols['UC_STACK_TOP']
         protected = bytes(self.mem[self.end:0xfffe])
-        result = self.lib.test_run(self.address(entry), 1000000000)
+        result = self.lib.test_run(self.address(entry), getattr(self,'instruction_budget',1000000000))
         assert self.exception is None, self.exception
         assert result >= 0, (entry, result, hex(self.reg['PC'].value))
         assert self.reg['SP'].value == self.symbols['UC_STACK_TOP']
@@ -214,6 +214,15 @@ def tests(m):
     assert m.save() == 0
     assert m.files[(16, 7, 'OUTPUT.TXT')].data == padded(result)
     cases.append('larger than twice maximum platform TPA; cache-boundary edit/save')
+    m.begin()
+    m.instruction_budget=2000000000
+    limit=(b'A'*127+b'\n')*8191
+    assert m.load(limit)==0
+    before=m.workspace()
+    assert before[2]==limit
+    assert m.load(limit+b'B'*127+b'\n',(2,31,'OVER.TXT'))!=0
+    assert m.workspace()==before
+    cases.append('8191-record maximum accepted; 8192-record source refused without replacing document')
     return cases
 
 

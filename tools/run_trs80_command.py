@@ -68,7 +68,7 @@ def key_args(text: str, delay: int = 12) -> list[str]:
             # Model 4 punctuation uses the shift row simultaneously with its
             # base key. The physical row contains : ; , - . /, producing
             # * + < = > ? when shifted.
-            shifted = {'"': (4, 2), "$": (4, 4), "*": (5, 2), "+": (5, 3), "<": (5, 4),
+            shifted = {'(': (5, 0), ')': (5, 1), '"': (4, 2), "$": (4, 4), "*": (5, 2), "+": (5, 3), "<": (5, 4),
                        "=": (5, 5), ">": (5, 6), "?": (5, 7)}
             if character in shifted:
                 row, column = shifted[character]

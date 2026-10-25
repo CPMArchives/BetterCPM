@@ -100,6 +100,8 @@ class Frontend(Commands):
             first=next((at for at in range(low+32,top) if self.mem[at]!=0xa5),top)
             self.high_water=max(getattr(self,'high_water',0),top-first)
             assert top-first<=1536, 'stack reserve below 512 bytes'
+            at=self.address('WL_GUARD')
+            assert bytes(self.mem[at:at+32])==bytes([0xa5])*32, 'inline RAM canary'
         return self.text()
 
     def text(self):return '\n'.join(''.join(map(chr,row)) for row in self.screen)
@@ -150,6 +152,10 @@ def tests(m):
         m.execute(b'',b'EX\r',ceiling=ceiling)
         assert not m.mutations
         cases.append('exclusive TPA boundary '+hex(ceiling))
+    m.execute(b'INPUT.TXT', b'P 2\r\x05\x15P 1\r\x07EX\r',
+              files={(1,7,'INPUT.TXT'):original})
+    assert m.files[(1,7,'INPUT.TXT')].data==original
+    cases.append('TED command recall E/G and U clear retain command-mode behavior')
     return cases
 
 

@@ -2,3 +2,7 @@
 # Preserve exact historical CP/M source bytes, including CRLF.
 third_party/dri-dump/DUMP.ASM -text -whitespace
 third_party/ted/** -text -whitespace
+
+# Preserve CP/M distribution text with CRLF and terminal EOF bytes.
+src/distribution/TED.TXT -text whitespace=cr-at-eol
+src/distribution/TEDCOPY.TXT -text whitespace=cr-at-eol

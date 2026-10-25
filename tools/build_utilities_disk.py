@@ -26,7 +26,8 @@ COMPONENTS.update({'ZSM4.COM':'third_party/zsm4/ZSM4.COM','LINK.COM':'third_part
                    'LINKCOPY.TXT':'src/distribution/LINKCOPY.TXT'})
 COMPONENTS.update({name+'.COM':'build/utilities/'+name+'.COM' for name in ('DASM','DSYM','DLINK')})
 COMPONENTS.update({'DASM.TXT':'src/distribution/DASM.TXT','DASMCOPY.TXT':'src/distribution/DASMCOPY.TXT'})
-PENDING=['TED full-screen editor (selected; implementation and qualification pending)','DASM tool set final release qualification pending']
+COMPONENTS.update({'TED.COM':'build/utilities/TED.COM','TED.TXT':'src/distribution/TED.TXT','TEDCOPY.TXT':'src/distribution/TEDCOPY.TXT'})
+PENDING=['TED final paired-media qualification pending','DASM tool set final release qualification pending']
 sha=lambda data:hashlib.sha256(data).hexdigest()
 
 
@@ -41,11 +42,23 @@ def validate_dasm_acceptance(receipt,files,target,image):
     return proof
 
 
-def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None, dasm_acceptance=None):
+def validate_ted_acceptance(receipt,files,target,image):
+    proof=receipt['platforms'][target]
+    if (receipt.get('ted_acceptance')!='PASS' or proof.get('status')!='PASS'
+        or proof['utilities_sha256']!=sha(image)
+        or receipt['binary']['sha256']!=sha(files['TED.COM'])
+        or not proof.get('system_sha256')):
+        raise ValueError('TED acceptance does not match packaged '+target)
+    return proof
+
+
+def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None, dasm_acceptance=None, ted_acceptance=None):
     from toolchain_distribution import companions, validate_acceptance
     accompanying = companions(artifacts)
     from dasm_distribution import companions as dasm_companions
     analysis_companions=dasm_companions(artifacts)
+    from ted_distribution import companions as ted_companions
+    editor_companions=ted_companions(artifacts)
     files={name:(artifacts/path).read_bytes() for name,path in COMPONENTS.items()}
     if not all(files.values()):raise ValueError('empty Utilities artifact')
     accepted=json.loads(ddt_acceptance.read_text()) if ddt_acceptance else None
@@ -54,6 +67,7 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
         if accepted.get('ddt_utilities_acceptance')!='PASS' or accepted.get('ddt_sha256')!=sha(files['DDT.COM']):
             raise ValueError('DDT acceptance does not match current artifact')
     dasm_accepted=json.loads(dasm_acceptance.read_text()) if dasm_acceptance else None
+    ted_accepted=json.loads(ted_acceptance.read_text()) if ted_acceptance else None
     reports=[]
     output.mkdir(parents=True,exist_ok=True)
     for target in ['z80pack','trs80gp']:
@@ -105,10 +119,18 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
                 verdict.update(status='PASS',evidence_sha256=sha(dasm_acceptance.read_bytes()),
                                paired_system_sha256=proof['system_sha256'])
             report['component_acceptance'][name]=verdict
+        report['ted_companions']={n:sha(d) for n,d in editor_companions.items()}
+        verdict={'status':'PENDING_RELEASE_ACCEPTANCE','sha256':sha(files['TED.COM'])}
+        if ted_accepted is not None:
+            proof=validate_ted_acceptance(ted_accepted,files,report['target'],data)
+            verdict.update(status='PASS',evidence_sha256=sha(ted_acceptance.read_bytes()),paired_system_sha256=proof['system_sha256'])
+        report['component_acceptance']['TED.COM']=verdict
         if dasm_accepted is not None:
-            report['pending']=[x for x in PENDING if not x.startswith('DASM ')]
+            report['pending']=[x for x in report['pending'] if not x.startswith('DASM ')]
+        if ted_accepted is not None:
+            report['pending']=[x for x in report['pending'] if not x.startswith('TED ')]
     # The complete source companion travels with both images (GPL section 3a).
-    for name,data in {**accompanying,**analysis_companions}.items():
+    for name,data in {**accompanying,**analysis_companions,**editor_companions}.items():
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
     # Construct and validate both before publishing either named image.
     for name,data,report in reports:
@@ -123,7 +145,7 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
         (output/(name+'.json')).write_text(json.dumps(report,indent=2)+'\n')
         print(f"{output/name}: PROVISIONAL, {len(files)} files; {len(report['pending'])} pending selections/implementations")
-    package={**accompanying,**analysis_companions}
+    package={**accompanying,**analysis_companions,**editor_companions}
     for name,data,report in reports:
         package[name]=data
         package[name+'.json']=(output/(name+'.json')).read_bytes()
@@ -150,10 +172,11 @@ def main():
     p.add_argument('--ddt-acceptance',type=Path,help='bind a passing DDT campaign to these exact image hashes')
     p.add_argument('--toolchain-acceptance',type=Path,help='bind passing native tool campaigns to both exact images and source companions')
     p.add_argument('--dasm-acceptance',type=Path,help='bind both-platform DASM qualification to exact binaries and disk images')
+    p.add_argument('--ted-acceptance',type=Path,help='bind TED acceptance to both exact disk images')
     a=p.parse_args()
     if a.build:
-        for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh','dasm','dsym','dlink']:subprocess.run([sys.executable,str(a.artifacts.resolve()/'tools'/f'build_{name}.py')],cwd=a.artifacts.resolve(),check=True)
-    build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance,a.toolchain_acceptance,a.dasm_acceptance)
+        for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh','dasm','dsym','dlink','ted']:subprocess.run([sys.executable,str(a.artifacts.resolve()/'tools'/f'build_{name}.py')],cwd=a.artifacts.resolve(),check=True)
+    build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance,a.toolchain_acceptance,a.dasm_acceptance,a.ted_acceptance)
 
 
 if __name__=='__main__':main()

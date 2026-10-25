@@ -1,0 +1,10 @@
+TED: Hector Peraza's editor, adapted for BetterCP/M.
+Copyright notices remain in the original and maintained sources.
+Licensed under GNU GPL version 2 or (at your option) any later version.
+NO WARRANTY. See src/utilities/ted/COPYING in the corresponding source.
+The complete source companion BetterCPM-TED-SOURCE.tar.gz accompanies
+both disk images in BetterCPM-Utilities-package.zip. Keep it with copies.
+Repository: https://github.com/CPMArchives/BetterCPM
+Original pinned snapshot and provenance: third_party/ted/.
+BetterCP/M adaptation versioning does not cover external ZSM4 or LINK.
+

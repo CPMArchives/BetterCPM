@@ -277,6 +277,31 @@ def tests(m):
     assert command(b'/one/(1,1)')==0 and m.position()==0
     assert command(b'/three/(1,1)')!=0
     cases.append('TED indexed positions, virtual columns, relative line and bounded search')
+    m.start(b'A'*4094)
+    m.putpos(4094);m.keys(b'\x16B')
+    assert m.logical()==b'A'*4094+b'B'
+    m.reg['A'].value=ord('C')
+    assert m.invoke('TC_KEY')!=0
+    assert m.logical()==b'A'*4094+b'B' and m.position()==4095
+    assert bytes(m.mem[m.address('WL_GUARD'):m.address('WL_GUARD')+32])==b'\xa5'*32
+    m.keys(b'\x08');assert m.logical()==b'A'*4094
+    cases.append('4095-byte RAM line, refused overflow, intact guard and editable retry')
+    m.start(b'A'*4095)
+    m.keys(b'\x14');assert m.logical()==b''
+    cases.append('delete-word removes full 4095-byte line without zero-count copy overrun')
+    m.start(b'A'*2048+b'\r\n'+b'B'*2047)
+    m.putpos(2050);m.keys(b'\x08')
+    assert m.logical()==b'A'*2048+b'B'*2047
+    cases.append('join reaches exact 4095-byte limit with original byte preservation')
+    m.start(b'A'*4095+b'\nB')
+    m.putpos(4096);m.reg['A'].value=8
+    assert m.invoke('TC_KEY')!=0
+    assert m.logical()==b'A'*4095+b'\nB'
+    cases.append('overlong join refused without truncating either source line')
+    m.start(b'one\ntwo\nthree')
+    assert command(b'/two/(1,3)+1')==0 and m.position()==8
+    assert command(b'/three/(1,3)-2')==0 and m.position()==0
+    cases.append('TED text-index displacement uses found line and zero column')
     return cases
 
 def main():

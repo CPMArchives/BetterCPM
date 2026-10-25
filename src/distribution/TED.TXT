@@ -1,0 +1,95 @@
+BetterCP/M TED 1.0 - full-screen text editor
+
+Load the screen and terminal modules before starting TED:
+  Model 4: RSX LOAD M4SCRN, RSX LOAD ANSI
+  z80pack ANSI terminal: RSX LOAD ANSISCRN, RSX LOAD ANSI
+Unload a conflicting terminal module first. TED does not load modules.
+Run TED [drive/user:filename] or TED /HELP or TED /VER.
+
+TED retains command, screen and browse modes. At TED>, S enters screen
+mode; an empty Ctrl-C does the same. Ctrl-C after a command executes it
+then enters screen mode. Ctrl-Z leaves screen for command mode. In browse,
+Return, Ctrl-C or Ctrl-Z returns to screen. EX leaves TED; abandonment of
+modified text requires explicit Yes (default No).
+
+Screen keys (^ means Ctrl):
+ ^S/^D left/right     ^E/^X up/down       ^R/^C page up/down
+ ^A/^F previous/next word                ^T delete next word
+ ^H Backspace left   ^G or DEL delete right (^] also delete right)
+ ^I TAB              Return split line  ^J insert empty line below
+ ^P duplicate line   ^V insert/overwrite (starts in overwrite)
+ ^Q previous tab stop ^O next tab stop   ^L line beginning/end
+ ^U screen top/bottom ^B or ^N browse    ^Z command mode
+ ^_ redraw           ^W unused
+ ^K C copy lines     ^K V move lines    ^K Y delete lines
+ ^K R read file      ^K W write file/range
+ ^K S save/continue  ^K X save/exit      ^K Q quit with safeguard
+
+K C/V/Y ask first/last lines and destination for C/V. There are no block
+marks. K R/W invoke TED's existing argument prompts, not character blocks.
+K replaces the old insert-above key; use up then J where possible.
+There is no Q prefix, repeat-find, KD or undo. Physical arrows work only
+when unambiguous: Model 4 raw arrow codes collide with control keys.
+Use the primary control navigation keys above.
+
+Movement can enter virtual columns beyond short lines. Only typing fills
+that space. In overwrite mode Backspace blanks; in insert mode it removes.
+Backspace at a line start joins the preceding line. Word operations stop
+at the line boundary; separators are space, TAB, . , : ; ! ?.
+
+Command-mode examples (line numbers are one-based):
+ P 10 5             position at line 10, visual column 5
+ S 10               position and enter screen
+ /text/             forward literal case-sensitive search, no wrap
+ /text/(1,20)+1     bounded search then move one line after the match
+ SU /old/new/       substitute using TED's existing command behavior
+ SU M /old/new/     confirm matches; SU 3 /old/new/ replaces up to 3
+ M 2 4 8            copy lines 2..4 after line 8
+ MD 2 4 8           move lines 2..4 after line 8
+ D 2 4              delete lines 2..4
+ R (5) OTHER.TXT (2,4) read source lines 2..4 after line 5
+ W 2 4 PART.TXT     write whole lines 2..4
+ W OTHER.TXT $      safely append; 0 selects replacement
+ W                  save full document to default name
+ F                  show default filename; FR shows memory headroom
+ PR 2 4             print selected lines through the console
+ CL                 clear with abandonment safeguard
+ EX                 exit with abandonment safeguard
+
+Command editing retains E recall, G recall-and-enter, D recall one byte,
+U or ^^ clear, TAB spaces, Backspace/DEL delete left. These differ from
+screen bindings. File operands accept explicit A..P, user 0..31 and 8.3
+names, not wildcards. Unqualified explicit names use the launch drive/user;
+default W uses the full identity of the latest R. Alternate/range W does
+not silently change that default or clear unsaved-document state.
+
+Text and storage:
+Literal TAB, trailing spaces, mixed CRLF/LF/CR and absent final newline
+are preserved. A no-edit full write preserves physical EOF padding too.
+Unsupported bytes/embedded EOF and lines over 4095 bytes are refused with
+line/offset diagnostics. File size is bounded by 8191 data records and
+available disk space, not TPA. Whole-line transfers add only separators
+needed at newly joined boundaries.
+
+Saves use checked unique stage files and retain the previous target as
+TEBnnnnn.BAK. TED never erases a destination to create its replacement.
+Overwrite and read-only/system protection require explicit authorization.
+Keep sufficient free space for checkpoints, stages and retained backups.
+Failures report exact work/stage/backup names to inspect; do not delete
+those files until you have checked your text. Inspect ambiguous failures
+before retrying. Backups are retained for your own cleanup.
+
+WORK A0: selects a workspace drive/user. RECOVER A0:TEWnnnnn.$$$ validates
+and copies a retained checkpoint only after confirmation; it does not erase
+the recovery source. Record the actual name reported by TED. Recovery is
+of the last committed checkpoint: one dirty line may still be in RAM.
+It is not an autosave or undo feature. A newly named document's older
+checkpoint can remain unnamed; specify a filename when saving recovery.
+Normal exit removes only a verified session-owned checkpoint. Stages and
+backups from ambiguous failures are retained for inspection.
+
+TED checks the active exclusive TPA limit before entering its private
+stack. Use only qualified SCRN/MCON providers and keep the loaded-module
+configuration fixed during editing. See the host qualification report for
+exact tested images, emulator versions and limitations.
+

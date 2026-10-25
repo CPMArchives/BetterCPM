@@ -947,6 +947,19 @@ TE_PROMPT:
 TE_PROMPT_COPIED:
  xor a
  ld (de),a
+ ld a,(TE_COMMAND_READ)
+ or a
+ ret z
+ ld a,(TE_FIELDLEN)
+ ld (TE_HISTORY_LEN),a
+ or a
+ ret z
+ ld c,a
+ ld b,0
+ ld hl,TE_FIELD
+ ld de,TE_HISTORY
+ ldir
+ xor a
  ret
 TE_CONFIRM:
  call TE_PROMPT
@@ -964,6 +977,18 @@ UIREAD:
  or a
  ld a,b
  ret z
+ cp 5
+ jp z,TE_RECALL_ALL
+ cp 7
+ jp z,TE_RECALL_GO
+ cp 4
+ jp z,TE_RECALL_ONE
+ cp 21
+ jp z,TE_COMMAND_CLEAR
+ cp 30
+ jp z,TE_COMMAND_CLEAR
+ cp 9
+ jp z,TE_COMMAND_TAB
  cp 3
  jp z,TE_COMMAND_SUBMIT
  cp 26
@@ -976,6 +1001,77 @@ UIREAD:
  ld (EDITLEN),a
  ld (EDITCUR),a
  ld a,13
+ ret
+TE_COMMAND_CLEAR:
+ xor a
+ ld (EDITLEN),a
+ ld (EDITCUR),a
+ ld (EDITSTART),a
+ ret
+TE_COMMAND_TAB:
+ ld a,(EDITLEN)
+ or 7
+ inc a
+ cp 96
+ jp nc,TE_COMMAND_IGNORED
+ ld b,a
+ ld a,(EDITLEN)
+ ld e,a
+ ld d,0
+ ld hl,EDITBUF
+ add hl,de
+TE_COMMAND_TAB_LOOP:
+ ld (hl),' '
+ inc hl
+ inc a
+ cp b
+ jp c,TE_COMMAND_TAB_LOOP
+ ld (EDITLEN),a
+ ld (EDITCUR),a
+TE_COMMAND_IGNORED:
+ xor a
+ ret
+TE_RECALL_GO:
+ call TE_RECALL_ALL
+ ld a,13
+ ret
+TE_RECALL_ALL:
+ ld a,(EDITLEN)
+ ld c,a
+ ld a,(TE_HISTORY_LEN)
+ sub c
+ jp c,TE_COMMAND_IGNORED
+ jp z,TE_COMMAND_IGNORED
+ ld b,a
+ ld e,c
+ ld d,0
+ ld hl,TE_HISTORY
+ add hl,de
+ push hl
+ ld hl,EDITBUF
+ add hl,de
+ ex de,hl
+ pop hl
+ ld c,b
+ ld b,0
+ ldir
+ ld a,(TE_HISTORY_LEN)
+ ld (EDITLEN),a
+ ld (EDITCUR),a
+ xor a
+ ret
+TE_RECALL_ONE:
+ ld a,(EDITLEN)
+ ld c,a
+ ld a,(TE_HISTORY_LEN)
+ cp c
+ jp c,TE_COMMAND_IGNORED
+ jp z,TE_COMMAND_IGNORED
+ ld e,c
+ ld d,0
+ ld hl,TE_HISTORY
+ add hl,de
+ ld a,(hl)
  ret
 TE_COMMAND_SUBMIT:
  ld a,1
@@ -1033,6 +1129,8 @@ TE_COMMAND_READ: db 0
 TE_COMMAND_FINISH: db 0
 TE_MODE: db 0
 TE_PENDING: db 0
+TE_HISTORY_LEN: db 0
+TE_HISTORY: ds 95
 TE_QUEUE_COUNT: db 0
 TE_QUEUE_HEAD: db 0
 TE_QUEUE_TAIL: db 0

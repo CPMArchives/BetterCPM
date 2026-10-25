@@ -624,6 +624,36 @@ OP_INDEX_SEARCH:
  call OP_CURRENT_LINE
  ret c
  ld hl,(OP_INDEX_ENDPTR)
+ call OP_WS
+ cp '+'
+ jp z,OP_INDEX_DISPLACE
+ cp '-'
+ jp z,OP_INDEX_DISPLACE
+ or a
+ ret
+OP_INDEX_DISPLACE:
+ ; TED text-index displacement is relative to the found line, not the
+ ; pre-search cursor. A displacement returns column zero on that line.
+ ld de,(OP_INDEX_BASE)
+ push de
+ ld (OP_INDEX_BASE),bc
+ call OP_INDEX_RELATIVE
+ pop de
+ ld (OP_INDEX_BASE),de
+ ret c
+ push hl
+ push bc
+ call OP_LINE_POS
+ pop bc
+ pop hl
+ ret c
+ push hl
+ ld hl,TC_SCAN
+ ld de,TC_POS
+ call TC_COPY3
+ ld de,0
+ ld (OP_INDEX_COLUMN),de
+ pop hl
  or a
  ret
 OP_INDEX_RELATIVE:
@@ -890,7 +920,10 @@ OP_DELETE_RANGE:
  call OP_RANGE
  ret c
  call TC_DEL_BLOCK
- jp OP_CLEAR_MARKS
+ call OP_CLEAR_MARKS
+ ret c
+ ld hl,OP_DELETED
+ jp TE_MESSAGE
 OP_COPY_MOVE:
  ; Original TED rejects a destination line within the inclusive source range.
  ld hl,(OP_DESTLINE)
@@ -914,7 +947,15 @@ OP_TRANSFER_READY:
  call TC_COPY3
  ld a,(OP_MOVE)
  call TL_TRANSFER
- jp OP_CLEAR_MARKS
+ call OP_CLEAR_MARKS
+ ret c
+ ld hl,OP_COPIED
+ ld a,(OP_MOVE)
+ or a
+ jp z,OP_TRANSFER_MESSAGE
+ ld hl,OP_MOVED
+OP_TRANSFER_MESSAGE:
+ jp TE_MESSAGE
 OP_CLEAR_MARKS:
  push af
  xor a
@@ -2171,6 +2212,9 @@ OP_FIRST: dw 1
 OP_LAST: dw 1
 OP_DESTLINE: dw 0
 OP_INSERTLINE: dw 0ffffh
+OP_COPIED: db "Copied.",0
+OP_MOVED: db "Moved.",0
+OP_DELETED: db "Deleted.",0
 OP_MOVE: db 0
 OP_PARTIAL: db 0
 OP_APPEND: db 0
