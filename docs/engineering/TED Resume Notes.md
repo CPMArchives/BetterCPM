@@ -1,6 +1,6 @@
 # TED implementation pause — 2026-10-25
 
-Paused explicitly at the user's request. Do not restart automatically or treat this checkpoint as qualified. Resume only when asked. Last previously pushed commit: 42a0859. This WIP checkpoint is intentionally local and incomplete.
+Historical pause checkpoint. The user subsequently requested resumption; see TED Qualification.md for current status. Do not treat this checkpoint as qualified. Last previously pushed commit: 42a0859. This WIP checkpoint is intentionally local and incomplete.
 
 ## Scope and implementation
 

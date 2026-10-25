@@ -59,6 +59,9 @@ class Workspace(Publisher):
         self.reg['SP'].value = self.symbols['UC_STACK_TOP']
         protected = bytes(self.mem[self.end:0xfffe])
         result = self.lib.test_run(self.address(entry), getattr(self,'instruction_budget',1000000000))
+        for _ in range(getattr(self,'instruction_chunks',1)-1):
+            if result!=-1000:break
+            result=self.lib.test_continue(1000000000)
         assert self.exception is None, self.exception
         assert result >= 0, (entry, result, hex(self.reg['PC'].value))
         assert self.reg['SP'].value == self.symbols['UC_STACK_TOP']
@@ -215,7 +218,7 @@ def tests(m):
     assert m.files[(16, 7, 'OUTPUT.TXT')].data == padded(result)
     cases.append('larger than twice maximum platform TPA; cache-boundary edit/save')
     m.begin()
-    m.instruction_budget=2000000000
+    m.instruction_chunks=16
     limit=(b'A'*127+b'\n')*8191
     assert m.load(limit)==0
     before=m.workspace()
@@ -242,7 +245,12 @@ def main():
         (work/'sim.h').write_text('#define DEF_CPU Z80\n#define EXCLUDE_I8080\n')
         for name in ('simmem.h', 'simport.h'):
             shutil.copy2(a.z80pack/'z80sim/srcsim'/name, work/name)
-        (work/'shim.c').write_text(SHIM)
+        # Continue the same CPU/stack across signed-int instruction budgets.
+        shim=SHIM.replace('int test_run(WORD address, int budget) {\n PC=address; SP-=2; memory[SP]=255; memory[(SP+1)&65535]=255;',
+                          'int test_continue(int budget) {')
+        shim += '\nint test_run(WORD address,int budget) { PC=address; SP-=2; memory[SP]=255; memory[(SP+1)&65535]=255; return test_continue(budget); }\n'
+        (work/'shim.c').write_text(shim.replace('cpu_state=ST_SINGLE_STEP;', 'if(PC==65535) return i; cpu_state=ST_SINGLE_STEP;'))
+
         core = a.z80pack/'z80core'
         subprocess.run(['cc', '-shared', '-fPIC', '-O2', f'-I{work}', f'-I{core}',
                         str(work/'shim.c'), str(core/'simglb.c'),

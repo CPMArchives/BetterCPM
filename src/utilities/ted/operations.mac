@@ -1247,7 +1247,10 @@ OP_READ_PROMPT:
  ld hl,OP_RLABEL
  call OP_PROMPT_PTR
  ret c
- jp OP_READ_ARGS
+ call OP_READ_ARGS
+ ret c
+ ld hl,OP_READMSG
+ jp TE_MESSAGE
 OP_READ_ARGS:
  ld de,0
  ld (OP_INDEX_BASE),de
@@ -1481,7 +1484,10 @@ OP_WRITE_PROMPT:
  ld hl,OP_WLABEL
  call OP_PROMPT_PTR
  ret c
- jp OP_WRITE_ARGS
+ call OP_WRITE_ARGS
+ ret c
+ ld hl,OP_WRITTENMSG
+ jp TE_MESSAGE
 OP_WRITE_ARGS:
  ld (OP_ARGPTR),hl
  xor a
@@ -1912,7 +1918,10 @@ OP_FIND:
  ret c
  call OP_END
  ret c
- jp OP_SCREEN
+ call OP_SCREEN
+ ret c
+ ld hl,OP_FOUNDMSG
+ jp TE_MESSAGE
 OP_SEARCH_RANGE:
  ld (OP_ARGPTR),hl
  ld hl,TC_LENGTH
@@ -2234,6 +2243,9 @@ OP_FINAL_LINE: db 0
 OP_DUP_TEMPLATE: db 1,0,0,0,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,0,0
 OP_ZERO: db 0,0,0
 OP_TEMPLATE: db 1,0,0,0,0,0,0,3,0,0,0,0,0,0,1,0,0,0,0,0,0
+OP_FOUNDMSG: db 'Found.',0
+OP_READMSG: db 'Read.',0
+OP_WRITTENMSG: db 'Written.',0
 OP_SAVEDMSG: db 'Saved.',0
 OP_FIRSTLABEL: db 'First line: ',0
 OP_LASTLABEL: db 'Last line: ',0

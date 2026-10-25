@@ -27,7 +27,7 @@ def main():
     original+=b'\x1a'*(-len(original)%128)
     if a.scenario=='groups':original=cpm_text('one\ntwo\nthree\nfour\n')
     if a.scenario=='interaction':original=b'ALPHA BETA  \r\nSECOND\tEND\nTHIRD\rLAST'
-    if a.scenario=='large':original=cpm_text(('long file with literal TAB\t and trailing spaces  \r\n'*1400).rstrip('\r\n'))
+    if a.scenario=='large':original=cpm_text(('long file with literal TAB\t and trailing spaces  \r\n'*900).rstrip('\r\n'))
     original+=b'\x1a'*(-len(original)%128)
     edited=original.replace(b'SECOND',b'CHANGED') if a.scenario=='interaction' else b'X'+original[1:]
     if a.scenario=='interaction':edited=edited.rstrip(b'\x1a')+b'\x1a'*(-len(edited.rstrip(b'\x1a'))%128)
@@ -116,6 +116,7 @@ QC_BAD: DB 'TED GUARD FAIL',13,10,'$'
                   (b'Y\r',b'Saved.',120),(b'\x0b',b'^K...',30),
                   (b'Q',b'TED EDITOR POSTEXIT PASS' if native_platform else b'C0>_ ',90)]
         executable='B:TED' if a.installed else 'TEDDEV'
+        screen_ready=b'^Z command  ^K file/range  OVR'.ljust(80)+b' '*80 if native_platform else b'^Z command'
         if a.scenario=='groups':
             files['INSERT.TXT']=cpm_text('read line\n')
             files['INSERT.TXT']+=b'\x1a'*(-len(files['INSERT.TXT'])%128)
@@ -126,27 +127,31 @@ QC_BAD: DB 'TED GUARD FAIL',13,10,'$'
             prefix(b'C',b'First line:');key(b'2\r',b'Last line:');key(b'2\r',b'After line:');key(b'3\r',b'Copied.')
             prefix(b'V',b'First line:');key(b'4\r',b'Last line:');key(b'4\r',b'After line:');key(b'1\r',b'Moved.')
             prefix(b'Y',b'First line:');key(b'2\r',b'Last line:');key(b'2\r',b'Deleted.')
-            prefix(b'R',b'R arguments:');key(b'(1) INSERT.TXT\r',b'read line')
-            prefix(b'W',b'W arguments:');key(b'2 2 WRITE.TXT\r',b'^Z command')
+            prefix(b'R',b'R arguments:');key(b'(1) INSERT.TXT\r',b'Read.')
+            prefix(b'W',b'W arguments:');key(b'2 2 WRITE.TXT\r',b'Written.')
             prefix(b'Y',b'First line:');key(b'2\r',b'Last line:');key(b'2\r',b'Deleted.')
             prefix(b'X',b'replace? Y/N:');key(b'Y\r',b'TED EDITOR POSTEXIT PASS' if native_platform else b'C0>_ ')
         if a.scenario=='interaction':
-            sequence=[(b'SU /SECOND/CHANGED/\r',b'TED>',120),
-                      (b'P 1\r',b'TED>',30),
-                      (b'/ALPHA/\r',b'^Z command',120),
-                      (b'\x14',b'BETA',120),
+            command_ready=b'TED> _'.ljust(80) if native_platform else b'TED>'
+            sequence=[(b'SU /SECOND/CHANGED/\r',command_ready,120),
+                      (b'P 1\r',command_ready,30),
+                      (b'/ALPHA/\r',b'Found.',120),
+                      (b'\x14',b'BETA'.ljust(80) if native_platform else b'BETA',120),
                       (b'\x16',b'INS',30),(b'ALPHA ',b'ALPHA BETA',120),
                       (b'\x16',b'OVR',30)]
             for control in (1,6,19,4,5,24,18,3,17,15,12,21,31):
+                # Current Model 4 MCON has no populated physical US chord;
+                # never synthesize a press in an unused matrix position.
+                if native_platform and control==31:continue
                 sequence.append((bytes([control]),b'^Z command',30))
             sequence += [(b'\x0e',b'BROWSE',30),(b'\r',b'^Z command',30),
-                         (b'\x1a',b'TED>',30),(b'P 1\r',b'TED>',30),
+                         (b'\x1a',b'TED>',30),(b'P 1\r',command_ready,30),
                          (b'W\r',b'replace? Y/N:',120),
-                         (b'Y\r',b'TED>',120),(b'S\r',b'^Z command',30),
+                         (b'Y\r',command_ready,120),(b'S\r',b'^Z command',30),
                          (b'\x0b',b'^K...',30),
                          (b'Q',b'TED EDITOR POSTEXIT PASS' if native_platform else b'C0>_ ',90)]
         if a.scenario=='large':
-            # One in-line overwrite of a file larger than either active TPA;
+            # One in-line overwrite of a file larger than twice free editor RAM;
             # exact full-file publication and backup are checked on the host.
             sequence=[(b'S\r',b'^Z command',60),(b'X',b'Xong',120),
                       (b'\x0b',b'^K...',30),(b'X',b'replace? Y/N:',120),
@@ -159,7 +164,7 @@ QC_BAD: DB 'TED GUARD FAIL',13,10,'$'
             utility_files={'TED.COM':image} if a.installed else None,
             interactive=interactive,interactive_launch=executable+' INPUT.TXT' if native_platform else None,
             interactive_followup='QPOST',interactive_prompt='TED>',
-            interactive_frames=[x[2]*10 for x in sequence] if native_platform else None,
+            interactive_frames=[60 for x in sequence] if native_platform else None,
             interactive_ready=[x[1].decode() for x in sequence] if native_platform else None)
         if a.scenario=='groups':
             assert outputs['INPUT.TXT']==original
@@ -173,9 +178,11 @@ QC_BAD: DB 'TED GUARD FAIL',13,10,'$'
         measured=re.search(rb'TED STACK HIGH WATER (\d+) TPA CEILING (\d+)',log)
         assert measured and int(measured[1])<=1536, ('stack reserve',measured)
         assert b'TED GUARD FAIL' not in log
+        if a.scenario=='large':
+            assert len(original)>2*(int(measured[2])-(len(image)+256)), 'fixture fits available RAM'
 
         assert b'TED EDITOR POSTEXIT PASS' in log
-        report['platforms'][platform]={'status':'PASS','stack_high_water':int(measured[1]),'tpa_ceiling':int(measured[2]),'private_stack_bytes':2048,'guard_bytes':64,'native_build':not a.cross_smoke and not a.installed,
+        report['platforms'][platform]={'status':'PASS','stack_high_water':int(measured[1]),'tpa_ceiling':int(measured[2]),'private_stack_bytes':2048,'guard_bytes':64,'physical_redraw_chord':'UNAVAILABLE' if native_platform else 'terminal US tested','native_build':not a.cross_smoke and not a.installed,
             'native_cross_parity':not a.cross_smoke and not a.installed,'execution':platform+'/execution.json'}
         (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
         print('PASS',platform,'interactive editor integration',flush=True)

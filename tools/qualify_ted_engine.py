@@ -460,6 +460,7 @@ def main():
     p.add_argument('--utilities', type=Path, required=True)
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--platforms', nargs='+', choices=['z80pack', 'trs80gp'], default=['z80pack', 'trs80gp'])
+    p.add_argument('--cross-probe',action='store_true',help='execute host-built API probe; product native parity is qualified separately')
     a = p.parse_args()
     a.output.mkdir(parents=True, exist_ok=False)
     maintained, mapping = source()
@@ -483,9 +484,14 @@ def main():
                  'BADCKP.TMP': bytes(bad), 'BAD.TXT': padded(b'good\x1aBAD'), 'EXIST.TXT': padded(ORIGINAL)}
         outputs = ['TEDCORE.COM', 'FIRST.TXT', 'SECOND.TXT', 'BLOCK.TXT', 'RECOVER.TXT',
                    'AFTERB.TXT', 'AFTERC.TXT', 'EXIST.TXT', 'TEB00000.BAK']
-        log, data = campaign(platform, files, ['B:ZSM4 TEDCORE=TEDNAT', 'B:LINK TEDCORE[A]', 'TEDCORE'],
+        commands=['B:ZSM4 TEDCORE=TEDNAT','B:LINK TEDCORE[A]','TEDCORE']
+        if a.cross_probe:
+            files.pop('TEDNAT.MAC')
+            files['TEDCORE.COM']=padded(binary)
+            commands=['TEDCORE']
+        log, data = campaign(platform, files, commands,
                              a.output/platform, system=a.system, utilities=a.utilities, extract=outputs)
-        assert b'Errors: 0' in log and b'UNDEFINED SYMBOLS' not in log.upper()
+        if not a.cross_probe:assert b'Errors: 0' in log and b'UNDEFINED SYMBOLS' not in log.upper()
         assert b'TED ENGINE NATIVE FAIL' not in log
         assert b'TED CAPACITY PASS:' in log
         used = [int(x) for x in re.findall(rb'TED ENGINE NATIVE PASS\. Stack high-water: ([0-9]+)', log)]
@@ -500,7 +506,7 @@ def main():
                     'EXIST.TXT': padded(RECOVERED), 'TEB00000.BAK': padded(ORIGINAL)}
         for name, wanted in expected.items():
             assert data[name] == wanted, (platform, name, data[name], wanted)
-        report['platforms'][platform] = {'status': 'PASS', 'native_cross_parity': True,
+        report['platforms'][platform] = {'status': 'PASS', 'native_cross_parity': not a.cross_probe,
                                        'stack_high_water': max(used), 'stack_reserved': 2048,
                                        'observed_margin': 2048-max(used), 'low_canary_bytes': 32,
                                        'payload_sha256': hashlib.sha256(binary).hexdigest(),
