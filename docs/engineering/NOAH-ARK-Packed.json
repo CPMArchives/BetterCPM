@@ -1,0 +1,298 @@
+{
+  "date": "2026-10-26",
+  "component": "NOAH",
+  "version": "1.0",
+  "revision": 15,
+  "scope": "Production ARC method-3 streaming decoding, exact length and CRC checking, staged extraction; methods 4-9 and ARK writes unsupported",
+  "status": "PASS within stated scope",
+  "qualification": {
+    "scope": "NOAH production phases; ARK methods 1-3, LBR and standalone codecs",
+    "layout": {
+      "resident_bytes": 18433,
+      "window": 18816,
+      "codec_context": 20864,
+      "ark_bytes": 2629,
+      "ark_address": 37376,
+      "cli_bytes": 18527,
+      "writer_plans": [
+        37376,
+        43520
+      ],
+      "transformed_ids": [
+        43520,
+        50176
+      ],
+      "stack": [
+        17050,
+        17562
+      ],
+      "required_ceilings": [
+        50176,
+        24388,
+        22304,
+        46071,
+        47446,
+        40064
+      ],
+      "build_id": "5a0176d615c2e6bd",
+      "companion_sha256": "3e5f4e7608a5f25f76bcffbe0935a1d178b9addce1c6d43931bb9fe8938e4626"
+    },
+    "verified_systems": {
+      "z80pack": {
+        "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1"
+      },
+      "trs80gp": {
+        "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43"
+      }
+    },
+    "resident_sha256": "14b5ea4537bb738f818aee0f8e15a0714c8298758cbeb1ece59ca27929424444",
+    "companion_sha256": "3e5f4e7608a5f25f76bcffbe0935a1d178b9addce1c6d43931bb9fe8938e4626",
+    "platforms": {
+      "z80pack": {
+        "status": "PASS",
+        "native_groups": [
+          {
+            "execution": "build-0/execution.json",
+            "console_sha256": "bfdf711c522fa0e299abb79fd52e90beedc6fd69bc04d1ab0eb86f8c6f602358",
+            "status": "PASS"
+          },
+          {
+            "reused": "build/noah-ark-packed/reuse/z80pack/build-1",
+            "status": "PASS"
+          },
+          {
+            "execution": "build-2/execution.json",
+            "console_sha256": "fcebb5ffc37a307c25664927c820613041b4d087f7d74c873120cc87adb19e2e",
+            "status": "PASS"
+          }
+        ],
+        "runtime_ceiling_hex": "C501",
+        "native_outputs": {
+          "NOAH": "8bbda1e218404147d2e8b6eb0bff7f8706e8a94af8a688e783fb4bb36519dd8e",
+          "NHCLI": "89e54c2bb5b0bdebc0297d9ae600b704f06d3d3184372fed365a0b3feebc82f9",
+          "NCSQ": "4aacb16b1450ac88f5678a72dc595dfc964d9bb1ae12beb48d35080fcae3e0db",
+          "NCUSQ": "14f829966af00301b562d9840aba11cafe27872d1301c907124131f4a072e77d",
+          "NCCR": "e3f6ecb27c1098392a23705b540a2f7959cdd162887107552e19ddae7a082970",
+          "NCUNCR": "81e6f6a7a3c226807132c054ef9d266ad30f75a5ef110be629cd866aaf1a5802",
+          "NHARK": "a017d81ee36d395e19239d18c53846ae1be3a909570d1e25adc14e42366be4df"
+        },
+        "runtime_outputs": {
+          "PACKED.BIN": "5d95df5b17b200ce09c7afbf56e33346e9d8dd7fce8892bf665e8c1e12f8fe23",
+          "EMPTY.BIN": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "PACKED.ARC": "6bcff7b4de4338813fdb1454d20ca73d8640e1679891cc2f67fe9902216d372b",
+          "EMPTY.ARC": "1888bbf3d9c1a6bc0749ff3cf49b78636bb9c07b870da3a92985ff8cbc045113",
+          "BADCRC.ARC": "7cbaeccdc08eaf3e1c888b5608c6bd439c5afdd1718d38c4a58540c66c8b435f",
+          "SHORT.ARC": "c551a2b4c26123ba7c98957c5c4560bde8a476ca01e8f146b7a2ec0f16aa0822",
+          "LONG.ARC": "a59ad90b531c1c14339430ae751c2dd02dcf7ecf542aaf3defe77cddd7e6eb3f",
+          "UNDER.ARC": "ee0ed86855f82a231c79a59aae121d8f34d3272d1c543826af9ff1b6d658d877",
+          "ORPHAN.ARC": "d5cb30ce2e87a30d08ff73ec76e864c06dfce4cf972a199238a691f2c3f5a1c6"
+        },
+        "runtime_console_sha256": "ca3657dacfc4e9b4d15eac593b46491ad50f291360a0f83d063e465406d2a8b1"
+      },
+      "trs80gp": {
+        "status": "PASS",
+        "native_groups": [
+          {
+            "execution": "build-0/execution.json",
+            "console_sha256": "0ebe3370ae5c92f586448b910b1b25dd846328a36a3f56da658423cb4ad075ad",
+            "status": "PASS"
+          },
+          {
+            "reused": "build/noah-ark-packed/reuse/trs80gp/build-1",
+            "status": "PASS"
+          },
+          {
+            "execution": "build-2/execution.json",
+            "console_sha256": "ae0b42caaa760c667c026f46cac4228e6dc6002d528a3e6230b29b08a8a6b9bd",
+            "status": "PASS"
+          }
+        ],
+        "runtime_ceiling_hex": "CA01",
+        "native_outputs": {
+          "NOAH": "8bbda1e218404147d2e8b6eb0bff7f8706e8a94af8a688e783fb4bb36519dd8e",
+          "NHCLI": "89e54c2bb5b0bdebc0297d9ae600b704f06d3d3184372fed365a0b3feebc82f9",
+          "NCSQ": "4aacb16b1450ac88f5678a72dc595dfc964d9bb1ae12beb48d35080fcae3e0db",
+          "NCUSQ": "14f829966af00301b562d9840aba11cafe27872d1301c907124131f4a072e77d",
+          "NCCR": "e3f6ecb27c1098392a23705b540a2f7959cdd162887107552e19ddae7a082970",
+          "NCUNCR": "81e6f6a7a3c226807132c054ef9d266ad30f75a5ef110be629cd866aaf1a5802",
+          "NHARK": "a017d81ee36d395e19239d18c53846ae1be3a909570d1e25adc14e42366be4df"
+        },
+        "runtime_outputs": {
+          "PACKED.BIN": "5d95df5b17b200ce09c7afbf56e33346e9d8dd7fce8892bf665e8c1e12f8fe23",
+          "EMPTY.BIN": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "PACKED.ARC": "6bcff7b4de4338813fdb1454d20ca73d8640e1679891cc2f67fe9902216d372b",
+          "EMPTY.ARC": "1888bbf3d9c1a6bc0749ff3cf49b78636bb9c07b870da3a92985ff8cbc045113",
+          "BADCRC.ARC": "7cbaeccdc08eaf3e1c888b5608c6bd439c5afdd1718d38c4a58540c66c8b435f",
+          "SHORT.ARC": "c551a2b4c26123ba7c98957c5c4560bde8a476ca01e8f146b7a2ec0f16aa0822",
+          "LONG.ARC": "a59ad90b531c1c14339430ae751c2dd02dcf7ecf542aaf3defe77cddd7e6eb3f",
+          "UNDER.ARC": "ee0ed86855f82a231c79a59aae121d8f34d3272d1c543826af9ff1b6d658d877",
+          "ORPHAN.ARC": "d5cb30ce2e87a30d08ff73ec76e864c06dfce4cf972a199238a691f2c3f5a1c6"
+        },
+        "runtime_console_sha256": "2bbe61c90b2cb5d627c78177df0aa9e8768af2be8de7b044b2b35525bc4135ce"
+      }
+    },
+    "qualification_mode": "ARC method-3 streaming decode, integrity and safe extraction"
+  },
+  "host_checks": {
+    "method3_production_transactions": 18,
+    "independent_deark_output_oracle": "PASS",
+    "existing_ark_production_transactions": 31,
+    "pinned_historical_archives": 3,
+    "historical_operations_per_archive": [
+      "LIST",
+      "TEST",
+      "EXTRACT (unsupported skip)"
+    ],
+    "existing_lbr_read_adapter_transactions": 137,
+    "lbr_write_transactions": 38,
+    "codec_overlay_transactions": 51,
+    "coverage_recovery_transactions": 15,
+    "registry_projections": "PASS",
+    "python_compilation": "PASS",
+    "diff_whitespace": "PASS"
+  },
+  "source_sha256": {
+    "src/archive/archive.inc": "529a44919d2adf0634bd049706c09bbd4cad6043829835f0e000697b3c40c4c0",
+    "src/archive/ark.inc": "c7b739785a15734456faee6f10c5f45f725ba21dbb3ed4151eda03d10c8c6b9e",
+    "src/archive/ark.mac": "71a2d9f4eda59ff1c12ebacbb348aa21724ed3b425cb2d338d3e5170033a5e43",
+    "src/archive/cpmfile.inc": "7fc7fbf76f6aacd7359bebcf2c2c8f2f1de5bb55a507aa49bcde7eafe7342738",
+    "src/archive/cpmfile.mac": "8a11b22e3e62666ff37173ebea8ac2c2d7ec1309ae92db446d88e7af9e09b752",
+    "src/utilities/noah.mac": "4816ff3ad49abc37e0ad87587f8fa061137ef88af1a2cc4ce2d5ed532a0b1db7",
+    "src/utilities/common/noahark.inc": "b7477984a59f9151421ad2af1c6bc54e83d2976c4b2afa48c013d889761707fe",
+    "src/utilities/common/noahark-phase.inc": "1a2b6d504f85ca79f70687c5e3999c203777c589ff64fb4e24334b776bd755e4",
+    "src/utilities/common/noahextract.inc": "8ed09546fd99428d1ef044862a3455b39912312a6bba2004d4afe1643912b378",
+    "src/utilities/common/noahresident.inc": "7239eac5d3f73026d7713865011f862b8f0c8aa3ead7fcd4d478a20ad7b48b7f",
+    "tools/build_noah.py": "0ee7cbc350b001162786c38b1bd4036bce529fdf48a0e350f2a21a234e705023",
+    "tools/noah_overlays.py": "40e282a98cb0224efd061188c895dbc339d677d433e65ffa02800cab5383034d",
+    "tools/test_noah.py": "efe1778ebacad70063f50ccf46e3e62cfb816827d19bf5778150b6d350e47ac9",
+    "tools/test_noah_ark.py": "b77544cf554b55b9aadfc6709d9611ec8163ff03cfc5ae5e02eaf363723c6e05",
+    "tools/test_noah_ark_packed.py": "ee3ac4866abb53ef2ca123f5beb0188d3352b7e0d53f734bc15cce3a4f546ab6",
+    "src/utilities/common/noahark-decode.inc": "944c192f66b72638b66970051a4e384071b4bde3907369b75826b79635faa3f9",
+    "tools/qualify_noah_codecs.py": "cce7d32710a3b93ab4ecbb0667b0cc9ebc41fe4ea9fe57eb281d6299265a3872",
+    "tools/dasm_native.py": "684bd017c874289edf7a17ac929fb71a101b4803a9d739032ce3251180b79219",
+    "tools/qualify_noah_proof.py": "f31993d880ce02c7244abb1c12ef139c0183db64dabfa53b1ad6cd417966c1fa",
+    "metadata/component-inputs.json": "c5569b4542573adf19e8dab2e58b87dd872a486b54bff1f3d95f47f6b7a5a82e",
+    "metadata/component-registry.json": "8ed213cf82f19542855ce8fa77a8cdc7b15840de725cb9fac0f024329bdfd539",
+    "metadata/utility-versions.tsv": "c3ad0703b3f364222f771c70b13fe04769f7f4abf9261072bbbd967f056f04e7",
+    "tests/fixtures/noah/references.json": "bec79cad8bfcbeb59bc6991915f0c41d87cc33783e812ebea194521eb0f786d2",
+    "tests/fixtures/noah/ark-methods.json": "46fe4d6200920911342250b2fdf858273972622a9712f7bcde083ba8d5625578"
+  },
+  "component_input_sha256": {
+    "src/archive/archive.inc": "529a44919d2adf0634bd049706c09bbd4cad6043829835f0e000697b3c40c4c0",
+    "src/archive/ark.inc": "c7b739785a15734456faee6f10c5f45f725ba21dbb3ed4151eda03d10c8c6b9e",
+    "src/archive/ark.mac": "71a2d9f4eda59ff1c12ebacbb348aa21724ed3b425cb2d338d3e5170033a5e43",
+    "src/archive/cpmfile.inc": "7fc7fbf76f6aacd7359bebcf2c2c8f2f1de5bb55a507aa49bcde7eafe7342738",
+    "src/archive/cpmfile.mac": "8a11b22e3e62666ff37173ebea8ac2c2d7ec1309ae92db446d88e7af9e09b752",
+    "src/archive/lbr.mac": "32b0ad559d367eebecb52d433714d9a822157a1e525b1134b1a2d3a8225543a0",
+    "src/archive/lbraudit.inc": "ad95bae205ace25a3c751279094a3c4530c055ecbd3af390f23a3f911760297a",
+    "src/archive/lbraudit.mac": "a5596d5b810c576ef5a0145ad185b8399e4cc1726d4451f6cac8f1420f28cf3b",
+    "src/archive/lbrwrite-render.inc": "1d6d7e11d10bdd8f95acdb28e4bd51caad80c15381bb0aff9715506caf967da8",
+    "src/archive/lbrwrite.inc": "9e7f4d8954ad3949d515db4fcfa986823b1ba51d5c1b4a45143391f0f46a72e3",
+    "src/archive/lbrwrite.mac": "6e8dac267b6f7fb1e654ef43a339f22c93b40c5081b4f1984872f2cc0d8a9e81",
+    "src/codec/codec.inc": "64d8478d79311923e05ef1b40d86797d89c7d97c42aa74ae28cb57abfefd356d",
+    "src/codec/codec.mac": "0182e9ed7ce1de3b414937e30b7ef84ab548dd5c749326017fd1360c3050e43e",
+    "src/codec/cr.inc": "bfbbcbecdab4ff0020e5855e7e9f832ce8d61a64b0f94c386b7c972122085007",
+    "src/codec/cr.mac": "ed03434a995e6891c37b929aecfeae4ffecb0884ece003752e3f852a928fb1d6",
+    "src/codec/sq.inc": "72f0341b8908f055c9a536f73512e8917db56996388977fd86fed3620be24946",
+    "src/codec/sq.mac": "8a985270ef97a4baf611c28be247574505f436c58731f9f147bc7009b770d6ea",
+    "src/codec/uncr.inc": "273604aa41590f497ebd8e9a4fcf8cf9687d476a1a3ccdc0fec384be2a886763",
+    "src/codec/uncr.mac": "2f6f91f9f2049a7a5e15fdb0393f09fc1755e70a2e3613565c963beadc7488f4",
+    "src/codec/usq.inc": "73fc88f4cfb0cfbec4e7865ba157e7b90ae339bd1e03eae348e6990c0e949924",
+    "src/codec/usq.mac": "32566e1c5610b93633f678734fcad263c144ee0e93d8246f9887bd4d80bdd63d",
+    "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+    "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+    "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+    "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+    "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+    "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+    "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+    "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+    "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+    "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+    "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+    "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+    "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
+    "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
+    "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
+    "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
+    "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+    "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
+    "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+    "src/utilities/common/noahaccount.inc": "c77af05e810dee6659f76057dc4bc77685ef78a9b69347064d0712d393281bf2",
+    "src/utilities/common/noahark-decode.inc": "944c192f66b72638b66970051a4e384071b4bde3907369b75826b79635faa3f9",
+    "src/utilities/common/noahark-phase.inc": "1a2b6d504f85ca79f70687c5e3999c203777c589ff64fb4e24334b776bd755e4",
+    "src/utilities/common/noahark.inc": "b7477984a59f9151421ad2af1c6bc54e83d2976c4b2afa48c013d889761707fe",
+    "src/utilities/common/noahcodec-add.inc": "12705700129726329ec4c1fc4dac3ef7b31973a40dd2ad75fd9fcd08d1db084e",
+    "src/utilities/common/noahcodec-resident.inc": "c6f0fdb13dc5a3204d1ddba05bccc78e2915f45aa89a26f5c1a900c75f57c376",
+    "src/utilities/common/noahcodec.inc": "f8509bd75fd2fddbfd7143708686b2e2cc7ba1bf08e8fe54e2f2cb012f42f2f4",
+    "src/utilities/common/noahextract.inc": "8ed09546fd99428d1ef044862a3455b39912312a6bba2004d4afe1643912b378",
+    "src/utilities/common/noahinput.inc": "8ded9870515081119b750edaca77c3c2fdf29877ff3ec2b6680ab5e2f579b6f2",
+    "src/utilities/common/noahpublish.inc": "84beea8443bedc832ba90fe2112f3fc6f8bfde811854dcec10b41a6f4d580113",
+    "src/utilities/common/noahresident-data.inc": "518c5813a05989462fc34793d063f327afbe2babd788283c442e394d1381500a",
+    "src/utilities/common/noahresident.inc": "7239eac5d3f73026d7713865011f862b8f0c8aa3ead7fcd4d478a20ad7b48b7f",
+    "src/utilities/common/noahselect.inc": "e8d497cb8070f3b11d211a7cf9134079b7cf9b97873f037891a96542de9bda21",
+    "src/utilities/common/noahwrite-parse.inc": "2aaf95301a17ee16f667010e8917dad155d4f0d067ee05e61d32967db43a601d",
+    "src/utilities/common/noahwrite.inc": "68c987a329631914b0a41df180c6f3bdabcb9cc78d809496bf64d6ccbe27e499",
+    "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+    "src/utilities/common/pipinput.inc": "6bbcfad92995a5be1997c19b8093645feba55a3c825f648445c0492104c4d8af",
+    "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+    "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+    "src/utilities/common/reninput.inc": "282aaf32ae572a9ae5289f03dcacb4333b82041806228a226aa9b2b533dffe99",
+    "src/utilities/common/sysgeninput.inc": "0902c666327bb719d2cfc6f1ef61cdb167b1248114da3e2e3af71d6425228623",
+    "src/utilities/common/ui/append.inc": "340e1a8d24992067d7f57613213fd18c3acac96940696933beea7d26658d175e",
+    "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b",
+    "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+    "src/utilities/common/ui/choiceerror.inc": "3b27714d70bd4b1cbbefe6f4bc5dfcdde5db53231e6eb426d85c453638fb0846",
+    "src/utilities/common/ui/confirm.inc": "1b841462ada57b565084da9b41bc5d7662e3d939e8c5731b4f2767bbbd214529",
+    "src/utilities/common/ui/default.inc": "64a602938d4000de77e31c7b2f4575198141fb7c590374e323ca98b3c31ab2ae",
+    "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+    "src/utilities/common/ui/format.inc": "3b037c07453f5e873864a8f6244ea44af438d05a358c186c64ff0fe9a1cbef5c",
+    "src/utilities/common/ui/inline.inc": "029a45b0f93ce8dd101c4b9d781d25a4ef6a8edb5f8d729df471827a8f0c3f13",
+    "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+    "src/utilities/common/ui/prompt.inc": "2d90d2f468687ae0ada66c043dbb2249020323da943ab5f4fb852aa53439845a",
+    "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
+    "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+    "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+    "src/utilities/noah.mac": "4816ff3ad49abc37e0ad87587f8fa061137ef88af1a2cc4ce2d5ed532a0b1db7",
+    "tools/build_dasm.py": "92220cecaca44b45f9ce2b95282451e30a940404d7f878bb964dcdbe38a1102e",
+    "tools/build_noah.py": "0ee7cbc350b001162786c38b1bd4036bce529fdf48a0e350f2a21a234e705023",
+    "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+    "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+    "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+    "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+    "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+    "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+    "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+    "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+    "tools/noah_overlays.py": "40e282a98cb0224efd061188c895dbc339d677d433e65ffa02800cab5383034d",
+    "tools/qualify_codec_native.py": "7c3ec3557b959fa24c0e98a895ef656bce87ec5320d06addde047f2cbd9155bb",
+    "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+    "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+    "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+    "tools/utility_versions.py": "b2ace8532510365911d1263407b6583b4461ee1a03f8579b50e3459f6dc830ee"
+  },
+  "oracle": {
+    "source_archive_sha256": "7eadb69be2b3105c151569abff3febd9f897d5c0597502055c7c8209b7e8be86",
+    "executable_sha256": "547ffbb6d239508c11472d7179a836172668702031416f93ea83af9e367484ca",
+    "foundation_receipt": "NOAH-ARK-Reader.json"
+  },
+  "third_party_tool_versioning": "ZSM4/LINK unchanged and excluded from BetterCP/M-owned component revisions",
+  "remaining": [
+    "Method 4 Huffman/RLE decode; methods 5-9 compatibility/workspace proofs",
+    "Compatible ARC encoding",
+    "Staged ARK creation and updates with metadata/trailer preservation",
+    "Broader interoperability/release qualification and Utilities Disk packaging",
+    "Interactive browser deferred; ZIP and LZ future scope"
+  ],
+  "evidence": {
+    "file": "NOAH-ARK-Packed-evidence.tar.gz",
+    "sha256": "fdba42ca7e6303a4efe62d1a77a1e1ce08f97dfe872af34a44a7cf0916453374",
+    "bytes": 903751,
+    "manifest_sha256": "2c0e7725042b86eede1b76a5262f24b6ccab82b518563dd8885c425b944dd324",
+    "historical_payloads_redistributed": false
+  }
+}

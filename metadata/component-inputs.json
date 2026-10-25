@@ -3367,6 +3367,7 @@
         "src/utilities/common/erainput.inc",
         "src/utilities/common/filespec.inc",
         "src/utilities/common/noahaccount.inc",
+        "src/utilities/common/noahark-decode.inc",
         "src/utilities/common/noahark-phase.inc",
         "src/utilities/common/noahark.inc",
         "src/utilities/common/noahcodec-add.inc",

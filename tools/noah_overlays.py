@@ -95,7 +95,7 @@ def production_build(assembler,out,flat_builder):
     # ARK supplements the CLI in the inactive writer arena, rather than
     # replacing it for every 128-byte extraction read.
     ark_prefix=''.join((ROOT/'src/archive'/p).read_text()+'\n' for p in ('ark.inc','ark.mac'))
-    ark_body=ark_prefix+(ROOT/'src/utilities/common/noahark-phase.inc').read_text()
+    ark_body=ark_prefix+(ROOT/'src/utilities/common/noahark-phase.inc').read_text()+(ROOT/'src/utilities/common/noahark-decode.inc').read_text()
     needed=set(re.findall(r'\b[A-Z_][A-Z_0-9]*\b',ark_body,re.I))
     ark_imports=''.join(f'{n} EQU {v}\n' for n,v in (rs|cs).items() if n in needed and n not in constant_names)
     ark_text=f' ORG {plan_address}\n'+constants+ark_imports+ark_body+'\n END\n'

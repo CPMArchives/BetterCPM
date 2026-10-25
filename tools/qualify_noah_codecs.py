@@ -143,6 +143,7 @@ def main():
     p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp'])
     p.add_argument('--reuse-build',type=Path,help='Reuse retained parity-checked native groups for unchanged source')
     p.add_argument('--reuse-ark-runtime',type=Path,help='Reuse an exact input/command-matched retained ARK runtime campaign')
+    p.add_argument('--ark-packed',action='store_true',help='Qualify production ARC method-3 decoding')
     p.add_argument('--ark-cli',action='store_true',help='Qualify stored ARK LIST/TEST/EXTRACT production integration')
     p.add_argument('--coverage-recovery',action='store_true',help='Qualify observed audit coverage and recovery summaries')
     p.add_argument('--member-accounting',action='store_true',help='Qualify extraction totals and ADD candidate accounting')
@@ -159,7 +160,7 @@ def main():
     names=['NOAH','NHCLI','NCSQ','NCUSQ','NCCR','NCUNCR','NHARK']
     expected={n:(cross/(n+'.bin')).read_bytes() for n in names}
     tools={n:(ROOT/'third_party'/folder/n).read_bytes() for n,folder in [('ZSM4.COM','zsm4'),('LINK.COM','dri-link')]}
-    report={'scope':'NOAH production controller/codec/ARK phase integration; stored ARK reads, LBR and standalone codecs',
+    report={'scope':'NOAH production phases; ARK methods 1-3, LBR and standalone codecs',
       'layout':layout,'verified_systems':systems,'resident_sha256':sha(image),
       'companion_sha256':sha(ovl),'platforms':{}}
     if a.stamp_delta_from:
@@ -207,6 +208,31 @@ def main():
             body=native[n][:len(expected[n])]
             native_ovl.extend(body+bytes(-len(body)%128))
         assert bytes(native_ovl)==ovl
+        if a.ark_packed:
+            from test_noah_ark_packed import fixtures,packed
+            from test_usq_com import padded
+            payload,cases=fixtures()
+            files={'NOAH.COM':native['NOAH'],'NOAH.OVL':bytes(native_ovl),'NCMEM.COM':mem,**cases}
+            prefix=['A:','RSX LOAD ANSISCRN','RSX LOAD ANSI','C:'] if platform=='z80pack' else []
+            commands=prefix+['NCMEM','NOAH /Q /LIST PACKED.ARC','NOAH /Q /TEST PACKED.ARC',
+                'NOAH /Q /X /Y PACKED.ARC','NOAH /Q /X /Y EMPTY.ARC']
+            commands += ['NOAH /Q /X /Y '+n for n in ('BADCRC.ARC','SHORT.ARC','LONG.ARC','UNDER.ARC','ORPHAN.ARC')]
+            log,outputs=campaign(platform,files,commands,base/'runtime',system=a.system,utilities=a.utilities,
+                extract=['PACKED.BIN','EMPTY.BIN']+list(cases),utility_files=tools,timeout=600)
+            ceiling='C501' if platform=='z80pack' else 'CA01'
+            assert ('NOAH QUAL TPA '+ceiling).encode() in log
+            assert re.findall(rb'Outcome: ([a-z/-]+)\.',log)==[b'success']*4+[b'failure']*5
+            assert b'unsupported' not in log and b'operation stopped' not in log
+            assert b'verified 00000001; unavailable/ambiguous: 00000000' in log
+            assert outputs['PACKED.BIN']==padded(payload) and outputs['EMPTY.BIN']==b''
+            for n,b in cases.items():assert outputs[n]==b,n
+            report['qualification_mode']='ARC method-3 streaming decode, integrity and safe extraction'
+            report['platforms'][platform]={'status':'PASS','native_groups':groups,'runtime_ceiling_hex':ceiling,
+                'native_outputs':{n:sha(b) for n,b in native.items()},'runtime_outputs':{n:sha(b) for n,b in outputs.items()},
+                'runtime_console_sha256':sha(log)}
+            (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
+            print('PASS',platform,'native method-3 decode and corruption refusal with providers loaded',flush=True)
+            continue
         if a.ark_cli:
             from test_noah_ark import fixtures
             from test_usq_com import padded
