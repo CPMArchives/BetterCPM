@@ -23,7 +23,10 @@ archive/file batch dispositions. The
 extraction batch totals and ADD candidate dispositions. The
 [coverage/recovery increment](NOAH%20Coverage%20and%20Recovery%20Reporting.md) adds
 observed LIST/TEST/EXTRACT coverage and distinct reported recovery-artifact totals.
-ARK, format-specific qualification, the browser and release packaging remain open.
+The [ARK reader foundation](NOAH%20ARK%20Reader%20Foundation.md) begins native
+ARC framing/stored-CRC work as an isolated library/proof. ARK production dispatch,
+compressed methods, updates, format-specific qualification, the browser and release
+packaging remain open.
 The bounded [compatibility/API/overlay and Model 4 memory proof](NOAH%20Compatibility%20and%20Memory%20Proof.md)
 records increments 1–2 and prototype limits. Its native LINK gate is now closed
 on source-verified system media; see the [resolution](NOAH-Model4-LINK-Resolution.json).

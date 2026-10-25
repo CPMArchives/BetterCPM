@@ -91,7 +91,7 @@ class Reader(Machine):
         names = ('IX', 'IY', 'SP', 'A_', 'B_', 'C_', 'D_', 'E_', 'H_', 'L_', 'F_')
         before = [self.regs[n].value for n in names]
         config = bytes(self.mem[self.ctx:self.ctx + 12])
-        steps = self.core.test_run(self.symbols[name], 3000000)
+        steps = self.core.test_run(self.symbols[name], getattr(self, 'instruction_budget', 3000000))
         assert steps >= 0, (name, steps, hex(self.regs['PC'].value))
         assert not self.callback_exception, self.callback_exception
         assert before == [self.regs[n].value for n in names], name

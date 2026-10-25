@@ -1,0 +1,123 @@
+{
+  "schema": 1,
+  "scope": "ARC reader foundation only; no production NOAH ARK commands or writers",
+  "reference_pins_sha256": "bec79cad8bfcbeb59bc6991915f0c41d87cc33783e812ebea194521eb0f786d2",
+  "methods": [
+    {
+      "id": 1,
+      "description": "stored, obsolete 25-byte header",
+      "header_bytes": 25,
+      "enumerate": true,
+      "raw_stored_read": true,
+      "decoded_read": true,
+      "integrity_test": true,
+      "encode": false
+    },
+    {
+      "id": 2,
+      "description": "stored",
+      "header_bytes": 29,
+      "enumerate": true,
+      "raw_stored_read": true,
+      "decoded_read": true,
+      "integrity_test": true,
+      "encode": false
+    },
+    {
+      "id": 3,
+      "description": "packed RLE",
+      "header_bytes": 29,
+      "enumerate": true,
+      "raw_stored_read": true,
+      "decoded_read": false,
+      "integrity_test": false,
+      "encode": false
+    },
+    {
+      "id": 4,
+      "description": "squeezed RLE/Huffman",
+      "header_bytes": 29,
+      "enumerate": true,
+      "raw_stored_read": true,
+      "decoded_read": false,
+      "integrity_test": false,
+      "encode": false
+    },
+    {
+      "id": 5,
+      "description": "crunched static LZW",
+      "header_bytes": 29,
+      "enumerate": true,
+      "raw_stored_read": true,
+      "decoded_read": false,
+      "integrity_test": false,
+      "encode": false
+    },
+    {
+      "id": 6,
+      "description": "crunched RLE/static LZW",
+      "header_bytes": 29,
+      "enumerate": true,
+      "raw_stored_read": true,
+      "decoded_read": false,
+      "integrity_test": false,
+      "encode": false
+    },
+    {
+      "id": 7,
+      "description": "crunched ARC 4.6 hash variant",
+      "header_bytes": 29,
+      "enumerate": true,
+      "raw_stored_read": true,
+      "decoded_read": false,
+      "integrity_test": false,
+      "encode": false
+    },
+    {
+      "id": 8,
+      "description": "crunched RLE/dynamic LZW",
+      "header_bytes": 29,
+      "enumerate": true,
+      "raw_stored_read": true,
+      "decoded_read": false,
+      "integrity_test": false,
+      "encode": false
+    },
+    {
+      "id": 9,
+      "description": "squashed dynamic LZW",
+      "header_bytes": 29,
+      "enumerate": true,
+      "raw_stored_read": true,
+      "decoded_read": false,
+      "integrity_test": false,
+      "encode": false
+    }
+  ],
+  "planned_native_selectors": {
+    "/SQ": {
+      "method": 4,
+      "implemented": false
+    },
+    "/CR": {
+      "method": 8,
+      "implemented": false
+    }
+  },
+  "unknown_method_policy": "reject AS_UNSUPPORTED; do not guess a header length",
+  "trailer_policy": {
+    "0": "exact end",
+    "1": "all trailing bytes 00h/1Ah",
+    "2": "opaque trailer; unvalidated, no clean-coverage or write-preservation claim"
+  },
+  "not_supported": [
+    "self-extracting prefixes or header resynchronization",
+    "encrypted/Spark high-bit methods",
+    "extended headers including methods 10/11/20+",
+    "compressed integrity testing/decoding",
+    "duplicate-name audit",
+    "date conversion",
+    "all archive writes",
+    "production CLI/overlay integration"
+  ]
+}
