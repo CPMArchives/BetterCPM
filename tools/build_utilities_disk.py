@@ -175,7 +175,12 @@ def main():
     p.add_argument('--ted-acceptance',type=Path,help='bind TED acceptance to both exact disk images')
     a=p.parse_args()
     if a.build:
-        for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh','dasm','dsym','dlink','ted']:subprocess.run([sys.executable,str(a.artifacts.resolve()/'tools'/f'build_{name}.py')],cwd=a.artifacts.resolve(),check=True)
+        for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh','dasm','dsym','dlink','ted']:
+            command=[sys.executable,str(a.artifacts.resolve()/'tools'/f'build_{name}.py')]
+            # TED defaults to its development directory; packaging consumes the
+            # binary, native source and build records together in utilities.
+            if name=='ted':command+=['--output',str(a.artifacts.resolve()/'build/utilities')]
+            subprocess.run(command,cwd=a.artifacts.resolve(),check=True)
     build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance,a.toolchain_acceptance,a.dasm_acceptance,a.ted_acceptance)
 
 
