@@ -61,8 +61,8 @@ def tests(m):
     # Compressed ADD preflight uses the same safe choice before its own stage.
     text=m.run('/ADD /SQ NEW.LBR B7:TEXT.DAT',inputs,failures={'read':1},keys='R')
     assert len(members(m.files[new]))==1 and m.answers==[ord('R')] and not m.opened,text
-    # Once output staging has begun, no retry is offered over uncertain output.
-    text=m.run('/SQ B7:TEXT.DAT C3:',inputs,failures={'write':1},keys='R')
+    # A retained candidate stage prevents retry over uncertain output.
+    text=m.run('/SQ B7:TEXT.DAT C3:',inputs,failures={'write':1,'delete':1},keys='R')
     assert not m.answers and 'Retry/Skip/Abort?' not in text and target not in m.files,text
     # An input that cannot be confirmed closed must not be reset/reopened over.
     text=m.run('/SQ B7:*.DAT C3:',{**inputs,second:b'NEXT'},failures={'source_close':0},keys='R')

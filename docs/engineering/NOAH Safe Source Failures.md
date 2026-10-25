@@ -96,3 +96,7 @@ and [portable evidence](NOAH-Safe-Source-Failures-evidence.tar.gz).
 Remaining work includes staged-operation failure choices where safety can be
 established, complete outcome accounting, ARK handlers and final Utilities Disk
 packaging. The interactive browser remains deferred.
+
+The subsequent [revision 10 staged-failure increment](NOAH%20Staged%20Failures.md)
+extends these choices to verified disposable-stage cleanup boundaries. The
+revision 9 measurements and receipts remain historical.

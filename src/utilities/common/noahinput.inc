@@ -46,8 +46,8 @@ NI_YES:
         LD A,1
         OR A
         RET
-; Safe source-preflight boundary only. No output/staging or live input may
-; remain when called. /Y never waits; Enter defaults to Skip, not Retry.
+; Call only at a confirmed safe restart boundary: candidate staging must be
+; absent and inputs restartable/closed. /Y never waits; Enter defaults to Skip.
 NI_FAILURE:
         LD A,(NS_YES)
         OR A

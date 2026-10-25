@@ -7,6 +7,7 @@ from pathlib import Path
 import random
 import re
 import struct
+import subprocess
 from build_noah import build,ROOT
 from noah_overlays import assemble
 from dasm_native import campaign
@@ -63,6 +64,77 @@ NL: DB 13,10,'$'
     return assemble(assembler,out,'NCMEM',text)[0]
 
 
+def disk_filler(assembler,out):
+    # Disposable qualification media only. Fill after SUBMIT has materialized
+    # its work file; leave enough directory entries for zero-length outputs.
+    text=''' ORG 100H
+ LD DE,FCB
+ LD C,22
+ CALL 5
+ CP 255
+ JR Z,BAD
+ LD DE,BUFFER
+ LD C,26
+ CALL 5
+LOOP: LD DE,FCB
+ LD C,21
+ CALL 5
+ OR A
+ JR NZ,FULL
+ LD HL,(LEFT)
+ DEC HL
+ LD (LEFT),HL
+ LD A,H
+ OR L
+ JR NZ,LOOP
+ JR BAD
+FULL: LD DE,FCB
+ LD C,16
+ CALL 5
+ CP 255
+ JR Z,BAD
+ LD DE,DONE
+ JR PRINT
+BAD: LD DE,ERROR
+PRINT: LD C,9
+ CALL 5
+ JP 0
+LEFT: DW 8192
+FCB: DB 0,'NFILL   DAT'
+ REPT 24
+ DB 0
+ ENDM
+BUFFER: DS 128
+DONE: DB 'NOAH DISK FILL DONE',13,10,'$'
+ERROR: DB 'NOAH DISK FILL FAILED',13,10,'$'
+ END
+'''
+    return assemble(assembler,out,'NFILL',text)[0]
+
+
+def near_full(raw,definition,folder):
+    # Reserve four blocks for startup/SUBMIT; NFILL consumes the small remainder
+    # natively. Filling the entire Model 4 volume through console automation
+    # would spend the campaign on unrelated long extent writes.
+    def run(*args):
+        return subprocess.run(args,cwd=folder,check=True,capture_output=True)
+    before=run('fsck.cpm','-T','raw','-f',definition,'-n',str(raw))
+    used,total=map(int,re.findall(rb'(\d+)/(\d+) blocks',before.stdout+before.stderr)[-1])
+    defs=(folder/'diskdefs').read_text()
+    section=re.search(r'diskdef '+re.escape(definition)+r'\s+(.*?)\bend\b',defs,re.S)[1]
+    block=int(re.search(r'blocksize\s+(\d+)',section)[1])
+    size=(total-used-4)*block
+    assert size>0
+    base=folder/'NBASE.DAT';base.write_bytes(bytes(size))
+    run('cpmcp','-T','raw','-f',definition,str(raw),str(base),'0:NBASE.DAT')
+    after=run('fsck.cpm','-T','raw','-f',definition,'-n',str(raw))
+    now,maximum=map(int,re.findall(rb'(\d+)/(\d+) blocks',after.stdout+after.stderr)[-1])
+    assert maximum-now==4
+    (folder/'full-media-preparation.json').write_text(json.dumps({
+        'block_bytes':block,'used_before':used,'total_blocks':total,
+        'reserved_free_blocks':4,'prefill_bytes':size,'prefill_sha256':sha(base.read_bytes())},indent=2)+'\n')
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--system',type=Path,required=True)
@@ -70,6 +142,7 @@ def main():
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp'])
     p.add_argument('--reuse-build',type=Path,help='Reuse retained parity-checked native groups for unchanged source')
+    p.add_argument('--staged-failures',action='store_true',help='Qualify stage cleanup and Retry/Skip on full media')
     p.add_argument('--source-failures',action='store_true',help='Qualify safe source-preflight choices')
     p.add_argument('--quiet-reporting',action='store_true',help='Run the bounded quiet-reporting native campaign')
     p.add_argument('--stamp-delta-from',type=Path,help='Qualify only the timestamp diagnostic delta from a retained full campaign')
@@ -129,6 +202,41 @@ def main():
             body=native[n][:len(expected[n])]
             native_ovl.extend(body+bytes(-len(body)%128))
         assert bytes(native_ovl)==ovl
+        if a.staged_failures:
+            rng=random.Random(506);data=bytes(rng.randrange(256) for _ in range(8192))
+            raw=with_crcs(archive([entry(b'FIRST   DAT',start=1,records=64),
+                                  entry(b'EMPTY   DAT',start=65,records=0)],data))
+            post=b'\x11\x0b\x01\x0e\x09\xcd\x05\x00\xc3\x00\x00NOAH STAGED POSTEXIT PASS\r\n$'
+            files={'NOAH.COM':native['NOAH'],'NOAH.OVL':bytes(native_ovl),'NCMEM.COM':mem,
+                   'NFILL.COM':disk_filler(assembler,cross),'NFPOST.COM':post,'TEST.LBR':raw}
+            prefix=['A:','RSX LOAD ANSISCRN','RSX LOAD ANSI','C:'] if platform=='z80pack' else []
+            commands=prefix+['NCMEM','NFILL']
+            question=b'Retry/Skip/Abort?';launch='NOAH /X TEST.LBR'
+            if platform=='trs80gp':
+                sequence=[(b'R',question,120),(b'S',b'NOAH STAGED POSTEXIT PASS',120)]
+            else:
+                sequence=[((launch+'\r').encode(),question,120),(b'R',question,120),
+                          (b'S',b'Unprocessed (hex):',120),(b'NFPOST\r',b'NOAH STAGED POSTEXIT PASS',60)]
+            log,outputs=campaign(platform,files,commands,base/'runtime',system=a.system,utilities=a.utilities,
+                extract=['EMPTY.DAT'],setup=near_full,interactive=sequence,interactive_launch=launch if platform=='trs80gp' else None,
+                interactive_followup='NFPOST' if platform=='trs80gp' else None,interactive_prompt=question.decode(),
+                interactive_frames=[3600,600] if platform=='trs80gp' else None,
+                interactive_ready=[question.decode(),'NOAH STAGED POSTEXIT PASS'] if platform=='trs80gp' else None,
+                timeout=600)
+            ceiling='C501' if platform=='z80pack' else 'CA01'
+            assert outputs['EMPTY.DAT']==b''
+            assert ('NOAH QUAL TPA '+ceiling).encode() in log
+            for text in (b'NOAH DISK FILL DONE',b'R/S/A [S]: R',b'R/S/A [S]: S',
+                         b'NOAH STAGED POSTEXIT PASS',b'failed: 00000001',b'Unprocessed (hex): 00000000'):
+                assert text in log,text
+            assert b'NOAH DISK FILL FAILED' not in log
+            report['qualification_mode']='staged failures on full media'
+            report['platforms'][platform]={'status':'PASS','native_groups':groups,'runtime_ceiling_hex':ceiling,
+                'native_outputs':{n:sha(b) for n,b in native.items()},'runtime_outputs':{n:sha(b) for n,b in outputs.items()},
+                'runtime_console_sha256':sha(log)}
+            (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
+            print('PASS',platform,'native stage Retry/Skip on full disposable media',flush=True)
+            continue
         if a.source_failures:
             payload=b'safe next source\x00\x1a\xff'
             post=b'\x11\x0b\x01\x0e\x09\xcd\x05\x00\xc3\x00\x00NOAH FAILURE POSTEXIT PASS\r\n$'

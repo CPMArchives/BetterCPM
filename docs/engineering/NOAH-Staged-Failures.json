@@ -1,0 +1,154 @@
+{
+  "date": "2026-10-25",
+  "component": "NOAH",
+  "version": "1.0",
+  "revision": 10,
+  "scope": "Safe staged restart, trusted member skip, cleanup ownership and all-extent existence checks",
+  "status": "PASS within stated scope",
+  "qualification": {
+    "scope": "NOAH production controller/codec phase integration; LBR and codec commands only",
+    "layout": {
+      "resident_bytes": 17778,
+      "window": 18048,
+      "codec_context": 20096,
+      "cli_bytes": 17289,
+      "writer_plans": [
+        35456,
+        41600
+      ],
+      "transformed_ids": [
+        41600,
+        48256
+      ],
+      "stack": [
+        16395,
+        16907
+      ],
+      "required_ceilings": [
+        48256,
+        23620,
+        21536,
+        45303,
+        46678
+      ],
+      "build_id": "d64d859091504782",
+      "companion_sha256": "b0ecaa7688126bf46b6e7f41d5c133da4eb5eaa279df13d52d2b17620208c6ab"
+    },
+    "verified_systems": {
+      "z80pack": {
+        "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1"
+      },
+      "trs80gp": {
+        "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43"
+      }
+    },
+    "resident_sha256": "88a7f761f589bd5fd28e76b55ec0f65e8755b63a8e9819bca191ad69901a6d58",
+    "companion_sha256": "b0ecaa7688126bf46b6e7f41d5c133da4eb5eaa279df13d52d2b17620208c6ab",
+    "platforms": {
+      "z80pack": {
+        "status": "PASS",
+        "native_groups": [
+          {
+            "execution": "build-0/execution.json",
+            "console_sha256": "8ac5cd0918ace0af80fa541aa22af3e80abd3b97b459dd7c2f9f137e7f59073c",
+            "status": "PASS"
+          },
+          {
+            "reused": "build/noah-failures/qualified/z80pack/build-1",
+            "status": "PASS"
+          }
+        ],
+        "runtime_ceiling_hex": "C501",
+        "native_outputs": {
+          "NOAH": "49350adda2b2ce15a7fc8e73c3adf0e1d04976b52ed8310f86983e799d6031a6",
+          "NHCLI": "3868ef16aa5ecbceeb655ce5838c72c8ae8a70d8f0930fbf852e8514626136dc",
+          "NCSQ": "ce958c98f2dd893dfdabc628ac9918fc6dd5345955ffc9269ac5f59fd145ffb3",
+          "NCUSQ": "b52ad0566ac67da3bff2777d24e5d734bd003bdcaf0c8b25c35a970aad49fc0b",
+          "NCCR": "8f4124c897afd0302d6c2c02ba74cb30e9ea6d23814097baaaba1e69cf91eac8",
+          "NCUNCR": "783711a8c2c8172c09ba23eb6c33f9e848e82a9c8c53802d078d901d1633b5f3"
+        },
+        "runtime_outputs": {
+          "EMPTY.DAT": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "runtime_console_sha256": "4d6dba8842645051cc0e02574ce24d8f03c28e743ebdbc88d0ee2c359dffd16a"
+      },
+      "trs80gp": {
+        "status": "PASS",
+        "native_groups": [
+          {
+            "execution": "build-0/execution.json",
+            "console_sha256": "a681c7b96dccf461b740636e45ba7a5d23a8886bb7de75cb11d605099185eb5f",
+            "status": "PASS"
+          },
+          {
+            "reused": "build/noah-failures/qualified/trs80gp/build-1",
+            "status": "PASS"
+          }
+        ],
+        "runtime_ceiling_hex": "CA01",
+        "native_outputs": {
+          "NOAH": "49350adda2b2ce15a7fc8e73c3adf0e1d04976b52ed8310f86983e799d6031a6",
+          "NHCLI": "3868ef16aa5ecbceeb655ce5838c72c8ae8a70d8f0930fbf852e8514626136dc",
+          "NCSQ": "ce958c98f2dd893dfdabc628ac9918fc6dd5345955ffc9269ac5f59fd145ffb3",
+          "NCUSQ": "b52ad0566ac67da3bff2777d24e5d734bd003bdcaf0c8b25c35a970aad49fc0b",
+          "NCCR": "8f4124c897afd0302d6c2c02ba74cb30e9ea6d23814097baaaba1e69cf91eac8",
+          "NCUNCR": "783711a8c2c8172c09ba23eb6c33f9e848e82a9c8c53802d078d901d1633b5f3"
+        },
+        "runtime_outputs": {
+          "EMPTY.DAT": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "runtime_console_sha256": "178c12c2c3611c3f95e89a9ce4390bc31ddbc414724a30d0910cea3112f897f5"
+      }
+    },
+    "qualification_mode": "staged failures on full media"
+  },
+  "host_checks": {
+    "staged_failure_transactions": 19,
+    "adapter_cases": 137,
+    "lbr_write_cases": 38,
+    "codec_cases": 51,
+    "source_failure_cases": 21,
+    "quiet_cases": 31,
+    "registry_projections": "PASS"
+  },
+  "source_sha256": {
+    "metadata/component-registry.json": "6ab61035035de5895f49546f8aa908a445735f2eef3e36070d4327febd29a960",
+    "metadata/utility-versions.tsv": "394b1623a60725c9c1ede9ed3b5f3f34a9c3040d69eebefe962e061146c7e16d",
+    "src/utilities/common/noahcodec.inc": "bbec3bce818ac822ee5216014f193d53d82cb7f144ab26275934adf2122c4e4a",
+    "src/utilities/common/noahextract.inc": "1563ec7915fee848139ba717557c69c24df06ef1736883b0618c027225c4b34d",
+    "src/utilities/common/noahinput.inc": "32137eb661c3fb6b7002a6e381e05142bc27e46f9cdb1271764e6f9434d3e068",
+    "src/utilities/common/noahpublish.inc": "78016ecd26be849ec1b69d7a2a71969d8aa58ff7baea5f41402faa0ce2e19ed3",
+    "src/utilities/common/noahwrite.inc": "77de8b4b31463abcece240e993ce0446a94b96b35cc367e08d58bf2fe24c777e",
+    "src/utilities/noah.mac": "dce42e57cc0e072f3974cd76a18b258a542f2d292b29ecdd78cbcd591780b254",
+    "tools/build_noah.py": "00c3570b130e62ff27f5a2b047ef079997171f220a742911b05ddc84c24d0fe5",
+    "tools/qualify_noah_codecs.py": "a92af72789d4fa9cef1d26d27b1bfdc78ae2b05ef5567aa9e4928e097b168107",
+    "tools/test_noah.py": "2df129858ef1fd8cc5b933ae27701d826e12daf8a958b6709030d238d98c8197",
+    "tools/test_noah_failures.py": "234b8288811d0ccba05ab2d9dc89156a0d298c0db1cda71f6a031b9ea9166ca0",
+    "tools/test_noah_staged.py": "47a76db8570472f9c6f5466f357601e828fbd3ebcc30030761ee78f576352a62"
+  },
+  "reused_codec_baseline_receipt_sha256": "fe3fd88083b81fa73e987c20e287964a039d69fba67acdb72c28e04f5c3c1d51",
+  "conservative_stops": [
+    "sticky archive reader failures",
+    "retained stage or unconfirmed MAKE name",
+    "unconfirmed input/output handles",
+    "live compressed writer aggregate failure",
+    "inner expansion-spool failure",
+    "publication and rollback boundaries"
+  ],
+  "remaining": [
+    "complete outcome reporting",
+    "ARK handlers",
+    "release media acceptance",
+    "interactive browser deferred"
+  ],
+  "evidence": {
+    "file": "NOAH-Staged-Failures-evidence.tar.gz",
+    "sha256": "d36861bfdce274fd1c0a8723bca65e5cbc371a9832b3606d86b41861d6143035",
+    "bytes": 631958,
+    "manifest_sha256": "024021260cf5b684a39ed9916ed91c6d20337ba88bac2d4ff5f3f47f7063da1c"
+  }
+}

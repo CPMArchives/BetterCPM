@@ -198,6 +198,8 @@ NC_AUTHORIZE:
 NC_STAGE_OUTPUT:
  CALL NX_TEMP_PAIR
  JP C,NC_FAILED
+ LD A,1
+ LD (NX_ATTEMPTED),A
  LD DE,NX_TEMP
  LD C,22
  CALL AC_BDOS
@@ -316,29 +318,17 @@ NC_REPORT_FAILURE:
  CALL NH_HEX
  LD DE,NH_NEWLINE
  CALL NH_PRINT
- ; Retry only the source preflight: never restart over staging, uncertain
- ; closes, member spools or publication/rollback state.
+ ; Restart only after confirmed source/stage cleanup, never over member
+ ; spools, retained files or a publication/rollback boundary.
  LD A,(NC_RETURN_MODE)
- OR A
- JP NZ,NC_FINISH
- LD A,(NX_LIVE)
- LD B,A
- LD A,(NX_KEEP)
- OR B
- LD B,A
- LD A,(NX_TEMP_OPEN)
- OR B
- LD B,A
- LD A,(NX_VERIFY_OPEN)
- OR B
- JP NZ,NC_FINISH
- LD A,(NS_STOP)
  OR A
  JP NZ,NC_FINISH
  CALL NR_CLEAN_INPUT
  LD A,(NR_INOPEN)
  OR A
  JP NZ,NC_FINISH
+ CALL NX_RETRY_CLEANUP
+ JP C,NC_FINISH
  CALL NI_FAILURE
  JP C,NC_FINISH
  CP 'R'
@@ -375,6 +365,8 @@ NC_RESET:
  LD (NX_VERIFY_OPEN),A
  LD (NX_LIVE),A
  LD (NX_KEEP),A
+ LD (NX_ATTEMPTED),A
+ LD (NX_PUBLICATION),A
  LD HL,NX_FINAL
  LD DE,NX_FINAL+1
  LD BC,36*6-1
