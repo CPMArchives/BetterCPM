@@ -316,8 +316,47 @@ NC_REPORT_FAILURE:
  CALL NH_HEX
  LD DE,NH_NEWLINE
  CALL NH_PRINT
+ ; Retry only the source preflight: never restart over staging, uncertain
+ ; closes, member spools or publication/rollback state.
+ LD A,(NC_RETURN_MODE)
+ OR A
+ JP NZ,NC_FINISH
+ LD A,(NX_LIVE)
+ LD B,A
+ LD A,(NX_KEEP)
+ OR B
+ LD B,A
+ LD A,(NX_TEMP_OPEN)
+ OR B
+ LD B,A
+ LD A,(NX_VERIFY_OPEN)
+ OR B
+ JP NZ,NC_FINISH
+ LD A,(NS_STOP)
+ OR A
+ JP NZ,NC_FINISH
+ CALL NR_CLEAN_INPUT
+ LD A,(NR_INOPEN)
+ OR A
+ JP NZ,NC_FINISH
+ CALL NI_FAILURE
+ JP C,NC_FINISH
+ CP 'R'
+ JP Z,NC_SOURCE
 NC_FINISH:
  CALL NR_CLEAN_INPUT
+ LD A,(NR_INOPEN)
+ OR A
+ JR Z,NC_INPUT_SAFE
+ LD A,1
+ LD (NS_STOP),A
+ LD (NS_ARC_FAILED),A
+ LD A,2
+ LD (NC_RESULT),A
+ CALL NC_PRINT_SOURCE
+ LD DE,NC_INPUT_CLOSE_TEXT
+ CALL NH_PRINT
+NC_INPUT_SAFE:
  LD A,(NC_PREP_MODE)
  OR A
  RET NZ
@@ -407,6 +446,8 @@ NC_SOURCE_SIZE:
  CALL AC_BDOS
  CP 255
  JP Z,NC_SIZE_BAD
+ LD A,1
+ LD (NR_INOPEN),A
  LD DE,NR_INPUT
  LD C,35
  CALL AC_BDOS
@@ -446,6 +487,8 @@ NC_SIZE_SHIFT:
  CALL AC_BDOS
  CP 255
  JR Z,NC_SIZE_BAD
+ XOR A
+ LD (NR_INOPEN),A
  CALL NW_TARGET_USER
  LD A,(NC_READ_RESULT)
  CP 2
@@ -619,6 +662,7 @@ NC_SQ_WORD: DB '/SQ',0
 NC_CR_WORD: DB '/CR',0
 NC_EX_WORD: DB '/EXPAND',0
 NC_DONE_TEXT: DB ' verified codec output published.',13,10,'$'
+NC_INPUT_CLOSE_TEXT: DB ' source close uncertain; batch stopped.',13,10,'$'
 NC_FAILED_TEXT: DB ' codec operation failed; original retained. Error ','$'
 NC_ORDINARY_TEXT: DB 'Not compressed; copying unchanged bytes.',13,10,'$'
 NC_UNCHANGED_TEXT: DB 'No output published; unchanged.',13,10,'$'

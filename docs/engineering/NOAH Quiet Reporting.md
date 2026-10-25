@@ -65,7 +65,7 @@ campaign remains in [NOAH Codec and Overlay Integration](NOAH%20Codec%20and%20Ov
 Full NOAH completion, ARK, remaining failure/outcome handling, the interactive
 browser and final Utilities Disk packaging remain separate work.
 
-## Remaining failure-path issue
+## Historical failure-path issue (resolved in revision 9)
 
 The focused failure-visibility check also confirmed an existing behavior shared
 by normal and quiet mode: a new ADD whose selected source fails preflight can
@@ -73,3 +73,7 @@ still publish an empty LBR. This is outside the reporting-only change and is not
 accepted as full specification conformance. The next failure/outcome increment
 must leave the new archive absent when every proposed source fails or is skipped
 and no explicit valid capacity/compaction change remains.
+
+The empty-archive issue above is resolved by the subsequent
+[revision 9 safe source-failure increment](NOAH%20Safe%20Source%20Failures.md).
+The revision 8 receipts remain historical.

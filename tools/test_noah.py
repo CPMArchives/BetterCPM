@@ -116,6 +116,10 @@ class Noah(Command):
         if fn==15 and de==self.symbols['NW_SOURCE'] and self.writer_change:
             self.files[self.writer_change[0]]=self.writer_change[1]
             self.writer_change=None
+        if fn==16 and de in (self.symbols['NR_INPUT'],self.symbols['NW_SOURCE']):
+            if self.fail('source_close'):
+                self.events.append((fn,de))
+                return 255
         if de==self.symbols['NR_FCB'] and fn in (15,16,20):
             if fn==15:
                 self.overlay_opens+=1
