@@ -7,9 +7,10 @@ from test_lbr import archive,entry,with_crcs
 
 
 def fixtures():
+    from test_noah_ark_lzw import lzw
     return {
         'STORED.ARC':member(b'old',1,b'OLD.TXT')+member(b'\0'*129,2,b'ZERO.BIN')+b'\x1a\0',
-        'MIXED.ARK':member(b'hello',2,b'FIRST.TXT')+member(b'packed',8,b'PACKED.TXT',logical=50)+member(b'last',1,b'LAST.TXT')+b'\x1a\0',
+        'MIXED.ARK':member(b'hello',2,b'FIRST.TXT')+lzw(b'packed data',8,b'PACKED.TXT')+member(b'last',1,b'LAST.TXT')+b'\x1a\0',
         'BAD.ARC':member(b'bad',crc=0)+b'\x1a\0',
         'DUP.ARC':member(b'a',name=b'SAME.TXT')+member(b'b',name=b'same.txt')+b'\x1a\0',
         'TAIL.ARC':member(b'tail',name=b'TAIL.TXT')+b'\x1a\0opaque',
@@ -31,11 +32,10 @@ def tests(m):
     mixed=diskkey(1,'MIXED.ARK')
     for op in ('/LIST','/TEST','/X /Y'):
         t=m.run(op+' MIXED.ARK',{mixed:f['MIXED.ARK']})
-        assert 'ARK method 08: unsupported' in t and 'Outcome: warning/partial.' in t,t
-        assert diskkey(1,'PACKED.TXT') not in m.files,t
+        assert 'unsupported' not in t and 'Outcome: success.' in t,t
         if '/X' in op:
-            assert m.files[diskkey(1,'LAST.TXT')]==padded(b'last') and 'skipped: 00000001' in t,t
-        if '/LIST' not in op:assert 'verified 00000002; unavailable/ambiguous: 00000001' in t,t
+            assert m.files[diskkey(1,'LAST.TXT')]==padded(b'last') and m.files[diskkey(1,'PACKED.TXT')]==padded(b'packed data'),t
+        if '/LIST' not in op:assert 'verified 00000003; unavailable/ambiguous: 00000000' in t,t
     for name in ('BAD.ARC','DUP.ARC'):
         for op in ('/TEST','/X /Y'):
             t=m.run(op+' '+name,{diskkey(1,name):f[name]})
@@ -47,9 +47,6 @@ def tests(m):
         assert 'opaque trailer: unvalidated' in t and 'Outcome: warning/partial.' in t,t
     t=m.run('/X /Y EMPTY.ARC',{diskkey(1,'EMPTY.ARC'):f['EMPTY.ARC']})
     assert 'No members matched' in t and not m.created,t
-    every=b''.join(member(b'packed',i,f'M{i}.DAT'.encode(),logical=50) for i in range(5,10))+b'\x1a\0'
-    t=m.run('/X /Y ALL.ARC',{diskkey(1,'ALL.ARC'):every})
-    assert all(f'ARK method {i:02X}: unsupported' in t for i in range(5,10)) and not m.created,t
     dated=bytearray(member(b'date',name=b'DATE.TXT')+b'\x1a\0');dated[19:23]=b'\x01\x21\x00\x00'
     t=m.run('/X /Y DATE.ARC',{diskkey(1,'DATE.ARC'):bytes(dated)})
     assert 'ARK DOS timestamp not restored' in t and 'Outcome: warning/partial.' in t,t
@@ -83,14 +80,21 @@ def historical(m):
     from pathlib import Path
     root=Path(__file__).resolve().parents[1]
     pins=json.loads((root/'tests/fixtures/noah/references.json').read_text())['artifacts']
-    m.instruction_budget=150000000
+    m.instruction_budget=700000000
     for name in ('crc32a.arc','de-lbr.arc','nulu15.arc'):
         raw=(root/'build/noah-proof/references'/name).read_bytes()
         assert hashlib.sha256(raw).hexdigest()==pins[name]['sha256']
         source=diskkey(1,'HIST.ARC')
-        for op in ('/LIST','/TEST','/X /Y'):
-            text=m.run(op+' HIST.ARC',{source:raw})
-            assert 'Outcome: warning/' in text and not m.created and m.files[source]==raw,text
+        text=m.run('/LIST HIST.ARC',{source:raw})
+        assert 'unsupported' not in text and 'Outcome: failure.' not in text and not m.created,text
+        text=m.run('/TEST HIST.ARC',{source:raw})
+        assert 'unsupported' not in text and 'Outcome: failure.' not in text and not m.created,text
+        text=m.run('/X /Y HIST.ARC',{source:raw})
+        assert 'unsupported' not in text and 'Outcome: failure.' not in text,text
+        for output in (root/'build/noah-proof/references'/('decoded-'+name)).iterdir():
+            dest='.'.join(output.name.split('.')[2:]).upper()
+            assert m.files[diskkey(1,dest)]==padded(output.read_bytes()),(name,dest,text)
+        assert m.files[source]==raw,text
         print('PASS: production historical LIST/TEST/EXTRACT',name)
 
 if __name__=='__main__':

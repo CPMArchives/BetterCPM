@@ -99,9 +99,8 @@ the generated independent fixture/oracle and native qualification stated above.
 
 ## Remaining work
 
-Methods 5–7 (historical static LZW variants) and 8/9 (dynamic LZW) still require
-compatibility and dictionary/workspace proofs. Their memory use must not be
-assumed to fit the present narrow controller margin. Compatible encoding,
-staged ARK writes and metadata/trailer preservation, broader interoperability
-and release acceptance, and disk packaging remain open. Interactive browsing,
-ZIP and LZH/LZ remain deferred.
+Methods 5–9 were added in revision 17; see the [LZW decoding and workspace
+proof](NOAH%20ARK%20LZW%20Decoding.md). Compatible encoding, staged ARK writes
+and metadata/trailer preservation, broader interoperability and release
+acceptance, and disk packaging remain open. Interactive browsing, ZIP and LZH/LZ
+remain deferred.

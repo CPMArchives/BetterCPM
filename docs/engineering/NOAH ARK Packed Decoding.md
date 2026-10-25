@@ -89,10 +89,9 @@ Unchanged codec modules may reuse retained native builds only after byte parity.
 
 ## Remaining decoding work
 
-Next is method 4 (Huffman plus this RLE stage), with independent fixtures and
-measured tree/workspace bounds. Methods 5–7 and dynamic LZW methods 8/9 require
-separate compatibility and workspace proofs; the current controller leaves only
-a small memory margin, so their dictionary storage must not be assumed to fit.
+Method 4 was added in revision 16, and methods 5–9 were added in revision 17;
+see the [Huffman/RLE qualification](NOAH%20ARK%20Huffman%20Decoding.md) and the
+[LZW compatibility and workspace proof](NOAH%20ARK%20LZW%20Decoding.md).
 Compatible encoding, staged ARK writes and preservation, broader historical
 interoperability/release qualification and disk packaging remain open. The
 interactive browser, ZIP and LZH/LZ remain deferred.

@@ -95,7 +95,7 @@ def production_build(assembler,out,flat_builder):
     # ARK supplements the CLI in the inactive writer arena, rather than
     # replacing it for every 128-byte extraction read.
     ark_prefix=''.join((ROOT/'src/archive'/p).read_text()+'\n' for p in ('ark.inc','ark.mac'))
-    ark_body=ark_prefix+(ROOT/'src/utilities/common/noahark-phase.inc').read_text()+(ROOT/'src/utilities/common/noahark-decode.inc').read_text()+(ROOT/'src/utilities/common/noahark-huffman.inc').read_text()
+    ark_body=ark_prefix+(ROOT/'src/utilities/common/noahark-phase.inc').read_text()+(ROOT/'src/utilities/common/noahark-decode.inc').read_text()+(ROOT/'src/utilities/common/noahark-huffman.inc').read_text()+(ROOT/'src/utilities/common/noahark-lzw-bridge.inc').read_text()
     needed=set(re.findall(r'\b[A-Z_][A-Z_0-9]*\b',ark_body,re.I))
     ark_imports=''.join(f'{n} EQU {v}\n' for n,v in (rs|cs).items() if n in needed and n not in constant_names)
     ark_text=f' ORG {plan_address}\n'+constants+ark_imports+ark_body+'\n END\n'
@@ -103,12 +103,22 @@ def production_build(assembler,out,flat_builder):
     assert plan_address+(len(raw)+127)//128*128 <= plan_address+12800
     payloads.append(raw);requirements.append(plan_address-window+(len(raw)+127)//128*128);entries.append((plan_address,0,0))
     (out/'NHARK.MAC').write_bytes(native_export(ark_text))
+    ark_bytes=len(raw)
+    lzw_body=(ROOT/'src/utilities/common/noahlzw-phase.inc').read_text()
+    needed=set(re.findall(r'\b[A-Z_][A-Z_0-9]*\b',lzw_body,re.I))
+    lzw_imports=''.join(f'{n} EQU {v}\n' for n,v in rs.items() if n in needed and n not in constant_names and n!='NR_WINDOW')
+    lzw_text=f' ORG {window}\nNR_WINDOW EQU {window}\n'+constants+lzw_imports+lzw_body+'\n END\n'
+    lzw_raw,_=assemble(assembler,out,'NCLZW',lzw_text)
+    # The phase must leave NR_CONTEXT intact while replacing the CLI window.
+    assert len(lzw_raw)<=2048, len(lzw_raw)
+    payloads.append(lzw_raw);requirements.append(4096+24576);entries.append((window,window+3,window+6))
+    (out/'NCLZW.MAC').write_bytes(native_export(lzw_text))
     build_id=hashlib.sha256(b''.join(payloads)+constants.encode()+resident.encode()+data.encode()+resident_data.encode()).digest()[:8]
-    header=bytearray(128);header[:4]=b'NHOV';struct.pack_into('<HH8s',header,4,2,1,build_id)
+    header=bytearray(128);header[:4]=b'NHOV';struct.pack_into('<HH8s',header,4,3,1,build_id)
     header[18]=len(payloads);record=1;companion=bytearray(128)
     for i,(raw,need,entry) in enumerate(zip(payloads,requirements,entries)):
         count=(len(raw)+127)//128
-        struct.pack_into('<BBHHHHHHH',header,24+i*16,i+1,1,record,count,len(raw),need,*entry)
+        struct.pack_into('<BBHHHHH',header,24+i*12,i+1,1,record,count,len(raw),need,entry[0])
         companion.extend(raw+bytes(count*128-len(raw)));record+=count
     struct.pack_into('<H',header,16,record);companion[:128]=header
     struct.pack_into('<I',header,124,zlib.crc32(companion));companion[:128]=header
@@ -121,7 +131,7 @@ def production_build(assembler,out,flat_builder):
     combined=(out/'NOAH.lst').read_text(errors='replace')+'\n'+(out/'NHCLI.lst').read_text(errors='replace')
     (out/'noah.lst').write_text(combined)
     report={'resident_bytes':len(image),'window':window,'codec_context':window+2048,
-      'ark_bytes':len(raw),'ark_address':plan_address,'cli_bytes':len(cli),'writer_plans':[plan_address,plan_address+6144],
+      'lzw_bytes':len(lzw_raw),'lzw_workspace':[window+4096,window+4096+24576],'ark_bytes':ark_bytes,'ark_address':plan_address,'cli_bytes':len(cli),'writer_plans':[plan_address,plan_address+6144],
       'transformed_ids':[plan_address+6144,plan_address+12800],
       'stack':[rs['NH_STACK'],rs['NH_STACK_TOP']],'required_ceilings':[window+n for n in requirements],
       'build_id':build_id.hex(),'companion_sha256':hashlib.sha256(companion).hexdigest()}

@@ -143,6 +143,7 @@ def main():
     p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp'])
     p.add_argument('--reuse-build',type=Path,help='Reuse retained parity-checked native groups for unchanged source')
     p.add_argument('--reuse-ark-runtime',type=Path,help='Reuse an exact input/command-matched retained ARK runtime campaign')
+    p.add_argument('--ark-lzw',action='store_true',help='Qualify production ARC methods 5-9 decoding and dictionary workspace')
     p.add_argument('--ark-squeezed',action='store_true',help='Qualify production ARC method-4 decoding')
     p.add_argument('--ark-packed',action='store_true',help='Qualify production ARC method-3 decoding')
     p.add_argument('--ark-cli',action='store_true',help='Qualify stored ARK LIST/TEST/EXTRACT production integration')
@@ -158,10 +159,10 @@ def main():
     a.output.mkdir(parents=True,exist_ok=False)
     cross=a.output/'cross';assembler=Path.home()/'bin/z80asm';image=build(assembler,cross)
     ovl=(cross/'NOAH.OVL').read_bytes();layout=json.loads((cross/'layout.json').read_text())
-    names=['NOAH','NHCLI','NCSQ','NCUSQ','NCCR','NCUNCR','NHARK']
+    names=['NOAH','NHCLI','NCSQ','NCUSQ','NCCR','NCUNCR','NHARK','NCLZW']
     expected={n:(cross/(n+'.bin')).read_bytes() for n in names}
     tools={n:(ROOT/'third_party'/folder/n).read_bytes() for n,folder in [('ZSM4.COM','zsm4'),('LINK.COM','dri-link')]}
-    report={'scope':'NOAH production phases; ARK methods 1-4, LBR and standalone codecs',
+    report={'scope':'NOAH production phases; ARK methods 1-9, LBR and standalone codecs',
       'layout':layout,'verified_systems':systems,'resident_sha256':sha(image),
       'companion_sha256':sha(ovl),'platforms':{}}
     if a.stamp_delta_from:
@@ -209,15 +210,81 @@ def main():
             body=native[n][:len(expected[n])]
             native_ovl.extend(body+bytes(-len(body)%128))
         assert bytes(native_ovl)==ovl
-        if a.ark_packed or a.ark_squeezed:
-            if a.ark_squeezed:
+        if a.ark_lzw or a.ark_packed or a.ark_squeezed:
+            if a.ark_lzw:
+                from test_noah_ark_lzw import lzw,fixtures as lzw_fixtures
+                from test_ark import member,crc16
+                import random
+                small,_=lzw_fixtures()
+                small_members=b''.join(lzw(small,method,f'M{method}.BIN'.encode()) for method in range(5,10))
+                small_members+=lzw(b'',8,b'EMPTY8.BIN')+lzw(b'',9,b'EMPTY9.BIN')
+                rng=random.Random(517)
+                maximum=bytes(rng.randrange(256) for _ in range(20000))
+                large_members=lzw(maximum,8,b'FULL8.BIN')+lzw(maximum,9,b'FULL9.BIN')
+                cases={'ALL.ARC':small_members+b'\x1a\0','FULL.ARC':large_members+b'\x1a\0'}
+                invalid={
+                    'BADCRC.ARC':bytearray(lzw(small,5,b'BADCRC.BIN')),
+                    'BADSTAT.ARC':member(b'\xff',5,b'BAD5.BIN',logical=1,crc=crc16(b'A')),
+                    'BADDYN.ARC':member(b'\x0c\x2c\x01',8,b'BAD8.BIN',logical=1,crc=crc16(b'A')),
+                }
+                invalid['BADCRC.ARC'][23]^=1
+                cases.update({name:(bytes(data)+b'\x1a\0') for name,data in invalid.items()})
+                pins=json.loads((ROOT/'tests/fixtures/noah/references.json').read_text())['artifacts']
+                historical={}
+                for name in ('crc32a.arc','de-lbr.arc','nulu15.arc'):
+                    raw=(ROOT/'build/noah-proof/references'/name).read_bytes()
+                    assert sha(raw)==pins[name]['sha256']
+                    cpm_name=name.upper()
+                    historical[cpm_name]=raw
+                cases.update(historical)
+                payload=small
+                method=5
+            elif a.ark_squeezed:
                 from test_noah_ark_squeezed import fixtures
             else:
                 from test_noah_ark_packed import fixtures
             from test_usq_com import padded
-            payload,cases=fixtures()
+            if not a.ark_lzw:
+                payload,cases=fixtures()
             files={'NOAH.COM':native['NOAH'],'NOAH.OVL':bytes(native_ovl),'NCMEM.COM':mem,**cases}
             prefix=['A:','RSX LOAD ANSISCRN','RSX LOAD ANSI','C:'] if platform=='z80pack' else []
+            if a.ark_lzw:
+                method='5-9'
+                commands=prefix+['NCMEM','NOAH /Q /LIST ALL.ARC','NOAH /Q /TEST ALL.ARC',
+                    'NOAH /Q /X /Y ALL.ARC','NOAH /Q /TEST FULL.ARC',
+                    'NOAH /Q /X /Y BADCRC.ARC','NOAH /Q /X /Y BADSTAT.ARC',
+                    'NOAH /Q /X /Y BADDYN.ARC']
+                for name in historical:
+                    commands.extend(['NOAH /Q /LIST '+name,'NOAH /Q /TEST '+name])
+                wanted=[f'M{i}.BIN' for i in range(5,10)]+['EMPTY8.BIN','EMPTY9.BIN']
+                log,outputs=campaign(platform,files,commands,base/'runtime',system=a.system,utilities=a.utilities,
+                    extract=wanted+list(cases),utility_files=tools,timeout=900)
+                assert outputs['M5.BIN']==padded(payload)
+                for i in range(6,10):assert outputs[f'M{i}.BIN']==padded(payload)
+                assert outputs['EMPTY8.BIN']==outputs['EMPTY9.BIN']==b''
+                assert re.findall(rb'Outcome: ([a-z/-]+)\.',log)==[
+                    b'success']*4+[b'failure']*3+[b'success']*2+[b'warning/partial']*2+[b'success']*2
+                assert b'unsupported' not in log and b'Insufficient transient' not in log
+                assert b'verified 00000007; unavailable/ambiguous: 00000000' in log
+                assert b'Archive/read error 08' in log
+                assert layout['lzw_bytes']==1705 and layout['lzw_workspace'][1]==47488
+                required=layout['lzw_workspace'][1]
+                assert layout['required_ceilings'][-1]==required
+                assert required < 0xC501 < 0xCA01
+                report['workspace_proof']={'overlay_bytes':layout['lzw_bytes'],'dictionary_bytes':24576,
+                    'workspace_start_hex':f"{layout['lzw_workspace'][0]:04X}",
+                    'required_end_hex':f'{required:04X}','z80pack_ceiling_hex':'C501',
+                    'model4_ceiling_hex':'CA01','z80pack_headroom':0xC501-required,
+                    'model4_headroom':0xCA01-required,
+                    'native_max_dictionary_case_bytes':len(maximum),
+                    'runtime_cases':'static and dynamic dictionaries, full 8/13-bit paths, validated 20 KiB output sink'}
+                report['qualification_mode']='ARC methods 5-9 decode, historical interoperability and 24 KiB workspace proof'
+                report['platforms'][platform]={'status':'PASS','native_groups':groups,'runtime_ceiling_hex':'C501' if platform=='z80pack' else 'CA01',
+                    'native_outputs':{n:sha(b) for n,b in native.items()},'runtime_outputs':{n:sha(b) for n,b in outputs.items()},
+                    'runtime_console_sha256':sha(log)}
+                (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
+                print('PASS',platform,'native ARC methods 5-9 and 24 KiB dictionary workspace',flush=True)
+                continue
             stem='SQUEEZED' if a.ark_squeezed else 'PACKED'
             method=4 if a.ark_squeezed else 3
             commands=prefix+['NCMEM',f'NOAH /Q /LIST {stem}.ARC',f'NOAH /Q /TEST {stem}.ARC',
