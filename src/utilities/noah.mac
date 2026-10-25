@@ -537,6 +537,8 @@ NH_DONE: DB 'Listing complete. Contents and CRCs not tested.',13,10,'$'
 NH_BAD_ARCHIVE: DB 'NOAH: Archive/read error ', '$'
 NH_CLOSE_ERROR: DB 'NOAH: Input close failed.',13,10,'$'
 NH_NEWLINE: DB 13,10,'$'
+        INCLUDE noahcodec-add.inc
+        INCLUDE noahcodec.inc
         INCLUDE noahwrite.inc
         INCLUDE noahwrite-parse.inc
         INCLUDE noahselect.inc
@@ -563,6 +565,8 @@ NH_AUDIT: DS LA_SIZE
         NOAH_PUBLISH_DATA
         NOAH_EXTRACT_DATA
         INCLUDE noahgrammar.inc
+        NOAH_CODEC_ADD_DATA
+        NOAH_CODEC_DATA
         NOAH_WRITE_DATA
 NH_STACK: DS 512
 NH_STACK_TOP:

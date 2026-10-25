@@ -46,6 +46,9 @@ NS_PROCESS_START:
         LD (NS_PROCESSED),HL
         LD (NS_BAD_ARCHIVES),HL
 NS_PROCESS:
+        LD A,(NH_MODE)
+        CP 6
+        JP NC,NC_SOURCE
         XOR A
         LD (NS_ARC_FAILED),A
         LD (NS_MATCHED),A
@@ -110,6 +113,11 @@ NS_COUNT_ARCHIVE:
         JP NS_PROCESS
 NS_FINISH:
         LD DE,NS_BATCH_TEXT
+        LD A,(NH_MODE)
+        CP 6
+        JR C,NS_SUMMARY_KIND
+        LD DE,NC_BATCH_TEXT
+NS_SUMMARY_KIND:
         CALL NH_PRINT
         LD HL,(NS_COUNT)
         CALL NS_PRINT_WORD
@@ -221,6 +229,8 @@ NS_COPY_TAIL:
         LD (NW_FORMAT),A
         LD (NW_ACTIVE),A
         LD (NW_PROMPT),A
+        LD (NC_REQUEST),A
+        LD (NC_EXPAND),A
 NS_TOKEN_LOOP:
         CALL NH_TOKEN
         JP C,NS_PARSE_OPERANDS
@@ -277,6 +287,10 @@ NS_NEW_MODE:
         LD (NS_MODE_SET),A
         JR NS_TOKEN_LOOP
 NS_FLAGS:
+        CALL NC_OPTION
+        JP C,NS_BAD
+        OR A
+        JP NZ,NS_TOKEN_LOOP
         CALL NW_OPTION
         JP C,NS_BAD
         OR A
@@ -308,6 +322,8 @@ NS_SYS_FLAG:
         LD (NS_SYS),A
         JP NS_TOKEN_LOOP
 NS_PARSE_OPERANDS:
+        CALL NC_PARSE_MODE
+        RET C
         LD A,(NS_OPERANDS)
         OR A
         JP Z,NS_BAD
@@ -354,6 +370,8 @@ NS_PARSE_SOURCE:
         LD A,(NH_MODE)
         CP 3
         JP Z,NW_PARSE_ADD
+        CP 6
+        JP NC,NC_PARSE_DEST
         LD HL,BC_ALL
         LD B,3
         LD A,(NS_OPERANDS)

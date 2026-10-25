@@ -69,6 +69,11 @@ NX_MEMBER:
         LD DE,NX_FINAL+1
         LD BC,11
         LDIR
+        CALL NC_MEMBER_PROBE
+        JP C,NX_MEMBER_ERROR
+        LD A,(NC_MEMBER_PENDING)
+        OR A
+        JR NZ,NX_NEW_OUTPUT
         CALL NO_AUTHORIZE
         JP C,NX_MEMBER_ERROR
         OR A
@@ -187,6 +192,9 @@ NX_VERIFY_EOF:
         LD (NX_VERIFY_OPEN),A
         CALL NX_POLL
         JP C,NX_MEMBER_ERROR
+        LD A,(NC_MEMBER_PENDING)
+        OR A
+        JP NZ,NC_MEMBER_PROCESS
         CALL NO_PUBLISH
         JP C,NX_OUTPUT_ERROR
         LD HL,NX_FINAL
@@ -196,6 +204,7 @@ NX_VERIFY_EOF:
         LD HL,NX_COMPLETED
         CALL NX_INC_COUNT
         ; This adapter has no filesystem timestamp setter: never fake success.
+NX_STAMP_CHECK:
         LD HL,NH_CONTEXT+AS_MEMBER+AM_DATES
         LD B,8
         XOR A

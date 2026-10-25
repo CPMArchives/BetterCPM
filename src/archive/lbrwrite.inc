@@ -20,6 +20,8 @@
 ; disjoint from context/code/stack. Caller initializes all state to zero.
 ; COUNT<=512. Plan status 0 skipped, 1 accepted active, 2 displaced accepted.
 ; Each plan retains physical source records, CRC16 and independent CRC32 state.
+; LP_PAD (formerly zero reserved) is 0..127 physical tail bytes excluded from
+; logical member length; CRC/digest still include them. Empty plans require 0.
 ; Source lengths are full CP/M records, never Ctrl-Z trimmed.
 ;
 ; LW_DISCOVER: snapshot header/count original entries. LW_FIND: ENTRY+1 canonical
@@ -83,6 +85,7 @@ LP_STATUS EQU 0
 LP_RECORDS EQU 1
 LP_CRC EQU 3
 LP_DIGEST EQU 5
+LP_PAD EQU 9
 LP_SIZE EQU 12
 LW_GET MACRO FIELD
  LD L,(IX+FIELD)
