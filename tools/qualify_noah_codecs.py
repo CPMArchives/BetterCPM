@@ -142,6 +142,7 @@ def main():
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp'])
     p.add_argument('--reuse-build',type=Path,help='Reuse retained parity-checked native groups for unchanged source')
+    p.add_argument('--member-accounting',action='store_true',help='Qualify extraction totals and ADD candidate accounting')
     p.add_argument('--outcome-reporting',action='store_true',help='Qualify final command outcomes and batch dispositions')
     p.add_argument('--staged-failures',action='store_true',help='Qualify stage cleanup and Retry/Skip on full media')
     p.add_argument('--source-failures',action='store_true',help='Qualify safe source-preflight choices')
@@ -203,6 +204,40 @@ def main():
             body=native[n][:len(expected[n])]
             native_ovl.extend(body+bytes(-len(body)%128))
         assert bytes(native_ovl)==ovl
+        if a.member_accounting:
+            first=b'A'*128;second=b'B'*128;third=b'C'*128
+            one=with_crcs(archive([entry(b'FIRST   DAT',start=1),entry(b'SECOND  DAT',start=2)],first+second))
+            two=with_crcs(archive([entry(b'THIRD   DAT',start=1)],third))
+            payloads=[bytes(range(128)),b'compress me '*10+bytes(8)]
+            files={'NOAH.COM':native['NOAH'],'NOAH.OVL':bytes(native_ovl),'NCMEM.COM':mem,
+                   'LIB1.LBR':one,'LIB2.LBR':two,'SRC1.BIN':payloads[0],'SRC2.BIN':payloads[1]}
+            prefix=['A:','RSX LOAD ANSISCRN','RSX LOAD ANSI','C:'] if platform=='z80pack' else []
+            commands=prefix+['NCMEM','NOAH /Q /X /Y LIB?.LBR','NOAH /Q /ADD OUT.LBR SRC?.BIN',
+                            'NOAH /Q /ADD /SQ SQOUT.LBR SRC?.BIN']
+            log,outputs=campaign(platform,files,commands,base/'runtime',system=a.system,utilities=a.utilities,
+                extract=['FIRST.DAT','SECOND.DAT','THIRD.DAT','OUT.LBR','SQOUT.LBR'],timeout=600)
+            ceiling='C501' if platform=='z80pack' else 'CA01'
+            assert ('NOAH QUAL TPA '+ceiling).encode() in log
+            assert b'Known members (hex): completed 00000003; skipped: 00000000; failed: 00000000' in log
+            assert log.count(b'ADD candidates (hex): completed 00000002; skipped: 00000000; failed: 00000000')==2
+            assert log.count(b'Accepted candidates (hex): 0002')==2
+            assert re.findall(rb'Outcome: ([a-z/-]+)\.',log)==[b'success']*3
+            assert [outputs[n] for n in ('FIRST.DAT','SECOND.DAT','THIRD.DAT')]==[first,second,third]
+            for name in ('OUT.LBR','SQOUT.LBR'):
+                raw=outputs[name];check_crc(raw);rows=members(raw);assert len(rows)==2
+                for row,payload in zip(rows,payloads):
+                    start=int.from_bytes(row[12:14],'little')*128
+                    length=int.from_bytes(row[14:16],'little')*128
+                    data=raw[start:start+length]
+                    if name=='SQOUT.LBR':assert host_decode(data,record_padding=True)[1]==payload
+                    else:assert data==payload
+            report['qualification_mode']='extraction totals and ADD candidate accounting'
+            report['platforms'][platform]={'status':'PASS','native_groups':groups,'runtime_ceiling_hex':ceiling,
+                'native_outputs':{n:sha(b) for n,b in native.items()},'runtime_outputs':{n:sha(b) for n,b in outputs.items()},
+                'runtime_console_sha256':sha(log)}
+            (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
+            print('PASS',platform,'native extraction totals and ADD candidates with terminal providers loaded',flush=True)
+            continue
         if a.outcome_reporting:
             data=bytes(range(128))
             raw=with_crcs(archive([entry(b'TEXT    DAT')],data))

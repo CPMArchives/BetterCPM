@@ -18,8 +18,11 @@ Retry/Skip/Abort and prevents unintended empty ADD archives. The
 [staged-failure increment](NOAH%20Staged%20Failures.md) adds verified stage cleanup,
 established restart boundaries and trusted member skips. The
 [final-outcome increment](NOAH%20Outcome%20Reporting.md) adds command outcomes and
-archive/file batch dispositions. Consolidated member/ADD accounting, ARK, the
-browser and release packaging remain open.
+archive/file batch dispositions. The
+[member/candidate increment](NOAH%20Member%20and%20Candidate%20Accounting.md) adds
+extraction batch totals and ADD candidate dispositions. Consolidated LIST/TEST
+coverage and recovery-artifact totals, ARK, the browser and release packaging
+remain open.
 The bounded [compatibility/API/overlay and Model 4 memory proof](NOAH%20Compatibility%20and%20Memory%20Proof.md)
 records increments 1–2 and prototype limits. Its native LINK gate is now closed
 on source-verified system media; see the [resolution](NOAH-Model4-LINK-Resolution.json).

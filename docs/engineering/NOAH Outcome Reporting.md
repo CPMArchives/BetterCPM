@@ -2,7 +2,9 @@
 
 Status: NOAH 1.0 revision 11, bounded reporting increment, 2026-10-26.
 The [behavioral specification](NOAH%20Specification.md) remains normative.
-This follows [staged failure handling](NOAH%20Staged%20Failures.md). It changes
+This follows [staged failure handling](NOAH%20Staged%20Failures.md). The subsequent [revision 12 accounting increment](NOAH%20Member%20and%20Candidate%20Accounting.md)
+adds extraction batch totals and ADD candidate dispositions. The measurements and
+remaining-work list below describe revision 11. This increment changes
 reporting for existing LBR and codec commands, with no new archive operations,
 interactive browser, OS service or distribution membership.
 

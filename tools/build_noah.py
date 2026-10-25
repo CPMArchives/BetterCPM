@@ -40,7 +40,7 @@ def build_flat(assembler, destination, source_only=False):
         work = Path(temp)
         for name in ('archive.inc', 'lbr.mac', 'lbraudit.inc', 'lbraudit.mac', 'cpmfile.inc', 'cpmfile.mac', 'lbrwrite.inc', 'lbrwrite.mac', 'lbrwrite-render.inc'):
             shutil.copy2(ROOT / 'src/archive' / name, work / name)
-        for name in ('noahextract.inc', 'noahselect.inc', 'noahinput.inc', 'noahpublish.inc', 'noahwrite.inc', 'noahwrite-parse.inc', 'noahcodec.inc', 'noahcodec-add.inc'):
+        for name in ('noahaccount.inc', 'noahextract.inc', 'noahselect.inc', 'noahinput.inc', 'noahpublish.inc', 'noahwrite.inc', 'noahwrite-parse.inc', 'noahcodec.inc', 'noahcodec-add.inc'):
             shutil.copy2(ROOT / 'src/utilities/common' / name, work / name)
         from shared_ui import controller_source, UI
         binding = (work / 'noahinput.inc').read_text()
