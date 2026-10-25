@@ -5,6 +5,21 @@
 NS_LIMIT        EQU 512
 NS_RECORD       EQU 13
 NS_RUN:
+        ; One disposition per frozen object, independent of attempt count.
+        XOR A
+        LD HL,NS_RESULT_BEGIN
+        LD B,NS_RESULT_END-NS_RESULT_BEGIN
+NS_RESULT_ZERO:
+        LD (HL),A
+        INC HL
+        DJNZ NS_RESULT_ZERO
+        INC A
+        LD (NS_RESULT_ACTIVE),A
+        LD (NS_FATAL),A
+        LD HL,0
+        LD (NS_BAD_ARCHIVES),HL
+        XOR A
+        LD (NS_ARC_FAILED),A
         LD C,25
         CALL AC_BDOS
         LD (NS_OLD_DRIVE),A
@@ -29,6 +44,8 @@ NS_QUEUE_MESSAGE:
         CALL NH_PRINT
         JP NH_RETURN
 NS_QUEUE_READY:
+        XOR A
+        LD (NS_FATAL),A
         LD A,(NH_MODE)
         CP 3
         JP Z,NW_ADD_BATCH
@@ -46,6 +63,8 @@ NS_PROCESS_START:
         LD (NS_PROCESSED),HL
         LD (NS_BAD_ARCHIVES),HL
 NS_PROCESS:
+        XOR A
+        LD (NS_DISPOSITION),A
         LD A,(NH_MODE)
         CP 6
         JP NC,NC_SOURCE
@@ -86,6 +105,7 @@ NS_ARCHIVE_NL:
         CALL NH_PRINT
         JP NH_ARCHIVE
 NS_ARCHIVE_DONE:
+        CALL NS_RECORD_RESULT
         LD A,(NS_ARC_FAILED)
         OR A
         JR Z,NS_COUNT_ARCHIVE
@@ -144,7 +164,108 @@ NS_SUMMARY_KIND:
         LD DE,NS_WARNING_TEXT
         CALL NH_PRINT
 NS_BATCH_RETURN:
+        LD DE,NS_COMPLETE_TEXT
+        CALL NH_PRINT
+        LD HL,(NS_COMPLETED)
+        CALL NS_PRINT_WORD
+        LD DE,NS_NO_MATCH_TEXT
+        CALL NH_PRINT
+        LD HL,(NS_NO_MATCH)
+        CALL NS_PRINT_WORD
+        LD DE,NS_SKIPPED_TEXT
+        CALL NH_PRINT
+        LD HL,(NS_SKIPPED)
+        CALL NS_PRINT_WORD
+        LD DE,NH_NEWLINE
+        CALL NH_PRINT
         JP NH_RETURN
+; Disposition 0=no matching work, 1=completed, 2=declined/unchanged.
+; A failed object belongs only to failed; useful subwork remains visible.
+NS_RECORD_RESULT:
+        LD A,(NS_DISPOSITION)
+        CP 1
+        JR NZ,NS_RECORD_CHECK
+        LD (NS_USEFUL),A
+NS_RECORD_CHECK:
+        LD A,(NS_ARC_FAILED)
+        OR A
+        JR Z,NS_RECORD_CLEAN
+        LD A,1
+        LD (NS_ERRORS),A
+        RET
+NS_RECORD_CLEAN:
+        LD HL,NS_NO_MATCH
+        LD A,(NS_DISPOSITION)
+        OR A
+        JR Z,NS_RECORD_INC
+        LD HL,NS_COMPLETED
+        DEC A
+        JR Z,NS_RECORD_INC
+        LD HL,NS_SKIPPED
+NS_RECORD_INC:
+        INC (HL)
+        RET NZ
+        INC HL
+        INC (HL)
+        RET
+NS_OUTCOME:
+        LD A,(NS_RESULT_ACTIVE)
+        OR A
+        RET Z
+        LD A,4
+        LD DE,NS_CANCEL_RESULT
+        LD HL,NH_ABORTED
+        BIT 0,(HL)
+        JR NZ,NS_OUTCOME_PRINT
+        LD A,3
+        LD DE,NS_FAILURE_RESULT
+        LD HL,NS_FATAL
+        BIT 0,(HL)
+        JR NZ,NS_OUTCOME_PRINT
+        LD A,(NS_STOP)
+        OR A
+        JR NZ,NS_OUTCOME_FAILURE
+        LD HL,(NS_BAD_ARCHIVES)
+        LD A,H
+        OR L
+        LD HL,NS_ARC_FAILED
+        OR (HL)
+        LD HL,NS_ERRORS
+        OR (HL)
+        JR Z,NS_OUTCOME_WORK
+        LD A,(NS_USEFUL)
+        OR A
+        JR Z,NS_OUTCOME_FAILURE
+        JR NS_OUTCOME_WARNING
+NS_OUTCOME_WORK:
+        LD A,(NS_USEFUL)
+        OR A
+        JR Z,NS_OUTCOME_EMPTY
+        LD A,(NS_WARNINGS)
+        LD HL,(NS_SKIPPED)
+        OR H
+        OR L
+        LD HL,(NS_NO_MATCH)
+        OR H
+        OR L
+        JR NZ,NS_OUTCOME_WARNING
+        LD A,1
+        LD DE,NS_SUCCESS_RESULT
+        JR NS_OUTCOME_PRINT
+NS_OUTCOME_EMPTY:
+        LD A,2
+        LD DE,NS_EMPTY_RESULT
+        JR NS_OUTCOME_PRINT
+NS_OUTCOME_WARNING:
+        LD A,2
+        LD DE,NS_PARTIAL_RESULT
+        JR NS_OUTCOME_PRINT
+NS_OUTCOME_FAILURE:
+        LD A,3
+        LD DE,NS_FAILURE_RESULT
+NS_OUTCOME_PRINT:
+        LD (NS_RESULT),A
+        JP NH_PRINT
 NS_PRINT_WORD:
         LD A,H
         CALL NH_HEX
@@ -753,8 +874,28 @@ NS_QUEUE_ERROR: DB 'NOAH: Selection failed or exceeds 512 archives; nothing modi
 NS_NO_ARCHIVES: DB 'NOAH: No archives matched.',13,10,'$'
 NS_NO_MEMBERS: DB 'No members matched.',13,10,'$'
 NS_UNPROCESSED_TEXT: DB '; unprocessed ', '$'
+NS_COMPLETE_TEXT: DB 'Disposition (hex): completed ','$'
+NS_NO_MATCH_TEXT: DB '; no-match ','$'
+NS_SKIPPED_TEXT: DB '; skipped ','$'
+NS_SUCCESS_RESULT: DB 'Outcome: success.',13,10,'$'
+NS_PARTIAL_RESULT: DB 'Outcome: warning/partial.',13,10,'$'
+NS_EMPTY_RESULT: DB 'Outcome: warning/no-work.',13,10,'$'
+NS_FAILURE_RESULT: DB 'Outcome: failure.',13,10,'$'
+NS_CANCEL_RESULT: DB 'Outcome: cancellation.',13,10,'$'
 NS_WARNING_TEXT: DB 'Warnings, skips or incomplete CRC coverage reported above.',13,10,'$'
 NOAH_SELECTION_DATA MACRO
+; Explicitly initialized even when the queue/parser fails.
+NS_RESULT_BEGIN:
+NS_RESULT_ACTIVE: DB 0
+NS_FATAL: DB 0
+NS_USEFUL: DB 0
+NS_ERRORS: DB 0
+NS_DISPOSITION: DB 0
+NS_RESULT: DB 0
+NS_COMPLETED: DW 0
+NS_NO_MATCH: DW 0
+NS_SKIPPED: DW 0
+NS_RESULT_END:
 NS_CAPTURED: DB 0
 NS_OLD_DRIVE: DB 0
 NS_OLD_USER: DB 0
