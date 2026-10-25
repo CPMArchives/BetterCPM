@@ -57,6 +57,8 @@ NX_MEMBER:
         LD (NX_VERIFY_OPEN),A
         LD (NX_LIVE),A
         LD (NX_KEEP),A
+        LD (NX_ATTEMPTED),A
+        LD (NX_PUBLICATION),A
         LD HL,NX_FINAL
         LD DE,NX_FINAL+1
         LD BC,36*6-1
@@ -92,6 +94,8 @@ NX_NEW_OUTPUT:
 NX_CRC_REPORTED:
         CALL NX_TEMP_PAIR
         JP C,NX_MEMBER_ERROR
+        LD A,1
+        LD (NX_ATTEMPTED),A
         LD DE,NX_TEMP
         LD C,22
         CALL AC_BDOS
@@ -232,15 +236,50 @@ NX_RESULT_READY:
         LD A,(NX_RESULT)
         CP AS_CANCEL
         JP Z,NX_STOP
-        LD A,1
-        LD (NS_ARC_FAILED),A
-        LD HL,NX_FAILED
-        CALL NX_INC_COUNT
         LD HL,NX_FINAL
         CALL NX_PRINT_FCB
         LD DE,NX_FAILED_TEXT
         CALL NH_PRINT
+        LD IX,NH_CONTEXT
+        LD A,(IX+AS_PHASE)
+        CP AS_SELECTED
+        JR NZ,NX_ERROR_STOP
+        CALL NX_RETRY_CLEANUP
+        JR C,NX_ERROR_STOP
+        CALL NI_FAILURE
+        JR C,NX_ERROR_ABORT
+        CP 'R'
+        JR Z,NX_RETRY_MEMBER
+        CALL NX_COUNT_FAILURE
+        LD DE,NX_FAILURE_SKIP_TEXT
+        CALL NH_PRINT
+        JP NX_NEXT
+NX_RETRY_MEMBER:
+        LD A,1
+        LD (NS_WARNINGS),A
+        ; No sticky reader error is cleared: only a still-selected member can
+        ; rewind its own bounded cursor. NEXT has not been called again.
+        LD HL,NH_CONTEXT+AS_MEMBER+AM_OFFSET
+        LD DE,NH_CONTEXT+AS_POSITION
+        LD BC,4
+        LDIR
+        LD HL,NH_CONTEXT+AS_MEMBER+AM_LENGTH
+        LD DE,NH_CONTEXT+AS_LEFT
+        LD BC,4
+        LDIR
+        JP NX_MEMBER
+NX_ERROR_ABORT:
+        CALL NX_COUNT_FAILURE
+        JP NX_STOP
+NX_ERROR_STOP:
+        CALL NX_COUNT_FAILURE
         JP NX_SUMMARY
+NX_COUNT_FAILURE:
+        LD A,1
+        LD (NS_ARC_FAILED),A
+        LD (NS_WARNINGS),A
+        LD HL,NX_FAILED
+        JP NX_INC_COUNT
 NX_ARCHIVE_ERROR:
         LD A,1
         LD (NS_ARC_FAILED),A
@@ -348,6 +387,9 @@ NX_EXISTS:
         LD DE,NX_SEARCH
         LD BC,36
         LDIR
+        ; A partial rename/delete can leave only a later physical extent.
+        LD A,'?'
+        LD (NX_SEARCH+12),A
         LD DE,NX_DIRECTORY
         LD C,26
         CALL AC_BDOS
@@ -464,9 +506,13 @@ NX_CLEANUP:
         LD C,16
         CALL AC_BDOS
         CP 0FFH
-        JR NZ,NX_CLEAN_VERIFY
-        LD A,1
-        LD (NX_KEEP),A
+        JR Z,NX_TEMP_UNCERTAIN
+        XOR A
+        LD (NX_TEMP_OPEN),A
+        JR NX_CLEAN_VERIFY
+NX_TEMP_UNCERTAIN:
+        LD HL,NX_TEMP
+        CALL NX_CLOSE_UNCERTAIN
 NX_CLEAN_VERIFY:
         LD A,(NX_VERIFY_OPEN)
         OR A
@@ -475,9 +521,13 @@ NX_CLEAN_VERIFY:
         LD C,16
         CALL AC_BDOS
         CP 0FFH
-        JR NZ,NX_CLEAN_LIVE
-        LD A,1
-        LD (NX_KEEP),A
+        JR Z,NX_VERIFY_UNCERTAIN
+        XOR A
+        LD (NX_VERIFY_OPEN),A
+        JR NX_CLEAN_LIVE
+NX_VERIFY_UNCERTAIN:
+        LD HL,NX_VERIFY
+        CALL NX_CLOSE_UNCERTAIN
 NX_CLEAN_LIVE:
         LD A,(NX_LIVE)
         OR A
@@ -488,18 +538,81 @@ NX_CLEAN_LIVE:
         LD DE,NX_TEMP
         LD C,19
         CALL AC_BDOS
-        CP 0FFH
-        RET NZ
+        ; A reported delete result is not proof of complete absence.
+        LD HL,NX_TEMP
+        CALL NX_EXISTS
+        JR NZ,NX_RETAIN
+NX_TEMP_ABSENT:
+        XOR A
+        LD (NX_LIVE),A
+        RET
 NX_RETAIN:
         LD HL,NX_TEMP
         CALL NX_EXISTS
-        RET Z
+        JR Z,NX_TEMP_ABSENT
+        LD A,1
+        LD (NX_KEEP),A
+        LD (NS_WARNINGS),A
         LD DE,NX_RETAIN_TEXT
         CALL NH_PRINT
         LD HL,NX_TEMP
         CALL NX_PRINT_FCB
         LD DE,NH_NEWLINE
+        CALL NH_PRINT
+        SCF
+        RET
+NX_CLOSE_UNCERTAIN:
+        LD A,1
+        LD (NX_KEEP),A
+        LD (NS_WARNINGS),A
+        LD (NS_STOP),A
+        LD DE,NX_CLOSE_TEXT
+        CALL NH_PRINT
+        CALL NX_PRINT_FCB
+        LD DE,NH_NEWLINE
         JP NH_PRINT
+; A restart may discard only a closed, disposable candidate stage. Publication
+; is a one-way boundary for this decision, even if rollback subsequently works.
+NX_RETRY_CLEANUP:
+        LD A,(NX_PUBLICATION)
+        LD B,A
+        LD A,(NS_STOP)
+        OR B
+        LD B,A
+        LD A,(NH_ABORTED)
+        OR B
+        LD B,A
+        LD A,(NX_KEEP)
+        OR B
+        JR NZ,NX_RETRY_UNSAFE
+        CALL NX_CLEANUP
+        RET C
+        LD A,(NX_TEMP_OPEN)
+        LD B,A
+        LD A,(NX_VERIFY_OPEN)
+        OR B
+        LD B,A
+        LD A,(NX_LIVE)
+        OR B
+        JR NZ,NX_RETRY_UNSAFE
+        LD A,(NX_ATTEMPTED)
+        OR A
+        RET Z
+        ; MAKE failure may still have left a name. Never commandeer or reset
+        ; an unconfirmed entry; require observed absence before starting over.
+        LD HL,NX_TEMP
+        CALL NX_EXISTS
+        JR Z,NX_RETRY_ABSENT
+        LD A,1
+        LD (NS_STOP),A
+        JP NX_RETAIN
+NX_RETRY_ABSENT:
+        XOR A
+        LD (NX_ATTEMPTED),A
+        RET
+NX_RETRY_UNSAFE:
+        SCF
+        RET
 NX_PRINT_FCB:
         LD A,(HL)
         DEC A
@@ -532,9 +645,11 @@ NX_TMP_EXT: DB 'TMP'
 NX_BAK_EXT: DB 'BAK'
 NX_EXISTS_TEXT: DB ': exists; skipped.',13,10,'$'
 NX_EXTRACTED_TEXT: DB ': extracted and verified.',13,10,'$'
-NX_FAILED_TEXT: DB ': extraction failed; stopped.',13,10,'$'
+NX_FAILED_TEXT: DB ': extraction failed.',13,10,'$'
+NX_FAILURE_SKIP_TEXT: DB 'Skipped after failure.',13,10,'$'
 NX_STAMP_TEXT: DB 'Timestamp not restored: filesystem service unavailable.',13,10,'$'
 NX_RETAIN_TEXT: DB 'Temporary retained: ','$'
+NX_CLOSE_TEXT: DB 'Close unconfirmed: ','$'
 NX_ARCHIVE_TEXT: DB 'NOAH: Archive read failed; extraction stopped.',13,10,'$'
 NX_CANCEL_TEXT: DB 'NOAH: Extraction cancelled.',13,10,'$'
 NX_DONE_TEXT: DB 'Extracted (hex): ','$'
@@ -542,6 +657,8 @@ NX_SKIP_TEXT: DB '; skipped: ','$'
 NX_FAIL_TEXT: DB '; failed: ','$'
 NX_UNPROCESSED_TEXT: DB 'Unprocessed (hex): ','$'
 NOAH_EXTRACT_DATA MACRO
+NX_ATTEMPTED: DB 0
+NX_PUBLICATION: DB 0
 NX_TOTAL: DS 4
 NX_COMPLETED: DS 4
 NX_SKIPPED: DS 4

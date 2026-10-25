@@ -169,6 +169,7 @@ NO_INSPECT_END:
 
 NO_PUBLISH:
         LD A,1
+        LD (NX_PUBLICATION),A
         LD (NX_KEEP),A
         LD A,(NW_ACTIVE)
         OR A

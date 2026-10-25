@@ -14,9 +14,10 @@ adds standalone SQ/CR/EXPAND, compressed LBR ADD and expanded extraction, with
 measured loaded-provider memory qualification on both platforms. The
 [quiet-reporting increment](NOAH%20Quiet%20Reporting.md) adds `/Q`. The
 [safe source-failure increment](NOAH%20Safe%20Source%20Failures.md) adds preflight
-Retry/Skip/Abort and prevents unintended empty ADD archives. ARK, staged-operation
-failure choices, complete outcome accounting, the browser and release packaging
-remain open.
+Retry/Skip/Abort and prevents unintended empty ADD archives. The
+[staged-failure increment](NOAH%20Staged%20Failures.md) adds verified stage cleanup,
+established restart boundaries and trusted member skips. ARK, complete outcome
+accounting, the browser and release packaging remain open.
 The bounded [compatibility/API/overlay and Model 4 memory proof](NOAH%20Compatibility%20and%20Memory%20Proof.md)
 records increments 1–2 and prototype limits. Its native LINK gate is now closed
 on source-verified system media; see the [resolution](NOAH-Model4-LINK-Resolution.json).

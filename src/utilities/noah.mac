@@ -204,6 +204,7 @@ NH_CLOSE:
 NH_CLOSE_FAILED:
         LD A,1
         LD (NS_ARC_FAILED),A
+        LD (NS_STOP),A
         LD DE,NH_CLOSE_ERROR
         CALL NH_PRINT
 NH_DMA:

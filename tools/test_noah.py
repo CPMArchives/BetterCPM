@@ -55,12 +55,15 @@ class Noah(Command):
         self.keys = list(kwargs.pop('keys', '').encode('ascii'))
         self.attrs = dict(kwargs.pop('attributes', {}))
         self.extent_attrs = dict(kwargs.pop('extent_attributes', {}))
+        self.physical_extents = dict(kwargs.pop('physical_extents', {}))
         self.answers = []
         self.search_items = []
         self.search_cursor = 0
         self.partial_attributes = kwargs.pop('partial_attributes', False)
         self.rename_moves_on_failure = kwargs.pop('rename_moves_on_failure', False)
         self.delete_removes_on_failure = kwargs.pop('delete_removes_on_failure', False)
+        self.make_creates_on_failure = kwargs.pop('make_creates_on_failure', False)
+        self.delete_keeps_on_success = kwargs.pop('delete_keeps_on_success', False)
         kwargs.setdefault('tpa', 0xd501)
         self.write_allowed = bool(args and any(t.upper() in ('/X', '/EXTRACT', '/ADD', '/REMOVE', '/COMPACT', '/SQ', '/CR', '/EXPAND') for t in args[0].split()))
         injected=None
@@ -162,7 +165,11 @@ class Noah(Command):
                     if d != drive or u != self.user or not all(p == 63 or p == c for p, c in zip(pattern, canonical)):
                         continue
                     records = len(padded(content)) // 128
-                    for extent in range(max(1, (records + 127) // 128)):
+                    for extent in self.physical_extents.get(identity,range(max(1,(records+127)//128))):
+                        # Explicit irregular-directory fixtures model a name
+                        # surviving only outside the FCB's requested EX group.
+                        if identity in self.physical_extents and self.mem[de+12]!=63 and ((self.mem[de+12]^extent)&31):
+                            continue
                         item = bytearray(32)
                         item[0] = u
                         item[1:12] = canonical
@@ -205,6 +212,13 @@ class Noah(Command):
             self.attrs[new] = self.attrs.pop(old, 0)
             self.renamed.append((old, new))
             return 255 if failed else 3
+        if fn == 22 and self.make_creates_on_failure and self.fail('make'):
+            self.events.append((fn,de))
+            self.files[self.fcbkey(de)]=b'UNCONFIRMED'
+            return 255
+        if fn == 19 and self.delete_keeps_on_success:
+            self.events.append((fn,de))
+            return 0
         if fn == 19 and self.delete_removes_on_failure:
             self.events.append((fn, de))
             key = self.fcbkey(de)
