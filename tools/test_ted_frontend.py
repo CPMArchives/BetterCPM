@@ -65,7 +65,7 @@ class Frontend(Commands):
             return 0
         return super().bdos(fn,de)
 
-    def execute(self,tail=b'',keys=b'',files=None,ceiling=0xd000):
+    def execute(self,tail=b'',keys=b'',files=None,ceiling=0xd000,instruction_budget=30000000):
         self.running=False
         self.begin()
         self.last_calls=[]
@@ -87,7 +87,7 @@ class Frontend(Commands):
         protected=bytes(self.mem[ceiling:0xfffe])
         spare=bytes(self.mem[self.end:ceiling])
         self.running=True
-        result=self.lib.test_run(0x100,30000000)
+        result=self.lib.test_run(0x100,instruction_budget)
         assert self.exception is None,(self.exception,self.last_calls,hex(self.value(self.mapping['frontend']['TE_OLDSP'],2)))
         assert result>=0,(result,hex(self.reg['PC'].value),self.input,self.text())
         assert bytes(self.mem[ceiling:0xfffe])==protected,'TPA ceiling crossed'
@@ -156,6 +156,13 @@ def tests(m):
               files={(1,7,'INPUT.TXT'):original})
     assert m.files[(1,7,'INPUT.TXT')].data==original
     cases.append('TED command recall E/G and U clear retain command-mode behavior')
+    data=(b'A'*64+b'\n')*21
+    m.execute(b'INPUT.TXT',b'S\r'+b'X'*200+b'\x0bSY\r\x0bQ',
+              files={(1,7,'INPUT.TXT'):padded(data)},instruction_budget=1000000000)
+    assert m.files[(1,7,'INPUT.TXT')].data==padded(b'X'*200+b'\n'+data[65:])
+    assert m.files[(1,7,'TEB00000.BAK')].data==padded(data)
+    assert not m.input and m.value(m.mapping['frontend']['TE_QUEUE_COUNT'],1)==0
+    cases.append('200 queued keys cross disk-backed redraw pages and safe-save; bounded FIFO preserves all keys')
     return cases
 
 

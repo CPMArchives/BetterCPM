@@ -16,6 +16,7 @@
  public TW_RAW_FETCH
  public TW_DIAG_PTR,TW_POLL
  public TW_EDIT_NAMED
+ public TW_NOP,TW_IO_POLL_PTR
  public TW_INIT,TW_LOAD,TW_EDIT,TW_NEW,TW_SCAN_INPUT,TW_GET_RECORD
  public TW_DOC,TW_META,TW_NAME,TW_AREA,TW_INPUT,TW_INPUT_LEN,TW_INPUT_REC
  public TW_SEGCOUNT,TW_SEGMENTS,TW_INSERT,TW_ERROR,TW_OWN,TW_KEPT,TW_RETAINED
@@ -1196,6 +1197,26 @@ TWF_MEMORY:
  or a
  ret
 
+; Read-only display hook: no cancellation/error result, all registers kept.
+; The frontend enables it only while rendering, not in cancellable file work.
+TW_IO_DEFER:
+ push af
+ push bc
+ push de
+ push hl
+ push ix
+ push iy
+ ld hl,(TW_IO_POLL_PTR)
+ call TW_IO_DISPATCH
+ pop iy
+ pop ix
+ pop hl
+ pop de
+ pop bc
+ pop af
+ ret
+TW_IO_DISPATCH:
+ jp (hl)
 TW_GET_RECORD:
  xor a
  ld (TW_CACHE_VALID),a
@@ -1212,6 +1233,8 @@ TWG_INPUT:
  ld (TW_FILELIMIT),hl
  ld hl,TW_INPUT
 TWG_OPEN:
+ ld (TW_FETCHDESC),hl
+ call TW_IO_DEFER
  call TW_SELECT
  ld de,TW_FCB
  ld bc,36
@@ -1234,6 +1257,9 @@ TWG_READ:
  or a
  sbc hl,de
  jr nc,TWG_PAD
+ call TW_IO_DEFER
+ ld hl,(TW_FETCHDESC)
+ call TW_SELECT
  ld hl,(TW_FETCHREC)
  ld (TW_FCB+33),hl
  xor a
@@ -1265,6 +1291,8 @@ TWG_NEXT:
  ld hl,TW_FETCHLEFT
  dec (hl)
  jr nz,TWG_READ
+ ld hl,(TW_FETCHDESC)
+ call TW_SELECT
  ld de,TW_FCB
  ld c,16
  call TW_BDOS
@@ -1279,6 +1307,8 @@ TWG_NEXT:
  or a
  ret
 TWG_BAD:
+ ld hl,(TW_FETCHDESC)
+ call TW_SELECT
  ld de,TW_FCB
  ld c,16
  call TW_BDOS
@@ -1320,6 +1350,7 @@ TW_AREA: ds 37
 TW_INPUT: ds 37
 TW_NAME: ds 37
 TW_POLL_PTR: dw TW_NOP
+TW_IO_POLL_PTR: dw TW_NOP
 TW_SEGCOUNT: db 0
 TW_SEGMENTS: ds 56
 TW_INSERT: ds 255
@@ -1360,6 +1391,7 @@ TW_RREC: dw 0
 TW_BYTEOFF: dw 0
 TW_PAGE: dw 0
 TW_FILELIMIT: dw 0
+TW_FETCHDESC: dw 0
 TW_FETCHREC: dw 0
 TW_FETCHPTR: dw 0
 TW_FETCHLEFT: db 0

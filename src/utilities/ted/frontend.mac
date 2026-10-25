@@ -5,6 +5,7 @@
  public TE_FIELD,TE_FIELDLEN,TE_MODE,TE_FILE,TE_CALLER,TE_SCREEN,TE_STATUS
  public TE_BUSY_POLL,TE_RESTORE,TE_SHOW_NAME,TE_FORMAT_FILE,TE_REPORT_FAILURE
  extrn TW_INIT,TW_NEW,TW_LOAD,TW_RECOVER,TW_RELEASE,TW_AREA,TW_NAME,TW_INPUT
+ extrn TW_NOP,TW_IO_POLL_PTR,TS_DEFER_PTR
  extrn TS_STAGE,TS_BACKUP,TS_ERROR,TS_PHASE,TS_CAPTURE,TS_LAST
  extrn TW_META,TW_DOC,TW_OWN,TW_POLL_PTR,TW_ERROR,TW_RETAINED,TW_KEPT
  extrn TC_INIT,TC_KEY,TC_POS,TC_TOP,TC_SCAN,TC_LENGTH,TC_PREFIX,TC_ACTION
@@ -99,6 +100,8 @@ TE_SIGNATURE_LOOP:
  cp 091h
  jp nz,TE_NOSCREEN
  call TW_INIT
+ ld hl,TE_DEFER_INPUT
+ ld (TS_DEFER_PTR),hl
  ld hl,TE_BUSY_POLL
  ld (TW_POLL_PTR),hl
  ld hl,TE_FILE
@@ -460,6 +463,15 @@ TE_QUERY_BAD:
 ; Typed SCRN rendering. Every byte position remains a document byte boundary;
 ; TAB expansion exists only in this renderer, never in the stored text.
 TE_RENDER:
+ ld hl,TE_DEFER_INPUT
+ ld (TW_IO_POLL_PTR),hl
+ call TE_RENDER_BODY
+ push af
+ ld hl,TW_NOP
+ ld (TW_IO_POLL_PTR),hl
+ pop af
+ ret
+TE_RENDER_BODY:
  call TC_SYNC
  call TC_COLUMN
  jp c,TE_RENDER_ERROR
@@ -552,6 +564,7 @@ TE_COUNT_FOUND:
  ld a,1
  ld (TE_ROW),a
 TE_RENDER_ROW:
+ call TE_DEFER_INPUT
  ld a,(TE_ROW)
  ld b,a
  ld c,0
@@ -903,6 +916,7 @@ TE_BUSY_POLL:
  jp z,TE_CANCEL
  cp 27
  jp z,TE_CANCEL
+TE_QUEUE_APPEND:
  ld b,a
  ld a,(TE_QUEUE_TAIL)
  ld e,a
@@ -917,6 +931,26 @@ TE_BUSY_POLL:
  ld hl,TE_QUEUE_COUNT
  inc (hl)
  or a
+ ret
+; Queue even ESC/^C while rendering or completing publication. They are
+; dispatched normally after the operation, never treated as a late abort.
+; Full queue leaves the next hardware byte unread; the capacity stays 128.
+TE_DEFER_INPUT:
+ push af
+ push bc
+ push de
+ push hl
+ ld a,(TE_QUEUE_COUNT)
+ cp 128
+ jp nc,TE_DEFER_DONE
+ call TE_POLL_RAW
+ or a
+ call nz,TE_QUEUE_APPEND
+TE_DEFER_DONE:
+ pop hl
+ pop de
+ pop bc
+ pop af
  ret
 TE_CANCEL:
  scf

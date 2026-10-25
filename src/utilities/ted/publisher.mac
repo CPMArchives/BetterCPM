@@ -13,6 +13,7 @@
 ; against a regenerated record stream before and after publication.
 
  .Z80
+ public TS_DEFER_PTR
  public TS_RUN,TS_CAPTURE,TS_LAST,TS_TARGET,TS_STAGE,TS_BACKUP
  public TS_BUFFER,TS_REWIND_PTR,TS_RECORD_PTR,TS_POLL_PTR
  public TS_REPLACE,TS_PROTECT,TS_ALIAS_COUNT,TS_ALIASES
@@ -150,10 +151,15 @@ TC_SCANNED:
 TC_READ:
  ld a,(TS_PHASE)
  cp 5
- jr nc,TC_READ_READY
+ jr c,TC_READ_CANCELABLE
+ call TS_DEFER
+ jr TC_READ_READY
+TC_READ_CANCELABLE:
  call TS_POLL
  jr c,TC_CANCEL
 TC_READ_READY:
+ ld hl,(TS_DESC)
+ call TS_SELECT
  ld de,TS_READBUF
  ld c,26
  call TS_BDOS
@@ -196,6 +202,8 @@ TC_BAD:
  call TS_BDOS
  jp TS_IO_ERROR
 TC_CANCEL:
+ ld hl,(TS_DESC)
+ call TS_SELECT
  ld de,TS_IOFCB
  ld c,16
  call TS_BDOS
@@ -409,6 +417,26 @@ TS_RECORD:
 TS_POLL:
  ld hl,(TS_POLL_PTR)
  jp (hl)
+; Non-cancelling observer for input queuing during committed publication.
+; A callback cannot abandon a rename/readback. Rebind DU/DMA afterwards.
+TS_DEFER:
+ push af
+ push bc
+ push de
+ push hl
+ push ix
+ push iy
+ ld hl,(TS_DEFER_PTR)
+ call TS_DEFER_DISPATCH
+ pop iy
+ pop ix
+ pop hl
+ pop de
+ pop bc
+ pop af
+ ret
+TS_DEFER_DISPATCH:
+ jp (hl)
 TS_NOP:
  or a
  ret
@@ -539,6 +567,9 @@ TS_VERIFY:
  jp z,TS_IO_ERROR
  call TS_REWIND
 TV_NEXT:
+ ld a,(TS_PHASE)
+ cp 5
+ call nc,TS_DEFER
  call TS_POLL
  jr c,TV_CANCEL
  call TS_RECORD
@@ -1020,6 +1051,7 @@ TS_ALIASES: ds 148
 TS_REWIND_PTR: dw TS_NOP
 TS_RECORD_PTR: dw TS_EMPTY
 TS_POLL_PTR: dw TS_NOP
+TS_DEFER_PTR: dw TS_NOP
 TS_BUFFER: ds 128
 TS_RUNTIME:
 TS_ERROR: db 0

@@ -31,7 +31,8 @@ undo, repeat-find or new opening screen. See the command matrix in
   to preserving storage. The obsolete lossy record engine remains separately
   identifiable in the maintained upstream modules and is not linked into the live COM.
 - `frontend.mac` uses callable SCRN 1.1 and MCON 1.2, explicitly loaded before
-  TED. No app-driven extension loading, terminal query, video-memory access or
+  TED. Rendering queues input at row and disk-read boundaries; publication
+  queues input without allowing a late cancellation. No app-driven extension loading, terminal query, video-memory access or
   keyboard-matrix access occurs. The private stack is 2048 bytes with a 32-byte
   low canary. Every live buffer is statically bounded below `TED_END`.
 

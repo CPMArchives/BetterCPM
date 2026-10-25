@@ -27,6 +27,9 @@ TP_REWIND: LD C,250
 TP_RECORD: LD C,251
  CALL 5
  RET
+TP_DEFER: LD C,253
+ CALL 5
+ RET
 TP_POLL: LD C,252
  CALL 5
  OR A
@@ -83,6 +86,11 @@ class Publisher(Codec):
             at = self.address('TS_BUFFER')
             self.mem[at:at+128] = self.payload[self.cursor:self.cursor+128]
             self.cursor += 128
+            return 0
+        if fn == 253:
+            assert self.mem[self.address('TS_PHASE')]>=5, 'deferral outside committed publication'
+            self.deferred+=1
+            self.user,self.drive,self.dma=31,16,0x80
             return 0
         if fn == 252:
             self.polls += 1
@@ -202,7 +210,7 @@ class Publisher(Codec):
 
     def run(self, payload, existing=b'ORIGINAL'+bytes(120), *, replace=True, protect=True,
             key=(1, 0, 'TEST.TXT'), attrs=None, failures=None, cancel_at=0, extras=None,
-            aliases=(), observer=None):
+            aliases=(), observer=None, defer=False):
         assert len(payload) % 128 == 0
         self.mem[:] = bytes([0xa5])*65536
         self.mem[0x100:0x100+len(self.image)] = self.image
@@ -214,6 +222,7 @@ class Publisher(Codec):
         self.failures, self.observer = failures or {}, observer
         self.events, self.mutations, self.exception = [], [], None
         self.matches = []
+        self.deferred=0
         if existing is not None:
             self.add(key, existing, **(attrs or {}))
         for name, data in (extras or {}).items():
@@ -225,6 +234,9 @@ class Publisher(Codec):
         self.mem[self.address('TS_ALIAS_COUNT')] = len(aliases)
         for i, alias in enumerate(aliases):
             self.descriptor(self.address('TS_ALIASES')+i*37, alias)
+        if defer:
+            at=self.address('TS_DEFER_PTR')
+            self.mem[at:at+2]=self.address('TP_DEFER').to_bytes(2,'little')
         for variable, entry in (('TS_REWIND_PTR', 'TP_REWIND'), ('TS_RECORD_PTR', 'TP_RECORD'), ('TS_POLL_PTR', 'TP_POLL')):
             at = self.address(variable)
             self.mem[at:at+2] = self.address(entry).to_bytes(2, 'little')
@@ -347,6 +359,9 @@ def tests(m):
     assert m.run(new, extras=many) == 10
     assert not m.mutations
     cases.append('bounded reservation exhaustion')
+    assert m.run(new,defer=True,extras={(1,31,'TEST.TXT'):bytes([77])*128})==0
+    assert m.deferred>0 and m.files[target].data==new
+    cases.append('non-cancelling critical input observer changes DU/DMA; every read rebinds and unrelated file survives')
     return cases
 
 
