@@ -1,11 +1,14 @@
 # TED.COM Adoption and WordStar Editing Engineering Specification
 
-Status: adopted implementation direction, 2026-10-25; detailed behavioral
-contract proposed for implementation review. TED is the selected Utilities
-Disk full-screen editor. No implementation, platform qualification or release
-acceptance is claimed by this specification. Section 3 records the user-agreed command scope and explicitly identifies
-remaining review items. Earlier broader interaction proposals are superseded.
-No claim about an unmodified TED capability is implied by a new binding.
+Status: implemented; component qualification completed on the recorded normal
+RAM z80pack/cpmsim and Model 4/trs80gp pairs, 2026-10-25. See the
+[TED qualification report](TED%20Qualification.md) and
+[machine-readable receipt](TED-Qualification.json) for exact executable/media
+identities, passed gates and limitations. Physical hardware, ROM/XIP and
+checked-profile application qualification are not claimed; whole-Utilities
+release acceptance remains separate. Section 3 records the agreed command
+scope; the command-binding review is complete. Earlier broader interaction
+proposals are superseded. This specification remains the behavioral contract.
 
 ## 1. Purpose, scope and authority
 
