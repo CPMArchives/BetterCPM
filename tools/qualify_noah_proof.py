@@ -6,12 +6,39 @@ from pathlib import Path
 import re
 
 from build_noah_proof import build, ROOT, sha
-from dasm_native import campaign, DEFAULT_SYSTEM
+from dasm_native import campaign
+
+
+def verify_system(system, platforms):
+    """Do not qualify current source against an unrelated cached resident core.
+
+    The original default image predated 8864aa5's sequential write rollover fix.
+    LINK's XXPROG.$$$ reopen then failed on Model 4 EXM=0 media. Checking only
+    the prototype/REL hashes cannot detect that stale operating-system input.
+    """
+    core = 'src/bdos/unified.mac'
+    expected = sha((ROOT/core).read_bytes())
+    identities = {}
+    for platform in platforms:
+        report = json.loads((system/platform/'report.json').read_text())
+        source = report.get('source', {})
+        actual = source.get('inputs', {}).get(core)
+        if actual != expected:
+            raise ValueError(f'{platform}: stale or unverified system core; '
+                             f'{core} expected {expected}, recorded {actual}. '
+                             'Use --system with media built from the current core.')
+        image = system/platform/report['image']
+        if sha(image.read_bytes()) != report['sha256']:
+            raise ValueError(f'{platform}: system image differs from its build report')
+        identities[platform] = {'source_revision':source['revision'],
+                               'core_sha256':actual,'image_sha256':report['sha256']}
+    return identities
 
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--system', type=Path, default=DEFAULT_SYSTEM)
+    p.add_argument('--system', type=Path, required=True,
+                   help='System-media directory with current-core source/hash reports')
     p.add_argument('--utilities', type=Path, default=ROOT/'build/ted-qualified-utilities')
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--reuse-native', type=Path,
@@ -28,6 +55,7 @@ def main():
     a.output = a.output.resolve()
     a.system = a.system.resolve()
     a.utilities = a.utilities.resolve()
+    systems = verify_system(a.system, a.platforms)
     a.output.mkdir(parents=True, exist_ok=False)
     cross = a.output/'cross'
     layout = build(Path.home()/'bin/z80asm', cross)
@@ -43,6 +71,7 @@ def main():
     builds = [f'B:ZSM4 {n}={n}' for n in ('PROOF','LBRMOD','UNCRMOD')]
     builds += [f'B:LINK {n}[A]' for n in ('PROOF','LBRMOD','UNCRMOD')]
     report = {'scope':'prototype only; no CLI/writer/ARK acceptance',
+              'verified_systems':systems,
               'layout':layout, 'platforms':{}}
     for platform in a.platforms:
         reuse = a.reuse_native and (a.reuse_native/platform/'after-PROOF.COM').is_file()
@@ -77,6 +106,8 @@ def main():
             outputs = {n+'.COM':(prior/('after-'+n+'.COM')).read_bytes()
                        for n in ('PROOF','LBRMOD','UNCRMOD')}
             execution = json.loads((prior/'execution.json').read_text())
+            assert execution['system_sha256'] == systems[platform]['image_sha256'], \
+                'retained campaign ran on a different system image'
             assert sha(log) == execution['console_sha256']
             assert execution['commands'] == todo
             assert execution['input_hashes'] == {n:sha(v) for n,v in inputs.items()} | {
