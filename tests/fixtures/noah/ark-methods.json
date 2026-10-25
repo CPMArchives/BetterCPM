@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "scope": "ARC reader foundation only; no production NOAH ARK commands or writers",
+  "scope": "Production NOAH ARK reading: methods 1/2 stored and method 3 packed decode; reusable ARK reader still exposes raw bytes and stored-only test",
   "reference_pins_sha256": "bec79cad8bfcbeb59bc6991915f0c41d87cc33783e812ebea194521eb0f786d2",
   "methods": [
     {
@@ -29,8 +29,8 @@
       "header_bytes": 29,
       "enumerate": true,
       "raw_stored_read": true,
-      "decoded_read": false,
-      "integrity_test": false,
+      "decoded_read": true,
+      "integrity_test": true,
       "encode": false
     },
     {
@@ -111,13 +111,11 @@
     "2": "opaque trailer; unvalidated, no clean-coverage or write-preservation claim"
   },
   "not_supported": [
+    "methods 4-9 decoding/integrity testing",
     "self-extracting prefixes or header resynchronization",
     "encrypted/Spark high-bit methods",
     "extended headers including methods 10/11/20+",
-    "compressed integrity testing/decoding",
-    "duplicate-name audit",
     "date conversion",
-    "all archive writes",
-    "production CLI/overlay integration"
+    "all archive writes"
   ]
 }

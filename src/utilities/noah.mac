@@ -1,6 +1,6 @@
-; NOAH development: LBR and stored ARK LIST/TEST/EXTRACT with selectors,
+; NOAH development: LBR and ARK LIST/TEST/EXTRACT with selectors,
 ; member filters, frozen batches and authorized staged replacement.
-; LBR writes and standalone codecs implemented; ARK compression/writes pending.
+; LBR writes and standalone codecs implemented; remaining ARK methods/writes pending.
 ; No distribution inclusion until the corresponding qualification is complete.
         ORG 100H
         JP NH_START

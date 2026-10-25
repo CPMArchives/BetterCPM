@@ -47,9 +47,9 @@ def tests(m):
         assert 'opaque trailer: unvalidated' in t and 'Outcome: warning/partial.' in t,t
     t=m.run('/X /Y EMPTY.ARC',{diskkey(1,'EMPTY.ARC'):f['EMPTY.ARC']})
     assert 'No members matched' in t and not m.created,t
-    every=b''.join(member(b'packed',i,f'M{i}.DAT'.encode(),logical=50) for i in range(3,10))+b'\x1a\0'
+    every=b''.join(member(b'packed',i,f'M{i}.DAT'.encode(),logical=50) for i in range(4,10))+b'\x1a\0'
     t=m.run('/X /Y ALL.ARC',{diskkey(1,'ALL.ARC'):every})
-    assert all(f'ARK method {i:02X}: unsupported' in t for i in range(3,10)) and not m.created,t
+    assert all(f'ARK method {i:02X}: unsupported' in t for i in range(4,10)) and not m.created,t
     dated=bytearray(member(b'date',name=b'DATE.TXT')+b'\x1a\0');dated[19:23]=b'\x01\x21\x00\x00'
     t=m.run('/X /Y DATE.ARC',{diskkey(1,'DATE.ARC'):bytes(dated)})
     assert 'ARK DOS timestamp not restored' in t and 'Outcome: warning/partial.' in t,t

@@ -161,6 +161,9 @@ NX_CLOSE_WRITTEN:
         LD DE,NH_CONTEXT+AS_LEFT
         LD BC,4
         LDIR
+        LD A,(NH_ARK)
+        OR A
+        CALL NZ,NW_PLANS+24
 NX_VERIFY_LOOP:
         CALL NX_POLL
         JP C,NX_MEMBER_ERROR

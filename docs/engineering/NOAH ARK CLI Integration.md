@@ -7,6 +7,9 @@ production dispatch, stored-member testing and safe extraction. The
 qualification and the source/evidence receipt are recorded in
 [NOAH-ARK-CLI.json](NOAH-ARK-CLI.json).
 
+The subsequent [packed decoder](NOAH%20ARK%20Packed%20Decoding.md) adds method 3
+in revision 15; the scope and measurements below record revision 14.
+
 ## Command boundary
 
 Existing files are recognized by content, irrespective of extension. A leading
