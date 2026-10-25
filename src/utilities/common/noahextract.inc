@@ -52,6 +52,7 @@ NX_NEXT:
 NX_MEMBER:
         CALL NS_MEMBER_MATCH
         JP NZ,NX_NEXT
+        CALL NA_RESET_NAMES
         XOR A
         LD (NX_TEMP_OPEN),A
         LD (NX_VERIFY_OPEN),A
@@ -562,6 +563,7 @@ NX_RETAIN:
         LD HL,NX_TEMP
         CALL NX_EXISTS
         JR Z,NX_TEMP_ABSENT
+        CALL NA_REC_TEMP
         LD A,1
         LD (NX_KEEP),A
         LD (NS_WARNINGS),A

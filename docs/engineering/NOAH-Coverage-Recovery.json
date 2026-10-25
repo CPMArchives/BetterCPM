@@ -1,0 +1,166 @@
+{
+  "date": "2026-10-26",
+  "component": "NOAH",
+  "version": "1.0",
+  "revision": 13,
+  "scope": "Observed LIST/TEST/EXTRACT coverage and distinct reported recovery-artifact totals; existing LBR/codec commands only",
+  "status": "PASS within stated scope",
+  "qualification": {
+    "scope": "NOAH production controller/codec phase integration; LBR and codec commands only",
+    "layout": {
+      "resident_bytes": 18335,
+      "window": 18688,
+      "codec_context": 20736,
+      "cli_bytes": 18343,
+      "writer_plans": [
+        37120,
+        43264
+      ],
+      "transformed_ids": [
+        43264,
+        49920
+      ],
+      "stack": [
+        16952,
+        17464
+      ],
+      "required_ceilings": [
+        49920,
+        24260,
+        22176,
+        45943,
+        47318
+      ],
+      "build_id": "245a78051382a3a6",
+      "companion_sha256": "140572b16b826790b82769a26d0be627a0cc2e389233eb49ac0869d0a55924a8"
+    },
+    "verified_systems": {
+      "z80pack": {
+        "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1"
+      },
+      "trs80gp": {
+        "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43"
+      }
+    },
+    "resident_sha256": "9962881952271b80eb5151affa6108d2997a549c4f8bfbb7b74d598f2fd4eadd",
+    "companion_sha256": "140572b16b826790b82769a26d0be627a0cc2e389233eb49ac0869d0a55924a8",
+    "platforms": {
+      "z80pack": {
+        "status": "PASS",
+        "native_groups": [
+          {
+            "execution": "build-0/execution.json",
+            "console_sha256": "95775ecaed1bf6b0f4a67ae4da87cafedb183d24d50f5fc34257a958d10f65e7",
+            "status": "PASS"
+          },
+          {
+            "execution": "build-1/execution.json",
+            "console_sha256": "4be2b9e631819443e08b171a6f1801b63ce131d21873580f6695fe064ae00ce5",
+            "status": "PASS"
+          }
+        ],
+        "runtime_ceiling_hex": "C501",
+        "native_outputs": {
+          "NOAH": "19fcff5b8d3c42d6c2a04db57bae56a845d7bbeac532174c598c31fced4125ad",
+          "NHCLI": "d81c875e48fc06b03b53135c6a289c2740ab6ec9fb5e94ca5353a376123a8978",
+          "NCSQ": "0aef0d7dffb30e80519f7e61871c6fd5147600e65b7100d31bb23655d6d56920",
+          "NCUSQ": "237e877734b76d1c69020f71d893dafbbba8c0b1aa934bdb697a1a9cad24fba8",
+          "NCCR": "cb8cd6713179343b5eec8bc0a9a28aab637ad142271cb8c72980d4b1bfb3a719",
+          "NCUNCR": "385bedb2fb553bbab001c6b8e2a887e37df1fde5b6fb3d19830098593157d2cf"
+        },
+        "runtime_outputs": {
+          "FIRST.DAT": "b6ac3cc10386331c765f04f041c147d0f278f2aed8eaa021e2d0057fc6f6ff9e",
+          "SECOND.DAT": "7abaa701a6f4bb8d9ea3872a315597eb6f2ccfd03392d8d10560837f6136d06a"
+        },
+        "runtime_console_sha256": "a23f9082dbfc7fd104d96368e8a66a093bfe6fb3be3a5db3bf962ded25dea8e9"
+      },
+      "trs80gp": {
+        "status": "PASS",
+        "native_groups": [
+          {
+            "execution": "build-0/execution.json",
+            "console_sha256": "d16c3520f685db55cf1af78eb535237a47cf53072670ea72f69b9e3cd558f8f3",
+            "status": "PASS"
+          },
+          {
+            "execution": "build-1/execution.json",
+            "console_sha256": "cb7958c3957e7ea207afd579ed25162ec87a598c702896ff97f80782e8c4d0f7",
+            "status": "PASS"
+          }
+        ],
+        "runtime_ceiling_hex": "CA01",
+        "native_outputs": {
+          "NOAH": "19fcff5b8d3c42d6c2a04db57bae56a845d7bbeac532174c598c31fced4125ad",
+          "NHCLI": "d81c875e48fc06b03b53135c6a289c2740ab6ec9fb5e94ca5353a376123a8978",
+          "NCSQ": "0aef0d7dffb30e80519f7e61871c6fd5147600e65b7100d31bb23655d6d56920",
+          "NCUSQ": "237e877734b76d1c69020f71d893dafbbba8c0b1aa934bdb697a1a9cad24fba8",
+          "NCCR": "cb8cd6713179343b5eec8bc0a9a28aab637ad142271cb8c72980d4b1bfb3a719",
+          "NCUNCR": "385bedb2fb553bbab001c6b8e2a887e37df1fde5b6fb3d19830098593157d2cf"
+        },
+        "runtime_outputs": {
+          "FIRST.DAT": "b6ac3cc10386331c765f04f041c147d0f278f2aed8eaa021e2d0057fc6f6ff9e",
+          "SECOND.DAT": "7abaa701a6f4bb8d9ea3872a315597eb6f2ccfd03392d8d10560837f6136d06a"
+        },
+        "runtime_console_sha256": "0b0c11a650f7df5ffeaee2fbe3a77edb125cfae620681c7b812138565a440cec"
+      }
+    },
+    "qualification_mode": "observed coverage and recovery summaries"
+  },
+  "host_checks": {
+    "coverage_recovery_transactions": 15,
+    "member_candidate_transactions": 18,
+    "outcome_transactions": 20,
+    "adapter_cases": 137,
+    "lbr_write_cases": 38,
+    "codec_cases": 51,
+    "quiet_cases": 31,
+    "source_failure_cases": 21,
+    "staged_failure_cases": 19,
+    "registry_projections": "PASS"
+  },
+  "source_sha256": {
+    "metadata/component-inputs.json": "0c0d684e0a748649d542f1bdf27711e257e627f4ca850d428c3d0728aa60e9ee",
+    "metadata/component-registry.json": "3a9840176f33cee8238aed175571cb36642bdfb1de08cda36a92db91c80c8979",
+    "metadata/utility-versions.tsv": "c5bb263a15830f955a5e2b460951c856c66ac33d3bae98a0b6fcdf257e9ae9c3",
+    "src/utilities/common/noahaccount.inc": "c77af05e810dee6659f76057dc4bc77685ef78a9b69347064d0712d393281bf2",
+    "src/utilities/common/noahcodec-add.inc": "12705700129726329ec4c1fc4dac3ef7b31973a40dd2ad75fd9fcd08d1db084e",
+    "src/utilities/common/noahcodec-resident.inc": "c6f0fdb13dc5a3204d1ddba05bccc78e2915f45aa89a26f5c1a900c75f57c376",
+    "src/utilities/common/noahcodec.inc": "f8509bd75fd2fddbfd7143708686b2e2cc7ba1bf08e8fe54e2f2cb012f42f2f4",
+    "src/utilities/common/noahextract.inc": "c5f83201ce4891a9565e6d58a951776553c021b69c84f613b2e3e461e70fa5fb",
+    "src/utilities/common/noahinput.inc": "8ded9870515081119b750edaca77c3c2fdf29877ff3ec2b6680ab5e2f579b6f2",
+    "src/utilities/common/noahpublish.inc": "84beea8443bedc832ba90fe2112f3fc6f8bfde811854dcec10b41a6f4d580113",
+    "src/utilities/common/noahresident-data.inc": "518c5813a05989462fc34793d063f327afbe2babd788283c442e394d1381500a",
+    "src/utilities/common/noahresident.inc": "34baab2c9a75b87d764a04cd7235efff426879b9a059ca479e5828c6a7e2c748",
+    "src/utilities/common/noahselect.inc": "e8d497cb8070f3b11d211a7cf9134079b7cf9b97873f037891a96542de9bda21",
+    "src/utilities/common/noahwrite-parse.inc": "2aaf95301a17ee16f667010e8917dad155d4f0d067ee05e61d32967db43a601d",
+    "src/utilities/common/noahwrite.inc": "68c987a329631914b0a41df180c6f3bdabcb9cc78d809496bf64d6ccbe27e499",
+    "src/utilities/noah.mac": "c75f92f2cb0662fe22a17c7118cf4188e57b31682210a4cfae0bfd0e5545fe6c",
+    "tools/build_noah.py": "6ffced5c83940fd1ebb201bf55da24e03b9b44d9983d3d512b8cf1ed2308bea2",
+    "tools/noah_overlays.py": "fba469600462e457a6b830d351c664c31440adafdaa6871c8d8568e8ec201fd6",
+    "tools/qualify_noah_codecs.py": "ba87b710a90caa01bdd14c3fce45aeee27190b01ed266a9ce1ad09e01a47c2af",
+    "tools/test_noah.py": "2df129858ef1fd8cc5b933ae27701d826e12daf8a958b6709030d238d98c8197",
+    "tools/test_noah_accounting.py": "b166867ee794efcbb9c2b31ffacb805466aede84baf9bab9f7ccdeed1c13ef10",
+    "tools/test_noah_codecs.py": "c1af6754c3ba627ac973fe54149b4673ffed065bff2a8dc1ec3bffda8bddceba",
+    "tools/test_noah_coverage.py": "3f823f02b6a2d14cc65378ac03ded098f5ccea07efa83bf42af945bef84f982c",
+    "tools/test_noah_failures.py": "234b8288811d0ccba05ab2d9dc89156a0d298c0db1cda71f6a031b9ea9166ca0",
+    "tools/test_noah_outcomes.py": "300f5e47f6561d0e492772ebf9702b55790321932c2f50438296f5d9e1441d88",
+    "tools/test_noah_quiet.py": "b47fd3f52079a2782efeedccfb9a37af405f733b3f78f87c19396d4bd3c3fd17",
+    "tools/test_noah_staged.py": "47a76db8570472f9c6f5466f357601e828fbd3ebcc30030761ee78f576352a62",
+    "tools/test_noah_write.py": "1f9cea3f8a1024e1a6fc45e21b09c2fab6f861a7251b6b1577a622f5925e93a9"
+  },
+  "remaining": [
+    "ARK handlers and format-specific reporting/qualification",
+    "release media acceptance",
+    "interactive browser deferred"
+  ],
+  "evidence": {
+    "file": "NOAH-Coverage-Recovery-evidence.tar.gz",
+    "sha256": "bb2ab0804533b950fe3fd747924ed9d04f2147217cfd80bd5972f92960c31efc",
+    "bytes": 555647,
+    "manifest_sha256": "6ae8a0e2e79fbd3c34a61b1d40fa046b62f157fe0215c8e2b6174d4bb4dc2091"
+  }
+}

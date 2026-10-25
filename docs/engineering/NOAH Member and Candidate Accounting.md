@@ -2,7 +2,10 @@
 
 Status: NOAH 1.0 revision 12, bounded reporting increment, 2026-10-26.
 The [behavioral specification](NOAH%20Specification.md) remains normative.
-This extends [final command outcomes](NOAH%20Outcome%20Reporting.md) with extraction
+The subsequent [revision 13 coverage/recovery increment](NOAH%20Coverage%20and%20Recovery%20Reporting.md)
+closes the summary gates identified below; these measurements and remaining-work
+notes remain revision 12 evidence. This extends
+[final command outcomes](NOAH%20Outcome%20Reporting.md) with extraction
 batch totals and ADD candidate accounting. It adds no archive operations, formats,
 prompts, disk access, browser or release-disk membership.
 

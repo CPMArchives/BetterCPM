@@ -321,6 +321,7 @@ NO_BACKUP_STILL_PRESENT:
         LD A,1
         LD (NS_STOP),A
 NO_WARNING_PRINT:
+        CALL NA_REC_BACKUP
         LD A,1
         LD (NS_WARNINGS),A
         LD DE,NO_CLEANUP_TEXT
@@ -370,6 +371,7 @@ NO_UNCERTAIN:
         LD HL,NX_BACKUP
         CALL NX_EXISTS
         JR Z,NO_UNCERTAIN_REPORT
+        CALL NA_REC_BACKUP
         ; A successfully created backup is still our original even if its
         ; rename-back failed. Reapply protection before handing off recovery.
         LD HL,NX_BACKUP

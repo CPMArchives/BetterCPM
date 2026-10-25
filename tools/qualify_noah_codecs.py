@@ -142,6 +142,7 @@ def main():
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp'])
     p.add_argument('--reuse-build',type=Path,help='Reuse retained parity-checked native groups for unchanged source')
+    p.add_argument('--coverage-recovery',action='store_true',help='Qualify observed audit coverage and recovery summaries')
     p.add_argument('--member-accounting',action='store_true',help='Qualify extraction totals and ADD candidate accounting')
     p.add_argument('--outcome-reporting',action='store_true',help='Qualify final command outcomes and batch dispositions')
     p.add_argument('--staged-failures',action='store_true',help='Qualify stage cleanup and Retry/Skip on full media')
@@ -204,6 +205,34 @@ def main():
             body=native[n][:len(expected[n])]
             native_ovl.extend(body+bytes(-len(body)%128))
         assert bytes(native_ovl)==ovl
+        if a.coverage_recovery:
+            first=b'A'*128;second=b'B'*128
+            good=with_crcs(archive([entry(b'FIRST   DAT',start=1),entry(b'SECOND  DAT',start=2)],first+second))
+            bad=bytearray(good);bad[256]^=1
+            missing=archive([entry(b'THIRD   DAT')],b'C'*128)
+            files={'NOAH.COM':native['NOAH'],'NOAH.OVL':bytes(native_ovl),'NCMEM.COM':mem,
+                   'GOOD.LBR':good,'BAD.LBR':bytes(bad),'MISS.LBR':missing}
+            prefix=['A:','RSX LOAD ANSISCRN','RSX LOAD ANSI','C:'] if platform=='z80pack' else []
+            commands=prefix+['NCMEM','NOAH /Q /LIST GOOD.LBR','NOAH /Q /TEST GOOD.LBR',
+                'NOAH /Q /TEST *.LBR','NOAH /Q /TEST GOOD.LBR FIRST.*','NOAH /Q /X /Y GOOD.LBR']
+            log,outputs=campaign(platform,files,commands,base/'runtime',system=a.system,utilities=a.utilities,
+                extract=['FIRST.DAT','SECOND.DAT'],timeout=600)
+            ceiling='C501' if platform=='z80pack' else 'CA01'
+            assert ('NOAH QUAL TPA '+ceiling).encode() in log
+            assert b'LIST: contents not tested.' in log
+            assert b'Known CRC regions (hex): verified 00000005; unavailable/ambiguous: 00000002' in log
+            assert b'Known CRC regions (hex): verified 00000002; unavailable/ambiguous: 00000000' in log
+            assert b'Listed members (hex): 00000003' in log
+            assert log.count(b'Recovery artifacts reported (hex): 00000000')==5
+            assert re.findall(rb'Outcome: ([a-z/-]+)\.',log)==[b'success',b'success',b'warning/partial',b'success',b'success']
+            assert outputs['FIRST.DAT']==first and outputs['SECOND.DAT']==second
+            report['qualification_mode']='observed coverage and recovery summaries'
+            report['platforms'][platform]={'status':'PASS','native_groups':groups,'runtime_ceiling_hex':ceiling,
+                'native_outputs':{n:sha(b) for n,b in native.items()},'runtime_outputs':{n:sha(b) for n,b in outputs.items()},
+                'runtime_console_sha256':sha(log)}
+            (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
+            print('PASS',platform,'native observed coverage and recovery summaries with terminal providers loaded',flush=True)
+            continue
         if a.member_accounting:
             first=b'A'*128;second=b'B'*128;third=b'C'*128
             one=with_crcs(archive([entry(b'FIRST   DAT',start=1),entry(b'SECOND  DAT',start=2)],first+second))
