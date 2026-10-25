@@ -49,6 +49,8 @@ NI_YES:
 ; Call only at a confirmed safe restart boundary: candidate staging must be
 ; absent and inputs restartable/closed. /Y never waits; Enter defaults to Skip.
 NI_FAILURE:
+        LD A,1
+        LD (NS_WARNINGS),A
         LD A,(NS_YES)
         OR A
         LD A,'S'

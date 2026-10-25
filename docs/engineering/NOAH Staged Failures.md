@@ -5,7 +5,9 @@ The [behavioral specification](NOAH%20Specification.md) remains normative.
 This extends the [source-preflight choices](NOAH%20Safe%20Source%20Failures.md)
 to established restart boundaries after staging. It adds no archive formats,
 browser, OS services or Utilities Disk membership. Complete outcome accounting
-and ARK remain separate work.
+and ARK remain separate work. The subsequent
+[revision 11 reporting increment](NOAH%20Outcome%20Reporting.md) adds final command
+outcomes and batch dispositions; the measurements below remain revision 10 evidence.
 
 ## Restart contract
 

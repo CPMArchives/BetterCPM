@@ -27,6 +27,7 @@ NH_START:
         LD (NH_DEST),A
         LD (NH_ABORTED),A
         LD (NS_CAPTURED),A
+        LD (NS_RESULT_ACTIVE),A
         LD HL,81H
         LD A,(80H)
         CP 128
@@ -173,6 +174,12 @@ NH_LIST_END:
         LD DE,NS_NO_MEMBERS
         CALL NH_PRINT
 NH_MATCHES_REPORTED:
+        LD HL,NS_MATCHED
+        CALL NW_NONZERO
+        JR Z,NH_MATCH_DISPOSITION
+        LD A,1
+        LD (NS_DISPOSITION),A
+NH_MATCH_DISPOSITION:
         LD A,(NH_MODE)
         CP 1
         LD DE,NH_DONE
@@ -210,6 +217,7 @@ NH_CLOSE_FAILED:
 NH_DMA:
         JP NS_ARCHIVE_DONE
 NH_RETURN:
+        CALL NS_OUTCOME
         CALL NS_RESTORE
         POP IY
         POP IX
@@ -220,6 +228,8 @@ NH_LOW_MEMORY:
         LD C,9
         JP 5
 NH_USAGE_ERROR:
+        LD A,1
+        LD (NS_FATAL),A
         LD DE,NH_USAGE
         CALL NH_PRINT
         JP NH_RETURN

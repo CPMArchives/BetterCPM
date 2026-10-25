@@ -142,6 +142,7 @@ def main():
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp'])
     p.add_argument('--reuse-build',type=Path,help='Reuse retained parity-checked native groups for unchanged source')
+    p.add_argument('--outcome-reporting',action='store_true',help='Qualify final command outcomes and batch dispositions')
     p.add_argument('--staged-failures',action='store_true',help='Qualify stage cleanup and Retry/Skip on full media')
     p.add_argument('--source-failures',action='store_true',help='Qualify safe source-preflight choices')
     p.add_argument('--quiet-reporting',action='store_true',help='Run the bounded quiet-reporting native campaign')
@@ -202,6 +203,33 @@ def main():
             body=native[n][:len(expected[n])]
             native_ovl.extend(body+bytes(-len(body)%128))
         assert bytes(native_ovl)==ovl
+        if a.outcome_reporting:
+            data=bytes(range(128))
+            raw=with_crcs(archive([entry(b'TEXT    DAT')],data))
+            files={'NOAH.COM':native['NOAH'],'NOAH.OVL':bytes(native_ovl),'NCMEM.COM':mem,
+                   'TEXT.DAT':data,'GOOD.LBR':raw,'BAD.LBR':b'bad archive'}
+            prefix=['A:','RSX LOAD ANSISCRN','RSX LOAD ANSI','C:'] if platform=='z80pack' else []
+            commands=prefix+['NCMEM','NOAH /Q /TEST GOOD.LBR','NOAH /Q /LIST GOOD.LBR NONE.*',
+                'NOAH /Q /TEST *.LBR','NOAH /Q /TEST BAD.LBR','NOAH /Q /BOGUS GOOD.LBR',
+                'NOAH /Q /SQ TEXT.DAT','NOAH /Q /ADD OUT.LBR TEXT.DAT']
+            log,outputs=campaign(platform,files,commands,base/'runtime',system=a.system,utilities=a.utilities,
+                extract=['TEXT.DQT','OUT.LBR'],timeout=600)
+            ceiling='C501' if platform=='z80pack' else 'CA01'
+            outcomes=re.findall(rb'Outcome: ([a-z/-]+)\.',log)
+            assert outcomes==[b'success',b'warning/no-work',b'warning/partial',b'failure',
+                              b'failure',b'success',b'success'],outcomes
+            assert ('NOAH QUAL TPA '+ceiling).encode() in log
+            assert b'completed 0000; no-match 0001; skipped 0000' in log
+            assert host_decode(outputs['TEXT.DQT'],record_padding=True)[1]==data
+            check_crc(outputs['OUT.LBR']);assert len(members(outputs['OUT.LBR']))==1
+            report['qualification_mode']='final outcomes and batch dispositions'
+            report['platforms'][platform]={'status':'PASS','native_groups':groups,'runtime_ceiling_hex':ceiling,
+                'outcomes':[x.decode() for x in outcomes],
+                'native_outputs':{n:sha(b) for n,b in native.items()},'runtime_outputs':{n:sha(b) for n,b in outputs.items()},
+                'runtime_console_sha256':sha(log)}
+            (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
+            print('PASS',platform,'native command outcomes with terminal providers loaded',flush=True)
+            continue
         if a.staged_failures:
             rng=random.Random(506);data=bytes(rng.randrange(256) for _ in range(8192))
             raw=with_crcs(archive([entry(b'FIRST   DAT',start=1,records=64),
