@@ -6,6 +6,9 @@ The [specification](NOAH%20Specification.md) remains normative. This extends the
 [stored ARK integration](NOAH%20ARK%20CLI%20Integration.md); it adds no encoder,
 archive update, browser or new command.
 
+The subsequent [Huffman/RLE increment](NOAH%20ARK%20Huffman%20Decoding.md) adds
+method 4 in revision 16. The scope and measurements below record revision 15.
+
 ## Implemented behavior
 
 ARC method 3 is now supported by LIST/TEST/EXTRACT. LIST reports metadata without

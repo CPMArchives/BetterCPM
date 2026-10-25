@@ -28,7 +28,9 @@ ARC framing/stored-CRC work as an isolated library/proof. The
 [ARK CLI integration](NOAH%20ARK%20CLI%20Integration.md) adds production content
 dispatch, LIST, stored-method TEST/EXTRACT and explicit unsupported-method/trailer
 reporting. The [packed decoder](NOAH%20ARK%20Packed%20Decoding.md) adds method 3
-streaming decode, exact length and CRC checks. Methods 4–9, ARK updates, broader interoperability/release
+streaming decode, exact length and CRC checks. The
+[Huffman/RLE decoder](NOAH%20ARK%20Huffman%20Decoding.md) adds method 4 with bounded
+tree validation. Methods 5–9, ARK updates, broader interoperability/release
 qualification, the browser and release packaging remain open.
 The bounded [compatibility/API/overlay and Model 4 memory proof](NOAH%20Compatibility%20and%20Memory%20Proof.md)
 records increments 1–2 and prototype limits. Its native LINK gate is now closed

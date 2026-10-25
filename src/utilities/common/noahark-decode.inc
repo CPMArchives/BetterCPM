@@ -1,4 +1,4 @@
-; Original ARC method-3 streaming decoder. No external codec source linked.
+; Original ARC method-3/4 streaming decoder. No external codec source linked.
 ; Singleton state belongs to the supplemental module, not the reusable reader.
 ; RESET rewinds stored input and decoded length/CRC at each pass/retry.
 NK_RESET:
@@ -16,6 +16,10 @@ NK_RESET:
  LD BC,ND_END-ND_STATE-1
  LD (HL),A
  LDIR
+ XOR A
+ LD (DH_READY),A
+ LD (DH_DONE),A
+ LD (DH_BITS),A
  RET
 NK_TEST:
  LD A,(IX+AS_MEMBER+AM_METHOD)
@@ -45,7 +49,8 @@ NK_READ:
  LD A,(IX+AS_MEMBER+AM_METHOD)
  CP 3
  JP C,ARK_RAW
- JP NZ,AR_STATE
+ CP 5
+ JP NC,AR_STATE
  LD A,B
  OR C
  RET Z
@@ -142,11 +147,11 @@ ND_DECODE:
  OR A
  RET
 ND_TOKEN:
- CALL ND_INPUT
+ CALL ND_TOKEN_INPUT
  RET C
  CP 90H
  JR NZ,ND_LITERAL
- CALL ND_INPUT
+ CALL ND_TOKEN_INPUT
  JR NC,ND_ESCAPE
  CP AS_END
  JP Z,AR_TRUNC
@@ -170,6 +175,14 @@ ND_LITERAL:
  LD (ND_HAVE),A
  POP AF
  OR A
+ RET
+ND_TOKEN_INPUT:
+ LD A,(IX+AS_MEMBER+AM_METHOD)
+ CP 4
+ JP NZ,ND_INPUT
+ CALL DH_GET
+ RET C
+ LD (ND_INPUT_BYTE),A
  RET
 ND_INPUT:
  LD A,(ND_USED)
