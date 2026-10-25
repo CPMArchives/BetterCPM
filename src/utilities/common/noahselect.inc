@@ -29,6 +29,9 @@ NS_QUEUE_MESSAGE:
         CALL NH_PRINT
         JP NH_RETURN
 NS_QUEUE_READY:
+        LD A,(NH_MODE)
+        CP 3
+        JP Z,NW_ADD_BATCH
         LD HL,(NS_COUNT)
         LD A,H
         OR L
@@ -213,6 +216,11 @@ NS_COPY_TAIL:
         LD (NS_ALL),A
         LD (NS_STOP),A
         LD (NS_WARNINGS),A
+        LD (NW_COMPACT),A
+        LD (NW_CAP_SET),A
+        LD (NW_FORMAT),A
+        LD (NW_ACTIVE),A
+        LD (NW_PROMPT),A
 NS_TOKEN_LOOP:
         CALL NH_TOKEN
         JP C,NS_PARSE_OPERANDS
@@ -269,6 +277,10 @@ NS_NEW_MODE:
         LD (NS_MODE_SET),A
         JR NS_TOKEN_LOOP
 NS_FLAGS:
+        CALL NW_OPTION
+        JP C,NS_BAD
+        OR A
+        JP NZ,NS_TOKEN_LOOP
         LD A,(NS_TOKEN_LEN)
         CP 2
         JR NZ,NS_SYS_FLAG
@@ -301,7 +313,7 @@ NS_PARSE_OPERANDS:
         JP Z,NS_BAD
         LD A,(NH_MODE)
         CP 2
-        JR Z,NS_PARSE_SOURCE
+        JR NC,NS_PARSE_SOURCE
         LD A,(NS_YES)
         LD C,A
         LD A,(NS_RO)
@@ -337,6 +349,11 @@ NS_PARSE_SOURCE:
         LDIR
         LD A,(FS_MASK)
         LD (NS_ATTR_MASK),A
+        CALL NW_PARSE_CHECK
+        RET C
+        LD A,(NH_MODE)
+        CP 3
+        JP Z,NW_PARSE_ADD
         LD HL,BC_ALL
         LD B,3
         LD A,(NS_OPERANDS)

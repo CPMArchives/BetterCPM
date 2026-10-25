@@ -6,7 +6,9 @@
 implementation gates in section 16. LBR reader/listing, integrity audit and new-file
 extraction increments, shared selectors and authorized overwrites exist; see
 [current implementation scope and checks](NOAH%20Selectors%20and%20Overwrite.md).
-Full specification conformance and release qualification are not claimed.
+The [LBR-write increment](NOAH%20LBR%20Writes.md) adds creation, ADD/replacement,
+REMOVE, COMPACT and capacity handling. Full specification conformance and release
+qualification are not claimed.
 The bounded [compatibility/API/overlay and Model 4 memory proof](NOAH%20Compatibility%20and%20Memory%20Proof.md)
 records increments 1–2 and prototype limits. Its native LINK gate is now closed
 on source-verified system media; see the [resolution](NOAH-Model4-LINK-Resolution.json).

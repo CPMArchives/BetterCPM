@@ -4,6 +4,10 @@ Build 003 extends the [LBR integrity/extraction increment](NOAH%20LBR%20Integrit
 This is development implementation, not full NOAH release qualification. The
 [behavioral specification](NOAH%20Specification.md) remains authoritative.
 
+For the later LBR-write commands and their qualification, see
+[NOAH LBR Writes](NOAH%20LBR%20Writes.md). The interface below describes this
+earlier extraction increment.
+
 ## Implemented interface
 
 ```text

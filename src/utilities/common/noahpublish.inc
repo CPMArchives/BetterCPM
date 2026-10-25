@@ -6,6 +6,9 @@ NO_AUTHORIZE:
         LD (NO_EXISTED),A
         LD (NO_BACK_LIVE),A
         LD (NO_OLD_ATTR),A
+        LD A,(NW_ACTIVE)
+        OR A
+        JR NZ,NO_NOT_INPUT
         LD HL,NX_FINAL
         CALL NS_IS_INPUT
         JR NZ,NO_NOT_INPUT
@@ -57,6 +60,10 @@ NO_PROTECTED_SKIP:
         LD DE,NO_PROTECTED_TEXT
         JR NO_SKIP
 NO_ORDINARY:
+        LD A,(NW_ACTIVE)
+        OR A
+        LD A,1
+        RET NZ
         LD A,(NS_YES)
         LD B,A
         LD A,(NS_ALL)
@@ -157,9 +164,13 @@ NO_INSPECT_END:
 NO_PUBLISH:
         LD A,1
         LD (NX_KEEP),A
+        LD A,(NW_ACTIVE)
+        OR A
+        JR NZ,NO_PUBLICATION_INPUT_OK
         LD HL,NX_FINAL
         CALL NS_IS_INPUT
         JP Z,NO_ERROR
+NO_PUBLICATION_INPUT_OK:
         CALL NO_INSPECT
         RET C
         LD B,A

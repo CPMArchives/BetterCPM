@@ -1,6 +1,6 @@
 ; NOAH development: LBR LIST/TEST/EXTRACT with shared source selectors,
 ; member filters, frozen batches and authorized staged replacement.
-; ARK, codecs, archive updates and overlays remain pending.
+; LBR staged writes; ARK, codecs and production overlays remain pending.
 ; No distribution inclusion until the corresponding qualification is complete.
         ORG 100H
         JP NH_START
@@ -10,7 +10,14 @@
         INCLUDE lbraudit.mac
         INCLUDE cpmfile.inc
         INCLUDE cpmfile.mac
+        INCLUDE lbrwrite.inc
+        INCLUDE lbrwrite.mac
 NH_START:
+        LD HL,(6)
+        LD DE,NH_STACK_TOP
+        OR A
+        SBC HL,DE
+        JP C,NH_LOW_MEMORY
         LD (NH_OLDSP),SP
         LD SP,NH_STACK_TOP
         PUSH IX
@@ -42,6 +49,9 @@ NH_START:
 NH_NOT_HELP:
         JP NS_RUN
 NH_ARCHIVE:
+        LD A,(NH_MODE)
+        CP 3
+        JP NC,NW_ARCHIVE
         ; Explicitly initialize all context/adapter storage (DS is not zero).
         LD HL,NH_CONTEXT
         LD DE,NH_CONTEXT+1
@@ -204,6 +214,10 @@ NH_RETURN:
         POP IX
         LD SP,(NH_OLDSP)
         RET
+NH_LOW_MEMORY:
+        LD DE,NW_MEMORY_TEXT
+        LD C,9
+        JP 5
 NH_USAGE_ERROR:
         LD DE,NH_USAGE
         CALL NH_PRINT
@@ -523,6 +537,8 @@ NH_DONE: DB 'Listing complete. Contents and CRCs not tested.',13,10,'$'
 NH_BAD_ARCHIVE: DB 'NOAH: Archive/read error ', '$'
 NH_CLOSE_ERROR: DB 'NOAH: Input close failed.',13,10,'$'
 NH_NEWLINE: DB 13,10,'$'
+        INCLUDE noahwrite.inc
+        INCLUDE noahwrite-parse.inc
         INCLUDE noahselect.inc
         INCLUDE noahinput.inc
         INCLUDE noahpublish.inc
@@ -530,6 +546,7 @@ NH_NEWLINE: DB 13,10,'$'
         LBR_CODE
         LBR_AUDIT_CODE
         ARCHIVE_CPM_CODE
+        LBR_WRITE_CODE
 NH_OLDSP: DW 0
 NH_ARG: DW 0
 NH_LENGTH: DB 0
@@ -546,6 +563,7 @@ NH_AUDIT: DS LA_SIZE
         NOAH_PUBLISH_DATA
         NOAH_EXTRACT_DATA
         INCLUDE noahgrammar.inc
-NH_STACK: DS 256
+        NOAH_WRITE_DATA
+NH_STACK: DS 512
 NH_STACK_TOP:
         END

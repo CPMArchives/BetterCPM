@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Build NOAH's LBR reader/test/extraction increment (not yet a release-disk utility)."""
+"""Build NOAH's LBR reader, extraction and staged-write increment (not yet a release-disk utility)."""
 import argparse
 import hashlib
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -23,7 +24,7 @@ def build(assembler, destination):
     texts = {
         'NH_VERSION': version_text(),
         'NH_USAGE': 'NOAH: Invalid or unsupported usage.\r\nUsage: NOAH [/LIST|/TEST] archives [member]\r\n       NOAH /EXTRACT archives [destination:pattern]\r\nUse NOAH /HELP for current scope.\r\n',
-        'NH_HELP': 'NOAH LBR reader development build\r\nUsage: NOAH [/LIST|/TEST] archives [member]\r\n       NOAH /EXTRACT archives [destination:pattern]\r\nAliases: /T /X. /VER and /HELP ignore other arguments; /HELP takes precedence.\r\nShared archive filespecs: wildcards, DU sets and attribute predicates.\r\nArchive order: drive, user, filename; frozen limit 512 archives.\r\nMember names are 8.3 patterns; README means exact extensionless README.\r\nExtraction destination is one DU, default caller DU.\r\nOverwrite: Y/N/All/Cancel, default No; ESC or Ctrl-C cancels.\r\n/Y approves ordinary replacement; /R and /SYS enable separate protection prompts.\r\n/Y always skips protected outputs; input archives are never replaced.\r\nARK, codecs, archive updates, /Q and recovery UI are pending.\r\nLIST does not test contents. TEST/EXTRACT audit structure and CRCs.\r\n',
+        'NH_HELP': 'NOAH LBR development build\r\nUsage: NOAH [/LIST|/TEST] archives [member]\r\n       NOAH /EXTRACT archives [destination:pattern]\r\nAliases: /T /X. /VER and /HELP ignore other arguments; /HELP takes precedence.\r\nShared archive filespecs: wildcards, DU sets and attribute predicates.\r\nArchive order: drive, user, filename; frozen limit 512 archives.\r\nMember names are 8.3 patterns; README means exact extensionless README.\r\nExtraction destination is one DU, default caller DU.\r\nOverwrite: Y/N/All/Cancel, default No; ESC or Ctrl-C cancels.\r\n/Y approves ordinary replacement; /R and /SYS enable separate protection prompts.\r\n/Y always skips protected outputs; extraction never replaces input archives.\r\nLBR writes: /ADD archive sources; /REMOVE archives member; /COMPACT archives.\r\n/CAPACITY=n on ADD/COMPACT; /FORMAT=LBR creates an unknown extension.\r\nNormal updates retain deleted data; rebuild/COMPACT discards recovery data.\r\nARK, codecs, /Q and recovery UI are pending.\r\nLIST does not test contents. TEST/EXTRACT audit structure and CRCs.\r\n',
     }
     emitted = []
     for label, text in texts.items():
@@ -37,9 +38,9 @@ def build(assembler, destination):
         emitted.append('        DB 36')
     with tempfile.TemporaryDirectory(prefix='bettercpm-noah-') as temp:
         work = Path(temp)
-        for name in ('archive.inc', 'lbr.mac', 'lbraudit.inc', 'lbraudit.mac', 'cpmfile.inc', 'cpmfile.mac'):
+        for name in ('archive.inc', 'lbr.mac', 'lbraudit.inc', 'lbraudit.mac', 'cpmfile.inc', 'cpmfile.mac', 'lbrwrite.inc', 'lbrwrite.mac', 'lbrwrite-render.inc'):
             shutil.copy2(ROOT / 'src/archive' / name, work / name)
-        for name in ('noahextract.inc', 'noahselect.inc', 'noahinput.inc', 'noahpublish.inc'):
+        for name in ('noahextract.inc', 'noahselect.inc', 'noahinput.inc', 'noahpublish.inc', 'noahwrite.inc', 'noahwrite-parse.inc'):
             shutil.copy2(ROOT / 'src/utilities/common' / name, work / name)
         from shared_ui import controller_source, UI
         binding = (work / 'noahinput.inc').read_text()
@@ -68,6 +69,35 @@ def build(assembler, destination):
         except subprocess.CalledProcessError:
             shutil.copy2(work / 'noah.lst', destination / 'noah.lst')
             raise
+        # Export a self-contained native source; external tools stay unmodified.
+        def expand(text):
+            return re.sub(r'(?mi)^\s*INCLUDE\s+(\S+)\s*$',
+                          lambda m: expand((work / m[1]).read_text()).rstrip(), text)
+        from qualify_codec_native import native_text
+        flat = expand((work / 'command.mac').read_text())
+        # Expand our bounded straight-line macros before native assembly. Keeping
+        # all four library bodies as ZSM4 macros exhausts its symbol workspace.
+        macros = {}
+        def take_macro(m):
+            macros[m[1]] = (m[2].strip().split(','), m[3])
+            return ''
+        flat = re.sub(r'(?ms)^([A-Z_][A-Z_0-9]*) MACRO([^\n]*)\n(.*?)^\s*ENDM[^\n]*$', take_macro, flat)
+        def invoke(m):
+            params, body = macros[m[1]]
+            args = m[2].strip().split(',')
+            for param, value in zip(params,args):
+                if param:
+                    body = re.sub(r'\b'+re.escape(param.strip())+r'\b',value.strip(),body)
+            return body.rstrip()
+        pattern = r'(?m)^[ \t]*('+ '|'.join(macros) + r')\b([^;\n]*)(?:;[^\n]*)?$'
+        for _ in range(4):
+            flat, count = re.subn(pattern,invoke,flat)
+            if not count: break
+        else: raise ValueError('unexpanded NOAH macro')
+        from build_dasm import validate_native_identifiers
+        validate_native_identifiers(flat)
+        native = native_text(flat)
+        (destination / 'NOAHNAT.MAC').write_bytes(native)
         image = (work / 'noah.bin').read_bytes()
         if image[:0x100] == bytes(0x100):
             image = image[0x100:]

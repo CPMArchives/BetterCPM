@@ -1,5 +1,10 @@
 # NOAH CLI compatibility checklist and overlay feasibility
 
+The LBR-write increment freezes this prototype's baseline reservation to the
+recorded 19,674-byte increments 1–2 image. Its results are historical read/decode
+feasibility, not memory proof for the larger current writer plus codecs. Current
+write memory and qualification are recorded in [NOAH LBR Writes](NOAH%20LBR%20Writes.md).
+
 Status: increments 1–2, bounded research/prototype record, 2026-10-25.
 Baseline: `e98797f95704174cbb77a918ecd1267007124cae`.
 The [NOAH Specification](NOAH%20Specification.md) remains authoritative.
@@ -12,8 +17,10 @@ NOAH qualification or the writer/ARK memory gates.
 
 ## 1. Frozen command checklist
 
-“Existing” below describes maintained code, not new whole-spec acceptance.
-The current CLI is `src/utilities/noah.mac` and its four common NOAH includes;
+“Existing” below is the frozen increments 1–2 baseline, before LBR writes, not
+current whole-spec acceptance. Increment 3 closes its scoped LBR-write rows;
+see [current write implementation](NOAH%20LBR%20Writes.md).
+The baseline CLI is `src/utilities/noah.mac` and its four common NOAH includes;
 `tools/build_noah.py` emits its supported help text. Do not infer NOAH integration
 from completion of the separate SQ/USQ/CR/UNCR utilities.
 
@@ -37,8 +44,9 @@ from completion of the separate SQ/USQ/CR/UNCR utilities.
 | Timestamp capabilities, binary lengths and source stability | Partial | Distinguish unavailable from error; no invented timestamp or Ctrl-Z trimming |
 | Native build, overlays, final media acceptance | Not complete | This prototype provides scoped evidence only |
 
-The remaining feature increments are unchanged: LBR writes; codec integration;
-ARK; remaining CLI behavior; final qualification/package. No undo, recursive
+At this frozen baseline the remaining increments were LBR writes, codec
+integration, ARK, remaining CLI behavior and final qualification/package.
+LBR writes are now implemented separately; the other increments remain deferred. No undo, recursive
 expansion, mounting, ZIP, `/LZ`, encryption or interactive browser is added.
 
 ## 2. Finite format and codec compatibility baseline

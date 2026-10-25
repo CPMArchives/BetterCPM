@@ -38,7 +38,10 @@ LA_NEXT:
         CALL LBR_NEXT
         JR NC,LA_MEMBER_FOUND
         CP AS_END
-        RET NZ
+        JR Z,LA_AUDIT_DONE
+        SCF
+        RET
+LA_AUDIT_DONE:
         OR A
         RET
 LA_MEMBER_FOUND:
