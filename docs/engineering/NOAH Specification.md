@@ -30,8 +30,10 @@ dispatch, LIST, stored-method TEST/EXTRACT and explicit unsupported-method/trail
 reporting. The [packed decoder](NOAH%20ARK%20Packed%20Decoding.md) adds method 3
 streaming decode, exact length and CRC checks. The
 [Huffman/RLE decoder](NOAH%20ARK%20Huffman%20Decoding.md) adds method 4 with bounded
-tree validation. Methods 5–9, ARK updates, broader interoperability/release
-qualification, the browser and release packaging remain open.
+tree validation. The [LZW decoder](NOAH%20ARK%20LZW%20Decoding.md) adds ARC
+methods 5–9 with bounded dictionary workspace and both-platform qualification.
+ARK updates, broader interoperability/release qualification, the browser and
+release packaging remain open.
 The bounded [compatibility/API/overlay and Model 4 memory proof](NOAH%20Compatibility%20and%20Memory%20Proof.md)
 records increments 1–2 and prototype limits. Its native LINK gate is now closed
 on source-verified system media; see the [resolution](NOAH-Model4-LINK-Resolution.json).

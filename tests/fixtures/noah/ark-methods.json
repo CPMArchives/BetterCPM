@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "scope": "Production NOAH ARK reading: methods 1/2 stored and methods 3/4 RLE/Huffman decoding; reusable ARK reader still exposes raw bytes and stored-only test",
+  "scope": "Production NOAH ARK reading: methods 1/2 stored, methods 3/4 RLE/Huffman and methods 5-9 historical/dynamic LZW decoding; reusable ARK reader still exposes raw bytes and stored-only test",
   "reference_pins_sha256": "bec79cad8bfcbeb59bc6991915f0c41d87cc33783e812ebea194521eb0f786d2",
   "methods": [
     {
@@ -49,9 +49,12 @@
       "header_bytes": 29,
       "enumerate": true,
       "raw_stored_read": true,
-      "decoded_read": false,
-      "integrity_test": false,
-      "encode": false
+      "decoded_read": true,
+      "integrity_test": true,
+      "encode": false,
+      "decode_workspace_bytes": 24576,
+      "decode_workspace_end_offset": 28672,
+      "dictionary": "4096-entry static hash table"
     },
     {
       "id": 6,
@@ -59,9 +62,12 @@
       "header_bytes": 29,
       "enumerate": true,
       "raw_stored_read": true,
-      "decoded_read": false,
-      "integrity_test": false,
-      "encode": false
+      "decoded_read": true,
+      "integrity_test": true,
+      "encode": false,
+      "decode_workspace_bytes": 24576,
+      "decode_workspace_end_offset": 28672,
+      "dictionary": "4096-entry static hash table plus RLE"
     },
     {
       "id": 7,
@@ -69,9 +75,12 @@
       "header_bytes": 29,
       "enumerate": true,
       "raw_stored_read": true,
-      "decoded_read": false,
-      "integrity_test": false,
-      "encode": false
+      "decoded_read": true,
+      "integrity_test": true,
+      "encode": false,
+      "decode_workspace_bytes": 24576,
+      "decode_workspace_end_offset": 28672,
+      "dictionary": "4096-entry ARC 4.6 hash table"
     },
     {
       "id": 8,
@@ -79,9 +88,12 @@
       "header_bytes": 29,
       "enumerate": true,
       "raw_stored_read": true,
-      "decoded_read": false,
-      "integrity_test": false,
-      "encode": false
+      "decoded_read": true,
+      "integrity_test": true,
+      "encode": false,
+      "decode_workspace_bytes": 24576,
+      "decode_workspace_end_offset": 28672,
+      "dictionary": "4096-entry dynamic dictionary plus RLE"
     },
     {
       "id": 9,
@@ -89,9 +101,12 @@
       "header_bytes": 29,
       "enumerate": true,
       "raw_stored_read": true,
-      "decoded_read": false,
-      "integrity_test": false,
-      "encode": false
+      "decoded_read": true,
+      "integrity_test": true,
+      "encode": false,
+      "decode_workspace_bytes": 24576,
+      "decode_workspace_end_offset": 28672,
+      "dictionary": "8192-entry 13-bit dynamic dictionary"
     }
   ],
   "planned_native_selectors": {
@@ -111,11 +126,11 @@
     "2": "opaque trailer; unvalidated, no clean-coverage or write-preservation claim"
   },
   "not_supported": [
-    "methods 5-9 decoding/integrity testing",
     "self-extracting prefixes or header resynchronization",
     "encrypted/Spark high-bit methods",
     "extended headers including methods 10/11/20+",
     "date conversion",
-    "all archive writes"
+    "all archive writes",
+    "method 8/9 encoding and compatible ARC creation"
   ]
 }
