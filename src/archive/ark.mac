@@ -1,0 +1,709 @@
+; Reusable ARC-family framing and stored-integrity reader; see ark.inc.
+ARK_CODE MACRO
+ARK_OPEN:
+        LD A,(IX+AS_ABI)
+        CP AS_ABI_VERSION
+        JP NZ,AR_CONFIG
+        LD A,(IX+AS_RESERVED)
+        OR A
+        JP NZ,AR_CONFIG
+        LD L,(IX+AS_SIZE)
+        LD H,(IX+AS_SIZE+1)
+        LD DE,AS_CONTEXT_SIZE
+        OR A
+        SBC HL,DE
+        JP C,AR_CONFIG
+        PUSH IX
+        POP HL
+        LD E,(IX+AS_SIZE)
+        LD D,(IX+AS_SIZE+1)
+        DEC DE
+        ADD HL,DE
+        JP C,AR_CONFIG
+        LD A,(IX+AS_READ)
+        OR (IX+AS_READ+1)
+        JP Z,AR_CONFIG
+        ; Clear only library-owned state, preserving caller configuration.
+        PUSH IX
+        POP HL
+        LD DE,AS_PHASE
+        ADD HL,DE
+        LD B,AS_CONTEXT_SIZE-AS_PHASE
+        XOR A
+AR_CLEAR:
+        LD (HL),A
+        INC HL
+        DJNZ AR_CLEAR
+        CALL AR_HEADER_OFFSET
+        LD (IX+AS_COUNT),2
+        CALL AR_TRANSFER
+        RET C
+        CALL AR_SIGNATURE
+        RET C
+        LD (IX+AS_PHASE),AS_READY
+        OR A
+        RET
+ARK_NEXT:
+        CALL AR_REQUIRE_OPEN
+        RET C
+        ; Metadata is invalidated even when the next header fails.
+        PUSH IX
+        POP HL
+        LD DE,AS_MEMBER
+        ADD HL,DE
+        LD B,AM_SIZE
+        XOR A
+AR_CLEAR_MEMBER:
+        LD (HL),A
+        INC HL
+        DJNZ AR_CLEAR_MEMBER
+        CALL AR_HEADER_OFFSET
+        LD (IX+AS_COUNT),2
+        LD (IX+AS_COUNT+1),0
+        CALL AR_TRANSFER
+        RET C
+        CALL AR_SIGNATURE
+        RET C
+        LD A,(IX+AS_ENTRY+1)
+        OR A
+        JP Z,AR_END_MARKER
+        CP 1
+        LD A,25
+        JR Z,AR_HEADER_SIZE
+        LD A,29
+AR_HEADER_SIZE:
+        LD (IX+AS_COUNT),A
+        CALL AR_TRANSFER
+        RET C
+        CALL AR_SIGNATURE
+        RET C
+        LD A,(IX+AS_ENTRY+1)
+        OR A
+        JP Z,AR_FORMAT
+        CP 1
+        LD A,25
+        JR Z,AR_CHECK_HEADER_SIZE
+        LD A,29
+AR_CHECK_HEADER_SIZE:
+        CP (IX+AS_COUNT)
+        JP NZ,AR_FORMAT
+        LD L,(IX+AS_NEXT)
+        LD H,(IX+AS_NEXT+1)
+        LD C,(IX+AS_NEXT+2)
+        LD B,(IX+AS_NEXT+3)
+        LD DE,AS_MEMBER+AM_ID
+        CALL AR_STORE32
+        LD E,(IX+AS_COUNT)
+        LD D,0
+        ADD HL,DE
+        JR NC,AR_DATA_OFFSET
+        INC BC
+        LD A,B
+        OR C
+        JP Z,AR_RANGE
+AR_DATA_OFFSET:
+        LD DE,AS_POSITION
+        CALL AR_STORE32
+        LD DE,AS_MEMBER+AM_OFFSET
+        CALL AR_STORE32
+        CALL AR_MEMBER
+        RET C
+        ; Full stored extent must fit before it can be skipped or consumed.
+        LD L,(IX+AS_POSITION)
+        LD H,(IX+AS_POSITION+1)
+        LD C,(IX+AS_POSITION+2)
+        LD B,(IX+AS_POSITION+3)
+        LD E,(IX+AS_LEFT)
+        LD D,(IX+AS_LEFT+1)
+        ADD HL,DE
+        PUSH HL
+        LD H,B
+        LD L,C
+        LD E,(IX+AS_LEFT+2)
+        LD D,(IX+AS_LEFT+3)
+        ADC HL,DE
+        JP C,AR_END_OVERFLOW
+        LD B,H
+        LD C,L
+        POP HL
+        LD DE,AS_FILE_SIZE
+        CALL AR_COMPARE32
+        JP C,AR_TRUNC
+        LD DE,AS_NEXT
+        CALL AR_STORE32
+        LD (IX+AS_PHASE),AS_SELECTED
+        OR A
+        RET
+AR_END_OVERFLOW:
+        POP HL
+        JP AR_RANGE
+AR_SIGNATURE:
+        LD A,(IX+AS_ENTRY)
+        CP 1AH
+        JP NZ,AR_FORMAT
+        LD A,(IX+AS_ENTRY+1)
+        CP 10
+        JR NC,AR_UNKNOWN_METHOD
+        OR A
+        RET
+AR_UNKNOWN_METHOD:
+        LD A,AS_UNSUPPORTED
+        JP AR_FAIL
+AR_HEADER_OFFSET:
+        LD L,(IX+AS_NEXT)
+        LD H,(IX+AS_NEXT+1)
+        LD C,(IX+AS_NEXT+2)
+        LD B,(IX+AS_NEXT+3)
+        LD DE,AS_OFFSET
+        CALL AR_STORE32
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY
+        ADD HL,DE
+        LD (IX+AS_BUFFER),L
+        LD (IX+AS_BUFFER+1),H
+        RET
+AR_MEMBER:
+        ; Canonical 8+3, with exactly one optional dot and a required NUL.
+        PUSH IX
+        POP HL
+        LD DE,AS_MEMBER
+        ADD HL,DE
+        LD B,11
+AR_SPACE_NAME:
+        LD (HL),' '
+        INC HL
+        DJNZ AR_SPACE_NAME
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY+2
+        ADD HL,DE
+        PUSH IX
+        POP DE
+        PUSH HL
+        LD HL,AS_MEMBER
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD B,13
+        LD C,8
+AR_NAME_BYTE:
+        LD A,(HL)
+        OR A
+        JR Z,AR_NAME_END
+        CP '.'
+        JR Z,AR_NAME_DOT
+        BIT 7,A
+        JP NZ,AR_FORMAT
+        CP 21H
+        JP C,AR_FORMAT
+        CP 7FH
+        JP NC,AR_FORMAT
+        PUSH HL
+        PUSH BC
+        LD HL,AR_BAD_CHARS
+        LD B,14
+AR_BAD_NAME:
+        CP (HL)
+        JR Z,AR_NAME_INVALID
+        INC HL
+        DJNZ AR_BAD_NAME
+        POP BC
+        POP HL
+        LD A,C
+        OR A
+        JP Z,AR_FORMAT
+        LD A,(HL)
+        CP 'a'
+        JR C,AR_NAME_STORE
+        CP 'z'+1
+        JR NC,AR_NAME_STORE
+        SUB 32
+AR_NAME_STORE:
+        LD (DE),A
+        INC DE
+        DEC C
+        INC HL
+        DJNZ AR_NAME_BYTE
+        JP AR_FORMAT
+AR_NAME_INVALID:
+        POP BC
+        POP HL
+        JP AR_FORMAT
+AR_NAME_DOT:
+        ; B starts at 13; consumed base cannot be empty; second dot invalid.
+        LD A,(IX+AS_MEMBER)
+        CP ' '
+        JP Z,AR_FORMAT
+        LD A,(IX+AS_UNUSED_SEEN)
+        OR A
+        JP NZ,AR_FORMAT
+        LD (IX+AS_UNUSED_SEEN),1
+        PUSH HL
+        PUSH IX
+        POP HL
+        LD DE,AS_MEMBER+8
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD C,3
+        INC HL
+        DJNZ AR_NAME_BYTE
+        JP AR_FORMAT
+AR_NAME_END:
+        LD A,(IX+AS_MEMBER)
+        CP ' '
+        JP Z,AR_FORMAT
+        XOR A
+        LD (IX+AS_UNUSED_SEEN),A
+        LD (IX+AS_MEMBER+AM_FLAGS),3
+        LD A,(IX+AS_ENTRY+1)
+        LD (IX+AS_MEMBER+AM_METHOD),A
+        LD A,(IX+AS_ENTRY+23)
+        LD (IX+AS_MEMBER+AM_CRC),A
+        LD A,(IX+AS_ENTRY+24)
+        LD (IX+AS_MEMBER+AM_CRC+1),A
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY+19
+        ADD HL,DE
+        PUSH IX
+        POP DE
+        PUSH HL
+        LD HL,AS_MEMBER+AM_DATES
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD BC,4
+        LDIR
+        LD (IX+AS_MEMBER+ARK_DATE_KIND),ARK_DOS_DATE
+        LD L,(IX+AS_ENTRY+15)
+        LD H,(IX+AS_ENTRY+16)
+        LD C,(IX+AS_ENTRY+17)
+        LD B,(IX+AS_ENTRY+18)
+        LD DE,AS_LEFT
+        CALL AR_STORE32
+        LD DE,AS_MEMBER+AM_STORED
+        CALL AR_STORE32
+        LD A,(IX+AS_ENTRY+1)
+        CP 1
+        JR Z,AR_DECODED_LENGTH
+        LD L,(IX+AS_ENTRY+25)
+        LD H,(IX+AS_ENTRY+26)
+        LD C,(IX+AS_ENTRY+27)
+        LD B,(IX+AS_ENTRY+28)
+AR_DECODED_LENGTH:
+        LD DE,AS_MEMBER+AM_LENGTH
+        CALL AR_STORE32
+        LD A,(IX+AS_ENTRY+1)
+        CP 3
+        RET NC
+        LD DE,AS_MEMBER+AM_STORED
+        CALL AR_COMPARE32
+        JP NZ,AR_FORMAT
+        OR A
+        RET
+AR_BAD_CHARS: DB '<>,;:=?*[]/\|"'
+AR_END_MARKER:
+        LD L,(IX+AS_NEXT)
+        LD H,(IX+AS_NEXT+1)
+        LD C,(IX+AS_NEXT+2)
+        LD B,(IX+AS_NEXT+3)
+        LD DE,2
+        ADD HL,DE
+        JR NC,AR_MARKER_END
+        INC BC
+AR_MARKER_END:
+        LD DE,AS_DIR_END
+        CALL AR_STORE32
+        LD DE,AS_POSITION
+        CALL AR_STORE32
+        ; Remaining physical bytes are padding or an explicitly opaque trailer.
+        PUSH IX
+        POP HL
+        LD DE,AS_FILE_SIZE
+        ADD HL,DE
+        PUSH IX
+        POP DE
+        PUSH HL
+        LD HL,AS_LEFT
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD BC,4
+        LDIR
+        PUSH IX
+        POP HL
+        LD DE,AS_LEFT
+        ADD HL,DE
+        PUSH IX
+        POP DE
+        PUSH HL
+        LD HL,AS_POSITION
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD B,4
+        OR A
+AR_TAIL_SUBTRACT:
+        LD A,(DE)
+        LD C,A
+        LD A,(HL)
+        SBC A,C
+        LD (HL),A
+        INC HL
+        INC DE
+        DJNZ AR_TAIL_SUBTRACT
+        LD (IX+AS_PHASE),AS_SELECTED
+        LD (IX+AS_UNUSED_SEEN),0
+AR_TAIL_READ:
+        PUSH IX
+        POP DE
+        LD HL,AS_ENTRY
+        ADD HL,DE
+        EX DE,HL
+        LD BC,32
+        CALL ARK_RAW
+        JR C,AR_TAIL_END
+        LD (IX+AS_UNUSED_SEEN),1
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY
+        ADD HL,DE
+        LD B,C
+AR_TAIL_BYTES:
+        LD A,(HL)
+        OR A
+        JR Z,AR_TAIL_BYTE_OK
+        CP 1AH
+        JR Z,AR_TAIL_BYTE_OK
+        LD (IX+AS_UNUSED_SEEN),2
+        JR AR_FINISHED
+AR_TAIL_BYTE_OK:
+        INC HL
+        DJNZ AR_TAIL_BYTES
+        JR AR_TAIL_READ
+AR_TAIL_END:
+        CP AS_END
+        JR Z,AR_FINISHED
+        SCF
+        RET
+AR_FINISHED:
+        LD (IX+AS_PHASE),AS_FINISHED
+        LD A,AS_END
+        SCF
+        RET
+ARK_TEST_STORED:
+        CALL AR_REQUIRE_OPEN
+        RET C
+        LD A,(IX+AS_PHASE)
+        CP AS_SELECTED
+        JP NZ,AR_STATE
+        LD A,(IX+AS_MEMBER+AM_METHOD)
+        CP 3
+        JR C,AR_TEST_READY
+        LD A,AS_UNSUPPORTED
+        JP AR_FAIL
+AR_TEST_READY:
+        LD (IX+AS_DIR_END),0
+        LD (IX+AS_DIR_END+1),0
+        PUSH IX
+        POP HL
+        LD DE,AS_MEMBER+AM_OFFSET
+        ADD HL,DE
+        PUSH IX
+        POP DE
+        PUSH HL
+        LD HL,AS_POSITION
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD BC,4
+        LDIR
+        PUSH IX
+        POP HL
+        LD DE,AS_MEMBER+AM_STORED
+        ADD HL,DE
+        PUSH IX
+        POP DE
+        PUSH HL
+        LD HL,AS_LEFT
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD BC,4
+        LDIR
+AR_TEST_READ:
+        PUSH IX
+        POP DE
+        LD HL,AS_ENTRY
+        ADD HL,DE
+        EX DE,HL
+        LD BC,32
+        CALL ARK_RAW
+        JR C,AR_TEST_END
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY
+        ADD HL,DE
+        LD B,C
+AR_CRC_BYTE:
+        LD A,(HL)
+        XOR (IX+AS_DIR_END)
+        LD (IX+AS_DIR_END),A
+        LD C,8
+AR_CRC_BIT:
+        SRL (IX+AS_DIR_END+1)
+        RR (IX+AS_DIR_END)
+        JR NC,AR_CRC_NEXT
+        LD A,(IX+AS_DIR_END)
+        XOR 1
+        LD (IX+AS_DIR_END),A
+        LD A,(IX+AS_DIR_END+1)
+        XOR 0A0H
+        LD (IX+AS_DIR_END+1),A
+AR_CRC_NEXT:
+        DEC C
+        JR NZ,AR_CRC_BIT
+        INC HL
+        DJNZ AR_CRC_BYTE
+        JR AR_TEST_READ
+AR_TEST_END:
+        CP AS_END
+        JR Z,AR_TEST_COMPARE
+        SCF
+        RET
+AR_TEST_COMPARE:
+        LD A,(IX+AS_DIR_END)
+        CP (IX+AS_MEMBER+AM_CRC)
+        JR NZ,AR_CHECK
+        LD A,(IX+AS_DIR_END+1)
+        CP (IX+AS_MEMBER+AM_CRC+1)
+        JR NZ,AR_CHECK
+        OR A
+        RET
+AR_CHECK:
+        LD A,AS_CHECK
+        JP AR_FAIL
+ARK_RAW:
+        LD A,(IX+AS_PHASE)
+        CP AS_FAILED
+        JP Z,AR_STICKY
+        CP AS_SELECTED
+        JP NZ,AR_STATE
+        LD A,B
+        OR C
+        RET Z
+        ; Requested memory range must not wrap.
+        PUSH DE
+        EX DE,HL
+        ADD HL,BC
+        POP DE
+        JP C,AR_RANGE
+        LD (IX+AS_BUFFER),E
+        LD (IX+AS_BUFFER+1),D
+        ; Clamp to remaining bytes when remaining fits one word.
+        LD A,(IX+AS_LEFT+2)
+        OR (IX+AS_LEFT+3)
+        JR NZ,AR_READ_COUNT
+        LD L,(IX+AS_LEFT)
+        LD H,(IX+AS_LEFT+1)
+        LD A,H
+        OR L
+        JR Z,AR_MEMBER_END
+        OR A
+        SBC HL,BC
+        JR NC,AR_READ_COUNT
+        LD C,(IX+AS_LEFT)
+        LD B,(IX+AS_LEFT+1)
+AR_READ_COUNT:
+        LD (IX+AS_COUNT),C
+        LD (IX+AS_COUNT+1),B
+        LD L,(IX+AS_POSITION)
+        LD H,(IX+AS_POSITION+1)
+        LD C,(IX+AS_POSITION+2)
+        LD B,(IX+AS_POSITION+3)
+        LD DE,AS_OFFSET
+        CALL AR_STORE32
+        CALL AR_TRANSFER
+        RET C
+        ; Callback destroys scratch registers. Recover request from context.
+        LD E,(IX+AS_COUNT)
+        LD D,(IX+AS_COUNT+1)
+        LD L,(IX+AS_POSITION)
+        LD H,(IX+AS_POSITION+1)
+        LD C,(IX+AS_POSITION+2)
+        LD B,(IX+AS_POSITION+3)
+        ADD HL,DE
+        JR NC,AR_READ_POS
+        INC BC
+AR_READ_POS:
+        PUSH DE
+        LD DE,AS_POSITION
+        CALL AR_STORE32
+        POP DE
+        LD L,(IX+AS_LEFT)
+        LD H,(IX+AS_LEFT+1)
+        LD C,(IX+AS_LEFT+2)
+        LD B,(IX+AS_LEFT+3)
+        OR A
+        SBC HL,DE
+        JR NC,AR_READ_LEFT
+        DEC BC
+AR_READ_LEFT:
+        PUSH DE
+        LD DE,AS_LEFT
+        CALL AR_STORE32
+        POP BC
+        OR A
+        RET
+AR_MEMBER_END:
+        LD BC,0
+        LD A,AS_END
+        SCF
+        RET
+ARK_CLOSE:
+        LD (IX+AS_PHASE),AS_CLOSED
+        XOR A
+        LD (IX+AS_STATUS),A
+        LD (IX+AS_DETAIL),A
+        RET
+
+; Store BC:HL at context+DE; preserves all input registers.
+AR_STORE32:
+        PUSH AF
+        PUSH DE
+        PUSH HL
+        PUSH BC
+        EX DE,HL
+        PUSH HL
+        PUSH IX
+        POP HL
+        POP BC
+        ADD HL,BC
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        INC HL
+        POP BC
+        LD (HL),C
+        INC HL
+        LD (HL),B
+        POP HL
+        POP DE
+        POP AF
+        RET
+; Compare context dword at DE against BC:HL; carry = field < value.
+; Preserves BC/DE/HL, sets Z on equality.
+AR_COMPARE32:
+        PUSH DE
+        PUSH HL
+        PUSH IX
+        POP HL
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        INC DE
+        INC DE
+        INC DE
+        LD A,(DE)
+        CP B
+        JR NZ,AR_COMPARE_DONE
+        DEC DE
+        LD A,(DE)
+        CP C
+        JR NZ,AR_COMPARE_DONE
+        DEC DE
+        LD A,(DE)
+        CP H
+        JR NZ,AR_COMPARE_DONE
+        DEC DE
+        LD A,(DE)
+        CP L
+AR_COMPARE_DONE:
+        POP DE
+        RET
+
+AR_TRANSFER:
+        ; Bound every callback request, including headers and trailer probes.
+        LD L,(IX+AS_OFFSET)
+        LD H,(IX+AS_OFFSET+1)
+        LD C,(IX+AS_OFFSET+2)
+        LD B,(IX+AS_OFFSET+3)
+        LD E,(IX+AS_COUNT)
+        LD D,(IX+AS_COUNT+1)
+        ADD HL,DE
+        JR NC,AR_REQUEST_END
+        INC BC
+        LD A,B
+        OR C
+        JP Z,AR_RANGE
+AR_REQUEST_END:
+        LD DE,AS_FILE_SIZE
+        CALL AR_COMPARE32
+        JP C,AR_TRUNC
+        XOR A
+        LD (IX+AS_ACTUAL),A
+        LD (IX+AS_ACTUAL+1),A
+        LD L,(IX+AS_READ)
+        LD H,(IX+AS_READ+1)
+        CALL AR_INDIRECT
+        JR C,AR_IO
+        LD L,(IX+AS_ACTUAL)
+        LD H,(IX+AS_ACTUAL+1)
+        LD E,(IX+AS_COUNT)
+        LD D,(IX+AS_COUNT+1)
+        OR A
+        SBC HL,DE
+        JP NZ,AR_TRUNC
+        OR A
+        RET
+AR_INDIRECT:
+        JP (HL)
+AR_REQUIRE_OPEN:
+        LD A,(IX+AS_PHASE)
+        CP AS_FAILED
+        JR Z,AR_STICKY
+        CP AS_FINISHED
+        JR Z,AR_ITER_END
+        CP AS_READY
+        RET Z
+        CP AS_SELECTED
+        RET Z
+        JR AR_STATE
+AR_ITER_END:
+        LD A,AS_END
+        SCF
+        RET
+AR_CONFIG:
+        ; Invalid allocation: do not write any library state.
+        LD A,AS_CONFIG
+        SCF
+        RET
+AR_IO:
+        LD (IX+AS_DETAIL),A
+        CP AS_CANCEL
+        JR Z,AR_FAIL
+        LD A,AS_IO
+        JR AR_FAIL
+AR_FORMAT:
+        LD A,AS_FORMAT
+        JR AR_FAIL
+AR_TRUNC:
+        LD A,AS_TRUNC
+        JR AR_FAIL
+AR_RANGE:
+        LD A,AS_RANGE
+        JR AR_FAIL
+AR_STATE:
+        LD A,AS_STATE
+AR_FAIL:
+        LD (IX+AS_STATUS),A
+        LD (IX+AS_PHASE),AS_FAILED
+        SCF
+        RET
+AR_STICKY:
+        LD A,(IX+AS_STATUS)
+        SCF
+        RET
+        ENDM
