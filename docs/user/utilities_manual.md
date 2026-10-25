@@ -2,7 +2,7 @@
 
 This manual explains how to use the programs supplied on the BetterCP/M Utilities Disk. For the command prompt, drive and user areas, file management, configuration, and the System Disk commands, see the [BetterCP/M User’s Guide](users_guide.md).
 
-The Utilities Disk is being assembled separately from the System Disk. This manual covers DUMP, the initial DDT debugger adaptation, the six standalone compression utilities SQ, USQ, CR, UNCR, LZH and UNLZH, and the original ZSM4/LINK development tools. Chapters for other utilities will be added as those programs are completed and selected for distribution.
+The Utilities Disk is being assembled separately from the System Disk. This manual covers DUMP, the initial DDT debugger adaptation, the six standalone compression utilities SQ, USQ, CR, UNCR, LZH and UNLZH, TED, DASM with its DSYM/DLINK companions, and the original ZSM4/LINK development tools. Chapters for other utilities will be added as those programs are completed and selected for distribution.
 
 ## Contents
 
@@ -20,11 +20,23 @@ The Utilities Disk is being assembled separately from the System Disk. This manu
   - [Messages and recovery](#messages-and-recovery)
 
 - [DDT debugger](#ddt-debugger)
-- [Native assembler and linker](#native-assembler-and-linker)
+- [TED full-screen text editor](#ted-full-screen-text-editor)
+  - [Starting TED](#starting-ted)
+  - [Modes and screen keys](#ted-modes-and-screen-keys)
+  - [Block and file sequences](#ted-block-and-file-sequences)
+  - [Command mode, search and replacement](#ted-command-mode-search-and-replacement)
+  - [Text preservation, saves and recovery](#ted-text-preservation-saves-and-recovery)
+- [DASM Z80 disassembler and symbol tools](#dasm-z80-disassembler-and-symbol-tools)
+  - [Starting DASM and logical bounds](#starting-dasm-and-setting-logical-bounds)
+  - [Analysis and source output](#dasm-analysis-and-source-output)
+  - [DLINK and DSYM](#dlink-checked-linking-and-dsym-conversion)
+  - [A ZSM4/LINK round trip](#a-zsm4link-round-trip)
+  - [Limits and recovery](#dasm-limits-and-recovery)
 - [Compression utilities](#compression-utilities)
   - [Shared command rules](#shared-compression-command-rules)
   - [Version identification](#compression-version-identification)
   - [File handling and recovery](#compression-file-handling-and-recovery)
+- [Native assembler and linker](#native-assembler-and-linker)
 
 ## Using the Utilities Disk
 
@@ -288,6 +300,365 @@ DDT relocates below the current BDOS gateway and reduces the debuggee's availabl
 
 BetterCP/M cpmsim command/input checks and Model 4/trs80gp screen/physical-keyboard checks pass. The Model 4 campaign verifies cursor editing, scrolling, CLEAR cancellation without committing an operand, A/L and G0/BREAK return on disposable current-system disks. DDT also passes release-placement checks from Utilities B: beside normal System A:, including Model 4 M4SCRN/ADM3A. For example, `B:DDT TINY.COM` loads the debuggee from your current A: drive and returns there after G0 or Ctrl-C. The Utilities images remain provisional pending acceptance of the other selected components.
 
+
+## TED full-screen text editor
+
+TED edits one text document using command, screen and browse modes. It retains
+TED's editing behavior with an agreed subset of WordStar command sequences.
+There is no undo, persistent block marking, WordStar document formatting or
+Ctrl-Q command prefix. The on-disk guide is `TED.TXT`.
+
+### Starting TED
+
+TED requires an 80-by-24 screen backend and the ANSI terminal module. Before
+starting it, use `RSX LIST` to check what is loaded:
+
+| Target | Screen backend | Terminal module |
+| --- | --- | --- |
+| Model 4 / trs80gp | M4SCRN | ANSI |
+| z80pack / cpmsim with an ANSI host terminal | ANSISCRN | ANSI |
+
+Load the missing backend with `RSX LOAD M4SCRN` or `RSX LOAD ANSISCRN`.
+Unload a conflicting terminal module, such as ADM3A, before `RSX LOAD ANSI`.
+TED does not load these modules itself. Keep the module configuration fixed
+while editing and keep the host terminal large enough for the 80-by-24 viewport.
+
+```text
+B0:TED A0:PROGRAM.MAC
+B0:TED
+B0:TED /HELP
+B0:TED /VER
+```
+
+The first command reads an existing file; the second starts without a filename.
+`/HELP` and `/VER` display usage or identification without opening a document.
+File operands accept one exact 8.3 name, optionally qualified with drive A
+through P and user 0 through 31, such as `A7:PROGRAM.MAC`. Wildcards are not
+accepted. An explicitly supplied unqualified filename uses the drive/user from
+which TED was launched, independently of the Utilities Disk's location.
+
+### TED modes and screen keys
+
+At `TED>`, enter `S` to start screen editing. Empty Ctrl-C also enters screen
+mode; Ctrl-C following a command executes it and then enters screen mode.
+Ctrl-Z returns from screen editing to command mode. Ctrl-B or Ctrl-N enters
+browse mode; Return, Ctrl-C or Ctrl-Z returns from browse to screen editing.
+Enter `EX` at `TED>` to leave TED. Discarding modified text requires an explicit
+Yes; the default is No.
+
+These bindings apply in **screen mode**:
+
+| Key | Action |
+| --- | --- |
+| Ctrl-S / Ctrl-D | Left / right within the line. |
+| Ctrl-E / Ctrl-X | Up / down. |
+| Ctrl-R / Ctrl-C | Page up / down. |
+| Ctrl-A / Ctrl-F | Previous / next word within the line. |
+| Ctrl-T | Delete the range traversed by next-word movement. |
+| Ctrl-H or Backspace | Backspace, with the mode-dependent behavior below. |
+| Ctrl-G, DEL or Ctrl-] | Delete the character to the right; no effect at line end. |
+| Ctrl-I or TAB | Insert a literal TAB. |
+| Return | Split the line at the cursor. |
+| Ctrl-J | Insert an empty line below. |
+| Ctrl-P | Duplicate the current line. |
+| Ctrl-Y or Ctrl-^ | Delete the current line. |
+| Ctrl-V | Toggle insert/overwrite; TED starts in overwrite mode. |
+| Ctrl-Q / Ctrl-O | Previous / next tab stop. |
+| Ctrl-L | Toggle between line beginning and end. |
+| Ctrl-U | Toggle between screen top and bottom. |
+| Ctrl-B or Ctrl-N | Enter browse mode. |
+| Ctrl-Z | Return to command mode. |
+| Ctrl-_ | Redraw. |
+| Ctrl-K | Begin a block/file command, listed below. |
+
+Ctrl-W, Ctrl-@ and Ctrl-\ are unused. Escape cancels an active prefix or prompt.
+The Model 4's raw arrow codes collide with TED control commands, including
+insertion, deletion and the Ctrl-K prefix. Use Ctrl-E/X/S/D for navigation.
+The current Model 4 console has no physical chord for Ctrl-underscore; that
+ASCII redraw binding remains available where the console can supply it.
+
+In overwrite mode, Backspace blanks the preceding character. In insert mode,
+it removes that character and shifts following text left. At the start of a
+line it joins the preceding line. Moving beyond a short line enters virtual
+columns without adding spaces; typing there supplies the necessary spaces.
+Tabs display to eight-column stops but remain TAB bytes in the file. Long lines
+scroll horizontally. TED does not wrap words, indent automatically or trim
+trailing spaces.
+
+Word operations stop at line boundaries. Separators are space, TAB and
+`. , : ; ! ?`; hyphens and underscores remain word characters. Word-right skips
+the remainder of the current word and following separators; word-left scans
+left over separators to the beginning of the preceding/current word.
+
+### TED block and file sequences
+
+Press Ctrl-K, release it, then the indicated letter. Upper/lowercase letters
+and the corresponding Ctrl-letter are accepted. These sequences invoke TED's
+existing whole-line operations and file argument prompts.
+
+| Sequence | Action |
+| --- | --- |
+| Ctrl-K C | Copy: prompt for first/last source lines and the line to copy after. |
+| Ctrl-K V | Move: prompt for first/last source lines and the line to move after. |
+| Ctrl-K Y | Delete: prompt for first/last source lines. |
+| Ctrl-K R | Read a file through TED's R argument prompt. |
+| Ctrl-K W | Write through TED's W argument prompt, including ranges and append. |
+| Ctrl-K S | Save to the default filename and continue editing. |
+| Ctrl-K X | Save, then exit only after successful publication. |
+| Ctrl-K Q | Quit, with default-No confirmation before discarding changes. |
+
+Line ranges include both numbered endpoints. There are no block marks or
+character-block selections. Ctrl-K replaces TED's former insert-above binding;
+move up one line and use Ctrl-J where appropriate. Ctrl-K D is not assigned.
+For an unnamed document, supply the required filename through the W prompt.
+
+### TED command mode, search and replacement
+
+Line numbers are decimal and one-based; position columns start at zero.
+Enter these commands at `TED>`, without the prompt text:
+
+| Example | Action |
+| --- | --- |
+| `P 10 5` | Position at line 10, visual column 5. |
+| `S 10` | Position at line 10 and enter screen editing. |
+| `/text/` | Find a forward, case-sensitive literal match within a line. |
+| `/text/(1,20)+1` | Search lines 1..20, then move one line after the match. |
+| `SU /old/new/` | Substitute matching text. |
+| `SU M /old/new/` | Ask before each substitution. |
+| `SU 3 /old/new/` | Replace up to three matches. |
+| `M 2 4 8` | Copy lines 2..4 after line 8. |
+| `MD 2 4 8` | Move lines 2..4 after line 8. |
+| `D 2 4` | Delete lines 2..4. |
+| `R (5) OTHER.TXT (2,4)` | Insert source lines 2..4 after document line 5. |
+| `W 2 4 PART.TXT` | Write whole lines 2..4 to PART.TXT. |
+| `W OTHER.TXT $` | Safely append to OTHER.TXT; `0` selects replacement. |
+| `W` | Save the whole document to its default filename. |
+| `F` / `FR` | Show the default filename / free memory above the static image. |
+| `PR 2 4` | Print selected lines through the console. |
+| `CL` / `EX` | Clear / exit, with an abandonment safeguard. |
+
+Search does not wrap or cross line endings. Use `P 1` before searching from
+the beginning. There is no repeat-find key. In confirmed substitution, Y
+replaces, Return skips and Ctrl-C stops; an empty replacement deletes matches,
+while an empty search is refused.
+
+R inserts after the specified line, or appends to the document if that position
+is omitted. It also selects the default filename. An alternate filename or
+line-range W does not silently change that default or clear unsaved-document
+state. Default W retains the full drive/user identity selected by the latest R.
+
+Command-field editing differs from screen editing: Ctrl-E recalls the previous
+command, Ctrl-G recalls and enters it, Ctrl-D recalls one byte, Ctrl-U or
+Ctrl-^ clears the field, TAB supplies spaces, and Backspace/DEL deletes left.
+Ctrl-Z submits EX with its normal abandonment safeguard. These are TED's
+command-field facilities, not additional screen bindings.
+
+### TED text preservation, saves and recovery
+
+TED preserves literal tabs, trailing spaces, mixed CRLF/LF/CR line endings and
+an absent final newline. An unchanged full-document write preserves physical
+EOF padding too. Whole-line transfers add only the separators required at new
+boundaries. Unsupported control/high-bit bytes, embedded EOF markers and lines
+over 4,095 bytes are refused with line/offset diagnostics. Input is limited to
+8,191 data records (1,048,448 bytes) and available disk space. Numeric line
+operands remain bounded to 16 bits; the file-size limit does not remove that
+command-language limit.
+
+Saves write and verify a unique stage before replacement. The old target is
+retained as `TEBnnnnn.BAK`; TED does not erase it to create the new file.
+Replacement and read-only/system protection require explicit authorization.
+Allow space for checkpoints, the output stage and retained backups. A failed
+or cancelled save leaves TED active rather than treating the document as saved.
+
+If saving fails, record the exact workspace, stage and backup names reported.
+Keep those files until you have checked which copy is complete. Inspect an
+ambiguous rename failure before retrying; do not delete the only complete copy.
+Retained backups are yours to clean up after verification.
+
+`WORK A0:` selects a workspace drive/user. `RECOVER A0:TEWnnnnn.$$$` validates
+and copies a retained checkpoint after confirmation; replace the placeholder
+with the actual name TED reported. The recovery source is retained. Recovery
+restores the last committed checkpoint: the latest dirty line can still be
+only in RAM. It is not autosave or undo. An older checkpoint may lack a newly
+chosen filename, so specify a filename when saving recovered text. Normal exit
+removes only a verified session-owned checkpoint; ambiguous stages/backups are
+retained for inspection.
+
+TED checks its active transient-memory ceiling before using its private stack.
+Loaded extensions reduce available memory. Component qualification covers the
+recorded normal RAM z80pack and Model 4/trs80gp configurations; physical hardware,
+ROM/XIP and checked-profile application qualification are separate. See the
+[TED qualification report](../engineering/TED%20Qualification.md) for exact
+images and console limitations. Complete source and native-build material
+accompany the host package in `BetterCPM-TED-SOURCE.tar.gz`; retain that companion
+and `TEDCOPY.TXT` when redistributing.
+
+## DASM Z80 disassembler and symbol tools
+
+DASM is the maintained Richard Conn 1.5 Z80 disassembler adaptation. It inspects
+loaded bytes, records symbols/comments and code/data classifications, saves
+analysis and generates Zilog source for the supplied ZSM4/LINK tools. It does
+not execute the input program. DSYM converts a verified final-address link
+report into symbols DASM can import; DLINK captures that report using the
+unchanged packaged LINK 1.3. The on-disk guide is `DASM.TXT`.
+
+### Starting DASM and setting logical bounds
+
+Keep Utilities on B: and work on a writable disk. Run `B0:DASM`, then use H for
+the interactive command summary. `B0:DASM /HELP` and `B0:DASM /VER` display
+usage or identification without creating files. DSYM and DLINK also accept
+noncreating `/VER` queries. ZSM4 and LINK retain their original third-party
+interfaces and versions; these queries have not been added to them.
+
+At DASM's prompt, read an exact file with a command such as `RPROGRAM.COM`.
+File operands support drives A..P and users 0..31, for example
+`RA7:PROGRAM.COM`; unqualified operands use the caller's original drive/user.
+DASM keeps at most 8,192 input bytes in memory and refuses an empty input.
+It has no disk-backed analysis paging or full-64-KiB input residency.
+
+CP/M records do not reveal the logical byte length of a program. After loading,
+use `Nhex` to select its measured logical length; without N, every physical
+record byte is input, including trailing `00h`, `1Ah` or `FFh`. Do not infer the
+length by stripping those values: they can be real program data. DASM addresses,
+lengths and range bounds are hexadecimal. `N5` means five logical bytes.
+
+`Ohex` selects a logical origin, normally `0100h`. Range ends are exclusive;
+an end-only bound may be `10000h`, but addresses cannot exceed `FFFFh` and an
+interval cannot cross the address-space boundary. Thus `100,105` denotes five
+bytes. Non-0100h origins generate PHASE/DEPHASE source: LINK still produces
+packed bytes at 0100h, which must not be assumed runnable there.
+
+### DASM analysis and source output
+
+| Command | Purpose |
+| --- | --- |
+| `H` / `?` | Interactive help / statistics. |
+| `Lstart,end` / `QLstart,end` | List instructions; quiet listing feeds staged source output without the normal console listing. |
+| `Dstart,end` | Dump bytes in a bounded range. |
+| `C` / `Caddress,type` | Inspect control classifications / set a classification listed below. |
+| `A` / `B` | Inherited data recognition / automatic symbol generation. |
+| `DS` | Inspect the symbol table. |
+| `Eaddress,.NAME` / `K.NAME` | Add / delete a symbol. |
+| `;address,text` | Add a printable comment; `;address,` deletes it and `;` lists comments. |
+| `Iaddress,[+|-]delta` | Safely rebase symbols at/above an address. |
+| `Sname.ASM` | Begin staged source output. |
+| `Pstart,end` | Emit the source prologue and equates for the selected interval. |
+| `Z` | Finish and publish the staged ASM output. |
+| `G` | Return to CP/M. |
+
+A control point selects how subsequent bytes are interpreted, up to the next
+control point or the selected end:
+
+| Type | Interpretation |
+| --- | --- |
+| B | Byte data, using quoted strings where appropriate. |
+| E | End-of-program marker. |
+| H | Byte data in hexadecimal. |
+| I | Instructions. |
+| S | Storage region; exact source output still retains its initialized bytes. |
+| W | Word data. |
+
+Bare/continuation forms of L, D and F retain DASM's existing workflow; use H
+for their syntax. Classify embedded data and review symbols before generating
+source. Successful assembly alone does not prove a faithful disassembly.
+
+`R` and `S` with `.SYM`, `.CTL` and `.DOC` import/export symbols, controls and
+comments individually. `Rname.DSY` imports DSYM's canonical output.
+`Sname.ALL` saves a versioned, checksummed session descriptor and uniquely named
+components; `Rname.ALL` validates the complete graph before replacing live
+analysis. Loading a session requires the same binary drive/user/name and
+matching logical bytes. Keep the descriptor and its referenced components
+together; the descriptor alone is not the saved analysis.
+
+### DLINK checked linking and DSYM conversion
+
+```text
+B0:DLINK PROGRAM
+B0:DLINK RESULT ONE TWO
+B0:DSYM PROGRAM.LOG
+B0:DSYM A7:PROGRAM.LOG C7:
+```
+
+`DLINK base` links `base.REL`. With explicit modules, the first operand is the
+output base and the remaining operands are input modules. The output base has
+no extension; inputs may omit `.REL`. All modules and outputs must share the
+output user area, although their drives may differ. Unqualified operands use
+the caller's original drive/user. Outputs `base.COM`, `base.SYM` and `base.LOG`
+must all be absent before starting.
+
+DLINK loads only the verified packaged **B0:LINK.COM**. It provides a bounded
+child workspace, captures the report in a unique `DLGnnnnn.$$$` stage and
+publishes the LOG after checked orderly completion. It does not enable LINK's
+legacy A disk-scratch option. Jobs needing more child workspace fail safely.
+Inspect LINK diagnostics; COM/SYM files left by a failed job are unverified.
+DLINK's `/VER` identifies the wrapper, not a new version of LINK.
+
+`DSYM [DU:]base.LOG [destination-DU:]` writes a new `base.DSY`, using the
+complete report's final addresses directly. It refuses an existing destination,
+a bare `.SYM`, failed-link diagnostics, truncated reports and conflicting
+symbols. Use a complete DLINK LOG: a plausible symbol file is not proof of a
+successful link. The default public export significance is six characters;
+DSYM cannot recover source spelling already lost by LINK. DASM interchange
+names may contain up to 12 characters; DSYM permits 255 unique normalized
+records, coalesces exact duplicates and preserves distinct aliases.
+
+### A ZSM4/LINK round trip
+
+For a **five-byte** PROGRAM.COM produced from PROGRAM.MAC, use this sequence
+from the writable work drive. Change the length and exclusive end for your
+actual program, and choose fresh output names:
+
+```text
+B0:ZSM4 PROGRAM=PROGRAM
+B0:DLINK PROGRAM
+B0:DSYM PROGRAM.LOG
+B0:DASM
+RPROGRAM.COM
+N5
+RPROGRAM.DSY
+SREBUILD.ASM
+P100,105
+QL100,105
+Z
+G
+B0:ZSM4 REBUILD=REBUILD.ASM
+B0:LINK REBUILD[A]
+```
+
+Check `Errors: 0` and all LINK diagnostics. Compare every byte of the declared
+logical interval against the original; check CP/M record padding separately.
+A one-byte absolute image requires an explicit `1Ah` padding byte outside the
+logical interval to work around LINK's one-byte-output behavior. Do not execute
+arbitrary disassembly inputs or assume output for a different logical origin
+is runnable at 0100h.
+
+### DASM limits and recovery
+
+DASM requires an active exclusive transient-memory ceiling of at least B200h
+and always retains its fixed 8-KiB input limit. Resident extensions consume
+headroom. DLINK gives its child a ceiling of A000h and needs room through
+B810h for its own storage and margin; DSYM requires 2A92h. These limits refer
+to active program memory, not the machine's total installed RAM.
+
+ASM output remains staged until Z. Interrupting a listing invalidates pending
+source output, so Z cannot publish it as complete. Ctrl-C offers confirmed
+cancellation; on Model 4 use the BREAK key for ETX. An ordinary key stopping a
+listing also invalidates the pending output. A declined Ctrl-C cancellation
+does not make an interrupted listing complete.
+
+Replacement retains a uniquely named backup. On errors, preserve the reported
+`.$$$` stages and BAK copies until you have identified a complete file. A failed
+session save can leave named `DSA00000.SYM`, `.DOC` and `.CTL` generation
+components while the old descriptor graph remains usable. Do not delete files
+referenced by the descriptor you intend to reload. CP/M renames do not provide
+power-loss durability or atomic replacement of multiple files.
+
+The [DASM qualification report](../engineering/DASM%20Qualification.md) records
+normal RAM Model 4/trs80gp and z80pack component results and their exact media.
+Physical hardware and whole-Utilities-release acceptance are separate. Original
+imports, maintained source and build recipes accompany the images in
+`BetterCPM-DASM-SOURCE.tar.gz`; retain that companion and `DASMCOPY.TXT` when
+redistributing.
 
 ## Compression utilities
 

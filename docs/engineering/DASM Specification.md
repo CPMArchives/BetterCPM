@@ -1,9 +1,14 @@
 # DASM Engineering Specification
 
-Status: selected implementation direction, 2026-10-25. Adopt Richard Conn's
-DASM 1.5 as a maintained Utilities Disk adaptation. The requirements below
-define implementation and acceptance work; they do not claim that a binary
-has been integrated, rebuilt with ZSM4 or qualified on either platform.
+Status: implemented; DASM, DSYM and DLINK component qualification completed on
+the recorded normal RAM z80pack/cpmsim and Model 4/trs80gp pairs, 2026-10-25.
+See the [DASM qualification report](DASM%20Qualification.md) and
+[machine-readable receipt](DASM-Qualification.json) for exact executable/media
+identities, passed gates and limitations. Physical hardware and whole-Utilities
+release acceptance remain separate. The maintained Conn 1.5 adaptation and
+its companions retain their recorded development identities; ZSM4 4.7 and
+LINK 1.3 remain unchanged, externally versioned tools. This specification
+remains the implementation and acceptance contract.
 
 ## 1. Purpose and scope
 
