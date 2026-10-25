@@ -70,6 +70,7 @@ def main():
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp'])
     p.add_argument('--reuse-build',type=Path,help='Reuse retained parity-checked native groups for unchanged source')
+    p.add_argument('--quiet-reporting',action='store_true',help='Run the bounded quiet-reporting native campaign')
     p.add_argument('--stamp-delta-from',type=Path,help='Qualify only the timestamp diagnostic delta from a retained full campaign')
     a=p.parse_args();a.output=a.output.resolve();a.system=a.system.resolve();a.utilities=a.utilities.resolve()
     systems=verify_system(a.system,a.platforms)
@@ -127,6 +128,34 @@ def main():
             body=native[n][:len(expected[n])]
             native_ovl.extend(body+bytes(-len(body)%128))
         assert bytes(native_ovl)==ovl
+        if a.quiet_reporting:
+            data=bytes(range(128))
+            raw=with_crcs(archive([entry(b'TEXT    DAT')],data))
+            files={'NOAH.COM':native['NOAH'],'NOAH.OVL':bytes(native_ovl),'NCMEM.COM':mem,
+                   'TEXT.DAT':data,'TEST.LBR':raw,'BAD.BIN':b'\x76\xfdunsupported'}
+            prefix=['A:','RSX LOAD ANSISCRN','RSX LOAD ANSI','C:'] if platform=='z80pack' else []
+            commands=prefix+['NCMEM','NOAH /Q /LIST TEST.LBR','NOAH /Q /X /Y TEST.LBR',
+                'NOAH /Q /SQ TEXT.DAT','NOAH /Q /EXPAND /Y TEXT.DQT',
+                'NOAH /Q /ADD /SQ /Y OUT.LBR TEXT.DAT','NOAH /Q /TEST OUT.LBR',
+                'NOAH /Q /REMOVE /Y OUT.LBR TEXT.DQT','NOAH /Q /EXPAND BAD.BIN']
+            log,outputs=campaign(platform,files,commands,base/'runtime',system=a.system,utilities=a.utilities,
+                extract=['TEXT.DAT','TEXT.DQT','OUT.LBR'],timeout=600)
+            ceiling='C501' if platform=='z80pack' else 'CA01'
+            assert outputs['TEXT.DAT']==data and host_decode(outputs['TEXT.DQT'],record_padding=True)[1]==data
+            check_crc(outputs['OUT.LBR']);assert members(outputs['OUT.LBR'])[0][0]==254
+            assert ('NOAH QUAL TPA '+ceiling).encode() in log
+            for text in (b'verified codec output published',b'extracted and verified',b'LBR update verified and published',b' -> stored member '):
+                assert text not in log,text
+            for text in (b'TEXT     DAT',b'Archives (hex): selected',b'Files (hex): selected',b'Accepted source versions',
+                         b'explicit compression increased',b'BAD.BIN',b'codec operation failed',b'TEXT    .DQT'):
+                assert text in log,text
+            report['qualification_mode']='quiet reporting'
+            report['platforms'][platform]={'status':'PASS','native_groups':groups,'runtime_ceiling_hex':ceiling,
+                'native_outputs':{n:sha(b) for n,b in native.items()},'runtime_outputs':{n:sha(b) for n,b in outputs.items()},
+                'runtime_console_sha256':sha(log)}
+            (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
+            print('PASS',platform,'native quiet reporting with terminal providers loaded',flush=True)
+            continue
         if a.stamp_delta_from:
             payload=b'preserve stamped bytes'
             wire=squeeze(payload,name=b'STAMPED.TXT');tail=-len(wire)%128

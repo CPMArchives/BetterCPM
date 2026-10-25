@@ -1,0 +1,140 @@
+{
+  "date": "2026-10-25",
+  "component": "NOAH",
+  "version": "1.0",
+  "revision": 8,
+  "scope": "Quiet reporting only; existing semantics retained",
+  "status": "PASS within stated scope",
+  "qualification": {
+    "scope": "NOAH production controller/codec phase integration; LBR and codec commands only",
+    "layout": {
+      "resident_bytes": 17520,
+      "window": 17792,
+      "codec_context": 19840,
+      "cli_bytes": 16782,
+      "writer_plans": [
+        34688,
+        40832
+      ],
+      "transformed_ids": [
+        40832,
+        47488
+      ],
+      "stack": [
+        16137,
+        16649
+      ],
+      "required_ceilings": [
+        47488,
+        23364,
+        21280,
+        45047,
+        46422
+      ],
+      "build_id": "8beb631e41801b94",
+      "companion_sha256": "b8da7c55f6df77e2349bd90c2975890e26615b1bbf8bdfc1ed57e0db35451e2b"
+    },
+    "verified_systems": {
+      "z80pack": {
+        "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1"
+      },
+      "trs80gp": {
+        "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43"
+      }
+    },
+    "resident_sha256": "0fd5be5d41e78ecf939647579253f34304141fd9bc04805ae2695b67a1c03f18",
+    "companion_sha256": "b8da7c55f6df77e2349bd90c2975890e26615b1bbf8bdfc1ed57e0db35451e2b",
+    "platforms": {
+      "z80pack": {
+        "status": "PASS",
+        "native_groups": [
+          {
+            "execution": "build-0/execution.json",
+            "console_sha256": "798103f22cffbd759de8d5eb79aaae420c899a79350e9099f96a543d2ac22fb7",
+            "status": "PASS"
+          },
+          {
+            "reused": "build/noah-codecs/qualified/z80pack/build-1",
+            "status": "PASS"
+          }
+        ],
+        "runtime_ceiling_hex": "C501",
+        "native_outputs": {
+          "NOAH": "3828871481e443848b4d05ffe2fa8cd99c65fa59e6be09ae418654a877e330b1",
+          "NHCLI": "fb47ae8fe96cbe59cf63d420de26508333e8f8c8a161344655520d396368848e",
+          "NCSQ": "a9b7e9751f926f64ead6a8271962112b10c74240f19f10afb026683f5b734718",
+          "NCUSQ": "e75ca194db482a31052673ad2dd848380a0d4ede0c623180ba666a52de406fd0",
+          "NCCR": "53ccbdc33ad199aeeb8e8357751f6fba4e74428b4ea85f525e44dd3c453bda1b",
+          "NCUNCR": "6331142512707c1e50773687564f9088b30860162d0dfbdee86d1886806df1e0"
+        },
+        "runtime_outputs": {
+          "TEXT.DAT": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+          "TEXT.DQT": "6bcb90ddb0fdf5292b8ed8379759c543e0b3f199b3e2fba2af03a391e32de8fb",
+          "OUT.LBR": "7ff78764e7037eaf08a7c995c653254074724e9a99d53a3c1413a9b4e6e1cca4"
+        },
+        "runtime_console_sha256": "f3ff731213b88f4984d95bbc6db16a88c2373f02fcbdaca3ac5cafc5b4ad1fe8"
+      },
+      "trs80gp": {
+        "status": "PASS",
+        "native_groups": [
+          {
+            "execution": "build-0/execution.json",
+            "console_sha256": "a291b6a817d277a85c20589f3447fa4e28126d40069a1a18e9761ee1035a890b",
+            "status": "PASS"
+          },
+          {
+            "reused": "build/noah-codecs/qualified/trs80gp/build-1",
+            "status": "PASS"
+          }
+        ],
+        "runtime_ceiling_hex": "CA01",
+        "native_outputs": {
+          "NOAH": "3828871481e443848b4d05ffe2fa8cd99c65fa59e6be09ae418654a877e330b1",
+          "NHCLI": "fb47ae8fe96cbe59cf63d420de26508333e8f8c8a161344655520d396368848e",
+          "NCSQ": "a9b7e9751f926f64ead6a8271962112b10c74240f19f10afb026683f5b734718",
+          "NCUSQ": "e75ca194db482a31052673ad2dd848380a0d4ede0c623180ba666a52de406fd0",
+          "NCCR": "53ccbdc33ad199aeeb8e8357751f6fba4e74428b4ea85f525e44dd3c453bda1b",
+          "NCUNCR": "6331142512707c1e50773687564f9088b30860162d0dfbdee86d1886806df1e0"
+        },
+        "runtime_outputs": {
+          "TEXT.DAT": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+          "TEXT.DQT": "6bcb90ddb0fdf5292b8ed8379759c543e0b3f199b3e2fba2af03a391e32de8fb",
+          "OUT.LBR": "7ff78764e7037eaf08a7c995c653254074724e9a99d53a3c1413a9b4e6e1cca4"
+        },
+        "runtime_console_sha256": "ac95f35e8a2b3c51fa7f99bdc17a879341a2b159142fea1bd4c5469d139ff35c"
+      }
+    },
+    "qualification_mode": "quiet reporting"
+  },
+  "host_checks": {
+    "quiet_transactions": 31,
+    "adapter_cases": 137,
+    "lbr_write_cases": 38,
+    "codec_cases": 51,
+    "registry_projections": "PASS"
+  },
+  "source_sha256": {
+    "metadata/component-registry.json": "03935418700e5b36aee58c2021d5136485f785233d5efb75c953cdf4c09253ca",
+    "metadata/utility-versions.tsv": "fb88e2ca9529d1570d3f2dc378f9f6ee84edfd4bc0e27326cb5877a4c1aa54f8",
+    "src/utilities/common/noahcodec.inc": "fee6ef5103a2780770a368131d1876efbcdf1b07efc463934f96d02896e729f2",
+    "src/utilities/common/noahextract.inc": "1d39dced4236efc02306e13ad9a3a23e5bf31fb93a614f4e3fb38bd3945085b1",
+    "src/utilities/common/noahselect.inc": "37d3baa9cf31028bf85ed16a7ef46fef229fafee2483b59087dd13e3758e0067",
+    "src/utilities/common/noahwrite.inc": "cf5102d1e45b492904eb1c1e4a3cf827491ce6bfa2a29387f6d175414764a9a5",
+    "src/utilities/noah.mac": "e424cb42e457bb35f75d435b45e3809f15882b5c29b3569cd30908e2a07f990d",
+    "tools/build_noah.py": "d8d8bb689ce9459a01a9059b97b995ec6907f460a4c31963faa0d0a60737e637",
+    "tools/qualify_noah_codecs.py": "969ff51a53083d6883c61e873a959f85eb31aedb6a8257aa78c1c3f009f35cc0",
+    "tools/test_noah_quiet.py": "d9ac6b077f6852cab434132c564233bcd27015860885906fb29cd94052970507"
+  },
+  "reused_codec_baseline_receipt_sha256": "222e85b9df2d8bf1a3ab048c845211bc1c89540b0f773ce79a5256207fd42897",
+  "known_existing_issue": "A new ADD with selected source preflight failures may still publish an empty LBR; deferred to failure/outcome increment, not full spec conformance",
+  "evidence": {
+    "file": "NOAH-Quiet-evidence.tar.gz",
+    "bytes": 508740,
+    "sha256": "c3edc011a33c00c5dc1341b590dd9d2a345722a496c6ef7aeecc153322f68382",
+    "manifest_sha256": "48317ebe9e14dccf0a9593c30b40d0a82a720df1d7eb99b8b602d127357b566a"
+  }
+}

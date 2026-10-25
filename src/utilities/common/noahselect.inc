@@ -224,6 +224,7 @@ NS_COPY_TAIL:
         LD (NS_ALL),A
         LD (NS_STOP),A
         LD (NS_WARNINGS),A
+        LD (NS_QUIET),A
         LD (NW_COMPACT),A
         LD (NW_CAP_SET),A
         LD (NW_FORMAT),A
@@ -301,12 +302,18 @@ NS_FLAGS:
         LD DE,(NS_TOKEN_PTR)
         INC DE
         LD A,(DE)
+        CP 'Q'
+        JR Z,NS_SET_QUIET
         CP 'Y'
         JR Z,NS_SET_YES
         CP 'R'
         JP NZ,NS_BAD
         LD A,1
         LD (NS_RO),A
+        JP NS_TOKEN_LOOP
+NS_SET_QUIET:
+        LD A,1
+        LD (NS_QUIET),A
         JP NS_TOKEN_LOOP
 NS_SET_YES:
         LD A,1
@@ -760,6 +767,7 @@ NS_SYS: DB 0
 NS_ALL: DB 0
 NS_STOP: DB 0
 NS_WARNINGS: DB 0
+NS_QUIET: DB 0
 NS_ARC_FAILED: DB 0
 NS_MEMBER_ARG: DW 0
 NS_MEMBER_LEN: DB 0
