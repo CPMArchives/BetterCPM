@@ -10,7 +10,8 @@ import subprocess
 import tempfile
 import zlib
 
-from build_noah_proof import build, ROOT
+from build_noah_proof import build, ROOT, sha
+from qualify_noah_proof import verify_system
 from test_usq import SHIM
 from test_usq_com import Command, diskkey
 
@@ -36,11 +37,43 @@ class Proof(Command):
         return super().bdos(fn, de)
 
 
+def system_preflight():
+    """Reject a stale core or changed disk before any assembly/emulator work."""
+    with tempfile.TemporaryDirectory(prefix='noah-system-gate-') as tmp:
+        root = Path(tmp)
+        folder = root/'trs80gp'; folder.mkdir()
+        image = folder/'system.dmk'; image.write_bytes(b'fixture disk')
+        report = {'image':image.name,'sha256':sha(image.read_bytes()),
+                  'source':{'revision':'fixture','inputs':{
+                      'src/bdos/unified.mac':sha((ROOT/'src/bdos/unified.mac').read_bytes())}}}
+        receipt = folder/'report.json'
+        receipt.write_text(json.dumps(report))
+        assert verify_system(root, ['trs80gp'])['trs80gp']['source_revision']=='fixture'
+        report['source']['inputs']['src/bdos/unified.mac']='obsolete'
+        receipt.write_text(json.dumps(report))
+        try:
+            verify_system(root, ['trs80gp'])
+        except ValueError as error:
+            assert 'stale or unverified' in str(error)
+        else:
+            raise AssertionError('stale resident core accepted')
+        report['source']['inputs']['src/bdos/unified.mac']=sha((ROOT/'src/bdos/unified.mac').read_bytes())
+        receipt.write_text(json.dumps(report)); image.write_bytes(b'changed disk')
+        try:
+            verify_system(root, ['trs80gp'])
+        except ValueError as error:
+            assert 'differs from its build report' in str(error)
+        else:
+            raise AssertionError('changed system image accepted')
+    return {'current_identity':'PASS','stale_core_refusal':'PASS','changed_image_refusal':'PASS'}
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output', type=Path, default=ROOT/'build/noah-proof/host')
     p.add_argument('--z80pack', type=Path, default=Path.home()/'projects/git/z80pack')
     a = p.parse_args()
+    preflight = system_preflight()
     a.output.mkdir(parents=True, exist_ok=True)
     report = build(Path.home()/'bin/z80asm', a.output/'cross')
     with tempfile.TemporaryDirectory(prefix='noah-proof-core-') as tmp:
@@ -92,7 +125,7 @@ def main():
         check('read error', {local:ovl}, 'PROOF INVALID', failures={'read':2})
         check('close error', {local:ovl}, 'PROOF INVALID', failures={'close_input':1})
         (a.output/'report.json').write_text(json.dumps({'scope':__doc__,
-             'layout':report,'checks':outcomes},indent=2)+'\n')
+             'layout':report,'system_preflight':preflight,'checks':outcomes},indent=2)+'\n')
         print('PASS: overlay validation, read/decode callbacks, bounds, refusal and original-file preservation')
 
 

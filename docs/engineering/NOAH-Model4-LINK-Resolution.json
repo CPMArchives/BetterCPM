@@ -1,0 +1,144 @@
+{
+  "date": "2026-10-25",
+  "baseline": "842874e40081574c52efd6167cf5f1b1af793733",
+  "scope": "Close the existing NOAH proof Model 4 native LINK gate; no production NOAH, resident-core, linker, overlay or feature changes",
+  "status": "PASS",
+  "root_cause": {
+    "classification": "stale qualification system input",
+    "old_system_revision": "19b65de4799c621a15593d6503ba657e454f577a",
+    "old_core_sha256": "b5b03b66e67eca609528e09604f1fb9ef4a8f3e4c2bed28388cab980ae03d935",
+    "existing_fix_commit": "8864aa58ca7ac26181c6fda15467150cbe6edd05",
+    "operation": "LINK closes XXPROG.$$$ after 128 records and opens extent 1. The old core had not prepared that extent, so OPEN returns FF on Model 4 EXM=0 media. Stock CP/M and the corrected core prepare it. EXM=1 grouping masks the old failure on the cpmsim disk.",
+    "option_test": "Both LINK PROOF[A] and LINK PROOF fail on the old core; removing [A] is not a fix. The original [A] invocation succeeds on the corrected core."
+  },
+  "resolution": {
+    "required_system_argument": true,
+    "current_core_and_disk_hash_preflight": true,
+    "retained_campaign_system_hash_check": true,
+    "old_image_rejected_before_output_assembly_or_emulator": true,
+    "system_preflight_unit_checks": {
+      "current_identity": "PASS",
+      "stale_core_refusal": "PASS",
+      "changed_image_refusal": "PASS"
+    },
+    "proof_artifacts_unchanged": true,
+    "proof_artifacts": {
+      "PROOF.COM": {
+        "bytes": 22247,
+        "sha256": "c92c666698b214c96a3c75ccf48d6ca434db3f80380900e63a1829c9f03dce9f"
+      },
+      "NOAH.OVL": {
+        "bytes": 2688,
+        "sha256": "0c7437bc77d51ee29d2d9116708ef9b686b41ac9d9af0b618beb0ff462077cbb"
+      },
+      "LBRMOD": {
+        "bytes": 957,
+        "sha256": "057dc7c709684095f86a9bf46aedba296fcc37037f0908908e0e5d64a6f5c88c"
+      },
+      "UNCRMOD": {
+        "bytes": 1458,
+        "sha256": "1e86837f2be8c41a1d9cf0b7ff81ac843face7894fdbbf6b1fadb4dbc548479a"
+      }
+    },
+    "current_systems": {
+      "z80pack": {
+        "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1"
+      },
+      "trs80gp": {
+        "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43"
+      }
+    },
+    "native_qualification": {
+      "z80pack": {
+        "status": "PASS",
+        "native_cross_parity": true,
+        "native_build_status": "PASS",
+        "native_build_reused_from": null,
+        "native_assembly_reused_from": null,
+        "observed_tpa_ceiling_hex": [
+          "C501",
+          "D501"
+        ],
+        "bare_read_decode": true,
+        "loaded_rsx_refusal": true,
+        "corrupt_overlay_refusal": true,
+        "execution_report": "build/noah-link-investigation/current-native/z80pack/execution.json",
+        "console_sha256": "f38675555d60d09ed7a0240205a6d94c6e8e10d540ddbfb3ae1274b2794d4278"
+      },
+      "trs80gp": {
+        "status": "PASS",
+        "native_cross_parity": true,
+        "native_build_status": "PASS",
+        "native_build_reused_from": null,
+        "native_assembly_reused_from": null,
+        "observed_tpa_ceiling_hex": [
+          "CA01",
+          "D501"
+        ],
+        "bare_read_decode": true,
+        "loaded_rsx_refusal": true,
+        "corrupt_overlay_refusal": true,
+        "execution_report": "build/noah-link-investigation/current-native/trs80gp/execution.json",
+        "console_sha256": "f17edd62f69bf433e612a0386e87b5fa4f35b82947df068362b59005a7f02b82"
+      }
+    }
+  },
+  "external_tools": {
+    "LINK.COM": {
+      "bytes": 15616,
+      "sha256": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677",
+      "comparison": "both Utilities Disk copies byte-identical to pinned unmodified repository tool"
+    },
+    "ZSM4.COM": {
+      "bytes": 22400,
+      "sha256": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+      "comparison": "both Utilities Disk copies byte-identical to pinned unmodified repository tool"
+    }
+  },
+  "source_sha256": {
+    "tools/qualify_noah_proof.py": "f31993d880ce02c7244abb1c12ef139c0183db64dabfa53b1ad6cd417966c1fa",
+    "tools/test_noah_proof.py": "1f6af9f12393ab96b9a68c9005fd89e6b23e26b247897500559ce404cb38734b",
+    "src/bdos/unified.mac": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc"
+  },
+  "limits_unchanged": [
+    "51,684-byte TPA requirement; Model 4 loaded terminal pair remains 227 bytes short and refuses safely",
+    "No writer/ARK/browser implementation",
+    "No physical-hardware, ROM/checked-profile or final Utilities release claim"
+  ],
+  "evidence_bundle": {
+    "file": "NOAH-Model4-LINK-Resolution-evidence.tar.gz",
+    "bytes": 20656,
+    "sha256": "d113a47632d0d7c26e5129ecaed0fe91faec440d422db3c00432b3d0c55c4c29",
+    "members_sha256": {
+      "README.txt": "79433adf7d23d6083fd9617bdd80fca9e24a93e37c5fec05ae749aa8ff26f8be",
+      "current/report.json": "4812829064e4de64579dc5564b64c75be944e7f980ad6b6dcb28ca3c33691d33",
+      "current/trs80gp/LBRMOD.COM": "2aa9abc222d59a8c69ffb1336a1371f953beb26953bc691c02f0d6ec7dafa0ec",
+      "current/trs80gp/PROOF.COM": "b74087f1c1d2bda7e628e171c00d337ab354f4389bded36903eac97a7c90c092",
+      "current/trs80gp/UNCRMOD.COM": "36707b9f27b6668bb84e9a9b280705642e644106f0b8e37b5ee7bf2b94da7ec8",
+      "current/trs80gp/console.bin": "f17edd62f69bf433e612a0386e87b5fa4f35b82947df068362b59005a7f02b82",
+      "current/trs80gp/execution.json": "656f72eb82234b42b75f9c9e1e4a21528dcc5fef3376b3ee36d98363135de86b",
+      "current/trs80gp/filesystem.txt": "53614da4720f54f7eb7a67e775547f5d4e1976fee6dc55fa7784c0721ef44c62",
+      "current/trs80gp/invocation.json": "497917ed0cb20450a3aae8fc3d121a426390075a767466abc37466aad881c0af",
+      "current/z80pack/LBRMOD.COM": "2aa9abc222d59a8c69ffb1336a1371f953beb26953bc691c02f0d6ec7dafa0ec",
+      "current/z80pack/PROOF.COM": "b74087f1c1d2bda7e628e171c00d337ab354f4389bded36903eac97a7c90c092",
+      "current/z80pack/UNCRMOD.COM": "36707b9f27b6668bb84e9a9b280705642e644106f0b8e37b5ee7bf2b94da7ec8",
+      "current/z80pack/console.bin": "f38675555d60d09ed7a0240205a6d94c6e8e10d540ddbfb3ae1274b2794d4278",
+      "current/z80pack/execution.json": "d39d2703d667305cc03bb745b73524cd8796eb0ced976bdd5eae175a54504666",
+      "current/z80pack/filesystem.txt": "db2f8f302124b93a2d07f8967bd5ecfc0fcc28745e1e435c0ea84579278285ff",
+      "host/report.json": "9c14dc4f91e3f7a0d0a58d1be9763f84f90fa94ae3d1847b45c29d4c8562efad",
+      "old-model4-options/console.bin": "22fb742f119447a404bde2d564c97f2a125f36967897ddc2bf8fb27b71028ed4",
+      "old-model4-options/execution.json": "379ceb25bc3ec1cfc57213116810d78c6eb1d603ed47eec8af7c9836e2895df3",
+      "old-model4-trace/console.bin": "762a90c876f964644801079cd72e97bacf10d833301fa4c72677b606078f5a40",
+      "old-model4-trace/execution.json": "b4899a9dde1e88271807d14fe87bc3f08c043eac63c21639d5791727d497cf4b",
+      "old-model4-trace/trace.mac": "49db2bb6b8e0d1ae5dcc64a396448e284e8370f3fce2a9e7a46394e6a723eed3",
+      "stale-refusal.txt": "65ffd36100957a726e1f8fc9184f3b7fba10c3d99964b4273e214984ee9721d1",
+      "stock-cpm/console.bin": "b2f28004b90cd811f0c8bcb18753532374f43e59873911e89356f273496dedad",
+      "stock-cpm/run.exp": "ac109377865690099c4df69e20641acc587ae0da740f6e7f165e8aeaa7bf3756",
+      "stock-cpm/trace.mac": "851325fcd5aa1d6731efe2fd1c3b88a3b3ea7676d6e02d0f9483f51ebe905f13"
+    }
+  }
+}

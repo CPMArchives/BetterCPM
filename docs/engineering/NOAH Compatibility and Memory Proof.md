@@ -3,6 +3,9 @@
 Status: increments 1–2, bounded research/prototype record, 2026-10-25.
 Baseline: `e98797f95704174cbb77a918ecd1267007124cae`.
 The [NOAH Specification](NOAH%20Specification.md) remains authoritative.
+Model 4 native LINK gate: **closed on source-verified current media**; see
+[resolution and evidence](NOAH-Model4-LINK-Resolution.json). The original blocked
+receipt used a stale operating-system image and is retained as historical evidence.
 This work adds no production commands, archive writer, browser, release-media
 entry, utility version change or resident service. It does **not** close full
 NOAH qualification or the writer/ARK memory gates.
@@ -228,20 +231,34 @@ their checked canaries. This is an observed bound on these exercised paths,
 **not a formal worst-case stack bound for future writers or arbitrary callbacks**.
 
 Both target runtimes execute the same pinned prototype/companion and demonstrate
-successful bare operation and safe loaded-RSX/corrupt-companion refusal. cpmsim
-has complete native ZSM4/LINK byte parity for controller and both modules.
-Model 4 ZSM4 reports zero errors for all three; its controller REL is byte-identical
-to cpmsim's and both smaller modules link. **Controller LINK on Model 4 remains
-BLOCKED**: LINK 1.3 prints `NO FILE:` even with an explicit input drive and the
-terminal modules unloaded. Runtime success there uses the cross-built controller;
-it must not be reported as complete Model 4 native toolchain qualification.
-Resolving that bounded build gate is follow-up work, not a reason to modify the
-external ZSM4/LINK programs in this PR.
+successful bare operation and safe loaded-RSX/corrupt-companion refusal. **Both
+now have native ZSM4/LINK byte parity for controller and both modules**, on
+source-verified current system media. The original Model 4 `NO FILE:` failure
+was real, but came from the proof harness's old default image, revision
+`19b65de4799c621a15593d6503ba657e454f577a`. That core predates the existing
+sequential-write rollover fix `8864aa58ca7ac26181c6fda15467150cbe6edd05`.
+The cpmsim disk's EXM=1 grouping hid the missing next extent; Model 4 EXM=0
+requires its own directory entry, explaining the original platform difference.
+
+The failing operation was LINK's reopen of `XXPROG.$$$` at extent 1 after writing
+exactly 128 records. The old core had not prepared that next extent. Stock CP/M
+and the corrected core do prepare it, which LINK requires. The failure reproduces
+with and without `[A]`; removing that option is not the fix. With current media,
+the unchanged controller REL and original `LINK PROOF[A]` command succeed. Neither
+the proof binary/layout nor external ZSM4/LINK needed a change.
+
+The NOAH qualifier now requires explicit `--system`, verifies the recorded BDOS
+source hash against the current source and checks the image against its build
+receipt **before** creating outputs, assembling or launching an emulator. Retained
+campaigns must also match that exact selected system image. Focused checks cover
+accepting a matching fixture and rejecting stale-core or changed-disk fixtures.
+The [resolution record](NOAH-Model4-LINK-Resolution.json) supersedes only the
+earlier native LINK blockage; all broader NOAH limits remain in effect.
 
 The proof closes the requested measurement question to the extent above. It
 does not approve starting a substantial memory redesign. Before full CLI closure:
 complete the actual controller split, common writer/step interface and measured
-writer/ARK budget; close the Model 4 native LINK gate; then qualify the new feature
+writer/ARK budget; then qualify the new feature
 increments and final exact COM/OVL pair. Physical hardware, checked/ROM profiles,
 final Utilities media and historical CP/M ARK interchange are NOT RUN here.
 
@@ -250,13 +267,13 @@ final Utilities media and historical CP/M ARK interchange are NOT RUN here.
 ```
 python3 tools/test_noah_proof.py
 python3 tools/build_noah_proof.py
-python3 tools/qualify_noah_proof.py --platforms z80pack --output /absolute/new/native-proof
-python3 tools/qualify_noah_proof.py --runtime-only --platforms trs80gp --output /absolute/new/model4-proof
+python3 tools/qualify_noah_proof.py --system /absolute/current/system-media --output /absolute/new/native-proof
 python3 tools/noah_compatibility.py --fetch --generate-vectors --oracle-deark /absolute/pinned/deark
 ```
 
 Native runs need the existing disposable-system campaign inputs, cpmtools,
-cpmsim/trs80gp and external ZSM4/LINK. Override `--system` and `--utilities` for
-their locations. References are hash-checked downloads; build the pinned Deark
+cpmsim/trs80gp and external ZSM4/LINK. Supply `--system` explicitly; override
+`--utilities` when needed. Source-verified cached media are usable without rebuilding
+unrelated components. References are hash-checked downloads; build the pinned Deark
 source unmodified with `make`, then use a fresh oracle output cache. No broad
 regression suite or release-disk rebuild is required for this prototype PR.

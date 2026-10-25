@@ -210,7 +210,8 @@
     "link": "BLOCKED",
     "diagnostic": "LINK 1.3: NO FILE: for controller, including explicit A: input and unloaded RSXs; smaller modules linked",
     "scope": "No Model 4 native controller parity claim",
-    "controller_rel_sha256": "ed3bfc7ceb3621cfd80386a4ccc4c8267930e88f0b2525da2080b7bce278f5b5"
+    "controller_rel_sha256": "ed3bfc7ceb3621cfd80386a4ccc4c8267930e88f0b2525da2080b7bce278f5b5",
+    "superseded_by": "NOAH-Model4-LINK-Resolution.json: native gate PASS on source-verified current-core media; original BLOCKED result came from the stale image"
   },
   "compatibility": {
     "scope": "reference and historical fixture inventory; not NOAH conformance",
