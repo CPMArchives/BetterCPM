@@ -52,7 +52,7 @@ def tests(m):
     m.run('/ADD NEW.LBR B7:TEXT.DAT',{source:data},failures={'read':1})
     normal_files=dict(m.files)
     text=m.run('/ADD /Q NEW.LBR B7:TEXT.DAT',{source:data},failures={'read':1})
-    assert 'B7:TEXT' in text and 'Source preflight failed; source skipped' in text and m.files==normal_files,text
+    assert 'B7:TEXT' in text and 'Source preflight failed.' in text and m.files==normal_files,text
     text=m.run('/ADD /Q /Y TEST.LBR TEST.LBR',{lib:raw})
     assert 'A0:TEST' in text and 'target excluded' in text and not m.created,text
     # Query precedence still requires no companion, regardless of quiet tokens.

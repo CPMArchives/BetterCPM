@@ -70,6 +70,7 @@ def main():
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp'])
     p.add_argument('--reuse-build',type=Path,help='Reuse retained parity-checked native groups for unchanged source')
+    p.add_argument('--source-failures',action='store_true',help='Qualify safe source-preflight choices')
     p.add_argument('--quiet-reporting',action='store_true',help='Run the bounded quiet-reporting native campaign')
     p.add_argument('--stamp-delta-from',type=Path,help='Qualify only the timestamp diagnostic delta from a retained full campaign')
     a=p.parse_args();a.output=a.output.resolve();a.system=a.system.resolve();a.utilities=a.utilities.resolve()
@@ -128,6 +129,38 @@ def main():
             body=native[n][:len(expected[n])]
             native_ovl.extend(body+bytes(-len(body)%128))
         assert bytes(native_ovl)==ovl
+        if a.source_failures:
+            payload=b'safe next source\x00\x1a\xff'
+            post=b'\x11\x0b\x01\x0e\x09\xcd\x05\x00\xc3\x00\x00NOAH FAILURE POSTEXIT PASS\r\n$'
+            files={'NOAH.COM':native['NOAH'],'NOAH.OVL':bytes(native_ovl),'NCMEM.COM':mem,
+                'FAIL1.SQ':b'\x76\xfdunsupported','FAIL2.SQ':squeeze(payload,name=b'RESULT.TXT'),'NFPOST.COM':post}
+            prefix=['A:','RSX LOAD ANSISCRN','RSX LOAD ANSI','C:'] if platform=='z80pack' else []
+            commands=prefix+['NCMEM','NOAH /Q /Y /EXPAND FAIL1.SQ']
+            question=b'Retry/Skip/Abort?'
+            launch='NOAH /Q /EXPAND FAIL*.SQ'
+            if platform=='trs80gp':
+                sequence=[(b'R',question,60),(b'S',b'NOAH FAILURE POSTEXIT PASS',120)]
+            else:
+                sequence=[((launch+'\r').encode(),question,60),(b'R',question,60),
+                          (b'S',b'Files (hex): selected',120),(b'NFPOST\r',b'NOAH FAILURE POSTEXIT PASS',60)]
+            log,outputs=campaign(platform,files,commands,base/'runtime',system=a.system,utilities=a.utilities,
+                extract=['RESULT.TXT'],interactive=sequence,interactive_launch=launch if platform=='trs80gp' else None,
+                interactive_followup='NFPOST' if platform=='trs80gp' else None,interactive_prompt=question.decode(),
+                interactive_frames=[3600,600] if platform=='trs80gp' else None,
+                interactive_ready=[question.decode(),'NOAH FAILURE POSTEXIT PASS'] if platform=='trs80gp' else None,
+                timeout=600)
+            ceiling='C501' if platform=='z80pack' else 'CA01'
+            assert outputs['RESULT.TXT']==payload+bytes([26])*(-len(payload)%128)
+            assert ('NOAH QUAL TPA '+ceiling).encode() in log
+            for text in (question,b'codec operation failed',b'NOAH FAILURE POSTEXIT PASS',b'unprocessed 0000'):
+                assert text in log,text
+            report['qualification_mode']='safe source failures'
+            report['platforms'][platform]={'status':'PASS','native_groups':groups,'runtime_ceiling_hex':ceiling,
+                'native_outputs':{n:sha(b) for n,b in native.items()},'runtime_outputs':{n:sha(b) for n,b in outputs.items()},
+                'runtime_console_sha256':sha(log)}
+            (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
+            print('PASS',platform,'native source Retry/Skip with loaded terminal providers',flush=True)
+            continue
         if a.quiet_reporting:
             data=bytes(range(128))
             raw=with_crcs(archive([entry(b'TEXT    DAT')],data))

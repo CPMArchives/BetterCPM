@@ -46,6 +46,42 @@ NI_YES:
         LD A,1
         OR A
         RET
+; Safe source-preflight boundary only. No output/staging or live input may
+; remain when called. /Y never waits; Enter defaults to Skip, not Retry.
+NI_FAILURE:
+        LD A,(NS_YES)
+        OR A
+        LD A,'S'
+        RET NZ
+        LD A,1
+        LD (NI_FAILURE_MODE),A
+        LD (NI_WAIT),A
+        LD HL,NI_FAILURE_KEYS
+        LD (UC_LIST),HL
+        LD A,3
+        LD (UC_COUNT),A
+        LD A,'S'
+        LD (UC_DEF),A
+        CALL UC_RUN
+        LD B,A
+        XOR A
+        LD (NI_WAIT),A
+        LD (NI_FAILURE_MODE),A
+        LD A,B
+        CP UI_SEND
+        JR Z,NI_FAILURE_VALUE
+        CP UI_DEF
+        JR NZ,NI_FAILURE_ABORT
+NI_FAILURE_VALUE:
+        LD A,(UC_VALUE)
+        CP 'A'
+        JR Z,NI_FAILURE_ABORT
+        OR A
+        RET
+NI_FAILURE_ABORT:
+        LD DE,NI_ABORT_TEXT
+        CALL NH_PRINT
+        JP NX_POLL_STOP
 NI_READ:
         LD C,6
         LD E,0FFH
@@ -54,6 +90,10 @@ NI_READ:
         JR Z,NI_READ
         RET
 NI_PAINT:
+        LD A,(NI_FAILURE_MODE)
+        OR A
+        LD DE,NI_FAILURE_TEXT
+        JP NZ,NH_PRINT
         LD A,(NW_PROMPT)
         OR A
         JP NZ,NW_PAINT
@@ -97,6 +137,9 @@ UI_CLOSE EQU NI_CLOSE
 UC_PAINT EQU NI_PAINT
 UC_ERROR EQU NI_ERROR
 ; @choice-modules@
+NI_FAILURE_KEYS: DB 'RSA'
+NI_FAILURE_TEXT: DB 'Retry/Skip/Abort? R/S/A [S]: ','$'
+NI_ABORT_TEXT: DB 'NOAH: Cancelled; remaining work unprocessed.',13,10,'$'
 NI_ORDINARY: DB 'YNAC'
 NI_PROTECTION: DB 'YN'
 NI_NORMAL_TEXT: DB ' exists. Replace? Y/N/A/C [N]: ','$'
@@ -105,6 +148,7 @@ NI_SYS_TEXT: DB ' is protected [SYS]. Replace? Y/N [N]: ','$'
 NI_BOTH_TEXT: DB ' is protected [RO SYS]. Replace? Y/N [N]: ','$'
 NI_INVALID_TEXT: DB 13,10,'Invalid choice. ','$'
 NOAH_INPUT_DATA MACRO
+NI_FAILURE_MODE: DB 0
 NI_PROTECTED: DB 0
 NI_WAIT: DB 0
 UC_LIST: DW 0

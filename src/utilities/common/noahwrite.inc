@@ -283,9 +283,21 @@ NW_SOURCE_FAILED:
  LD DE,NW_SOURCE_ERROR_TEXT
  CALL NH_PRINT
  CALL NW_CLOSE_SOURCE
+ JP C,NW_IO_ERROR
  LD A,(NH_ABORTED)
  OR A
  JP NZ,NW_CANCEL
+ ; Compressed ADD reads an already verified aggregate here. Its metadata or
+ ; payload failure abandons the transaction rather than accepting a new spool.
+ LD A,(NC_ADD_ACTIVE)
+ OR A
+ JP NZ,NW_IO_ERROR
+ CALL NI_FAILURE
+ JP C,NW_CANCEL
+ CP 'R'
+ JP Z,NW_CANDIDATE
+ LD DE,NW_SOURCE_SKIP_TEXT
+ CALL NH_PRINT
 NW_SKIP_SOURCE:
  LD A,1
  LD (NS_WARNINGS),A
@@ -307,6 +319,17 @@ NW_PLAN:
  CP 3
  JR NZ,NW_REMOVE_CHECK
  LD A,(NW_CONSIDERED)
+ OR A
+ JP Z,NW_UNCHANGED
+ ; An absent old directory is not an implicit capacity-change request. If
+ ; every candidate failed/skipped, no new archive is needed by default.
+ LD HL,NW_CONTEXT+LW_ACCEPTED
+ CALL NW_NONZERO
+ JR NZ,NW_REMOVE_CHECK
+ LD A,(NO_EXISTED)
+ OR A
+ JR NZ,NW_REMOVE_CHECK
+ LD A,(NW_CAP_SET)
  OR A
  JP Z,NW_UNCHANGED
 NW_REMOVE_CHECK:
@@ -1053,7 +1076,8 @@ NW_MEMORY_TEXT: DB 'NOAH: Insufficient transient memory.',13,10,'$'
 NW_NO_SOURCES_TEXT: DB 'NOAH: No ADD sources; archive unchanged.',13,10,'$'
 NW_UNCHANGED_TEXT: DB 'NOAH: No accepted change; archive unchanged.',13,10,'$'
 NW_FORMAT_TEXT: DB 'NOAH: New archive requires .LBR or /FORMAT=LBR.',13,10,'$'
-NW_SOURCE_ERROR_TEXT: DB 'NOAH: Source preflight failed; source skipped.',13,10,'$'
+NW_SOURCE_ERROR_TEXT: DB 'NOAH: Source preflight failed.',13,10,'$'
+NW_SOURCE_SKIP_TEXT: DB 'NOAH: Source skipped; no replacement accepted.',13,10,'$'
 NW_FAILED_TEXT: DB 'NOAH: LBR update failed; original retained. Error ', '$'
 NW_DONE_TEXT: DB 'NOAH: LBR update verified and published.',13,10,'$'
 NW_REBUILD_TEXT: DB 'NOAH: Rebuilding active members; deleted recovery data discarded.',13,10
