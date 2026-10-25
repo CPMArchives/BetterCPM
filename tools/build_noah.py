@@ -24,7 +24,7 @@ def build_flat(assembler, destination, source_only=False):
     texts = {
         'NH_VERSION': version_text(),
         'NH_USAGE': 'NOAH: Invalid or unsupported usage.\r\nUsage: NOAH [/LIST|/TEST] archives [member]\r\n       NOAH /EXTRACT archives [destination:pattern]\r\nUse NOAH /HELP for current scope.\r\n',
-        'NH_HELP': 'NOAH LBR development build\r\nUsage: NOAH [/LIST|/TEST] archives [member]\r\n       NOAH /EXTRACT archives [destination:pattern]\r\nAliases: /T /X. /VER and /HELP ignore other arguments; /HELP takes precedence.\r\nShared archive filespecs: wildcards, DU sets and attribute predicates.\r\nArchive order: drive, user, filename; frozen limit 512 archives.\r\nMember names are 8.3 patterns; README means exact extensionless README.\r\nExtraction destination is one DU, default caller DU.\r\nOverwrite: Y/N/All/Cancel, default No; ESC or Ctrl-C cancels.\r\n/Y approves ordinary replacement; /R and /SYS enable separate protection prompts.\r\n/Y always skips protected outputs; extraction never replaces input archives.\r\nLBR writes: /ADD archive sources; /REMOVE archives member; /COMPACT archives.\r\n/CAPACITY=n on ADD/COMPACT; /FORMAT=LBR creates an unknown extension.\r\nNormal updates retain deleted data; rebuild/COMPACT discards recovery data.\r\nCodecs: /SQ sources [destination:] and /CR sources [destination:].\r\n/EXPAND sources [destination:] decodes one recognized layer or copies ordinary files.\r\n/ADD /SQ or /CR stores compressed members; /X /EXPAND expands one inner layer.\r\nMatching NOAH.OVL required except VER/HELP; invocation DU then A0.\r\n/Q hides routine progress/success.\r\nSafe failures: Retry/Skip/Abort [Skip]; /Y skips.\r\nARK, /LZ pending; uncertain recovery stops.\r\nLIST does not test contents. TEST/EXTRACT audit structure and CRCs.\r\n',
+        'NH_HELP': 'NOAH LBR/ARK development build\r\nUsage: NOAH [/LIST|/TEST] archives [member]\r\n       NOAH /EXTRACT archives [destination:pattern]\r\nAliases: /T /X. /VER and /HELP ignore other arguments; /HELP takes precedence.\r\nShared archive filespecs: wildcards, DU sets and attribute predicates.\r\nArchive order: drive, user, filename; frozen limit 512 archives.\r\nMember names are 8.3 patterns; README means exact extensionless README.\r\nExtraction destination is one DU, default caller DU.\r\nOverwrite: Y/N/All/Cancel, default No; ESC or Ctrl-C cancels.\r\n/Y approves ordinary replacement; /R and /SYS enable separate protection prompts.\r\n/Y always skips protected outputs; extraction never replaces input archives.\r\nLBR writes: /ADD archive sources; /REMOVE archives member; /COMPACT archives.\r\n/CAPACITY=n on ADD/COMPACT; /FORMAT=LBR creates an unknown extension.\r\nNormal updates retain deleted data; rebuild/COMPACT discards recovery data.\r\nCodecs: /SQ sources [destination:] and /CR sources [destination:].\r\n/EXPAND sources [destination:] decodes one recognized layer or copies ordinary files.\r\n/ADD /SQ or /CR stores compressed members; /X /EXPAND expands one inner layer.\r\nMatching NOAH.OVL required except VER/HELP; invocation DU then A0.\r\n/Q hides routine progress/success.\r\nSafe failures: Retry/Skip/Abort [Skip]; /Y skips.\r\nARK LIST/TEST/EXTRACT: stored methods 1/2; compressed methods reported unsupported.\r\nARK writes, /LZ pending; uncertain recovery stops.\r\nLIST does not test contents. TEST/EXTRACT audit structure and CRCs.\r\n',
     }
     emitted = []
     for label, text in texts.items():
@@ -40,7 +40,7 @@ def build_flat(assembler, destination, source_only=False):
         work = Path(temp)
         for name in ('archive.inc', 'lbr.mac', 'lbraudit.inc', 'lbraudit.mac', 'cpmfile.inc', 'cpmfile.mac', 'lbrwrite.inc', 'lbrwrite.mac', 'lbrwrite-render.inc'):
             shutil.copy2(ROOT / 'src/archive' / name, work / name)
-        for name in ('noahaccount.inc', 'noahextract.inc', 'noahselect.inc', 'noahinput.inc', 'noahpublish.inc', 'noahwrite.inc', 'noahwrite-parse.inc', 'noahcodec.inc', 'noahcodec-add.inc'):
+        for name in ('noahark.inc', 'noahaccount.inc', 'noahextract.inc', 'noahselect.inc', 'noahinput.inc', 'noahpublish.inc', 'noahwrite.inc', 'noahwrite-parse.inc', 'noahcodec.inc', 'noahcodec-add.inc'):
             shutil.copy2(ROOT / 'src/utilities/common' / name, work / name)
         from shared_ui import controller_source, UI
         binding = (work / 'noahinput.inc').read_text()
@@ -76,6 +76,8 @@ def build_flat(assembler, destination, source_only=False):
                           lambda m: expand((work / m[1]).read_text()).rstrip(), text)
         from qualify_codec_native import native_text
         flat = expand((work / 'command.mac').read_text())
+        # Content recognition is specific to NOAH; keep the reusable adapter unchanged.
+        flat = flat.replace('        JP LBR_OPEN', '        JP NH_FORMAT_OPEN', 1)
         # Expand our bounded straight-line macros before native assembly. Keeping
         # all four library bodies as ZSM4 macros exhausts its symbol workspace.
         macros = {}

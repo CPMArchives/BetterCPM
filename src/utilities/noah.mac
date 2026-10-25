@@ -1,6 +1,6 @@
-; NOAH development: LBR LIST/TEST/EXTRACT with shared source selectors,
+; NOAH development: LBR and stored ARK LIST/TEST/EXTRACT with selectors,
 ; member filters, frozen batches and authorized staged replacement.
-; LBR writes and codec phases implemented; ARK and failure choices pending.
+; LBR writes and standalone codecs implemented; ARK compression/writes pending.
 ; No distribution inclusion until the corresponding qualification is complete.
         ORG 100H
         JP NH_START
@@ -69,6 +69,9 @@ NH_ARCHIVE:
         CALL NS_QUEUE_FCB
         CALL AC_OPEN
         JP C,NH_FAILED
+        LD A,(NH_ARK)
+        OR A
+        JP NZ,NW_PLANS+3
         LD A,(NH_MODE)
         OR A
         JR Z,NH_LIST_START
@@ -115,7 +118,7 @@ NH_LIST_START:
         LD DE,NH_HEADING
         CALL NH_PRINT
 NH_LIST_LOOP:
-        CALL LBR_NEXT
+        CALL NH_NEXT
         JR C,NH_LIST_END
         CALL NS_MEMBER_MATCH
         JP NZ,NH_LIST_LOOP
@@ -143,6 +146,9 @@ NH_LENGTH_LOOP:
         DJNZ NH_LENGTH_LOOP
         LD DE,NH_BYTES
         CALL NH_PRINT
+        LD A,(NH_ARK)
+        OR A
+        JP NZ,NW_PLANS+15
         LD A,(NH_MODE)
         CP 1
         JR NZ,NH_LIST_CONTINUE
@@ -158,6 +164,9 @@ NH_LIST_CONTINUE:
 NH_LIST_END:
         CP AS_END
         JP NZ,NH_FAILED
+        LD A,(NH_ARK)
+        OR A
+        CALL NZ,NW_PLANS+18
         CALL AC_CLOSE
         JR C,NH_CLOSE_FAILED
         LD A,(NS_MATCHED)
@@ -579,6 +588,8 @@ NH_NEWLINE: DB 13,10,'$'
         LBR_AUDIT_CODE
         ARCHIVE_CPM_CODE
         LBR_WRITE_CODE
+        INCLUDE noahark.inc
+NH_ARK: DB 0
 NH_OLDSP: DW 0
 NH_ARG: DW 0
 NH_LENGTH: DB 0

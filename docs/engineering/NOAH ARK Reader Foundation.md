@@ -5,6 +5,10 @@ not a production NOAH command. The [behavioral specification](NOAH%20Specificati
 remains normative. NOAH 1.0 revision 13 and its companion remain byte-identical to
 the qualified LBR/codec build. No Utilities Disk member, command or writer is added.
 
+The subsequent [ARK CLI increment](NOAH%20ARK%20CLI%20Integration.md) integrates
+this unchanged reader into NOAH 1.0 revision 14. The scope and measurements below
+record the isolated foundation at revision 13.
+
 ## Implemented boundary
 
 `src/archive/ark.inc` and `ark.mac` implement the existing 138-byte, caller-owned
