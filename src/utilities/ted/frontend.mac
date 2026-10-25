@@ -1,0 +1,1088 @@
+; Portable TED console/screen adapter. GPL-2.0-or-later.
+; SCRN typed calls only; no terminal query, keyboard matrix or VRAM access.
+ .Z80
+ public TE_START,TE_PROMPT,TE_CONFIRM,TE_MESSAGE,TE_READ,TE_RENDER,TE_PRINT
+ public TE_FIELD,TE_FIELDLEN,TE_MODE,TE_FILE,TE_CALLER,TE_SCREEN,TE_STATUS
+ public TE_BUSY_POLL,TE_RESTORE,TE_SHOW_NAME,TE_FORMAT_FILE,TE_REPORT_FAILURE
+ extrn TW_INIT,TW_NEW,TW_LOAD,TW_RECOVER,TW_RELEASE,TW_AREA,TW_NAME,TW_INPUT
+ extrn TS_STAGE,TS_BACKUP,TS_ERROR,TS_PHASE,TS_CAPTURE,TS_LAST
+ extrn TW_META,TW_DOC,TW_OWN,TW_POLL_PTR,TW_ERROR,TW_RETAINED,TW_KEPT
+ extrn TC_INIT,TC_KEY,TC_POS,TC_TOP,TC_SCAN,TC_LENGTH,TC_PREFIX,TC_ACTION
+ extrn TC_INSERT,TC_COPY3,TC_CMP3,TC_NEXT,TC_PREV,TC_FETCH,TC_START,TC_EOL,TC_COLUMN
+ extrn TC_SYNC,TC_PREF,TC_PREFVALID,TC_PREFERRED,TC_BSET,TC_ESET
+ extrn OP_DISPATCH,OP_ACTION,OP_PARSE_FILE,OP_END,OP_TEXT_DIAGNOSTIC,OP_LINE_BELOW,OP_DUPLICATE
+ extrn TED_STACK_TOP,TED_STACK_LOW
+ cseg
+TE_BDOS:
+ push bc
+ push de
+ push hl
+ push ix
+ push iy
+ call 5
+ pop iy
+ pop ix
+ pop hl
+ pop de
+ pop bc
+ ret
+TE_START:
+ ; No private-stack access until its complete static image is below TPA.
+ ld hl,(6)
+ ld de,TED_END
+ or a
+ sbc hl,de
+ jp c,0
+ ld (TE_OLDSP),sp
+ ld sp,TED_STACK_TOP
+ ; Bounded command-tail query recognition precedes provider or file operations.
+ call TE_QUERY
+ jp c,TE_RETURN
+ ld hl,(6)
+ ld de,TED_END
+ or a
+ sbc hl,de
+ jp c,TE_LOW
+ ld hl,TED_STACK_LOW
+ ld de,TED_STACK_LOW+1
+ ld bc,TED_STACK_SIZE+31
+ ld (hl),0a5h
+ ldir
+ ld c,25
+ call TE_BDOS
+ inc a
+ ld (TE_CALLER),a
+ ld e,255
+ ld c,32
+ call TE_BDOS
+ ld (TE_CALLER+36),a
+ ld a,(TE_CALLER)
+ ld (TE_FILE),a
+ ld (TW_AREA),a
+ ld a,(TE_CALLER+36)
+ ld (TE_FILE+36),a
+ ld (TW_AREA+36),a
+ ld de,TE_MCONREQ
+ ld c,182
+ call TE_BDOS
+ or a
+ jp nz,TE_NOSCREEN
+ ld de,TE_REQ
+ ld c,182
+ call TE_BDOS
+ or a
+ jp nz,TE_NOSCREEN
+ ld hl,(TE_REQ+12)
+ ld (TE_BACKEND),hl
+ ld a,h
+ or l
+ jp z,TE_NOSCREEN
+ ld a,12
+ call TE_QUERY_SCREEN
+ ld de,TE_SIGNATURE
+ ld b,7
+TE_SIGNATURE_LOOP:
+ ld a,(de)
+ cp (hl)
+ jp nz,TE_NOSCREEN
+ inc hl
+ inc de
+ djnz TE_SIGNATURE_LOOP
+ ; Required typed position/cell/erase/cursor operations, SCRN 1.1 contract.
+ ld a,(hl)
+ and 0c0h
+ cp 0c0h
+ jp nz,TE_NOSCREEN
+ inc hl
+ ld a,(hl)
+ and 091h
+ cp 091h
+ jp nz,TE_NOSCREEN
+ call TW_INIT
+ ld hl,TE_BUSY_POLL
+ ld (TW_POLL_PTR),hl
+ ld hl,TE_FILE
+ ld de,TW_NAME
+ ld bc,37
+ ldir
+ ld hl,TE_FILE
+ ld de,TW_META+22
+ ld bc,37
+ ldir
+ call TC_INIT
+ ; Preserve the command tail before any DMA use. CCP default FCB is parsed
+ ; only after full exact-filespec validation in the operations adapter.
+ ld a,(TE_TAILLEN)
+ or a
+ jp z,TE_COMMAND
+ ld hl,TE_TAIL
+ call OP_PARSE_FILE
+ jp c,TE_BAD_START
+ call OP_END
+ jp c,TE_BAD_START
+ ld hl,TE_FILE
+ ld de,TW_INPUT
+ ld bc,37
+ ldir
+ ld hl,TW_INPUT
+ call TS_CAPTURE
+ jp c,TE_BAD_START
+ ld a,(TS_LAST)
+ or a
+ jp z,TE_NAMED_EMPTY
+ call TW_LOAD
+ jp c,TE_BAD_START
+ call TC_INIT
+ jp TE_COMMAND
+TE_NAMED_EMPTY:
+ ld hl,TE_FILE
+ ld de,TW_META+22
+ ld bc,37
+ ldir
+ ld hl,TE_FILE
+ ld de,TW_NAME
+ ld bc,37
+ ldir
+ call TC_INIT
+ jp TE_COMMAND
+TE_BAD_START:
+ call TE_REPORT_FAILURE
+ jp TE_COMMAND
+TE_LOW:
+ ld de,TE_LOWMSG
+ ld c,9
+ call TE_BDOS
+ jp TE_RETURN
+TE_NOSCREEN:
+ ld de,TE_SCREENMSG
+ ld c,9
+ call TE_BDOS
+ jp TE_RETURN
+TE_FATAL:
+ ld hl,TE_ERRORMSG
+ call TE_MESSAGE
+ jp TE_EXIT
+TE_COMMAND:
+ ld a,(TE_STATUS)
+ or a
+ jp z,TE_COMMAND_FIELD
+ ld b,22
+ ld c,0
+ call TE_POSITION
+ call TE_CLEARLINE
+ ld hl,TE_STATUS
+ call TE_PRINT
+TE_COMMAND_FIELD:
+ xor a
+ ld (TE_MODE),a
+ ld (TE_COMMAND_FINISH),a
+ inc a
+ ld (TE_COMMAND_READ),a
+ ld hl,TE_CMDLABEL
+ call TE_PROMPT
+ push af
+ xor a
+ ld (TE_COMMAND_READ),a
+ pop af
+ jp c,TE_COMMAND
+ xor a
+ ld (TE_STATUS),a
+ call OP_DISPATCH
+ jp c,TE_ERROR
+ ld a,(TE_MODE)
+ cp 2
+ jp z,TE_EXIT
+ ld a,(TE_COMMAND_FINISH)
+ or a
+ jp nz,TE_EDIT
+ ld a,(TE_MODE)
+ or a
+ jp z,TE_COMMAND
+TE_EDIT:
+ ld a,1
+ ld (TE_MODE),a
+ call TE_RENDER
+ call TE_READ
+ push af
+ xor a
+ ld (TE_STATUS),a
+ pop af
+ call TC_KEY
+ jp c,TE_ERROR
+TE_ACTION:
+ ld a,(TC_ACTION)
+ or a
+ jp nz,TE_DO_ACTION
+ ld a,(TC_PREFIX)
+ or a
+ jp z,TE_EDIT
+ ; No document reads or disk work between a prefix and its suffix.
+ ld b,22
+ ld c,40
+ call TE_POSITION
+ ld hl,TE_PREFIXMSG
+ call TE_PRINT
+ call TE_READ
+ call TC_KEY
+ jp c,TE_ERROR
+ jp TE_ACTION
+TE_DO_ACTION:
+ cp 12
+ jp z,TE_COMMAND
+ cp 13
+ jp z,TE_EDIT
+ cp 11
+ jp z,TE_BROWSE
+ cp 15
+ jp z,TE_ESCAPE
+ cp 17
+ jp z,TE_INSERT_BELOW
+ cp 16
+ jp z,TE_DUP_LINE
+ cp 14
+ jp z,TE_TOP_BOTTOM
+ call OP_ACTION
+ jp c,TE_ERROR
+ ld a,(TE_MODE)
+ cp 2
+ jp z,TE_EXIT
+ or a
+ jp z,TE_COMMAND
+ jp TE_EDIT
+TE_INSERT_BELOW:
+ call OP_LINE_BELOW
+ jp c,TE_ERROR
+ jp TE_EDIT
+TE_DUP_LINE:
+ call OP_DUPLICATE
+ jp c,TE_ERROR
+ jp TE_EDIT
+TE_TOP_BOTTOM:
+ ld hl,(TE_CURSORCOL)
+ ld (TC_PREF),hl
+ ld hl,TC_TOP
+ ld de,TC_SCAN
+ call TC_COPY3
+ call TC_PREFERRED
+ jp c,TE_ERROR
+ ld a,(TE_CURSORROW)
+ cp 1
+ jp nz,TE_EDIT
+ ld b,20
+TE_BOTTOM_LOOP:
+ push bc
+ ld a,24
+ call TC_KEY
+ pop bc
+ jp c,TE_ERROR
+ djnz TE_BOTTOM_LOOP
+ jp TE_EDIT
+TE_BROWSE:
+ ld a,3
+ ld (TE_MODE),a
+ call TE_RENDER
+TE_BROWSE_READ:
+ call TE_READ
+ cp 13
+ jp z,TE_EDIT
+ cp 3
+ jp z,TE_EDIT
+ cp 26
+ jp z,TE_EDIT
+ cp 27
+ jp nz,TE_BROWSE_READ
+ call TE_ESCAPE_READ
+ cp 5
+ jp z,TE_BROWSE_UP
+ cp 24
+ jp z,TE_BROWSE_DOWN
+ cp 19
+ jp z,TE_BROWSE_LEFT
+ cp 4
+ jp nz,TE_BROWSE_READ
+ ld hl,(TE_HORIZ)
+ ld de,10
+ add hl,de
+ ld (TE_HORIZ),hl
+ jp TE_BROWSE
+TE_BROWSE_LEFT:
+ ld hl,(TE_HORIZ)
+ ld de,10
+ or a
+ sbc hl,de
+ jp nc,TE_BROWSE_HSET
+ ld hl,0
+TE_BROWSE_HSET:
+ ld (TE_HORIZ),hl
+ jp TE_BROWSE
+TE_BROWSE_UP:
+ ld a,18
+ jp TE_BROWSE_PAGE
+TE_BROWSE_DOWN:
+ ld a,3
+TE_BROWSE_PAGE:
+ call TC_KEY
+ jp c,TE_ERROR
+ jp TE_BROWSE
+TE_ESCAPE:
+ call TE_ESCAPE_READ
+ or a
+ jp z,TE_EDIT
+ call TC_KEY
+ jp c,TE_ERROR
+ jp TE_EDIT
+TE_ESCAPE_READ:
+ ; Only consume an already available suffix. A bare ESC never waits forever.
+ call TE_NOWAIT
+ or a
+ ret z
+ cp '['
+ jp z,TE_ESCAPE_SUFFIX
+ cp 'O'
+ jp nz,TE_ESCAPE_UNREAD
+TE_ESCAPE_SUFFIX:
+ call TE_NOWAIT
+ cp 'A'
+ ld b,5
+ jp z,TE_ESCAPE_RETURN
+ cp 'B'
+ ld b,24
+ jp z,TE_ESCAPE_RETURN
+ cp 'C'
+ ld b,4
+ jp z,TE_ESCAPE_RETURN
+ cp 'D'
+ ld b,19
+ jp z,TE_ESCAPE_RETURN
+ or a
+ ret z
+TE_ESCAPE_UNREAD:
+ ld (TE_PENDING),a
+ xor a
+ ret
+TE_ESCAPE_RETURN:
+ ld a,b
+ ret
+TE_ERROR:
+ call TE_REPORT_FAILURE
+ ld a,(TE_MODE)
+ or a
+ jp z,TE_COMMAND
+ jp TE_EDIT
+TE_EXIT:
+ call TW_RELEASE
+ jp nc,TE_EXIT_CLEAR
+ ; Show the actual owned checkpoint before clearing the typed screen.
+ ld hl,TE_RECOVERYMSG
+ call TE_MESSAGE
+ ld de,TE_STATUS
+ ld hl,TW_DOC
+ call TE_FORMAT_FILE
+ ld hl,TE_RETAIN_SUFFIX
+ call TE_COPY_TEXT
+ call TE_RENDER
+ call TE_READ
+TE_EXIT_CLEAR:
+ ld a,15
+ ld c,1
+ call TE_SCREEN
+ ld hl,(1)
+ ld de,63
+ add hl,de
+ ld a,4
+ call TE_MCON
+ call TE_RESTORE
+TE_RETURN:
+ ld sp,(TE_OLDSP)
+ ret
+TE_MCON:
+ jp (hl)
+TE_RESTORE:
+ ld a,(TE_CALLER+36)
+ ld e,a
+ ld c,32
+ call TE_BDOS
+ ld a,(TE_CALLER)
+ dec a
+ ld e,a
+ ld c,14
+ call TE_BDOS
+ ld de,80h
+ ld c,26
+ jp TE_BDOS
+TE_QUERY:
+ ld a,(80h)
+ cp 128
+ jp nc,TE_QUERY_BAD
+ ld (TE_TAILLEN),a
+ ld c,a
+ ld b,0
+ ld hl,81h
+ ld de,TE_TAIL
+ or a
+ jp z,TE_QUERY_COPIED
+ ldir
+TE_QUERY_COPIED:
+ xor a
+ ld (de),a
+ ld hl,TE_TAIL
+ ld a,(TE_TAILLEN)
+ or a
+ jp z,TE_QUERY_SCAN
+ ld b,a
+TE_QUERY_SANITIZE:
+ ld a,(hl)
+ cp 9
+ jp z,TE_QUERY_NEXT
+ cp 32
+ jp nc,TE_QUERY_NEXT
+ ld (hl),255
+TE_QUERY_NEXT:
+ inc hl
+ djnz TE_QUERY_SANITIZE
+TE_QUERY_SCAN:
+ ld hl,TE_TAIL
+ ld a,(TE_TAILLEN)
+ ld b,a
+ ld de,TE_HELPMSG
+ call UH_QUERY
+ ret c
+ ld hl,TE_TAIL
+ ld a,(TE_TAILLEN)
+ ld b,a
+ ld de,TE_VERMSG
+ jp UV_QUERY
+TE_QUERY_BAD:
+ scf
+ ret
+; @te-query@
+
+; Typed SCRN rendering. Every byte position remains a document byte boundary;
+; TAB expansion exists only in this renderer, never in the stored text.
+TE_RENDER:
+ call TC_SYNC
+ call TC_COLUMN
+ jp c,TE_RENDER_ERROR
+ ld (TE_CURSORCOL),hl
+ ld a,(TE_MODE)
+ cp 3
+ jp z,TE_RENDER_TOP
+ ld de,(TE_HORIZ)
+ or a
+ sbc hl,de
+ jp c,TE_RENDER_HLEFT
+ ld de,80
+ or a
+ sbc hl,de
+ jp c,TE_RENDER_TOP
+ ld hl,(TE_CURSORCOL)
+ ld de,79
+ or a
+ sbc hl,de
+ ld (TE_HORIZ),hl
+ jp TE_RENDER_TOP
+TE_RENDER_HLEFT:
+ ld hl,(TE_CURSORCOL)
+ ld (TE_HORIZ),hl
+TE_RENDER_TOP:
+ ; Keep the cursor within a 21-line viewport. First pass finds its row;
+ ; if below the viewport, move the top just far enough, then render again.
+ ld hl,TC_TOP
+ ld de,TC_SCAN
+ call TC_COPY3
+ ld hl,TC_POS
+ ld de,TC_TOP
+ call TC_CMP3
+ jp nc,TE_RENDER_COUNT
+ call TE_TOP_AT_CURSOR
+TE_RENDER_COUNT:
+ xor a
+ ld (TE_ROW),a
+TE_COUNT_ROW:
+ ld hl,TC_SCAN
+ ld de,TC_POS
+ call TC_CMP3
+ jp z,TE_COUNT_FOUND
+ jp nc,TE_COUNT_FOUND
+ call TC_FETCH
+ jp c,TE_COUNT_FOUND
+ cp 13
+ jp z,TE_COUNT_NEWLINE
+ cp 10
+ jp z,TE_COUNT_NEWLINE
+ call TC_NEXT
+ jp c,TE_RENDER_ERROR
+ jp TE_COUNT_ROW
+TE_COUNT_NEWLINE:
+ call TC_NEXT
+ jp c,TE_RENDER_ERROR
+ ld hl,TE_ROW
+ inc (hl)
+ ld a,(hl)
+ cp 21
+ jp c,TE_COUNT_ROW
+ ld hl,TC_TOP
+ ld de,TC_SCAN
+ call TC_COPY3
+ call TC_EOL
+ jp c,TE_RENDER_ERROR
+ call TC_NEXT
+ jp c,TE_RENDER_ERROR
+ ld hl,TC_SCAN
+ ld de,TC_TOP
+ call TC_COPY3
+ jp TE_RENDER_COUNT
+TE_COUNT_FOUND:
+ ld a,(TE_ROW)
+ inc a
+ ld (TE_CURSORROW),a
+ ld a,15
+ ld c,0
+ call TE_SCREEN
+ ld b,0
+ ld c,0
+ call TE_POSITION
+ call TE_CLEARLINE
+ ld hl,TE_TITLE
+ call TE_PRINT
+ call TE_SHOW_NAME
+ ld hl,TC_TOP
+ ld de,TC_SCAN
+ call TC_COPY3
+ ld a,1
+ ld (TE_ROW),a
+TE_RENDER_ROW:
+ ld a,(TE_ROW)
+ ld b,a
+ ld c,0
+ call TE_POSITION
+ call TE_CLEARLINE
+ ld hl,0
+ ld (TE_VISUAL),hl
+TE_RENDER_BYTE:
+ call TC_FETCH
+ jp c,TE_RENDER_NEXT
+ cp 13
+ jp z,TE_RENDER_BREAK
+ cp 10
+ jp z,TE_RENDER_BREAK
+ cp 9
+ jp z,TE_RENDER_TAB
+ push af
+ call TE_RENDER_CELL
+ pop af
+ ld hl,TC_SCAN
+ call TC_INC3_ADAPTER
+ jp TE_RENDER_BYTE
+TE_RENDER_TAB:
+ ld a,' '
+ call TE_RENDER_CELL
+ ld hl,(TE_VISUAL)
+ ld a,l
+ and 7
+ jp nz,TE_RENDER_TAB
+ ld hl,TC_SCAN
+ call TC_INC3_ADAPTER
+ jp TE_RENDER_BYTE
+TE_RENDER_BREAK:
+ call TC_NEXT
+ jp c,TE_RENDER_ERROR
+TE_RENDER_NEXT:
+ ld hl,TE_ROW
+ inc (hl)
+ ld a,(hl)
+ cp 22
+ jp c,TE_RENDER_ROW
+ ld b,22
+ ld c,0
+ call TE_POSITION
+ call TE_CLEARLINE
+ ld hl,TE_HINT
+ call TE_PRINT
+ ld a,(TC_INSERT)
+ or a
+ ld hl,TE_OVER
+ jp z,TE_RENDER_MODE
+ ld hl,TE_INSERT
+TE_RENDER_MODE:
+ call TE_PRINT
+ ld a,(TC_PREFIX)
+ or a
+ ld hl,TE_PREFIXMSG
+ call nz,TE_PRINT
+ ld a,(TE_MODE)
+ cp 3
+ ld hl,TE_BROWSEMSG
+ call z,TE_PRINT
+ ld b,23
+ ld c,0
+ call TE_POSITION
+ call TE_CLEARLINE
+ ld hl,TE_STATUS
+ call TE_PRINT
+ ld hl,(TE_CURSORCOL)
+ ld de,(TE_HORIZ)
+ or a
+ sbc hl,de
+ ld c,l
+ ld a,(TE_CURSORROW)
+ ld b,a
+ call TE_POSITION
+ ld a,15
+ ld c,1
+ call TE_SCREEN
+ or a
+ ret
+TE_RENDER_ERROR:
+ scf
+ ret
+TC_INC3_ADAPTER:
+ inc (hl)
+ ret nz
+ inc hl
+ inc (hl)
+ ret nz
+ inc hl
+ inc (hl)
+ ret
+TE_TOP_AT_CURSOR:
+ ld hl,TC_POS
+ ld de,TC_SCAN
+ call TC_COPY3
+ call TC_START
+ ld hl,TC_SCAN
+ ld de,TC_TOP
+ call TC_COPY3
+ ret
+TE_RENDER_CELL:
+ push af
+ ld hl,(TE_VISUAL)
+ ld de,(TE_HORIZ)
+ or a
+ sbc hl,de
+ jp c,TE_CELL_SKIP
+ ld de,80
+ or a
+ sbc hl,de
+ jp nc,TE_CELL_SKIP
+ pop af
+ call TE_PUT
+ jp TE_CELL_COUNT
+TE_CELL_SKIP:
+ pop af
+TE_CELL_COUNT:
+ ld hl,(TE_VISUAL)
+ inc hl
+ ld (TE_VISUAL),hl
+ ret
+TE_SHOW_NAME:
+ ld hl,TW_META+23
+ ld b,8
+TE_NAME_BASE:
+ ld a,(hl)
+ cp ' '
+ call nz,TE_PUT
+ inc hl
+ djnz TE_NAME_BASE
+ ld a,'.'
+ call TE_PUT
+ ld b,3
+TE_NAME_EXT:
+ ld a,(hl)
+ cp ' '
+ call nz,TE_PUT
+ inc hl
+ djnz TE_NAME_EXT
+ ret
+TE_REPORT_FAILURE:
+ ld a,(TW_ERROR)
+ cp 12
+ jp z,OP_TEXT_DIAGNOSTIC
+ ld de,TE_STATUS
+ ld hl,TE_FAILURE_PREFIX
+ call TE_COPY_TEXT
+ ld a,(TS_PHASE)
+ cp 1
+ jp c,TE_FAILURE_DOC
+ ld hl,TS_STAGE
+ call TE_FORMAT_FILE
+ ld hl,TE_BACKUP_PREFIX
+ call TE_COPY_TEXT
+ ld hl,TS_BACKUP
+ call TE_FORMAT_FILE
+ xor a
+ ld (de),a
+ ret
+TE_FAILURE_DOC:
+ ld hl,TW_DOC
+ call TE_FORMAT_FILE
+ xor a
+ ld (de),a
+ ret
+; Format exact explicit DU and 8.3 name into caller-owned >=20-byte buffer.
+TE_FORMAT_FILE:
+ push hl
+ ld a,(hl)
+ add a,'A'-1
+ ld (de),a
+ inc de
+ push hl
+ ld bc,36
+ add hl,bc
+ ld a,(hl)
+ pop hl
+ ld b,0
+TE_USER_TENS:
+ cp 10
+ jp c,TE_USER_UNITS
+ sub 10
+ inc b
+ jp TE_USER_TENS
+TE_USER_UNITS:
+ ld c,a
+ ld a,b
+ or a
+ jp z,TE_USER_LAST
+ add a,'0'
+ ld (de),a
+ inc de
+TE_USER_LAST:
+ ld a,c
+ add a,'0'
+ ld (de),a
+ inc de
+ ld a,':'
+ ld (de),a
+ inc de
+ pop hl
+ inc hl
+ ld b,8
+TE_FORMAT_BASE:
+ ld a,(hl)
+ and 127
+ cp ' '
+ jp z,TE_FORMAT_BASE_NEXT
+ ld (de),a
+ inc de
+TE_FORMAT_BASE_NEXT:
+ inc hl
+ djnz TE_FORMAT_BASE
+ ld a,(hl)
+ and 127
+ cp ' '
+ jp z,TE_FORMAT_DONE
+ ld a,'.'
+ ld (de),a
+ inc de
+ ld b,3
+TE_FORMAT_EXT:
+ ld a,(hl)
+ and 127
+ cp ' '
+ jp z,TE_FORMAT_EXT_NEXT
+ ld (de),a
+ inc de
+TE_FORMAT_EXT_NEXT:
+ inc hl
+ djnz TE_FORMAT_EXT
+TE_FORMAT_DONE:
+ xor a
+ ld (de),a
+ ret
+TE_COPY_TEXT:
+ ld a,(hl)
+ ld (de),a
+ or a
+ ret z
+ inc hl
+ inc de
+ jp TE_COPY_TEXT
+TE_POSITION:
+ ld a,6
+ jp TE_SCREEN
+TE_CLEARLINE:
+ ld c,32
+ ld a,8
+ jp TE_SCREEN
+TE_SCREEN:
+ push af
+ push bc
+ push de
+ push hl
+ call TE_DISPATCH
+ pop hl
+ pop de
+ pop bc
+ pop af
+ ret
+TE_QUERY_SCREEN:
+ push bc
+ push de
+ call TE_DISPATCH
+ pop de
+ pop bc
+ ret
+TE_DISPATCH:
+ push hl
+ ld hl,(TE_BACKEND)
+ ex (sp),hl
+ ret
+TE_PUT:
+ push bc
+ ld c,a
+ ld a,7
+ call TE_SCREEN
+ pop bc
+ ret
+TE_PRINT:
+ ld a,(hl)
+ or a
+ ret z
+ call TE_PUT
+ inc hl
+ jp TE_PRINT
+TE_MESSAGE:
+ ld de,TE_STATUS
+ ld b,79
+TE_MESSAGE_COPY:
+ ld a,(hl)
+ ld (de),a
+ or a
+ ret z
+ inc hl
+ inc de
+ djnz TE_MESSAGE_COPY
+ xor a
+ ld (de),a
+ ret
+TE_POLL_RAW:
+ ld e,255
+ ld c,6
+ call TE_BDOS
+ ret
+TE_READ:
+ call TE_NOWAIT
+ or a
+ jp z,TE_READ
+ ret
+TE_NOWAIT:
+ ld a,(TE_PENDING)
+ or a
+ jp z,TE_QUEUE_READ
+ ld b,a
+ xor a
+ ld (TE_PENDING),a
+ ld a,b
+ ret
+TE_QUEUE_READ:
+ ld a,(TE_QUEUE_COUNT)
+ or a
+ jp z,TE_POLL_RAW
+ dec a
+ ld (TE_QUEUE_COUNT),a
+ ld a,(TE_QUEUE_HEAD)
+ ld e,a
+ ld d,0
+ ld hl,TE_QUEUE
+ add hl,de
+ ld b,(hl)
+ ld a,e
+ inc a
+ and 127
+ ld (TE_QUEUE_HEAD),a
+ ld a,b
+ ret
+TE_BUSY_POLL:
+ ld a,(TE_QUEUE_COUNT)
+ cp 128
+ jp nc,TE_CANCEL
+ call TE_POLL_RAW
+ or a
+ ret z
+ cp 3
+ jp z,TE_CANCEL
+ cp 27
+ jp z,TE_CANCEL
+ ld b,a
+ ld a,(TE_QUEUE_TAIL)
+ ld e,a
+ ld d,0
+ ld hl,TE_QUEUE
+ add hl,de
+ ld (hl),b
+ ld a,e
+ inc a
+ and 127
+ ld (TE_QUEUE_TAIL),a
+ ld hl,TE_QUEUE_COUNT
+ inc (hl)
+ or a
+ ret
+TE_CANCEL:
+ scf
+ ret
+
+; Shared standard field editor and synchronous controller. All policy lives
+; in the operation adapter; fields accept empty for TED's omission defaults.
+TE_PROMPT:
+ ld a,95
+ ld b,0
+ call UE_INIT
+ xor a
+ ld (UP_MODE),a
+ inc a
+ ld (UP_MODE),a
+ call UP_RUN
+ cp UI_ABORT
+ jp z,TE_CANCEL
+ ld a,(EDITLEN)
+ ld (TE_FIELDLEN),a
+ ld c,a
+ ld b,0
+ ld hl,EDITBUF
+ ld de,TE_FIELD
+ or a
+ jp z,TE_PROMPT_COPIED
+ ldir
+TE_PROMPT_COPIED:
+ xor a
+ ld (de),a
+ ret
+TE_CONFIRM:
+ call TE_PROMPT
+ ret c
+ ld a,(TE_FIELD)
+ and 0dfh
+ cp 'Y'
+ jp nz,TE_CANCEL
+ or a
+ ret
+UIREAD:
+ call TE_READ
+ ld b,a
+ ld a,(TE_COMMAND_READ)
+ or a
+ ld a,b
+ ret z
+ cp 3
+ jp z,TE_COMMAND_SUBMIT
+ cp 26
+ ret nz
+ ld hl,EDITBUF
+ ld (hl),'E'
+ inc hl
+ ld (hl),'X'
+ ld a,2
+ ld (EDITLEN),a
+ ld (EDITCUR),a
+ ld a,13
+ ret
+TE_COMMAND_SUBMIT:
+ ld a,1
+ ld (TE_COMMAND_FINISH),a
+ ld a,13
+ ret
+UI_VALID:
+ or a
+ ret
+UI_CLOSE:
+ ret
+UIDRAW:
+ ld b,23
+ ld c,0
+ call TE_POSITION
+ call TE_CLEARLINE
+ ld hl,(EDITPROMPT)
+ ld d,0
+TE_LABEL:
+ ld a,(hl)
+ or a
+ jp z,TE_FIELD_DRAW
+ call TE_PUT
+ inc hl
+ inc d
+ jp TE_LABEL
+TE_FIELD_DRAW:
+ ld a,79
+ jp UR_DRAW
+UR_PUT EQU TE_PUT
+UR_MARK:
+ or 128
+ jp TE_PUT
+UR_POS:
+ ld b,23
+ jp TE_POSITION
+UIMESSAGE:
+ call TE_MESSAGE
+ jp UIDRAW
+; @te-input@
+; @te-controller@
+ dseg
+TE_FAILURE_PREFIX: db 'Failed; inspect work/stage: ',0
+TE_BACKUP_PREFIX: db ' backup: ',0
+TE_RETAIN_SUFFIX: db ' retained; record this recovery name. Press a key.',0
+TE_OLDSP: dw 0
+TE_BACKEND: dw 0
+TE_CALLER: db 1
+ ds 35
+ db 0
+TE_FILE: db 1,'           '
+ ds 24
+ db 0
+TE_COMMAND_READ: db 0
+TE_COMMAND_FINISH: db 0
+TE_MODE: db 0
+TE_PENDING: db 0
+TE_QUEUE_COUNT: db 0
+TE_QUEUE_HEAD: db 0
+TE_QUEUE_TAIL: db 0
+TE_QUEUE: ds 128
+TE_HORIZ: dw 0
+TE_VISUAL: dw 0
+TE_CURSORCOL: dw 0
+TE_CURSORROW: db 1
+TE_ROW: db 0
+TE_SAVEPOS: ds 3
+TE_TAILLEN: db 0
+TE_TAIL: ds 129
+TE_STATUS: ds 80
+TE_FIELDLEN: db 0
+TE_FIELD: ds 96
+TE_MCONREQ: db 1,20,0,0,'MCON',1,2,0,0,0,0
+ dw 0
+ db 0,0,0,0,0,0
+TE_REQ: db 1,20,0,0,'SCRN',1,1,0,0,0,0
+ dw 0
+ db 0,0,0,0,0,0
+TE_SIGNATURE: db 'SCR',1,0,24,80
+TE_TITLE: db 'TED  ',0
+TE_HINT: db '^Z command  ^K file/range  ',0
+TE_OVER: db 'OVR',0
+TE_INSERT: db 'INS',0
+TE_PREFIXMSG: db '  ^K...',0
+TE_BROWSEMSG: db '  BROWSE',0
+TE_CMDLABEL: db 'TED> ',0
+TE_ERRORMSG: db 'Operation refused or failed; document retained.',0
+TE_RECOVERYMSG: db 'Workspace cleanup failed; retain the exact checkpoint for recovery.',0
+TE_LOWMSG: db 'TED: insufficient transient memory.',13,10,'$'
+TE_SCREENMSG: db 'TED requires SCRN 1.1, 80x24; select ANSI with M4SCRN/ANSISCRN.',13,10,'$'
+TE_HELP_TOKEN: db '/HELP',0
+TE_VER_TOKEN: db '/VER',0
+; @ted-version@
+TE_HELPMSG: db 'TED [DU:]FILE - TED behavior with WordStar key aliases.',13,10
+ db '^Z command; S screen; R/W/M/MD/D/SU use TED arguments.',13,10
+ db '^K: C copy,V move,Y delete,R read,W write,S save,X save+exit,Q quit.',13,10
+ db '^A/^F word left/right; ^T delete word; ^Q/^O tab stops.',13,10
+ db '^L line ends; ^N browse; ^U screen top/bottom; ^_ redraw.',13,10,'$'
+UILIMITMSG: db 'Field limit reached.',0
+UI_NEED: db 'Value required.',0
+EDITLEN: db 0
+EDITCUR: db 0
+EDITSTART: db 0
+EDITMAX: db 95
+EDITPROMPT: dw TE_CMDLABEL
+EDITBUF: ds 95
+UP_MODE: db 1
+UP_DPTR: dw 0
+UP_DLEN: db 0
+ end

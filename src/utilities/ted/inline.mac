@@ -1,0 +1,424 @@
+; Bounded dirty-line adapter, preserving TED's buffered interactive behavior.
+; GPL-2.0-or-later. One 4095-byte line, no unbounded heap or undo/history.
+; WL_EDIT: 0 handled in RAM, 1 use disk transaction, CF failure. Validate all
+; bounds before mutation. Every fallible load/flush retains the active text.
+; WL_FLUSH: verified immutable checkpoint; preserves caller segment arguments.
+; Recovery describes the last committed checkpoint, not automatic per-key save.
+ .Z80
+ public WL_INIT,WL_EDIT,WL_FLUSH,WL_FETCH,WL_ACTIVE,WL_RAM,WL_DISCARD,WL_GUARD
+ extrn TS_TARGET,TS_REPLACE,TS_PROTECT
+ extrn TW_POLL,TW_ERROR
+ extrn TW_META,TW_POS,TW_KIND,TW_RAW_FETCH,TW_EDIT,TW_SEGCOUNT,TW_SEGMENTS,TW_INSERT
+ extrn TC_EDIT_BEGIN,TC_EDIT_END,TC_INCOUNT,TC_SCAN,TC_START,TC_EOL
+ extrn TC_COPY3,TC_CMP3,TC_SUB3,TC_ADD3,TC_INC3
+ cseg
+WL_INIT:
+ ld hl,WL_GUARD
+ ld de,WL_GUARD+1
+ ld bc,31
+ ld (hl),0a5h
+ ldir
+WL_DISCARD:
+ xor a
+ ld (WL_ACTIVE),a
+ ld (WL_BUSY),a
+ ld (WL_DIRTY),a
+ ret
+WL_FAIL:
+ scf
+ ret
+WL_FALLBACK:
+ call WL_FLUSH
+ ret c
+ ld a,1
+ or a
+ ret
+WL_EDIT:
+ ; Line breaks and arbitrary multi-segment operations stay transactional.
+ ld hl,(TC_INCOUNT)
+ ld a,h
+ or a
+ jp nz,WL_FALLBACK
+ ld a,l
+ or a
+ jp z,WLE_RANGE
+ ld b,a
+ ld hl,TW_INSERT
+WLE_CHECK_INSERT:
+ ld a,(hl)
+ cp 9
+ jp z,WLE_CHECK_NEXT
+ cp 32
+ jp c,WL_FALLBACK
+ cp 127
+ jp nc,WL_FALLBACK
+WLE_CHECK_NEXT:
+ inc hl
+ djnz WLE_CHECK_INSERT
+WLE_RANGE:
+ ld a,(WL_ACTIVE)
+ or a
+ jp z,WLE_ACTIVATE
+ ld hl,TC_EDIT_BEGIN
+ ld de,WL_START
+ call TC_CMP3
+ jp c,WLE_NEW_LINE
+ ld hl,TC_EDIT_END
+ ld de,WL_START
+ call TC_CMP3
+ jp c,WLE_NEW_LINE
+ ld hl,TC_EDIT_END
+ ld de,WL_OFFSET
+ call TC_COPY3
+ ld hl,WL_OFFSET
+ ld de,WL_START
+ call TC_SUB3
+ ld hl,WL_OFFSET
+ ld de,WL_LENGTH
+ call TC_CMP3
+ jp c,WLE_READY
+ jp z,WLE_READY
+WLE_NEW_LINE:
+ call WL_FLUSH
+ ret c
+WLE_ACTIVATE:
+ ld hl,TC_EDIT_BEGIN
+ ld de,TC_SCAN
+ call TC_COPY3
+ call TC_START
+ ret c
+ ld hl,TC_SCAN
+ ld de,WL_START
+ call TC_COPY3
+ call TC_EOL
+ ret c
+ ld hl,TC_EDIT_END
+ ld de,TC_SCAN
+ call TC_CMP3
+ jp c,WLE_LOAD
+ jp z,WLE_LOAD
+ jp WL_FALLBACK
+WLE_LOAD:
+ ld hl,TC_SCAN
+ ld de,WL_OLDEND
+ call TC_COPY3
+ ld hl,TC_SCAN
+ ld de,WL_LENGTH
+ call TC_COPY3
+ ld hl,WL_LENGTH
+ ld de,WL_START
+ call TC_SUB3
+ ld a,(WL_LENGTH+2)
+ or a
+ jp nz,WL_FAIL
+ ld hl,(WL_LENGTH)
+ ld de,4096
+ or a
+ sbc hl,de
+ jp nc,WL_FAIL
+ ld hl,WL_LENGTH
+ ld de,WL_OLDLEN
+ call TC_COPY3
+ ld hl,TW_META
+ ld de,WL_ORIGINAL_META
+ ld bc,128
+ ldir
+ ld hl,WL_START
+ ld de,WL_LOADPOS
+ call TC_COPY3
+ ld hl,WL_RAM
+ ld (WL_PTR),hl
+WLE_LOAD_BYTE:
+ ld a,(WL_LOADPOS)
+ and 127
+ jp nz,WLE_LOAD_FETCH
+ call TW_POLL
+ jp nc,WLE_LOAD_FETCH
+ ld a,7
+ ld (TW_ERROR),a
+ scf
+ ret
+WLE_LOAD_FETCH:
+ ld hl,WL_LOADPOS
+ ld de,WL_OLDEND
+ call TC_CMP3
+ jp z,WLE_LOADED
+ ld hl,WL_LOADPOS
+ ld de,TW_POS
+ call TC_COPY3
+ ld a,1
+ ld (TW_KIND),a
+ call TW_RAW_FETCH
+ ret c
+ ld hl,(WL_PTR)
+ ld (hl),a
+ inc hl
+ ld (WL_PTR),hl
+ ld hl,WL_LOADPOS
+ call TC_INC3
+ jp WLE_LOAD_BYTE
+WLE_LOADED:
+ xor a
+ ld (WL_DIRTY),a
+ ld a,1
+ ld (WL_ACTIVE),a
+WLE_READY:
+ ld hl,TC_EDIT_BEGIN
+ ld de,WL_BEGIN
+ call TC_COPY3
+ ld hl,WL_BEGIN
+ ld de,WL_START
+ call TC_SUB3
+ ld hl,TC_EDIT_END
+ ld de,WL_END
+ call TC_COPY3
+ ld hl,WL_END
+ ld de,WL_START
+ call TC_SUB3
+ ld hl,WL_END
+ ld de,WL_REMOVED
+ call TC_COPY3
+ ld hl,WL_REMOVED
+ ld de,WL_BEGIN
+ call TC_SUB3
+ ld hl,(WL_LENGTH)
+ ld de,(WL_REMOVED)
+ or a
+ sbc hl,de
+ ret c
+ ld de,(TC_INCOUNT)
+ add hl,de
+ jp c,WL_FAIL
+ ld (WL_NEWLEN),hl
+ ld de,4096
+ or a
+ sbc hl,de
+ jp nc,WL_FALLBACK
+ ; No fallible operation follows this point. Move tail in the safe direction.
+ ld hl,(WL_LENGTH)
+ ld de,(WL_END)
+ or a
+ sbc hl,de
+ ld (WL_TAIL),hl
+ ld b,h
+ ld c,l
+ ld a,b
+ or c
+ jp z,WLE_COPY_INSERT
+ ld hl,(WL_BEGIN)
+ ld de,(TC_INCOUNT)
+ add hl,de
+ ld (WL_NEWTAIL),hl
+ ld de,(WL_END)
+ or a
+ sbc hl,de
+ jp c,WLE_SHIFT_LEFT
+ jp z,WLE_COPY_INSERT
+ ld hl,(WL_LENGTH)
+ dec hl
+ ld de,WL_RAM
+ add hl,de
+ push hl
+ ld hl,(WL_NEWLEN)
+ dec hl
+ add hl,de
+ ex de,hl
+ pop hl
+ ld bc,(WL_TAIL)
+ lddr
+ jp WLE_COPY_INSERT
+WLE_SHIFT_LEFT:
+ ld hl,(WL_END)
+ ld de,WL_RAM
+ add hl,de
+ push hl
+ ld hl,(WL_NEWTAIL)
+ add hl,de
+ ex de,hl
+ pop hl
+ ld bc,(WL_TAIL)
+ ldir
+WLE_COPY_INSERT:
+ ld bc,(TC_INCOUNT)
+ ld a,b
+ or c
+ jp z,WLE_COMMIT
+ ld hl,(WL_BEGIN)
+ ld de,WL_RAM
+ add hl,de
+ ex de,hl
+ ld hl,TW_INSERT
+ ldir
+WLE_COMMIT:
+ ld hl,(WL_NEWLEN)
+ ld (WL_LENGTH),hl
+ ld hl,TW_META+12
+ ld de,WL_REMOVED
+ call TC_SUB3
+ ld hl,(TC_INCOUNT)
+ ld (WL_INSERTED),hl
+ xor a
+ ld (WL_INSERTED+2),a
+ ld hl,TW_META+12
+ ld de,WL_INSERTED
+ call TC_ADD3
+ ld a,1
+ ld (TW_META+21),a
+ ld (WL_DIRTY),a
+ xor a
+ ret
+
+WL_FETCH:
+ ld a,(WL_ACTIVE)
+ or a
+ jp z,TW_RAW_FETCH
+ ld hl,TW_POS
+ ld de,WL_START
+ call TC_CMP3
+ jp c,TW_RAW_FETCH
+ ld hl,TW_POS
+ ld de,WL_OFFSET
+ call TC_COPY3
+ ld hl,WL_OFFSET
+ ld de,WL_START
+ call TC_SUB3
+ ld hl,WL_OFFSET
+ ld de,WL_LENGTH
+ call TC_CMP3
+ jp nc,WLF_SUFFIX
+ ld hl,(WL_OFFSET)
+ ld de,WL_RAM
+ add hl,de
+ ld a,(hl)
+ or a
+ ret
+WLF_SUFFIX:
+ ld hl,TW_POS
+ ld de,WL_SAVEDPOS
+ call TC_COPY3
+ ld hl,TW_POS
+ ld de,WL_LENGTH
+ call TC_SUB3
+ ld hl,TW_POS
+ ld de,WL_OLDLEN
+ call TC_ADD3
+ call TW_RAW_FETCH
+ push af
+ ld hl,WL_SAVEDPOS
+ ld de,TW_POS
+ call TC_COPY3
+ pop af
+ ret
+
+WL_FLUSH:
+ ld a,(WL_BUSY)
+ or a
+ jp nz,WLF_NOOP
+ ld a,(WL_ACTIVE)
+ or a
+ ret z
+ ld a,(WL_DIRTY)
+ or a
+ jp z,WL_DISCARD
+ ld hl,TS_TARGET
+ ld de,WL_TARGET_SAVE
+ ld bc,37
+ ldir
+ ld a,(TS_REPLACE)
+ ld (WL_FLAGS_SAVE),a
+ ld a,(TS_PROTECT)
+ ld (WL_FLAGS_SAVE+1),a
+ ld hl,TW_SEGCOUNT
+ ld de,WL_SAVED_SEGMENTS
+ ld bc,57
+ ldir
+ ld hl,TW_META
+ ld de,WL_MODIFIED_META
+ ld bc,128
+ ldir
+ ld hl,WL_ORIGINAL_META
+ ld de,TW_META
+ ld bc,128
+ ldir
+ ld hl,WL_TEMPLATE
+ ld de,TW_SEGMENTS
+ ld bc,21
+ ldir
+ ld hl,WL_START
+ ld de,TW_SEGMENTS+4
+ call TC_COPY3
+ ld hl,WL_LENGTH
+ ld de,TW_SEGMENTS+11
+ call TC_COPY3
+ ld hl,WL_OLDEND
+ ld de,TW_SEGMENTS+15
+ call TC_COPY3
+ ld hl,TW_META+12
+ ld de,TW_SEGMENTS+18
+ call TC_COPY3
+ ld hl,TW_SEGMENTS+18
+ ld de,WL_OLDEND
+ call TC_SUB3
+ ld a,3
+ ld (TW_SEGCOUNT),a
+ xor a
+ ld (WL_ACTIVE),a
+ inc a
+ ld (WL_BUSY),a
+ call TW_EDIT
+ push af
+ jp nc,WLF_RESTORE_ARGS
+ ld hl,WL_MODIFIED_META
+ ld de,TW_META
+ ld bc,128
+ ldir
+ ld a,1
+ ld (WL_ACTIVE),a
+WLF_RESTORE_ARGS:
+ ld hl,WL_TARGET_SAVE
+ ld de,TS_TARGET
+ ld bc,37
+ ldir
+ ld a,(WL_FLAGS_SAVE)
+ ld (TS_REPLACE),a
+ ld a,(WL_FLAGS_SAVE+1)
+ ld (TS_PROTECT),a
+ ld hl,WL_SAVED_SEGMENTS
+ ld de,TW_SEGCOUNT
+ ld bc,57
+ ldir
+ xor a
+ ld (WL_BUSY),a
+ pop af
+ ret
+WLF_NOOP:
+ or a
+ ret
+ dseg
+WL_ACTIVE: db 0
+WL_BUSY: db 0
+WL_DIRTY: db 0
+WL_TARGET_SAVE: ds 37
+WL_FLAGS_SAVE: ds 2
+WL_START: ds 3
+WL_OLDEND: ds 3
+WL_OLDLEN: ds 3
+WL_LENGTH: ds 3
+WL_BEGIN: ds 3
+WL_END: ds 3
+WL_REMOVED: ds 3
+WL_INSERTED: ds 3
+WL_OFFSET: ds 3
+WL_LOADPOS: ds 3
+WL_SAVEDPOS: ds 3
+WL_PTR: dw 0
+WL_NEWLEN: dw 0
+WL_NEWTAIL: dw 0
+WL_TAIL: dw 0
+WL_ORIGINAL_META: ds 128
+WL_MODIFIED_META: ds 128
+WL_SAVED_SEGMENTS: ds 57
+WL_TEMPLATE: db 1,0,0,0,0,0,0,5,0,0,0,0,0,0,1,0,0,0,0,0,0
+WL_RAM: ds 4095
+WL_GUARD: ds 32
+ end

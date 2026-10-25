@@ -1,0 +1,313 @@
+; Whole-line segment composition for TED M/MD/R/W-append semantics.
+; GPL-2.0-or-later. Preserve existing bytes; add only necessary separators at
+; new boundaries, including preventing an accidental cross-boundary CRLF.
+ .Z80
+ public TL_INIT,TL_ADD,TL_TOTAL,TL_TRANSFER
+ extrn TW_META,TW_SEGCOUNT,TW_SEGMENTS,TW_INSERT,TW_EDIT,TW_FETCH,TW_POS,TW_KIND
+ extrn TC_BEGIN,TC_END,TC_POS,TC_LENGTH,TC_VIRTUAL,TC_PREFVALID,TC_SYNC
+ extrn TC_COPY3,TC_CMP3,TC_SUB3,TC_ADD3,TC_DEC3
+ extrn WL_FLUSH
+ cseg
+TL_BAD:
+ scf
+ ret
+; A=first observed terminator (0/1 CRLF, 2 LF, 3 CR).
+TL_INIT:
+ ld hl,0a0dh
+ ld (TL_BREAK),hl
+ ld b,2
+ cp 2
+ jp z,TL_INIT_LF
+ cp 3
+ jp nz,TL_INIT_SET
+ ld b,1
+ jp TL_INIT_SET
+TL_INIT_LF:
+ ld a,10
+ ld (TL_BREAK),a
+ ld b,1
+TL_INIT_SET:
+ ld a,b
+ ld (TL_BREAKLEN),a
+ xor a
+ ld (TW_SEGCOUNT),a
+ ld (TL_USED),a
+ ld hl,TL_TOTAL
+ ld (hl),a
+ inc hl
+ ld (hl),a
+ inc hl
+ ld (hl),a
+ or a
+ ret
+; A=kind 1 document or 3 scanned external input, HL=offset[3], DE=count[3].
+TL_ADD:
+ ld (TL_FRAGMENT),a
+ push de
+ ld de,TL_FRAGMENT+1
+ call TC_COPY3
+ pop hl
+ ld de,TL_FRAGMENT+4
+ call TC_COPY3
+ ld hl,TL_FRAGMENT+4
+ ld a,(hl)
+ inc hl
+ or (hl)
+ inc hl
+ or (hl)
+ ret z
+ ld a,(TW_SEGCOUNT)
+ or a
+ jp z,TL_EMIT
+ ld hl,TL_FRAGMENT
+ ld de,TL_PENDING
+ ld bc,7
+ ldir
+ ; Read the prior fragment's final byte and the new fragment's first byte.
+ ld hl,TL_LASTEND
+ ld de,TW_POS
+ call TC_COPY3
+ ld hl,TW_POS
+ call TC_DEC3
+ ld a,(TL_LASTKIND)
+ ld (TW_KIND),a
+ call TW_FETCH
+ ret c
+ ld (TL_LEFTBYTE),a
+ ld hl,TL_PENDING+1
+ ld de,TW_POS
+ call TC_COPY3
+ ld a,(TL_PENDING)
+ ld (TW_KIND),a
+ call TW_FETCH
+ ret c
+ ld c,a
+ ld a,(TL_LEFTBYTE)
+ cp 10
+ jp z,TL_RESTORE_EMIT
+ cp 13
+ jp nz,TL_FULL_BREAK
+ ld a,c
+ cp 10
+ jp nz,TL_RESTORE_EMIT
+ ; One CR breaks a new CR+LF pair without creating an extra logical line.
+ ld a,13
+ ld (TL_SEPARATOR),a
+ ld a,1
+ ld (TL_SEPLEN),a
+ jp TL_INSERT_BREAK
+TL_FULL_BREAK:
+ ld hl,(TL_BREAK)
+ ld (TL_SEPARATOR),hl
+ ld a,(TL_BREAKLEN)
+ ld (TL_SEPLEN),a
+TL_INSERT_BREAK:
+ ld a,(TL_USED)
+ ld (TL_FRAGMENT+1),a
+ ld e,a
+ ld d,0
+ ld hl,TW_INSERT
+ add hl,de
+ ld a,(TL_SEPARATOR)
+ ld (hl),a
+ inc hl
+ ld a,(TL_SEPARATOR+1)
+ ld (hl),a
+ ld a,2
+ ld (TL_FRAGMENT),a
+ xor a
+ ld (TL_FRAGMENT+2),a
+ ld (TL_FRAGMENT+3),a
+ ld (TL_FRAGMENT+5),a
+ ld (TL_FRAGMENT+6),a
+ ld a,(TL_SEPLEN)
+ ld (TL_FRAGMENT+4),a
+ ld b,a
+ ld a,(TL_USED)
+ add a,b
+ cp 9
+ jp nc,TL_BAD
+ ld (TL_USED),a
+ call TL_EMIT
+ ret c
+TL_RESTORE_EMIT:
+ ld hl,TL_PENDING
+ ld de,TL_FRAGMENT
+ ld bc,7
+ ldir
+TL_EMIT:
+ ld a,(TW_SEGCOUNT)
+ cp 8
+ jp nc,TL_BAD
+ ld e,a
+ ld d,0
+ ld h,d
+ ld l,e
+ add hl,hl
+ add hl,hl
+ add hl,hl
+ or a
+ sbc hl,de
+ ld de,TW_SEGMENTS
+ add hl,de
+ ex de,hl
+ ld hl,TL_FRAGMENT
+ ld bc,7
+ ldir
+ ld hl,TW_SEGCOUNT
+ inc (hl)
+ ld a,(TL_FRAGMENT)
+ ld (TL_LASTKIND),a
+ ld hl,TL_FRAGMENT+1
+ ld de,TL_LASTEND
+ call TC_COPY3
+ ld hl,TL_LASTEND
+ ld de,TL_FRAGMENT+4
+ call TC_ADD3
+ ret c
+ ld hl,TL_TOTAL
+ ld de,TL_FRAGMENT+4
+ call TC_ADD3
+ ret
+; A=0 copy, 1 move. Source is TC_BEGIN..TC_END; destination TC_POS.
+; Caller rejects a destination line within the inclusive source line range.
+TL_TRANSFER:
+ ld (TL_MOVE),a
+ call WL_FLUSH
+ ret c
+ ld hl,TC_POS
+ ld de,TL_DEST
+ call TC_COPY3
+ ld hl,TC_END
+ ld de,TL_SOURCE_LENGTH
+ call TC_COPY3
+ ld hl,TL_SOURCE_LENGTH
+ ld de,TC_BEGIN
+ call TC_SUB3
+ ld a,(TW_META+20)
+ call TL_INIT
+ ld a,(TL_MOVE)
+ or a
+ jp z,TL_COPY
+ ld hl,TL_DEST
+ ld de,TC_BEGIN
+ call TC_CMP3
+ jp z,TL_NOOP
+ jp c,TL_MOVE_BEFORE
+ ld de,TC_END
+ call TC_CMP3
+ jp z,TL_NOOP
+ jp c,TL_BAD
+ ; prefix before source, middle after source, source, suffix after destination.
+ ld hl,TL_ZERO
+ ld de,TC_BEGIN
+ ld a,1
+ call TL_ADD
+ ret c
+ ld hl,TL_DEST
+ ld de,TL_MIDDLE
+ call TC_COPY3
+ ld hl,TL_MIDDLE
+ ld de,TC_END
+ call TC_SUB3
+ ld hl,TC_END
+ ld de,TL_MIDDLE
+ ld a,1
+ call TL_ADD
+ ret c
+ call TL_SOURCE
+ ret c
+ call TL_CURSOR
+ jp TL_SUFFIX
+TL_MOVE_BEFORE:
+ ld hl,TL_ZERO
+ ld de,TL_DEST
+ ld a,1
+ call TL_ADD
+ ret c
+ call TL_SOURCE
+ ret c
+ call TL_CURSOR
+ ld hl,TC_BEGIN
+ ld de,TL_MIDDLE
+ call TC_COPY3
+ ld hl,TL_MIDDLE
+ ld de,TL_DEST
+ call TC_SUB3
+ ld hl,TL_DEST
+ ld de,TL_MIDDLE
+ ld a,1
+ call TL_ADD
+ ret c
+ ld hl,TC_END
+ jp TL_FINAL_SUFFIX
+TL_COPY:
+ ld hl,TL_ZERO
+ ld de,TL_DEST
+ ld a,1
+ call TL_ADD
+ ret c
+ call TL_SOURCE
+ ret c
+ call TL_CURSOR
+TL_SUFFIX:
+ ld hl,TL_DEST
+TL_FINAL_SUFFIX:
+ push hl
+ ld de,TL_REMAIN_START
+ call TC_COPY3
+ ld hl,TC_LENGTH
+ ld de,TL_REMAIN
+ call TC_COPY3
+ ld hl,TL_REMAIN
+ ld de,TL_REMAIN_START
+ call TC_SUB3
+ pop hl
+ ld de,TL_REMAIN
+ ld a,1
+ call TL_ADD
+ ret c
+ call TW_EDIT
+ ret c
+ call TC_SYNC
+ ld hl,TL_NEWCURSOR
+ ld de,TC_POS
+ call TC_COPY3
+ xor a
+ ld (TC_VIRTUAL),a
+ ld (TC_VIRTUAL+1),a
+ ld (TC_PREFVALID),a
+ ret
+TL_SOURCE:
+ ld hl,TC_BEGIN
+ ld de,TL_SOURCE_LENGTH
+ ld a,1
+ jp TL_ADD
+TL_CURSOR:
+ ld hl,TL_TOTAL
+ ld de,TL_NEWCURSOR
+ jp TC_COPY3
+TL_NOOP:
+ or a
+ ret
+ dseg
+TL_FRAGMENT: ds 7
+TL_PENDING: ds 7
+TL_LASTEND: ds 3
+TL_LASTKIND: db 0
+TL_TOTAL: ds 3
+TL_USED: db 0
+TL_BREAK: ds 2
+TL_BREAKLEN: db 2
+TL_SEPARATOR: ds 2
+TL_SEPLEN: db 0
+TL_LEFTBYTE: db 0
+TL_MOVE: db 0
+TL_DEST: ds 3
+TL_SOURCE_LENGTH: ds 3
+TL_MIDDLE: ds 3
+TL_REMAIN_START: ds 3
+TL_REMAIN: ds 3
+TL_NEWCURSOR: ds 3
+TL_ZERO: db 0,0,0
+ end

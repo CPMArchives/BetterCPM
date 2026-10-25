@@ -162,6 +162,9 @@
     ],
     "utility:DLINK": [
       "build/utilities/DLINK.COM"
+    ],
+    "utility:TED": [
+      "build/utilities/TED.COM"
     ]
   }
 }

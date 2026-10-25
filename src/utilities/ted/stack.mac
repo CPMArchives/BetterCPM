@@ -1,0 +1,9 @@
+; Statically owned TED call stack; no allocator or overlay may reuse it.
+; GPL-2.0-or-later. Native qualification measures high water with reserve.
+ .Z80
+ public TED_STACK_TOP,TED_STACK_LOW
+ dseg
+TED_STACK_LOW: ds 32
+ ds TED_STACK_SIZE
+TED_STACK_TOP:
+ end

@@ -1,0 +1,67 @@
+{
+  "oracle_sha256": "1e14315ccec62f0ef74d797c86e99c2213e14d45782cc396108bf22bf105fc9a",
+  "cases": [
+    {
+      "name": "right-start",
+      "initial_hex": "61612e62622c63633a64643b65652166663f67672d68685f696920206a6a0d0a20206b6b206c6c",
+      "keys_hex": "11120640",
+      "saved_hex": "61612e4062622c63633a64643b65652166663f67672d68685f696920206a6a0d0a20206b6b206c6c"
+    },
+    {
+      "name": "right-punctuation",
+      "initial_hex": "61612e62622c63633a64643b65652166663f67672d68685f696920206a6a0d0a20206b6b206c6c",
+      "keys_hex": "111204040640",
+      "saved_hex": "61612e4062622c63633a64643b65652166663f67672d68685f696920206a6a0d0a20206b6b206c6c"
+    },
+    {
+      "name": "right-repeat",
+      "initial_hex": "61612e62622c63633a64643b65652166663f67672d68685f696920206a6a0d0a20206b6b206c6c",
+      "keys_hex": "11120606060606060640",
+      "saved_hex": "61612e62622c63633a64643b65652166663f67672d68685f69692020406a6a0d0a20206b6b206c6c"
+    },
+    {
+      "name": "left-end",
+      "initial_hex": "61612e62622c63633a64643b65652166663f67672d68685f696920206a6a0d0a20206b6b206c6c",
+      "keys_hex": "11030140",
+      "saved_hex": "61612e62622c63633a64643b65652166663f67672d68685f696920206a6a0d0a20206b6b20406c6c"
+    },
+    {
+      "name": "delete-start",
+      "initial_hex": "61612e62622c63633a64643b65652166663f67672d68685f696920206a6a0d0a20206b6b206c6c",
+      "keys_hex": "111214",
+      "saved_hex": "62622c63633a64643b65652166663f67672d68685f696920206a6a0d0a20206b6b206c6c"
+    },
+    {
+      "name": "delete-punctuation",
+      "initial_hex": "61612e62622c63633a64643b65652166663f67672d68685f696920206a6a0d0a20206b6b206c6c",
+      "keys_hex": "1112040414",
+      "saved_hex": "616162622c63633a64643b65652166663f67672d68685f696920206a6a0d0a20206b6b206c6c"
+    },
+    {
+      "name": "delete-after-punctuation",
+      "initial_hex": "61612e62622c63633a64643b65652166663f67672d68685f696920206a6a0d0a20206b6b206c6c",
+      "keys_hex": "111204040414",
+      "saved_hex": "61612e63633a64643b65652166663f67672d68685f696920206a6a0d0a20206b6b206c6c"
+    }
+  ],
+  "scope": "derived saved-byte observations, CP/M WordStar 3.30 Kaypro, non-document mode selected through opening N",
+  "archive": {
+    "url": "http://www.retroarchive.org/cpm/text/Wskpro33.zip",
+    "sha256": "b98ffd19ca75bf6e358f01a78313d744440a48cdb829858b096badb748850cd4"
+  },
+  "manual": {
+    "title": "WordStar Reference Manual for Release 3.3, Copyright 1983 MicroPro",
+    "url": "http://ftpmirror.your.org/pub/misc/bitsavers/pdf/microPro/Wordstar_3.3/Wordstar_3.3_Reference_Manual_1983.pdf",
+    "sha256": "3e19f78bad332884d84c3463c5c5ddaedb27cfacc5258ee2b8a981a1adcfe649",
+    "bytes": 7321205,
+    "word_rules_pdf_pages": [
+      81,
+      82
+    ]
+  },
+  "oracle_files": {
+    "WS.COM": "1e14315ccec62f0ef74d797c86e99c2213e14d45782cc396108bf22bf105fc9a",
+    "WSOVLY1.OVR": "71f212196dd8e1aca9f9e16b85823da2f0fd391070e2e3f12ffcf333d8382074",
+    "WSMSGS.OVR": "65c3231fe18dcfcddf2f5580553bb6ab2dc4af6c95e2e9bd6424813c0abc57df"
+  }
+}

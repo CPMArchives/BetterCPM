@@ -1,0 +1,1062 @@
+; TED checked record publisher. GPL-2.0-or-later; see COPYING.
+; Descriptor = canonical FCB[36], user[1]; explicit drive 1..16/user 0..31.
+; TS_RUN publishes the record stream to TS_TARGET. REWIND_PTR resets it;
+; RECORD_PTR fills TS_BUFFER and returns A=0 record, 1 EOF, 2 failure.
+; POLL_PTR returns CF to cancel before namespace publication; callbacks must
+; balance the private stack. They may change DU/DMA; every disk call rebinds.
+; TS_REPLACE/TS_PROTECT are independent caller authorizations, default zero.
+; TS_ALIASES contains at most four active workspace/input descriptors.
+; CF clear is the sole successful commit result. Failure leaves recovery
+; names in TS_STAGE/TS_BACKUP; no failure path erases any file.
+; Fingerprints bind all physical extent metadata, attribute unions, record
+; counts and CRC-32 contents. New output is additionally compared byte-for-byte
+; against a regenerated record stream before and after publication.
+
+ .Z80
+ public TS_RUN,TS_CAPTURE,TS_LAST,TS_TARGET,TS_STAGE,TS_BACKUP
+ public TS_BUFFER,TS_REWIND_PTR,TS_RECORD_PTR,TS_POLL_PTR
+ public TS_REPLACE,TS_PROTECT,TS_ALIAS_COUNT,TS_ALIASES
+ public TS_ERROR,TS_PHASE,TS_OWN_STAGE,TS_RENSTATUS
+ public TS_PICK_WORK,TS_WORK,TS_COMPARE,TS_NEW,TS_VALIDATE
+ cseg
+
+TS_BDOS:
+ push bc
+ push de
+ push hl
+ push ix
+ push iy
+ call 5
+ pop iy
+ pop ix
+ pop hl
+ pop de
+ pop bc
+ ret
+
+TS_SELECT:
+ push de
+ push bc
+ push hl
+ ld de,36
+ add hl,de
+ ld e,(hl)
+ ld c,32
+ call TS_BDOS
+ pop hl
+ pop bc
+ pop de
+ ret
+
+TS_RESETFCB:
+ push hl
+ push de
+ push bc
+ ld de,12
+ add hl,de
+ ld d,h
+ ld e,l
+ inc de
+ ld bc,23
+ ld (hl),0
+ ldir
+ pop bc
+ pop de
+ pop hl
+ ret
+
+; Capture into TS_LAST: found[1], attribute union[11], extent CRC[4],
+; data CRC[4], physical record count[2]. No timestamps/byte-length guesses.
+TS_CAPTURE:
+ ld (TS_DESC),hl
+ call TS_SELECT
+ ld de,TS_IOFCB
+ ld bc,36
+ ldir
+ ld hl,TS_IOFCB
+ call TS_RESETFCB
+ ld hl,TS_LAST
+ ld de,TS_LAST+1
+ ld bc,21
+ ld (hl),0
+ ldir
+ call TS_CRC_RESET
+ ld a,'?'
+ ld (TS_IOFCB+12),a
+ ld de,TS_DIRECTORY
+ ld c,26
+ call TS_BDOS
+ ld de,TS_IOFCB
+ ld c,17
+ call TS_BDOS
+TC_SCAN:
+ cp 255
+ jr z,TC_SCANNED
+ cp 4
+ jp nc,TS_IO_ERROR
+ add a,a
+ add a,a
+ add a,a
+ add a,a
+ add a,a
+ ld e,a
+ ld d,0
+ ld hl,TS_DIRECTORY
+ add hl,de
+ inc hl
+ ld de,TS_LAST+1
+ ld b,11
+TC_ATTR:
+ ld a,(hl)
+ and 80h
+ ld c,a
+ ld a,(de)
+ or c
+ ld (de),a
+ inc hl
+ inc de
+ djnz TC_ATTR
+ ld bc,20
+ call TS_CRC_BUFFER
+ ld a,1
+ ld (TS_LAST),a
+ ld de,TS_IOFCB
+ ld c,18
+ call TS_BDOS
+ jr TC_SCAN
+TC_SCANNED:
+ ld a,(TS_LAST)
+ or a
+ ret z
+ call TS_CRC_FINISH
+ ld hl,TS_CRC
+ ld de,TS_LAST+12
+ ld bc,4
+ ldir
+ call TS_CRC_RESET
+ ld hl,(TS_DESC)
+ ld de,TS_IOFCB
+ ld bc,36
+ ldir
+ ld hl,TS_IOFCB
+ call TS_RESETFCB
+ ld de,TS_IOFCB
+ ld c,15
+ call TS_BDOS
+ cp 255
+ jp z,TS_IO_ERROR
+ ld hl,0
+ ld (TS_COUNT),hl
+TC_READ:
+ ld a,(TS_PHASE)
+ cp 5
+ jr nc,TC_READ_READY
+ call TS_POLL
+ jr c,TC_CANCEL
+TC_READ_READY:
+ ld de,TS_READBUF
+ ld c,26
+ call TS_BDOS
+ ld de,TS_IOFCB
+ ld c,20
+ call TS_BDOS
+ or a
+ jr z,TC_DATA
+ cp 1
+ jr nz,TC_BAD
+ ld de,TS_IOFCB
+ ld c,16
+ call TS_BDOS
+ cp 255
+ jp z,TS_IO_ERROR
+ call TS_CRC_FINISH
+ ld hl,TS_CRC
+ ld de,TS_LAST+16
+ ld bc,4
+ ldir
+ ld hl,(TS_COUNT)
+ ld (TS_LAST+20),hl
+ or a
+ ret
+TC_DATA:
+ ld hl,(TS_COUNT)
+ inc hl
+ ld (TS_COUNT),hl
+ ld de,8193
+ or a
+ sbc hl,de
+ jr nc,TC_BAD
+ ld hl,TS_READBUF
+ ld bc,128
+ call TS_CRC_BUFFER
+ jr TC_READ
+TC_BAD:
+ ld de,TS_IOFCB
+ ld c,16
+ call TS_BDOS
+ jp TS_IO_ERROR
+TC_CANCEL:
+ ld de,TS_IOFCB
+ ld c,16
+ call TS_BDOS
+ cp 255
+ jp z,TS_IO_ERROR
+ ld a,7
+ jp TS_FAIL
+
+; Compare TS_LAST with the expected 22-byte tag at HL.
+TS_COMPARE:
+ ld de,TS_LAST
+ ld b,22
+TS_COMPARE_LOOP:
+ ld a,(de)
+ cp (hl)
+ jr nz,TS_DIFFERENT
+ inc hl
+ inc de
+ djnz TS_COMPARE_LOOP
+ or a
+ ret
+TS_DIFFERENT:
+ scf
+ ret
+
+; Check the immutable original identity, tolerating only our authorized RO
+; clearing. SYS/ARC/other supported high attribute bits must remain unchanged.
+TS_ORIGINAL_ID:
+ ld a,(TS_LAST)
+ cp 1
+ jr nz,TS_DIFFERENT
+ ld hl,TS_ORIGINAL+1
+ ld de,TS_LAST+1
+ ld b,11
+TO_ATTR:
+ ld a,(de)
+ xor (hl)
+ ld c,a
+ ld a,b
+ cp 3
+ ld a,c
+ jr nz,TO_ATTR_TEST
+ and 7fh
+TO_ATTR_TEST:
+ or a
+ jr nz,TS_DIFFERENT
+ inc hl
+ inc de
+ djnz TO_ATTR
+ ld b,10
+TO_CONTENT:
+ ld a,(de)
+ cp (hl)
+ jr nz,TS_DIFFERENT
+ inc hl
+ inc de
+ djnz TO_CONTENT
+ or a
+ ret
+
+; HL/DE descriptors: compare drive/user and the eleven name bytes.
+TS_SAME:
+ push hl
+ push de
+ push bc
+ ld b,12
+TSA_KEY:
+ ld a,(de)
+ xor (hl)
+ and 7fh
+ jr nz,TSA_DIFFERENT
+ inc hl
+ inc de
+ djnz TSA_KEY
+ ld bc,24
+ add hl,bc
+ ex de,hl
+ add hl,bc
+ ex de,hl
+ ld a,(de)
+ cp (hl)
+ jr nz,TSA_DIFFERENT
+ pop bc
+ pop de
+ pop hl
+ xor a
+ ret
+TSA_DIFFERENT:
+ pop bc
+ pop de
+ pop hl
+ ld a,1
+ or a
+ ret
+
+TS_ALIAS:
+ ld (TS_CANDIDATE),hl
+ ld a,(TS_ALIAS_COUNT)
+ cp 5
+ jp nc,TS_ALIAS_ERROR
+ or a
+ ret z
+ ld b,a
+ ld de,TS_ALIASES
+TSA_NEXT:
+ ld hl,(TS_CANDIDATE)
+ call TS_SAME
+ jp z,TS_ALIAS_ERROR
+ ex de,hl
+ ld de,37
+ add hl,de
+ ex de,hl
+ djnz TSA_NEXT
+ or a
+ ret
+
+; Namespace-only absence check for reservation. Do not read each colliding
+; file's contents merely to skip its name, including orphan physical extents.
+TS_PRESENT:
+ call TS_SELECT
+ ld de,TS_IOFCB
+ ld bc,36
+ ldir
+ ld hl,TS_IOFCB
+ call TS_RESETFCB
+ ld a,'?'
+ ld (TS_IOFCB+12),a
+ ld de,TS_DIRECTORY
+ ld c,26
+ call TS_BDOS
+ ld de,TS_IOFCB
+ ld c,17
+ call TS_BDOS
+ cp 255
+ jr z,TSP_ABSENT
+ cp 4
+ jp nc,TS_IO_ERROR
+ ld a,1
+ or a
+ ret
+TSP_ABSENT:
+ xor a
+ ret
+
+; Reserve a previously absent exact candidate, never a wildcard erase.
+; HL=descriptor, DE=11-byte template. Caller chooses whether to MAKE it.
+TS_PICK:
+ ld (TS_PICKDESC),hl
+ push hl
+ ld de,TS_TARGET
+ ld bc,37
+ ex de,hl
+ pop de
+ push de
+ ldir
+ pop hl
+ inc hl
+ ld de,(TS_TEMPLATE)
+ ex de,hl
+ ld bc,11
+ ldir
+ ld hl,1000
+ ld (TS_TRIES),hl
+TP_TRY:
+ ld hl,(TS_PICKDESC)
+ ld de,TS_TARGET
+ call TS_SAME
+ jr z,TP_NEXT
+ call TS_ALIAS
+ jr c,TP_NEXT
+ ld hl,(TS_PICKDESC)
+ call TS_PRESENT
+ ret c
+ or a
+ ret z
+TP_NEXT:
+ ld hl,(TS_PICKDESC)
+ ld de,8
+ add hl,de
+ ld b,5
+TP_DIGIT:
+ inc (hl)
+ ld a,(hl)
+ cp '9'+1
+ jr c,TP_COUNT
+ ld (hl),'0'
+ dec hl
+ djnz TP_DIGIT
+TP_COUNT:
+ ld hl,(TS_TRIES)
+ dec hl
+ ld (TS_TRIES),hl
+ ld a,h
+ or l
+ jr nz,TP_TRY
+ ld a,10
+ jp TS_FAIL
+
+TS_PICK_WORK:
+ ld hl,TS_WORK_NAME
+ ld (TS_TEMPLATE),hl
+ ld hl,TS_WORK
+ jp TS_PICK
+
+TS_REWIND:
+ ld hl,(TS_REWIND_PTR)
+ jp (hl)
+TS_RECORD:
+ ld hl,(TS_RECORD_PTR)
+ jp (hl)
+TS_POLL:
+ ld hl,(TS_POLL_PTR)
+ jp (hl)
+TS_NOP:
+ or a
+ ret
+TS_EMPTY:
+ ld a,1
+ or a
+ ret
+
+TS_VALIDATE:
+ push hl
+ ld a,(hl)
+ or a
+ jr z,TS_INVALID
+ cp 17
+ jr nc,TS_INVALID
+ push hl
+ ld de,36
+ add hl,de
+ ld a,(hl)
+ pop hl
+ cp 32
+ jr nc,TS_INVALID
+ inc hl
+ ld a,(hl)
+ cp ' '
+ jr z,TS_INVALID
+ ld b,8
+ call TS_FIELD
+ jr c,TS_INVALID
+ ld b,3
+ call TS_FIELD
+ jr c,TS_INVALID
+ pop hl
+ or a
+ ret
+TS_INVALID:
+ pop hl
+ ld a,11
+ jp TS_FAIL
+TS_FIELD:
+ ld d,0
+TF_CHAR:
+ ld a,(hl)
+ cp ' '
+ jr nz,TF_NONSPACE
+ ld d,1
+ jr TF_NEXT
+TF_NONSPACE:
+ cp ' '+1
+ ret c
+ cp 7fh
+ ccf
+ ret c
+ ld e,a
+ ld a,d
+ or a
+ scf
+ ret nz
+ push hl
+ push bc
+ ld hl,TS_FORBIDDEN
+TF_FORBIDDEN:
+ ld a,(hl)
+ or a
+ jr z,TF_VALID
+ cp e
+ jr z,TF_BAD
+ inc hl
+ jr TF_FORBIDDEN
+TF_BAD:
+ pop bc
+ pop hl
+ scf
+ ret
+TF_VALID:
+ pop bc
+ pop hl
+TF_NEXT:
+ inc hl
+ djnz TF_CHAR
+ or a
+ ret
+
+; HL=descriptor, TS_ATTR[11]=desired high-bit union. Always inspect the
+; actual result after a failure; the caller decides bounded restoration.
+TS_SETATTR:
+ call TS_SELECT
+ ld de,TS_IOFCB
+ ld bc,36
+ ldir
+ ld hl,TS_IOFCB
+ call TS_RESETFCB
+ ld hl,TS_IOFCB+1
+ ld de,TS_ATTR
+ ld b,11
+TAT_LOOP:
+ ld a,(hl)
+ and 7fh
+ ld c,a
+ ld a,(de)
+ or c
+ ld (hl),a
+ inc hl
+ inc de
+ djnz TAT_LOOP
+ ld de,TS_IOFCB
+ ld c,30
+ call TS_BDOS
+ cp 255
+ jp z,TS_ATTRIBUTE_ERROR
+ or a
+ ret
+
+; Regenerate and compare the complete record stream, including defined
+; padding and physical EOF. HL=descriptor; no CRC can substitute for this.
+TS_VERIFY:
+ ld (TS_VERIFYDESC),hl
+ call TS_SELECT
+ ld de,TS_VERIFYFCB
+ ld bc,36
+ ldir
+ ld hl,TS_VERIFYFCB
+ call TS_RESETFCB
+ ld de,TS_VERIFYFCB
+ ld c,15
+ call TS_BDOS
+ cp 255
+ jp z,TS_IO_ERROR
+ call TS_REWIND
+TV_NEXT:
+ call TS_POLL
+ jr c,TV_CANCEL
+ call TS_RECORD
+ cp 2
+ jr nc,TV_BAD
+ ld (TS_STREAMEND),a
+ ld hl,(TS_VERIFYDESC)
+ call TS_SELECT
+ ld de,TS_READBUF
+ ld c,26
+ call TS_BDOS
+ ld de,TS_VERIFYFCB
+ ld c,20
+ call TS_BDOS
+ ld b,a
+ ld a,(TS_STREAMEND)
+ or a
+ jr nz,TV_EOF
+ ld a,b
+ or a
+ jr nz,TV_BAD
+ ld hl,TS_BUFFER
+ ld de,TS_READBUF
+ ld b,128
+TV_COMPARE:
+ ld a,(de)
+ cp (hl)
+ jr nz,TV_BAD
+ inc hl
+ inc de
+ djnz TV_COMPARE
+ jr TV_NEXT
+TV_EOF:
+ ld a,b
+ cp 1
+ jr nz,TV_BAD
+ ld de,TS_VERIFYFCB
+ ld c,16
+ call TS_BDOS
+ cp 255
+ jp z,TS_IO_ERROR
+ or a
+ ret
+TV_CANCEL:
+ ld a,7
+ jr TV_FAILED
+TV_BAD:
+ ld a,4
+TV_FAILED:
+ ld (TS_ERROR),a
+ ld hl,(TS_VERIFYDESC)
+ call TS_SELECT
+ ld de,TS_VERIFYFCB
+ ld c,16
+ call TS_BDOS
+ ld a,(TS_ERROR)
+ jp TS_FAIL
+
+; A rename is judged by the actual namespace and identity, even if BDOS
+; reports failure after moving it. TS_FROM/TO point to descriptors and
+; TS_EXPECT to the source tag. Never call RENAME over an observed destination.
+TS_MOVE:
+ ld hl,(TS_FROM)
+ call TS_CAPTURE
+ ret c
+ ld hl,(TS_EXPECT)
+ call TS_COMPARE
+ jp c,TS_CHANGED_ERROR
+ ld hl,(TS_TO)
+ call TS_CAPTURE
+ ret c
+ ld a,(TS_LAST)
+ or a
+ jp nz,TS_CHANGED_ERROR
+ ld hl,(TS_TO)
+ call TS_PRESENT
+ ret c
+ or a
+ jp nz,TS_CHANGED_ERROR
+ ld hl,(TS_FROM)
+ call TS_SELECT
+ ld de,TS_IOFCB
+ ld bc,36
+ ldir
+ ld hl,TS_IOFCB
+ call TS_RESETFCB
+ ld hl,(TS_TO)
+ ld de,TS_IOFCB+16
+ ld bc,12
+ ldir
+ ld de,TS_IOFCB
+ ld c,23
+ call TS_BDOS
+ ld (TS_RENSTATUS),a
+ ld hl,(TS_FROM)
+ call TS_CAPTURE
+ ret c
+ ld a,(TS_LAST)
+ or a
+ jp nz,TS_NAMESPACE_ERROR
+ ld hl,(TS_TO)
+ call TS_CAPTURE
+ ret c
+ ld hl,(TS_EXPECT)
+ call TS_COMPARE
+ jp c,TS_NAMESPACE_ERROR
+ or a
+ ret
+
+TS_RUN:
+ ld hl,TS_RUNTIME
+ ld de,TS_RUNTIME+1
+ ld bc,TS_RUNTIME_END-TS_RUNTIME-1
+ ld (hl),0
+ ldir
+ ld e,255
+ ld c,32
+ call TS_BDOS
+ ld (TS_CALLERUSER),a
+ ld hl,TS_TARGET
+ call TS_VALIDATE
+ jp c,TS_RETURN
+ call TS_ALIAS
+ jp c,TS_RETURN
+ ld hl,TS_TARGET
+ call TS_CAPTURE
+ jp c,TS_RETURN
+ ld hl,TS_LAST
+ ld de,TS_ORIGINAL
+ ld bc,22
+ ldir
+ ld a,(TS_LAST)
+ or a
+ jr z,TR_STAGE
+ ld a,(TS_REPLACE)
+ or a
+ jr nz,TR_PROTECTION
+ ld a,1
+ jp TS_RUN_FAIL
+TR_PROTECTION:
+ ld a,(TS_LAST+9)
+ ld b,a
+ ld a,(TS_LAST+10)
+ or b
+ jr z,TR_STAGE
+ ld a,(TS_PROTECT)
+ or a
+ jr nz,TR_STAGE
+ ld a,2
+ jp TS_RUN_FAIL
+TR_STAGE:
+ ld a,1
+ ld (TS_PHASE),a
+ ld hl,TS_STAGE_NAME
+ ld (TS_TEMPLATE),hl
+ ld hl,TS_STAGE
+ call TS_PICK
+ jp c,TS_RETURN
+ ld hl,TS_STAGE
+ call TS_PRESENT
+ jp c,TS_RETURN
+ or a
+ jp nz,TS_RUN_CHANGED
+ ld hl,TS_STAGE
+ call TS_SELECT
+ ld de,TS_STAGEFCB
+ ld bc,36
+ ldir
+ ld hl,TS_STAGEFCB
+ call TS_RESETFCB
+ ld de,TS_STAGEFCB
+ ld c,22
+ call TS_BDOS
+ cp 255
+ jp z,TS_RUN_IO
+ ld a,1
+ ld (TS_OWN_STAGE),a
+ call TS_REWIND
+TR_WRITE:
+ call TS_POLL
+ jp c,TR_WRITE_CANCEL
+ call TS_RECORD
+ cp 1
+ jr z,TR_CLOSE
+ cp 2
+ jp nc,TR_WRITE_ERROR
+ ld hl,(TS_WRCOUNT)
+ inc hl
+ ld (TS_WRCOUNT),hl
+ ld de,8193
+ or a
+ sbc hl,de
+ jp nc,TR_WRITE_ERROR
+ ld hl,TS_STAGE
+ call TS_SELECT
+ ld de,TS_BUFFER
+ ld c,26
+ call TS_BDOS
+ ld de,TS_STAGEFCB
+ ld c,21
+ call TS_BDOS
+ or a
+ jp nz,TR_WRITE_ERROR
+ jr TR_WRITE
+TR_CLOSE:
+ ld a,2
+ ld (TS_PHASE),a
+ ld hl,TS_STAGE
+ call TS_SELECT
+ ld de,TS_STAGEFCB
+ ld c,16
+ call TS_BDOS
+ cp 255
+ jp z,TS_RUN_IO
+ ld a,3
+ ld (TS_PHASE),a
+ ld hl,TS_STAGE
+ call TS_VERIFY
+ jp c,TS_RETURN
+ ld hl,TS_STAGE
+ call TS_CAPTURE
+ jp c,TS_RETURN
+ ld hl,TS_LAST
+ ld de,TS_NEW
+ ld bc,22
+ ldir
+ ld a,4
+ ld (TS_PHASE),a
+ ld hl,TS_BACK_NAME
+ ld (TS_TEMPLATE),hl
+ ld hl,TS_BACKUP
+ call TS_PICK
+ jp c,TS_RETURN
+ ld hl,TS_TARGET
+ call TS_CAPTURE
+ jp c,TS_RETURN
+ ld hl,TS_ORIGINAL
+ call TS_COMPARE
+ jp c,TS_RUN_CHANGED
+ call TS_POLL
+ jp c,TS_RUN_CANCEL
+ ld a,(TS_ORIGINAL)
+ or a
+ jp z,TR_PUBLISH
+ ld a,5
+ ld (TS_PHASE),a
+ ld hl,TS_ORIGINAL
+ ld de,TS_CLEAR_TAG
+ ld bc,22
+ ldir
+ ld hl,TS_ORIGINAL+1
+ ld de,TS_ATTR
+ ld bc,11
+ ldir
+ ld hl,TS_ATTR+8
+ res 7,(hl)
+ ld hl,TS_CLEAR_TAG+9
+ res 7,(hl)
+ ld a,(TS_ORIGINAL+9)
+ or a
+ jr z,TR_BACKUP
+ ld hl,TS_TARGET
+ call TS_SETATTR
+ jp c,TS_RECOVER
+TR_BACKUP:
+ ld hl,TS_TARGET
+ ld (TS_FROM),hl
+ ld hl,TS_BACKUP
+ ld (TS_TO),hl
+ ld hl,TS_CLEAR_TAG
+ ld (TS_EXPECT),hl
+ call TS_MOVE
+ jp c,TS_RECOVER
+ ld hl,TS_ORIGINAL+1
+ ld de,TS_ATTR
+ ld bc,11
+ ldir
+ ld hl,TS_BACKUP
+ call TS_SETATTR
+ jp c,TS_RECOVER
+ ld hl,TS_BACKUP
+ call TS_CAPTURE
+ jp c,TS_RECOVER
+ ld hl,TS_ORIGINAL
+ call TS_COMPARE
+ jp c,TS_RECOVER
+TR_PUBLISH:
+ ld a,6
+ ld (TS_PHASE),a
+ ld hl,TS_STAGE
+ ld (TS_FROM),hl
+ ld hl,TS_TARGET
+ ld (TS_TO),hl
+ ld hl,TS_NEW
+ ld (TS_EXPECT),hl
+ call TS_MOVE
+ jp c,TS_RECOVER
+ xor a
+ ld (TS_OWN_STAGE),a
+ ld a,7
+ ld (TS_PHASE),a
+ ld hl,TS_ORIGINAL+1
+ ld de,TS_ATTR
+ ld bc,11
+ ldir
+ ld hl,TS_ATTR+10
+ res 7,(hl) ; BetterCP/M clears ARC for changed output.
+ ld hl,TS_TARGET
+ call TS_SETATTR
+ jp c,TS_RECOVER
+ ; No cancellable operation may abandon a publication already in progress.
+ ld hl,(TS_POLL_PTR)
+ ld (TS_SAVED_POLL),hl
+ ld hl,TS_NOP
+ ld (TS_POLL_PTR),hl
+ ld hl,TS_TARGET
+ call TS_VERIFY
+ push af
+ ld hl,(TS_SAVED_POLL)
+ ld (TS_POLL_PTR),hl
+ pop af
+ jp c,TS_RECOVER
+ ld hl,TS_TARGET
+ call TS_CAPTURE
+ jp c,TS_RECOVER
+ ld hl,TS_NEW
+ ld de,TS_EXPECTED
+ ld bc,22
+ ldir
+ ld hl,TS_ATTR
+ ld de,TS_EXPECTED+1
+ ld bc,11
+ ldir
+ ld hl,TS_EXPECTED
+ call TS_COMPARE
+ jp c,TS_RECOVER
+ ld a,8
+ ld (TS_PHASE),a
+ xor a
+ ld (TS_ERROR),a
+ jp TS_RETURN
+
+TR_WRITE_CANCEL:
+ ld a,7
+ jr TR_WRITE_FAILED
+TR_WRITE_ERROR:
+ ld a,3
+TR_WRITE_FAILED:
+ ld (TS_ERROR),a
+ ld hl,TS_STAGE
+ call TS_SELECT
+ ld de,TS_STAGEFCB
+ ld c,16
+ call TS_BDOS
+ jp TS_RETURN
+
+; Bounded rollback: never replace an occupied final name. An occupied final
+; can only receive attribute restoration if it is still the original object.
+TS_RECOVER:
+ ld a,(TS_ERROR)
+ or a
+ jr nz,TR_HAVE_ERROR
+ ld a,9
+ ld (TS_ERROR),a
+TR_HAVE_ERROR:
+ ld a,(TS_ORIGINAL)
+ or a
+ jp z,TS_RETURN
+ ld hl,TS_TARGET
+ call TS_CAPTURE
+ jp c,TS_RETURN
+ ld a,(TS_LAST)
+ or a
+ jr z,TR_ROLLBACK
+ call TS_ORIGINAL_ID
+ jp c,TS_RETURN
+ jr TR_RESTORE_ORIG
+TR_ROLLBACK:
+ ld hl,TS_BACKUP
+ call TS_CAPTURE
+ jp c,TS_RETURN
+ call TS_ORIGINAL_ID
+ jp c,TS_RETURN
+ ld hl,TS_LAST
+ ld de,TS_CLEAR_TAG
+ ld bc,22
+ ldir
+ ld hl,TS_ORIGINAL+1
+ ld de,TS_ATTR
+ ld bc,11
+ ldir
+ ld hl,TS_ATTR+8
+ res 7,(hl)
+ ld hl,TS_CLEAR_TAG+9
+ res 7,(hl)
+ ld hl,TS_BACKUP
+ call TS_SETATTR
+ jp c,TS_RETURN
+ ld hl,TS_BACKUP
+ ld (TS_FROM),hl
+ ld hl,TS_TARGET
+ ld (TS_TO),hl
+ ld hl,TS_CLEAR_TAG
+ ld (TS_EXPECT),hl
+ call TS_MOVE
+ jp c,TS_RETURN
+TR_RESTORE_ORIG:
+ ld hl,TS_ORIGINAL+1
+ ld de,TS_ATTR
+ ld bc,11
+ ldir
+ ld hl,TS_TARGET
+ call TS_SETATTR
+ jp c,TS_RETURN
+ ld hl,TS_TARGET
+ call TS_CAPTURE
+ jp c,TS_RETURN
+ ld hl,TS_ORIGINAL
+ call TS_COMPARE
+ jr nc,TS_RETURN
+ ld a,9
+ ld (TS_ERROR),a
+ jp TS_RETURN
+
+TS_RUN_CHANGED:
+ ld a,5
+ jr TS_RUN_FAIL
+TS_RUN_CANCEL:
+ ld a,7
+ jr TS_RUN_FAIL
+TS_RUN_IO:
+ ld a,3
+TS_RUN_FAIL:
+ ld (TS_ERROR),a
+TS_RETURN:
+ ld a,(TS_ERROR)
+ ld (TS_SAVED_ERR),a
+ ld a,(TS_CALLERUSER)
+ ld e,a
+ ld c,32
+ call TS_BDOS
+ ld de,80h
+ ld c,26
+ call TS_BDOS
+ ld a,(TS_SAVED_ERR)
+ or a
+ ret z
+ scf
+ ret
+
+TS_IO_ERROR:
+ ld a,3
+ jr TS_FAIL
+TS_CHANGED_ERROR:
+ ld a,5
+ jr TS_FAIL
+TS_ALIAS_ERROR:
+ ld a,6
+ jr TS_FAIL
+TS_NAMESPACE_ERROR:
+ ld a,8
+ jr TS_FAIL
+TS_ATTRIBUTE_ERROR:
+ ld a,9
+TS_FAIL:
+ ld (TS_ERROR),a
+ scf
+ ret
+
+; @ts-crc@
+
+ dseg
+TS_TARGET: ds 37
+TS_WORK: ds 37
+TS_REPLACE: db 0
+TS_PROTECT: db 0
+TS_ALIAS_COUNT: db 0
+TS_ALIASES: ds 148
+TS_REWIND_PTR: dw TS_NOP
+TS_RECORD_PTR: dw TS_EMPTY
+TS_POLL_PTR: dw TS_NOP
+TS_BUFFER: ds 128
+TS_RUNTIME:
+TS_ERROR: db 0
+TS_PHASE: db 0
+TS_OWN_STAGE: db 0
+TS_RENSTATUS: db 0
+TS_CALLERUSER: db 0
+TS_SAVED_ERR: db 0
+TS_STAGE: ds 37
+TS_BACKUP: ds 37
+TS_ORIGINAL: ds 22
+TS_NEW: ds 22
+TS_EXPECTED: ds 22
+TS_CLEAR_TAG: ds 22
+TS_ATTR: ds 11
+TS_COUNT: dw 0
+TS_WRCOUNT: dw 0
+TS_TRIES: dw 0
+TS_TEMPLATE: dw 0
+TS_PICKDESC: dw 0
+TS_DESC: dw 0
+TS_VERIFYDESC: dw 0
+TS_FROM: dw 0
+TS_TO: dw 0
+TS_EXPECT: dw 0
+TS_SAVED_POLL: dw 0
+TS_CANDIDATE: dw 0
+TS_STREAMEND: db 0
+TS_LAST: ds 22
+TS_IOFCB: ds 36
+TS_STAGEFCB: ds 36
+TS_VERIFYFCB: ds 36
+TS_DIRECTORY: ds 128
+TS_READBUF: ds 128
+TS_RUNTIME_END:
+TS_STAGE_NAME: db 'TET00000$$$'
+TS_BACK_NAME: db 'TEB00000BAK'
+TS_WORK_NAME: db 'TEW00000$$$'
+TS_FORBIDDEN: db '.*?:/\[];=<>',0
+ end

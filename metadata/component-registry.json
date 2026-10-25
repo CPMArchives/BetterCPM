@@ -924,21 +924,35 @@
     },
     "utility:TED": {
       "kind": "utility",
-      "version": null,
+      "version": "1.0",
       "placement": "Utilities",
       "roots": [
-        "src/utilities/ted/main.mac"
+        "src/utilities/ted/cmds.mac",
+        "src/utilities/ted/commands.mac",
+        "src/utilities/ted/cpmio.mac",
+        "src/utilities/ted/fileio.mac",
+        "src/utilities/ted/frontend.mac",
+        "src/utilities/ted/inline.mac",
+        "src/utilities/ted/lines.mac",
+        "src/utilities/ted/main.mac",
+        "src/utilities/ted/operations.mac",
+        "src/utilities/ted/publisher.mac",
+        "src/utilities/ted/scrn.mac",
+        "src/utilities/ted/search.mac",
+        "src/utilities/ted/stack.mac",
+        "src/utilities/ted/termdef.mac",
+        "src/utilities/ted/text.mac",
+        "src/utilities/ted/workspace.mac"
       ],
       "builders": [
-        "tools/build_ted.py",
-        "tools/build_native_ted.py"
+        "tools/build_ted.py"
       ],
-      "revision": null,
+      "revision": 1,
       "api_version": null,
-      "tracking": "pending",
-      "dependency_status": "pending",
+      "tracking": "initial",
+      "dependency_status": "tracked-conservative",
       "display_format": "numeric",
-      "description": "Full-screen Text Editor (development foundation; not qualified)"
+      "description": "Full-screen Text Editor"
     }
   },
   "legacy_utility_order": [
@@ -982,7 +996,8 @@
     "WARM",
     "DASM",
     "DSYM",
-    "DLINK"
+    "DLINK",
+    "TED"
   ],
   "legacy_subsystem_rows": [
     {

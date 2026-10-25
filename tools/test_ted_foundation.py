@@ -21,11 +21,12 @@ from test_usq_com import Command, diskkey
 
 class Ted(Command):
     def __init__(self, library, image, listing, mapping):
-        super().__init__(library, image, listing, required_symbols=('MEMTOP', 'MAPLIMIT', 'NUMBUF', 'BFPOOL'))
+        super().__init__(library, image, listing, required_symbols=(('MEMTOP', 'MAPLIMIT', 'NUMBUF', 'BFPOOL') if 'main' in mapping else ('TTX_INIT',)))
         self.listing, self.mapping = listing, mapping
         self.end = self.address('TED_END')
-        self.symbols['UC_STACK_TOP'] = self.address(mapping['main']['STACK'])
-        self.symbols['UC_STACK'] = self.symbols['UC_STACK_TOP']-1024
+        self.symbols['UC_STACK_TOP'] = self.address('TED_STACK_TOP')
+        self.stack_size = self.address('TED_STACK_SIZE')
+        self.symbols['UC_STACK'] = self.symbols['UC_STACK_TOP']-self.stack_size
         self.symbols['UC_INPUT'] = 0x5c
 
     def address(self, name):
@@ -69,7 +70,7 @@ class Ted(Command):
             return 0
         return super().bdos(fn, de)
 
-    def execute(self, *, tpa=0xd000, files=None, failures=None, command=b'EX\r', entry=0x100, setup=None):
+    def execute(self, *, tpa=0xd000, files=None, failures=None, command=b'EX\r', entry=None, setup=None):
         self.files = dict(files or {})
         self.original = dict(self.files)
         self.drive, self.user = 1, 31
@@ -89,7 +90,7 @@ class Ted(Command):
         if setup:
             setup(self)
         protected = bytes(self.mem[tpa:0xfffe])
-        result = self.lib.test_run(entry, 30000000)
+        result = self.lib.test_run(self.address('START') if entry is None else entry, 30000000)
         assert self.exception is None, self.exception
         assert result >= 0, (result, hex(self.reg['PC'].value), self.console[-300:])
         assert bytes(self.mem[tpa:0xfffe]) == protected, 'active TPA ceiling crossed'
@@ -190,7 +191,7 @@ def main():
     a = p.parse_args()
     with tempfile.TemporaryDirectory(prefix='ted-foundation-') as directory:
         work = Path(directory)
-        image = build(Path.home()/'bin/z80asm', work)
+        image = build(Path.home()/'bin/z80asm', work, legacy=True)
         (work/'sim.h').write_text('#define DEF_CPU Z80\n#define EXCLUDE_I8080\n')
         for name in ('simmem.h', 'simport.h'):
             shutil.copy2(a.z80pack/'z80sim/srcsim'/name, work/name)
@@ -211,7 +212,7 @@ def main():
                                   for path in [core/'simglb.c', *sorted(core.glob('simz80*.c'))]},
                   'shim_sha256': hashlib.sha256(SHIM.encode()).hexdigest(),
                   'minimum_ceiling': m.end+2564, 'reserved_map_bytes': 2048,
-                  'minimum_cache_bytes': 516, 'private_stack_bytes': 1024,
+                  'minimum_cache_bytes': 516, 'private_stack_bytes': m.stack_size,
                   'native_stack_measurement': 'NOT_RUN'}
         if a.output:
             a.output.parent.mkdir(parents=True, exist_ok=True)

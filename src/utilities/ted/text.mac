@@ -1,0 +1,230 @@
+; TED preserving streaming text validator. GPL-2.0-or-later; see COPYING.
+; All input bytes remain literal in the caller's staged record stream. This
+; module describes logical text; it never rewrites tabs, spaces or terminators.
+; FEED takes A, preserves BC/DE/HL, returns CF on failure with A=error code.
+; Error offsets are zero-based physical byte positions; lines are one-based.
+; FINISH is allowed only at a portable CP/M 128-byte record boundary.
+
+ .Z80
+ public TTX_INIT,TTX_FEED,TTX_FINISH,TTX_STATE,TTX_END
+ public TTX_PHYS,TTX_LENGTH,TTX_LINES,TTX_COLUMN,TTX_TERM
+ public TTX_ERROR,TTX_BADPOS,TTX_BADLINE,TTX_EOF
+ cseg
+
+TTX_INIT:
+ push hl
+ push de
+ push bc
+ xor a
+ ld hl,TTX_STATE
+ ld de,TTX_STATE+1
+ ld bc,TTX_END-TTX_STATE-1
+ ld (hl),a
+ ldir
+ inc a
+ ld (TTX_LINES),a
+ pop bc
+ pop de
+ pop hl
+ ret
+
+TTX_FEED:
+ push bc
+ push de
+ push hl
+ ld b,a
+ ld a,(TTX_ERROR)
+ or a
+ jp nz,TX_RETURN_BAD
+ ld a,b
+ ld (TX_BYTE),a
+ ld hl,TTX_PHYS
+ ld de,TX_AT
+ ld bc,3
+ ldir
+ ld hl,TTX_LINES
+ ld de,TX_LINEAT
+ ld bc,3
+ ldir
+ ld a,(TTX_EOF)
+ or a
+ jr z,TX_TEXT
+ ld a,(TX_BYTE)
+ cp 1ah
+ jp nz,TX_EMBEDDED
+ jp TX_PHYSICAL
+
+TX_TEXT:
+ ld a,(TX_CR)
+ or a
+ jr z,TX_CHARACTER
+ xor a
+ ld (TX_CR),a
+ ld a,(TX_BYTE)
+ cp 10
+ jr nz,TX_CR_ONLY
+ ld a,1
+ call TX_FIRST_TERM
+ jp TX_LOGICAL
+TX_CR_ONLY:
+ ld a,3
+ call TX_FIRST_TERM
+TX_CHARACTER:
+ ld a,(TX_BYTE)
+ cp 1ah
+ jr z,TX_EOF_START
+ cp 13
+ jr z,TX_CR_START
+ cp 10
+ jr z,TX_LF
+ cp 9
+ jr z,TX_ORDINARY
+ cp 20h
+ jp c,TX_UNSUPPORTED
+ cp 7fh
+ jp nc,TX_UNSUPPORTED
+TX_ORDINARY:
+ ld hl,(TTX_COLUMN)
+ ld de,4095
+ or a
+ sbc hl,de
+ jp nc,TX_TOO_LONG
+ ld hl,(TTX_COLUMN)
+ inc hl
+ ld (TTX_COLUMN),hl
+ jr TX_LOGICAL
+TX_CR_START:
+ ld a,1
+ ld (TX_CR),a
+ jr TX_NEWLINE
+TX_LF:
+ ld a,2
+ call TX_FIRST_TERM
+TX_NEWLINE:
+ ld hl,0
+ ld (TTX_COLUMN),hl
+ ld hl,TTX_LINES
+ call TX_INCREMENT
+ jp c,TX_OVERFLOW
+TX_LOGICAL:
+ ld hl,TTX_LENGTH
+ call TX_INCREMENT
+ jp c,TX_OVERFLOW
+TX_PHYSICAL:
+ ld hl,TTX_PHYS
+ call TX_INCREMENT
+ jp c,TX_OVERFLOW
+ ld a,(TX_BYTE)
+ or a
+ pop hl
+ pop de
+ pop bc
+ ret
+TX_EOF_START:
+ ld a,1
+ ld (TTX_EOF),a
+ jr TX_PHYSICAL
+
+; A=1 CRLF, 2 LF, 3 CR; record only the first observed terminator.
+TX_FIRST_TERM:
+ ld b,a
+ ld a,(TTX_TERM)
+ or a
+ ret nz
+ ld a,b
+ ld (TTX_TERM),a
+ ret
+
+; Increment a little-endian 24-bit count. CF means overflow.
+TX_INCREMENT:
+ or a
+ inc (hl)
+ ret nz
+ inc hl
+ inc (hl)
+ ret nz
+ inc hl
+ inc (hl)
+ ret nz
+ scf
+ ret
+
+TX_UNSUPPORTED:
+ ld a,1
+ jr TX_FAIL
+TX_TOO_LONG:
+ ld a,2
+ jr TX_FAIL
+TX_EMBEDDED:
+ ld a,3
+ jr TX_FAIL
+TX_OVERFLOW:
+ ld a,4
+TX_FAIL:
+ ld (TTX_ERROR),a
+ ld hl,TX_AT
+ ld de,TTX_BADPOS
+ ld bc,3
+ ldir
+ ld hl,TX_LINEAT
+ ld de,TTX_BADLINE
+ ld bc,3
+ ldir
+ ld a,(TTX_ERROR)
+TX_RETURN_BAD:
+ scf
+ pop hl
+ pop de
+ pop bc
+ ret
+
+TTX_FINISH:
+ push bc
+ push de
+ push hl
+ ld a,(TTX_ERROR)
+ or a
+ jr nz,TX_RETURN_BAD
+ ld a,(TTX_PHYS)
+ and 7fh
+ jr nz,TX_PART_RECORD
+ ld a,(TX_CR)
+ or a
+ jr z,TX_FINISH_OK
+ ld a,3
+ call TX_FIRST_TERM
+TX_FINISH_OK:
+ xor a
+ pop hl
+ pop de
+ pop bc
+ ret
+TX_PART_RECORD:
+ ld hl,TTX_PHYS
+ ld de,TX_AT
+ ld bc,3
+ ldir
+ ld hl,TTX_LINES
+ ld de,TX_LINEAT
+ ld bc,3
+ ldir
+ ld a,5
+ jr TX_FAIL
+
+ dseg
+TTX_STATE:
+TTX_PHYS: ds 3
+TTX_LENGTH: ds 3
+TTX_LINES: ds 3
+TTX_COLUMN: ds 2
+TTX_TERM: db 0
+TTX_EOF: db 0
+TTX_ERROR: db 0
+TTX_BADPOS: ds 3
+TTX_BADLINE: ds 3
+TX_AT: ds 3
+TX_LINEAT: ds 3
+TX_BYTE: db 0
+TX_CR: db 0
+TTX_END:
+ end

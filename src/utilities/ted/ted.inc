@@ -11,3 +11,4 @@ BLKSIZ	equ	512		; disk block size
 BUFSIZ	equ	BLKSIZ+4	; memory buffer size (516 bytes)
 
 MAXLEN	equ	162		; max line length
+TED_STACK_SIZE equ 2048 ; private editor/BDOS/BIOS stack; qualify native margin

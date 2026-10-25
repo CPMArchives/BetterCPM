@@ -1,0 +1,1499 @@
+; TED logical WordStar command core. GPL-2.0-or-later; see COPYING.
+; Positions/marks are 24-bit byte boundaries; CRLF is one cursor step.
+; This module owns no console, screen or filename prompt. TC_ACTION requests
+; frontend policy: 1 save, 2 save/close, 3 save/exit, 4 abandon, 5 read file,
+; 6 write block, 7 find, 8 replace, 9 repeat, 10 help, 255 unsupported.
+; CF reports an engine/read failure; otherwise every key is consumed once.
+
+ .Z80
+ public TC_INIT,TC_KEY,TC_STATE,TC_STATE_END,TC_POS,TC_TOP,TC_PREFIX,TC_ACTION
+ public TC_BEGIN,TC_END,TC_BSET,TC_ESET,TC_SHOW,TC_INSERT,TC_PREF,TC_PREFVALID
+ public TC_SCAN,TC_LENGTH,TC_NEXT,TC_PREV,TC_FETCH,TC_START,TC_EOL,TC_COLUMN
+ public TC_COPY3,TC_CMP3,TC_ADD3,TC_SUB3,TC_INC3,TC_DEC3,TC_EDIT_BEGIN,TC_EDIT_END
+ public TC_VIRTUAL
+ public TC_PREFERRED
+ public TC_COPY_BLOCK,TC_MOVE_BLOCK,TC_DEL_BLOCK
+ public TC_DO_EDIT,TC_INCOUNT,TC_ADVANCE,TC_SYNC
+ extrn WL_EDIT
+ extrn TW_META,TW_EDIT,TW_SEGCOUNT,TW_SEGMENTS,TW_INSERT,TW_FETCH,TW_POS,TW_KIND
+ cseg
+
+TC_INIT:
+ ld hl,TC_STATE
+ ld de,TC_STATE+1
+ ld bc,TC_STATE_END-TC_STATE-1
+ ld (hl),0
+ ldir
+ ld a,1
+ ld (TC_SHOW),a
+ jp TC_SYNC
+TC_SYNC:
+ ld hl,TW_META+12
+ ld de,TC_LENGTH
+ call TC_COPY3
+ or a
+ ret
+TC_COPY3:
+ ld bc,3
+ ldir
+ ret
+; Compare unsigned HL[3] against DE[3], preserving pointers and flags.
+TC_CMP3:
+ push hl
+ push de
+ push bc
+ inc hl
+ inc hl
+ inc de
+ inc de
+ ld c,3
+TCC_BYTE:
+ ld a,(de)
+ ld b,a
+ ld a,(hl)
+ cp b
+ jp nz,TCC_DONE
+ dec hl
+ dec de
+ dec c
+ jp nz,TCC_BYTE
+TCC_DONE:
+ pop bc
+ pop de
+ pop hl
+ ret
+TC_ADD3:
+ ld c,3
+ or a
+TCA_BYTE:
+ ld a,(de)
+ adc a,(hl)
+ ld (hl),a
+ inc hl
+ inc de
+ dec c
+ jp nz,TCA_BYTE
+ ret
+TC_SUB3:
+ ld c,3
+ or a
+TCS_BYTE:
+ ld a,(de)
+ ld b,a
+ ld a,(hl)
+ sbc a,b
+ ld (hl),a
+ inc hl
+ inc de
+ dec c
+ jp nz,TCS_BYTE
+ ret
+TC_INC3:
+ or a
+ inc (hl)
+ ret nz
+ inc hl
+ inc (hl)
+ ret nz
+ inc hl
+ inc (hl)
+ ret nz
+ scf
+ ret
+TC_DEC3:
+ ld c,3
+ scf
+TCD_BYTE:
+ ld a,(hl)
+ sbc a,0
+ ld (hl),a
+ inc hl
+ dec c
+ jp nz,TCD_BYTE
+ ret
+
+TC_FETCH:
+ ld hl,TC_SCAN
+ ld de,TC_LENGTH
+ call TC_CMP3
+ jp c,TC_FETCH_IN
+ scf
+ ret
+TC_FETCH_IN:
+ ld hl,TC_SCAN
+ ld de,TW_POS
+ call TC_COPY3
+ ld a,1
+ ld (TW_KIND),a
+ jp TW_FETCH
+TC_NEXT:
+ call TC_FETCH
+ ret c
+ ld (TC_CHAR),a
+ ld hl,TC_SCAN
+ call TC_INC3
+ ld a,(TC_CHAR)
+ cp 13
+ jp nz,TC_OK
+ call TC_FETCH
+ jp c,TC_WORD_EOF
+ cp 10
+ jp nz,TC_OK
+ ld hl,TC_SCAN
+ call TC_INC3
+TC_OK:
+ or a
+ ret
+TC_PREV:
+ ld hl,TC_SCAN
+ ld de,TC_ZERO
+ call TC_CMP3
+ scf
+ ret z
+ ld hl,TC_SCAN
+ call TC_DEC3
+ call TC_FETCH
+ ret c
+ cp 10
+ jp nz,TC_OK
+ ld hl,TC_SCAN
+ ld de,TC_ZERO
+ call TC_CMP3
+ jp z,TC_OK
+ ld hl,TC_SCAN
+ ld de,TC_TEMP
+ call TC_COPY3
+ ld hl,TC_SCAN
+ call TC_DEC3
+ call TC_FETCH
+ ret c
+ cp 13
+ jp z,TC_OK
+ ld hl,TC_TEMP
+ ld de,TC_SCAN
+ call TC_COPY3
+ jp TC_OK
+
+; Locate logical line boundaries from TC_SCAN. EOL points before its
+; terminator, and NEXT then crosses the exact original terminator only.
+TC_START:
+ ld hl,TC_SCAN
+ ld de,TC_ZERO
+ call TC_CMP3
+ ret z
+ ld hl,TC_SCAN
+ ld de,TC_SAVED
+ call TC_COPY3
+ call TC_PREV
+ ret c
+ call TC_FETCH
+ ret c
+ cp 13
+ jp z,TCL_FOUND
+ cp 10
+ jp nz,TC_START
+TCL_FOUND:
+ ld hl,TC_SAVED
+ ld de,TC_SCAN
+ call TC_COPY3
+ or a
+ ret
+TC_EOL:
+ call TC_FETCH
+ jp c,TC_EOL_END
+ cp 13
+ ret z
+ cp 10
+ ret z
+ ld hl,TC_SCAN
+ call TC_INC3
+ jp TC_EOL
+TC_EOL_END:
+ ; Reaching the defined document end is normal, not an I/O error.
+ ld hl,TC_SCAN
+ ld de,TC_LENGTH
+ call TC_CMP3
+ ret z
+ scf
+ ret
+
+TC_POS_SCAN:
+ ld hl,TC_POS
+ ld de,TC_SCAN
+ jp TC_COPY3
+TC_COMMIT_SCAN:
+ ld hl,TC_SCAN
+ ld de,TC_POS
+ call TC_COPY3
+ xor a
+ ld (TC_PREFVALID),a
+ ld (TC_VIRTUAL),a
+ ld (TC_VIRTUAL+1),a
+ ret
+TC_COLUMN:
+ call TC_POS_SCAN
+ call TC_START
+ ret c
+ ld hl,0
+ ld (TC_VISUAL),hl
+TCCOL_LOOP:
+ ld hl,TC_SCAN
+ ld de,TC_POS
+ call TC_CMP3
+ jp z,TCCOL_DONE
+ call TC_FETCH
+ ret c
+ call TC_VISUAL_NEXT
+ ld hl,TC_SCAN
+ call TC_INC3
+ jp TCCOL_LOOP
+TCCOL_DONE:
+ ld hl,(TC_VISUAL)
+ ld de,(TC_VIRTUAL)
+ add hl,de
+ or a
+ ret
+TC_VISUAL_NEXT:
+ ld hl,(TC_VISUAL)
+ cp 9
+ jp z,TC_TAB_COLUMN
+ inc hl
+ ld (TC_VISUAL),hl
+ ret
+TC_TAB_COLUMN:
+ ld de,8
+ add hl,de
+ ld a,l
+ and 0f8h
+ ld l,a
+ ld (TC_VISUAL),hl
+ ret
+
+TC_KEY:
+ ld (TC_CHAR),a
+ xor a
+ ld (TC_ACTION),a
+ ld hl,TW_META+12
+ ld de,TC_LENGTH
+ call TC_COPY3
+ ld a,(TC_PREFIX)
+ or a
+ jp nz,TC_SUFFIX
+ ld a,(TC_CHAR)
+ cp 127
+ jp z,TC_DELETE
+ cp 32
+ jp c,TCK_CONTROL
+ cp 127
+ jp nc,TC_UNSUPPORTED
+ jp TC_TYPE
+TCK_CONTROL:
+ add a,a
+ ld e,a
+ ld d,0
+ ld hl,TC_TABLE
+ add hl,de
+ ld e,(hl)
+ inc hl
+ ld d,(hl)
+ ex de,hl
+ jp (hl)
+TC_TABLE:
+ dw TC_OK,TC_WORD_LEFT,TC_BROWSE,TC_PAGE_DOWN,TC_RIGHT,TC_UP,TC_WORD_RIGHT,TC_DELETE
+ dw TC_BACKSPACE,TC_TAB,TC_LINE_BELOW,TC_K,TC_LINE_TOGGLE,TC_RETURN,TC_BROWSE,TC_NEXT_TAB
+ dw TC_DUPLICATE,TC_PREV_TAB,TC_PAGE_UP,TC_LEFT,TC_DEL_WORD,TC_SCREEN_TOGGLE,TC_TOGGLE,TC_OK
+ dw TC_DOWN,TC_DEL_LINE,TC_COMMAND,TC_ESCAPE,TC_OK,TC_DELETE,TC_DEL_LINE,TC_REDRAW
+TC_BROWSE:
+ ld a,11
+ jp TC_EVENT
+TC_COMMAND:
+ ld a,12
+ jp TC_EVENT
+TC_REDRAW:
+ ld a,13
+ jp TC_EVENT
+TC_SCREEN_TOGGLE:
+ ld a,14
+ jp TC_EVENT
+TC_ESCAPE:
+ ld a,15
+ jp TC_EVENT
+TC_DUPLICATE:
+ ld a,16
+ jp TC_EVENT
+TC_LINE_BELOW:
+ ld a,17
+ jp TC_EVENT
+TC_LINE_TOGGLE:
+ call TC_POS_SCAN
+ call TC_START
+ ret c
+ ld hl,TC_SCAN
+ ld de,TC_POS
+ call TC_CMP3
+ jp nz,TC_COMMIT_SCAN
+ call TC_EOL
+ ret c
+ jp TC_COMMIT_SCAN
+TC_TAB:
+ ld a,9
+ ld (TC_CHAR),a
+ ld hl,(TC_VIRTUAL)
+ ld a,h
+ or l
+ jp nz,TC_TYPE_VIRTUAL
+ ; TAB always inserts a literal byte, even in overwrite mode.
+ call TC_EDIT_AT_CURSOR
+ ld a,9
+ ld (TW_INSERT),a
+ ld hl,1
+ ld (TC_INCOUNT),hl
+ ld (TC_ADVANCE),hl
+ jp TC_DO_EDIT
+TC_NEXT_TAB:
+ call TC_COLUMN
+ ret c
+ ld de,8
+ add hl,de
+ ld a,l
+ and 0f8h
+ ld l,a
+ jp TC_TAB_TARGET
+TC_PREV_TAB:
+ call TC_COLUMN
+ ret c
+ ld a,h
+ or l
+ ret z
+ dec hl
+ ld a,l
+ and 0f8h
+ ld l,a
+TC_TAB_TARGET:
+ ld (TC_PREF),hl
+ call TC_POS_SCAN
+ call TC_START
+ ret c
+ call TC_PREFERRED
+ xor a
+ ld (TC_PREFVALID),a
+ ret
+TC_K:
+ ld a,11
+ ld (TC_PREFIX),a
+ or a
+ ret
+TC_Q:
+ ld a,17
+ ld (TC_PREFIX),a
+ or a
+ ret
+TC_SUFFIX:
+ ld (TC_WAS_PREFIX),a
+ xor a
+ ld (TC_PREFIX),a
+ ld a,(TC_CHAR)
+ cp 27
+ ret z
+ cp 1
+ jp c,TC_UNSUPPORTED
+ cp 27
+ jp nc,TCS_LETTER
+ add a,'A'-1
+TCS_LETTER:
+ cp 'a'
+ jp c,TCS_UPPER
+ cp 'z'+1
+ jp nc,TCS_UPPER
+ sub 32
+TCS_UPPER:
+ ld c,a
+ ld a,(TC_WAS_PREFIX)
+ cp 11
+ ld hl,TC_KTABLE
+ jp z,TCS_LOOK
+ ld hl,TC_QTABLE
+TCS_LOOK:
+ ld a,(hl)
+ or a
+ jp z,TC_UNSUPPORTED
+ inc hl
+ cp c
+ jp z,TCS_CALL
+ inc hl
+ inc hl
+ jp TCS_LOOK
+TCS_CALL:
+ ld e,(hl)
+ inc hl
+ ld d,(hl)
+ ex de,hl
+ jp (hl)
+TC_KTABLE:
+ db 'C'
+ dw TC_COPY_LINES
+ db 'V'
+ dw TC_MOVE_LINES
+ db 'Y'
+ dw TC_DELETE_LINES
+ db 'R'
+ dw TC_READ_FILE
+ db 'W'
+ dw TC_WRITE_FILE
+ db 'S'
+ dw TC_SAVE
+ db 'X'
+ dw TC_SAVE_EXIT
+ db 'Q'
+ dw TC_ABANDON
+ db 0
+TC_COPY_LINES:
+ ld a,18
+ jp TC_EVENT
+TC_MOVE_LINES:
+ ld a,19
+ jp TC_EVENT
+TC_DELETE_LINES:
+ ld a,20
+ jp TC_EVENT
+
+TC_QTABLE:
+ db 'S'
+ dw TC_HOME
+ db 'D'
+ dw TC_END_LINE
+ db 'R'
+ dw TC_DOC_HOME
+ db 'C'
+ dw TC_DOC_END
+ db 'B'
+ dw TC_GOTO_BEGIN
+ db 'K'
+ dw TC_GOTO_END
+ db 'Y'
+ dw TC_DEL_EOL
+ db 'F'
+ dw TC_FIND
+ db 'A'
+ dw TC_REPLACE
+ db 0
+
+TC_SAVE:
+ ld a,1
+ jp TC_EVENT
+TC_SAVE_CLOSE:
+ ld a,2
+ jp TC_EVENT
+TC_SAVE_EXIT:
+ ld a,3
+ jp TC_EVENT
+TC_ABANDON:
+ ld a,4
+ jp TC_EVENT
+TC_READ_FILE:
+ ld a,5
+ jp TC_EVENT
+TC_WRITE_FILE:
+ ld a,6
+ jp TC_EVENT
+TC_FIND:
+ ld a,7
+ jp TC_EVENT
+TC_REPLACE:
+ ld a,8
+ jp TC_EVENT
+TC_REPEAT:
+ ld a,9
+ jp TC_EVENT
+TC_HELP:
+ ld a,10
+ jp TC_EVENT
+TC_UNSUPPORTED:
+ ld a,255
+TC_EVENT:
+ ld (TC_ACTION),a
+ or a
+ ret
+TC_TOGGLE:
+ ld a,(TC_INSERT)
+ xor 1
+ ld (TC_INSERT),a
+ or a
+ ret
+TC_LEFT:
+ ld hl,(TC_VIRTUAL)
+ ld a,h
+ or l
+ jp z,TC_LEFT_BYTE
+ dec hl
+ ld (TC_VIRTUAL),hl
+ xor a
+ ld (TC_PREFVALID),a
+ ret
+TC_LEFT_BYTE:
+ call TC_POS_SCAN
+ call TC_START
+ ret c
+ ld hl,TC_SCAN
+ ld de,TC_POS
+ call TC_CMP3
+ jp z,TC_OK
+ call TC_POS_SCAN
+ call TC_PREV
+ ret c
+ jp TC_COMMIT_SCAN
+TC_RIGHT:
+ call TC_POS_SCAN
+ call TC_FETCH
+ jp c,TC_RIGHT_EDGE
+ cp 13
+ jp z,TC_RIGHT_VIRTUAL
+ cp 10
+ jp z,TC_RIGHT_VIRTUAL
+ call TC_NEXT
+ ret c
+ jp TC_COMMIT_SCAN
+TC_RIGHT_EDGE:
+ ld hl,TC_SCAN
+ ld de,TC_LENGTH
+ call TC_CMP3
+ ret nz
+TC_RIGHT_VIRTUAL:
+ ld hl,(TC_VIRTUAL)
+ ld de,4095
+ or a
+ sbc hl,de
+ jp nc,TC_OK
+ ld hl,(TC_VIRTUAL)
+ inc hl
+ ld (TC_VIRTUAL),hl
+ xor a
+ ld (TC_PREFVALID),a
+ ret
+TC_MOTION_EDGE:
+ ld hl,TC_SCAN
+ ld de,TC_ZERO
+ call TC_CMP3
+ jp z,TC_OK
+ ld hl,TC_SCAN
+ ld de,TC_LENGTH
+ call TC_CMP3
+ jp z,TC_OK
+ scf
+ ret
+TC_HOME:
+ call TC_POS_SCAN
+ call TC_START
+ ret c
+ jp TC_COMMIT_SCAN
+TC_END_LINE:
+ call TC_POS_SCAN
+ call TC_EOL
+ ret c
+ jp TC_COMMIT_SCAN
+TC_DOC_HOME:
+ ld hl,TC_ZERO
+ ld de,TC_SCAN
+ call TC_COPY3
+ jp TC_COMMIT_SCAN
+TC_DOC_END:
+ ld hl,TC_LENGTH
+ ld de,TC_SCAN
+ call TC_COPY3
+ jp TC_COMMIT_SCAN
+
+; Delimiters are fixed by the 3.30 oracle: whitespace and . , : ; ! ?.
+; Hyphen, underscore and other source punctuation remain in the word.
+TC_DELIMITER:
+ cp 9
+ ret z
+ cp 10
+ ret z
+ cp 13
+ ret z
+ cp ' '
+ ret z
+ cp '.'
+ ret z
+ cp ','
+ ret z
+ cp ':'
+ ret z
+ cp ';'
+ ret z
+ cp '!'
+ ret z
+ cp '?'
+ ret
+TC_WORD_RIGHT:
+ ld hl,(TC_VIRTUAL)
+ ld a,h
+ or l
+ jp nz,TC_OK
+ call TC_POS_SCAN
+ call TC_WORD_END
+ ret c
+ jp TC_COMMIT_SCAN
+TC_WORD_END:
+ call TC_FETCH
+ jp c,TC_WORD_EOF
+ cp 13
+ ret z
+ cp 10
+ ret z
+ call TC_DELIMITER
+ jp z,TC_WORD_SPACE
+ call TC_NEXT
+ ret c
+ jp TC_WORD_END
+TC_WORD_SPACE:
+ call TC_FETCH
+ jp c,TC_WORD_EOF
+ cp 13
+ ret z
+ cp 10
+ ret z
+ call TC_DELIMITER
+ jp nz,TC_OK
+ call TC_NEXT
+ ret c
+ jp TC_WORD_SPACE
+TC_WORD_EOF:
+ ld hl,TC_SCAN
+ ld de,TC_LENGTH
+ call TC_CMP3
+ ret z
+ scf
+ ret
+TC_WORD_LEFT:
+ call TC_POS_SCAN
+ call TC_START
+ ret c
+ ld hl,TC_SCAN
+ ld de,TC_WORD_BOUND
+ call TC_COPY3
+ call TC_POS_SCAN
+TC_WLEFT_SKIP:
+ ld hl,TC_SCAN
+ ld de,TC_WORD_BOUND
+ call TC_CMP3
+ jp z,TC_COMMIT_SCAN
+ call TC_PREV
+ jp c,TC_WLEFT_EDGE
+ call TC_FETCH
+ ret c
+ call TC_DELIMITER
+ jp z,TC_WLEFT_SKIP
+TC_WLEFT_WORD:
+ ld hl,TC_SCAN
+ ld de,TC_WORD_BOUND
+ call TC_CMP3
+ jp z,TC_COMMIT_SCAN
+ ld hl,TC_SCAN
+ ld de,TC_SAVED
+ call TC_COPY3
+ call TC_PREV
+ jp c,TC_WLEFT_EDGE
+ call TC_FETCH
+ ret c
+ call TC_DELIMITER
+ jp nz,TC_WLEFT_WORD
+ ld hl,TC_SAVED
+ ld de,TC_SCAN
+ call TC_COPY3
+ jp TC_COMMIT_SCAN
+TC_WLEFT_EDGE:
+ ld hl,TC_SCAN
+ ld de,TC_ZERO
+ call TC_CMP3
+ jp nz,TC_READ_ERROR
+ jp TC_COMMIT_SCAN
+
+TC_VERTICAL_PREF:
+ ld a,(TC_PREFVALID)
+ or a
+ ret nz
+ call TC_COLUMN
+ ret c
+ ld (TC_PREF),hl
+ ld a,1
+ ld (TC_PREFVALID),a
+ or a
+ ret
+TC_UP:
+ call TC_VERTICAL_PREF
+ ret c
+ call TC_POS_SCAN
+ call TC_START
+ ret c
+ call TC_PREV
+ jp c,TC_MOTION_EDGE
+ call TC_START
+ ret c
+ jp TC_PREFERRED
+TC_DOWN:
+ call TC_VERTICAL_PREF
+ ret c
+ call TC_POS_SCAN
+ call TC_EOL
+ ret c
+ call TC_NEXT
+ jp c,TC_MOTION_EDGE
+TC_PREFERRED:
+ ld hl,0
+ ld (TC_VISUAL),hl
+TCP_COLUMN:
+ call TC_FETCH
+ jp c,TCP_FETCH_EDGE
+ cp 13
+ jp z,TCP_DONE
+ cp 10
+ jp z,TCP_DONE
+ call TC_VISUAL_NEXT
+ ld de,(TC_PREF)
+ or a
+ sbc hl,de
+ jp z,TCP_ADVANCE
+ jp nc,TCP_DONE
+TCP_ADVANCE:
+ ld hl,TC_SCAN
+ call TC_INC3
+ jp TCP_COLUMN
+TCP_DONE:
+ ld hl,TC_SCAN
+ ld de,TC_POS
+ call TC_COPY3
+ ld hl,0
+ ld (TC_VIRTUAL),hl
+ call TC_FETCH
+ jp c,TCP_VIRTUAL_EDGE
+ cp 13
+ jp z,TCP_VIRTUAL
+ cp 10
+ jp nz,TC_OK
+TCP_VIRTUAL:
+ ld hl,(TC_PREF)
+ ld de,(TC_VISUAL)
+ or a
+ sbc hl,de
+ jp c,TC_OK
+ ld (TC_VIRTUAL),hl
+ or a
+ ret
+TCP_VIRTUAL_EDGE:
+ ld hl,TC_SCAN
+ ld de,TC_LENGTH
+ call TC_CMP3
+ jp z,TCP_VIRTUAL
+ scf
+ ret
+TCP_FETCH_EDGE:
+ ld hl,TC_SCAN
+ ld de,TC_LENGTH
+ call TC_CMP3
+ jp z,TCP_DONE
+TC_READ_ERROR:
+ scf
+ ret
+TC_PAGE_UP:
+ ld a,21
+ ld (TC_REPEAT_COUNT),a
+TCPU_LOOP:
+ call TC_UP
+ ret c
+ call TC_SCROLL_UP
+ ret c
+ ld hl,TC_REPEAT_COUNT
+ dec (hl)
+ jp nz,TCPU_LOOP
+ or a
+ ret
+TC_PAGE_DOWN:
+ ld a,21
+ ld (TC_REPEAT_COUNT),a
+TCPD_LOOP:
+ call TC_DOWN
+ ret c
+ call TC_SCROLL_DOWN
+ ret c
+ ld hl,TC_REPEAT_COUNT
+ dec (hl)
+ jp nz,TCPD_LOOP
+ or a
+ ret
+TC_SCROLL_UP:
+ ld hl,TC_TOP
+ ld de,TC_SCAN
+ call TC_COPY3
+ call TC_PREV
+ jp c,TC_MOTION_EDGE
+ call TC_START
+ ret c
+ jp TC_SCROLL_COMMIT
+TC_SCROLL_DOWN:
+ ld hl,TC_TOP
+ ld de,TC_SCAN
+ call TC_COPY3
+ call TC_EOL
+ ret c
+ call TC_NEXT
+ jp c,TC_MOTION_EDGE
+TC_SCROLL_COMMIT:
+ ld hl,TC_SCAN
+ ld de,TC_TOP
+ call TC_COPY3
+ or a
+ ret
+
+TC_EDIT_AT_CURSOR:
+ ld hl,TC_POS
+ ld de,TC_EDIT_BEGIN
+ call TC_COPY3
+ ld hl,TC_POS
+ ld de,TC_EDIT_END
+ call TC_COPY3
+ ld hl,0
+ ld (TC_INCOUNT),hl
+ ld (TC_ADVANCE),hl
+ ret
+TC_TYPE:
+ ld hl,(TC_VIRTUAL)
+ ld a,h
+ or l
+ jp nz,TC_TYPE_VIRTUAL
+ call TC_EDIT_AT_CURSOR
+ ld a,(TC_CHAR)
+ ld (TW_INSERT),a
+ ld hl,1
+ ld (TC_INCOUNT),hl
+ ld (TC_ADVANCE),hl
+ ld a,(TC_INSERT)
+ or a
+ jp nz,TC_DO_EDIT
+ call TC_POS_SCAN
+ call TC_FETCH
+ jp c,TC_TYPE_EDGE
+ cp 13
+ jp z,TC_DO_EDIT
+ cp 10
+ jp z,TC_DO_EDIT
+ ld b,a
+ ld a,(TC_CHAR)
+ cp b
+ jp z,TC_TYPE_SAME
+ ld hl,TC_EDIT_END
+ call TC_INC3
+ jp TC_DO_EDIT
+TC_TYPE_SAME:
+ ld hl,TC_POS
+ call TC_INC3
+ or a
+ ret
+TC_TYPE_VIRTUAL:
+ call TC_EDIT_AT_CURSOR
+ ld a,(TC_CHAR)
+ ld (TW_INSERT),a
+ ld hl,1
+ ld (TC_INCOUNT),hl
+ ld (TC_ADVANCE),hl
+TC_VIRTUAL_SPLICE:
+ ; Four bounded segments: literal prefix, generated SPACE run, insertion,
+ ; literal suffix. No allocation proportional to the virtual column.
+ ld hl,TC_VIRTUAL_TEMPLATE
+ ld de,TW_SEGMENTS
+ ld bc,28
+ ldir
+ ld hl,TC_POS
+ ld de,TW_SEGMENTS+4
+ call TC_COPY3
+ ld hl,(TC_VIRTUAL)
+ ld (TW_SEGMENTS+11),hl
+ ld hl,(TC_INCOUNT)
+ ld (TW_SEGMENTS+18),hl
+ ld hl,TC_POS
+ ld de,TW_SEGMENTS+22
+ call TC_COPY3
+ ld hl,TC_LENGTH
+ ld de,TW_SEGMENTS+25
+ call TC_COPY3
+ ld hl,TW_SEGMENTS+25
+ ld de,TC_POS
+ call TC_SUB3
+ ld a,4
+ ld (TW_SEGCOUNT),a
+ call TW_EDIT
+ ret c
+ ld hl,(TC_VIRTUAL)
+ ld de,(TC_ADVANCE)
+ add hl,de
+ ld (TC_DELTA),hl
+ xor a
+ ld (TC_DELTA+2),a
+ ld hl,TC_POS
+ ld de,TC_DELTA
+ call TC_ADD3
+ xor a
+ ld (TC_VIRTUAL),a
+ ld (TC_VIRTUAL+1),a
+ ld (TC_PREFVALID),a
+ jp TC_SYNC
+TC_TYPE_EDGE:
+ ld hl,TC_SCAN
+ ld de,TC_LENGTH
+ call TC_CMP3
+ jp z,TC_DO_EDIT
+ scf
+ ret
+TC_RETURN:
+ call TC_EDIT_AT_CURSOR
+ call TC_BREAK_BYTES
+ ld hl,(TC_INCOUNT)
+ ld (TC_ADVANCE),hl
+ ld hl,(TC_VIRTUAL)
+ ld a,h
+ or l
+ jp nz,TC_VIRTUAL_SPLICE
+ jp TC_DO_EDIT
+TC_NEWLINE:
+ call TC_EDIT_AT_CURSOR
+ call TC_BREAK_BYTES
+ jp TC_DO_EDIT
+TC_BREAK_BYTES:
+ ld a,(TW_META+20)
+ cp 2
+ jp z,TC_LF_BYTES
+ ld a,13
+ ld (TW_INSERT),a
+ ld hl,1
+ ld (TC_INCOUNT),hl
+ ld a,(TW_META+20)
+ cp 3
+ ret z
+ ld a,10
+ ld (TW_INSERT+1),a
+ inc hl
+ ld (TC_INCOUNT),hl
+ ret
+TC_LF_BYTES:
+ ld a,10
+ ld (TW_INSERT),a
+ ld hl,1
+ ld (TC_INCOUNT),hl
+ ret
+TC_BACKSPACE:
+ ld hl,(TC_VIRTUAL)
+ ld a,h
+ or l
+ jp nz,TC_LEFT
+ call TC_EDIT_AT_CURSOR
+ call TC_POS_SCAN
+ call TC_PREV
+ jp c,TC_MOTION_EDGE
+ ld hl,TC_SCAN
+ ld de,TC_EDIT_BEGIN
+ call TC_COPY3
+ call TC_FETCH
+ ret c
+ cp 13
+ jp z,TC_DO_EDIT
+ cp 10
+ jp z,TC_DO_EDIT
+ ld b,a
+ ld a,(TC_INSERT)
+ or a
+ jp nz,TC_DO_EDIT
+ ld a,b
+ cp ' '
+ jp z,TC_BACKSPACE_SPACE
+ ld a,' '
+ ld (TW_INSERT),a
+ ld hl,1
+ ld (TC_INCOUNT),hl
+ jp TC_DO_EDIT
+TC_BACKSPACE_SPACE:
+ ld hl,TC_SCAN
+ ld de,TC_POS
+ jp TC_COPY3
+TC_DELETE:
+ ld hl,(TC_VIRTUAL)
+ ld a,h
+ or l
+ jp nz,TC_OK
+ call TC_POS_SCAN
+ call TC_FETCH
+ jp c,TC_MOTION_EDGE
+ cp 13
+ jp z,TC_OK
+ cp 10
+ jp z,TC_OK
+ call TC_EDIT_AT_CURSOR
+ call TC_POS_SCAN
+ call TC_NEXT
+ jp c,TC_MOTION_EDGE
+ ld hl,TC_SCAN
+ ld de,TC_EDIT_END
+ call TC_COPY3
+ jp TC_DO_EDIT
+TC_DEL_EOL:
+ call TC_EDIT_AT_CURSOR
+ call TC_POS_SCAN
+ call TC_EOL
+ ret c
+ ld hl,TC_SCAN
+ ld de,TC_EDIT_END
+ call TC_COPY3
+ jp TC_DO_EDIT
+TC_DEL_WORD:
+ ld hl,(TC_VIRTUAL)
+ ld a,h
+ or l
+ jp nz,TC_OK
+ call TC_EDIT_AT_CURSOR
+ call TC_POS_SCAN
+ call TC_WORD_END
+ ret c
+ ld hl,TC_SCAN
+ ld de,TC_EDIT_END
+ call TC_COPY3
+ jp TC_DO_EDIT
+TC_DEL_LINE:
+ call TC_EDIT_AT_CURSOR
+ call TC_POS_SCAN
+ call TC_START
+ ret c
+ ld hl,TC_SCAN
+ ld de,TC_EDIT_BEGIN
+ call TC_COPY3
+ call TC_EOL
+ ret c
+ call TC_NEXT
+ jp nc,TC_LINE_DELETE_READY
+ ld hl,TC_SCAN
+ ld de,TC_LENGTH
+ call TC_CMP3
+ jp nz,TC_READ_ERROR
+TC_LINE_DELETE_READY:
+ ld hl,TC_SCAN
+ ld de,TC_EDIT_END
+ call TC_COPY3
+
+TC_DO_EDIT:
+ ; Canonical three-segment splice. Failure cannot move cursor or markers.
+ ld hl,TC_EDIT_END
+ ld de,TC_LENGTH
+ call TC_CMP3
+ jp c,TCE_RANGE_OK
+ jp nz,TC_UNSUPPORTED
+TCE_RANGE_OK:
+ ld hl,TC_EDIT_BEGIN
+ ld de,TC_EDIT_END
+ call TC_CMP3
+ jp nc,TCE_EMPTY_CHECK
+TCE_BUILD:
+ call WL_EDIT
+ ret c
+ or a
+ jp z,TCE_COMMIT
+ ld hl,TC_SEG_TEMPLATE
+ ld de,TW_SEGMENTS
+ ld bc,21
+ ldir
+ ld hl,TC_EDIT_BEGIN
+ ld de,TW_SEGMENTS+4
+ call TC_COPY3
+ ld hl,(TC_INCOUNT)
+ ld (TW_SEGMENTS+11),hl
+ ld hl,TC_EDIT_END
+ ld de,TW_SEGMENTS+15
+ call TC_COPY3
+ ld hl,TC_LENGTH
+ ld de,TW_SEGMENTS+18
+ call TC_COPY3
+ ld hl,TW_SEGMENTS+18
+ ld de,TC_EDIT_END
+ call TC_SUB3
+ ld a,3
+ ld (TW_SEGCOUNT),a
+ call TW_EDIT
+ ret c
+TCE_COMMIT:
+ call TC_ADJUST_MARKS
+ ld hl,TC_EDIT_BEGIN
+ ld de,TC_POS
+ call TC_COPY3
+ ld hl,(TC_ADVANCE)
+ ld (TC_DELTA),hl
+ xor a
+ ld (TC_DELTA+2),a
+ ld hl,TC_POS
+ ld de,TC_DELTA
+ call TC_ADD3
+ xor a
+ ld (TC_PREFVALID),a
+ ld (TC_VIRTUAL),a
+ ld (TC_VIRTUAL+1),a
+ jp TC_SYNC
+TCE_EMPTY_CHECK:
+ jp nz,TC_UNSUPPORTED
+ ld hl,(TC_INCOUNT)
+ ld a,h
+ or l
+ ret z
+ jp TCE_BUILD
+
+TC_ADJUST_MARKS:
+ ld a,(TC_BSET)
+ or a
+ jp z,TC_ADJUST_END
+ ld hl,TC_BEGIN
+ xor a
+ call TC_ADJUST_ONE
+TC_ADJUST_END:
+ ld a,(TC_ESET)
+ or a
+ ret z
+ ld hl,TC_END
+ ld a,1
+TC_ADJUST_ONE:
+ ld (TC_AFFINITY),a
+ ld (TC_MARKPTR),hl
+ ld de,TC_EDIT_BEGIN
+ call TC_CMP3
+ ret c
+ ld de,TC_EDIT_END
+ call TC_CMP3
+ jp c,TC_MARK_INSIDE
+ jp z,TC_MARK_BOUNDARY
+ ld hl,TC_EDIT_END
+ ld de,TC_DELTA
+ call TC_COPY3
+ ld hl,TC_DELTA
+ ld de,TC_EDIT_BEGIN
+ call TC_SUB3
+ ld hl,(TC_MARKPTR)
+ ld de,TC_DELTA
+ call TC_SUB3
+ jp TC_MARK_ADD
+TC_MARK_BOUNDARY:
+ ld hl,TC_EDIT_BEGIN
+ ld de,TC_EDIT_END
+ call TC_CMP3
+ jp nz,TC_MARK_AFTER
+TC_MARK_INSIDE:
+ ld hl,TC_EDIT_BEGIN
+ ld de,(TC_MARKPTR)
+ call TC_COPY3
+ ld a,(TC_AFFINITY)
+ or a
+ ret z
+ jp TC_MARK_ADD
+TC_MARK_AFTER:
+ ld hl,TC_EDIT_BEGIN
+ ld de,(TC_MARKPTR)
+ call TC_COPY3
+TC_MARK_ADD:
+ ld hl,(TC_INCOUNT)
+ ld (TC_DELTA),hl
+ xor a
+ ld (TC_DELTA+2),a
+ ld hl,(TC_MARKPTR)
+ ld de,TC_DELTA
+ jp TC_ADD3
+
+TC_MARK_BEGIN:
+ ld hl,TC_POS
+ ld de,TC_BEGIN
+ call TC_COPY3
+ ld a,1
+ ld (TC_BSET),a
+ or a
+ ret
+TC_MARK_END:
+ ld hl,TC_POS
+ ld de,TC_END
+ call TC_COPY3
+ ld a,1
+ ld (TC_ESET),a
+ or a
+ ret
+TC_HIDE:
+ ld a,(TC_SHOW)
+ xor 1
+ ld (TC_SHOW),a
+ or a
+ ret
+TC_GOTO_BEGIN:
+ ld a,(TC_BSET)
+ or a
+ jp z,TC_UNSUPPORTED
+ ld hl,TC_BEGIN
+ ld de,TC_SCAN
+ call TC_COPY3
+ jp TC_COMMIT_SCAN
+TC_GOTO_END:
+ ld a,(TC_ESET)
+ or a
+ jp z,TC_UNSUPPORTED
+ ld hl,TC_END
+ ld de,TC_SCAN
+ call TC_COPY3
+ jp TC_COMMIT_SCAN
+TC_BLOCK_VALID:
+ ld a,(TC_BSET)
+ ld b,a
+ ld a,(TC_ESET)
+ and b
+ jp z,TC_BLOCK_BAD
+ ld hl,TC_BEGIN
+ ld de,TC_END
+ call TC_CMP3
+ jp nc,TC_BLOCK_BAD
+ ld hl,TC_END
+ ld de,TC_LENGTH
+ call TC_CMP3
+ jp c,TC_OK
+ jp z,TC_OK
+TC_BLOCK_BAD:
+ scf
+ ret
+TC_DEL_BLOCK:
+ call TC_BLOCK_VALID
+ jp c,TC_UNSUPPORTED
+ ld hl,TC_BEGIN
+ ld de,TC_EDIT_BEGIN
+ call TC_COPY3
+ ld hl,TC_END
+ ld de,TC_EDIT_END
+ call TC_COPY3
+ ld hl,0
+ ld (TC_INCOUNT),hl
+ ld (TC_ADVANCE),hl
+ call TC_DO_EDIT
+ ret c
+ xor a
+ ld (TC_BSET),a
+ ld (TC_ESET),a
+ ret
+
+; Block copy/move use immutable old-document segments; no intermediate
+; deletion is visible if allocation, validation or disk I/O fails.
+TC_COPY_BLOCK:
+ xor a
+ jp TC_BLOCK_TRANSFER
+TC_MOVE_BLOCK:
+ ld a,1
+TC_BLOCK_TRANSFER:
+ ld (TC_MOVING),a
+ call TC_BLOCK_VALID
+ jp c,TC_UNSUPPORTED
+ ld hl,TC_POS
+ ld de,TC_BEGIN
+ call TC_CMP3
+ jp c,TC_BLOCK_BEFORE
+ jp z,TC_BLOCK_BOUNDARY
+ ld de,TC_END
+ call TC_CMP3
+ jp c,TC_UNSUPPORTED
+ jp z,TC_BLOCK_BOUNDARY
+ jp TC_BLOCK_AFTER
+TC_BLOCK_BOUNDARY:
+ ld a,(TC_MOVING)
+ or a
+ ret nz
+TC_BLOCK_AFTER:
+ ld a,1
+ ld (TC_AFTER_BLOCK),a
+ jp TC_BLOCK_BUILD
+TC_BLOCK_BEFORE:
+ xor a
+ ld (TC_AFTER_BLOCK),a
+TC_BLOCK_BUILD:
+ ld hl,TC_END
+ ld de,TC_BLOCKLEN
+ call TC_COPY3
+ ld hl,TC_BLOCKLEN
+ ld de,TC_BEGIN
+ call TC_SUB3
+ ld hl,TC_POS
+ ld de,TC_INSERT_AT
+ call TC_COPY3
+ ld a,(TC_MOVING)
+ or a
+ jp z,TC_BLOCK_COPY_SEG
+ ld a,(TC_AFTER_BLOCK)
+ or a
+ jp z,TC_BLOCK_MOVE_BEFORE
+ ld hl,TC_INSERT_AT
+ ld de,TC_BLOCKLEN
+ call TC_SUB3
+ ; prefix [0,B), middle [E,destination), block [B,E), suffix
+ ld hl,TC_BEGIN
+ ld de,TC_BOUND1
+ call TC_COPY3
+ ld hl,TC_END
+ ld de,TC_BOUND2
+ call TC_COPY3
+ ld hl,TC_POS
+ ld de,TC_BOUND3
+ call TC_COPY3
+ jp TC_BLOCK_MOVE_SEG
+TC_BLOCK_MOVE_BEFORE:
+ ; prefix [0,destination), block [B,E), middle [destination,B), suffix
+ ld hl,TC_POS
+ ld de,TC_BOUND1
+ call TC_COPY3
+ ld hl,TC_POS
+ ld de,TC_BOUND2
+ call TC_COPY3
+ ld hl,TC_BEGIN
+ ld de,TC_BOUND3
+ call TC_COPY3
+TC_BLOCK_MOVE_SEG:
+ ld hl,TC_FOUR_TEMPLATE
+ ld de,TW_SEGMENTS
+ ld bc,28
+ ldir
+ ld hl,TC_BOUND1
+ ld de,TW_SEGMENTS+4
+ call TC_COPY3
+ ld a,(TC_AFTER_BLOCK)
+ or a
+ jp z,TC_MOVE_EARLY_FIELDS
+ ld hl,TC_BOUND2
+ ld de,TW_SEGMENTS+8
+ call TC_COPY3
+ ld hl,TC_BOUND3
+ ld de,TW_SEGMENTS+11
+ call TC_COPY3
+ ld hl,TW_SEGMENTS+11
+ ld de,TC_BOUND2
+ call TC_SUB3
+ ld hl,TC_BEGIN
+ ld de,TW_SEGMENTS+15
+ call TC_COPY3
+ ld hl,TC_BLOCKLEN
+ ld de,TW_SEGMENTS+18
+ call TC_COPY3
+ jp TC_MOVE_SUFFIX
+TC_MOVE_EARLY_FIELDS:
+ ld hl,TC_BEGIN
+ ld de,TW_SEGMENTS+8
+ call TC_COPY3
+ ld hl,TC_BLOCKLEN
+ ld de,TW_SEGMENTS+11
+ call TC_COPY3
+ ld hl,TC_BOUND2
+ ld de,TW_SEGMENTS+15
+ call TC_COPY3
+ ld hl,TC_BOUND3
+ ld de,TW_SEGMENTS+18
+ call TC_COPY3
+ ld hl,TW_SEGMENTS+18
+ ld de,TC_BOUND2
+ call TC_SUB3
+TC_MOVE_SUFFIX:
+ ld a,(TC_AFTER_BLOCK)
+ or a
+ ld hl,TC_POS
+ jp nz,TC_MOVE_SUFFIX_POS
+ ld hl,TC_END
+TC_MOVE_SUFFIX_POS:
+ ld de,TW_SEGMENTS+22
+ call TC_COPY3
+ ld hl,TC_LENGTH
+ ld de,TW_SEGMENTS+25
+ call TC_COPY3
+ ld hl,TW_SEGMENTS+25
+ ld de,TW_SEGMENTS+22
+ call TC_SUB3
+ ld a,4
+ jp TC_BLOCK_RUN
+TC_BLOCK_COPY_SEG:
+ ld hl,TC_THREE_OLD
+ ld de,TW_SEGMENTS
+ ld bc,21
+ ldir
+ ld hl,TC_POS
+ ld de,TW_SEGMENTS+4
+ call TC_COPY3
+ ld hl,TC_BEGIN
+ ld de,TW_SEGMENTS+8
+ call TC_COPY3
+ ld hl,TC_BLOCKLEN
+ ld de,TW_SEGMENTS+11
+ call TC_COPY3
+ ld hl,TC_POS
+ ld de,TW_SEGMENTS+15
+ call TC_COPY3
+ ld hl,TC_LENGTH
+ ld de,TW_SEGMENTS+18
+ call TC_COPY3
+ ld hl,TW_SEGMENTS+18
+ ld de,TC_POS
+ call TC_SUB3
+ ld a,3
+TC_BLOCK_RUN:
+ ld (TW_SEGCOUNT),a
+ call TW_EDIT
+ ret c
+ ld hl,TC_INSERT_AT
+ ld de,TC_BEGIN
+ call TC_COPY3
+ ld hl,TC_INSERT_AT
+ ld de,TC_END
+ call TC_COPY3
+ ld hl,TC_END
+ ld de,TC_BLOCKLEN
+ call TC_ADD3
+ ld hl,TC_END
+ ld de,TC_POS
+ call TC_COPY3
+ xor a
+ ld (TC_PREFVALID),a
+ jp TC_SYNC
+
+ dseg
+TC_STATE:
+TC_POS: ds 3
+TC_TOP: ds 3
+TC_BEGIN: ds 3
+TC_END: ds 3
+TC_BSET: db 0
+TC_ESET: db 0
+TC_SHOW: db 0
+TC_INSERT: db 0
+TC_PREFIX: db 0
+TC_ACTION: db 0
+TC_PREF: dw 0
+TC_PREFVALID: db 0
+TC_SCAN: ds 3
+TC_LENGTH: ds 3
+TC_TEMP: ds 3
+TC_SAVED: ds 3
+TC_VISUAL: dw 0
+TC_CHAR: db 0
+TC_WAS_PREFIX: db 0
+TC_REPEAT_COUNT: db 0
+TC_EDIT_BEGIN: ds 3
+TC_EDIT_END: ds 3
+TC_INCOUNT: dw 0
+TC_ADVANCE: dw 0
+TC_DELTA: ds 3
+TC_MARKPTR: dw 0
+TC_AFFINITY: db 0
+TC_MOVING: db 0
+TC_AFTER_BLOCK: db 0
+TC_BLOCKLEN: ds 3
+TC_INSERT_AT: ds 3
+TC_BOUND1: ds 3
+TC_BOUND2: ds 3
+TC_BOUND3: ds 3
+TC_VIRTUAL: dw 0
+TC_WORD_BOUND: ds 3
+TC_STATE_END:
+TC_VIRTUAL_TEMPLATE: db 1,0,0,0,0,0,0,4,0,0,0,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,0,0
+TC_ZERO: db 0,0,0
+TC_SEG_TEMPLATE: db 1,0,0,0,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,0,0
+TC_THREE_OLD: db 1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0
+TC_FOUR_TEMPLATE: db 1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0
+ end

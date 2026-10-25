@@ -3,13 +3,14 @@
 Status: adopted implementation direction, 2026-10-25; detailed behavioral
 contract proposed for implementation review. TED is the selected Utilities
 Disk full-screen editor. No implementation, platform qualification or release
-acceptance is claimed by this specification. New behavioral choices below are
-explicit requirements for the adaptation, not claims about unmodified TED.
+acceptance is claimed by this specification. Section 3 records the user-agreed command scope and explicitly identifies
+remaining review items. Earlier broader interaction proposals are superseded.
+No claim about an unmodified TED capability is implied by a new binding.
 
 ## 1. Purpose, scope and authority
 
 Adopt Hector Peraza's Z80 TED as a source-maintained adaptation providing
-WordStar-compatible non-document editing and file commands, recoverable file
+WordStar command sequences over TED editing and file behavior, recoverable file
 publication, correct transient-memory ownership and preservation of source
 text on BetterCP/M. Qualify the same portable editor on z80pack/cpmsim and
 trs80gp/TRS-80 Model 4, with physical Model 4 hardware a separately reported
@@ -31,7 +32,7 @@ system-wide key-binding change is authorized by this adaptation.
 
 ### 1.1 Initial release scope
 
-- One document at a time, with a disk-backed workspace and character blocks.
+- One document at a time, with a disk-backed workspace and existing whole-line range operations.
 - Source/non-document editing; no automatic word wrap or paragraph formatting.
 - The movement, editing, search, block and file commands in section 3.
 - 80-column, 24-row operation on both platforms, using explicit terminal
@@ -42,7 +43,9 @@ system-wide key-binding change is authorized by this adaptation.
 
 Document-mode soft returns, WordStar high-bit formatting, printing/mail merge,
 spell checking, multiple simultaneous documents, shell escapes, syntax
-highlighting, background saving and multilevel undo are outside this release.
+highlighting, background saving and all undo are outside this release.
+Preserve TED behavior when binding an existing operation. The only agreed
+small editing additions are the line-local word operations described in section 3; other new features require explicit scope review.
 Unsupported commands must be identified; they must never invoke a conflicting
 TED operation or silently transform document bytes.
 
@@ -77,12 +80,13 @@ binary hashes in a TED reference-baseline document. The
 is a reference, not a license to redistribute WordStar. Do not import its code,
 manual prose, screens or binaries into TED's distributable package.
 
-For the supported subset, compare observable cursor, text, block, search and
-file-command behavior with the pinned oracle. This specification's explicit
-safety/text-preservation rules take precedence over historical destructive or
-formatting behavior. Record each deliberate difference. Unresolved oracle
-details block the affected compatibility claim; they do not justify guessing
-and calling the result compatible.
+For aliases to existing operations, the pinned TED source and documentation
+are the behavioral reference. Qualify aliases against invoking the original
+operation with the same arguments. WordStar is a reference for command spelling,
+not authority to add features or replace TED semantics. The explicitly agreed
+word operations use section 3's bounded definitions. Repeat-find is excluded. Safety,
+text-preservation and memory requirements override confirmed upstream defects.
+Do not claim complete WordStar behavioral compatibility.
 
 ## 3. WordStar-compatible interaction
 
@@ -92,72 +96,126 @@ they open a text field. Every recognized key is consumed exactly once.
 
 ### 3.1 Command matrix
 
+Latest scope decision: no ^Q prefix in this release. Retain TED's original
+^Q previous-tab-stop operation. All earlier ^Q-prefixed proposals are withdrawn;
+a possible future prefix is outside this implementation scope.
+
+^K is explicitly reassigned from TED's insert-line-above operation to the
+agreed block/file command prefix. Retain ^J as TED's insert-empty-line-below
+operation, including its existing cursor behavior. Moving up one line then
+using ^J is the accepted usual workaround for insertion above; it does not
+cover insertion above the first line. Do not add a replacement binding or
+feature for that edge case without review.
+
+The following is the complete agreed screen-editing control-key map. Retained
+operations call TED's original machinery, subject to the separately required
+safety, memory and text-preservation fixes. Preserve original boundary and
+cursor behavior unless an explicit addition below says otherwise.
+
 | Keys | Required action |
 | --- | --- |
-| ^S / ^D | Previous/next character boundary. |
-| ^E / ^X | Previous/next logical line, retaining preferred display column. |
-| ^A / ^F | Previous/next word; freeze exact delimiter behavior with oracle fixtures. |
-| ^R / ^C | Page up/down by the visible text height, preserving screen-relative position where possible. |
-| ^W / ^Z | Scroll viewport one line up/down without changing text. |
-| ^Q S / ^Q D | Beginning/end of current logical line. |
-| ^Q R / ^Q C | Beginning/end of document. |
-| ^Q B / ^Q K | Move to beginning/end block marker. |
-| ^H / DEL | Delete preceding character; at line start join with previous line. |
-| ^G | Delete following character; at line end join with next line. |
-| ^T | Delete next word according to the pinned WordStar word-deletion fixtures. |
-| ^Y | Delete current logical line, including its terminator when present. |
-| ^Q Y | Delete from cursor to line end; preserve the terminator. |
-| ^V | Toggle insert/overwrite; show the active state. |
-| ^M | Insert a line break at cursor and move to the new line. |
-| ^N | Insert a line break at cursor without moving the cursor. |
-| ^I | Insert one literal TAB byte. |
-| ^Q F | Find text using section 3.4. |
-| ^Q A | Replace text using section 3.4. |
-| ^L | Repeat the last committed search/replace operation. |
-| ^K B / ^K K | Mark beginning/end of a character block. |
-| ^K H | Toggle marked-block display; retain the marks. |
-| ^K C / ^K V / ^K Y | Copy/move/delete marked block. |
-| ^K R | Read another file at cursor; current filename remains unchanged. |
-| ^K W | Write marked block to a prompted file through safe publication. |
-| ^K S | Save current document and continue at the same cursor/viewport. |
-| ^K D | Save and close document, then return to TED opening screen. |
-| ^K X | Save and exit to the CP/M command prompt. |
-| ^K Q | Abandon current document, default-No confirmation if modified, then return to opening screen. |
-| ^J | Context help; return without changing text or document position. |
+| ^A / ^F | Line-local word-left/right as defined below (approved additions). |
+| ^B / ^N | Retain TED browse-mode entry. |
+| ^C / ^R | Page down/up using TED's existing paging machinery. |
+| ^D / ^S | Retain TED cursor right/left. |
+| ^E / ^X | Retain TED cursor up/down. |
+| ^G / DEL / ^] | Invoke TED delete-right; DEL is the approved reassigned alias. |
+| ^H / Backspace | Retain TED delete-left. |
+| ^I / TAB | Insert TAB, retaining literal text through the preservation adapter. |
+| ^J / LF | Retain TED insert-empty-line-below and existing cursor behavior. |
+| ^K | Block/file prefix; replaces TED insert-line-above binding. |
+| ^L | Retain TED toggle between beginning/end of current line; no repeat-find. |
+| ^M / Return | Retain TED split-line-at-cursor operation. |
+| ^O | Invoke existing next-tab-stop routine, displaced from ^F. |
+| ^P | Retain TED duplicate-current-line operation. |
+| ^Q | Retain TED previous-tab-stop; not a prefix. |
+| ^T | Line-local delete-word as defined below (approved addition). |
+| ^U | Invoke existing screen-top/bottom cursor toggle, displaced from ^T. |
+| ^V | Retain TED insert/overwrite toggle and overwrite startup default. |
+| ^W | Unused/no-op, as in original TED; no scroll-up operation. |
+| ^Y / ^^ | Retain TED delete-current-line operation. |
+| ^Z | Return from screen editing to TED command mode. |
+| ^_ | Retain TED redraw operation, while ^R is reassigned to page up. |
+| ESC (^[) | Retain terminal escape-key handling in normal screen mode; cancel an active prefix/prompt locally. |
+| ^@ / ^\ | Retain original no-op bindings. |
 
-The distinction between ^K D and ^K X corrects the earlier conversational
-outline, which treated both as exit-to-CP/M. TED has no requirement to reproduce
-WordStar's complete opening menu. Its opening screen shall offer Open/New,
-Help and Exit; closing a document must not unexpectedly select another file.
-Exit from the opening screen performs normal workspace cleanup.
+| ^K sequence | Required action |
+| --- | --- |
+| ^KC | Prompt for first/last source line and destination; invoke TED M. |
+| ^KV | Prompt for first/last source line and destination; invoke TED MD. |
+| ^KY | Prompt for first/last source line; invoke TED D. |
+| ^KR | Invoke TED R through its argument prompts and retain existing defaults. |
+| ^KW | Invoke TED W through its argument prompts, including range, filename and replace/append arguments. |
+| ^KS | Invoke default W and remain editing after successful save. |
+| ^KX | Invoke default W, then EX only after verified successful save. |
+| ^KQ | Invoke EX; default-No abandonment confirmation if modified. |
+
+^KD is omitted. ^KB, ^KK and ^KH are not implemented. There is no ^Q prefix,
+repeat-find binding, new context-help binding, or persistent marked block.
+Retain ordinary character entry, existing terminal-key aliases and TED's
+command language. Physical aliases must not override an agreed control byte.
+In browse mode retain the original arrow-key paging/horizontal-shift behavior
+and Return/^C/^Z return to screen editing. In command mode retain command
+parsing, Return execution, ^C execution followed by screen editing, and ^Z
+exit subject to the required abandonment safeguard.
+
+Navigation and basic editing were accepted, subject to the overarching rule
+that aliases reuse TED behavior. The approved Backspace/^H binding deletes
+left; DEL is a synonym for ^G (delete right). Physical keys delivering identical
+bytes require no distinction. Do not add cross-line joins merely to reproduce
+WordStar; retain TED's existing deletion/join rules, subject to preservation.
+Where an earlier matrix description implies an extra behavior absent upstream,
+audit and resolve it explicitly rather than treating it as authorization.
+
+### Agreed bounded word-operation additions
+
+The user approved `^A` (word-left), `^F` (word-right), and `^T`
+(delete-word) as small additions to TED. These are not aliases for existing
+upstream word operations. Keep them line-local: never cross or delete a line
+ending. Separators are SPACE, TAB, and `. , : ; ! ?`; underscores and hyphens
+remain word characters. Word-left skips separators to the left, then scans to
+the beginning of the preceding/current word. Word-right skips the rest of the
+current word and following separators. Delete-word removes the same range that
+word-right traverses without moving the cursor. At boundaries these are no-ops.
+Reuse existing cursor/deletion facilities and the preserving storage adapter;
+no large buffer or persistent word-operation state is required.
 
 ### 3.2 Editing semantics
 
-Start in insert mode. Overwrite replaces the next ordinary byte, never consumes
+Retain TED's overwrite-mode startup default. Overwrite replaces the next ordinary byte, never consumes
 a logical line terminator, and extends the line at its end. Preserve a preferred
 visual column during consecutive vertical moves; horizontal motion establishes
 a new preferred column. Tabs occupy the next eight-column stop for display,
-but cursor positions and blocks refer to byte boundaries. Moving into a tab's
+but cursor positions refer to byte boundaries. Range commands select whole lines by line number. Moving into a tab's
 display span selects a documented adjacent byte boundary; never split a stored
 tab into spaces just to position the cursor. Freeze this boundary behavior in
 fixtures before enabling physical navigation aliases.
 
-Clamp motion at document boundaries. Do not insert spaces merely by moving
-beyond a short line. Horizontal scrolling must permit editing logical lines
+Retain TED's virtual columns beyond a short line: movement alone does not
+insert spaces; explicitly typing there supplies the necessary spaces. Left/right
+movement remains within the current line. Backspace at line start joins with
+the preceding line. Elsewhere it shifts text left in insert mode and blanks the
+preceding character in overwrite mode, retaining TED's actual implementation.
+Forward delete shifts text and is a no-op at line end. Identical overwrite
+characters do not dirty the document. Horizontal scrolling must permit editing logical lines
 longer than 80 columns. Moving/scrolling/help/redraw must not mark text modified.
 No automatic indentation, tabification, case folding, word wrap or trailing-
 space trimming occurs in the initial source-editing profile.
 
 ### 3.3 Prefixes, prompts and terminal keys
 
-Represent normal editing, ^K prefix, ^Q prefix, text prompt, choice prompt,
-opening screen and busy operation as separate states. Show pending prefixes.
+Represent normal editing, ^K prefix, text prompt, choice prompt,
+TED command mode and busy operation as separate states. Show pending prefixes.
 ESC cancels a prefix with no document change. Invalid suffixes report an
 unsupported command and return to normal state without inserting the suffix.
 No prefix may remain active across help, save completion or cancelled prompts.
 
-In ordinary document editing ^C means Page Down, not warm boot or entry to
-TED's legacy prompt. In text fields ESC/^C cancels locally; in long operations
+In ordinary screen editing ^C means Page Down, not warm boot or entry to
+TED's command prompt. ^Z retains the existing return to command mode. In browse
+mode retain TED's existing ^C/^Z return to screen editing; in command mode
+retain ^C command execution followed by screen editing and ^Z exit, with the
+required modified-document abandonment confirmation. Do not implement
+WordStar's ^Z scroll-down command. In text fields ESC/^C cancels locally; in long operations
 they request interruption at safe boundaries. Literal Q is text in editing
 state. Confirmation Enter means No; invalid choices retain the question.
 Default-No abandonment is required even if the historical oracle differs.
@@ -177,53 +235,93 @@ WordStar control keys must work even without optional host escape-key decoding.
 Do not probe with terminal queries that BetterCP/M does not answer, or consume
 ordinary user input while waiting indefinitely for an ESC sequence suffix.
 
-Retain legacy TED command mode only through a visible Advanced command on the
-opening/help UI, outside the WordStar editing bindings. Its destructive writes
-must use the same safe publisher; it is not a bypass. It is not required for
-any supported WordStar workflow.
+Retain TED's existing command mode and original operations. A new opening
+screen, an Advanced-only command-mode restriction, and new context-help behavior
+are not requirements. Retain ^Z for command-mode return, ^J for line
+insertion, ^_ for redraw, ^O for next tab stop and ^U for screen-top/bottom.
+Do not add context help under a displaced TED key.
+All writes, including command-mode writes, must use the safe publisher.
 
-### 3.4 Find and replace
+### 3.4 Search and replacement — existing command mode
 
-Support forward/backward literal search, ASCII case-sensitive/insensitive
-matching, single occurrence, repeat, and global replace. Prompt separately for
-search text, replacement text and options; default to forward/case-sensitive,
-with confirmation for replacements. Preserve accepted settings for ^L. Empty
-replacement means deletion; an empty search is invalid. Cancelling either
-field leaves the last committed search unchanged. Do not interpret filename
-query switches inside literal search/replacement text.
+The latest user decision withdraws the ^Q prefix entirely. Do not implement
+^QF, ^QA, ^QS, ^QD, ^QR, ^QC, ^QY, or block-marker jumps. ^Q retains TED's
+existing previous-tab-stop action. Search remains available through TED's
+existing command-mode `/text/` facility; replacement uses existing `SU`.
+Preserve forward, case-sensitive literal matching, no implicit wrapping,
+within-line matches, optional line-range limits, and existing substitution
+options (all, per-match confirmation, or a specified count). Preserve
+Y=replace, Return=skip, Ctrl-C=stop. Empty replacement deletes matches;
+empty search is rejected. Safety and text-preservation fixes still apply.
 
-Initial prompts may present named choices instead of reproducing WordStar's
-entire option-letter grammar. Mark that difference in help and compatibility
-fixtures. Confirm replacements with Yes/No/All/Cancel; Enter means No, All lasts
-for this operation only. Cancellation keeps completed replacements and reports
-their count, with the document still modified. Search never wraps silently.
-Report end/not-found; a subsequent explicit repeat may start a newly requested
-search, not an undocumented wrapped scan. Search must cross cache boundaries;
-matching must not force the entire document into RAM.
+The earlier repeat-find proposal is withdrawn: ^L retains TED's existing
+beginning/end-of-line toggle. A future ^Q prefix and repeat-find feature are
+outside the agreed release scope.
 
 ### 3.5 Blocks
 
-Represent a block as a half-open byte range [begin,end) in logical document
-order, including any selected TABs and line terminators. Reject reversed,
-missing or empty ranges for operations needing nonempty text. Marks track
-insert/delete operations deterministically; record position-affinity fixtures.
-Block hide changes display only. Copy/move insertion inside the source range
-is rejected without mutation. Move to its own boundary is a no-op. After a
-successful copy/move, mark the inserted range; after deletion clear the marks.
+The agreed bindings are command-sequence aliases for TED's existing whole-line
+operations, not WordStar character-block semantics:
 
-Before changing text, verify capacity for a block operation or stage its result
-in workspace so allocation/disk failure leaves the original document intact.
-File insertion must likewise be complete or leave text unchanged. Operations
-work when source/destination lie in swapped-out blocks. Block-file output does
-not change the document filename or its dirty state and uses section 5.
+- `^KC`: prompt for first source line, last source line, and destination line;
+  invoke existing `M P1 P2 P3` semantics (copy inclusive source range after P3).
+- `^KV`: prompt for the same three line numbers; invoke existing
+  `MD P1 P2 P3` semantics (move inclusive source range after P3).
+- `^KY`: prompt for first and last source line; invoke existing `D P1 P2`
+  semantics (delete inclusive range).
+
+Collect and validate all arguments before invoking the operation. Cancelling a
+prompt leaves the document unchanged. Preserve TED's existing line-number,
+destination, and overlap rules; do not substitute newly invented character-block
+rules. Qualify each binding against the corresponding original TED operation.
+No persistent block boundaries, block highlighting, `^KB`, `^KK`, `^KH`, `^QB`,
+or `^QK` are included. No undo is included. The adaptation adds command
+sequences to existing TED capabilities; additional editor features are out of
+scope. Search remains in existing command mode as defined in section 3.4; file bindings are defined in section 3.6.
+
+The separately required file-safety, memory-boundary, and text-preservation
+fixes still apply. Range operations must leave the document intact on allocation
+or disk failure and work with source/destination data outside the memory cache.
+
+### 3.6 File-command aliases — agreed approach
+
+`^KR` invokes the existing `R [(P)] FILE (N1,N2)` machinery, prompting for its
+arguments. Preserve insertion after line P, default append-to-buffer when P is
+omitted, optional source-line selection, and TED's default filename handling.
+Do not substitute character-at-cursor insertion or a new document-open workflow.
+The required preservation fixes override upstream trailing-space stripping.
+
+`^KW` invokes existing `W [P1 P2] [FILE] [N]` machinery with prompts for its
+arguments. Preserve whole-document or line-range output, omission/default rules,
+explicit output filename, and existing N=0 replace / N=$ append semantics.
+Do not introduce marked blocks or a separate Save As feature, and do not change
+the default document filename merely because W names an alternate output.
+Append must stage the complete original-plus-appended result before publication;
+it must not bypass safe-save requirements by writing directly to the target.
+
+`^KS` invokes default W and continues editing. If no default filename exists,
+obtain the required filename through the W argument interface; do not invent a
+new persistent filename policy. `^KX` composes successful default W with EX;
+on failed/cancelled saving remain in TED. `^KQ` invokes EX, with the separately
+required default-No abandonment confirmation when modified. Preserve TED's
+return to CP/M rather than inventing an opening-screen lifecycle.
+
+The command-binding review is complete. ^KD is omitted; retain ^L, ^N and
+^J as TED operations, ^W as unused, ^_ as redraw, and use ^O/^U for displaced
+next-tab-stop and screen-top/bottom operations. No new in-editor help feature,
+opening screen, file browser, or document-management workflow is authorized.
+Standard /HELP remains a separate required utility query.
 
 ## 4. Invocation, filespecs and queries
 
-Initial syntax: `TED [simple-DU:]filename` or `TED` for the opening screen.
-Open/New and file prompts accept the same exact 8.3 filespec grammar, with
+Initial syntax: `TED [simple-DU:]filename` or `TED` for TED's existing no-filename startup/command mode.
+Invocation and file prompts accept the same exact 8.3 filespec grammar, with
 simple drive/user qualifiers and all 32 BetterCP/M user areas. Capture caller
-DU once. Unqualified invocation uses caller DU; subsequent unqualified file
-prompts use the current document DU, or caller DU before a document is named.
+DU once. Unqualified invocation and explicitly named unqualified R/W operands
+use the captured caller DU, retaining TED's working-directory defaults despite
+internal workspace user selection. Default W uses the complete latest-R
+identity. Workspace defaults to caller DU; WORK DU: may select another writable
+workspace area without changing document identity or output defaults.
 Reject wildcards, attribute predicates and compound selectors before file I/O.
 Use the shared exact-filespec implementation where practical.
 
@@ -290,8 +388,11 @@ deletion choice, defaulting to preservation, after validating their structure.
 | S8 Retain | Keep the original BAK and report its exact name; cleanup owned workspace only on successful close/exit. | Cleanup failure reports a warning and actual retained paths. |
 
 For new targets skip S5. A failed save must never delete an existing final
-object to make publication succeed. Save As changes the current document
-identity only after S7. Save-and-Continue preserves cursor, marks and viewport.
+object to make publication succeed. Writing to an explicit alternate filename retains TED W
+default-filename semantics; do not introduce an identity-changing Save As action.
+A full default-document save marks it clean only after S7. Exporting a range or
+writing/appending to another file does not imply the default document is saved.
+Save-and-Continue preserves cursor and viewport.
 Repeated saves reserve new backups rather than silently replacing an unrelated
 .BAK file. Backup pruning is a later explicit operation, outside initial scope.
 Warn about required free space and accumulating backups; do not present a
@@ -322,7 +423,7 @@ Inspect the union of RO/SYS attributes across physical extents. Read-only
 documents may be opened for inspection. Saving over any RO/SYS target requires
 a separate default-No confirmation naming the actual attributes; ordinary
 overwrite authorization never implies protected-file authorization. After No,
-keep the document editable and permit Save As to another target.
+keep the document editable and permit W output to another target.
 
 Preserve original RO/SYS on the backup and replacement. Clear RO only at a
 specifically authorized mutation boundary, restore it on failed paths, and
@@ -379,7 +480,13 @@ are refused with filename/line/offset evidence, without replacing the current
 document or changing disk files. This is a product limit, not a claim that
 WordStar used this limit. Audit all 8-bit counters and fixed 164-byte buffers.
 Do not allocate a 4096-byte permanent buffer for every line or every cache page;
-use bounded streaming/chunked operations and explicit overflow checks.
+use bounded streaming/chunked operations and explicit overflow checks. One
+4095-byte dirty-line buffer is permitted to retain TED's interactive buffering
+behavior. It must not grow with document size. Validate before RAM mutation;
+failed flushing retains the editable RAM line. Ordinary typing must not require
+full-document disk publication per keystroke. Flush before a different-line
+edit, save/export, or structural operation. Recovery represents the last
+verified checkpoint, not automatic persistence of each keystroke.
 
 Expose the workspace's measured record/address limits rather than advertising
 an unconditional 1 MiB text capacity. Linked-record, line-number and file-offset
@@ -418,7 +525,10 @@ Retain at least upstream's 2048-byte post-static-workspace startup requirement
 only if measured cache/map/stack needs prove it sufficient. Derive and publish
 the actual minimum from the final map and worst-case live state. Fail before
 workspace creation if insufficient. Report available bytes and required bytes.
-No extension loading/unloading is performed during editing, which would change
+The complete static image includes the page cache, dirty-line buffer, prompt
+state, stack and guard. The minimum exclusive ceiling is TED_END; there is no
+extra unbounded heap allocation in the preserving adapter. No extension
+loading/unloading is performed during editing, which would change
 the captured ceiling. Reject/avoid paths that can invalidate document pointers.
 
 Measure stack high-water marks under actual BDOS/BIOS calls, nested prompts,
@@ -441,7 +551,7 @@ query, alternate-screen assumption, full xterm behavior, 132-column switching,
 hardware-specific memory access or function-key dependency is required.
 All actions must be available through the specified control keys. Reserve
 header/status rows and compute Page Up/Down from the actual text viewport.
-Keep the cursor and markers visible, including the final screen column and
+Keep the cursor visible, including the final screen column and
 last logical line. Restore attributes/cursor visibility on exit. Do not promise
 restoration of an arbitrary prior screen image. Require a native Model 4
 keyboard/video campaign in addition to host terminal-model tests.
@@ -482,11 +592,11 @@ reference disks or the user's mounted working media.
 | ID | Campaign | Required evidence |
 | --- | --- | --- |
 | T01 | Provenance/build | Pinned source/archive/license hashes; reproducible cross and native builds; exact COM parity and size. |
-| T02 | WordStar subset | Oracle fixtures for every supported command, prefix/control-letter variants, movement boundaries, word delimiters, page behavior, blocks and search. Record deliberate differences. |
+| T02 | WordStar subset | TED-equivalence fixtures for aliases, prefix/control-letter variants, movement boundaries, agreed word rules, paging, line-range operations and existing search. Verify approved additions separately. |
 | T03 | Text round trips | TABs, trailing spaces, mixed CR/LF/CRLF, no final newline, empty and full-record files, 127/128/129-byte cases, valid padding suffixes and rejected embedded 1Ah/high-bit/NUL data. |
 | T04 | Long lines | 161/162/163 and 4094/4095/4096-byte lines, TAB display widths, horizontal scrolling, split/join/replace/block crossings; refusal never truncates. |
 | T05 | Virtual workspace | File exceeds available RAM by at least 2x, repeated eviction, cache-edge matches, block moves/copies, full map/address limits, wrap/overflow rejection and interruption. |
-| T06 | Namespace/attributes | Drives/users 0,7,15,16,31; same names across DUs; multi-extent RO/SYS unions; ordinary/protected refusal; Save As and block-output aliases; unrelated file preservation. |
+| T06 | Namespace/attributes | Drives/users 0,7,15,16,31; same names across DUs; multi-extent RO/SYS unions; ordinary/protected refusal; alternate W targets and line-range output aliases; unrelated file preservation. |
 | T07 | Publisher fault injection | Every S0-S8 boundary, first/later write, close/reopen/readback, attribute operations, both renames, cleanup and rollback; failed rename with actual movement; unexpected final/BAK appearance. |
 | T08 | Real capacity faults | Directory full; no blocks; one/few blocks; workspace-full during edit/load/replace; output-stage capacity exhaustion; distinguish real exhaustion from injected status. |
 | T09 | Memory/stack | Reduced ceilings with loaded modules, exact minimum and one-byte-below, 16-bit wrap, cache/map collision, stack canaries/high-water, untouched protected core and terminal modules. |
@@ -529,7 +639,7 @@ new executable revision or force unrelated campaigns.
 ## 11. Ordered implementation and release gates
 
 1. **Reference and design:** import/pin upstream; freeze WordStar fixtures and
-   differences, simple-DU grammar, text representation, marker affinity and
+   differences, simple-DU grammar, text representation, line-range command mappings and
    limits; audit all destructive writes, counters and memory allocation.
 2. **Safe foundation:** implement owned workspace, measured memory layout,
    staged publisher and recovery diagnostics. Prove faults/capacity invariants
@@ -538,7 +648,7 @@ new executable revision or force unrelated campaigns.
    implement terminator/padding preservation, long lines and transactional
    document operations across cache boundaries.
 4. **Interaction:** implement prefix dispatcher, WordStar editing/file commands,
-   opening screen, prompts/help and portable terminal adapter. Retain no
+   TED command-mode integration, agreed prompts and portable terminal adapter. Retain no
    conflicting legacy binding under a supported WordStar key.
 5. **Platform qualification:** complete T01-T11, record native/cross parity,
    measured minimum TPA, stack reserve, response times and known limits.

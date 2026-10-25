@@ -1,0 +1,282 @@
+; TED bounded literal search/replace core. GPL-2.0-or-later.
+; The frontend commits these settings only after all fields are accepted.
+; TF_FIND includes the current position; TF_AGAIN advances a find-only
+; operation, but resumes replacement at its committed continuation position.
+; No implicit wrapping. Polling and source reads can cancel/fail without edits.
+
+ .Z80
+ public TF_FIND,TF_AGAIN,TF_APPLY,TF_SKIP,TF_TEXT,TF_LEN,TF_REPL,TF_RLEN
+ public TF_LIMIT
+ public TF_CASE,TF_BACK,TF_MODE,TF_ERROR,TF_POLL_PTR
+ extrn TC_SYNC,TC_POS,TC_SCAN,TC_LENGTH,TC_PREFVALID,TC_FETCH,TC_VIRTUAL
+ extrn TC_COPY3,TC_CMP3,TC_ADD3,TC_INC3,TC_DEC3
+ extrn TC_EDIT_BEGIN,TC_EDIT_END,TC_INCOUNT,TC_ADVANCE,TC_DO_EDIT
+ extrn TW_INSERT
+ cseg
+
+TF_NOP:
+ or a
+ ret
+TF_POLL:
+ ld hl,(TF_POLL_PTR)
+ jp (hl)
+TF_AGAIN:
+ call TC_SYNC
+ ld hl,TC_POS
+ ld de,TF_ORIGIN
+ call TC_COPY3
+ ld a,(TF_MODE)
+ or a
+ jp z,TF_INVALID
+ cp 2
+ jr nz,TF_AGAIN_DIRECTION
+ ld a,(TF_BACK)
+ or a
+ jp z,TF_FIND
+ jr TF_AGAIN_BACK
+TF_AGAIN_DIRECTION:
+ ld a,(TF_BACK)
+ or a
+ jr nz,TF_AGAIN_BACK
+ ld hl,TC_POS
+ ld de,TC_LENGTH
+ call TC_CMP3
+ jp nc,TF_NOT_FOUND
+ ld hl,TC_POS
+ call TC_INC3
+ jr TF_AGAIN_RUN
+TF_AGAIN_BACK:
+ ld hl,TC_POS
+ ld de,TF_ZERO
+ call TC_CMP3
+ jp z,TF_NOT_FOUND
+ ld hl,TC_POS
+ call TC_DEC3
+TF_AGAIN_RUN:
+ call TF_FIND
+ ret nc
+ push af
+ ld hl,TF_ORIGIN
+ ld de,TC_POS
+ call TC_COPY3
+ pop af
+ ret
+TF_FIND:
+ call TC_SYNC
+ ld hl,TC_LENGTH
+ ld de,TF_BOUND
+ call TC_COPY3
+ ld hl,TF_LIMIT
+ ld a,(hl)
+ inc hl
+ or (hl)
+ inc hl
+ or (hl)
+ jp z,TFF_BOUND_READY
+ ld hl,TF_LIMIT
+ ld de,TC_LENGTH
+ call TC_CMP3
+ jp nc,TFF_BOUND_READY
+ ld hl,TF_LIMIT
+ ld de,TF_BOUND
+ call TC_COPY3
+TFF_BOUND_READY:
+ xor a
+ ld (TF_ERROR),a
+ ld a,(TF_LEN)
+ or a
+ jp z,TF_INVALID
+ cp 96
+ jp nc,TF_INVALID
+ ld hl,TC_POS
+ ld de,TF_AT
+ call TC_COPY3
+TFF_CANDIDATE:
+ call TF_POLL
+ jp c,TF_CANCEL
+ ld hl,TF_AT
+ ld de,TC_SCAN
+ call TC_COPY3
+ ld hl,TF_TEXT
+ ld (TF_NEEDLE),hl
+ ld a,(TF_LEN)
+ ld (TF_LEFT),a
+TFF_CHARACTER:
+ ld hl,TC_SCAN
+ ld de,TF_BOUND
+ call TC_CMP3
+ jr nc,TFF_MISMATCH
+ call TC_FETCH
+ jp c,TF_READ_ERROR
+ cp 13
+ jp z,TFF_MISMATCH
+ cp 10
+ jp z,TFF_MISMATCH
+ call TF_FOLD
+ ld (TF_BYTE),a
+ ld hl,(TF_NEEDLE)
+ ld a,(hl)
+ call TF_FOLD
+ ld hl,TF_BYTE
+ cp (hl)
+ jr nz,TFF_MISMATCH
+ ld hl,(TF_NEEDLE)
+ inc hl
+ ld (TF_NEEDLE),hl
+ ld hl,TC_SCAN
+ call TC_INC3
+ ld hl,TF_LEFT
+ dec (hl)
+ jr nz,TFF_CHARACTER
+ ld hl,TF_AT
+ ld de,TC_POS
+ call TC_COPY3
+ xor a
+ ld (TC_PREFVALID),a
+ ld (TC_VIRTUAL),a
+ ld (TC_VIRTUAL+1),a
+ ret
+TFF_MISMATCH:
+ ld a,(TF_BACK)
+ or a
+ jr nz,TFF_PREVIOUS
+ ld hl,TF_AT
+ ld de,TF_BOUND
+ call TC_CMP3
+ jp nc,TF_NOT_FOUND
+ ld hl,TF_AT
+ call TC_INC3
+ jp TFF_CANDIDATE
+TFF_PREVIOUS:
+ ld hl,TF_AT
+ ld de,TF_ZERO
+ call TC_CMP3
+ jp z,TF_NOT_FOUND
+ ld hl,TF_AT
+ call TC_DEC3
+ jp TFF_CANDIDATE
+TF_FOLD:
+ push hl
+ ld h,a
+ ld a,(TF_CASE)
+ or a
+ ld a,h
+ jr nz,TFF_FOLDED
+ cp 'a'
+ jr c,TFF_FOLDED
+ cp 'z'+1
+ jr nc,TFF_FOLDED
+ sub 32
+TFF_FOLDED:
+ pop hl
+ ret
+
+; Apply the accepted replacement to the found range. The engine commits
+; cursor/markers only after complete candidate validation and publication.
+TF_APPLY:
+ ld a,(TF_LEN)
+ or a
+ jp z,TF_INVALID
+ cp 96
+ jp nc,TF_INVALID
+ ld a,(TF_RLEN)
+ cp 96
+ jp nc,TF_INVALID
+ ld e,a
+ ld d,0
+ ld (TC_INCOUNT),de
+ ld a,(TF_BACK)
+ or a
+ jr z,TFA_FORWARD
+ ld de,0
+TFA_FORWARD:
+ ld (TC_ADVANCE),de
+ ld a,(TF_LEN)
+ ld (TF_DELTA),a
+ xor a
+ ld (TF_DELTA+1),a
+ ld (TF_DELTA+2),a
+ ld hl,TC_POS
+ ld de,TC_EDIT_BEGIN
+ call TC_COPY3
+ ld hl,TC_POS
+ ld de,TC_EDIT_END
+ call TC_COPY3
+ ld hl,TC_EDIT_END
+ ld de,TF_DELTA
+ call TC_ADD3
+ ld a,(TF_RLEN)
+ or a
+ jr z,TFA_READY
+ ld c,a
+ ld b,0
+ ld hl,TF_REPL
+ ld de,TW_INSERT
+ ldir
+TFA_READY:
+ call TC_DO_EDIT
+ jp c,TF_READ_ERROR
+ xor a
+ ret
+
+; Move past a rejected occurrence for a continuing replace operation.
+TF_SKIP:
+ ld a,(TF_BACK)
+ or a
+ jr nz,TF_SKIP_BACK
+ ld a,(TF_LEN)
+ ld (TF_DELTA),a
+ xor a
+ ld (TF_DELTA+1),a
+ ld (TF_DELTA+2),a
+ ld hl,TC_POS
+ ld de,TF_DELTA
+ call TC_ADD3
+ or a
+ ret
+TF_SKIP_BACK:
+ ld hl,TC_POS
+ ld de,TF_ZERO
+ call TC_CMP3
+ jp z,TF_NOT_FOUND
+ ld hl,TC_POS
+ call TC_DEC3
+ or a
+ ret
+
+TF_NOT_FOUND:
+ ld a,1
+ jr TF_FAIL
+TF_READ_ERROR:
+ ld a,3
+ jr TF_FAIL
+TF_CANCEL:
+ ld a,7
+ jr TF_FAIL
+TF_INVALID:
+ ld a,11
+TF_FAIL:
+ ld (TF_ERROR),a
+ scf
+ ret
+
+ dseg
+TF_TEXT: ds 95
+TF_LEN: db 0
+TF_REPL: ds 95
+TF_RLEN: db 0
+TF_CASE: db 1
+TF_BACK: db 0
+TF_MODE: db 0
+TF_ERROR: db 0
+TF_POLL_PTR: dw TF_NOP
+TF_BOUND: ds 3
+TF_LIMIT: ds 3
+TF_AT: ds 3
+TF_NEEDLE: dw 0
+TF_LEFT: db 0
+TF_BYTE: db 0
+TF_DELTA: ds 3
+TF_ORIGIN: ds 3
+TF_ZERO: db 0,0,0
+ end

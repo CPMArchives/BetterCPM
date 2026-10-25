@@ -1,0 +1,1374 @@
+; TED preserving, disk-backed document transactions. GPL-2.0-or-later.
+; Retains TED's 512-byte random-read paging unit; replaces the lossy 8-bit
+; line representation with literal byte segments and 24-bit logical offsets.
+; Active workspaces are immutable. TS_RUN verifies a fresh TEW object before
+; the in-memory document descriptor is switched. Old workspaces are erased
+; only when owned by this session and still identical to the captured object.
+;
+; TW_LOAD: TW_INPUT exact descriptor -> validate and stage a complete file.
+; TW_EDIT: TW_SEGCOUNT <=8, TW_SEGMENTS = kind[1],offset[3],count[3].
+;          kind 1 = current document, 2 = TW_INSERT[255], 3 = scanned input.
+; TW_AREA supplies writable workspace DU; TW_NAME is document identity.
+; CF failure leaves TW_DOC/TW_META untouched. TW_ERROR/TTX diagnostics explain.
+; TW_KEPT is a cleanup warning, never authority to delete another file.
+
+ .Z80
+ public TW_RAW_FETCH
+ public TW_DIAG_PTR,TW_POLL
+ public TW_EDIT_NAMED
+ public TW_INIT,TW_LOAD,TW_EDIT,TW_NEW,TW_SCAN_INPUT,TW_GET_RECORD
+ public TW_DOC,TW_META,TW_NAME,TW_AREA,TW_INPUT,TW_INPUT_LEN,TW_INPUT_REC
+ public TW_SEGCOUNT,TW_SEGMENTS,TW_INSERT,TW_ERROR,TW_OWN,TW_KEPT,TW_RETAINED
+ public TW_DOC_TAG,TW_CACHE_VALID,TW_INPUT_TAG,TW_INPUT_BOUND
+ public TW_HEADER,TW_FETCH,TW_POS,TW_KIND,TW_POLL_PTR
+ public TW_SAVE,TW_EXPORT,TW_WRITE_BLOCK,TW_RECOVER,TW_INSPECT_REC,TW_RELEASE
+ extrn WL_INIT,WL_FLUSH,WL_FETCH,WL_RAM,WL_DISCARD
+ extrn TS_RUN,TS_CAPTURE,TS_COMPARE,TS_LAST,TS_NEW,TS_TARGET,TS_WORK,TS_PICK_WORK
+ extrn TS_BUFFER,TS_REWIND_PTR,TS_RECORD_PTR,TS_POLL_PTR
+ extrn TS_REPLACE,TS_PROTECT,TS_ALIAS_COUNT,TS_ALIASES
+ extrn TS_PHASE
+ extrn TS_VALIDATE
+ extrn TTX_INIT,TTX_FEED,TTX_FINISH,TTX_LENGTH,TTX_LINES,TTX_TERM,TTX_ERROR
+ cseg
+
+TW_BDOS:
+ push bc
+ push de
+ push hl
+ push ix
+ push iy
+ call 5
+ pop iy
+ pop ix
+ pop hl
+ pop de
+ pop bc
+ ret
+TW_SELECT:
+ push hl
+ push de
+ ld de,36
+ add hl,de
+ ld e,(hl)
+ ld c,32
+ call TW_BDOS
+ pop de
+ pop hl
+ ret
+TW_FCB_RESET:
+ ld hl,TW_FCB+12
+ ld de,TW_FCB+13
+ ld bc,23
+ ld (hl),0
+ ldir
+ ret
+
+TW_INIT:
+ call WL_INIT
+ ld hl,TW_STATE
+ ld de,TW_STATE+1
+ ld bc,TW_STATE_END-TW_STATE-1
+ ld (hl),0
+ ldir
+ ret
+TW_NOP:
+ or a
+ ret
+TW_POLL:
+ ld hl,(TW_POLL_PTR)
+ jp (hl)
+TW_INC:
+ or a
+ inc (hl)
+ ret nz
+ inc hl
+ inc (hl)
+ ret nz
+ inc hl
+ inc (hl)
+ ret nz
+ scf
+ ret
+TW_DEC:
+ ld a,(hl)
+ sub 1
+ ld (hl),a
+ inc hl
+ ld a,(hl)
+ sbc a,0
+ ld (hl),a
+ inc hl
+ ld a,(hl)
+ sbc a,0
+ ld (hl),a
+ ret
+
+; Scan a source through portable sequential records. The first 1Ah is EOF
+; only if every later recorded byte is also 1Ah. No prior document is changed.
+TW_SCAN_INPUT:
+ ld hl,TW_INPUT
+ ld (TW_DIAG_PTR),hl
+ xor a
+ ld (TW_ERROR),a
+ ld (TW_CACHE_VALID),a
+ ld (TW_INPUT_BOUND),a
+ call TW_SCOPE
+ call TW_CAPTURE_INPUT
+ ret c
+ call TTX_INIT
+ ld hl,TW_INPUT
+ call TW_SELECT
+ ld de,TW_FCB
+ ld bc,36
+ ldir
+ call TW_FCB_RESET
+ ld de,TW_FCB
+ ld c,15
+ call TW_BDOS
+ cp 255
+ jp z,TW_IO_ERROR
+ ld hl,0
+ ld (TW_INPUT_REC),hl
+TWI_RECORD:
+ call TW_POLL
+ jr c,TWI_CANCEL
+ ld hl,TW_INPUT
+ call TW_SELECT
+ ld de,TW_IOBUF
+ ld c,26
+ call TW_BDOS
+ ld de,TW_FCB
+ ld c,20
+ call TW_BDOS
+ cp 1
+ jr z,TWI_EOF
+ or a
+ jr nz,TWI_IO
+ ld hl,(TW_INPUT_REC)
+ inc hl
+ ld (TW_INPUT_REC),hl
+ ld de,8192
+ or a
+ sbc hl,de
+ jr nc,TWI_LIMIT
+ ld hl,TW_IOBUF
+ ld b,128
+TWI_BYTE:
+ ld a,(hl)
+ call TTX_FEED
+ jr c,TWI_TEXT
+ inc hl
+ djnz TWI_BYTE
+ jr TWI_RECORD
+TWI_EOF:
+ ld de,TW_FCB
+ ld c,16
+ call TW_BDOS
+ cp 255
+ jp z,TW_IO_ERROR
+ call TTX_FINISH
+ jp c,TW_TEXT_ERROR
+ ld hl,TTX_LENGTH
+ ld de,TW_INPUT_LEN
+ ld bc,3
+ ldir
+ ld a,1
+ ld (TW_INPUT_BOUND),a
+ or a
+ ret
+TWI_CANCEL:
+ ld a,7
+ jr TWI_FAIL
+TWI_TEXT:
+ ld a,12
+ jr TWI_FAIL
+TWI_LIMIT:
+ ld a,10
+ jr TWI_FAIL
+TWI_IO:
+ ld a,3
+TWI_FAIL:
+ ld (TW_ERROR),a
+ ld de,TW_FCB
+ ld c,16
+ call TW_BDOS
+ ld a,(TW_ERROR)
+ jp TW_FAIL
+
+TW_LOAD:
+ call WL_FLUSH
+ ret c
+ call TW_SCAN_INPUT
+ ret c
+ ld hl,TW_INPUT
+ ld de,TW_NAME
+ ld bc,37
+ ldir
+ ld hl,TW_SEGMENTS
+ ld (hl),3
+ inc hl
+ ld (hl),0
+ inc hl
+ ld (hl),0
+ inc hl
+ ld (hl),0
+ inc hl
+ ld de,0
+ push hl
+ ld hl,(TW_INPUT_REC)
+ xor a
+ ld b,7
+TWL_BYTES:
+ add hl,hl
+ rla
+ djnz TWL_BYTES
+ ex de,hl
+ pop hl
+ ld (hl),e
+ inc hl
+ ld (hl),d
+ inc hl
+ ld (hl),a
+ ld a,1
+ ld (TW_SEGCOUNT),a
+ ld (TW_ALLOW_PAD),a
+ xor a
+ ld (TW_DIRTY),a
+ jp TW_TRANSACTION
+
+TW_NEW:
+ call WL_FLUSH
+ ret c
+ xor a
+ ld (TW_SEGCOUNT),a
+ ld (TW_ALLOW_PAD),a
+ ld (TW_DIRTY),a
+ jp TW_TRANSACTION
+TW_EDIT:
+ call WL_FLUSH
+ ret c
+ ld hl,TW_META+22
+ ld de,TW_NAME
+ ld bc,37
+ ldir
+TW_EDIT_NAMED:
+ xor a
+ ld (TW_ALLOW_PAD),a
+ ld a,1
+ ld (TW_DIRTY),a
+ jp TW_TRANSACTION
+
+; File output omits the workspace header. No-edit output retains every
+; original physical padding record. Save As commits identity only after S7.
+TW_EXPORT:
+ xor a
+ ld (TW_SAVE_COMMIT),a
+ jr TW_SAVE_BEGIN
+TW_SAVE:
+ ld a,1
+ ld (TW_SAVE_COMMIT),a
+TW_SAVE_BEGIN:
+ call WL_FLUSH
+ ret c
+ xor a
+ ld (TW_ERROR),a
+ call TW_BIND_SOURCE
+ ret c
+ ld hl,TW_SEGMENTS
+ ld (hl),1
+ inc hl
+ ld (hl),0
+ inc hl
+ ld (hl),0
+ inc hl
+ ld (hl),0
+ inc hl
+ push hl
+ ld hl,(TW_META+15)
+ xor a
+ ld b,7
+TWS_SIZE:
+ add hl,hl
+ rla
+ djnz TWS_SIZE
+ ex de,hl
+ pop hl
+ ld (hl),e
+ inc hl
+ ld (hl),d
+ inc hl
+ ld (hl),a
+ ld a,1
+ ld (TW_SEGCOUNT),a
+ ld hl,TW_SREWIND
+ call TW_FILE_PUBLISH
+ ret c
+ ld a,(TW_SAVE_COMMIT)
+ or a
+ ret z
+ xor a
+ ld (TW_META+21),a
+ ld hl,TS_TARGET
+ ld de,TW_META+22
+ ld bc,37
+ ldir
+ ld hl,TS_TARGET
+ ld de,TW_NAME
+ ld bc,37
+ ldir
+ or a
+ ret
+TW_WRITE_BLOCK:
+ call WL_FLUSH
+ ret c
+ xor a
+ ld (TW_ERROR),a
+ call TW_BIND_SOURCE
+ ret c
+ ld hl,TW_BREWIND
+ jp TW_FILE_PUBLISH
+TW_FILE_PUBLISH:
+ ld (TS_REWIND_PTR),hl
+ ld hl,TW_DATA_RECORD
+ ld (TS_RECORD_PTR),hl
+ ld hl,(TW_POLL_PTR)
+ ld (TS_POLL_PTR),hl
+ ld hl,TW_DOC
+ ld de,TS_ALIASES
+ ld bc,37
+ ldir
+ ld a,1
+ ld (TS_ALIAS_COUNT),a
+ call TS_RUN
+ jp c,TW_PUBLISH_ERROR
+ xor a
+ ret
+TW_SREWIND:
+ ld hl,TW_META+8
+ ld (TW_CRC_EXPECT),hl
+ ld a,1
+ ld (TW_CHECK_CRC),a
+ jp TW_REWIND
+TW_BREWIND:
+ xor a
+ ld (TW_CHECK_CRC),a
+ jp TW_REWIND
+
+; Check an active workspace before using it as an immutable source.
+TW_BIND_SOURCE:
+ call TW_SCOPE
+ ld a,(TW_OWN)
+ or a
+ ret z
+ ld hl,TW_DOC
+ call TS_CAPTURE
+ jp c,TW_IO_ERROR
+ ld hl,TW_DOC_TAG
+ call TS_COMPARE
+ jp c,TW_CHANGED
+ or a
+ ret
+
+TW_SCOPE:
+ xor a
+ ld (TS_PHASE),a
+ ld hl,(TW_POLL_PTR)
+ ld (TS_POLL_PTR),hl
+ ret
+
+TW_CAPTURE_INPUT:
+ ld hl,TW_INPUT
+ call TS_CAPTURE
+ jp c,TW_IO_ERROR
+ ld a,(TS_LAST)
+ or a
+ jp z,TW_IO_ERROR
+ ld hl,TS_LAST
+ ld de,TW_INPUT_TAG
+ ld bc,22
+ ldir
+ or a
+ ret
+TW_BIND_INPUT:
+ ld a,(TW_SEGCOUNT)
+ or a
+ ret z
+ ld b,a
+ ld hl,TW_SEGMENTS
+TWBI_SEGMENT:
+ ld a,(hl)
+ cp 3
+ jr z,TWBI_CHECK
+ ld de,7
+ add hl,de
+ djnz TWBI_SEGMENT
+ or a
+ ret
+TWBI_CHECK:
+ ld a,(TW_INPUT_BOUND)
+ or a
+ jp z,TW_SEG_ERROR
+ ld hl,TW_INPUT
+ call TS_CAPTURE
+ jp c,TW_IO_ERROR
+ ld hl,TW_INPUT_TAG
+ call TS_COMPARE
+ jp c,TW_CHANGED
+ or a
+ ret
+
+TW_TRANSACTION:
+ xor a
+ ld (TW_ERROR),a
+ ld (TW_KEPT),a
+ ld (TW_CACHE_VALID),a
+ ld a,(TW_SEGCOUNT)
+ cp 9
+ jp nc,TW_SEG_ERROR
+ call TW_BIND_SOURCE
+ ret c
+ call TW_VALIDATE
+ ret c
+ call TW_BIND_INPUT
+ ret c
+ ; The workspace is a new name, never an overwrite of the active object.
+ ld hl,TW_AREA
+ ld de,TS_TARGET
+ ld bc,37
+ ldir
+ xor a
+ ld (TS_ALIAS_COUNT),a
+ ld a,(TW_OWN)
+ or a
+ jr z,TWT_PICK
+ ld hl,TW_DOC
+ ld de,TS_ALIASES
+ ld bc,37
+ ldir
+ ld a,1
+ ld (TS_ALIAS_COUNT),a
+TWT_PICK:
+ call TS_PICK_WORK
+ jp c,TW_PUBLISH_ERROR
+ ld hl,TS_WORK
+ ld de,TS_TARGET
+ ld bc,37
+ ldir
+ xor a
+ ld (TS_REPLACE),a
+ ld (TS_PROTECT),a
+ ld hl,TW_WREWIND
+ ld (TS_REWIND_PTR),hl
+ ld hl,TW_WRECORD
+ ld (TS_RECORD_PTR),hl
+ ld hl,(TW_POLL_PTR)
+ ld (TS_POLL_PTR),hl
+ call TS_RUN
+ jp c,TW_PUBLISH_ERROR
+ ld hl,TS_WORK
+ call TS_CAPTURE
+ jp c,TW_IO_ERROR
+ ld hl,TS_NEW
+ call TS_COMPARE
+ jp c,TW_CHANGED
+ ld hl,TS_LAST
+ ld de,TW_NEW_TAG
+ ld bc,22
+ ldir
+ ; Candidate and source have both been verified. Preserve the old descriptor
+ ; for a bounded, ownership-checked cleanup after the commit below.
+ ld hl,TW_DOC
+ ld de,TW_RETAINED
+ ld bc,37
+ ldir
+ ld a,(TW_OWN)
+ ld (TW_OLD_OWN),a
+ ld hl,TS_WORK
+ ld de,TW_DOC
+ ld bc,37
+ ldir
+ ld hl,TW_HEADER
+ ld de,TW_META
+ ld bc,128
+ ldir
+ ld a,1
+ ld (TW_OWN),a
+ xor a
+ ld (TW_CACHE_VALID),a
+ call TW_CLEAN_OLD
+ ld hl,TW_NEW_TAG
+ ld de,TW_DOC_TAG
+ ld bc,22
+ ldir
+ xor a
+ ret
+
+TW_CLEAN_OLD:
+ ld a,(TW_OLD_OWN)
+ or a
+ ret z
+ call TW_SCOPE
+ ld hl,TW_RETAINED
+ call TS_CAPTURE
+ jr c,TWC_KEEP
+ ld hl,TW_DOC_TAG
+ call TS_COMPARE
+ jr c,TWC_KEEP
+ ld hl,TW_RETAINED
+ call TW_SELECT
+ ld de,TW_FCB
+ ld bc,36
+ ldir
+ call TW_FCB_RESET
+ ld de,TW_FCB
+ ld c,19
+ call TW_BDOS
+ ; ERASE may report failure after removing the owned file. Inspect actual
+ ; state before claiming that a recovery path remains.
+ ld hl,TW_RETAINED
+ call TS_CAPTURE
+ jr c,TWC_KEEP
+ ld a,(TS_LAST)
+ or a
+ ret z
+TWC_KEEP:
+ ld a,1
+ ld (TW_KEPT),a
+ ret
+
+; Recovery never makes a pre-existing file owned. It validates the complete
+; checkpoint, then copies its literal data into a fresh owned workspace. The
+; original recovery file is retained for an explicit, separate user decision.
+TW_RECOVER:
+ call WL_FLUSH
+ ret c
+ ld a,1
+ ld (TW_RECOVER_COMMIT),a
+ jr TWR_BEGIN
+TW_INSPECT_REC:
+ xor a
+ ld (TW_RECOVER_COMMIT),a
+TWR_BEGIN:
+ ; Never recover through the currently owned checkpoint: committing a copy
+ ; would otherwise clean up the very source the recovery contract retains.
+ ld a,(TW_OWN)
+ or a
+ jr z,TWR_NOT_ACTIVE
+ ld hl,TW_INPUT
+ ld de,TW_DOC
+ ld b,12
+TWR_ALIAS_NAME:
+ ld a,(de)
+ cp (hl)
+ jr nz,TWR_NOT_ACTIVE
+ inc hl
+ inc de
+ djnz TWR_ALIAS_NAME
+ ld a,(TW_INPUT+36)
+ ld b,a
+ ld a,(TW_DOC+36)
+ cp b
+ jp z,TW_SEG_ERROR
+TWR_NOT_ACTIVE:
+ xor a
+ ld (TW_ERROR),a
+ ld (TW_CACHE_VALID),a
+ ld (TW_INPUT_BOUND),a
+ call TW_SCOPE
+ call TW_CAPTURE_INPUT
+ ret c
+ ld hl,TW_INPUT
+ call TW_SELECT
+ ld de,TW_FCB
+ ld bc,36
+ ldir
+ call TW_FCB_RESET
+ ld de,TW_FCB
+ ld c,15
+ call TW_BDOS
+ cp 255
+ jp z,TW_IO_ERROR
+ ld de,TW_RECOVER_HDR
+ ld c,26
+ call TW_BDOS
+ ld de,TW_FCB
+ ld c,20
+ call TW_BDOS
+ or a
+ jp nz,TWR_CLOSE_BAD
+ ld hl,TW_MAGIC
+ ld de,TW_RECOVER_HDR
+ ld b,8
+TWR_MAGIC:
+ ld a,(de)
+ cp (hl)
+ jp nz,TWR_CLOSE_BAD
+ inc hl
+ inc de
+ djnz TWR_MAGIC
+ call TW_CRC_RESET
+ ld hl,TW_RECOVER_HDR
+ ld bc,124
+ call TW_CRC_BUFFER
+ call TW_CRC_FINISH
+ ld hl,TW_CRC
+ ld de,TW_RECOVER_HDR+124
+ ld b,4
+TWR_HCRC:
+ ld a,(de)
+ cp (hl)
+ jp nz,TWR_CLOSE_BAD
+ inc hl
+ inc de
+ djnz TWR_HCRC
+ ld hl,TW_RECOVER_HDR+59
+ ld b,65
+TWR_RESERVED:
+ ld a,(hl)
+ or a
+ jp nz,TWR_CLOSE_BAD
+ inc hl
+ djnz TWR_RESERVED
+ ld hl,TW_RECOVER_HDR+22
+ call TW_RECOVERY_NAME
+ jp c,TWR_CLOSE_BAD
+ call TTX_INIT
+ call TW_CRC_RESET
+ ld hl,0
+ ld (TW_INPUT_REC),hl
+TWR_RECORD:
+ call TW_POLL
+ jp c,TWR_CLOSE_BAD
+ ld hl,TW_INPUT
+ call TW_SELECT
+ ld de,TW_IOBUF
+ ld c,26
+ call TW_BDOS
+ ld de,TW_FCB
+ ld c,20
+ call TW_BDOS
+ cp 1
+ jr z,TWR_EOF
+ or a
+ jp nz,TWR_CLOSE_BAD
+ ld hl,(TW_INPUT_REC)
+ inc hl
+ ld (TW_INPUT_REC),hl
+ ld de,8192
+ or a
+ sbc hl,de
+ jp nc,TWR_CLOSE_BAD
+ ld hl,TW_IOBUF
+ ld bc,128
+ call TW_CRC_BUFFER
+ ld hl,TW_IOBUF
+ ld b,128
+TWR_BYTE:
+ ld a,(hl)
+ call TTX_FEED
+ jp c,TWR_CLOSE_BAD
+ inc hl
+ djnz TWR_BYTE
+ jr TWR_RECORD
+TWR_EOF:
+ ld de,TW_FCB
+ ld c,16
+ call TW_BDOS
+ cp 255
+ jp z,TW_IO_ERROR
+ call TTX_FINISH
+ jp c,TW_TEXT_ERROR
+ call TW_CRC_FINISH
+ ld hl,TW_CRC
+ ld de,TW_RECOVER_HDR+8
+ ld b,4
+TWR_DCRC:
+ ld a,(de)
+ cp (hl)
+ jp nz,TW_CHANGED
+ inc hl
+ inc de
+ djnz TWR_DCRC
+ ld hl,(TW_INPUT_REC)
+ ld de,(TW_RECOVER_HDR+15)
+ or a
+ sbc hl,de
+ jp nz,TW_CHANGED
+ ld hl,TTX_LENGTH
+ ld de,TW_RECOVER_HDR+12
+ ld b,3
+TWR_LENGTH:
+ ld a,(de)
+ cp (hl)
+ jp nz,TW_CHANGED
+ inc hl
+ inc de
+ djnz TWR_LENGTH
+ ld hl,TTX_LINES
+ ld de,TW_RECOVER_HDR+17
+ ld b,3
+TWR_LINES:
+ ld a,(de)
+ cp (hl)
+ jp nz,TW_CHANGED
+ inc hl
+ inc de
+ djnz TWR_LINES
+ ld a,(TTX_TERM)
+ ld b,a
+ ld a,(TW_RECOVER_HDR+20)
+ cp b
+ jp nz,TW_CHANGED
+ ld a,(TW_RECOVER_HDR+21)
+ cp 2
+ jp nc,TW_CHANGED
+ ld hl,TW_RECOVER_HDR+22
+ ld de,TW_NAME
+ ld bc,37
+ ldir
+ ld hl,TW_SEGMENTS
+ ld (hl),3
+ inc hl
+ ld (hl),128
+ inc hl
+ ld (hl),0
+ inc hl
+ ld (hl),0
+ inc hl
+ push hl
+ ld hl,(TW_INPUT_REC)
+ xor a
+ ld b,7
+TWR_SIZE:
+ add hl,hl
+ rla
+ djnz TWR_SIZE
+ ex de,hl
+ pop hl
+ ld (hl),e
+ inc hl
+ ld (hl),d
+ inc hl
+ ld (hl),a
+ ld a,1
+ ld (TW_SEGCOUNT),a
+ ld (TW_INPUT_BOUND),a
+ ld (TW_ALLOW_PAD),a
+ ld (TW_DIRTY),a
+ ld hl,(TW_INPUT_REC)
+ inc hl ; raw input has the header too; the segment skips it
+ ld (TW_INPUT_REC),hl
+ ld a,(TW_RECOVER_COMMIT)
+ or a
+ ret z
+ jp TW_TRANSACTION
+TWR_CLOSE_BAD:
+ ld de,TW_FCB
+ ld c,16
+ call TW_BDOS
+ jp TW_TEXT_ERROR
+
+ ; A checkpoint may belong to a legitimately unnamed TED document. File
+ ; publication still requires a nonempty canonical name through TS_VALIDATE.
+TW_RECOVERY_NAME:
+ ld a,(hl)
+ or a
+ jp z,TW_SEG_ERROR
+ cp 17
+ jp nc,TW_SEG_ERROR
+ push hl
+ ld de,36
+ add hl,de
+ ld a,(hl)
+ pop hl
+ cp 32
+ jp nc,TW_SEG_ERROR
+ inc hl
+ ld a,(hl)
+ dec hl
+ cp ' '
+ jp nz,TS_VALIDATE
+ push hl
+ inc hl
+ ld b,11
+TWR_UNNAMED:
+ ld a,(hl)
+ cp ' '
+ jr nz,TWR_UNNAMED_BAD
+ inc hl
+ djnz TWR_UNNAMED
+ ld b,24
+TWR_UNNAMED_ZERO:
+ ld a,(hl)
+ or a
+ jr nz,TWR_UNNAMED_BAD
+ inc hl
+ djnz TWR_UNNAMED_ZERO
+ pop hl
+ or a
+ ret
+TWR_UNNAMED_BAD:
+ pop hl
+ jp TW_SEG_ERROR
+
+; Only a session-owned, still-identical, checked-closed object can be removed.
+; A failed erase is followed by namespace inspection, never a blind retry.
+TW_RELEASE:
+ call TW_BIND_SOURCE
+ ret c
+ ld a,(TW_OWN)
+ or a
+ ret z
+ ld hl,TW_DOC
+ call TW_SELECT
+ ld de,TW_FCB
+ ld bc,36
+ ldir
+ call TW_FCB_RESET
+ ld de,TW_FCB
+ ld c,19
+ call TW_BDOS
+ ld hl,TW_DOC
+ call TS_CAPTURE
+ jp c,TW_IO_ERROR
+ ld a,(TS_LAST)
+ or a
+ jp nz,TW_IO_ERROR
+ xor a
+ ld (TW_OWN),a
+ ld (TW_CACHE_VALID),a
+ jp WL_DISCARD
+
+; Calculate the complete candidate without allocating a line-sized buffer.
+TW_VALIDATE:
+ ld hl,TW_META+22
+ ld (TW_DIAG_PTR),hl
+ ld hl,TW_HEADER
+ ld de,TW_HEADER+1
+ ld bc,127
+ ld (hl),0
+ ldir
+ ld hl,TW_MAGIC
+ ld de,TW_HEADER
+ ld bc,8
+ ldir
+ call TTX_INIT
+ xor a
+ ld (TW_CHECK_CRC),a
+ call TW_REWIND
+ ld hl,0
+ ld (TW_RECORDS),hl
+TWV_RECORD:
+ call TW_POLL
+ jp c,TW_CANCEL
+ call TW_DATA_RECORD
+ cp 1
+ jr z,TWV_DONE
+ cp 2
+ jp nc,TW_STREAM_ERROR
+ ld hl,(TW_RECORDS)
+ inc hl
+ ld (TW_RECORDS),hl
+ ld de,8192
+ or a
+ sbc hl,de
+ jp nc,TW_LIMIT
+ ld hl,TS_BUFFER
+ ld b,128
+TWV_BYTE:
+ ld a,(hl)
+ call TTX_FEED
+ jp c,TW_TEXT_ERROR
+ inc hl
+ djnz TWV_BYTE
+ jr TWV_RECORD
+TWV_DONE:
+ call TTX_FINISH
+ jp c,TW_TEXT_ERROR
+ ld a,(TW_ALLOW_PAD)
+ or a
+ jr nz,TWV_LENGTH_OK
+ ld hl,TTX_LENGTH
+ ld de,TW_TOTAL
+ ld b,3
+TWV_LENGTH:
+ ld a,(de)
+ cp (hl)
+ jp nz,TW_TEXT_ERROR
+ inc hl
+ inc de
+ djnz TWV_LENGTH
+TWV_LENGTH_OK:
+ ld hl,TW_CRC
+ ld de,TW_HEADER+8
+ ld bc,4
+ ldir
+ ld hl,TTX_LENGTH
+ ld de,TW_HEADER+12
+ ld bc,3
+ ldir
+ ld hl,(TW_RECORDS)
+ ld (TW_HEADER+15),hl
+ ld hl,TTX_LINES
+ ld de,TW_HEADER+17
+ ld bc,3
+ ldir
+ ld a,(TTX_TERM)
+ ld (TW_HEADER+20),a
+ ld a,(TW_DIRTY)
+ ld (TW_HEADER+21),a
+ ld hl,TW_NAME
+ ld de,TW_HEADER+22
+ ld bc,37
+ ldir
+ call TW_CRC_RESET
+ ld hl,TW_HEADER
+ ld bc,124
+ call TW_CRC_BUFFER
+ call TW_CRC_FINISH
+ ld hl,TW_CRC
+ ld de,TW_HEADER+124
+ ld bc,4
+ ldir
+ or a
+ ret
+
+TW_WREWIND:
+ ld hl,TW_HEADER+8
+ ld (TW_CRC_EXPECT),hl
+ ld a,1
+ ld (TW_HEADER_PENDING),a
+ ld (TW_CHECK_CRC),a
+ jp TW_REWIND
+TW_WRECORD:
+ ld a,(TW_HEADER_PENDING)
+ or a
+ jp z,TW_DATA_RECORD
+ xor a
+ ld (TW_HEADER_PENDING),a
+ ld hl,TW_HEADER
+ ld de,TS_BUFFER
+ ld bc,128
+ ldir
+ xor a
+ ret
+
+TW_REWIND:
+ call TW_CRC_RESET
+ ld a,(TW_SEGCOUNT)
+ ld (TW_SEGLEFT),a
+ ld hl,TW_SEGMENTS
+ ld (TW_SEGPTR),hl
+ xor a
+ ld (TW_LEFT),a
+ ld (TW_LEFT+1),a
+ ld (TW_LEFT+2),a
+ ld (TW_ENDED),a
+ ld (TW_TOTAL),a
+ ld (TW_TOTAL+1),a
+ ld (TW_TOTAL+2),a
+ ret
+
+TW_DATA_RECORD:
+ ld a,(TW_ENDED)
+ or a
+ jr nz,TWD_EOF
+ ld hl,TS_BUFFER
+ ld (TW_OUTPTR),hl
+ ld a,128
+ ld (TW_OUTLEFT),a
+TWD_BYTE:
+ call TW_BYTE
+ jr c,TWD_END
+ ld hl,(TW_OUTPTR)
+ ld (hl),a
+ inc hl
+ ld (TW_OUTPTR),hl
+ ld hl,TW_OUTLEFT
+ dec (hl)
+ jr nz,TWD_BYTE
+TWD_RECORD:
+ ld hl,TS_BUFFER
+ ld bc,128
+ call TW_CRC_BUFFER
+ xor a
+ ret
+TWD_END:
+ ld a,(TW_ERROR)
+ or a
+ jr nz,TWD_ERROR
+ ld a,(TW_OUTLEFT)
+ cp 128
+ jr z,TWD_FINISH
+ ld b,a
+ ld hl,(TW_OUTPTR)
+TWD_PAD:
+ ld (hl),1ah
+ inc hl
+ djnz TWD_PAD
+ jr TWD_RECORD
+TWD_FINISH:
+ ld a,1
+ ld (TW_ENDED),a
+ call TW_CRC_FINISH
+ ld a,(TW_CHECK_CRC)
+ or a
+ jr z,TWD_EOF
+ ld hl,(TW_CRC_EXPECT)
+ ld de,TW_CRC
+ ld b,4
+TWD_CHECK:
+ ld a,(de)
+ cp (hl)
+ jr nz,TWD_CHANGED
+ inc hl
+ inc de
+ djnz TWD_CHECK
+TWD_EOF:
+ ld a,1
+ ret
+TWD_CHANGED:
+ ld a,5
+ ld (TW_ERROR),a
+TWD_ERROR:
+ ld a,2
+ ret
+
+TW_BYTE:
+ ld a,(TW_LEFT)
+ ld b,a
+ ld a,(TW_LEFT+1)
+ or b
+ ld b,a
+ ld a,(TW_LEFT+2)
+ or b
+ jr nz,TWB_FETCH
+ ld a,(TW_SEGLEFT)
+ or a
+ scf
+ ret z
+ dec a
+ ld (TW_SEGLEFT),a
+ ld hl,(TW_SEGPTR)
+ ld a,(hl)
+ inc hl
+ ld (TW_KIND),a
+ ld de,TW_POS
+ ld bc,3
+ ldir
+ ld de,TW_LEFT
+ ld bc,3
+ ldir
+ ld (TW_SEGPTR),hl
+ jr TW_BYTE
+TWB_FETCH:
+ call TW_FETCH
+ ret c
+ push af
+ ld hl,TW_POS
+ call TW_INC
+ jr c,TWB_OVERFLOW
+ ld hl,TW_TOTAL
+ call TW_INC
+ jr c,TWB_OVERFLOW
+ ld hl,TW_LEFT
+ call TW_DEC
+ pop af
+ or a
+ ret
+TWB_OVERFLOW:
+ pop af
+ jp TW_LIMIT
+
+; Byte fetch with a 512-byte, read-only cache. This is the retained TED
+; paging unit, using the same four CP/M random records and explicit DMA.
+TW_FETCH:
+ ld a,(TW_KIND)
+ cp 1
+ jp z,WL_FETCH
+ cp 5
+ jp z,TWF_INLINE_RAM
+ cp 4
+ jp z,TWF_SPACE
+ cp 2
+ jp z,TWF_MEMORY
+ cp 1
+ jr z,TWF_FILE
+ cp 3
+ jp nz,TW_SEG_ERROR
+TW_RAW_FETCH:
+TWF_FILE:
+ ld hl,(TW_POS)
+ ld a,(TW_POS+2)
+ ld b,7
+TWF_SHIFT:
+ srl a
+ rr h
+ rr l
+ djnz TWF_SHIFT
+ or a
+ jp nz,TW_LIMIT
+ ld a,(TW_KIND)
+ cp 1
+ jr nz,TWF_RAW
+ inc hl ; workspace header occupies physical record zero
+TWF_RAW:
+ ld (TW_RREC),hl
+ ld a,l
+ and 3
+ ld h,0
+ rra
+ rr h
+ ld a,(TW_POS)
+ and 7fh
+ ld l,a
+ ; Record bit 0 supplies byte-offset bit 7, bit 1 supplies bit 8.
+ ld a,(TW_RREC)
+ bit 0,a
+ jr z,TWF_OFFSET1
+ set 7,l
+TWF_OFFSET1:
+ ld h,0
+ bit 1,a
+ jr z,TWF_OFFSET2
+ inc h
+TWF_OFFSET2:
+ ld (TW_BYTEOFF),hl
+ ld hl,(TW_RREC)
+ ld a,l
+ and 0fch
+ ld l,a
+ ld (TW_PAGE),hl
+ ld a,(TW_CACHE_VALID)
+ or a
+ jr z,TWF_MISS
+ ld a,(TW_CACHE_KIND)
+ ld b,a
+ ld a,(TW_KIND)
+ cp b
+ jr nz,TWF_MISS
+ ld de,(TW_CACHE_PAGE)
+ or a
+ sbc hl,de
+ jr z,TWF_HIT
+TWF_MISS:
+ call TW_GET_RECORD
+ ret c
+TWF_HIT:
+ ld hl,(TW_BYTEOFF)
+ ld de,TW_CACHE
+ add hl,de
+ ld a,(hl)
+ or a
+ ret
+TWF_INLINE_RAM:
+ ld a,(TW_POS+2)
+ or a
+ jp nz,TW_SEG_ERROR
+ ld hl,(TW_POS)
+ ld de,4095
+ or a
+ sbc hl,de
+ jp nc,TW_SEG_ERROR
+ ld hl,(TW_POS)
+ ld de,WL_RAM
+ add hl,de
+ ld a,(hl)
+ or a
+ ret
+TWF_SPACE:
+ ld a,32
+ or a
+ ret
+TWF_MEMORY:
+ ld a,(TW_POS+2)
+ or a
+ jp nz,TW_SEG_ERROR
+ ld hl,(TW_POS)
+ ld de,255
+ or a
+ sbc hl,de
+ jp nc,TW_SEG_ERROR
+ ld hl,(TW_POS)
+ ld de,TW_INSERT
+ add hl,de
+ ld a,(hl)
+ or a
+ ret
+
+TW_GET_RECORD:
+ xor a
+ ld (TW_CACHE_VALID),a
+ ld a,(TW_KIND)
+ cp 1
+ jr nz,TWG_INPUT
+ ld hl,(TW_META+15)
+ inc hl
+ ld (TW_FILELIMIT),hl
+ ld hl,TW_DOC
+ jr TWG_OPEN
+TWG_INPUT:
+ ld hl,(TW_INPUT_REC)
+ ld (TW_FILELIMIT),hl
+ ld hl,TW_INPUT
+TWG_OPEN:
+ call TW_SELECT
+ ld de,TW_FCB
+ ld bc,36
+ ldir
+ call TW_FCB_RESET
+ ld de,TW_FCB
+ ld c,15
+ call TW_BDOS
+ cp 255
+ jp z,TW_IO_ERROR
+ ld hl,(TW_PAGE)
+ ld (TW_FETCHREC),hl
+ ld hl,TW_CACHE
+ ld (TW_FETCHPTR),hl
+ ld a,4
+ ld (TW_FETCHLEFT),a
+TWG_READ:
+ ld hl,(TW_FETCHREC)
+ ld de,(TW_FILELIMIT)
+ or a
+ sbc hl,de
+ jr nc,TWG_PAD
+ ld hl,(TW_FETCHREC)
+ ld (TW_FCB+33),hl
+ xor a
+ ld (TW_FCB+35),a
+ ld de,(TW_FETCHPTR)
+ ld c,26
+ call TW_BDOS
+ ld de,TW_FCB
+ ld c,33
+ call TW_BDOS
+ or a
+ jr nz,TWG_BAD
+ jr TWG_NEXT
+TWG_PAD:
+ ld hl,(TW_FETCHPTR)
+ ld b,128
+TWG_PADDING:
+ ld (hl),1ah
+ inc hl
+ djnz TWG_PADDING
+TWG_NEXT:
+ ld hl,(TW_FETCHREC)
+ inc hl
+ ld (TW_FETCHREC),hl
+ ld hl,(TW_FETCHPTR)
+ ld de,128
+ add hl,de
+ ld (TW_FETCHPTR),hl
+ ld hl,TW_FETCHLEFT
+ dec (hl)
+ jr nz,TWG_READ
+ ld de,TW_FCB
+ ld c,16
+ call TW_BDOS
+ cp 255
+ jp z,TW_IO_ERROR
+ ld hl,(TW_PAGE)
+ ld (TW_CACHE_PAGE),hl
+ ld a,(TW_KIND)
+ ld (TW_CACHE_KIND),a
+ ld a,1
+ ld (TW_CACHE_VALID),a
+ or a
+ ret
+TWG_BAD:
+ ld de,TW_FCB
+ ld c,16
+ call TW_BDOS
+ jp TW_IO_ERROR
+
+TW_STREAM_ERROR:
+ ld a,(TW_ERROR)
+ or a
+ jr nz,TW_FAIL
+TW_IO_ERROR:
+ ld a,3
+ jr TW_FAIL
+TW_CHANGED:
+ ld a,5
+ jr TW_FAIL
+TW_CANCEL:
+ ld a,7
+ jr TW_FAIL
+TW_LIMIT:
+ ld a,10
+ jr TW_FAIL
+TW_SEG_ERROR:
+ ld a,11
+ jr TW_FAIL
+TW_TEXT_ERROR:
+ ld a,12
+ jr TW_FAIL
+TW_PUBLISH_ERROR:
+ ld a,13
+TW_FAIL:
+ ld (TW_ERROR),a
+ scf
+ ret
+
+; @tw-crc@
+ dseg
+TW_DIAG_PTR: dw TW_INPUT
+TW_AREA: ds 37
+TW_INPUT: ds 37
+TW_NAME: ds 37
+TW_POLL_PTR: dw TW_NOP
+TW_SEGCOUNT: db 0
+TW_SEGMENTS: ds 56
+TW_INSERT: ds 255
+TW_SAVE_COMMIT: db 0
+TW_STATE:
+TW_DOC: ds 37
+TW_META: ds 128
+TW_DOC_TAG: ds 22
+TW_NEW_TAG: ds 22
+TW_ERROR: db 0
+TW_OWN: db 0
+TW_OLD_OWN: db 0
+TW_KEPT: db 0
+TW_RETAINED: ds 37
+TW_HEADER: ds 128
+TW_INPUT_LEN: ds 3
+TW_INPUT_REC: dw 0
+TW_INPUT_BOUND: db 0
+TW_INPUT_TAG: ds 22
+TW_RECOVER_HDR: ds 128
+TW_RECOVER_COMMIT: db 0
+TW_ALLOW_PAD: db 0
+TW_DIRTY: db 0
+TW_RECORDS: dw 0
+TW_HEADER_PENDING: db 0
+TW_CHECK_CRC: db 0
+TW_CRC_EXPECT: dw 0
+TW_ENDED: db 0
+TW_SEGLEFT: db 0
+TW_SEGPTR: dw 0
+TW_KIND: db 0
+TW_POS: ds 3
+TW_LEFT: ds 3
+TW_TOTAL: ds 3
+TW_OUTPTR: dw 0
+TW_OUTLEFT: db 0
+TW_RREC: dw 0
+TW_BYTEOFF: dw 0
+TW_PAGE: dw 0
+TW_FILELIMIT: dw 0
+TW_FETCHREC: dw 0
+TW_FETCHPTR: dw 0
+TW_FETCHLEFT: db 0
+TW_CACHE_VALID: db 0
+TW_CACHE_KIND: db 0
+TW_CACHE_PAGE: dw 0
+TW_CACHE: ds 512
+TW_FCB: ds 36
+TW_IOBUF: ds 128
+TW_STATE_END:
+TW_MAGIC: db 'BCTED001'
+ end

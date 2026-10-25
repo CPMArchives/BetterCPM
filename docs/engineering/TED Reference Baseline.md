@@ -1,7 +1,8 @@
 # TED Reference Baseline
 
-Status: upstream source pinned; WordStar oracle baseline incomplete. This is a
-development record, not a compatibility acceptance.
+Status: upstream and WordStar comparison artifacts pinned. The user-agreed
+interface is TED behavior with selected WordStar command sequences, not full
+WordStar emulation. Qualification is a separate record.
 
 ## TED upstream
 
@@ -19,25 +20,34 @@ development record, not a compatibility acceptance.
   upstream `syslib.lib` are retained only in the immutable reference snapshot
   and are not linked into the CP/M development executable.
 
-## WordStar comparison authority
+## WordStar comparison evidence and authority
 
-The adopted reference remains MicroPro WordStar 3.3 for CP/M, non-document mode,
-and the [1983 WordStar 3.3 Reference Manual](https://www.bitsavers.org/pdf/microPro/Wordstar_3.3/Wordstar_3.3_Reference_Manual_1983.pdf).
-The manual's bibliographic identity was located independently at Bitsavers.
-The primary download returned HTTP 403 on both www and bare-host attempts;
-there is no claimed local hash or completed manual review from those attempts.
+The 1983 MicroPro WordStar 3.3 Reference Manual was obtained through the
+[Bitsavers mirror](http://ftpmirror.your.org/pub/misc/bitsavers/pdf/microPro/Wordstar_3.3/Wordstar_3.3_Reference_Manual_1983.pdf)
+after primary-host access failed. SHA-256:
+`3e19f78bad332884d84c3463c5c5ddaedb27cfacc5258ee2b8a981a1adcfe649`;
+7,321,205 bytes. PDF pages 81–82 define the word separators; the scanned
+punctuation was visually checked because OCR omitted some marks.
 
-No independently sourced CP/M 3.3 binary has yet been pinned or executed for
-this adaptation. The adjacent CP/M compatibility investigation's WordStar
-artifact is **3.00**, so it cannot silently substitute for the adopted 3.3
-oracle. No proprietary WordStar binary, manual copy or screen image is included
-in this repository. Do not label existing TED bindings WordStar-compatible on
-the strength of upstream's “WordStar-like” description.
+The independently sourced [Kaypro CP/M WordStar 3.30 archive](http://www.retroarchive.org/cpm/text/Wskpro33.zip)
+has SHA-256 `b98ffd19ca75bf6e358f01a78313d744440a48cdb829858b096badb748850cd4`.
+WS.COM is 17,920 bytes, SHA-256
+`1e14315ccec62f0ef74d797c86e99c2213e14d45782cc396108bf22bf105fc9a`.
+It identifies Release 3.30, Kaypro 4u. No installation patch was applied.
+Non-document mode was selected explicitly with N on disposable cpmsim media.
+Seven saved-byte observations using our own input text establish punctuation,
+hyphen and underscore word behavior. Provenance, overlay hashes and derived
+fixtures are in `metadata/ted-wordstar33-fixtures.json`.
 
-Required next evidence: exact binary/container hashes, acquisition provenance,
-installation/terminal patch settings, manual artifact hash/edition, command
-fixtures covering the entire specification matrix, and explicit dispositions
-for every safety/preservation override. Until then T02 remains NOT RUN.
+Proprietary binaries, overlays, manual copies and screenshots remain outside
+the repository and distributable source companion. The derived fixtures are
+limited evidence, not a complete WordStar command compatibility claim.
+
+The later user review supersedes the original WordStar-emulation proposal:
+TED source/docs govern existing operations, while the specification defines
+three bounded word-operation additions. There is no ^Q prefix or repeat-find.
+The WordStar fixtures contain their original oracle setup keys; those are not
+TED bindings. Qualification tests exercise the agreed TED bindings separately.
 
 ## Toolchain boundary
 

@@ -1,0 +1,2208 @@
+; TED command/storage compatibility adapter. GPL-2.0-or-later.
+; Existing line-oriented operation semantics over the preserving workspace.
+; No command path can bypass TS_RUN; fields commit only after validation.
+ .Z80
+ public OP_TEXT_DIAGNOSTIC
+ public OP_END
+ public OP_DISPATCH,OP_ACTION,OP_PARSE_FILE,OP_LINE_BELOW,OP_DUPLICATE
+ public OP_LINE_POS,OP_RANGE,OP_WRITE,OP_READ,OP_FIND,OP_SUBSTITUTE
+ extrn TL_INIT,TL_ADD,TL_TOTAL,TL_TRANSFER
+ extrn WL_FLUSH
+ extrn TE_FIELD,TE_FIELDLEN,TE_FILE,TE_CALLER,TE_MODE,TE_PROMPT,TE_CONFIRM
+ extrn TE_FORMAT_FILE
+ extrn TE_SCREEN
+ extrn TE_MESSAGE,TE_RENDER,TE_READ,TE_BUSY_POLL
+ extrn TC_INIT,TC_SYNC,TC_POS,TC_TOP,TC_SCAN,TC_LENGTH,TC_COPY3,TC_CMP3
+ extrn TC_ADD3,TC_SUB3,TC_INC3,TC_DEC3,TC_NEXT,TC_PREV,TC_FETCH,TC_START,TC_EOL
+ extrn TC_BEGIN,TC_END,TC_BSET,TC_ESET,TC_COPY_BLOCK,TC_MOVE_BLOCK,TC_DEL_BLOCK
+ extrn TC_EDIT_BEGIN,TC_EDIT_END,TC_INCOUNT,TC_ADVANCE,TC_DO_EDIT,TC_ACTION,TC_VIRTUAL,TC_COLUMN,TC_PREF,TC_PREFERRED
+ extrn TW_DIAG_PTR
+ extrn TW_INPUT_TAG,TW_INPUT_BOUND
+ extrn TW_META,TW_NAME,TW_DOC,TW_DOC_TAG,TW_OWN,TW_CACHE_VALID,TW_AREA
+ extrn TW_INPUT,TW_INPUT_LEN,TW_INPUT_REC,TW_SCAN_INPUT,TW_LOAD,TW_NEW,TW_EDIT,TW_EDIT_NAMED
+ extrn TW_SEGMENTS,TW_SEGCOUNT,TW_INSERT,TW_SAVE,TW_EXPORT,TW_WRITE_BLOCK,TW_RELEASE
+ extrn TW_FETCH,TW_POS,TW_KIND
+ extrn TTX_LINES,TTX_ERROR,TTX_BADLINE,TTX_BADPOS
+ extrn TW_RECOVER,TW_INSPECT_REC
+ extrn TS_TARGET,TS_REPLACE,TS_PROTECT,TS_CAPTURE,TS_LAST,TS_VALIDATE
+ extrn TF_FIND,TF_APPLY,TF_SKIP,TF_TEXT,TF_LEN,TF_REPL,TF_RLEN,TF_CASE,TF_BACK
+ extrn TF_POLL_PTR,TF_ERROR,TF_LIMIT
+ cseg
+OP_BDOS:
+ push bc
+ push de
+ push hl
+ call 5
+ pop hl
+ pop de
+ pop bc
+ ret
+OP_BAD:
+ scf
+ ret
+OP_OK:
+ or a
+ ret
+OP_COPY37:
+ ld bc,37
+ ldir
+ ret
+OP_UPPER:
+ cp 'a'
+ ret c
+ cp 'z'+1
+ ret nc
+ sub 32
+ ret
+OP_WS:
+ ld a,(hl)
+ cp ' '
+ jp z,OP_WS_ONE
+ cp 9
+ ret nz
+OP_WS_ONE:
+ inc hl
+ jp OP_WS
+OP_SKIP:
+ ld a,(hl)
+ cp ' '
+ jp z,OP_SKIP_ONE
+ cp 9
+ jp z,OP_SKIP_ONE
+ cp ','
+ ret nz
+OP_SKIP_ONE:
+ inc hl
+ jp OP_SKIP
+OP_END:
+ call OP_SKIP
+ or a
+ ret z
+ scf
+ ret
+OP_PROMPT_PTR:
+ call TE_PROMPT
+ ret c
+ ld hl,TE_FIELD
+ or a
+ ret
+OP_DISPATCH:
+ ld hl,0
+ ld (OP_LINE_OVERRIDE),hl
+ ld (OP_INDEX_BASE),hl
+ ld hl,TE_FIELD
+ ld de,OP_COMMAND
+ ld bc,96
+ ldir
+ ld hl,OP_COMMAND
+ call OP_SKIP
+ or a
+ jp z,OP_SCREEN
+ call OP_UPPER
+ cp 'E'
+ jp z,OP_EXIT_COMMAND
+ cp 'S'
+ jp z,OP_S_COMMAND
+ cp 'M'
+ jp z,OP_M_COMMAND
+ cp 'D'
+ jp z,OP_D_COMMAND
+ cp 'R'
+ jp z,OP_R_COMMAND
+ cp 'W'
+ jp z,OP_W_COMMAND
+ cp 'C'
+ jp z,OP_CLEAR_COMMAND
+ cp 'F'
+ jp z,OP_F_COMMAND
+ cp 'P'
+ jp z,OP_P_COMMAND
+ ; Delimited search is an existing TED command, not a ^Q interface.
+ cp '/'
+ jp z,OP_FIND
+ cp '!'
+ jp z,OP_FIND
+ cp '?'
+ jp z,OP_FIND
+ cp '"'
+ jp z,OP_FIND
+ cp '%'
+ jp z,OP_FIND
+ cp '&'
+ jp z,OP_FIND
+ cp 39
+ jp z,OP_FIND
+ cp '='
+ jp z,OP_FIND
+ cp ':'
+ jp z,OP_FIND
+ cp 92
+ jp z,OP_FIND
+ cp '<'
+ jp z,OP_FIND
+ cp '>'
+ jp z,OP_FIND
+ jp OP_BAD
+OP_SCREEN:
+ ld a,1
+ ld (TE_MODE),a
+ or a
+ ret
+OP_EXIT_COMMAND:
+ inc hl
+ ld a,(hl)
+ call OP_UPPER
+ cp 'X'
+ jp nz,OP_BAD
+ inc hl
+ call OP_END
+ ret c
+ jp OP_EXIT
+OP_S_COMMAND:
+ inc hl
+ ld a,(hl)
+ call OP_UPPER
+ cp 'U'
+ jp z,OP_SU_COMMAND
+ call OP_SKIP
+ or a
+ jp z,OP_SCREEN
+ call OP_SET_POSITION
+ ret c
+ jp OP_SCREEN
+OP_SU_COMMAND:
+ inc hl
+ jp OP_SUBSTITUTE
+OP_M_COMMAND:
+ inc hl
+ xor a
+ ld (OP_MOVE),a
+ ld a,(hl)
+ call OP_UPPER
+ cp 'D'
+ jp nz,OP_M_ARGS
+ inc hl
+ ld a,1
+ ld (OP_MOVE),a
+OP_M_ARGS:
+ call OP_RANGE_ARGS
+ ret c
+ ld de,0
+ ld (OP_INDEX_BASE),de
+ call OP_INDEX
+ ret c
+ ld (OP_DESTLINE),bc
+ call OP_END
+ ret c
+ jp OP_COPY_MOVE
+OP_D_COMMAND:
+ inc hl
+ call OP_RANGE_ARGS
+ ret c
+ call OP_END
+ ret c
+ jp OP_DELETE_RANGE
+OP_R_COMMAND:
+ inc hl
+ ld a,(hl)
+ call OP_UPPER
+ cp 'E'
+ jp z,OP_RECOVER_COMMAND
+ jp OP_READ_ARGS
+OP_W_COMMAND:
+ inc hl
+ ld a,(hl)
+ call OP_UPPER
+ cp 'O'
+ jp z,OP_WORK_COMMAND
+ ld a,(hl)
+ call OP_UPPER
+ cp 'U'
+ jp nz,OP_WRITE_ARGS
+ inc hl
+ jp OP_WRITE_ARGS
+OP_CLEAR_COMMAND:
+ inc hl
+ ld a,(hl)
+ call OP_UPPER
+ cp 'L'
+ jp nz,OP_BAD
+ inc hl
+ call OP_END
+ ret c
+ call OP_ABANDON
+ ret c
+ ld hl,TW_META+22
+ ld de,TW_NAME
+ call OP_COPY37
+ call TW_NEW
+ ret c
+ call TC_INIT
+ or a
+ ret
+OP_F_COMMAND:
+ inc hl
+ call OP_SKIP
+ or a
+ jp z,OP_FILENAME
+ call OP_UPPER
+ cp 'R'
+ jp nz,OP_BAD
+ inc hl
+ call OP_END
+ ret c
+ ld hl,(6)
+ ld de,TED_END
+ or a
+ sbc hl,de
+ ld (OP_NUMBER_VALUE),hl
+ xor a
+ ld (OP_NUMBER_VALUE+2),a
+ ld de,OP_INFOBUF
+ ld hl,OP_MEMORYMSG
+ call OP_TEXT_APPEND
+ ld hl,OP_NUMBER_VALUE
+ call OP_DEC24
+ xor a
+ ld (de),a
+ ld hl,OP_INFOBUF
+ jp TE_MESSAGE
+OP_FILENAME:
+ ld hl,TW_META+22
+ ld de,OP_INFOBUF
+ call TE_FORMAT_FILE
+ ld hl,OP_INFOBUF
+ jp TE_MESSAGE
+OP_P_COMMAND:
+ inc hl
+ ld a,(hl)
+ call OP_UPPER
+ cp 'R'
+ jp z,OP_PRINT_RANGE
+ call OP_SKIP
+ or a
+ jp z,OP_POSITION_REPORT
+ call OP_SET_POSITION
+ ret c
+ jp OP_POSITION_REPORT
+OP_POSITION_REPORT:
+ ld hl,OP_ZERO
+ ld de,TC_SCAN
+ call TC_COPY3
+ ld hl,OP_ZERO
+ ld de,OP_NUMBER_VALUE
+ call TC_COPY3
+ ld hl,OP_NUMBER_VALUE
+ call TC_INC3
+OP_POSITION_SCAN:
+ ld hl,TC_SCAN
+ ld de,TC_POS
+ call TC_CMP3
+ jp nc,OP_POSITION_READY
+ call TC_FETCH
+ ret c
+ cp 13
+ jp z,OP_POSITION_NEWLINE
+ cp 10
+ jp nz,OP_POSITION_NEXT
+OP_POSITION_NEWLINE:
+ ld hl,OP_NUMBER_VALUE
+ call TC_INC3
+OP_POSITION_NEXT:
+ call TC_NEXT
+ ret c
+ jp OP_POSITION_SCAN
+OP_POSITION_READY:
+ ld de,OP_INFOBUF
+ ld hl,OP_POSITIONMSG
+ call OP_TEXT_APPEND
+ ld hl,OP_NUMBER_VALUE
+ call OP_DEC24
+ push de
+ call TC_COLUMN
+ ld (OP_NUMBER_VALUE),hl
+ xor a
+ ld (OP_NUMBER_VALUE+2),a
+ pop de
+ ld hl,OP_COLUMNMSG
+ call OP_TEXT_APPEND
+ ld hl,OP_NUMBER_VALUE
+ call OP_DEC24
+ xor a
+ ld (de),a
+ ld hl,OP_INFOBUF
+ jp TE_MESSAGE
+OP_PRINT_RANGE:
+ inc hl
+ call OP_RANGE_ARGS
+ ret c
+ call OP_END
+ ret c
+ call OP_RANGE
+ ret c
+ ld hl,TC_BEGIN
+ ld de,TC_SCAN
+ call TC_COPY3
+ ; Re-synchronize routed console state before using ordinary print output.
+ ld hl,(1)
+ ld de,63
+ add hl,de
+ ld a,4
+ call OP_CONSOLE
+OP_PRINT_BYTE:
+ ld hl,TC_SCAN
+ ld de,TC_END
+ call TC_CMP3
+ jp nc,OP_CLEAR_MARKS
+ call TE_BUSY_POLL
+ ret c
+ call TC_FETCH
+ ret c
+ ld e,a
+ ld c,2
+ call OP_BDOS
+ ld hl,TC_SCAN
+ call TC_INC3
+ jp OP_PRINT_BYTE
+OP_CONSOLE:
+ jp (hl)
+
+OP_TEXT_DIAGNOSTIC:
+ ld de,OP_INFOBUF
+ ld hl,OP_TEXTERRMSG
+ call OP_TEXT_APPEND
+ ld a,(TTX_ERROR)
+ add a,'0'
+ ld (de),a
+ inc de
+ ld hl,OP_LINEMSG
+ call OP_TEXT_APPEND
+ ld hl,TTX_BADLINE
+ call OP_DEC24
+ ld hl,OP_OFFSETMSG
+ call OP_TEXT_APPEND
+ ld hl,TTX_BADPOS
+ call OP_DEC24
+ ld hl,OP_INMSG
+ call OP_TEXT_APPEND
+ ld hl,(TW_DIAG_PTR)
+ call TE_FORMAT_FILE
+ ld hl,OP_INFOBUF
+ jp TE_MESSAGE
+OP_RECOVER_COMMAND:
+ ld de,OP_RECOVER_WORD
+ call OP_KEYWORD
+ ret c
+ call OP_FILE_TOKEN
+ ret c
+ call OP_END
+ ret c
+ ld hl,TE_FILE
+ ld de,TW_INPUT
+ call OP_COPY37
+ call TW_INSPECT_REC
+ ret c
+ ld hl,OP_RECOVERLABEL
+ call TE_CONFIRM
+ ret c
+ call TW_RECOVER
+ ret c
+ jp TC_INIT
+OP_WORK_COMMAND:
+ ld de,OP_WORK_WORD
+ call OP_KEYWORD
+ ret c
+ call OP_SKIP
+ ; Parse exact DU by attaching an internal harmless canonical filename.
+ ld de,OP_DUBUF
+ ld b,5
+OP_WORK_COPY:
+ ld a,(hl)
+ or a
+ jp z,OP_BAD
+ ld (de),a
+ inc de
+ inc hl
+ cp ':'
+ jp z,OP_WORK_TAIL
+ djnz OP_WORK_COPY
+ jp OP_BAD
+OP_WORK_TAIL:
+ call OP_END
+ ret c
+ ld hl,OP_WORK_NAME
+ call OP_TEXT_APPEND
+ ld hl,OP_DUBUF
+ call OP_PARSE_FILE
+ ret c
+ ld hl,TE_FILE
+ ld de,TW_AREA
+ call OP_COPY37
+ or a
+ ret
+OP_KEYWORD:
+ ld a,(de)
+ or a
+ jp z,OP_KEYWORD_END
+ ld b,a
+ ld a,(hl)
+ call OP_UPPER
+ cp b
+ jp nz,OP_BAD
+ inc hl
+ inc de
+ jp OP_KEYWORD
+OP_KEYWORD_END:
+ ld a,(hl)
+ cp ' '
+ ret z
+ cp 9
+ ret z
+ jp OP_BAD
+OP_TEXT_APPEND:
+ ld a,(hl)
+ ld (de),a
+ or a
+ ret z
+ inc hl
+ inc de
+ jp OP_TEXT_APPEND
+; Bounded decimal formatting for existing P/FR reporting; no document buffer.
+OP_DEC24:
+ ld (OP_OUTPTR),de
+ ld de,OP_NUMBER_WORK
+ call TC_COPY3
+ ld hl,OP_POWERS
+ ld (OP_POWERPTR),hl
+ xor a
+ ld (OP_DEC_STARTED),a
+ ld a,8
+ ld (OP_DEC_LEFT),a
+OP_DEC_POWER:
+ xor a
+ ld (OP_DEC_DIGIT),a
+OP_DEC_SUBTRACT:
+ ld hl,OP_NUMBER_WORK
+ ld de,(OP_POWERPTR)
+ call TC_CMP3
+ jp c,OP_DEC_WRITE
+ ld hl,OP_NUMBER_WORK
+ ld de,(OP_POWERPTR)
+ call TC_SUB3
+ ld hl,OP_DEC_DIGIT
+ inc (hl)
+ jp OP_DEC_SUBTRACT
+OP_DEC_WRITE:
+ ld a,(OP_DEC_DIGIT)
+ or a
+ jp nz,OP_DEC_EMIT
+ ld a,(OP_DEC_STARTED)
+ or a
+ jp nz,OP_DEC_EMIT
+ ld a,(OP_DEC_LEFT)
+ cp 1
+ jp nz,OP_DEC_ADVANCE
+OP_DEC_EMIT:
+ ld a,1
+ ld (OP_DEC_STARTED),a
+ ld a,(OP_DEC_DIGIT)
+ add a,'0'
+ ld de,(OP_OUTPTR)
+ ld (de),a
+ inc de
+ ld (OP_OUTPTR),de
+OP_DEC_ADVANCE:
+ ld hl,(OP_POWERPTR)
+ inc hl
+ inc hl
+ inc hl
+ ld (OP_POWERPTR),hl
+ ld hl,OP_DEC_LEFT
+ dec (hl)
+ jp nz,OP_DEC_POWER
+ ld de,(OP_OUTPTR)
+ xor a
+ ld (de),a
+ ret
+
+; Inclusive source lines, with omitted last line meaning first line.
+OP_RANGE_ARGS:
+ call OP_INDEX
+ ret c
+ ld a,b
+ or c
+ jp z,OP_BAD
+ ld (OP_FIRST),bc
+ ld (OP_LAST),bc
+ ld (OP_INDEX_BASE),bc
+ call OP_SKIP
+ or a
+ ret z
+ push hl
+ call OP_INDEX
+ jp c,OP_RANGE_NOSECOND
+ ld (OP_LAST),bc
+ pop de
+ jp OP_CHECK_RANGE
+OP_RANGE_NOSECOND:
+ pop hl
+ or a
+ ret
+OP_CHECK_RANGE:
+ push hl
+ ld hl,(OP_LAST)
+ ld de,(OP_FIRST)
+ or a
+ sbc hl,de
+ pop hl
+ ret
+OP_SET_POSITION:
+ call OP_INDEX
+ ret c
+ ld (OP_ARGPTR),hl
+ push bc
+ ld hl,(OP_INDEX_COLUMN)
+ ld (TC_PREF),hl
+ pop bc
+ call OP_LINE_POS
+ ret c
+ ld hl,(OP_ARGPTR)
+ call OP_SKIP
+ or a
+ jp z,OP_SET_CURSOR
+ call OP_NUMBER
+ ret c
+ ld (TC_PREF),bc
+ call OP_END
+ ret c
+OP_SET_CURSOR:
+ ; P/S char positions are visual columns, including TED virtual columns.
+ call TC_PREFERRED
+ ret c
+ ld hl,TC_POS
+ ld de,TC_TOP
+ call TC_COPY3
+ ret
+OP_INDEX:
+ ld de,0
+ ld (OP_INDEX_COLUMN),de
+ call OP_SKIP
+ cp '0'
+ jp c,OP_INDEX_NONNUM
+ cp '9'+1
+ jp c,OP_NUMBER
+ cp '$'
+ jp z,OP_NUMBER
+OP_INDEX_NONNUM:
+ cp '+'
+ jp z,OP_INDEX_RELATIVE
+ cp '-'
+ jp z,OP_INDEX_RELATIVE
+ ; Existing TED text-index delimiters; the parser never accepts arbitrary
+ ; letters as a search delimiter or consumes a subsequent command argument.
+ ld de,OP_DELIMITERS
+ ld c,a
+OP_INDEX_DELIM:
+ ld a,(de)
+ or a
+ jp z,OP_BAD
+ cp c
+ jp z,OP_INDEX_SEARCH
+ inc de
+ jp OP_INDEX_DELIM
+OP_INDEX_SEARCH:
+ call OP_GET_SEARCH
+ ret c
+ call OP_SEARCH_RANGE
+ ret c
+ ld (OP_INDEX_ENDPTR),hl
+ call TF_FIND
+ ret c
+ call TC_COLUMN
+ ret c
+ ld (OP_INDEX_COLUMN),hl
+ call OP_CURRENT_LINE
+ ret c
+ ld hl,(OP_INDEX_ENDPTR)
+ or a
+ ret
+OP_INDEX_RELATIVE:
+ ld (OP_REL_SIGN),a
+ inc hl
+ call OP_NUMBER
+ ret c
+ ld (OP_REL_VALUE),bc
+ ld (OP_INDEX_ENDPTR),hl
+ ld bc,(OP_INDEX_BASE)
+ ld a,b
+ or c
+ jp nz,OP_INDEX_BASE_READY
+ call OP_CURRENT_LINE
+ ret c
+OP_INDEX_BASE_READY:
+ ld h,b
+ ld l,c
+ ld de,(OP_REL_VALUE)
+ ld a,(OP_REL_SIGN)
+ cp '-'
+ jp z,OP_INDEX_SUB
+ add hl,de
+ jp c,OP_BAD
+ jp OP_INDEX_RESULT
+OP_INDEX_SUB:
+ or a
+ sbc hl,de
+ jp c,OP_BAD
+OP_INDEX_RESULT:
+ ld b,h
+ ld c,l
+ ld hl,(OP_INDEX_ENDPTR)
+ or a
+ ret
+OP_CURRENT_LINE:
+ ld hl,OP_ZERO
+ ld de,TC_SCAN
+ call TC_COPY3
+ ld bc,1
+OP_CURRENT_SCAN:
+ push bc
+ ld hl,TC_SCAN
+ ld de,TC_POS
+ call TC_CMP3
+ jp nc,OP_CURRENT_FOUND
+ call TC_FETCH
+ jp c,OP_CURRENT_BAD
+ cp 13
+ jp z,OP_CURRENT_NEWLINE
+ cp 10
+ jp z,OP_CURRENT_NEWLINE
+ call TC_NEXT
+ jp c,OP_CURRENT_BAD
+ pop bc
+ jp OP_CURRENT_SCAN
+OP_CURRENT_NEWLINE:
+ call TC_NEXT
+ jp c,OP_CURRENT_BAD
+ pop bc
+ inc bc
+ ld a,b
+ or c
+ jp z,OP_BAD
+ jp OP_CURRENT_SCAN
+OP_CURRENT_FOUND:
+ pop bc
+ or a
+ ret
+OP_CURRENT_BAD:
+ pop bc
+ scf
+ ret
+
+; Numeric line expressions: decimal, $, and +/- decimal offsets.
+OP_NUMBER:
+ call OP_ATOM
+ ret c
+OP_EXPRESSION:
+ ld a,(hl)
+ cp '+'
+ jp z,OP_EXPRESSION_MORE
+ cp '-'
+ jp z,OP_EXPRESSION_MORE
+ or a
+ ret
+OP_EXPRESSION_MORE:
+ ld (OP_SIGN),a
+ inc hl
+ push bc
+ call OP_ATOM
+ jp c,OP_EXPRESSION_BAD
+ ex (sp),hl
+ ld d,b
+ ld e,c
+ ld a,(OP_SIGN)
+ cp '-'
+ jp z,OP_EXPRESSION_SUB
+ add hl,de
+ jp OP_EXPRESSION_VALUE
+OP_EXPRESSION_SUB:
+ or a
+ sbc hl,de
+OP_EXPRESSION_VALUE:
+ ld b,h
+ ld c,l
+ pop hl
+ ret c
+ jp OP_EXPRESSION
+OP_EXPRESSION_BAD:
+ pop bc
+ scf
+ ret
+OP_ATOM:
+ call OP_SKIP
+ ld bc,0
+ ld a,(hl)
+ cp '$'
+ jp z,OP_NUMBER_LAST
+ cp '0'
+ jp c,OP_BAD
+ cp '9'+1
+ jp nc,OP_BAD
+OP_NUMBER_DIGIT:
+ sub '0'
+ ld (OP_DIGIT),a
+ push hl
+ ld h,b
+ ld l,c
+ add hl,hl
+ jp c,OP_NUMBER_OVERFLOW
+ ld d,h
+ ld e,l
+ add hl,hl
+ jp c,OP_NUMBER_OVERFLOW
+ add hl,hl
+ jp c,OP_NUMBER_OVERFLOW
+ add hl,de
+ jp c,OP_NUMBER_OVERFLOW
+ ld a,(OP_DIGIT)
+ ld e,a
+ ld d,0
+ add hl,de
+ jp c,OP_NUMBER_OVERFLOW
+ ld b,h
+ ld c,l
+ pop hl
+ inc hl
+ ld a,(hl)
+ cp '0'
+ jp c,OP_NUMBER_DONE
+ cp '9'+1
+ jp c,OP_NUMBER_DIGIT
+OP_NUMBER_DONE:
+ or a
+ ret
+OP_NUMBER_OVERFLOW:
+ pop hl
+ scf
+ ret
+OP_NUMBER_LAST:
+ inc hl
+ push hl
+ ld hl,(OP_LINE_OVERRIDE)
+ ld a,h
+ or l
+ jp nz,OP_LAST_PTR
+ ld hl,TW_META+17
+OP_LAST_PTR:
+ ld c,(hl)
+ inc hl
+ ld b,(hl)
+ inc hl
+ ld a,(hl)
+ or a
+ jp nz,OP_NUMBER_OVERFLOW
+ pop hl
+ or a
+ ret
+
+; BC line number -> TC_SCAN at its beginning, clamped at document end.
+; Line zero denotes before the first line, usable only as insertion target.
+OP_LINE_POS:
+ push bc
+ ld hl,OP_ZERO
+ ld de,TC_SCAN
+ call TC_COPY3
+ pop bc
+ ld a,b
+ or c
+ ret z
+ dec bc
+OP_LINE_LOOP:
+ ld a,b
+ or c
+ ret z
+ push bc
+ call TC_EOL
+ jp c,OP_LINE_FAIL
+ call TC_NEXT
+ jp c,OP_LINE_EDGE
+ pop bc
+ dec bc
+ jp OP_LINE_LOOP
+OP_LINE_EDGE:
+ ld hl,TC_SCAN
+ ld de,TC_LENGTH
+ call TC_CMP3
+ jp nz,OP_LINE_FAIL
+ pop bc
+ or a
+ ret
+OP_LINE_FAIL:
+ pop bc
+ scf
+ ret
+OP_AFTER_LINE:
+ push bc
+ call OP_LINE_POS
+ pop bc
+ ret c
+ ld a,b
+ or c
+ ret z
+ call TC_EOL
+ ret c
+ call TC_NEXT
+ ret nc
+ ld hl,TC_SCAN
+ ld de,TC_LENGTH
+ call TC_CMP3
+ ret
+OP_SCAN_TO_POS:
+ ld hl,TC_SCAN
+ ld de,TC_POS
+ call TC_COPY3
+ ld hl,TC_SCAN
+ ld de,TC_TOP
+ call TC_COPY3
+ xor a
+ ld (TC_PREFVALID),a
+ ld (TC_VIRTUAL),a
+ ld (TC_VIRTUAL+1),a
+ ret
+OP_RANGE:
+ ld bc,(OP_FIRST)
+ call OP_LINE_POS
+ ret c
+ ld hl,TC_SCAN
+ ld de,TC_BEGIN
+ call TC_COPY3
+ ld bc,(OP_LAST)
+ call OP_AFTER_LINE
+ ret c
+ ld hl,TC_SCAN
+ ld de,TC_END
+ call TC_COPY3
+ ld a,1
+ ld (TC_BSET),a
+ ld (TC_ESET),a
+ or a
+ ret
+OP_DELETE_RANGE:
+ call OP_RANGE
+ ret c
+ call TC_DEL_BLOCK
+ jp OP_CLEAR_MARKS
+OP_COPY_MOVE:
+ ; Original TED rejects a destination line within the inclusive source range.
+ ld hl,(OP_DESTLINE)
+ ld de,(OP_FIRST)
+ or a
+ sbc hl,de
+ jp c,OP_TRANSFER_READY
+ ld hl,(OP_LAST)
+ ld de,(OP_DESTLINE)
+ or a
+ sbc hl,de
+ jp nc,OP_BAD
+OP_TRANSFER_READY:
+ call OP_RANGE
+ ret c
+ ld bc,(OP_DESTLINE)
+ call OP_AFTER_LINE
+ ret c
+ ld hl,TC_SCAN
+ ld de,TC_POS
+ call TC_COPY3
+ ld a,(OP_MOVE)
+ call TL_TRANSFER
+ jp OP_CLEAR_MARKS
+OP_CLEAR_MARKS:
+ push af
+ xor a
+ ld (TC_BSET),a
+ ld (TC_ESET),a
+ pop af
+ ret
+
+; Bindings collect TED arguments, then invoke the same command adapters.
+OP_ACTION:
+ cp 1
+ jp z,OP_SAVE
+ cp 3
+ jp z,OP_SAVE_EXIT
+ cp 4
+ jp z,OP_EXIT
+ cp 5
+ jp z,OP_READ_PROMPT
+ cp 6
+ jp z,OP_WRITE_PROMPT
+ cp 18
+ jp z,OP_COPY_PROMPT
+ cp 19
+ jp z,OP_MOVE_PROMPT
+ cp 20
+ jp z,OP_DELETE_PROMPT
+ jp OP_BAD
+OP_ASK_RANGE:
+ ld hl,OP_FIRSTLABEL
+ call OP_PROMPT_PTR
+ ret c
+ call OP_NUMBER
+ ret c
+ ld a,b
+ or c
+ jp z,OP_BAD
+ ld (OP_FIRST),bc
+ ld hl,OP_LASTLABEL
+ call OP_PROMPT_PTR
+ ret c
+ call OP_NUMBER
+ ret c
+ ld (OP_LAST),bc
+ jp OP_CHECK_RANGE
+OP_COPY_PROMPT:
+ xor a
+ ld (OP_MOVE),a
+ jp OP_TRANSFER_PROMPT
+OP_MOVE_PROMPT:
+ ld a,1
+ ld (OP_MOVE),a
+OP_TRANSFER_PROMPT:
+ call OP_ASK_RANGE
+ ret c
+ ld hl,OP_DESTLABEL
+ call OP_PROMPT_PTR
+ ret c
+ call OP_NUMBER
+ ret c
+ ld (OP_DESTLINE),bc
+ jp OP_COPY_MOVE
+OP_DELETE_PROMPT:
+ call OP_ASK_RANGE
+ ret c
+ jp OP_DELETE_RANGE
+OP_ABANDON:
+ ld a,(TW_META+21)
+ or a
+ ret z
+ ld hl,OP_ABANDONLABEL
+ jp TE_CONFIRM
+OP_EXIT:
+ call OP_ABANDON
+ ret c
+ ld a,2
+ ld (TE_MODE),a
+ or a
+ ret
+OP_SAVE_EXIT:
+ call OP_SAVE
+ ret c
+ ld a,2
+ ld (TE_MODE),a
+ or a
+ ret
+OP_SAVE:
+ call WL_FLUSH
+ ret c
+ ld hl,TW_META+22
+ ld de,TE_FILE
+ call OP_COPY37
+ ld a,(TE_FILE+1)
+ cp ' '
+ jp nz,OP_SAVE_NAMED
+ ld hl,OP_FILELABEL
+ call OP_PROMPT_PTR
+ ret c
+ call OP_PARSE_FILE
+ ret c
+ call OP_END
+ ret c
+ ; Establish a default only for an unnamed document, after successful save.
+OP_SAVE_NAMED:
+ ld hl,TE_FILE
+ ld de,TS_TARGET
+ call OP_COPY37
+ call OP_AUTHORIZE
+ ret c
+ call TW_SAVE
+ ret c
+ ld hl,OP_SAVEDMSG
+ jp TE_MESSAGE
+OP_AUTHORIZE:
+ xor a
+ ld (TS_REPLACE),a
+ ld (TS_PROTECT),a
+ ld hl,TS_TARGET
+ call TS_CAPTURE
+ ret c
+ ld a,(TS_LAST)
+ or a
+ ret z
+ ld hl,OP_OVERWRITELABEL
+ call OP_TARGET_CONFIRM
+ ret c
+ ld a,1
+ ld (TS_REPLACE),a
+ ld a,(TS_LAST+9)
+ ld b,a
+ ld a,(TS_LAST+10)
+ or b
+ and 128
+ ret z
+ ld hl,OP_PROTECTLABEL
+ call OP_TARGET_CONFIRM
+ ret c
+ ld a,1
+ ld (TS_PROTECT),a
+ or a
+ ret
+
+OP_TARGET_CONFIRM:
+ push hl
+ ld hl,TS_TARGET
+ ld de,OP_CONFIRMBUF
+ call TE_FORMAT_FILE
+ pop hl
+OP_CONFIRM_COPY:
+ ld a,(hl)
+ ld (de),a
+ or a
+ jp z,OP_CONFIRM_READY
+ inc hl
+ inc de
+ jp OP_CONFIRM_COPY
+OP_CONFIRM_READY:
+ ld hl,OP_CONFIRMBUF
+ jp TE_CONFIRM
+
+; Exact DU:8.3 parser. HL points to NUL-terminated token. No wildcards,
+; compound selectors, implicit truncation or range/user wrap.
+OP_PARSE_FILE:
+ ld (OP_PARSEPTR),hl
+ ld a,(TE_CALLER)
+ ld (TE_FILE),a
+ ld a,(TE_CALLER+36)
+ ld (TE_FILE+36),a
+ ld hl,TE_FILE+1
+ ld de,TE_FILE+2
+ ld bc,10
+ ld (hl),' '
+ ldir
+ ld hl,TE_FILE+12
+ ld de,TE_FILE+13
+ ld bc,23
+ ld (hl),0
+ ldir
+ ld hl,(OP_PARSEPTR)
+ call OP_SKIP
+ ld (OP_PARSEPTR),hl
+OP_COLON_SCAN:
+ ld a,(hl)
+ or a
+ jp z,OP_NO_DU
+ cp ':'
+ jp z,OP_HAVE_DU
+ cp ' '
+ jp z,OP_NO_DU
+ cp 9
+ jp z,OP_NO_DU
+ inc hl
+ jp OP_COLON_SCAN
+OP_HAVE_DU:
+ ld (OP_COLON),hl
+ ld hl,(OP_PARSEPTR)
+ ld a,(hl)
+ call OP_UPPER
+ cp 'A'
+ jp c,OP_DU_USER
+ cp 'P'+1
+ jp nc,OP_BAD
+ sub 'A'-1
+ ld (TE_FILE),a
+ inc hl
+OP_DU_USER:
+ ld de,(OP_COLON)
+ push hl
+ or a
+ sbc hl,de
+ pop hl
+ jp z,OP_DU_DONE
+ ld a,(hl)
+ cp '0'
+ jp c,OP_BAD
+ cp '9'+1
+ jp nc,OP_BAD
+ call OP_ATOM
+ ret c
+ ld a,b
+ or a
+ jp nz,OP_BAD
+ ld a,c
+ cp 32
+ jp nc,OP_BAD
+ ld (TE_FILE+36),a
+ ld de,(OP_COLON)
+ push hl
+ or a
+ sbc hl,de
+ pop hl
+ jp nz,OP_BAD
+OP_DU_DONE:
+ inc hl
+ ld (OP_PARSEPTR),hl
+OP_NO_DU:
+ ld hl,(OP_PARSEPTR)
+ ld de,TE_FILE+1
+ ld b,8
+ xor a
+ ld (OP_EXT),a
+OP_NAME_LOOP:
+ ld a,(hl)
+ or a
+ jp z,OP_NAME_END
+ cp ' '
+ jp z,OP_NAME_END
+ cp 9
+ jp z,OP_NAME_END
+ cp ','
+ jp z,OP_NAME_END
+ cp '.'
+ jp z,OP_NAME_DOT
+ ld c,a
+ ld a,b
+ or a
+ jp z,OP_BAD
+ ld a,c
+ call OP_UPPER
+ ld (de),a
+ inc de
+ inc hl
+ dec b
+ jp OP_NAME_LOOP
+OP_NAME_DOT:
+ ld a,(OP_EXT)
+ or a
+ jp nz,OP_BAD
+ inc a
+ ld (OP_EXT),a
+ inc hl
+ ld de,TE_FILE+9
+ ld b,3
+ jp OP_NAME_LOOP
+OP_NAME_END:
+ ld (OP_PARSEPTR),hl
+ push hl
+ ld hl,TE_FILE
+ call TS_VALIDATE
+ pop hl
+ ret
+OP_FILE_TOKEN:
+ call OP_PARSE_FILE
+ ret c
+ ld hl,(OP_PARSEPTR)
+ or a
+ ret
+
+OP_READ_PROMPT:
+ ld hl,OP_RLABEL
+ call OP_PROMPT_PTR
+ ret c
+ jp OP_READ_ARGS
+OP_READ_ARGS:
+ ld de,0
+ ld (OP_INDEX_BASE),de
+ ; Original syntax R [(P)] FILE [(N1,N2)]. Omitted P appends.
+ ld bc,0ffffh
+ ld (OP_INSERTLINE),bc
+ call OP_SKIP
+ cp '('
+ jp nz,OP_R_FILE
+ inc hl
+ call OP_INDEX
+ ret c
+ ld (OP_INSERTLINE),bc
+ call OP_SKIP
+ cp ')'
+ jp nz,OP_BAD
+ inc hl
+OP_R_FILE:
+ call OP_FILE_TOKEN
+ ret c
+ ld (OP_ARGPTR),hl
+ ld hl,TE_FILE
+ ld de,TW_INPUT
+ call OP_COPY37
+ call TW_SCAN_INPUT
+ ret c
+ ld hl,(OP_ARGPTR)
+ call OP_SOURCE_RANGE
+ ret c
+ call OP_END
+ ret c
+ jp OP_READ
+OP_SOURCE_RANGE:
+ ld hl,OP_ZERO
+ ld de,OP_SOURCE_BEGIN
+ call TC_COPY3
+ ld hl,TW_INPUT_LEN
+ ld de,OP_SOURCE_END
+ call TC_COPY3
+ ld hl,TTX_LINES
+ ld (OP_LINE_OVERRIDE),hl
+ ld hl,(OP_ARGPTR)
+ call OP_SKIP
+ or a
+ ret z
+ cp '('
+ jp nz,OP_BAD
+ inc hl
+ call OP_NUMBER
+ ret c
+ ld (OP_FIRST),bc
+ call OP_WS
+ cp ','
+ jp nz,OP_BAD
+ inc hl
+ call OP_NUMBER
+ ret c
+ ld (OP_LAST),bc
+ call OP_SKIP
+ cp ')'
+ jp nz,OP_BAD
+ inc hl
+ ld (OP_ARGPTR),hl
+ call OP_CHECK_RANGE
+ ret c
+ ld bc,(OP_FIRST)
+ call OP_RAW_LINE
+ ret c
+ ld hl,OP_RAW_POS
+ ld de,OP_SOURCE_BEGIN
+ call TC_COPY3
+ ld bc,(OP_LAST)
+ inc bc
+ ld a,b
+ or c
+ jp z,OP_BAD
+ call OP_RAW_LINE
+ ret c
+ ld hl,OP_RAW_POS
+ ld de,OP_SOURCE_END
+ call TC_COPY3
+ ld hl,(OP_ARGPTR)
+ or a
+ ret
+OP_RAW_LINE:
+ push bc
+ ld hl,OP_ZERO
+ ld de,OP_RAW_POS
+ call TC_COPY3
+ pop bc
+ ld a,b
+ or c
+ jp z,OP_BAD
+ dec bc
+OP_RAW_LOOP:
+ ld a,b
+ or c
+ ret z
+ push bc
+OP_RAW_BYTE:
+ call OP_RAW_FETCH
+ jp c,OP_RAW_END
+ cp 13
+ jp z,OP_RAW_CR
+ cp 10
+ jp z,OP_RAW_LF
+ ld hl,OP_RAW_POS
+ call TC_INC3
+ jp OP_RAW_BYTE
+OP_RAW_CR:
+ ld hl,OP_RAW_POS
+ call TC_INC3
+ call OP_RAW_FETCH
+ jp c,OP_RAW_END
+ cp 10
+ jp nz,OP_RAW_NEXT
+OP_RAW_LF:
+ ld hl,OP_RAW_POS
+ call TC_INC3
+OP_RAW_NEXT:
+ pop bc
+ dec bc
+ jp OP_RAW_LOOP
+OP_RAW_END:
+ ld hl,OP_RAW_POS
+ ld de,TW_INPUT_LEN
+ call TC_CMP3
+ pop bc
+ ret
+OP_RAW_FETCH:
+ ld hl,OP_RAW_POS
+ ld de,TW_INPUT_LEN
+ call TC_CMP3
+ jp nc,OP_BAD
+ ld hl,OP_RAW_POS
+ ld de,TW_POS
+ call TC_COPY3
+ ld a,3
+ ld (TW_KIND),a
+ jp TW_FETCH
+OP_READ:
+ call WL_FLUSH
+ ret c
+ ld bc,(OP_INSERTLINE)
+ ld a,b
+ and c
+ inc a
+ jp nz,OP_READ_POSITION
+ ld hl,TC_LENGTH
+ ld de,TC_SCAN
+ call TC_COPY3
+ jp OP_READ_BUILD
+OP_READ_POSITION:
+ call OP_AFTER_LINE
+ ret c
+OP_READ_BUILD:
+ ld hl,TC_SCAN
+ ld de,OP_INSERT_AT
+ call TC_COPY3
+ ; A complete read into an empty buffer is a load, retaining physical padding.
+ ld hl,TC_LENGTH
+ ld a,(hl)
+ inc hl
+ or (hl)
+ inc hl
+ or (hl)
+ jp nz,OP_READ_SEGMENTS
+ ld hl,OP_SOURCE_BEGIN
+ ld de,OP_ZERO
+ call TC_CMP3
+ jp nz,OP_READ_SEGMENTS
+ ld hl,OP_SOURCE_END
+ ld de,TW_INPUT_LEN
+ call TC_CMP3
+ jp nz,OP_READ_SEGMENTS
+ call TW_LOAD
+ ret c
+ jp TC_INIT
+OP_READ_SEGMENTS:
+ ld hl,OP_SOURCE_END
+ ld de,OP_SOURCE_LENGTH
+ call TC_COPY3
+ ld hl,OP_SOURCE_LENGTH
+ ld de,OP_SOURCE_BEGIN
+ call TC_SUB3
+ ld hl,TC_LENGTH
+ ld de,OP_REMAIN
+ call TC_COPY3
+ ld hl,OP_REMAIN
+ ld de,OP_INSERT_AT
+ call TC_SUB3
+ ld a,(TW_META+20)
+ call TL_INIT
+ ld hl,OP_ZERO
+ ld de,OP_INSERT_AT
+ ld a,1
+ call TL_ADD
+ ret c
+ ld hl,OP_SOURCE_BEGIN
+ ld de,OP_SOURCE_LENGTH
+ ld a,3
+ call TL_ADD
+ ret c
+ ld hl,OP_INSERT_AT
+ ld de,OP_REMAIN
+ ld a,1
+ call TL_ADD
+ ret c
+ ld hl,TW_INPUT
+ ld de,TW_NAME
+ call OP_COPY37
+ call TW_EDIT_NAMED
+ ret c
+ ; Keep the cursor on the destination line, as TED's R setup does.
+ ld hl,OP_INSERT_AT
+ ld de,TC_SCAN
+ call TC_COPY3
+ ld hl,OP_INSERT_AT
+ ld de,OP_ZERO
+ call TC_CMP3
+ jp z,OP_READ_CURSOR
+ call TC_PREV
+ ret c
+ call TC_START
+ ret c
+OP_READ_CURSOR:
+ call OP_SCAN_TO_POS
+ jp TC_SYNC
+
+OP_WRITE_PROMPT:
+ ld hl,OP_WLABEL
+ call OP_PROMPT_PTR
+ ret c
+ jp OP_WRITE_ARGS
+OP_WRITE_ARGS:
+ ld (OP_ARGPTR),hl
+ xor a
+ ld (OP_PARTIAL),a
+ ld (OP_APPEND),a
+ ld hl,OP_ZERO
+ ld de,OP_SOURCE_BEGIN
+ call TC_COPY3
+ ld hl,TC_LENGTH
+ ld de,OP_SOURCE_END
+ call TC_COPY3
+ ld hl,(OP_ARGPTR)
+ call OP_SKIP
+ push hl
+ call OP_NUMBER
+ jp c,OP_W_NO_RANGE
+ ld (OP_FIRST),bc
+ ld (OP_LAST),bc
+ call OP_SKIP
+ push hl
+ call OP_NUMBER
+ jp c,OP_W_ONE_RANGE
+ pop de
+ ld (OP_LAST),bc
+ jp OP_W_HAVE_RANGE
+OP_W_ONE_RANGE:
+ pop hl
+OP_W_HAVE_RANGE:
+ pop de
+ ld (OP_ARGPTR),hl
+ call OP_CHECK_RANGE
+ ret c
+ call OP_RANGE
+ ret c
+ ld hl,TC_BEGIN
+ ld de,OP_SOURCE_BEGIN
+ call TC_COPY3
+ ld hl,TC_END
+ ld de,OP_SOURCE_END
+ call TC_COPY3
+ call OP_CLEAR_MARKS
+ ld a,1
+ ld (OP_PARTIAL),a
+ ld hl,(OP_ARGPTR)
+ jp OP_W_TARGET
+OP_W_NO_RANGE:
+ pop hl
+OP_W_TARGET:
+ call OP_SKIP
+ or a
+ jp z,OP_W_DEFAULT
+ cp '$'
+ jp z,OP_W_DEFAULT
+ cp '0'
+ jp z,OP_W_DEFAULT
+ call OP_FILE_TOKEN
+ ret c
+ jp OP_W_APPEND_ARG
+OP_W_DEFAULT:
+ push hl
+ ld hl,TW_META+22
+ ld de,TE_FILE
+ call OP_COPY37
+ pop hl
+OP_W_APPEND_ARG:
+ call OP_SKIP
+ or a
+ jp z,OP_W_FINISH_ARGS
+ cp '$'
+ jp z,OP_W_APPEND
+ cp '0'
+ jp nz,OP_BAD
+ inc hl
+ jp OP_W_EXTRA
+OP_W_APPEND:
+ inc hl
+ ld a,1
+ ld (OP_APPEND),a
+OP_W_EXTRA:
+ call OP_END
+ ret c
+OP_W_FINISH_ARGS:
+ ld hl,TE_FILE
+ ld de,TS_TARGET
+ call OP_COPY37
+ ld hl,TE_FILE
+ call TS_VALIDATE
+ ret c
+ jp OP_WRITE
+OP_WRITE:
+ call WL_FLUSH
+ ret c
+ call OP_AUTHORIZE
+ ret c
+ ld a,(OP_APPEND)
+ or a
+ jp nz,OP_APPEND_WRITE
+ ; Whole output to default filename can retain every original physical record.
+ ld a,(OP_PARTIAL)
+ or a
+ jp nz,OP_EXPORT
+ ld hl,TS_TARGET
+ ld de,TW_META+22
+ ld b,12
+OP_W_SAME:
+ ld a,(de)
+ cp (hl)
+ jp nz,TW_EXPORT
+ inc hl
+ inc de
+ djnz OP_W_SAME
+ ld a,(TS_TARGET+36)
+ ld b,a
+ ld a,(TW_META+58)
+ cp b
+ jp z,TW_SAVE
+ jp TW_EXPORT
+OP_EXPORT:
+ call OP_OUTPUT_SEGMENT
+ jp TW_WRITE_BLOCK
+OP_OUTPUT_SEGMENT:
+ ld hl,TW_SEGMENTS
+ ld (hl),1
+ inc hl
+ ld de,OP_SOURCE_BEGIN
+ ex de,hl
+ call TC_COPY3
+ ld hl,OP_SOURCE_END
+ ld de,TW_SEGMENTS+4
+ call TC_COPY3
+ ld hl,TW_SEGMENTS+4
+ ld de,OP_SOURCE_BEGIN
+ call TC_SUB3
+ ld a,1
+ ld (TW_SEGCOUNT),a
+ ret
+OP_APPEND_WRITE:
+ ld a,(TS_REPLACE)
+ or a
+ jp nz,OP_APPEND_EXISTING
+ ld a,(OP_PARTIAL)
+ or a
+ jp z,TW_EXPORT
+ jp OP_EXPORT
+OP_APPEND_EXISTING:
+ ld hl,OP_SOURCE_END
+ ld de,OP_SOURCE_LENGTH
+ call TC_COPY3
+ ld hl,OP_SOURCE_LENGTH
+ ld de,OP_SOURCE_BEGIN
+ call TC_SUB3
+ ld hl,OP_SOURCE_LENGTH
+ ld a,(hl)
+ inc hl
+ or (hl)
+ inc hl
+ or (hl)
+ ret z
+ ; Freeze the existing target in a second owned checkpoint before publishing.
+ ; Regenerated append output must never read a target renamed during S5/S6.
+ ld hl,TS_TARGET
+ ld de,OP_APPEND_TARGET
+ call OP_COPY37
+ ld a,(TS_REPLACE)
+ ld (OP_APPEND_FLAGS),a
+ ld a,(TS_PROTECT)
+ ld (OP_APPEND_FLAGS+1),a
+ ld hl,TW_DOC
+ ld de,OP_DOC_CONTEXT
+ ld bc,187
+ ldir
+ ld a,(TW_OWN)
+ ld (OP_DOC_OWN),a
+ xor a
+ ld (TW_OWN),a
+ ld hl,OP_APPEND_TARGET
+ ld de,TW_INPUT
+ call OP_COPY37
+ call TW_LOAD
+ jp c,OP_APPEND_LOAD_FAILED
+ ld hl,TW_DOC
+ ld de,OP_APPEND_CONTEXT
+ ld bc,187
+ ldir
+ call OP_RESTORE_CONTEXT
+ ld hl,OP_APPEND_CONTEXT
+ ld de,TW_INPUT
+ call OP_COPY37
+ ld hl,TW_INPUT
+ call TS_CAPTURE
+ jp c,OP_APPEND_CLEAN_FAILURE
+ ld hl,TS_LAST
+ ld de,TW_INPUT_TAG
+ ld bc,22
+ ldir
+ ld a,1
+ ld (TW_INPUT_BOUND),a
+ ld hl,(OP_APPEND_CONTEXT+37+15)
+ inc hl
+ ld (TW_INPUT_REC),hl
+ ld hl,OP_APPEND_CONTEXT+37+12
+ ld de,TW_INPUT_LEN
+ call TC_COPY3
+ ; Omit the checkpoint header/padding, composing complete logical lines.
+ ld hl,TW_INPUT_LEN
+ ld de,OP_APPEND_COUNT
+ call TC_COPY3
+ ld a,(OP_APPEND_CONTEXT+37+20)
+ call TL_INIT
+ ld hl,OP_APPEND_START
+ ld de,OP_APPEND_COUNT
+ ld a,3
+ call TL_ADD
+ jp c,OP_APPEND_CLEAN_FAILURE
+ ld hl,OP_SOURCE_BEGIN
+ ld de,OP_SOURCE_LENGTH
+ ld a,1
+ call TL_ADD
+ jp c,OP_APPEND_CLEAN_FAILURE
+ ld hl,OP_APPEND_TARGET
+ ld de,TS_TARGET
+ call OP_COPY37
+ ld a,(OP_APPEND_FLAGS)
+ ld (TS_REPLACE),a
+ ld a,(OP_APPEND_FLAGS+1)
+ ld (TS_PROTECT),a
+ call TW_WRITE_BLOCK
+ push af
+ call OP_APPEND_RELEASE
+ pop af
+ ret
+OP_APPEND_LOAD_FAILED:
+ push af
+ call OP_RESTORE_CONTEXT
+ pop af
+ ret
+OP_APPEND_CLEAN_FAILURE:
+ call OP_APPEND_RELEASE
+ scf
+ ret
+OP_RESTORE_CONTEXT:
+ ld hl,OP_DOC_CONTEXT
+ ld de,TW_DOC
+ ld bc,187
+ ldir
+ ld a,(OP_DOC_OWN)
+ ld (TW_OWN),a
+ ld hl,TW_META+22
+ ld de,TW_NAME
+ call OP_COPY37
+ xor a
+ ld (TW_CACHE_VALID),a
+ ret
+OP_APPEND_RELEASE:
+ ld hl,OP_APPEND_CONTEXT
+ ld de,TW_DOC
+ ld bc,187
+ ldir
+ ld a,1
+ ld (TW_OWN),a
+ call TW_RELEASE
+ push af
+ call OP_RESTORE_CONTEXT
+ pop af
+ ret
+
+OP_LINE_BELOW:
+ call TC_COLUMN
+ ret c
+ ld (OP_SAVEDCOL),hl
+ ld hl,TC_POS
+ ld de,TC_SCAN
+ call TC_COPY3
+ call TC_EOL
+ ret c
+ xor a
+ ld (OP_FINAL_LINE),a
+ call TC_FETCH
+ jp nc,OP_BELOW_TERMINATED
+ ld hl,TC_SCAN
+ ld de,TC_LENGTH
+ call TC_CMP3
+ jp nz,OP_BAD
+ ld a,1
+ ld (OP_FINAL_LINE),a
+ jp OP_BELOW_READY
+OP_BELOW_TERMINATED:
+ call TC_NEXT
+ ret c
+OP_BELOW_READY:
+ ld hl,TC_SCAN
+ ld de,TC_EDIT_BEGIN
+ call TC_COPY3
+ ld hl,TC_SCAN
+ ld de,TC_EDIT_END
+ call TC_COPY3
+ call OP_BREAK
+ ld hl,0
+ ld a,(OP_FINAL_LINE)
+ or a
+ jp z,OP_BELOW_ADVANCE
+ ld hl,(TC_INCOUNT)
+OP_BELOW_ADVANCE:
+ ld (TC_ADVANCE),hl
+ call TC_DO_EDIT
+ ret c
+ ld hl,(OP_SAVEDCOL)
+ ld (TC_VIRTUAL),hl
+ or a
+ ret
+OP_DUPLICATE:
+ ld hl,(TC_VIRTUAL)
+ ld (OP_SAVEDVIRTUAL),hl
+ ld hl,TC_POS
+ ld de,OP_SAVEDPOS
+ call TC_COPY3
+ ld hl,TC_POS
+ ld de,TC_SCAN
+ call TC_COPY3
+ call TC_START
+ ret c
+ ld hl,TC_SCAN
+ ld de,TC_BEGIN
+ call TC_COPY3
+ ; Retain the byte displacement within the copied line.
+ ld hl,OP_SAVEDPOS
+ ld de,TC_BEGIN
+ call TC_SUB3
+ call TC_EOL
+ ret c
+ call TC_FETCH
+ jp c,OP_DUP_FINAL
+ call TC_NEXT
+ ret c
+ ld hl,TC_SCAN
+ ld de,TC_END
+ call TC_COPY3
+ ld hl,TC_SCAN
+ ld de,OP_DUP_START
+ call TC_COPY3
+ ld hl,TC_SCAN
+ ld de,TC_POS
+ call TC_COPY3
+ ld a,1
+ ld (TC_BSET),a
+ ld (TC_ESET),a
+ call TC_COPY_BLOCK
+ jp c,OP_CLEAR_MARKS
+ jp OP_DUP_CURSOR
+OP_DUP_FINAL:
+ ; An unterminated final line needs a separator before its duplicate, while
+ ; the new last line keeps the original lack of a final terminator.
+ ld hl,TC_SCAN
+ ld de,TC_LENGTH
+ call TC_CMP3
+ jp nz,OP_BAD
+ call OP_BREAK
+ ld hl,OP_DUP_TEMPLATE
+ ld de,TW_SEGMENTS
+ ld bc,21
+ ldir
+ ld hl,TC_LENGTH
+ ld de,TW_SEGMENTS+4
+ call TC_COPY3
+ ld hl,(TC_INCOUNT)
+ ld (TW_SEGMENTS+11),hl
+ ld (OP_DELTA),hl
+ xor a
+ ld (OP_DELTA+2),a
+ ld hl,TC_LENGTH
+ ld de,OP_DUP_START
+ call TC_COPY3
+ ld hl,OP_DUP_START
+ ld de,OP_DELTA
+ call TC_ADD3
+ ld hl,TC_BEGIN
+ ld de,TW_SEGMENTS+15
+ call TC_COPY3
+ ld hl,TC_LENGTH
+ ld de,TW_SEGMENTS+18
+ call TC_COPY3
+ ld hl,TW_SEGMENTS+18
+ ld de,TC_BEGIN
+ call TC_SUB3
+ ld a,3
+ ld (TW_SEGCOUNT),a
+ call TW_EDIT
+ ret c
+ call TC_SYNC
+OP_DUP_CURSOR:
+ ld hl,OP_DUP_START
+ ld de,OP_SAVEDPOS
+ call TC_ADD3
+ ld hl,OP_DUP_START
+ ld de,TC_POS
+ call TC_COPY3
+ ld hl,(OP_SAVEDVIRTUAL)
+ ld (TC_VIRTUAL),hl
+ xor a
+ ld (TC_PREFVALID),a
+ jp OP_CLEAR_MARKS
+OP_BREAK:
+ ld a,(TW_META+20)
+ cp 2
+ jp z,OP_BREAK_LF
+ ld a,13
+ ld (TW_INSERT),a
+ ld hl,1
+ ld (TC_INCOUNT),hl
+ ld a,(TW_META+20)
+ cp 3
+ ret z
+ ld a,10
+ ld (TW_INSERT+1),a
+ inc hl
+ ld (TC_INCOUNT),hl
+ ret
+OP_BREAK_LF:
+ ld a,10
+ ld (TW_INSERT),a
+ ld hl,1
+ ld (TC_INCOUNT),hl
+ ret
+
+; TED literal forward searches, with existing delimited command syntax.
+OP_FIND:
+ call OP_INDEX
+ ret c
+ call OP_END
+ ret c
+ jp OP_SCREEN
+OP_SEARCH_RANGE:
+ ld (OP_ARGPTR),hl
+ ld hl,TC_LENGTH
+ ld de,OP_SEARCH_BOUND
+ call TC_COPY3
+ ld hl,TC_LENGTH
+ ld de,TF_LIMIT
+ call TC_COPY3
+ ld hl,(OP_ARGPTR)
+ call OP_WS
+ cp '('
+ jp z,OP_SEARCH_HAVE_LIMITS
+ or a
+ ret
+OP_SEARCH_HAVE_LIMITS:
+ inc hl
+ call OP_WS
+ xor a
+ ld (OP_SEARCH_OMITTED),a
+ ld a,(hl)
+ cp ','
+ jp z,OP_SEARCH_OMIT_FIRST
+ call OP_NUMBER
+ ret c
+ ld (OP_FIRST),bc
+ jp OP_SEARCH_ENDLINE
+OP_SEARCH_OMIT_FIRST:
+ ld a,1
+ ld (OP_SEARCH_OMITTED),a
+ ld (OP_SEARCH_PARSE),hl
+ call OP_CURRENT_LINE
+ ret c
+ ld (OP_FIRST),bc
+ ld hl,(OP_SEARCH_PARSE)
+OP_SEARCH_ENDLINE:
+ call OP_WS
+ cp ')'
+ jp z,OP_SEARCH_TO_EOF
+ cp ','
+ jp nz,OP_BAD
+ inc hl
+ call OP_WS
+ cp ')'
+ jp z,OP_SEARCH_TO_EOF
+ call OP_NUMBER
+ ret c
+ ld (OP_LAST),bc
+ jp OP_SEARCH_CLOSE
+OP_SEARCH_TO_EOF:
+ ld bc,(TW_META+17)
+ ld a,(TW_META+19)
+ or a
+ jp nz,OP_BAD
+ ld (OP_LAST),bc
+OP_SEARCH_CLOSE:
+ call OP_WS
+ cp ')'
+ jp nz,OP_BAD
+ inc hl
+ ld (OP_ARGPTR),hl
+ call OP_CHECK_RANGE
+ ret c
+ ld bc,(OP_LAST)
+ call OP_AFTER_LINE
+ ret c
+ ld hl,TC_SCAN
+ ld de,OP_SEARCH_BOUND
+ call TC_COPY3
+ ld hl,TC_SCAN
+ ld de,TF_LIMIT
+ call TC_COPY3
+ ld a,(OP_SEARCH_OMITTED)
+ or a
+ jp nz,OP_SEARCH_RETURN
+ ld bc,(OP_FIRST)
+ call OP_LINE_POS
+ ret c
+ ld hl,TC_SCAN
+ ld de,TC_POS
+ call TC_COPY3
+OP_SEARCH_RETURN:
+ ld hl,(OP_ARGPTR)
+ or a
+ ret
+OP_GET_SEARCH:
+ ld a,(hl)
+ ld c,a
+ ld de,OP_DELIMITERS
+OP_SEARCH_DELIMITER:
+ ld a,(de)
+ or a
+ jp z,OP_BAD
+ cp c
+ jp z,OP_SEARCH_DELIMITER_OK
+ inc de
+ jp OP_SEARCH_DELIMITER
+OP_SEARCH_DELIMITER_OK:
+ ld a,c
+ ld (OP_DELIMITER),a
+ inc hl
+ ld de,TF_TEXT
+ ld b,0
+OP_SEARCH_STRING:
+ ld a,(hl)
+ or a
+ jp z,OP_BAD
+ ld c,a
+ ld a,(OP_DELIMITER)
+ cp c
+ jp z,OP_SEARCH_END
+ ld a,b
+ cp 95
+ jp nc,OP_BAD
+ ld a,c
+ ld (de),a
+ inc hl
+ inc de
+ inc b
+ jp OP_SEARCH_STRING
+OP_SEARCH_END:
+ ld a,b
+ or a
+ jp z,OP_BAD
+ ld (TF_LEN),a
+ inc hl
+ xor a
+ ld (TF_BACK),a
+ inc a
+ ld (TF_CASE),a
+ ld de,TE_BUSY_POLL
+ ld (TF_POLL_PTR),de
+ or a
+ ret
+OP_SUBSTITUTE:
+ xor a
+ ld (OP_SUBMODE),a
+ ld bc,0
+ ld (OP_SUBCOUNT),bc
+ call OP_SKIP
+ cp 'M'
+ jp z,OP_SUB_CONFIRM
+ cp 'm'
+ jp z,OP_SUB_CONFIRM
+ cp '0'
+ jp c,OP_SUB_STRINGS
+ cp '9'+1
+ jp nc,OP_SUB_STRINGS
+ call OP_NUMBER
+ ret c
+ ld a,b
+ or c
+ jp z,OP_BAD
+ ld (OP_SUBCOUNT),bc
+ call OP_SKIP
+ jp OP_SUB_STRINGS
+OP_SUB_CONFIRM:
+ inc hl
+ ld a,1
+ ld (OP_SUBMODE),a
+ call OP_SKIP
+OP_SUB_STRINGS:
+ call OP_GET_SEARCH
+ ret c
+ ld de,TF_REPL
+ ld b,0
+OP_REPLACE_STRING:
+ ld a,(hl)
+ or a
+ jp z,OP_BAD
+ ld c,a
+ ld a,(OP_DELIMITER)
+ cp c
+ jp z,OP_REPLACE_END
+ ld a,b
+ cp 95
+ jp nc,OP_BAD
+ ld a,c
+ ld (de),a
+ inc de
+ inc hl
+ inc b
+ jp OP_REPLACE_STRING
+OP_REPLACE_END:
+ ld a,b
+ ld (TF_RLEN),a
+ inc hl
+ call OP_SEARCH_RANGE
+ ret c
+ call OP_END
+ ret c
+OP_SUB_LOOP:
+ call TF_FIND
+ jp c,OP_SUB_END
+ ld hl,TC_POS
+ ld de,OP_SEARCH_BOUND
+ call TC_CMP3
+ jp nc,OP_OK
+ ld a,(OP_SUBMODE)
+ or a
+ jp z,OP_SUB_APPLY
+ call TE_RENDER
+ ld hl,OP_REPLACELABEL
+ call TE_PROMPT
+ ret c
+ ld a,(TE_FIELD)
+ call OP_UPPER
+ cp 'Y'
+ jp z,OP_SUB_APPLY
+ call TF_SKIP
+ ret c
+ jp OP_SUB_NEXT
+OP_SUB_APPLY:
+ call TF_APPLY
+ ret c
+ ld a,(TF_LEN)
+ ld (OP_DELTA),a
+ xor a
+ ld (OP_DELTA+1),a
+ ld (OP_DELTA+2),a
+ ld hl,OP_SEARCH_BOUND
+ ld de,OP_DELTA
+ call TC_SUB3
+ ld a,(TF_RLEN)
+ ld (OP_DELTA),a
+ ld hl,OP_SEARCH_BOUND
+ ld de,OP_DELTA
+ call TC_ADD3
+ ld hl,OP_SEARCH_BOUND
+ ld de,TF_LIMIT
+ call TC_COPY3
+OP_SUB_NEXT:
+ ld hl,(OP_SUBCOUNT)
+ ld a,h
+ or l
+ jp z,OP_SUB_LOOP
+ dec hl
+ ld (OP_SUBCOUNT),hl
+ ld a,h
+ or l
+ jp nz,OP_SUB_LOOP
+ or a
+ ret
+OP_SUB_END:
+ ld a,(TF_ERROR)
+ cp 1
+ jp z,OP_OK
+ scf
+ ret
+ dseg
+OP_TEXTERRMSG: db 'Text error ',0
+OP_LINEMSG: db ' line ',0
+OP_OFFSETMSG: db ' offset ',0
+OP_INMSG: db ' in ',0
+OP_SEARCH_OMITTED: db 0
+OP_SEARCH_PARSE: dw 0
+OP_INDEX_BASE: dw 0
+OP_INDEX_COLUMN: dw 0
+OP_INDEX_ENDPTR: dw 0
+OP_REL_SIGN: db 0
+OP_REL_VALUE: dw 0
+OP_DELIMITERS: db '!',34,'%',38,39,'=',':',92,'/','?','<','>',0
+OP_INFOBUF: ds 80
+OP_DUBUF: ds 20
+OP_NUMBER_VALUE: ds 3
+OP_NUMBER_WORK: ds 3
+OP_OUTPTR: dw 0
+OP_POWERPTR: dw 0
+OP_DEC_STARTED: db 0
+OP_DEC_LEFT: db 0
+OP_DEC_DIGIT: db 0
+OP_POWERS: db 080h,096h,098h,040h,042h,00fh,0a0h,086h,1,010h,027h,0,0e8h,3,0,100,0,0,10,0,0,1,0,0
+OP_RECOVER_WORD: db 'ECOVER',0
+OP_WORK_WORD: db 'ORK',0
+OP_WORK_NAME: db 'IGNORED.TMP',0
+OP_RECOVERLABEL: db 'Recover validated checkpoint? Y/N: ',0
+OP_CONFIRMBUF: ds 80
+OP_DOC_CONTEXT: ds 187
+OP_APPEND_CONTEXT: ds 187
+OP_DOC_OWN: db 0
+OP_APPEND_START: db 128,0,0
+OP_APPEND_COUNT: ds 3
+OP_APPEND_TARGET: ds 37
+OP_APPEND_FLAGS: ds 2
+OP_APPEND_TEMPLATE: db 3,128,0,0,0,0,0,1,0,0,0,0,0,0
+OP_LINE_OVERRIDE: dw 0
+OP_SIGN: db 0
+OP_RAW_POS: ds 3
+OP_SEARCH_BOUND: ds 3
+OP_DELTA: ds 3
+OP_COMMAND: ds 96
+OP_PARSEPTR: dw 0
+OP_COLON: dw 0
+OP_ARGPTR: dw 0
+OP_EXT: db 0
+OP_DIGIT: db 0
+OP_FIRST: dw 1
+OP_LAST: dw 1
+OP_DESTLINE: dw 0
+OP_INSERTLINE: dw 0ffffh
+OP_MOVE: db 0
+OP_PARTIAL: db 0
+OP_APPEND: db 0
+OP_SUBMODE: db 0
+OP_SUBCOUNT: dw 0
+OP_DELIMITER: db '/'
+OP_SOURCE_LENGTH: ds 3
+OP_REMAIN: ds 3
+OP_SOURCE_BEGIN: ds 3
+OP_SOURCE_END: ds 3
+OP_INSERT_AT: ds 3
+OP_SAVEDPOS: ds 3
+OP_DUP_START: ds 3
+OP_SAVEDCOL: dw 0
+OP_SAVEDVIRTUAL: dw 0
+OP_FINAL_LINE: db 0
+OP_DUP_TEMPLATE: db 1,0,0,0,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,0,0
+OP_ZERO: db 0,0,0
+OP_TEMPLATE: db 1,0,0,0,0,0,0,3,0,0,0,0,0,0,1,0,0,0,0,0,0
+OP_SAVEDMSG: db 'Saved.',0
+OP_FIRSTLABEL: db 'First line: ',0
+OP_LASTLABEL: db 'Last line: ',0
+OP_DESTLABEL: db 'After line: ',0
+OP_FILELABEL: db 'Filename: ',0
+OP_RLABEL: db 'R arguments: ',0
+OP_WLABEL: db 'W arguments: ',0
+OP_ABANDONLABEL: db 'Discard changes? Y/N: ',0
+OP_OVERWRITELABEL: db ' replace? Y/N: ',0
+OP_PROTECTLABEL: db ' RO/SYS authorize? Y/N: ',0
+OP_REPLACELABEL: db 'Replace? Y/Return/^C: ',0
+OP_MEMORYMSG: db 'Free TPA above static image (bytes): ',0
+OP_NAMEMSG: db 'Default filename is shown in the title.',0
+OP_POSITIONMSG: db 'Line ',0
+OP_COLUMNMSG: db ' column ',0
+ end

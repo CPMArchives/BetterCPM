@@ -2266,8 +2266,12 @@ NOMEM: ld hl,ERRMEM
 
 	dseg
 
-	ds	1024		; provisional private stack, native high-water pending
+	ds	32		; low-stack canary, filled by qualification harness
+	ds	TED_STACK_SIZE	; private stack, native high-water qualification required
 STACK	equ	$
+ public TED_STACK_TOP,TED_STACK_LOW
+TED_STACK_TOP equ STACK
+TED_STACK_LOW equ STACK-TED_STACK_SIZE-32
 
 	public	$MEMRY
 $MEMRY:	ds	2
