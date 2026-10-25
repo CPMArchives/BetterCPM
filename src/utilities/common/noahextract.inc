@@ -198,9 +198,8 @@ NX_VERIFY_EOF:
         CALL NO_PUBLISH
         JP C,NX_OUTPUT_ERROR
         LD HL,NX_FINAL
-        CALL NX_PRINT_FCB
         LD DE,NX_EXTRACTED_TEXT
-        CALL NH_PRINT
+        CALL NH_PROGRESS_FCB
         LD HL,NX_COMPLETED
         CALL NX_INC_COUNT
         ; This adapter has no filesystem timestamp setter: never fake success.

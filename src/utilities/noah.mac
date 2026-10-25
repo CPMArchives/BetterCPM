@@ -1,6 +1,6 @@
 ; NOAH development: LBR LIST/TEST/EXTRACT with shared source selectors,
 ; member filters, frozen batches and authorized staged replacement.
-; LBR staged writes; ARK, codecs and production overlays remain pending.
+; LBR writes and codec phases implemented; ARK and failure choices pending.
 ; No distribution inclusion until the corresponding qualification is complete.
         ORG 100H
         JP NH_START
@@ -222,6 +222,20 @@ NH_USAGE_ERROR:
         LD DE,NH_USAGE
         CALL NH_PRINT
         JP NH_RETURN
+; Quiet affects only explicitly designated progress, never general diagnostics.
+NH_PROGRESS:
+        LD A,(NS_QUIET)
+        OR A
+        RET NZ
+        JP NH_PRINT
+NH_PROGRESS_FCB:
+        LD A,(NS_QUIET)
+        OR A
+        RET NZ
+        PUSH DE
+        CALL NX_PRINT_FCB
+        POP DE
+        JP NH_PRINT
 NH_PRINT:
         LD C,9
         JP AC_BDOS
