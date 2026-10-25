@@ -20,7 +20,12 @@ once. The include is the authoritative register/layout/status contract, shared
 by the library, command, adapter and tests. All public entries preserve IX/IY,
 the alternate register bank and stack balance. AF/BC/DE/HL are scratch unless
 an entry explicitly returns them. This is a provisional read ABI, version 1;
-writer, overlay and capability interfaces remain engineering gates.
+production overlay and capability interfaces remain engineering gates. The later
+[staged LBR writer](../engineering/NOAH%20LBR%20Writes.md) adds a separate callback
+ABI without changing this read context. Its authoritative layout and register
+contract are in `src/archive/lbrwrite.inc`; emit `LBR_WRITE_CODE` once after the
+reader/CRC helpers. Caller-owned source plans and file lifecycle/publication remain
+outside the reusable writer.
 
 A caller owns a nonwrapping allocation of at least `AS_CONTEXT_SIZE` (138) bytes.
 The first 12 bytes are configuration; the rest belong to the library. Before

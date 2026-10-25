@@ -54,6 +54,9 @@ NI_READ:
         JR Z,NI_READ
         RET
 NI_PAINT:
+        LD A,(NW_PROMPT)
+        OR A
+        JP NZ,NW_PAINT
         LD HL,NX_FINAL
         CALL NX_PRINT_FCB
         LD A,(NI_PROTECTED)

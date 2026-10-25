@@ -30,7 +30,7 @@ class Noah(Command):
             match = re.search(rf'^([0-9a-f]{{4}}).*\b{name}:\s', listing, re.M | re.I)
             assert match, name
             self.symbols[old] = int(match[1], 16)
-        for name in ('AC_OPEN', 'AC_CLOSE', 'LBR_NEXT', 'LBR_READ', 'NH_CONTEXT', 'NX_TEMP', 'NX_VERIFY', 'NI_WAIT', 'NS_YES'):
+        for name in ('AC_OPEN', 'AC_CLOSE', 'LBR_NEXT', 'LBR_READ', 'NH_CONTEXT', 'NX_TEMP', 'NX_VERIFY', 'NI_WAIT', 'NS_YES', 'NW_MEMORY_TEXT'):
             match = re.search(rf'\b{name}[ \t]+([0-9a-f]{{4}})\b', listing, re.I)
             assert match, name
             self.symbols[name] = int(match[1], 16)
@@ -54,15 +54,28 @@ class Noah(Command):
         self.partial_attributes = kwargs.pop('partial_attributes', False)
         self.rename_moves_on_failure = kwargs.pop('rename_moves_on_failure', False)
         self.delete_removes_on_failure = kwargs.pop('delete_removes_on_failure', False)
-        self.write_allowed = bool(args and any(t.upper() in ('/X', '/EXTRACT') for t in args[0].split()))
+        kwargs.setdefault('tpa', 0xd501)
+        self.write_allowed = bool(args and any(t.upper() in ('/X', '/EXTRACT', '/ADD', '/REMOVE', '/COMPACT') for t in args[0].split()))
         try:
             result = super().run(*args, **kwargs)
         except AssertionError as error:
             raise AssertionError((args[0], str(error))) from error
         minimum = C.c_ushort.in_dll(self.lib, 'minimum_sp').value
         self.max_stack = max(self.max_stack, self.symbols['UC_STACK_TOP'] - minimum)
-        assert self.max_stack < 128, 'stack overlaps version-tail scratch'
+        assert self.max_stack < 384, 'stack overlaps version-tail scratch'
         return result
+
+    def callback(self, kind):
+        # The pre-stack low-TPA diagnostic deliberately uses the CCP stack.
+        de = self.reg['D'].value * 256 + self.reg['E'].value
+        if kind == 0 and self.reg['PC'].value == 5 and self.reg['C'].value == 9 and de == self.symbols['NW_MEMORY_TEXT']:
+            try:
+                assert self.reg['SP'].value == 0xdffe
+                self.reg['A'].value = self.bdos(9,de)
+            except BaseException as error:
+                self.exception = error
+            return
+        return super().callback(kind)
 
     def fail(self, operation):
         self.attempts[operation] = self.attempts.get(operation, 0) + 1
@@ -72,9 +85,9 @@ class Noah(Command):
         return choice is not None and (choice == 0 or self.attempts[operation] == choice)
 
     def bdos(self, fn, de):
-        writes = (19, 21, 22, 23)
+        writes = (19, 21, 22, 23, 34)
         assert self.write_allowed or fn not in writes, ('not a read-only operation', fn)
-        assert fn in (2, 6, 9, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 30, 32, 33, 35), fn
+        assert fn in (2, 6, 9, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 30, 32, 33, 34, 35), fn
         if fn == 14:
             self.events.append((fn, de))
             self.drive = (de & 255) + 1
@@ -189,6 +202,19 @@ class Noah(Command):
             data = padded(self.files[self.fcbkey(de)])
             self.mem[de + 33:de + 36] = (len(data) // 128).to_bytes(3, 'little')
             return 255  # DRI function 35 has no defined accumulator result.
+        if fn == 34:
+            self.events.append((fn, de))
+            assert de in self.opened
+            key = self.fcbkey(de)
+            record = int.from_bytes(bytes(self.mem[de + 33:de + 36]), 'little')
+            at = record * 128
+            data = bytearray(padded(self.files[key]))
+            assert at <= len(data), ('random write hole', record, len(data))
+            failed = self.fail('write')
+            count = 17 if failed else 128
+            data[at:at + count] = bytes(self.mem[self.dma:self.dma + count])
+            self.files[key] = bytes(data)
+            return 2 if failed else 0
         if fn == 33:
             self.events.append((fn, de))
             if self.fail('read'):
@@ -257,7 +283,7 @@ def tests(m):
         assert m.run(tail, {}) == version_text()
         assert [f for f, _ in m.events] == [9]
     help_output = m.run('/HELP', {})
-    assert 'LBR reader development build' in help_output
+    assert 'LBR development build' in help_output
     for tail in ('/HELP', '/HELP X', 'X /help', '/HELP /HELP', '/VER /HELP',
                  '/HELP /VER', 'FILE\t/HeLp\t/UNKNOWN', ' ' * 122 + '/HELP'):
         assert m.run(tail, {}) == help_output, tail

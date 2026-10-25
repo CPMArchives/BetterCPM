@@ -2,7 +2,7 @@
 """Build an isolated NOAH ABI/overlay/TPA experiment, never a shipping NOAH.
 
 Uses the unchanged LBR and UNCR libraries with a memory-source adapter. Reserves
-the complete existing NOAH image *in addition* to the proof resident. No archive
+the recorded increments 1–2 NOAH image *in addition* to the proof resident. No archive
 writer, browser, production CLI dispatch or Utilities Disk packaging is added.
 """
 import argparse
@@ -14,7 +14,6 @@ import struct
 import subprocess
 import zlib
 
-from build_noah import build as baseline_build
 from qualify_codec_native import native_text
 from test_cr import reference
 from test_lbr import archive, entry
@@ -55,7 +54,11 @@ def native(source):
 
 def build(assembler, out):
     out.mkdir(parents=True, exist_ok=True)
-    baseline = baseline_build(assembler, out/'baseline')
+    # This isolated experiment reserves a frozen, recorded baseline. Rebasing it
+    # onto later writer work would silently change the earlier proof's question.
+    # Current production memory is measured by the LBR-write qualification.
+    record = ROOT/'docs/engineering/NOAH-Compatibility-Memory-Proof.json'
+    baseline = json.loads(record.read_text())['layout']['baseline']
     includes = {p.name: p.read_text() for folder in
                 (ROOT/'src/archive', ROOT/'src/codec', PROOF)
                 for p in folder.glob('*.inc')}
@@ -82,7 +85,7 @@ def build(assembler, out):
         ac = base+ovl_bytes+1
         cc = ac+138+2
         end = cc+26582+1
-        return f'''BASELINE_BYTES EQU {len(baseline)}
+        return f'''BASELINE_BYTES EQU {baseline["bytes"]}
 OVERLAY EQU {base}
 OVL_BYTES EQU {ovl_bytes}
 OVL_RECORDS EQU {ovl_bytes//128}
@@ -122,11 +125,11 @@ DECODED_BYTES EQU {len(data)}
 '''
     codec = assemble(assembler, out, 'UNCRMOD', csource, cbase)
     ovl_bytes = align(cbase+len(codec))-base
-    source_inputs = [ROOT/'tools/build_noah_proof.py', *PROOF.glob('*')]
+    source_inputs = [ROOT/'tools/build_noah_proof.py', record, *PROOF.glob('*')]
     source_inputs += [ROOT/'src/archive'/n for n in ('archive.inc', 'lbr.mac')]
     source_inputs += [ROOT/'src/codec'/n for n in ('codec.inc','codec.mac','uncr.inc','uncr.mac')]
     hashes = {str(p.relative_to(ROOT)): sha(p.read_bytes()) for p in sorted(source_inputs) if p.is_file()}
-    build_id = hashlib.sha256((json.dumps(hashes, sort_keys=True)+sha(baseline)).encode()).digest()[:8]
+    build_id = hashlib.sha256((json.dumps(hashes, sort_keys=True)+baseline['sha256']).encode()).digest()[:8]
     header = bytearray(128)
     struct.pack_into('<4sHH8sIHH', header, 0, b'NHOV', 1, 2, build_id, ovl_bytes, 128, 0)
     for i, (ident, image, address, workspace) in enumerate(
@@ -152,8 +155,7 @@ DECODED_BYTES EQU {len(data)}
     end = cc+26582+1
     report = {'scope': 'isolated read/decode feasibility, not production NOAH or writer proof',
               'build_id': build_id.hex(), 'source_sha256': hashes,
-              'baseline': {'bytes': len(baseline), 'sha256': sha(baseline),
-                           'reservation': 'entire current image, including selection, buffers and stack'},
+              'baseline': {**baseline, 'reservation': 'frozen increments 1–2 image; not current writer memory'},
               'codecs': sizes,
               'ranges_exclusive': {'proof_plus_baseline': [256, 256+len(image)],
                   'overlay_header': [base, hbase], 'lbr_code': [hbase, hbase+len(handler)],

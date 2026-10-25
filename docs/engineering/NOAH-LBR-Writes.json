@@ -1,0 +1,115 @@
+{
+  "date": "2026-10-25",
+  "component": "NOAH 1.0 revision 6",
+  "base_commit": "e0fcb6a",
+  "scope": "Increment 3 LBR writes only; development qualification, not full NOAH release",
+  "native": {
+    "scope": "LBR writes only; no browser, ARK or codecs",
+    "binary_sha256": "440c6c2cc0418e4af492e91dd1da17382892fd76aba7953f19b1010117541a6f",
+    "image_bytes": 33101,
+    "exclusive_memory_ceiling": 33357,
+    "record_rounded_load_ceiling": 33408,
+    "verified_systems": {
+      "z80pack": {
+        "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1"
+      },
+      "trs80gp": {
+        "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43"
+      }
+    },
+    "platforms": {
+      "z80pack": {
+        "status": "PASS",
+        "native_cross_parity": true,
+        "cross_extent_bytes": 20480,
+        "console_sha256": "1a7d0fb41bc816cf7a7e4081236aeaafd5ae0eb07c1742be3623c0fec78f7fd2",
+        "outputs": {
+          "NOAHNAT.COM": "590ece955bff5a931f6472ef60f45741decfa79079e292184e95e2ffeb5a98c2",
+          "CREATED.LBR": "11524086b85eef6617fc703b4ac65e7d88aa6c03e226e8ef7b023df632c6500f",
+          "REPLACE.LBR": "e099ba5586a27a6b74cf5f8859feb9e82a1ebd7d25a3c97b1f9c69c4a7eca70a",
+          "REMOVE.LBR": "6d27d41e193cceef61bd19bf03bb50ee7d2265def61753ccc3227de3b84a4502",
+          "COMPACT.LBR": "1a6c9d8f09c7994448eca0234ffae5e58560c99635d511ecefcc8dd6cd538b52",
+          "LIMITED.LBR": "71e7dbe03eec464417563beef358a2b4bd6b2815cbf1df954ab9ab93a8e827ee",
+          "LARGE.LBR": "0ef754009d8cfe031fd30768cfedf2e260a4dccb4106a4a9f12130b8bdb5efd0"
+        }
+      },
+      "trs80gp": {
+        "status": "PASS",
+        "native_cross_parity": true,
+        "cross_extent_bytes": 20480,
+        "console_sha256": "39953aa850b71e5471be2adc076afc5455fa09b0e0a6947710da344fc1ff64da",
+        "outputs": {
+          "NOAHNAT.COM": "590ece955bff5a931f6472ef60f45741decfa79079e292184e95e2ffeb5a98c2",
+          "CREATED.LBR": "11524086b85eef6617fc703b4ac65e7d88aa6c03e226e8ef7b023df632c6500f",
+          "REPLACE.LBR": "e099ba5586a27a6b74cf5f8859feb9e82a1ebd7d25a3c97b1f9c69c4a7eca70a",
+          "REMOVE.LBR": "6d27d41e193cceef61bd19bf03bb50ee7d2265def61753ccc3227de3b84a4502",
+          "COMPACT.LBR": "1a6c9d8f09c7994448eca0234ffae5e58560c99635d511ecefcc8dd6cd538b52",
+          "LIMITED.LBR": "71e7dbe03eec464417563beef358a2b4bd6b2815cbf1df954ab9ab93a8e827ee",
+          "LARGE.LBR": "0ef754009d8cfe031fd30768cfedf2e260a4dccb4106a4a9f12130b8bdb5efd0"
+        }
+      }
+    }
+  },
+  "host": {
+    "reusable_writer": "PASS: independent CRC/bytes and fault checks",
+    "write_cli_cases": 38,
+    "existing_cli_regression_cases": 137,
+    "deterministic_build": "PASS",
+    "historical_overlay_regression": "PASS; frozen increments 1\u20132 reservation",
+    "intercepted_max_stack_bytes": 38,
+    "private_stack_bytes": 512,
+    "reduced_ceiling_cli_tests": [
+      "C501",
+      "CA01"
+    ],
+    "low_ceiling_refusal": "7000"
+  },
+  "independent_oracle": {
+    "name": "Deark",
+    "revision": "c19b47c80a5ff8a7b41eb4f578e1afdda99202a2",
+    "archive_sha256": "11524086b85eef6617fc703b4ac65e7d88aa6c03e226e8ef7b023df632c6500f",
+    "binary_256_bytes": "PASS",
+    "empty_member": "PASS"
+  },
+  "native_prepared_source_sha256": "c4a396ebb9e7b8de2a100930bda1cb156109ee70194e794f2fdceb0c3c5253ae",
+  "reviewed_source_inputs": {
+    "metadata/component-registry.json": "95f16e4d72a029c37d6a89469884116b5c6d631a78bd2d969685f70607ea943e",
+    "src/archive/lbraudit.mac": "a5596d5b810c576ef5a0145ad185b8399e4cc1726d4451f6cac8f1420f28cf3b",
+    "src/archive/lbrwrite-render.inc": "3d17ba02c38d14ade646da2f26ff36d233b21ebdc48c5840897089bc1674f3a1",
+    "src/archive/lbrwrite.inc": "99086164e503375539cad759bcdea9d1ef8171967abcbebb58af6ed355fa6e5d",
+    "src/archive/lbrwrite.mac": "2d6b795b057e251364ceed5be6d61a0343d4130cbda61933311ffa4046e96e2d",
+    "src/utilities/common/noahextract.inc": "41c534d21900466a09cd166f43df36030f6f17d7e2d86be43031cd3a69381b2f",
+    "src/utilities/common/noahinput.inc": "ddaf40983f0b416944d8241dfddb0b717ab3b548a6ee208b450327de0d32be85",
+    "src/utilities/common/noahpublish.inc": "f96415753baec706f67cffd9a3efe5b3f30f873785c9bcbb267edbecd2f3caa8",
+    "src/utilities/common/noahselect.inc": "19965a370b6249ce381637fe13a5698969c595ccfbe6fd134a439fa7e6e1ee08",
+    "src/utilities/common/noahwrite-parse.inc": "2aaf95301a17ee16f667010e8917dad155d4f0d067ee05e61d32967db43a601d",
+    "src/utilities/common/noahwrite.inc": "4d07a9978f0f76e4d2e8fd2250356b5b94efda6b205f83ed374428cb2f46b21e",
+    "src/utilities/noah.mac": "3e5dc586524fc41c4b332fffcb8351831e822617afad31246326115eb237cb34",
+    "tools/build_noah.py": "5f8451880e83814c024ce6339bb498c4045928a8c943a2f16b33c64af73d1331",
+    "tools/build_noah_proof.py": "a5a259c380854884b28ba245033821ff2c089898d422fb77d02ab62fa5c01d20",
+    "tools/qualify_noah_write.py": "36a5939497308cb9c8b29e1560210270caec828099d284f30a3674ff2d26030d",
+    "tools/test_lbr_write.py": "98cb43d7852da5878d3651c9607a0d417121adbef27b50c66a9077dbd0065bf3",
+    "tools/test_noah.py": "35403babfcbcc95f0706a3af203285e793c19b984a1424d05cbe45b80607e042",
+    "tools/test_noah_write.py": "1f9cea3f8a1024e1a6fc45e21b09c2fab6f861a7251b6b1577a622f5925e93a9"
+  },
+  "external_tools": {
+    "ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+    "LINK.COM": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677",
+    "modified": false
+  },
+  "limits": [
+    "No ARK, codec commands, browser, /Q or production overlay integration",
+    "Native runtime campaigns use bare TPA; reduced ceilings exercised by the core harness",
+    "No concurrent-writer locking or power-loss atomicity claim",
+    "Historical zero CRC remains ambiguous; source timestamps unavailable",
+    "Bounded fixtures and injected failures, not exhaustive release qualification"
+  ],
+  "evidence_bundle": {
+    "file": "NOAH-LBR-Writes-evidence.tar.gz",
+    "sha256": "5d706f63b9970ca7165b1b903d5922d528a04f68009c9079663cb607e5d6a7dc"
+  }
+}
