@@ -1,0 +1,70 @@
+{
+  "scope": "Reference-only downloads; no external source linked or redistributed in NOAH",
+  "artifacts": {
+    "LUDEF5.html": {
+      "url": "https://www.seasip.info/Cpm/ludef5.html",
+      "bytes": 17138,
+      "sha256": "970997c3eb8d8a1c5550276858f5b90ff23f80a8ccad928ce7ae92765d4360cc"
+    },
+    "arcpack.c": {
+      "url": "https://raw.githubusercontent.com/hyc/arc/325047b2dc60fad5f6c8238d8cb5294b9a5ada38/arcpack.c",
+      "bytes": 6655,
+      "sha256": "0c18e2d58195e866e57fd041bed11b35e465703492570b098e53d08feb9b2ae8"
+    },
+    "arcunp.c": {
+      "url": "https://raw.githubusercontent.com/hyc/arc/325047b2dc60fad5f6c8238d8cb5294b9a5ada38/arcunp.c",
+      "bytes": 5036,
+      "sha256": "988af3a30eb41793d226c4c816cf3e5571b0f1d7c88e9e8af03bfba48ef54166"
+    },
+    "arc-Readme": {
+      "url": "https://raw.githubusercontent.com/hyc/arc/325047b2dc60fad5f6c8238d8cb5294b9a5ada38/Readme",
+      "bytes": 5337,
+      "sha256": "211e318a3e81b5117a22211d0e368b063e49989778e1b3cab05523b74499a29e"
+    },
+    "deark-arc.c": {
+      "url": "https://raw.githubusercontent.com/jsummers/deark/c19b47c80a5ff8a7b41eb4f578e1afdda99202a2/modules/arc.c",
+      "bytes": 47605,
+      "sha256": "da6480050fb4520b3c7a00721a0e2a858c27c600b97c59f2c47f9ae6eabbd60b"
+    },
+    "deark-COPYING": {
+      "url": "https://raw.githubusercontent.com/jsummers/deark/c19b47c80a5ff8a7b41eb4f578e1afdda99202a2/COPYING",
+      "bytes": 1225,
+      "sha256": "770a005b55f848b3985030ba01bb3f5db5718955ecdef3ec41d0ca00b97e24c6"
+    },
+    "Arcinfo": {
+      "url": "https://raw.githubusercontent.com/hyc/arc/325047b2dc60fad5f6c8238d8cb5294b9a5ada38/Arcinfo",
+      "bytes": 5577,
+      "sha256": "4ac323f4aed16c2d851a635eacc523338d20329035500843003085e2205ce6b9"
+    },
+    "arc-LICENSE": {
+      "url": "https://raw.githubusercontent.com/hyc/arc/325047b2dc60fad5f6c8238d8cb5294b9a5ada38/LICENSE",
+      "bytes": 256,
+      "sha256": "c0895c997a0df4addda191622e54c2efd85e026c89a2d3bf352efe4c2ba4a67b"
+    },
+    "crc32a.arc": {
+      "url": "https://www.zimmers.net/anonftp/pub/cpm/archivers/crc32a.arc",
+      "bytes": 21263,
+      "sha256": "e14c091c8df685127b33b0cbd1e5ac9e9bca686aaf95f1b819afdde78a0764d5"
+    },
+    "de-lbr.arc": {
+      "url": "https://www.zimmers.net/anonftp/pub/cpm/archivers/de-lbr.arc",
+      "bytes": 5120,
+      "sha256": "499a2c291a67705fcaf80db3b67dec96a5469a09676203b7df4e1812082addba"
+    },
+    "nulu15.arc": {
+      "url": "https://www.zimmers.net/anonftp/pub/cpm/archivers/nulu15.arc",
+      "bytes": 40233,
+      "sha256": "61ef61dc7d963c4ba0f17bc940c551492bd57817d2a864e2869c35f89c20842d"
+    },
+    "arc-COPYING": {
+      "url": "https://raw.githubusercontent.com/hyc/arc/325047b2dc60fad5f6c8238d8cb5294b9a5ada38/COPYING",
+      "bytes": 17992,
+      "sha256": "32b1062f7da84967e7019d01ab805935caa7ab7321a7ced0e30ebe75e5df1670"
+    },
+    "deark-source.tar.gz": {
+      "url": "https://codeload.github.com/jsummers/deark/tar.gz/c19b47c80a5ff8a7b41eb4f578e1afdda99202a2",
+      "bytes": 1376282,
+      "sha256": "7eadb69be2b3105c151569abff3febd9f897d5c0597502055c7c8209b7e8be86"
+    }
+  }
+}

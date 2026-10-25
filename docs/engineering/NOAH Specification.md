@@ -7,6 +7,9 @@ implementation gates in section 16. LBR reader/listing, integrity audit and new-
 extraction increments, shared selectors and authorized overwrites exist; see
 [current implementation scope and checks](NOAH%20Selectors%20and%20Overwrite.md).
 Full specification conformance and release qualification are not claimed.
+The bounded [compatibility/API/overlay and Model 4 memory proof](NOAH%20Compatibility%20and%20Memory%20Proof.md)
+records increments 1–2, prototype limits and the outstanding native LINK gate;
+it does not add production commands or close full implementation gates.
 
 This document supersedes the chronological NOAH decision draft. Settled behavior
 is normative. Editorial defaults below use existing BetterCP/M conventions;

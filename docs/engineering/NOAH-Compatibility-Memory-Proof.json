@@ -1,0 +1,564 @@
+{
+  "date": "2026-10-25",
+  "baseline": "e98797f95704174cbb77a918ecd1267007124cae",
+  "scope": "NOAH CLI increments 1\u20132: compatibility inventory and isolated API/overlay/memory feasibility; no production command changes",
+  "overall": "PARTIAL_WITH_EXPLICIT_BLOCKED_GATES",
+  "layout": {
+    "scope": "isolated read/decode feasibility, not production NOAH or writer proof",
+    "build_id": "7a7d5c76ad81b71c",
+    "source_sha256": {
+      "src/archive/archive.inc": "529a44919d2adf0634bd049706c09bbd4cad6043829835f0e000697b3c40c4c0",
+      "src/archive/lbr.mac": "32b0ad559d367eebecb52d433714d9a822157a1e525b1134b1a2d3a8225543a0",
+      "src/codec/codec.inc": "64d8478d79311923e05ef1b40d86797d89c7d97c42aa74ae28cb57abfefd356d",
+      "src/codec/codec.mac": "0182e9ed7ce1de3b414937e30b7ef84ab548dd5c749326017fd1360c3050e43e",
+      "src/codec/uncr.inc": "273604aa41590f497ebd8e9a4fcf8cf9687d476a1a3ccdc0fec384be2a886763",
+      "src/codec/uncr.mac": "2f6f91f9f2049a7a5e15fdb0393f09fc1755e70a2e3613565c963beadc7488f4",
+      "tools/build_noah_proof.py": "825c2b088fced96211c63c0afac996e07830773c4527364c2d09fa84d9e405c2",
+      "tools/noah_proof/proof.inc": "f4f0e6a0cb406860b493a6998dd1175e5fef776aca86efa7cc109dd82aacd6e3",
+      "tools/noah_proof/proof.mac": "7caee8bd09d22a3640e9fc27b77f62b57cebc9a0cb9a4b4b5fc8f5b4561ad00f"
+    },
+    "baseline": {
+      "bytes": 19674,
+      "sha256": "7a42c790727d8f15ff97861e49d10b4b8aedcd981c3e7c74f9f627f9e9ad8692",
+      "reservation": "entire current image, including selection, buffers and stack"
+    },
+    "codecs": {
+      "sq": {
+        "code_bytes_including_common": 1385,
+        "context_bytes": 3524
+      },
+      "usq": {
+        "code_bytes_including_common": 929,
+        "context_bytes": 1440
+      },
+      "cr": {
+        "code_bytes_including_common": 1194,
+        "context_bytes": 25207
+      },
+      "uncr": {
+        "code_bytes_including_common": 1449,
+        "context_bytes": 26582
+      }
+    },
+    "ranges_exclusive": {
+      "proof_plus_baseline": [
+        256,
+        22503
+      ],
+      "overlay_header": [
+        22528,
+        22656
+      ],
+      "lbr_code": [
+        22656,
+        23613
+      ],
+      "uncr_code": [
+        23680,
+        25138
+      ],
+      "archive_context": [
+        25217,
+        25355
+      ],
+      "codec_context": [
+        25357,
+        51939
+      ]
+    },
+    "required_ceiling": 51940,
+    "required_tpa_bytes": 51684,
+    "guard_bytes": 4,
+    "private_stack_bytes": 512,
+    "artifacts": {
+      "PROOF.COM": {
+        "bytes": 22247,
+        "sha256": "c92c666698b214c96a3c75ccf48d6ca434db3f80380900e63a1829c9f03dce9f"
+      },
+      "NOAH.OVL": {
+        "bytes": 2688,
+        "sha256": "0c7437bc77d51ee29d2d9116708ef9b686b41ac9d9af0b618beb0ff462077cbb"
+      },
+      "LBRMOD": {
+        "bytes": 957,
+        "sha256": "057dc7c709684095f86a9bf46aedba296fcc37037f0908908e0e5d64a6f5c88c"
+      },
+      "UNCRMOD": {
+        "bytes": 1458,
+        "sha256": "1e86837f2be8c41a1d9cf0b7ff81ac843face7894fdbbf6b1fadb4dbc548479a"
+      }
+    }
+  },
+  "host_checks": {
+    "simultaneous LBR/UNCR and exact decoded bytes": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF PASS"
+    },
+    "A0 fallback and caller DU restoration": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF PASS"
+    },
+    "exact minimum": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA CAE4 NEED CAE4\r\nNOAH PROOF PASS"
+    },
+    "one below minimum": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA CAE3 NEED CAE4\r\nNOAH PROOF LOW TPA"
+    },
+    "terminal RSX reduced TPA": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA C501 NEED CAE4\r\nNOAH PROOF LOW TPA"
+    },
+    "no arbitrary DU scan": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF INVALID"
+    },
+    "missing companion": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF INVALID"
+    },
+    "signature": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF INVALID"
+    },
+    "ABI": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF INVALID"
+    },
+    "count": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF INVALID"
+    },
+    "build mismatch": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF INVALID"
+    },
+    "length": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF INVALID"
+    },
+    "offset": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF INVALID"
+    },
+    "entry": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF INVALID"
+    },
+    "workspace": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF INVALID"
+    },
+    "body CRC": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF INVALID"
+    },
+    "CRC field": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF INVALID"
+    },
+    "truncated companion": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF INVALID"
+    },
+    "trailing record": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF INVALID"
+    },
+    "read error": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF INVALID"
+    },
+    "close error": {
+      "status": "PASS",
+      "console": "NOAH PROOF TPA D501 NEED CAE4\r\nNOAH PROOF INVALID"
+    }
+  },
+  "cpmsim": {
+    "status": "PASS",
+    "native_cross_parity": true,
+    "native_build_reused_from": "build/noah-proof/native-v2/z80pack",
+    "observed_tpa_ceiling_hex": [
+      "C501",
+      "D501"
+    ],
+    "bare_read_decode": true,
+    "loaded_rsx_refusal": true,
+    "corrupt_overlay_refusal": true,
+    "execution_report": "z80pack/execution.json",
+    "console_sha256": "6325f948699c34ab095b91122b387c27d46aaf6d71f0a2bf009f451012046a4a"
+  },
+  "model4_runtime": {
+    "status": "PASS",
+    "native_cross_parity": false,
+    "native_build_status": "NOT_RUN",
+    "native_build_reused_from": null,
+    "native_assembly_reused_from": null,
+    "observed_tpa_ceiling_hex": [
+      "CA01",
+      "D501"
+    ],
+    "bare_read_decode": true,
+    "loaded_rsx_refusal": true,
+    "corrupt_overlay_refusal": true,
+    "execution_report": "build/noah-proof/model4-runtime/trs80gp/execution.json",
+    "console_sha256": "7028282634d8d86c6fe638bbe90b62da900aa2c6d4890799bc63f24c0ac6c06e"
+  },
+  "model4_native": {
+    "assembly": "PASS: three zero-error ZSM4 results; controller REL byte-identical to cpmsim",
+    "link": "BLOCKED",
+    "diagnostic": "LINK 1.3: NO FILE: for controller, including explicit A: input and unloaded RSXs; smaller modules linked",
+    "scope": "No Model 4 native controller parity claim",
+    "controller_rel_sha256": "ed3bfc7ceb3621cfd80386a4ccc4c8267930e88f0b2525da2080b7bce278f5b5"
+  },
+  "compatibility": {
+    "scope": "reference and historical fixture inventory; not NOAH conformance",
+    "pins_sha256": "bec79cad8bfcbeb59bc6991915f0c41d87cc33783e812ebea194521eb0f786d2",
+    "references": {
+      "LUDEF5.html": {
+        "url": "https://www.seasip.info/Cpm/ludef5.html",
+        "bytes": 17138,
+        "sha256": "970997c3eb8d8a1c5550276858f5b90ff23f80a8ccad928ce7ae92765d4360cc"
+      },
+      "arcpack.c": {
+        "url": "https://raw.githubusercontent.com/hyc/arc/325047b2dc60fad5f6c8238d8cb5294b9a5ada38/arcpack.c",
+        "bytes": 6655,
+        "sha256": "0c18e2d58195e866e57fd041bed11b35e465703492570b098e53d08feb9b2ae8"
+      },
+      "arcunp.c": {
+        "url": "https://raw.githubusercontent.com/hyc/arc/325047b2dc60fad5f6c8238d8cb5294b9a5ada38/arcunp.c",
+        "bytes": 5036,
+        "sha256": "988af3a30eb41793d226c4c816cf3e5571b0f1d7c88e9e8af03bfba48ef54166"
+      },
+      "arc-Readme": {
+        "url": "https://raw.githubusercontent.com/hyc/arc/325047b2dc60fad5f6c8238d8cb5294b9a5ada38/Readme",
+        "bytes": 5337,
+        "sha256": "211e318a3e81b5117a22211d0e368b063e49989778e1b3cab05523b74499a29e"
+      },
+      "deark-arc.c": {
+        "url": "https://raw.githubusercontent.com/jsummers/deark/c19b47c80a5ff8a7b41eb4f578e1afdda99202a2/modules/arc.c",
+        "bytes": 47605,
+        "sha256": "da6480050fb4520b3c7a00721a0e2a858c27c600b97c59f2c47f9ae6eabbd60b"
+      },
+      "deark-COPYING": {
+        "url": "https://raw.githubusercontent.com/jsummers/deark/c19b47c80a5ff8a7b41eb4f578e1afdda99202a2/COPYING",
+        "bytes": 1225,
+        "sha256": "770a005b55f848b3985030ba01bb3f5db5718955ecdef3ec41d0ca00b97e24c6"
+      },
+      "Arcinfo": {
+        "url": "https://raw.githubusercontent.com/hyc/arc/325047b2dc60fad5f6c8238d8cb5294b9a5ada38/Arcinfo",
+        "bytes": 5577,
+        "sha256": "4ac323f4aed16c2d851a635eacc523338d20329035500843003085e2205ce6b9"
+      },
+      "arc-LICENSE": {
+        "url": "https://raw.githubusercontent.com/hyc/arc/325047b2dc60fad5f6c8238d8cb5294b9a5ada38/LICENSE",
+        "bytes": 256,
+        "sha256": "c0895c997a0df4addda191622e54c2efd85e026c89a2d3bf352efe4c2ba4a67b"
+      },
+      "crc32a.arc": {
+        "url": "https://www.zimmers.net/anonftp/pub/cpm/archivers/crc32a.arc",
+        "bytes": 21263,
+        "sha256": "e14c091c8df685127b33b0cbd1e5ac9e9bca686aaf95f1b819afdde78a0764d5"
+      },
+      "de-lbr.arc": {
+        "url": "https://www.zimmers.net/anonftp/pub/cpm/archivers/de-lbr.arc",
+        "bytes": 5120,
+        "sha256": "499a2c291a67705fcaf80db3b67dec96a5469a09676203b7df4e1812082addba"
+      },
+      "nulu15.arc": {
+        "url": "https://www.zimmers.net/anonftp/pub/cpm/archivers/nulu15.arc",
+        "bytes": 40233,
+        "sha256": "61ef61dc7d963c4ba0f17bc940c551492bd57817d2a864e2869c35f89c20842d"
+      },
+      "arc-COPYING": {
+        "url": "https://raw.githubusercontent.com/hyc/arc/325047b2dc60fad5f6c8238d8cb5294b9a5ada38/COPYING",
+        "bytes": 17992,
+        "sha256": "32b1062f7da84967e7019d01ab805935caa7ab7321a7ced0e30ebe75e5df1670"
+      },
+      "deark-source.tar.gz": {
+        "url": "https://codeload.github.com/jsummers/deark/tar.gz/c19b47c80a5ff8a7b41eb4f578e1afdda99202a2",
+        "bytes": 1376282,
+        "sha256": "7eadb69be2b3105c151569abff3febd9f897d5c0597502055c7c8209b7e8be86"
+      }
+    },
+    "historical_arc_fixtures": {
+      "crc32a.arc": {
+        "members": [
+          {
+            "name": "CRC32A.C",
+            "method": 8,
+            "header_offset": 0,
+            "stored_bytes": 671,
+            "decoded_bytes": 1144,
+            "crc16": "dfa9"
+          },
+          {
+            "name": "CRC32A.COM",
+            "method": 8,
+            "header_offset": 700,
+            "stored_bytes": 4187,
+            "decoded_bytes": 5120,
+            "crc16": "b2a5"
+          },
+          {
+            "name": "RUNTIME.OVY",
+            "method": 8,
+            "header_offset": 4916,
+            "stored_bytes": 16316,
+            "decoded_bytes": 18944,
+            "crc16": "d9cf"
+          }
+        ],
+        "end_offset": 21263,
+        "physical_bytes": 21263,
+        "trailing_bytes": 0,
+        "sha256": "e14c091c8df685127b33b0cbd1e5ac9e9bca686aaf95f1b819afdde78a0764d5",
+        "independent_decoded_outputs": {
+          "output.000.CRC32A.C": {
+            "bytes": 1144,
+            "sha256": "ad894f4a48a2b49b5f41cfc39fd2e3a042dbbeeb0eac0fc3d32e90b775c30942"
+          },
+          "output.001.CRC32A.COM": {
+            "bytes": 5120,
+            "sha256": "b02e0a817e9b84034e7a7c6bb8a615d2081c3e1ec270eed7ae384b0a348f6b4f"
+          },
+          "output.002.RUNTIME.OVY": {
+            "bytes": 18944,
+            "sha256": "710b24c85492cf69178df2229a8272ced66da8d296f1936dc3a356680b5b2e60"
+          }
+        },
+        "oracle_log_sha256": "8afe2f6b1bbc73a5592f27f41d251fa312af5b82e37dc1ee00aef1bfc7686a6f"
+      },
+      "de-lbr.arc": {
+        "members": [
+          {
+            "name": "DE-LBR.COM",
+            "method": 8,
+            "header_offset": 0,
+            "stored_bytes": 4725,
+            "decoded_bytes": 6272,
+            "crc16": "3714"
+          },
+          {
+            "name": "DE-LBR.DOC",
+            "method": 8,
+            "header_offset": 4754,
+            "stored_bytes": 189,
+            "decoded_bytes": 256,
+            "crc16": "a1ab"
+          }
+        ],
+        "end_offset": 4974,
+        "physical_bytes": 5120,
+        "trailing_bytes": 146,
+        "sha256": "499a2c291a67705fcaf80db3b67dec96a5469a09676203b7df4e1812082addba",
+        "independent_decoded_outputs": {
+          "output.000.DE-LBR.COM": {
+            "bytes": 6272,
+            "sha256": "d2e91291189f03042f08b2e216ef687ebcec13f0efcdd3b825af2fddd7d381d4"
+          },
+          "output.001.DE-LBR.DOC": {
+            "bytes": 256,
+            "sha256": "a6499c95217711af14a976a2d5bb9e1fe2ed7d3df3ae2d7e3f8e8eeef859bf59"
+          }
+        },
+        "oracle_log_sha256": "97b04b35110e4ab380d0b034deb5c927280fce72f656b2d840c1a292772c32cf"
+      },
+      "nulu15.arc": {
+        "members": [
+          {
+            "name": "NULU15.ASC",
+            "method": 9,
+            "header_offset": 0,
+            "stored_bytes": 25965,
+            "decoded_bytes": 64815,
+            "crc16": "8564"
+          },
+          {
+            "name": "NULU15.COM",
+            "method": 8,
+            "header_offset": 25994,
+            "stored_bytes": 14208,
+            "decoded_bytes": 15360,
+            "crc16": "2295"
+          }
+        ],
+        "end_offset": 40233,
+        "physical_bytes": 40233,
+        "trailing_bytes": 0,
+        "sha256": "61ef61dc7d963c4ba0f17bc940c551492bd57817d2a864e2869c35f89c20842d",
+        "independent_decoded_outputs": {
+          "output.000.NULU15.ASC": {
+            "bytes": 64815,
+            "sha256": "e32a941f328431f12e1f35bf6d2c022784dc7e38e31a8434358195ca3f0a9efb"
+          },
+          "output.001.NULU15.COM": {
+            "bytes": 15360,
+            "sha256": "71d1bef16250c7781ac4316bb580a129b25fc3d7d69752cd5cc4f4fd88f65f03"
+          }
+        },
+        "oracle_log_sha256": "2c8c2897cd24c667a90e06a6054553dcaf466699619ac6e48e97d02a322b26a5"
+      },
+      "generated-method-1.arc": {
+        "members": [
+          {
+            "name": "ORACLE.BIN",
+            "method": 1,
+            "header_offset": 0,
+            "stored_bytes": 259,
+            "decoded_bytes": 259,
+            "crc16": "b9c9"
+          }
+        ],
+        "end_offset": 286,
+        "physical_bytes": 286,
+        "trailing_bytes": 0,
+        "sha256": "51e43f73fdb96a0b1d68ded5b7a9018fcf23350b27e71e4dac80a958a80f2055",
+        "independent_decoded_outputs": {
+          "output.000.ORACLE.BIN": {
+            "bytes": 259,
+            "sha256": "cde30f099c61c21e663dd755824270aa2359095eac24b9e4ecf853429f959395"
+          }
+        },
+        "oracle_log_sha256": "cbde9463441712b78621c3f143b3246b8ad693b7135d47c92cd0ffad16f70a4e"
+      },
+      "generated-method-2.arc": {
+        "members": [
+          {
+            "name": "ORACLE.BIN",
+            "method": 2,
+            "header_offset": 0,
+            "stored_bytes": 259,
+            "decoded_bytes": 259,
+            "crc16": "b9c9"
+          }
+        ],
+        "end_offset": 290,
+        "physical_bytes": 290,
+        "trailing_bytes": 0,
+        "sha256": "dd7381e9bc4e62a2ac90986cf27e00b909342c1ca4ae8c55310b7bfeca1ab62c",
+        "independent_decoded_outputs": {
+          "output.000.ORACLE.BIN": {
+            "bytes": 259,
+            "sha256": "cde30f099c61c21e663dd755824270aa2359095eac24b9e4ecf853429f959395"
+          }
+        },
+        "oracle_log_sha256": "685cef749c1c87bf4a3b39c37a8939a274c4b06bf1f1448253ce6a926d8997da"
+      },
+      "generated-method-3.arc": {
+        "members": [
+          {
+            "name": "ORACLE.BIN",
+            "method": 3,
+            "header_offset": 0,
+            "stored_bytes": 260,
+            "decoded_bytes": 259,
+            "crc16": "b9c9"
+          }
+        ],
+        "end_offset": 291,
+        "physical_bytes": 291,
+        "trailing_bytes": 0,
+        "sha256": "8987279676c5ba081b00043c1ac487ef9a6d5a7427e5e53339a0bc8b0e042390",
+        "independent_decoded_outputs": {
+          "output.000.ORACLE.BIN": {
+            "bytes": 259,
+            "sha256": "cde30f099c61c21e663dd755824270aa2359095eac24b9e4ecf853429f959395"
+          }
+        },
+        "oracle_log_sha256": "25b79d89a86ac5545bd7dc3e7b93aa97a1f6fb424658087dc0ca5e8d19638bc9"
+      },
+      "generated-method-4.arc": {
+        "members": [
+          {
+            "name": "ORACLE.BIN",
+            "method": 4,
+            "header_offset": 0,
+            "stored_bytes": 1288,
+            "decoded_bytes": 259,
+            "crc16": "b9c9"
+          }
+        ],
+        "end_offset": 1319,
+        "physical_bytes": 1319,
+        "trailing_bytes": 0,
+        "sha256": "fe82725d3ab20f4b04119e92ea99600ad1b489de4a0ef4fba3c19e4e47869643",
+        "independent_decoded_outputs": {
+          "output.000.ORACLE.BIN": {
+            "bytes": 259,
+            "sha256": "cde30f099c61c21e663dd755824270aa2359095eac24b9e4ecf853429f959395"
+          }
+        },
+        "oracle_log_sha256": "8771e4d4aa2a0c76be03921b990cb651cb0fe40fca8e7e7b595a41951bab6f35"
+      }
+    },
+    "deark_executable_sha256": "547ffbb6d239508c11472d7179a836172668702031416f93ea83af9e367484ca"
+  },
+  "remaining_gates": [
+    "Production writer and block-step API",
+    "Demand-loading and changed companion checks during transactions",
+    "Actual writer/ARK memory and scratch/performance measurements",
+    "Model 4 native controller LINK",
+    "Historical CP/M ARK encoder/decoder interchange",
+    "Complete CLI and release qualification"
+  ],
+  "source_sha256": {
+    "tools/build_noah_proof.py": "825c2b088fced96211c63c0afac996e07830773c4527364c2d09fa84d9e405c2",
+    "tools/noah_compatibility.py": "e4b1d136202e25bc22657395a6fa6d9a38d0ab1f1bc4a8ed9ba135046c2a8a5e",
+    "tools/qualify_noah_proof.py": "4e81216f75a4bd5ca6bd164022adb255c8cafe6c769210524d2be2fb4ddadf9b",
+    "tools/test_noah_proof.py": "b33d3b10cdaa74124ab60e137f93169e4f715036b22350f3f387b528e6b3dec2",
+    "tools/noah_proof/proof.inc": "f4f0e6a0cb406860b493a6998dd1175e5fef776aca86efa7cc109dd82aacd6e3",
+    "tools/noah_proof/proof.mac": "7caee8bd09d22a3640e9fc27b77f62b57cebc9a0cb9a4b4b5fc8f5b4561ad00f"
+  },
+  "evidence_bundle": {
+    "file": "NOAH-Compatibility-Memory-Proof-evidence.tar.gz",
+    "bytes": 38153,
+    "sha256": "14725b243f021cc81e9107f16112304e9ede2cb376e65e9b39e92f989dcb15ee",
+    "members_sha256": {
+      "cross/LBRMOD.MAC": "be72f6c73e91c261d81c55530b1260197b83d1a8fb6c2b47267f28b5e6643e88",
+      "cross/LBRMOD.bin": "057dc7c709684095f86a9bf46aedba296fcc37037f0908908e0e5d64a6f5c88c",
+      "cross/NOAH.OVL": "0c7437bc77d51ee29d2d9116708ef9b686b41ac9d9af0b618beb0ff462077cbb",
+      "cross/PROOF.COM": "c92c666698b214c96a3c75ccf48d6ca434db3f80380900e63a1829c9f03dce9f",
+      "cross/PROOF.MAC": "0636ac7059d9bcb1ab3f6ddc72255bdf2d3c97eabebfb0f4392a1050b505d0e3",
+      "cross/UNCRMOD.MAC": "0f8c1256db501fe25e90c7e8f9e1024eb47b128961fe4fdb0c0e466454fc39f7",
+      "cross/UNCRMOD.bin": "1e86837f2be8c41a1d9cf0b7ff81ac843face7894fdbbf6b1fadb4dbc548479a",
+      "cross/layout.json": "579b3e5fddc309e7fd31410a436619ef5bba77933e674f695e7370dc7447c46b",
+      "final-compatibility.json": "78a98f438a26b13059d0ce6b13485dffcedd75d35459d481065f2456bd1f080a",
+      "host/report.json": "fe883f60e70abefdaad4d56e599f44822b191fcc48c56c812c38cf00d07961bc",
+      "model4-checked/report.json": "d42924e2e410b342c9b7b081fad5cfeea67072fee77d702f56c20ae60cebb8a6",
+      "model4-final/console.bin": "990ef112221935fe7f8073868f3b8838232771605cbb897ebeb60b6528c0a24f",
+      "model4-final/execution.json": "53ed5ed2e201d8415b8d887325f065173ef457bf71fa85be1837500cf634fd9b",
+      "model4-runtime/trs80gp/console.bin": "7028282634d8d86c6fe638bbe90b62da900aa2c6d4890799bc63f24c0ac6c06e",
+      "model4-runtime/trs80gp/execution.json": "7473e08cc8aa75476080bda25bf2bbb24375d8bde53b49250e85e93d69097746",
+      "model4-runtime/trs80gp/filesystem.txt": "810b61e57bbd22417f90d83c14e24666547d3a70efdf8d3839b807efbd39d0a2",
+      "native-v2/z80pack/console.bin": "0b3be426563521373a6353fd42fc9eafb7ff364eb27e3dbd7dda3ec57259389b",
+      "native-v2/z80pack/execution.json": "3fc30d92cac1a99c923f2c404a42e8527344b1b153959d6584a14d4411439a0f",
+      "native-v4/report.json": "12f8a1bf8aa47b806fe33381ceab5f7fd413f6807f3245f7a6d462a5b0c5189f",
+      "native-v4/trs80gp/PROOF.REL": "ed3bfc7ceb3621cfd80386a4ccc4c8267930e88f0b2525da2080b7bce278f5b5",
+      "native-v4/trs80gp/trs80-text-1.bin": "a41a4ed814d4cab1cd8c24b109e90d8fe0d69a4d7449210bde518c0c0ce20df7",
+      "native-v4/trs80gp/trs80-text-2.bin": "896823c61724913906e7f4c82a4c97ab4bf4c9724ceafe783231869a9064c8c2",
+      "native-v4/trs80gp/trs80-text-3.bin": "1dd49802d35b171e612df1beb18288a22384b377b42da2f88aada013610fa764",
+      "native-v4/trs80gp/trs80-text-4.bin": "1f2a2f08819b2af78e096d5d7fa474f35ca40131a46efd342a62071accdb4418",
+      "native-v4/trs80gp/trs80-text-5.bin": "9c9fa1deb9b42a1a09de405eb479c8a071d841ac2bf00ed82ec2cc0d25da10fc",
+      "native-v4/trs80gp/trs80-text-6.bin": "746a73b94ace38c7c8e651a1d81edc1c437dbcde92cbdf429d91336c470994b7",
+      "native-v4/z80pack/console.bin": "6325f948699c34ab095b91122b387c27d46aaf6d71f0a2bf009f451012046a4a",
+      "native-v4/z80pack/execution.json": "0da79492c32881c99005545289b50bdac4e563fbea3756ffd2c5520c4f862026",
+      "native-z80/LBRMOD.COM": "2aa9abc222d59a8c69ffb1336a1371f953beb26953bc691c02f0d6ec7dafa0ec",
+      "native-z80/PROOF.COM": "b74087f1c1d2bda7e628e171c00d337ab354f4389bded36903eac97a7c90c092",
+      "native-z80/PROOF.REL": "ed3bfc7ceb3621cfd80386a4ccc4c8267930e88f0b2525da2080b7bce278f5b5",
+      "native-z80/UNCRMOD.COM": "36707b9f27b6668bb84e9a9b280705642e644106f0b8e37b5ee7bf2b94da7ec8",
+      "oracle/crc32a.arc.deark.log": "8afe2f6b1bbc73a5592f27f41d251fa312af5b82e37dc1ee00aef1bfc7686a6f",
+      "oracle/de-lbr.arc.deark.log": "97b04b35110e4ab380d0b034deb5c927280fce72f656b2d840c1a292772c32cf",
+      "oracle/generated-method-1.arc": "51e43f73fdb96a0b1d68ded5b7a9018fcf23350b27e71e4dac80a958a80f2055",
+      "oracle/generated-method-1.arc.deark.log": "cbde9463441712b78621c3f143b3246b8ad693b7135d47c92cd0ffad16f70a4e",
+      "oracle/generated-method-2.arc": "dd7381e9bc4e62a2ac90986cf27e00b909342c1ca4ae8c55310b7bfeca1ab62c",
+      "oracle/generated-method-2.arc.deark.log": "685cef749c1c87bf4a3b39c37a8939a274c4b06bf1f1448253ce6a926d8997da",
+      "oracle/generated-method-3.arc": "8987279676c5ba081b00043c1ac487ef9a6d5a7427e5e53339a0bc8b0e042390",
+      "oracle/generated-method-3.arc.deark.log": "25b79d89a86ac5545bd7dc3e7b93aa97a1f6fb424658087dc0ca5e8d19638bc9",
+      "oracle/generated-method-4.arc": "fe82725d3ab20f4b04119e92ea99600ad1b489de4a0ef4fba3c19e4e47869643",
+      "oracle/generated-method-4.arc.deark.log": "8771e4d4aa2a0c76be03921b990cb651cb0fe40fca8e7e7b595a41951bab6f35",
+      "oracle/nulu15.arc.deark.log": "2c8c2897cd24c667a90e06a6054553dcaf466699619ac6e48e97d02a322b26a5"
+    }
+  }
+}
