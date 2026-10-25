@@ -344,7 +344,7 @@ def tests(m):
         assert m.run(tail, {}) == version_text()
         assert [f for f, _ in m.events] == [9]
     help_output = m.run('/HELP', {})
-    assert 'LBR development build' in help_output
+    assert 'LBR/ARK development build' in help_output
     for tail in ('/HELP', '/HELP X', 'X /help', '/HELP /HELP', '/VER /HELP',
                  '/HELP /VER', 'FILE\t/HeLp\t/UNKNOWN', ' ' * 122 + '/HELP'):
         assert m.run(tail, {}) == help_output, tail
@@ -645,7 +645,6 @@ def selector_overwrite_tests(m):
     crowded = {diskkey(2, f'F{i:07d}.LBR', 0): one for i in range(513)}
     m.instruction_budget = 30000000
     output = m.run('/X /Y B0:*.LBR', crowded, user=7)
-    del m.instruction_budget
     assert 'exceeds 512' in output and not any(fn == 15 for fn, _ in m.events)
     assert not m.created and not m.renamed and not m.deleted
     assert m.user == 7 and m.drive == 1
@@ -683,6 +682,7 @@ def main():
                         str(work / 'shim.c'), str(core / 'simglb.c'),
                         *map(str, sorted(core.glob('simz80*.c'))), '-o', str(work / 'core.so')], check=True)
         m = Noah(C.CDLL(str(work / 'core.so')), image, (work / 'noah.lst').read_text(errors='replace'))
+        m.instruction_budget = 30000000  # Full companion validation, including supplemental ARK.
         tests(m)
         extraction_tests(m)
         selector_overwrite_tests(m)

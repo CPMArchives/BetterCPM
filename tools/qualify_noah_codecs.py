@@ -142,6 +142,8 @@ def main():
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp'])
     p.add_argument('--reuse-build',type=Path,help='Reuse retained parity-checked native groups for unchanged source')
+    p.add_argument('--reuse-ark-runtime',type=Path,help='Reuse an exact input/command-matched retained ARK runtime campaign')
+    p.add_argument('--ark-cli',action='store_true',help='Qualify stored ARK LIST/TEST/EXTRACT production integration')
     p.add_argument('--coverage-recovery',action='store_true',help='Qualify observed audit coverage and recovery summaries')
     p.add_argument('--member-accounting',action='store_true',help='Qualify extraction totals and ADD candidate accounting')
     p.add_argument('--outcome-reporting',action='store_true',help='Qualify final command outcomes and batch dispositions')
@@ -154,10 +156,10 @@ def main():
     a.output.mkdir(parents=True,exist_ok=False)
     cross=a.output/'cross';assembler=Path.home()/'bin/z80asm';image=build(assembler,cross)
     ovl=(cross/'NOAH.OVL').read_bytes();layout=json.loads((cross/'layout.json').read_text())
-    names=['NOAH','NHCLI','NCSQ','NCUSQ','NCCR','NCUNCR']
+    names=['NOAH','NHCLI','NCSQ','NCUSQ','NCCR','NCUNCR','NHARK']
     expected={n:(cross/(n+'.bin')).read_bytes() for n in names}
     tools={n:(ROOT/'third_party'/folder/n).read_bytes() for n,folder in [('ZSM4.COM','zsm4'),('LINK.COM','dri-link')]}
-    report={'scope':'NOAH production controller/codec phase integration; LBR and codec commands only',
+    report={'scope':'NOAH production controller/codec/ARK phase integration; stored ARK reads, LBR and standalone codecs',
       'layout':layout,'verified_systems':systems,'resident_sha256':sha(image),
       'companion_sha256':sha(ovl),'platforms':{}}
     if a.stamp_delta_from:
@@ -176,7 +178,7 @@ def main():
     for platform in a.platforms:
         base=a.output/platform;base.mkdir()
         native={};groups=[]
-        for number,group in enumerate((names[:2],names[2:])):
+        for number,group in enumerate((names[:2],names[2:6],names[6:])):
             folder=base/('build-'+str(number))
             if a.reuse_build:
                 old=a.reuse_build/platform/('build-'+str(number))
@@ -205,6 +207,56 @@ def main():
             body=native[n][:len(expected[n])]
             native_ovl.extend(body+bytes(-len(body)%128))
         assert bytes(native_ovl)==ovl
+        if a.ark_cli:
+            from test_noah_ark import fixtures
+            from test_usq_com import padded
+            cases=fixtures()
+            lbr=with_crcs(archive([entry(b'LBR     DAT')],b'L'*128))
+            files={'NOAH.COM':native['NOAH'],'NOAH.OVL':bytes(native_ovl),'NCMEM.COM':mem,
+                   **cases,'ONE.LBR':lbr}
+            prefix=['A:','RSX LOAD ANSISCRN','RSX LOAD ANSI','C:'] if platform=='z80pack' else []
+            commands=prefix+['NCMEM','NOAH /Q /LIST STORED.ARC','NOAH /Q /TEST STORED.ARC',
+                'NOAH /Q /X /Y STORED.ARC','NOAH /Q /LIST MIXED.ARK','NOAH /Q /TEST MIXED.ARK',
+                'NOAH /Q /X /Y MIXED.ARK','NOAH /Q /X /Y BAD.ARC','NOAH /Q /X /Y DUP.ARC',
+                'NOAH /Q /TEST TAIL.ARC','NOAH /Q /X /Y TAIL.ARC',
+                'NOAH /Q /X /Y EMPTY.ARC','NOAH /Q /X /Y ONE.LBR','NOAH /VER']
+            outputs_wanted=['OLD.TXT','ZERO.BIN','FIRST.TXT','LAST.TXT','TAIL.TXT','LBR.DAT']
+            retained=a.reuse_ark_runtime/platform/'runtime' if a.reuse_ark_runtime else None
+            wanted=outputs_wanted+list(cases)+['ONE.LBR']
+            if retained and (retained/'execution.json').is_file():
+                audit=json.loads((retained/'execution.json').read_text())
+                assert audit['commands']==commands and audit['original_media_unchanged']
+                assert audit['system_sha256']==systems[platform]['image_sha256']
+                assert all(audit['input_hashes'][n]==sha(b) for n,b in files.items())
+                assert audit['utilities_members']=={n:sha(b) for n,b in tools.items()}
+                log=(retained/'console.bin').read_bytes();assert sha(log)==audit['console_sha256']
+                outputs={n:(retained/('after-'+n)).read_bytes() for n in wanted}
+                assert all(sha(b)==audit['outputs'][n] for n,b in outputs.items())
+                runtime_evidence={'runtime_reused_from':str(retained)}
+            else:
+                log,outputs=campaign(platform,files,commands,base/'runtime',system=a.system,utilities=a.utilities,
+                    extract=wanted,utility_files=tools,timeout=600)
+                runtime_evidence={}
+
+            ceiling='C501' if platform=='z80pack' else 'CA01'
+            assert ('NOAH QUAL TPA '+ceiling).encode() in log
+            assert b'Insufficient transient' not in log and b'operation stopped' not in log
+            assert re.findall(rb'Outcome: ([a-z/-]+)\.',log)==[
+                b'success',b'success',b'success',b'warning/partial',b'warning/partial',b'warning/partial',
+                b'failure',b'failure',b'warning/partial',b'warning/partial',b'warning/no-work',b'success']
+            assert b'Archive/read error 08' in log and b'Archive/read error 09' in log
+            assert b'ARK method 08: unsupported' in log and b'opaque trailer: unvalidated' in log
+            assert b'verified 00000002; unavailable/ambiguous: 00000001' in log
+            for n,b in zip(outputs_wanted,(b'old',b'\0'*129,b'hello',b'last',b'tail',b'L'*128)):
+                assert outputs[n]==padded(b),(n,outputs[n])
+            for n,b in {**cases,'ONE.LBR':lbr}.items():assert outputs[n]==b,n
+            report['qualification_mode']='ARK stored production LIST/TEST/EXTRACT and unchanged LBR extraction'
+            report['platforms'][platform]={'status':'PASS','native_groups':groups,'runtime_ceiling_hex':ceiling,
+                'native_outputs':{n:sha(b) for n,b in native.items()},'runtime_outputs':{n:sha(b) for n,b in outputs.items()},
+                'runtime_console_sha256':sha(log),**runtime_evidence}
+            (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
+            print('PASS',platform,'native ARK stored integration with terminal providers loaded',flush=True)
+            continue
         if a.coverage_recovery:
             first=b'A'*128;second=b'B'*128
             good=with_crcs(archive([entry(b'FIRST   DAT',start=1),entry(b'SECOND  DAT',start=2)],first+second))

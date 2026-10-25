@@ -92,9 +92,20 @@ def production_build(assembler,out,flat_builder):
         assert len(raw)<=2048,(codec,len(raw))
         payloads.append(raw);requirements.append(2048+size);entries.append((window,window+3,window+6))
         (out/('NC'+name+'.MAC')).write_bytes(native_export(text))
+    # ARK supplements the CLI in the inactive writer arena, rather than
+    # replacing it for every 128-byte extraction read.
+    ark_prefix=''.join((ROOT/'src/archive'/p).read_text()+'\n' for p in ('ark.inc','ark.mac'))
+    ark_body=ark_prefix+(ROOT/'src/utilities/common/noahark-phase.inc').read_text()
+    needed=set(re.findall(r'\b[A-Z_][A-Z_0-9]*\b',ark_body,re.I))
+    ark_imports=''.join(f'{n} EQU {v}\n' for n,v in (rs|cs).items() if n in needed and n not in constant_names)
+    ark_text=f' ORG {plan_address}\n'+constants+ark_imports+ark_body+'\n END\n'
+    raw,_=assemble(assembler,out,'NHARK',ark_text)
+    assert plan_address+(len(raw)+127)//128*128 <= plan_address+12800
+    payloads.append(raw);requirements.append(plan_address-window+(len(raw)+127)//128*128);entries.append((plan_address,0,0))
+    (out/'NHARK.MAC').write_bytes(native_export(ark_text))
     build_id=hashlib.sha256(b''.join(payloads)+constants.encode()+resident.encode()+data.encode()+resident_data.encode()).digest()[:8]
     header=bytearray(128);header[:4]=b'NHOV';struct.pack_into('<HH8s',header,4,2,1,build_id)
-    header[18]=5;record=1;companion=bytearray(128)
+    header[18]=len(payloads);record=1;companion=bytearray(128)
     for i,(raw,need,entry) in enumerate(zip(payloads,requirements,entries)):
         count=(len(raw)+127)//128
         struct.pack_into('<BBHHHHHHH',header,24+i*16,i+1,1,record,count,len(raw),need,*entry)
@@ -110,7 +121,7 @@ def production_build(assembler,out,flat_builder):
     combined=(out/'NOAH.lst').read_text(errors='replace')+'\n'+(out/'NHCLI.lst').read_text(errors='replace')
     (out/'noah.lst').write_text(combined)
     report={'resident_bytes':len(image),'window':window,'codec_context':window+2048,
-      'cli_bytes':len(cli),'writer_plans':[plan_address,plan_address+6144],
+      'ark_bytes':len(raw),'ark_address':plan_address,'cli_bytes':len(cli),'writer_plans':[plan_address,plan_address+6144],
       'transformed_ids':[plan_address+6144,plan_address+12800],
       'stack':[rs['NH_STACK'],rs['NH_STACK_TOP']],'required_ceilings':[window+n for n in requirements],
       'build_id':build_id.hex(),'companion_sha256':hashlib.sha256(companion).hexdigest()}

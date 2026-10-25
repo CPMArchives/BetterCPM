@@ -24,6 +24,9 @@ NX_ZERO_COUNTS:
         LD DE,(NH_AUDIT+LA_UNCHECKED+2)
         ADC HL,DE
         LD (NX_TOTAL+2),HL
+        LD A,(NH_ARK)
+        OR A
+        JR NZ,NX_TOTAL_READY
         LD HL,(NX_TOTAL)
         LD A,H
         OR L
@@ -35,16 +38,17 @@ NX_ZERO_COUNTS:
 NX_TOTAL_DECREMENT:
         DEC HL
         LD (NX_TOTAL),HL
+NX_TOTAL_READY:
         LD A,(NH_DUSER)
         LD E,A
         LD C,32
         CALL AC_BDOS
-        CALL LBR_OPEN
+        CALL NH_REOPEN
         JP C,NX_ARCHIVE_ERROR
 NX_NEXT:
         CALL NX_POLL
         JP C,NX_STOP
-        CALL LBR_NEXT
+        CALL NH_NEXT
         JR NC,NX_MEMBER
         CP AS_END
         JP Z,NX_SUMMARY
@@ -72,8 +76,10 @@ NX_MEMBER:
         LD DE,NX_FINAL+1
         LD BC,11
         LDIR
-        CALL NC_MEMBER_PROBE
+        CALL NH_MEMBER_PROBE
         JP C,NX_MEMBER_ERROR
+        CP AS_UNSUPPORTED
+        JR Z,NX_SKIP_MEMBER
         LD A,(NC_MEMBER_PENDING)
         OR A
         JR NZ,NX_NEW_OUTPUT
@@ -81,10 +87,14 @@ NX_MEMBER:
         JP C,NX_MEMBER_ERROR
         OR A
         JR NZ,NX_NEW_OUTPUT
+NX_SKIP_MEMBER:
         LD HL,NX_SKIPPED
         CALL NX_INC_COUNT
         JP NX_NEXT
 NX_NEW_OUTPUT:
+        LD A,(NH_ARK)
+        OR A
+        JR NZ,NX_CRC_REPORTED
         LD A,(IX+AS_MEMBER+AM_CRC)
         OR (IX+AS_MEMBER+AM_CRC+1)
         JR NZ,NX_CRC_REPORTED
@@ -209,6 +219,9 @@ NX_VERIFY_EOF:
         CALL NX_INC_COUNT
         ; This adapter has no filesystem timestamp setter: never fake success.
 NX_STAMP_CHECK:
+        LD A,(NH_ARK)
+        OR A
+        JP NZ,NW_PLANS+21
         LD HL,NH_CONTEXT+AS_MEMBER+AM_DATES
         LD B,8
         XOR A
@@ -393,7 +406,7 @@ NX_SOURCE_CHUNK:
         LDIR
         LD DE,NX_BUFFER
         LD BC,128
-        JP LBR_READ
+        JP NH_READ
 
 ; Return Z if absent, NZ if present. Only our private search FCB/DMA changes.
 NX_EXISTS:
