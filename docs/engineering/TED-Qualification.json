@@ -1,0 +1,222 @@
+{
+  "schema": 1,
+  "ted_acceptance": "PASS",
+  "scope": "TED 1.0 revision 001 on the exact legacy RAM emulator pairs; whole Utilities release acceptance separate",
+  "source_commit": "e435e038dfb09eed523237ac075f858051253d2c",
+  "binary": {
+    "name": "TED.COM",
+    "bytes": 30380,
+    "sha256": "272c31a168d63d4b5a5f2c5517d0c614a00fccf746dc966e8a180f16cc9f959c"
+  },
+  "compiled_cases": {
+    "text": 140,
+    "publisher": 179,
+    "workspace": 42,
+    "commands": 105,
+    "frontend": 21
+  },
+  "platforms": {
+    "z80pack": {
+      "status": "PASS",
+      "system_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1",
+      "utilities_sha256": "1645ddddb44aa49d194bc864764869af64d7fee1300143b3c1791eb5799181b7",
+      "native_cross_parity": true,
+      "native_padding_bytes": 84,
+      "native_file_sha256": "0125f06e4346f770dcbdd4c473d579224ce493468b921fe572a5ac2a919ccac7",
+      "scenarios": {
+        "groups": {
+          "system_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1",
+          "utilities_sha256": "1645ddddb44aa49d194bc864764869af64d7fee1300143b3c1791eb5799181b7",
+          "status": "PASS",
+          "native_cross_parity": false,
+          "native_build": false,
+          "stack_high_water": 54,
+          "private_stack_bytes": 2048,
+          "guard_bytes": 64,
+          "tpa_ceiling": 50433,
+          "scenarios": {
+            "GROUPS": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50433
+            },
+            "INTERACTION": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50433
+            },
+            "LARGE": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50433
+            }
+          },
+          "physical_redraw_chord": "terminal US tested",
+          "api_stack_high_water": 36,
+          "execution": "z80pack/execution.json"
+        },
+        "interaction": {
+          "system_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1",
+          "utilities_sha256": "1645ddddb44aa49d194bc864764869af64d7fee1300143b3c1791eb5799181b7",
+          "status": "PASS",
+          "native_cross_parity": false,
+          "native_build": false,
+          "stack_high_water": 54,
+          "private_stack_bytes": 2048,
+          "guard_bytes": 64,
+          "tpa_ceiling": 50433,
+          "scenarios": {
+            "GROUPS": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50433
+            },
+            "INTERACTION": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50433
+            },
+            "LARGE": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50433
+            }
+          },
+          "physical_redraw_chord": "terminal US tested",
+          "api_stack_high_water": 36,
+          "execution": "z80pack/execution.json"
+        },
+        "large": {
+          "system_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1",
+          "utilities_sha256": "1645ddddb44aa49d194bc864764869af64d7fee1300143b3c1791eb5799181b7",
+          "status": "PASS",
+          "native_cross_parity": false,
+          "native_build": false,
+          "stack_high_water": 54,
+          "private_stack_bytes": 2048,
+          "guard_bytes": 64,
+          "tpa_ceiling": 50433,
+          "scenarios": {
+            "GROUPS": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50433
+            },
+            "INTERACTION": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50433
+            },
+            "LARGE": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50433
+            }
+          },
+          "physical_redraw_chord": "terminal US tested",
+          "api_stack_high_water": 36,
+          "execution": "z80pack/execution.json"
+        }
+      }
+    },
+    "trs80gp": {
+      "status": "PASS",
+      "system_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43",
+      "utilities_sha256": "e5693ae7c54fe16fa7464f4d4b75bce99c04138d64a9705cd4290f2bdd27d769",
+      "native_cross_parity": true,
+      "native_padding_bytes": 84,
+      "native_file_sha256": "0125f06e4346f770dcbdd4c473d579224ce493468b921fe572a5ac2a919ccac7",
+      "scenarios": {
+        "groups": {
+          "system_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43",
+          "utilities_sha256": "e5693ae7c54fe16fa7464f4d4b75bce99c04138d64a9705cd4290f2bdd27d769",
+          "status": "PASS",
+          "native_cross_parity": false,
+          "native_build": false,
+          "stack_high_water": 54,
+          "private_stack_bytes": 2048,
+          "guard_bytes": 64,
+          "tpa_ceiling": 50689,
+          "scenarios": {
+            "INTERACTION": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50689
+            },
+            "LARGE": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50689
+            },
+            "GROUPS": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50689
+            }
+          },
+          "reused_groups_receipt_sha256": "d5129d95647d1ed07141dbdb673e904cc4248246760d357753f7017130041fa5",
+          "physical_redraw_chord": "UNAVAILABLE",
+          "api_stack_high_water": 36,
+          "execution": "trs80gp/execution.json"
+        },
+        "interaction": {
+          "system_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43",
+          "utilities_sha256": "e5693ae7c54fe16fa7464f4d4b75bce99c04138d64a9705cd4290f2bdd27d769",
+          "status": "PASS",
+          "native_cross_parity": false,
+          "native_build": false,
+          "stack_high_water": 54,
+          "private_stack_bytes": 2048,
+          "guard_bytes": 64,
+          "tpa_ceiling": 50689,
+          "scenarios": {
+            "INTERACTION": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50689
+            },
+            "LARGE": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50689
+            },
+            "GROUPS": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50689
+            }
+          },
+          "reused_groups_receipt_sha256": "d5129d95647d1ed07141dbdb673e904cc4248246760d357753f7017130041fa5",
+          "physical_redraw_chord": "UNAVAILABLE",
+          "api_stack_high_water": 36,
+          "execution": "trs80gp/execution.json"
+        },
+        "large": {
+          "system_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43",
+          "utilities_sha256": "e5693ae7c54fe16fa7464f4d4b75bce99c04138d64a9705cd4290f2bdd27d769",
+          "status": "PASS",
+          "native_cross_parity": false,
+          "native_build": false,
+          "stack_high_water": 54,
+          "private_stack_bytes": 2048,
+          "guard_bytes": 64,
+          "tpa_ceiling": 50689,
+          "scenarios": {
+            "INTERACTION": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50689
+            },
+            "LARGE": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50689
+            },
+            "GROUPS": {
+              "stack_high_water": 54,
+              "tpa_ceiling": 50689
+            }
+          },
+          "reused_groups_receipt_sha256": "d5129d95647d1ed07141dbdb673e904cc4248246760d357753f7017130041fa5",
+          "physical_redraw_chord": "UNAVAILABLE",
+          "api_stack_high_water": 36,
+          "execution": "trs80gp/execution.json"
+        }
+      }
+    }
+  },
+  "evidence": {
+    "name": "TED-Qualification-Evidence.tar.gz",
+    "sha256": "9f4823a316e9c8c58d04ad726a6a3376c616201ac27a540d4f8aef0b00a50928"
+  },
+  "limits": [
+    "Physical hardware NOT RUN",
+    "ROM/XIP and checked-profile application acceptance NOT RUN",
+    "Physical arrow/control collisions use primary agreed control navigation",
+    "Model 4 physical Ctrl-underscore chord unavailable; ASCII US binding tested separately",
+    "Recovery restores committed checkpoint, not the latest unflushed RAM line"
+  ]
+}

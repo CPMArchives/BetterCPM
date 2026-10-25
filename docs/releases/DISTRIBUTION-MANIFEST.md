@@ -49,8 +49,10 @@ All membership or layout changes require discussion with the maintainer.
 - DUMP.COM: enhanced read-only hex/ASCII viewer with `/P`, required `/40`, `/FROM=`, exact DU access, interactive Find/Go To, sealed DRI `/BARE`, and visually styled `/VER`; [engineering specification](../engineering/DUMP%20Specification.md).
 - TED.COM: selected full-screen editor adaptation of Hector Peraza's TED, with
   WordStar-compatible non-document editing/file commands, recoverable saving,
-  bounded memory ownership and source-text preservation. Implementation and
-  both-platform qualification are pending; no TED binary is included yet. See
+  bounded memory ownership and source-text preservation. The builder includes
+  TED.COM, TED.TXT and TEDCOPY.TXT, with complete source/native-build companions.
+  Acceptance is bound to exact paired images by a separate receipt; see
+  [current qualification](../engineering/TED%20Qualification.md) and the
   [engineering specification](../engineering/TED%20Specification.md).
 - DASM.COM: maintained Richard Conn 1.5 adaptation with ZSM4-compatible output,
   checked logical bounds and recoverable individual/session publication.
@@ -241,7 +243,7 @@ Utilities media remain PROVISIONAL; this campaign does not close whole-disk acce
 [Native ZSM4/LINK qualification](../engineering/Compression%20Native%20Build%20Qualification.md)
 passes for all six Build 004 commands with exact executable parity.
 
-## Current ten-file inventory acceptance — 2026-10-24
+## Ten-file inventory acceptance checkpoint — 2026-10-24
 
 The maintainer selected qualification of the current implemented inventory while
 keeping unresolved selections open. [Acceptance and evidence](../engineering/Utility%20Release%20Reacceptance.md)
@@ -251,9 +253,9 @@ on the recorded System/Utilities pairs. The shared query change is reaccepted
 for current shipped utilities. Both Utilities images remain byte-identical to
 the compression-qualified images; their current hash manifest is retained.
 
-This is current-inventory acceptance, not final approval of the complete release
-inventory. Full-screen editor/disassembler selection, ZSM4/LINK packaging and
-on-disk documentation/native-build materials remain open. NOAH's complete
+This checkpoint accepted the inventory of that date. Editor/disassembler
+selection, ZSM4/LINK packaging and on-disk documentation/native-build materials
+were still open; later sections record subsequent work. NOAH's complete
 interface is selected post-1.0 work; its development foundation stays excluded.
 The builder reports it as deferred rather than an unselected 1.0 archive tool.
 
@@ -263,10 +265,11 @@ The maintainer selected TED with WordStar-compatible editing/file commands and
 corrections for file safety, memory ownership and source-text preservation.
 [The engineering specification](../engineering/TED%20Specification.md) defines
 the adaptation and both-platform acceptance gates. This resolves the editor
-selection mentioned in earlier checkpoints; implementation, packaging and
-qualification remain pending. Existing Utilities images and their evidence are
-unchanged. Update the builder's pending-editor description when implementing
-this selection; do not substitute the upstream binary as a qualified release.
+selection mentioned in earlier checkpoints. The maintained implementation and
+packaging now exist; [current qualification](../engineering/TED%20Qualification.md)
+records their evidence and limits. Historical Utilities receipts remain bound
+to their original images. New packages require a matching TED acceptance
+receipt; the whole Utilities release remains provisional.
 
 ## Disassembler selection — 2026-10-25
 

@@ -1,5 +1,9 @@
 # TED Qualification — development foundation
 
+Historical checkpoint at commit `42a0859`. Its statements below describe that
+foundation, not the completed adaptation. See [current qualification](TED%20Qualification.md)
+for subsequent implementation and evidence.
+
 **TED is not implemented to the adopted specification and is not qualified for
 release.** This record covers a bounded implementation foundation only. There
 is no accepted `TED.COM`, no WordStar compatibility claim, and no TED addition

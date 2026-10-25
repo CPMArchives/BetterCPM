@@ -231,7 +231,7 @@ those are distinguished from native media witnesses.
 The implementation supports 8 KiB input with bounded metadata arenas. Full-address-space
 input, disk-backed paging and the alternate TDL output mode remain outside the
 default qualified ZSM4 contract. Hardware qualification and a whole Utilities
-release are separate. TED remains pending; ZSM4/LINK retain upstream ownership,
+release are separate. TED was pending for that historical receipt (see [current TED qualification](TED%20Qualification.md)); ZSM4/LINK retain upstream ownership,
 versions and unchanged distributed bytes. DLINK's verified in-memory exit adaptation
 is documented in [Symbol Conversion](DASM%20Symbol%20Conversion.md).
 

@@ -21,7 +21,7 @@ SIMULATOR = Path.home()/'projects/git/z80pack/cpmsim/cpmsim'
 
 
 def campaign(platform, files, commands, output, *, system=DEFAULT_SYSTEM,
-             utilities=None, extract=(), interactive=(), emulator=None, utility_files=None, setup=None, interactive_frames=None, interactive_launch=None, interactive_ready=None, interactive_followup=None, interactive_prompt='*'):
+             utilities=None, extract=(), interactive=(), emulator=None, utility_files=None, setup=None, interactive_frames=None, interactive_launch=None, interactive_ready=None, interactive_followup=None, interactive_prompt='*', timeout=1800, input_wait_frames=60000):
     """Run each shell command with a visible completion marker; preserve media."""
     output.mkdir(parents=True, exist_ok=False)
     native = platform == 'trs80gp'
@@ -99,12 +99,12 @@ end
         add_file(data,'STARTUP.SUB',b'RSX LOAD M4SCRN\r\nRSX LOAD ADM3A\r\nSUBMIT QUALIFY\r\n\x1a')
         disk=output/'a.dmk';disk.write_bytes(make_dmk(data))
         (output/'b.dmk').write_bytes(ub)
-        args=[str(emulator),'-m4','-batch','-turbo','-ktx','-d0',str(disk),
-              '-d1',str(output/'b.dmk'),'-itime','60000','-id','300','-it']
+        args=[str(emulator),'-m4','-batch','-turbo','-sx','-sfmute','-ktx','-d0',str(disk),
+              '-d1',str(output/'b.dmk'),'-itime',str(input_wait_frames),'-id','300','-it']
         for i in range(len(commands)):
             args += ['-iw',f'DASM STEP {i} DONE','-it']+key_args('\r',25)+['-id','60']
         if interactive_launch:args += ['-iw',interactive_prompt]
-        for index,(outgoing,wanted,timeout) in enumerate(interactive):
+        for index,(outgoing,wanted,key_timeout) in enumerate(interactive):
             frames=interactive_frames[index] if interactive_frames is not None else 120
             ready=interactive_ready[index] if interactive_ready is not None else None
             if outgoing==b'\x03' and ready:
@@ -118,7 +118,7 @@ end
             args += ['-id',str(frames),'-it']
         args += ['-ix']
         (output/'invocation.json').write_text(json.dumps(args,indent=2)+'\n')
-        launch(args,cwd=output,timeout=1800)
+        launch(args,cwd=output,timeout=timeout)
         captures=sorted(output.glob('trs80-text-*'),key=lambda p:int(p.stem.rsplit('-',1)[1]))
         logs=[bytes(x&127 for x in p.read_bytes()[:1920]) for p in captures]
         assert len(logs)==1+len(commands)+len(interactive), 'missing native screen captures'
@@ -151,7 +151,7 @@ end
     check=tool('fsck.cpm','-T','raw','-f',definition,'-n',raw)
     (output/'filesystem.txt').write_bytes(check.stdout+check.stderr)
     assert original.read_bytes()==image and utility.read_bytes()==ub
-    evidence={'platform':platform,'system_sha256':hashlib.sha256(image).hexdigest(),
+    evidence={'platform':platform,'automation_limits':{'wall_seconds':timeout,'input_wait_frames':input_wait_frames},'system_sha256':hashlib.sha256(image).hexdigest(),
               'utilities_sha256':hashlib.sha256(ub).hexdigest(),
               'commands':commands,'utilities_members':utility_members,'input_hashes':{n:hashlib.sha256(v).hexdigest() for n,v in files.items()},
               'emulator_sha256':hashlib.sha256((emulator if native else SIMULATOR).read_bytes()).hexdigest(),

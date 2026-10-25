@@ -3,7 +3,8 @@
 Qualification date: 2026-10-25. This report concerns the bounded BetterCP/M
 DASM adaptation, DSYM converter and DLINK checked launcher on the Model 4/trs80gp
 and z80pack/cpmsim emulator targets. It does not qualify physical hardware or
-the entire Utilities Disk. TED remains pending. The binaries retain their
+the entire Utilities Disk. TED was pending on those historical images; see
+[current TED qualification](TED%20Qualification.md). The binaries retain their
 owned development identity, `1.0 (001-dev)`.
 
 ## Implementation

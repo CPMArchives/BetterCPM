@@ -89,7 +89,7 @@ QC_BAD: DB 'TED GUARD FAIL',13,10,'$'
 ''')
 
 
-def qualify(system,utilities,output,platform):
+def qualify(system,utilities,output,platform,skip_native_build=False,reuse_groups=None):
     output.mkdir(parents=True,exist_ok=False)
     image=build(Path.home()/'bin/z80asm',output/'cross',identity_state='assigned')
     listing=(output/'cross/TEDDEV.LST').read_text()
@@ -111,14 +111,14 @@ def qualify(system,utilities,output,platform):
     # Native source/REL coexist with the complete fixtures on the 800K native
     # System work copy. The 332K simulator work disk uses a separate native-build gate.
     commands=['RSX UNLOAD ADM3A','RSX LOAD ANSI'] if native else ['A:','RSX LOAD ANSISCRN','RSX LOAD ANSI','C:']
-    if native:
+    if native and not skip_native_build:
         files['TEDNAT.MAC']=cpm_text(compact_source((output/'cross/TEDNAT.MAC').read_text().rstrip('\x1a')))
         commands=['B:ZSM4 TEDDEV=TEDNAT','B:LINK TEDDEV[A]']+commands
     seq=[]
     def key(b,ready):seq.append((b,ready,1800))
     def k(suffix,ready):key(b'\x0b',b'^K...');key(suffix,ready)
     def prompt():key(b'',b'TED>')
-    command_ready=b'TED> _'.ljust(80) if native else b'TED>'
+    command_ready=b'TED>'
     if not native:key(b'B:TED IGRP.TXT\r',b'TED>')
     key(b'S\r',b'^Z command')
     k(b'C',b'First line:');key(b'2\r',b'Last line:');key(b'2\r',b'After line:');key(b'3\r',b'Copied.')
@@ -132,7 +132,7 @@ def qualify(system,utilities,output,platform):
     else:
         key(b'QGROUP\r',b'TED GROUPS PASS');key(b'B:TED IMIX.TXT\r',b'TED>')
     key(b'SU /SECOND/CHANGED/\r',command_ready);key(b'P 1\r',command_ready)
-    key(b'/ALPHA/\r',b'Found.');key(b'\x14',b'BETA');key(b'\x16',b'INS')
+    key(b'/ALPHA/\r',b'Found.');key(b'\x14',b'BETA'.ljust(80));key(b'\x16',b'INS')
     key(b'ALPHA ',b'ALPHA BETA');key(b'\x16',b'OVR')
     for control in (1,6,19,4,5,24,18,3,17,15,12,21,31):
         if native and control==31:continue
@@ -149,21 +149,35 @@ def qualify(system,utilities,output,platform):
     else:
         key(b'QLARGE\r',b'TED LARGE PASS');key(b'TEDCORE\r',b'TED ENGINE NATIVE PASS.')
         key(b'ENDPROBE\r',b'TED ALL DONE')
+    reused=None
+    if reuse_groups:
+        assert native and skip_native_build
+        reused=json.loads((reuse_groups/'report.json').read_text())
+        assert reused['status']=='PASS' and reused['payload_sha256']==sha(image)
+        assert reused['platforms'][platform]['groups_outputs_verified']
+        begin=next(i for i,item in enumerate(seq) if item[0].startswith(b'SU '))
+        seq=[(b'',b'TED>',1800)]+seq[begin:]
     extract=['IGRP.TXT','INSERT.TXT','WRITE.TXT','IMIX.TXT','ILARGE.TXT',
              'TEB00000.BAK','TEB00001.BAK','TEB00002.BAK','TEB00003.BAK',
              'FIRST.TXT','SECOND.TXT','BLOCK.TXT','RECOVER.TXT','AFTERB.TXT','AFTERC.TXT','EXIST.TXT']
-    if native:extract+=['TEDDEV.COM']
+    if reuse_groups:
+        extract.remove('WRITE.TXT');extract.remove('TEB00003.BAK')
+    if native and not skip_native_build:extract+=['TEDDEV.COM']
     log,outputs=campaign(platform,files,commands,output/platform,system=system,utilities=utilities,
-        extract=extract,utility_files={'TED.COM':image},interactive=seq,
-        interactive_launch='B:TED IGRP.TXT' if native else None,
-        interactive_followup='QGROUP\r\nB:TED IMIX.TXT\r\nQMIX\r\nB:TED ILARGE.TXT\r\nQLARGE\r\nTEDCORE\r\nENDPROBE',
-        interactive_prompt='TED>',interactive_frames=[60]*len(seq) if native else None,
+        extract=extract,utility_files={'TED.COM':image},interactive=seq,timeout=3600,input_wait_frames=600000,
+        interactive_launch=('B:TED IMIX.TXT' if reuse_groups else 'B:TED IGRP.TXT') if native else None,
+        interactive_followup=('QMIX\r\nB:TED ILARGE.TXT\r\nQLARGE\r\nTEDCORE\r\nENDPROBE' if reuse_groups else 'QGROUP\r\nB:TED IMIX.TXT\r\nQMIX\r\nB:TED ILARGE.TXT\r\nQLARGE\r\nTEDCORE\r\nENDPROBE'),
+        interactive_prompt='TED>',interactive_frames=[3600 if x[1]==command_ready else 600 for x in seq] if native else None,
         interactive_ready=[x[1].decode() for x in seq] if native else None)
-    if native:assert outputs['TEDDEV.COM'][:len(image)]==image
+    if native and not skip_native_build:assert outputs['TEDDEV.COM'][:len(image)]==image
     expected={'IGRP.TXT':group,'INSERT.TXT':group,'WRITE.TXT':insert,
               'IMIX.TXT':padded(mixed.rstrip(b'\x1a').replace(b'SECOND',b'CHANGED')),
               'ILARGE.TXT':b'X'+large[1:], 'TEB00000.BAK':insert,
               'TEB00001.BAK':mixed,'TEB00002.BAK':large,'TEB00003.BAK':padded(ORIGINAL)}
+    if reuse_groups:
+        expected.pop('WRITE.TXT');expected['INSERT.TXT']=insert
+        expected['TEB00000.BAK']=mixed;expected['TEB00001.BAK']=large
+        expected['TEB00002.BAK']=padded(ORIGINAL);expected.pop('TEB00003.BAK')
     edited=INITIAL[:3]+b'\t '+INITIAL[3:]
     expected.update({'FIRST.TXT':padded(INITIAL),'SECOND.TXT':padded(edited),
                      'BLOCK.TXT':padded(edited[2:-2]),'RECOVER.TXT':padded(RECOVERED),
@@ -173,17 +187,24 @@ def qualify(system,utilities,output,platform):
     assert b'TED GUARD FAIL' not in log and b'TED ALL DONE' in log
     measured=re.findall(rb'TED STACK HIGH WATER (\d+) TPA CEILING (\d+) TED (GROUPS|INTERACTION|LARGE) PASS',log)
     results={tag.decode():{'stack_high_water':int(used),'tpa_ceiling':int(ceiling)} for used,ceiling,tag in measured}
+    if reuse_groups:
+        assert set(results)=={'INTERACTION','LARGE'}
+        results['GROUPS']=reused['platforms'][platform]['scenarios']['GROUPS']
+        execution=json.loads((output/platform/'execution.json').read_text())
+        old_execution=json.loads((reuse_groups/platform/'execution.json').read_text())
+        assert all(execution[k]==old_execution[k] for k in ('system_sha256','utilities_sha256'))
     assert set(results)=={'GROUPS','INTERACTION','LARGE'}
     assert all(v['stack_high_water']<=1536 for v in results.values())
     assert len(large)>2*(results['LARGE']['tpa_ceiling']-(len(image)+256))
     used=[int(v) for v in re.findall(rb'TED ENGINE NATIVE PASS\. Stack high-water: (\d+)',log)]
     assert used and max(used)<=1536
-    proof={'status':'PASS','native_cross_parity':native,'native_build':native,
+    proof={'status':'PASS','native_cross_parity':native and not skip_native_build,'native_build':native and not skip_native_build,
            'stack_high_water':max(v['stack_high_water'] for v in results.values()),'private_stack_bytes':2048,
            'guard_bytes':64,'tpa_ceiling':results['LARGE']['tpa_ceiling'],'scenarios':results,
+           'reused_groups_receipt_sha256':sha((reuse_groups/'report.json').read_bytes()) if reuse_groups else None,
            'physical_redraw_chord':'UNAVAILABLE' if native else 'terminal US tested',
            'api_stack_high_water':max(used),'execution':platform+'/execution.json'}
-    report={'status':'PASS','scope':'one-boot installed groups/interaction/large and real-capacity API execution; native product parity separate field',
+    report={'status':'PASS','scope':('completed groups reused from separately verified identical payload/pair; one-boot interaction/large/real-capacity API' if reuse_groups else 'one-boot installed groups/interaction/large and real-capacity API execution; native product parity separate field'),
             'installed':True,'payload_sha256':sha(image),'platforms':{platform:proof},'large_file_bytes':len(large)}
     (output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
     print('PASS',platform,'native/installed workflows/capacity',flush=True)
@@ -194,4 +215,6 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--system',type=Path,required=True);p.add_argument('--utilities',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True);p.add_argument('--platform',choices=['z80pack','trs80gp'],required=True)
-    a=p.parse_args();qualify(a.system,a.utilities,a.output,a.platform)
+    p.add_argument('--skip-native-build',action='store_true',help='use a separate existing native build/parity receipt')
+    p.add_argument('--reuse-groups',type=Path,help='reuse completed groups on the identical payload and original paired media')
+    a=p.parse_args();qualify(a.system,a.utilities,a.output,a.platform,a.skip_native_build,a.reuse_groups)
