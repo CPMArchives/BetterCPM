@@ -3,7 +3,9 @@
 The LBR-write increment freezes this prototype's baseline reservation to the
 recorded 19,674-byte increments 1–2 image. Its results are historical read/decode
 feasibility, not memory proof for the larger current writer plus codecs. Current
-write memory and qualification are recorded in [NOAH LBR Writes](NOAH%20LBR%20Writes.md).
+production phase layout and loaded-provider qualification are recorded in
+[NOAH Codec and Overlay Integration](NOAH%20Codec%20and%20Overlay%20Integration.md).
+The intervening monolithic writer receipt remains in [NOAH LBR Writes](NOAH%20LBR%20Writes.md).
 
 Status: increments 1–2, bounded research/prototype record, 2026-10-25.
 Baseline: `e98797f95704174cbb77a918ecd1267007124cae`.

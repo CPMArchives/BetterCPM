@@ -15,6 +15,12 @@ NO_AUTHORIZE:
         LD DE,NO_INPUT_TEXT
         JP NO_SKIP
 NO_NOT_INPUT:
+        LD HL,NX_FINAL
+        CALL NR_IS_MODULE
+        JR NZ,NO_MODULE_SAFE
+        LD DE,NO_MODULE_TEXT
+        JP NO_SKIP
+NO_MODULE_SAFE:
         CALL NO_INSPECT
         RET C
         OR A
@@ -171,6 +177,9 @@ NO_PUBLISH:
         CALL NS_IS_INPUT
         JP Z,NO_ERROR
 NO_PUBLICATION_INPUT_OK:
+        LD HL,NX_FINAL
+        CALL NR_IS_MODULE
+        JP Z,NO_ERROR
         CALL NO_INSPECT
         RET C
         LD B,A
@@ -457,6 +466,7 @@ NO_PROTECTION_ERROR: DB 'Protection restoration failed: ','$'
 NO_UNCERTAIN_TEXT: DB 'Recovery required; stop. Original/backup may be at ','$'
 NO_NEW_TEXT: DB 13,10,'Final/new path: ','$'
 NOAH_PUBLISH_DATA MACRO
+NO_MODULE_TEXT: DB ' active NOAH.OVL cannot be replaced.',13,10,'$'
 NO_EXISTED: DB 0
 NO_BACK_LIVE: DB 0
 NO_OLD_ATTR: DB 0

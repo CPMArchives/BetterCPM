@@ -1,0 +1,287 @@
+{
+  "date": "2026-10-25",
+  "component": "NOAH",
+  "version": "1.0",
+  "revision": 7,
+  "scope": "Standalone SQ/CR/EXPAND, compressed LBR ADD, expanded extraction, production phase overlays; no ARK/browser/Q/release packaging",
+  "status": "PASS within stated scope",
+  "full_native_campaign": {
+    "scope": "NOAH production controller/codec phase integration; LBR and codec commands only",
+    "layout": {
+      "resident_bytes": 17494,
+      "window": 17792,
+      "codec_context": 19840,
+      "cli_bytes": 16723,
+      "writer_plans": [
+        34560,
+        40704
+      ],
+      "transformed_ids": [
+        40704,
+        47360
+      ],
+      "stack": [
+        16111,
+        16623
+      ],
+      "required_ceilings": [
+        47360,
+        23364,
+        21280,
+        45047,
+        46422
+      ],
+      "build_id": "a3dffa63e842a925",
+      "companion_sha256": "b2deed0d6d04071d36c0525a39ff7a22ace2c51c5850ad50d078bc93463950da"
+    },
+    "verified_systems": {
+      "z80pack": {
+        "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1"
+      },
+      "trs80gp": {
+        "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43"
+      }
+    },
+    "resident_sha256": "64dfa8e6f0cf82d14a6c7850d1ab77ee566afd5486482051464a30db93a18d16",
+    "companion_sha256": "b2deed0d6d04071d36c0525a39ff7a22ace2c51c5850ad50d078bc93463950da",
+    "platforms": {
+      "z80pack": {
+        "status": "PASS",
+        "native_groups": [
+          {
+            "execution": "build-0/execution.json",
+            "console_sha256": "ea980d277a3007c96de6a97619fe848b6492865c16fec76bb56fdefe9d86cca9",
+            "status": "PASS"
+          },
+          {
+            "execution": "build-1/execution.json",
+            "console_sha256": "1fb4a7e8aebdbb0b679eadfa58d337f8e832afe68ac30282a7017302852544f3",
+            "status": "PASS"
+          }
+        ],
+        "runtime_ceiling_hex": "C501",
+        "native_outputs": {
+          "NOAH": "835edd4f2bc43b53833f39685a1a8768bc5ca3cda3a1ed1797dd72b4381318f0",
+          "NHCLI": "e42e1b2dfc2864e0f4f0517e5c870dbca98c4bea43cc05a270fc8de373f6f87d",
+          "NCSQ": "a9b7e9751f926f64ead6a8271962112b10c74240f19f10afb026683f5b734718",
+          "NCUSQ": "e75ca194db482a31052673ad2dd848380a0d4ede0c623180ba666a52de406fd0",
+          "NCCR": "53ccbdc33ad199aeeb8e8357751f6fba4e74428b4ea85f525e44dd3c453bda1b",
+          "NCUNCR": "6331142512707c1e50773687564f9088b30860162d0dfbdee86d1886806df1e0"
+        },
+        "runtime_outputs": {
+          "BINARY.DAT": "f21de570dd77ed7bff050a6a857446fb92d52f94f05c1f7965f709685583d6e9",
+          "BINARY.DQT": "db156e97dd957d32266c1e789487d4af038be6e6385a288c31a780a0558f7df3",
+          "BINARY.DZT": "8e53b6189a4b5779197566154eb5f55c0c14fc3cb2c81c49bf256b0bd1703b58",
+          "ORASQ.DAT": "f21de570dd77ed7bff050a6a857446fb92d52f94f05c1f7965f709685583d6e9",
+          "ORACR.DAT": "f21de570dd77ed7bff050a6a857446fb92d52f94f05c1f7965f709685583d6e9",
+          "SQ.LBR": "cadcbad52be0b9d49887ebb982c42a6eb4879fbd39908ebe8428278f54c51bed",
+          "CR.LBR": "e9d0452d8948349842bc89dabd490533ae0905c8afac36d73fe1d249e56d854a",
+          "CREATED.LBR": "a5ccb2e3898c01578c40665450b256ce0450d5e7f5b7a46bd1650e169b377c92",
+          "REPLACE.LBR": "3dfea7164bc61f1d8467caa7fde010e3972f8c7f94971f67eb2d0651e0ebc63c",
+          "REMOVE.LBR": "c99ddef2b1610e38d10136abed47dadf519fe9e31c450984059401041f088231",
+          "COMPACT.LBR": "1a6c9d8f09c7994448eca0234ffae5e58560c99635d511ecefcc8dd6cd538b52",
+          "LIMITED.LBR": "9b547bf8436a9f219525980940f5875eade535f64a986703dd9fd3a10345b8dc"
+        },
+        "extent_outputs": {
+          "BIG.LBR": "4153b5d1f79ab93ced0b088ed10f3b3c0537f081a929d9235b4ce898ebe65069",
+          "BIG.BIN": "8462ed5515c0e96dc35004a77afdc0ad35c97ef4ae1311a427fb158645eebffd"
+        },
+        "runtime_console_sha256": "28cc46f30ce37775beface5982755143284a52a703ba4ee45e3ed088de8f4e21",
+        "extent_console_sha256": "b969573b7ad8ccf3e89ae8e6e60d48c73f1f9b8449659e13c97a0ede92174dda",
+        "cross_extent_source_bytes": 20480
+      },
+      "trs80gp": {
+        "status": "PASS",
+        "native_groups": [
+          {
+            "execution": "build-0/execution.json",
+            "console_sha256": "dd2b2aff4943d93f4f7c0d829890d4599b6b581654138a7b7aba0ffc0f3d0f81",
+            "status": "PASS"
+          },
+          {
+            "execution": "build-1/execution.json",
+            "console_sha256": "cb7958c3957e7ea207afd579ed25162ec87a598c702896ff97f80782e8c4d0f7",
+            "status": "PASS"
+          }
+        ],
+        "runtime_ceiling_hex": "CA01",
+        "native_outputs": {
+          "NOAH": "835edd4f2bc43b53833f39685a1a8768bc5ca3cda3a1ed1797dd72b4381318f0",
+          "NHCLI": "e42e1b2dfc2864e0f4f0517e5c870dbca98c4bea43cc05a270fc8de373f6f87d",
+          "NCSQ": "a9b7e9751f926f64ead6a8271962112b10c74240f19f10afb026683f5b734718",
+          "NCUSQ": "e75ca194db482a31052673ad2dd848380a0d4ede0c623180ba666a52de406fd0",
+          "NCCR": "53ccbdc33ad199aeeb8e8357751f6fba4e74428b4ea85f525e44dd3c453bda1b",
+          "NCUNCR": "6331142512707c1e50773687564f9088b30860162d0dfbdee86d1886806df1e0"
+        },
+        "runtime_outputs": {
+          "BINARY.DAT": "f21de570dd77ed7bff050a6a857446fb92d52f94f05c1f7965f709685583d6e9",
+          "BINARY.DQT": "db156e97dd957d32266c1e789487d4af038be6e6385a288c31a780a0558f7df3",
+          "BINARY.DZT": "8e53b6189a4b5779197566154eb5f55c0c14fc3cb2c81c49bf256b0bd1703b58",
+          "ORASQ.DAT": "f21de570dd77ed7bff050a6a857446fb92d52f94f05c1f7965f709685583d6e9",
+          "ORACR.DAT": "f21de570dd77ed7bff050a6a857446fb92d52f94f05c1f7965f709685583d6e9",
+          "SQ.LBR": "cadcbad52be0b9d49887ebb982c42a6eb4879fbd39908ebe8428278f54c51bed",
+          "CR.LBR": "e9d0452d8948349842bc89dabd490533ae0905c8afac36d73fe1d249e56d854a",
+          "CREATED.LBR": "a5ccb2e3898c01578c40665450b256ce0450d5e7f5b7a46bd1650e169b377c92",
+          "REPLACE.LBR": "3dfea7164bc61f1d8467caa7fde010e3972f8c7f94971f67eb2d0651e0ebc63c",
+          "REMOVE.LBR": "c99ddef2b1610e38d10136abed47dadf519fe9e31c450984059401041f088231",
+          "COMPACT.LBR": "1a6c9d8f09c7994448eca0234ffae5e58560c99635d511ecefcc8dd6cd538b52",
+          "LIMITED.LBR": "9b547bf8436a9f219525980940f5875eade535f64a986703dd9fd3a10345b8dc"
+        },
+        "extent_outputs": {
+          "BIG.LBR": "558d9f477d41681a03308884d97272f497b422156bf8fa95466cf2a8d4088a28",
+          "BIG.BIN": "8462ed5515c0e96dc35004a77afdc0ad35c97ef4ae1311a427fb158645eebffd"
+        },
+        "runtime_console_sha256": "3e75355c3868f15c7f745f5658f55938a753702468e28b152f0f653f702a2d1d",
+        "extent_console_sha256": "d04ee7328659af9930fe71f0ec52c6d7b7613fa1bff4bea51ddf8b066fdb45dc",
+        "cross_extent_source_bytes": 20480
+      }
+    }
+  },
+  "final_timestamp_delta": {
+    "scope": "NOAH production controller/codec phase integration; LBR and codec commands only",
+    "layout": {
+      "resident_bytes": 17494,
+      "window": 17792,
+      "codec_context": 19840,
+      "cli_bytes": 16723,
+      "writer_plans": [
+        34560,
+        40704
+      ],
+      "transformed_ids": [
+        40704,
+        47360
+      ],
+      "stack": [
+        16111,
+        16623
+      ],
+      "required_ceilings": [
+        47360,
+        23364,
+        21280,
+        45047,
+        46422
+      ],
+      "build_id": "de968de714a86240",
+      "companion_sha256": "93e0b63a9ad13a1a217d396a0cfb93cd656c742f0551cb08f2be5c440e8f0b3b"
+    },
+    "verified_systems": {
+      "z80pack": {
+        "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1"
+      },
+      "trs80gp": {
+        "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43"
+      }
+    },
+    "resident_sha256": "f1cdec67c0583ef8769dacce4e4d3c7f2345ac33c230f5b2ceb4085996e03bcf",
+    "companion_sha256": "93e0b63a9ad13a1a217d396a0cfb93cd656c742f0551cb08f2be5c440e8f0b3b",
+    "platforms": {
+      "z80pack": {
+        "status": "PASS",
+        "native_groups": [
+          {
+            "execution": "build-0/execution.json",
+            "console_sha256": "ea980d277a3007c96de6a97619fe848b6492865c16fec76bb56fdefe9d86cca9",
+            "status": "PASS"
+          },
+          {
+            "reused": "build/noah-codecs/qualified/z80pack/build-1",
+            "status": "PASS"
+          }
+        ],
+        "runtime_ceiling_hex": "C501",
+        "native_outputs": {
+          "NOAH": "00d175aa835a272b67381204dbd466c63aaa960c4bae0c8c2f2c618b75b0d054",
+          "NHCLI": "a4be296a005743b0cd39d50ff5ade2de13c7f659cb3ad9c46f77aa376c34b2d7",
+          "NCSQ": "a9b7e9751f926f64ead6a8271962112b10c74240f19f10afb026683f5b734718",
+          "NCUSQ": "e75ca194db482a31052673ad2dd848380a0d4ede0c623180ba666a52de406fd0",
+          "NCCR": "53ccbdc33ad199aeeb8e8357751f6fba4e74428b4ea85f525e44dd3c453bda1b",
+          "NCUNCR": "6331142512707c1e50773687564f9088b30860162d0dfbdee86d1886806df1e0"
+        },
+        "runtime_outputs": {
+          "STAMPED.TXT": "25989161aaa00695b02028ffaa1826df1a29d5338f6c5564b0f966e03f77f5eb"
+        },
+        "runtime_console_sha256": "b3953d8ce35e255fb4e5b98197cb3269ada066300744ae448ca9da46f8142b4c"
+      },
+      "trs80gp": {
+        "status": "PASS",
+        "native_groups": [
+          {
+            "execution": "build-0/execution.json",
+            "console_sha256": "dd2b2aff4943d93f4f7c0d829890d4599b6b581654138a7b7aba0ffc0f3d0f81",
+            "status": "PASS"
+          },
+          {
+            "reused": "build/noah-codecs/qualified/trs80gp/build-1",
+            "status": "PASS"
+          }
+        ],
+        "runtime_ceiling_hex": "CA01",
+        "native_outputs": {
+          "NOAH": "00d175aa835a272b67381204dbd466c63aaa960c4bae0c8c2f2c618b75b0d054",
+          "NHCLI": "a4be296a005743b0cd39d50ff5ade2de13c7f659cb3ad9c46f77aa376c34b2d7",
+          "NCSQ": "a9b7e9751f926f64ead6a8271962112b10c74240f19f10afb026683f5b734718",
+          "NCUSQ": "e75ca194db482a31052673ad2dd848380a0d4ede0c623180ba666a52de406fd0",
+          "NCCR": "53ccbdc33ad199aeeb8e8357751f6fba4e74428b4ea85f525e44dd3c453bda1b",
+          "NCUNCR": "6331142512707c1e50773687564f9088b30860162d0dfbdee86d1886806df1e0"
+        },
+        "runtime_outputs": {
+          "STAMPED.TXT": "25989161aaa00695b02028ffaa1826df1a29d5338f6c5564b0f966e03f77f5eb"
+        },
+        "runtime_console_sha256": "1ce0eb807d711326c1f2cf19b7e625ce5086bbecea547710b594d7ca3e7c996a"
+      }
+    },
+    "qualification_mode": "timestamp diagnostic delta",
+    "full_baseline_report_sha256": "3cbba40931388f524c101d7c851b9ccc215eeb2e46d1fe0bb02df6dc1248c07b",
+    "controller_changed_offsets": [
+      3895,
+      3896
+    ]
+  },
+  "host_checks": {
+    "codec_overlay_transactions": 51,
+    "existing_adapter_cases": 137,
+    "existing_lbr_write_cases": 38,
+    "independent_lbr_writer_oracles": "PASS",
+    "registry_projections": "PASS"
+  },
+  "source_sha256": {
+    "metadata/component-inputs.json": "1fa3f81e4e57b4c503bb434e2ffe3053213150dcb68dde660087d9c7df696e19",
+    "metadata/component-registry.json": "d65fc3fed0f5913a2ebe3f820e97dc19b4724813e65f25399443f0b14f36671b",
+    "metadata/utility-versions.tsv": "6f0748392214587cbd6a5e65da716fda871ce57063e6649079aa36d5f5276cdf",
+    "src/archive/lbrwrite-render.inc": "1d6d7e11d10bdd8f95acdb28e4bd51caad80c15381bb0aff9715506caf967da8",
+    "src/archive/lbrwrite.inc": "9e7f4d8954ad3949d515db4fcfa986823b1ba51d5c1b4a45143391f0f46a72e3",
+    "src/archive/lbrwrite.mac": "6e8dac267b6f7fb1e654ef43a339f22c93b40c5081b4f1984872f2cc0d8a9e81",
+    "src/utilities/common/noahcodec-add.inc": "dea02625c0bcf41d27a8fd55e785ce493c42846fb30b6764a14d0ea51b876e5e",
+    "src/utilities/common/noahcodec-resident.inc": "c6f0fdb13dc5a3204d1ddba05bccc78e2915f45aa89a26f5c1a900c75f57c376",
+    "src/utilities/common/noahcodec.inc": "4235155a232b7e427787535be8e125d2cd666bb0186ff9e7126013aa140c5c65",
+    "src/utilities/common/noahextract.inc": "b372f238780eed62e0d94b62635e932d09db7872a0260d405495be2096abbbaf",
+    "src/utilities/common/noahpublish.inc": "7b6b9fb5ec23f820e22dce078908331d4377f2d85a7d47d8f409be442856f65d",
+    "src/utilities/common/noahresident-data.inc": "518c5813a05989462fc34793d063f327afbe2babd788283c442e394d1381500a",
+    "src/utilities/common/noahresident.inc": "34baab2c9a75b87d764a04cd7235efff426879b9a059ca479e5828c6a7e2c748",
+    "src/utilities/common/noahselect.inc": "a546d6d0f6b5a34c52615c2201b1dcac0f91301f719d0ebbbff1a0de8d6fcc43",
+    "src/utilities/common/noahwrite.inc": "38fa9fab1b25d438b2ce3c48739349c536d8ccf6b0ffca056f776a2585f256a2",
+    "src/utilities/noah.mac": "87c766e2626791e7cb83ebbdda8c4880a4dd7c35ad7816b9f9b4593e2395f6ac",
+    "tools/build_noah.py": "dfd463a581d7e5a33fbe7117dfa6e9c2925548412d78a2731bb844ab86af0dc8",
+    "tools/noah_overlays.py": "fba469600462e457a6b830d351c664c31440adafdaa6871c8d8568e8ec201fd6",
+    "tools/qualify_noah_codecs.py": "f5c1f4e6576180a07553c0e6880e96d86a31e93a1ad0fb6a8a151a6d15f018f2",
+    "tools/qualify_noah_write.py": "722c8e56a267206f54836da9e79d9223e62615d565cc5ae219fdeea3f5c9943b",
+    "tools/test_noah.py": "d429801c513a5029056cef2d24a0697500bc98652ff9e3e413a182521da9f702",
+    "tools/test_noah_codecs.py": "c1af6754c3ba627ac973fe54149b4673ffed065bff2a8dc1ec3bffda8bddceba"
+  },
+  "evidence": {
+    "file": "NOAH-Codec-Overlay-evidence.tar.gz",
+    "sha256": "d9726cabc9dedd64cf0b93ae970df7e7d88f4451f964d496e23a5b3f1c0800e1",
+    "bytes": 1405176,
+    "manifest_sha256": "3a4745a4e4e7414ed10d5ef8ef07311b96ef8e848ad50ea41bcd5005bdd98a71"
+  }
+}

@@ -16,6 +16,7 @@ from test_usq_com import Command, diskkey, padded
 class Noah(Command):
     def __init__(self, library, image, listing):
         self.lib, self.image = library, image
+        self.overlay = getattr(image, "overlay", None)
         self.mem = (C.c_ubyte * 65536).in_dll(library, 'memory')
         self.reg = {}
         for name in ('A', 'B', 'C', 'D', 'E', 'H', 'L', 'A_', 'B_', 'C_', 'D_', 'E_', 'H_', 'L_'):
@@ -30,7 +31,7 @@ class Noah(Command):
             match = re.search(rf'^([0-9a-f]{{4}}).*\b{name}:\s', listing, re.M | re.I)
             assert match, name
             self.symbols[old] = int(match[1], 16)
-        for name in ('AC_OPEN', 'AC_CLOSE', 'LBR_NEXT', 'LBR_READ', 'NH_CONTEXT', 'NX_TEMP', 'NX_VERIFY', 'NI_WAIT', 'NS_YES', 'NW_MEMORY_TEXT'):
+        for name in ('AC_OPEN', 'AC_CLOSE', 'LBR_NEXT', 'LBR_READ', 'NH_CONTEXT', 'NX_TEMP', 'NX_VERIFY', 'NI_WAIT', 'NS_YES', 'NW_MEMORY_TEXT', 'NX_BUFFER', 'NR_FCB', 'NR_INPUT', 'NW_SOURCE'):
             match = re.search(rf'\b{name}[ \t]+([0-9a-f]{{4}})\b', listing, re.I)
             assert match, name
             self.symbols[name] = int(match[1], 16)
@@ -42,6 +43,12 @@ class Noah(Command):
         self.max_stack = 0
 
     def run(self, *args, **kwargs):
+        supply=kwargs.pop('supply_overlay',True)
+        self.overlay_change_at=kwargs.pop('overlay_change_at',None)
+        self.overlay_opens=0
+        self.source_change=kwargs.pop('source_change',None)
+        self.writer_change=kwargs.pop('writer_change',None)
+        self.source_opens=0
         self.cancel_poll = kwargs.pop('cancel_poll', None)
         self.tamper = kwargs.pop('tamper', False)
         self.polls = 0
@@ -55,11 +62,28 @@ class Noah(Command):
         self.rename_moves_on_failure = kwargs.pop('rename_moves_on_failure', False)
         self.delete_removes_on_failure = kwargs.pop('delete_removes_on_failure', False)
         kwargs.setdefault('tpa', 0xd501)
-        self.write_allowed = bool(args and any(t.upper() in ('/X', '/EXTRACT', '/ADD', '/REMOVE', '/COMPACT') for t in args[0].split()))
+        self.write_allowed = bool(args and any(t.upper() in ('/X', '/EXTRACT', '/ADD', '/REMOVE', '/COMPACT', '/SQ', '/CR', '/EXPAND') for t in args[0].split()))
+        injected=None
+        if self.overlay is not None and supply:
+            files = dict(args[1])
+            drive = kwargs.get('drive',1); user=kwargs.get('user',0)
+            injected=diskkey(drive,'NOAH.OVL',user)
+            if injected in files: injected=None
+            else: files[diskkey(drive,'NOAH.OVL',user)]=self.overlay
+            args = (args[0],files)+args[2:]
         try:
             result = super().run(*args, **kwargs)
         except AssertionError as error:
             raise AssertionError((args[0], str(error))) from error
+        if injected:
+            self.files.pop(injected,None);self.original.pop(injected,None)
+        self.overlay_events=[(f,d) for f,d in self.events if d==self.symbols['NR_FCB'] and f in (15,16,20)]
+        self.events=[(f,d) for f,d in self.events if (f,d) not in self.overlay_events]
+        if self.overlay_events and 'operation stopped' not in result and 'Insufficient transient' not in result:
+            at=self.image.window
+            assert bytes(self.mem[at:at+len(self.image.controller)])==self.image.controller, 'controller not restored'
+        ceiling=kwargs.get('tpa',0xd501)
+        assert not any(self.mem[ceiling:0xd800]), 'write above active TPA'
         minimum = C.c_ushort.in_dll(self.lib, 'minimum_sp').value
         self.max_stack = max(self.max_stack, self.symbols['UC_STACK_TOP'] - minimum)
         assert self.max_stack < 384, 'stack overlaps version-tail scratch'
@@ -85,6 +109,24 @@ class Noah(Command):
         return choice is not None and (choice == 0 or self.attempts[operation] == choice)
 
     def bdos(self, fn, de):
+        if fn==15 and de==self.symbols['NR_INPUT']:
+            self.source_opens+=1
+            if self.source_change and self.source_opens==self.source_change[1]:
+                self.files[self.source_change[0]]=self.source_change[2]
+        if fn==15 and de==self.symbols['NW_SOURCE'] and self.writer_change:
+            self.files[self.writer_change[0]]=self.writer_change[1]
+            self.writer_change=None
+        if de==self.symbols['NR_FCB'] and fn in (15,16,20):
+            if fn==15:
+                self.overlay_opens+=1
+                if self.overlay_opens==self.overlay_change_at:
+                    key=self.fcbkey(de)
+                    if key in self.files:
+                        raw=bytearray(self.files[key]);raw[-8]^=1;self.files[key]=bytes(raw)
+            failures,attempts=self.failures,self.attempts
+            self.failures={};self.attempts={}
+            try: return super().bdos(fn,de)
+            finally: self.failures,self.attempts=failures,attempts
         writes = (19, 21, 22, 23, 34)
         assert self.write_allowed or fn not in writes, ('not a read-only operation', fn)
         assert fn in (2, 6, 9, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 30, 32, 33, 34, 35), fn
@@ -229,7 +271,8 @@ class Noah(Command):
             return 0
         return super().bdos(fn, de)
 
-    def library_call(self, name, count=0, output=0x6001):
+    def library_call(self, name, count=0, output=None):
+        if output is None: output=self.symbols["NX_BUFFER"]
         self.reg['IX'].value = self.symbols['NH_CONTEXT']
         self.reg['SP'].value = self.symbols['UC_STACK_TOP']
         self.reg['B'].value, self.reg['C'].value = count >> 8, count & 255
@@ -270,7 +313,7 @@ def tests(m):
             break
         count = m.reg['B'].value * 256 + m.reg['C'].value
         assert 0 < count <= 195
-        result.extend(m.mem[0x6001:0x6001 + count])
+        result.extend(m.mem[m.symbols["NX_BUFFER"]:m.symbols["NX_BUFFER"] + count])
     assert result == data[:-17]
     assert m.library_call('AC_CLOSE') == 0 and not m.opened
     m.intact()

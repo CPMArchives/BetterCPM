@@ -4,7 +4,11 @@ NOAH 1.0 revision 6 implements LBR creation, ADD/replacement, REMOVE,
 COMPACT and directory capacity selection. It remains a development utility;
 this is not full NOAH qualification or Utilities Disk packaging. The
 [behavioral specification](NOAH%20Specification.md) remains normative.
-ARK writes, codecs, `/Q`, the browser and production overlay dispatch are deferred.
+This is the historical revision 6 qualification record. The subsequent
+[revision 7 codec and overlay increment](NOAH%20Codec%20and%20Overlay%20Integration.md)
+implements codecs and production dispatch; its measured phase layout supersedes
+the monolithic memory limits below. ARK, `/Q`, remaining recovery commands, the
+browser and release packaging remain deferred.
 
 ## Commands
 
