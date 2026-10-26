@@ -1,19 +1,23 @@
 {
   "scope": "NHARK production overlay ARC writer entry packaging",
   "status": "z80pack ZSM4/LINK source parity passed; Model 4 native build pending",
-  "source_commit": "0e0e7a5",
   "system_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1",
   "utilities_sha256": "1645ddddb44aa49d194bc864764869af64d7fee1300143b3c1791eb5799181b7",
   "phase_layout": {
     "start_hex": "9200",
-    "bytes": 5370,
-    "record_padded_bytes": 5440,
-    "padded_end_hex": "A740",
+    "bytes": 5379,
+    "record_padded_bytes": 5504,
+    "padded_end_hex": "A780",
     "arena_end_hex": "C400",
+    "writer_dispatch_slots": {
+      "NAW_BUILD_HEADER": "921B",
+      "NAW_WRITE_MEMBER": "921E",
+      "NAW_WRITE_END": "9221"
+    },
     "writer_entries": {
-      "ARK_BUILD_HEADER": "9200",
-      "ARK_WRITE_MEMBER": "9338",
-      "ARK_WRITE_END": "948F"
+      "ARK_BUILD_HEADER": "A35D",
+      "ARK_WRITE_MEMBER": "A495",
+      "ARK_WRITE_END": "A5EC"
     }
   },
   "platforms": {
@@ -27,10 +31,10 @@
         "B:LINK NCLZW[A]",
         "B:LINK NCAR8[A]"
       ],
-      "nhark_source_sha256": "eebb804fda944a10295743183a4df631eb4e3e14851d707bc5669c6abdafcffd",
-      "nhark_linked_com_sha256": "f4b13b99d7b647245c6cbe594ca0548a6fb1060a40aac155d842a0d7b076d58d",
+      "nhark_source_sha256": "fa3fdb72f4e13e44aabd030ee0c4161079f54a0d3a955d7d03566cdc577f0983",
+      "nhark_linked_com_sha256": "c3da1c9cf3e48d4bcf82c4148094a1d3474fb61871b1f22fe5cad25d01a9001d",
       "all_native_outputs_match_cross_assembly": true,
-      "console_sha256": "bfa3ad29218b4349e88d9e22820c90cd668a9baf19f5367e7bce4468f2ae8b66",
+      "console_sha256": "7bfbb145874ce45bfdb2e75ce58af170a3a6fc4383c91022d98f156f3f0e3c4b",
       "original_media_unchanged": true
     },
     "trs80gp": {

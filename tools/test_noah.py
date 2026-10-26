@@ -769,6 +769,22 @@ def main():
                    for address in layout['ark_writer_entries'].values())
         assert set(layout['ark_writer_entries']) == {
             'ARK_BUILD_HEADER', 'ARK_WRITE_MEMBER', 'ARK_WRITE_END'}
+        expected_dispatch = {
+            'NAW_BUILD_HEADER': ark_start + 27,
+            'NAW_WRITE_MEMBER': ark_start + 30,
+            'NAW_WRITE_END': ark_start + 33,
+        }
+        assert layout['ark_writer_dispatch'] == expected_dispatch
+        overlay = image.overlay
+        descriptor = 24 + (6 - 1) * 12
+        assert overlay[descriptor] == 6
+        record = int.from_bytes(overlay[descriptor + 2:descriptor + 4], 'little')
+        module_length = int.from_bytes(overlay[descriptor + 6:descriptor + 8], 'little')
+        module_offset = 128 + (record - 1) * 128
+        module = overlay[module_offset:module_offset + module_length]
+        for slot, entry in zip((27, 30, 33), ('ARK_BUILD_HEADER', 'ARK_WRITE_MEMBER', 'ARK_WRITE_END')):
+            assert module[slot] == 0xC3
+            assert int.from_bytes(module[slot + 1:slot + 3], 'little') == layout['ark_writer_entries'][entry]
         assert build(a.assembler, work / 'repeat') == image
         (work / 'sim.h').write_text('#define DEF_CPU Z80\n#define EXCLUDE_I8080\n')
         for name in ('simmem.h', 'simport.h'):

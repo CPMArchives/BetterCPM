@@ -100,13 +100,12 @@ def production_build(assembler,out,flat_builder):
     # replacing it for every 128-byte extraction read.
     ark_prefix=''.join((ROOT/'src/archive'/p).read_text()+'\n' for p in ('archive.inc','ark.inc','ark.mac','arkwrite.inc'))
     # The ARC writer API is now part of the reloadable archive overlay, sharing
-    # its existing plan arena. Expand its code macro here just like ARK_CODE;
-    # callers remain responsible for invoking it only from an authorized,
-    # staged archive transaction.
+    # its existing plan arena. Keep its emitted code after the public jump table
+    # and all reader/controller code so module entry offsets remain stable.
     ark_writer=(ROOT/'src/archive/arkwrite.mac').read_text()
     ark_writer=ark_writer.replace('ARK_WRITE_CODE MACRO\n','').replace('        ENDM\n','')
-    ark_prefix+=ark_writer+'\n'
     ark_body=ark_prefix+(ROOT/'src/utilities/common/noahark-phase.inc').read_text()+(ROOT/'src/utilities/common/noahark-decode.inc').read_text()+(ROOT/'src/utilities/common/noahark-huffman.inc').read_text()+(ROOT/'src/utilities/common/noahark-lzw-bridge.inc').read_text()
+    ark_body+='\n'+ark_writer+'\n'
     needed=set(re.findall(r'\b[A-Z_][A-Z_0-9]*\b',ark_body,re.I))
     ark_imports=''.join(f'{n} EQU {v}\n' for n,v in (rs|cs).items() if n in needed and n not in constant_names)
     ark_text=f' ORG {plan_address}\n'+constants+ark_imports+ark_body+'\n END\n'
@@ -158,6 +157,7 @@ def production_build(assembler,out,flat_builder):
     report={'resident_bytes':len(image),'window':window,'codec_context':window+2048,
       'lzw_bytes':len(lzw_raw),'lzw_workspace':[window+4096,window+4096+24576],'ark_bytes':ark_bytes,'ark_address':plan_address,'cli_bytes':len(cli),'writer_plans':[plan_address,plan_address+6144],
       'ark_writer_entries':{name:ark_symbols[name] for name in ('ARK_BUILD_HEADER','ARK_WRITE_MEMBER','ARK_WRITE_END')},
+      'ark_writer_dispatch':{name:ark_symbols[name] for name in ('NAW_BUILD_HEADER','NAW_WRITE_MEMBER','NAW_WRITE_END')},
       'transformed_ids':[plan_address+6144,plan_address+12800],
       'ark8_encoder_bytes':len(encoder_raw),'ark8_encoder_context_bytes':25207,
       'ark8_encoder_required_end':window+2048+25207,
