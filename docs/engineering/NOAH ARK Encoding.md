@@ -107,13 +107,18 @@ execution and linked-file results without emulator disk images.
 ## ARC member stream writer foundation
 
 `src/archive/arkwrite.inc` and `arkwrite.mac` provide `ARK_BUILD_HEADER`,
-`ARK_WRITE_MEMBER`, and `ARK_WRITE_END`. The serializer validates canonical
+`ARK_WRITE_MEMBER`, `ARK_WRITE_END`, and `ARK_COPY_MEMBER`. The serializer validates canonical
 padded CP/M 8.3 names and writes the new-format 29-byte header for methods 2
 (stored), 4 (SQ) or 8 (CR), including exact stored/logical lengths, raw DOS
 date/time words and CRC. `ARK_WRITE_MEMBER` streams that header and exactly
 the stored payload length through caller-provided input and output callbacks;
 the caller's 128-byte buffer supports bounded chunks without adding physical
 record padding to member data. `ARK_WRITE_END` emits ARC's `1Ah 00h` marker.
+`ARK_COPY_MEMBER` requires a member selected by the checked reader, then copies
+its original legacy or extended header and bounded stored body without
+decoding or changing either. This preserves supported and opaque-but-bounded
+methods byte-for-byte. Short reads, failed writes and output-offset overflow
+return errors without advancing the destination cursor for a failed chunk.
 The caller still owns physical record packing/padding, retained-member order,
 opaque trailer handling, staged readback and NOAH's publication transaction.
 The API uses static scratch and is not reentrant.
@@ -121,40 +126,45 @@ The API uses static scratch and is not reentrant.
 `tools/test_ark.py` assembles these routines beside the production ARC reader.
 It checks method-2/4/8 header bytes and metadata round trips, malformed-name
 rejection, a 522-byte member across 128-byte boundaries, an empty member, the
-end marker, source I/O failure, short reads and failed output. This remains an
-isolated library proof, not NOAH command integration. `/ADD`, replacement,
-`/REMOVE`, `/COMPACT`, trailer preservation, staged readback and
-publication/recovery remain open.
+end marker, source I/O failure, short reads and failed output. It also checks
+byte-identical retained members for methods 1, 2, 4, 5, 8 and 9, plus read and
+write failure behavior during copy. This remains an isolated library proof,
+not NOAH command integration. `/ADD`, replacement, `/REMOVE`, ordinary-update
+trailer preservation, staged readback and publication/recovery remain open.
+The normative NOAH specification now defines ARC `/COMPACT`: rewrite all
+members byte-for-byte, remove only excess 00h/1Ah padding after the end marker,
+and refuse an opaque trailer before staging. That command behavior is specified
+but not implemented yet.
 
-`tools/qualify_ark_writer_cpm.py` adds one native CP/M method-2 write check.
-On z80pack, unmodified ZSM4/LINK build the proof, and the program writes a
-522-byte deterministic member plus the ARC end marker. The extracted 640-byte
-CP/M file matches the independent 553-byte ARC oracle followed only by `1Ah`
-record padding. The linked proof ends at `13ACh` against the measured `C501h`
-active TPA ceiling. Its [receipt](NOAH-ARK-Writer-Native.json) records the
-input-system and output hashes. This is an isolated library/runtime check; it
-does not exercise NOAH archive staging, retained members, recovery, or
-publication.
+`tools/qualify_ark_writer_cpm.py` qualifies ARC method-2 creation and retained
+member copying under native CP/M. The proof writes a 522-byte member plus the
+ARC end marker; its extracted 640-byte file matches the independent 553-byte
+oracle followed only by `1Ah` record padding. It then reads a method-9 ARC
+fixture and byte-compares the complete copied member and terminator. On
+z80pack, unmodified ZSM4/LINK build and run the proof successfully: the linked
+image is 6,455 bytes, ends at `1A37h`, and fits below the measured `C501h` active
+TPA ceiling. The [receipt](NOAH-ARK-Writer-Native.json) records the system,
+image and output hashes. This remains an isolated API check, not NOAH archive
+staging, update, recovery or publication qualification.
 
-The same run has not completed on the Model 4. The local trs80gp 2.5.8 process
-aborted during startup on macOS 27.2, and LaunchServices could not launch the
-temporary test bundle. Treat Model 4 writer qualification as pending; the
-z80pack result does not close the cross-platform gate.
+The Model 4 run remains unqualified. LaunchServices rejected the temporary
+launcher, and direct execution of the local trs80gp binary terminated with
+SIGABRT. Keep the Model 4 gate open; z80pack success does not close it.
 
 ## Writer entry points in the production overlay
 
 `tools/noah_overlays.py` now assembles the shared ARC framing library and
-`ARK_BUILD_HEADER`, `ARK_WRITE_MEMBER`, and `ARK_WRITE_END` into the reloadable
+`ARK_BUILD_HEADER`, `ARK_WRITE_MEMBER`, `ARK_WRITE_END`, and `ARK_COPY_MEMBER` into the reloadable
 `NHARK` phase. `tools/test_noah.py` checks that each exported entry falls inside
 the assembled phase and that its record-padded image remains within the
 existing 12,800-byte inactive arena. This adds no resident TPA allocation and
-preserves the original nine reader/controller slots. Three stable writer
+preserves the original nine reader/controller slots. Four stable writer
 dispatch slots now follow those entries; the host layout test pins their
 addresses and target labels. The existing `tools/test_ark.py` vectors continue
 to exercise the writer implementation in isolation.
 
-The entries are not yet connected to `/ADD`, `/REMOVE`, or `/COMPACT`. The
-current overlap has a bounded memory solution for ordinary source plans:
+The entries are not yet connected to `/ADD` or `/REMOVE`. The current overlap
+has a bounded memory solution for ordinary source plans:
 derive the plan-table start from the record-padded NHARK size and place the table
 after the loaded overlay. The deterministic host build asserts the table fits
 inside the existing arena. The future command path still has to preserve that
@@ -170,7 +180,7 @@ layout proof.
 - Wire the production method-4/8 encoders and method-2 copy path to `/ADD`,
   including length/CRC accounting, source-stability checks, staged verification
   and publication/recovery. Standalone CR output is not an ARC method-8 stream.
-- Add ARC creation, replacement, REMOVE and COMPACT with exact retained member,
-  raw metadata, opaque suffix and trailer preservation rules.
+- Add ARC creation, replacement, ADD/REMOVE/COMPACT using the specified exact
+  retained-member, raw-metadata, opaque-trailer and safe-padding rules.
 - Qualify the integrated writer with native ZSM4/LINK and runtime transactions
   on z80pack and the Model 4 before advertising ARC writes.
