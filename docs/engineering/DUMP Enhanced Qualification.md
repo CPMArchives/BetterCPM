@@ -1,5 +1,9 @@
 # Enhanced DUMP qualification
 
+This is the historical Build 002 qualification and unchanged-byte extraction
+record. Current exact-range behavior and revision 006 evidence are recorded in
+[DUMP Range Qualification](DUMP%20Range%20Qualification.md).
+
 DUMP 1.0 Build 002 implements the consolidated
 [DUMP specification](DUMP%20Specification.md). The initial Build 001 record
 remains historical; enhanced behavior is no longer described as merely proposed.

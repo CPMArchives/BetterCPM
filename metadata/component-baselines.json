@@ -3822,10 +3822,10 @@
     },
     "utility:DUMP|trs80gp|default|cross": {
       "assigned_identity": {
-        "revision": 5,
+        "revision": 6,
         "version": "1.0"
       },
-      "fingerprint": "7b429f51fe65de3ded0e11aa813c099395e9eb1e1571d9f976b98b5c96770c8c",
+      "fingerprint": "463890a8ee806774352a0d34a263d3a2b5c50d49ba23a6a22dea2d551a1cbac4",
       "inputs": {
         "component": "utility:DUMP",
         "configuration": {
@@ -3848,10 +3848,10 @@
           "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
           "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
           "src/utilities/common/dumpbare.inc": "1c347ebf8808dba2930204cc5b2c89de19b57e76ff161eda7ad1266cf3457995",
-          "src/utilities/common/dumpio.inc": "35b0e4fadc98742a78abc4e31e7c6474523765ee2eb8891e04a6a8251f6b97fe",
-          "src/utilities/common/dumpparse.inc": "91414470abc73b959b56d111d40af9b7f937bd6adfd07320801f4bdeb6a784da",
-          "src/utilities/common/dumpsearch.inc": "daf354ab094072dc9862131a0f326884a2bea7414a2c3eb65b3ed9d1417bd414",
-          "src/utilities/common/dumpview.inc": "c2a00473da920d91495d17d5bcbb712f02332cc1175a8f8e3e72dacdba0ad4a7",
+          "src/utilities/common/dumpio.inc": "bfc16e5aa408cb7870c0a15c0fcf0c6545de0a60cc510894837da8d98e5698ee",
+          "src/utilities/common/dumpparse.inc": "a7f45b543a1eb3a3ad30d2e6cc3f9264aff27f4dbe9593ffd82467856d2d8512",
+          "src/utilities/common/dumpsearch.inc": "25267aae45106775add414783fcd6aa440d1fa3c3c08f7e074aceb05713b3cd5",
+          "src/utilities/common/dumpview.inc": "a2a1c0317eaa364193f801e08aaeea8ee9d0761b7fb65fc0dec791c981b451bd",
           "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
           "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
           "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
@@ -3876,7 +3876,7 @@
           "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
           "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
           "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
-          "src/utilities/dump.mac": "1f6a3120320ece369d48f7a9c5cdf54b42b5c3ff9c06127756ba3736b426eaf0",
+          "src/utilities/dump.mac": "6e74e06e8190787ebba548ac947843eca0ec0389832ee7c7657146c6589bda45",
           "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
           "tools/build_dump.py": "f5bd4f17455468d31b574507f5189447871e26c834af4a07ddfd58a9a1fcc0a6",
           "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
@@ -3915,10 +3915,10 @@
     },
     "utility:DUMP|z80pack|default|cross": {
       "assigned_identity": {
-        "revision": 5,
+        "revision": 6,
         "version": "1.0"
       },
-      "fingerprint": "b6d7b13a600eaaf5e152e2e4867d8aef00a7a17b908a9853c818c6268cc4b667",
+      "fingerprint": "76149be416776d7c5ff90ee1d639f1f938e53a21c63b89f0ee7a56166f2c0040",
       "inputs": {
         "component": "utility:DUMP",
         "configuration": {
@@ -3941,10 +3941,10 @@
           "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
           "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
           "src/utilities/common/dumpbare.inc": "1c347ebf8808dba2930204cc5b2c89de19b57e76ff161eda7ad1266cf3457995",
-          "src/utilities/common/dumpio.inc": "35b0e4fadc98742a78abc4e31e7c6474523765ee2eb8891e04a6a8251f6b97fe",
-          "src/utilities/common/dumpparse.inc": "91414470abc73b959b56d111d40af9b7f937bd6adfd07320801f4bdeb6a784da",
-          "src/utilities/common/dumpsearch.inc": "daf354ab094072dc9862131a0f326884a2bea7414a2c3eb65b3ed9d1417bd414",
-          "src/utilities/common/dumpview.inc": "c2a00473da920d91495d17d5bcbb712f02332cc1175a8f8e3e72dacdba0ad4a7",
+          "src/utilities/common/dumpio.inc": "bfc16e5aa408cb7870c0a15c0fcf0c6545de0a60cc510894837da8d98e5698ee",
+          "src/utilities/common/dumpparse.inc": "a7f45b543a1eb3a3ad30d2e6cc3f9264aff27f4dbe9593ffd82467856d2d8512",
+          "src/utilities/common/dumpsearch.inc": "25267aae45106775add414783fcd6aa440d1fa3c3c08f7e074aceb05713b3cd5",
+          "src/utilities/common/dumpview.inc": "a2a1c0317eaa364193f801e08aaeea8ee9d0761b7fb65fc0dec791c981b451bd",
           "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
           "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
           "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
@@ -3969,7 +3969,7 @@
           "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
           "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
           "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
-          "src/utilities/dump.mac": "1f6a3120320ece369d48f7a9c5cdf54b42b5c3ff9c06127756ba3736b426eaf0",
+          "src/utilities/dump.mac": "6e74e06e8190787ebba548ac947843eca0ec0389832ee7c7657146c6589bda45",
           "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
           "tools/build_dump.py": "f5bd4f17455468d31b574507f5189447871e26c834af4a07ddfd58a9a1fcc0a6",
           "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",

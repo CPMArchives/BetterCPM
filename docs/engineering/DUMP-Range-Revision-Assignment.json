@@ -1,0 +1,292 @@
+{
+  "trs80gp": {
+    "artifact": {
+      "bytes": 14537,
+      "name": "DUMP.COM",
+      "sha256": "3734f5fe0750a52328cc9cf02be502076f0c29f6b7279d0b7789d8596bbf9576"
+    },
+    "component": "utility:DUMP",
+    "final_report_sha256": "49c39f93c84d51d7ce442d4566394dde82b529923252ed1430a30ccae9a77995",
+    "identity": {
+      "revision": 6,
+      "version": "1.0"
+    },
+    "input_record": {
+      "assigned_identity": {
+        "revision": 6,
+        "version": "1.0"
+      },
+      "fingerprint": "463890a8ee806774352a0d34a263d3a2b5c50d49ba23a6a22dea2d551a1cbac4",
+      "inputs": {
+        "component": "utility:DUMP",
+        "configuration": {
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        },
+        "files": {
+          "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+          "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+          "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+          "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+          "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+          "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+          "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
+          "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
+          "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
+          "src/utilities/common/dumpbare.inc": "1c347ebf8808dba2930204cc5b2c89de19b57e76ff161eda7ad1266cf3457995",
+          "src/utilities/common/dumpio.inc": "bfc16e5aa408cb7870c0a15c0fcf0c6545de0a60cc510894837da8d98e5698ee",
+          "src/utilities/common/dumpparse.inc": "a7f45b543a1eb3a3ad30d2e6cc3f9264aff27f4dbe9593ffd82467856d2d8512",
+          "src/utilities/common/dumpsearch.inc": "25267aae45106775add414783fcd6aa440d1fa3c3c08f7e074aceb05713b3cd5",
+          "src/utilities/common/dumpview.inc": "a2a1c0317eaa364193f801e08aaeea8ee9d0761b7fb65fc0dec791c981b451bd",
+          "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/pipinput.inc": "6bbcfad92995a5be1997c19b8093645feba55a3c825f648445c0492104c4d8af",
+          "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/common/reninput.inc": "282aaf32ae572a9ae5289f03dcacb4333b82041806228a226aa9b2b533dffe99",
+          "src/utilities/common/sysgeninput.inc": "0902c666327bb719d2cfc6f1ef61cdb167b1248114da3e2e3af71d6425228623",
+          "src/utilities/common/ui/append.inc": "340e1a8d24992067d7f57613213fd18c3acac96940696933beea7d26658d175e",
+          "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b",
+          "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+          "src/utilities/common/ui/choiceerror.inc": "3b27714d70bd4b1cbbefe6f4bc5dfcdde5db53231e6eb426d85c453638fb0846",
+          "src/utilities/common/ui/confirm.inc": "1b841462ada57b565084da9b41bc5d7662e3d939e8c5731b4f2767bbbd214529",
+          "src/utilities/common/ui/default.inc": "64a602938d4000de77e31c7b2f4575198141fb7c590374e323ca98b3c31ab2ae",
+          "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+          "src/utilities/common/ui/format.inc": "3b037c07453f5e873864a8f6244ea44af438d05a358c186c64ff0fe9a1cbef5c",
+          "src/utilities/common/ui/inline.inc": "029a45b0f93ce8dd101c4b9d781d25a4ef6a8edb5f8d729df471827a8f0c3f13",
+          "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+          "src/utilities/common/ui/prompt.inc": "2d90d2f468687ae0ada66c043dbb2249020323da943ab5f4fb852aa53439845a",
+          "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
+          "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/dump.mac": "6e74e06e8190787ebba548ac947843eca0ec0389832ee7c7657146c6589bda45",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_dump.py": "f5bd4f17455468d31b574507f5189447871e26c834af4a07ddfd58a9a1fcc0a6",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_versions.py": "b2ace8532510365911d1263407b6583b4461ee1a03f8579b50e3459f6dc830ee"
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "Hexadecimal File Display",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "trs80gp"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "proposal": {
+      "candidate_artifact_sha256": "a1a368aa9f2f91cf76df78b442c521de06712cb1cefaf0e58f9aeaf1b3592e13",
+      "candidate_identity": {
+        "revision": 5,
+        "version": "1.0"
+      },
+      "candidate_input_fingerprint": "463890a8ee806774352a0d34a263d3a2b5c50d49ba23a6a22dea2d551a1cbac4",
+      "candidate_report_sha256": "b7e292ce3687cfdf9105942748d4541d16a93106f1f3009536c041179147d6bf",
+      "component": "utility:DUMP",
+      "executable_changed": true,
+      "proposed_identity": {
+        "revision": 6,
+        "version": "1.0"
+      },
+      "reference_artifact_sha256": "e8b8263d528329542f3315f0c223d2fe34c784d7776c8d961240c17256779095",
+      "reference_identity": {
+        "revision": 5,
+        "version": "1.0"
+      },
+      "reference_report_sha256": "fbd3ee314f00d5d4060bd4e03e1b1803907b6a3d3c57161371f9fbbdab040e50",
+      "schema": 1,
+      "selected_inputs_changed": true,
+      "status": "revision-proposal; not acceptance",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "trs80gp"
+      }
+    },
+    "provenance": {
+      "repository_commit": "50ca8dca93b2ecfaa67642b6cf5d4aff268feed0"
+    },
+    "schema": 1,
+    "status": "explicit revision assignment; not qualification",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "trs80gp"
+    }
+  },
+  "z80pack": {
+    "artifact": {
+      "bytes": 14537,
+      "name": "DUMP.COM",
+      "sha256": "3734f5fe0750a52328cc9cf02be502076f0c29f6b7279d0b7789d8596bbf9576"
+    },
+    "component": "utility:DUMP",
+    "final_report_sha256": "2670424ca0909b5e938b55b6be08da304d2d8b62000cf3c3dde0594c62510811",
+    "identity": {
+      "revision": 6,
+      "version": "1.0"
+    },
+    "input_record": {
+      "assigned_identity": {
+        "revision": 6,
+        "version": "1.0"
+      },
+      "fingerprint": "76149be416776d7c5ff90ee1d639f1f938e53a21c63b89f0ee7a56166f2c0040",
+      "inputs": {
+        "component": "utility:DUMP",
+        "configuration": {
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        },
+        "files": {
+          "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+          "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+          "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+          "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+          "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+          "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+          "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
+          "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
+          "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
+          "src/utilities/common/dumpbare.inc": "1c347ebf8808dba2930204cc5b2c89de19b57e76ff161eda7ad1266cf3457995",
+          "src/utilities/common/dumpio.inc": "bfc16e5aa408cb7870c0a15c0fcf0c6545de0a60cc510894837da8d98e5698ee",
+          "src/utilities/common/dumpparse.inc": "a7f45b543a1eb3a3ad30d2e6cc3f9264aff27f4dbe9593ffd82467856d2d8512",
+          "src/utilities/common/dumpsearch.inc": "25267aae45106775add414783fcd6aa440d1fa3c3c08f7e074aceb05713b3cd5",
+          "src/utilities/common/dumpview.inc": "a2a1c0317eaa364193f801e08aaeea8ee9d0761b7fb65fc0dec791c981b451bd",
+          "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/pipinput.inc": "6bbcfad92995a5be1997c19b8093645feba55a3c825f648445c0492104c4d8af",
+          "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/common/reninput.inc": "282aaf32ae572a9ae5289f03dcacb4333b82041806228a226aa9b2b533dffe99",
+          "src/utilities/common/sysgeninput.inc": "0902c666327bb719d2cfc6f1ef61cdb167b1248114da3e2e3af71d6425228623",
+          "src/utilities/common/ui/append.inc": "340e1a8d24992067d7f57613213fd18c3acac96940696933beea7d26658d175e",
+          "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b",
+          "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+          "src/utilities/common/ui/choiceerror.inc": "3b27714d70bd4b1cbbefe6f4bc5dfcdde5db53231e6eb426d85c453638fb0846",
+          "src/utilities/common/ui/confirm.inc": "1b841462ada57b565084da9b41bc5d7662e3d939e8c5731b4f2767bbbd214529",
+          "src/utilities/common/ui/default.inc": "64a602938d4000de77e31c7b2f4575198141fb7c590374e323ca98b3c31ab2ae",
+          "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+          "src/utilities/common/ui/format.inc": "3b037c07453f5e873864a8f6244ea44af438d05a358c186c64ff0fe9a1cbef5c",
+          "src/utilities/common/ui/inline.inc": "029a45b0f93ce8dd101c4b9d781d25a4ef6a8edb5f8d729df471827a8f0c3f13",
+          "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+          "src/utilities/common/ui/prompt.inc": "2d90d2f468687ae0ada66c043dbb2249020323da943ab5f4fb852aa53439845a",
+          "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
+          "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/dump.mac": "6e74e06e8190787ebba548ac947843eca0ec0389832ee7c7657146c6589bda45",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_dump.py": "f5bd4f17455468d31b574507f5189447871e26c834af4a07ddfd58a9a1fcc0a6",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_versions.py": "b2ace8532510365911d1263407b6583b4461ee1a03f8579b50e3459f6dc830ee"
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "Hexadecimal File Display",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "proposal": {
+      "candidate_artifact_sha256": "a1a368aa9f2f91cf76df78b442c521de06712cb1cefaf0e58f9aeaf1b3592e13",
+      "candidate_identity": {
+        "revision": 5,
+        "version": "1.0"
+      },
+      "candidate_input_fingerprint": "76149be416776d7c5ff90ee1d639f1f938e53a21c63b89f0ee7a56166f2c0040",
+      "candidate_report_sha256": "3e9e713db7801db475740dbd3aa8360ce3bed641a7b1b4ff8cc6b5c81bd1dec4",
+      "component": "utility:DUMP",
+      "executable_changed": true,
+      "proposed_identity": {
+        "revision": 6,
+        "version": "1.0"
+      },
+      "reference_artifact_sha256": "e8b8263d528329542f3315f0c223d2fe34c784d7776c8d961240c17256779095",
+      "reference_identity": {
+        "revision": 5,
+        "version": "1.0"
+      },
+      "reference_report_sha256": "b6aa662e812f42f13ed17205fb3c8931236156ed4552cee91f6e762490394ba6",
+      "schema": 1,
+      "selected_inputs_changed": true,
+      "status": "revision-proposal; not acceptance",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      }
+    },
+    "provenance": {
+      "repository_commit": "50ca8dca93b2ecfaa67642b6cf5d4aff268feed0"
+    },
+    "schema": 1,
+    "status": "explicit revision assignment; not qualification",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "z80pack"
+    }
+  }
+}

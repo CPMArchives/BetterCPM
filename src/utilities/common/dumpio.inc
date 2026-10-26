@@ -1,3 +1,72 @@
+; Fixed /LEN range; saturate the exclusive end at physical record EOF.
+; Addition carry means beyond EOF too, never a wrapped small range.
+SETRANGE:
+        LD HL,LENGTH
+        LD DE,RANGEEND
+        CALL COPY32
+        LD A,(LENSET)
+        OR A
+        RET Z
+        LD HL,FROM
+        LD DE,RANGELOW
+        CALL COPY32
+        LD HL,FROM
+        LD DE,COUNT
+        LD IX,CELL
+        LD B,4
+        OR A
+SRADD:
+        LD A,(DE)
+        ADC A,(HL)
+        LD (IX+0),A
+        INC IX
+        INC HL
+        INC DE
+        DJNZ SRADD
+        RET C
+        LD HL,CELL
+        LD DE,LENGTH
+        CALL CMP32
+        RET NC
+        LD DE,RANGEEND
+        JP COPY32
+; Load a display slot without reading masked data. Page buffers retain aligned
+; slots; validity is derived from addresses, never from a sentinel byte value.
+DISPLAYBYTE:
+        LD HL,POS
+        LD DE,STAGELOW
+        CALL CMP32
+        JR C,DBBLANK
+        LD DE,RANGEEND
+        CALL CMP32
+        JP C,GETBYTE
+DBBLANK:
+        XOR A
+        RET
+; CF = cell outside committed display bounds. Preserve renderer registers.
+CELLVALID:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD HL,DISPLAYPOS
+        LD DE,CELL
+        CALL COPY32
+        LD A,(ROWINDEX)
+        LD E,A
+        LD D,0
+        LD HL,CELL
+        CALL ADD16
+        LD DE,ACTIVELOW
+        CALL CMP32
+        JR C,CVDONE
+        LD DE,RANGEEND
+        CALL CMP32
+        CCF
+CVDONE:
+        POP HL
+        POP DE
+        POP BC
+        RET
 ; POS is a 32-bit byte address. GETBYTE never changes it. Cache by record.
 GETBYTE:
         LD HL,POS
@@ -89,7 +158,7 @@ LOADPAGE:
 LPLOOP:
         LD HL,POS
         PUSH DE
-        LD DE,LENGTH
+        LD DE,RANGEEND
         CALL CMP32
         POP DE
         JR NC,LPOK
@@ -101,7 +170,7 @@ LPLOOP:
         POP DE
         JR Z,LPOK
         PUSH DE
-        CALL GETBYTE
+        CALL DISPLAYBYTE
         POP DE
         RET C
         LD (DE),A
@@ -118,6 +187,9 @@ LPOK:
         OR A
         RET
 COMMITPAGE:
+        LD HL,STAGELOW
+        LD DE,ACTIVELOW
+        CALL COPY32
         LD HL,NEXT
         LD DE,PAGE
         CALL COPY32
@@ -132,7 +204,7 @@ COMMITPAGE:
         RET Z
         LDIR
         RET
-; One row, from RENDERPTR, at DISPLAYPOS. ROWBYTES bytes always available.
+; One aligned row at DISPLAYPOS. Masked slots never consult buffer contents.
 ROWOUT:
         LD HL,DISPLAYPOS
         CALL HEX32
@@ -146,8 +218,15 @@ ROWHEX:
         LD E,A
         LD D,0
         ADD HL,DE
+        CALL CELLVALID
+        JR C,RHBLANK
         LD A,(HL)
         CALL HEXBYTE
+        JR RHNEXT
+RHBLANK:
+        CALL SPACE
+        CALL SPACE
+RHNEXT:
         LD HL,ROWINDEX
         INC (HL)
         LD A,(ROWBYTES)
@@ -170,10 +249,15 @@ ROWSEP:
 ROWASCII:
         CALL SPACE
         CALL SPACE
+        XOR A
+        LD (ROWINDEX),A
         LD HL,(RENDERPTR)
         LD A,(ROWBYTES)
         LD B,A
 RASTRING:
+        CALL CELLVALID
+        LD A,' '
+        JR C,RAPUT
         LD A,(HL)
         CP 32
         JR C,RADOT
@@ -184,6 +268,10 @@ RADOT:
 RAPUT:
         CALL PUT
         INC HL
+        PUSH HL
+        LD HL,ROWINDEX
+        INC (HL)
+        POP HL
         DJNZ RASTRING
         LD (RENDERPTR),HL
         LD HL,DISPLAYPOS
@@ -199,7 +287,7 @@ DSLOOP:
         CALL STREAMKEY
         JP C,DSEND
         LD HL,POS
-        LD DE,LENGTH
+        LD DE,RANGEEND
         CALL CMP32
         JP NC,DSEND
         LD HL,POS
@@ -211,7 +299,7 @@ DSLOOP:
 DSLOAD:
         PUSH BC
         PUSH DE
-        CALL GETBYTE
+        CALL DISPLAYBYTE
         POP DE
         POP BC
         JP C,DSERROR

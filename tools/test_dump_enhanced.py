@@ -100,11 +100,14 @@ def execute(payload=b'', tail='TEST.BIN', keys=b'Q', backend=True, width=80,
                 snapshots=snapshots,cpu=c,syms=syms)
 
 
-def row(payload,pos=0,compact=False):
-    n=8 if compact else 16;b=payload[pos:pos+n]
-    hx=(b[:4].hex().upper()+' '+b[4:].hex().upper()) if compact else (
-        ' '.join(f'{v:02X}' for v in b[:8])+'  '+' '.join(f'{v:02X}' for v in b[8:]))
-    return f'{pos:08X}  {hx}  '+''.join(chr(v) if 32<=v<127 else '.' for v in b)
+def row(payload,pos=0,compact=False,lower=0,end=None):
+    n=8 if compact else 16
+    end=len(payload) if end is None else min(end,len(payload))
+    cells=[payload[i] if lower<=i<end else None for i in range(pos,pos+n)]
+    hx=[f'{v:02X}' if v is not None else '  ' for v in cells]
+    text=(''.join(hx[:4])+' '+''.join(hx[4:])) if compact else (
+        ' '.join(hx[:8])+'  '+' '.join(hx[8:]))
+    return f'{pos:08X}  {text}  '+''.join(' ' if v is None else chr(v) if 32<=v<127 else '.' for v in cells)
 
 
 def main():
@@ -124,7 +127,7 @@ def main():
     for tail in ['','TEST.BIN X.BIN','/NO TEST.BIN','TEST.BIN /FROM=Z',
                  'TEST.BIN /FROM=0 /FROM=Z','TEST.BIN /FROM=Z /FROM=0',
                  'TEST.BIN /BARE /40','TEST.BIN /BARE /P','TEST.BIN /BARE /FROM=0',
-                 'TEST.BIN /LEN=10','TEST.BIN /FIND=AA','B[1,2]:TEST.BIN','*.BIN',
+                 'TEST.BIN /LEN=','TEST.BIN /FIND=AA','B[1,2]:TEST.BIN','*.BIN',
                  'B7:TEST.BIN /BARE','TEST.BIN /FROM=100000000']:
         r=check(payload,tail=tail);assert not r['names'],tail
         assert b'DUMP:' in r['output'],(tail,r['output'])
@@ -132,8 +135,8 @@ def main():
     for tail in ['B:TEST.BIN','TEST.BIN']:
         r=check(payload,tail=tail,caller=(2,3));assert r['names'][0][1]==3
     for off in ['123','123H','00000123','1h']:
-        r=check(payload,tail=f'TEST.BIN /FROM={off}');v=int(off.rstrip('hH'),16)&~15
-        assert r['output'].startswith(row(payload,v).encode())
+        r=check(payload,tail=f'TEST.BIN /FROM={off}');exact=int(off.rstrip('hH'),16);v=exact&~15
+        assert r['output'].startswith(row(payload,v,lower=exact).encode())
     r=check(payload,tail='TEST.BIN /FROM=80 /FROM=100');assert r['output'].startswith(b'00000100')
     for data,tail in [(b'','TEST.BIN'),(b'','TEST.BIN /P')]:
         r=check(data,tail=tail);assert r['output']==b'Empty file\r\n'
@@ -175,7 +178,7 @@ def main():
         r=check(payload,tail='TEST.BIN /FROM='+value);assert b'DUMP:' in r['output']
     r=check(payload,tail='TEST.BIN /FROM=FFFF /FROM=0');assert b'out of range' in r['output']
     large=bytes(range(256))*258
-    r=check(large,tail='TEST.BIN /FROM=10003');assert r['output'].startswith(row(large,65536).encode())
+    r=check(large,tail='TEST.BIN /FROM=10003');assert r['output'].startswith(row(large,65536,lower=65539).encode())
     r=check(payload,tail='TEST.BIN /P',keys=b'F\rQ');assert not any(b'Match at' in s[-1] for s in r['snapshots'])
     r=check(payload,tail='TEST.BIN /P',keys=b'F   \rHQ');assert r['snapshots'][-1][-1].startswith(b'^R Up')
     spaces=b' '*128
@@ -217,6 +220,80 @@ def main():
     assert r['snapshots'][-1][0].startswith(b'00000000')
     r=check(payload,tail='TEST.BIN /P',keys=b'FZZ\rAQ',cancel_after=1)
     assert r['snapshots'][-1][-1].startswith(b'^R Up')
+    # Independent full-string and screen-cell assertions for exact range edges.
+    for compact in (False,True):
+        n=8 if compact else 16
+        for start,size in [(0,0),(0,1),(1,1),(7,2),(7,10),(15,2),(16,16),
+                           (127,2),(255,1),(255,2),(1001,23),(1023,1),
+                           (1023,0xffffffff)]:
+            end=min(len(payload),start+size)
+            options=f'TEST.BIN /FROM={start:X} /LEN={size:X}'+(' /40' if compact else '')
+            expected=[row(payload,i,compact,lower=start,end=end) for i in range(start//n*n,end,n)] if size else []
+            r=check(payload,tail=options)
+            assert r['output']==(('\r\n'.join(expected)+'\r\n\r\n').encode() if expected else b''),(options,r['output'])
+            r=check(payload,tail=options+' /P',width=40 if compact else 80)
+            if not size:
+                assert not r['snapshots'] and not r['reads']
+            else:
+                snap=r['snapshots'][0]
+                for i,line in enumerate(expected[:23]):assert snap[i].decode().startswith(line),(options,snap[i],line)
+                for line in snap[len(expected):23]:assert not line.strip(),(options,line)
+    for suffix in ['a','aH','Ah','0000000A']:
+        r=check(payload,tail='TEST.BIN /LEN='+suffix)
+        assert r['output']==(row(payload,end=10)+'\r\n\r\n').encode()
+    for value in ['','H','-1','+1','0x10','Z','1HH','100000000']:
+        for opts in [f'/LEN={value}',f'/LEN={value} /LEN=1']:
+            r=check(payload,tail='TEST.BIN '+opts)
+            assert not r['names'] and b'DUMP:' in r['output'],opts
+    for opts in ['/BARE /LEN=0','/LEN=1 /BARE','/FROM=400 /LEN=0',
+                 '/FROM=FFFF /FROM=0 /LEN=1']:
+        r=check(payload,tail='TEST.BIN '+opts)
+        assert b'DUMP:' in r['output'] and not r['reads'],opts
+    r=check(payload,tail='TEST.BIN /LEN=1 /LEN=2')
+    assert r['output']==(row(payload,end=2)+'\r\n\r\n').encode()
+    r=check(b'',tail='TEST.BIN /LEN=0 /P');assert r['output']==b'Empty file\r\n'
+    r=check(b'',tail='TEST.BIN /FROM=0 /LEN=0');assert b'out of range' in r['output']
+    r=check(payload,tail='TEST.BIN /FROM=7 /LEN=1 /P',keys=b'\x12\x03G8\r\x087\rQ')
+    assert r['snapshots'][1][-1].startswith(b'Beginning of file')
+    assert r['snapshots'][2][-1].startswith(b'End of file')
+    assert any(s[-1].startswith(b'Invalid input') for s in r['snapshots'])
+    assert r['snapshots'][-1][0].decode().startswith(row(payload,lower=7,end=8))
+    for compact in (False,True):
+        n=8 if compact else 16;cap=23*n
+        opts='TEST.BIN /FROM=7 /LEN=190 /P'+(' /40' if compact else '')
+        r=check(payload,tail=opts,keys=b'\x03\x12G8\rQ')
+        assert r['snapshots'][1][0].decode().startswith(row(payload,cap,compact,lower=7,end=407))
+        assert r['snapshots'][2][0].decode().startswith(row(payload,0,compact,lower=7,end=407))
+        assert r['snapshots'][-1][0].decode().startswith(row(payload,8//n*n,compact,lower=7,end=407))
+    r=check(payload,tail='TEST.BIN /FROM=7 /P',keys=b'\x12Q')
+    assert r['snapshots'][0][0].decode().startswith(row(payload,lower=7))
+    assert r['snapshots'][-1][-1].startswith(b'Beginning of file')
+    r=check(payload,tail='TEST.BIN /FROM=17 /P',keys=b'\x12Q')
+    assert r['snapshots'][-1][0].decode().startswith(row(payload))
+    # Search cannot match masked prefix/suffix bytes, even across a boundary.
+    r=check(payload,tail='TEST.BIN /FROM=7 /LEN=3 /P',keys=b'F06\rHF090A\rHQ')
+    assert r['snapshots'][-1][-1].startswith(b'Pattern not found')
+    r=check(payload,tail='TEST.BIN /FROM=7 /LEN=3 /P',keys=b'F07\rH,Q')
+    assert any(s[-1].startswith(b'Match at 00000007') for s in r['snapshots'])
+    assert r['snapshots'][-1][-1].startswith(b'No further matches')
+    # A partial end at a record boundary must never request the following record.
+    for paged in (False,True):
+        r=check(payload,tail='TEST.BIN /FROM=7F /LEN=1'+(' /P' if paged else ''),error=lambda rec,n:rec==1)
+        assert r['reads']==[0] and b'Read error' not in r['output']
+    r=check(payload,tail='TEST.BIN /FROM=7 /LEN=300 /P',keys=b'\x03Q',error=lambda rec,n:rec==3)
+    assert r['snapshots'][-1][0].decode().startswith(row(payload,lower=7,end=775))
+    assert r['snapshots'][-1][-1].startswith(b'Read error')
+    r=check(large,tail='TEST.BIN /FROM=10003 /LEN=10')
+    assert r['output']==(row(large,0x10000,lower=0x10003,end=0x10013)+'\r\n'+row(large,0x10010,lower=0x10003,end=0x10013)+'\r\n\r\n').encode()
+    r=check(payload,tail='/LEN=1h /FROM=7 /40 /P TEST.BIN',keys=b'G6\r\x087\rQ')
+    assert any(s[-1].startswith(b'Invalid input') for s in r['snapshots'])
+    assert r['snapshots'][-1][0].decode().startswith(row(payload,0,True,lower=7,end=8))
+    r=check(payload,tail='TEST.BIN /FROM=7 /P',keys=b'G0\rQ')
+    assert r['snapshots'][-1][0].decode().startswith(row(payload))
+    r=check(payload,tail='TEST.BIN /FROM=7 /P',keys=b'F00\rHQ')
+    assert r['snapshots'][-1][-1].startswith(b'Match at 00000100')
+    r=check(payload,tail='TEST.BIN /LEN=1 /BARE /VER')
+    assert r['output']==version_text().encode() and r['services']==[9]
     (ROOT/'build/utilities/dump-enhanced-tests.json').write_text(json.dumps({'status':'PASS','cases':count,'program_sha256':hashlib.sha256((ROOT/'build/utilities/DUMP.COM').read_bytes()).hexdigest(),'scope':'Compiled Z80 with hostile public BDOS fixture and independent typed-cell screen; not native platform evidence.'},indent=2)+'\n')
     print(f'PASS: {count} compiled enhanced DUMP output/parser/DU/viewer/editor/search/failure cases')
 

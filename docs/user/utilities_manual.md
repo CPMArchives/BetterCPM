@@ -79,6 +79,8 @@ DUMP file
 DUMP file /P
 DUMP file /40
 DUMP file /FROM=offset
+DUMP file /LEN=count
+DUMP file /FROM=offset /LEN=count
 DUMP file /P /40 /FROM=offset
 DUMP /BARE file
 DUMP /VER
@@ -90,26 +92,27 @@ If DUMP is on B0: and is not otherwise found by your command environment, use `B
 | --- | --- |
 | `/P` | Browse interactively with paging, Find, and Go To. Requires a loaded screen backend. |
 | `/40` | Show eight bytes per row in a layout that fits a 40-column screen. |
-| `/FROM=offset` | Begin at the row containing the specified hexadecimal byte position. |
+| `/FROM=offset` | Begin displaying at the exact hexadecimal byte position; earlier columns are blank. |
 | `/BARE` | Use the original CP/M hex-only display and interruption behavior. |
-| `/VER` | Show DUMP’s version and build, then return. Other arguments are ignored. |
+| `/LEN=count` | Display at most this many bytes, in hexadecimal; optional H/h suffix. |
+| `/VER` | Show DUMP’s version and revision, then return. Other arguments are ignored. |
 
-Options may appear before or after the filename and are case-insensitive. `/P`, `/40`, and `/FROM=` may be combined. `/BARE` cannot be combined with them. Repeating a flag is harmless. If `/FROM=` occurs more than once, the last value selects the starting position, but every supplied value must be valid and within the file.
+Options may appear before or after the filename and are case-insensitive. `/P`, `/40`, `/FROM=`, and `/LEN=` may be combined. `/BARE` cannot be combined with them. Repeating a flag is harmless. For `/FROM=` and `/LEN=`, the last value wins, but every occurrence must be valid. Every `/FROM=` must also identify a byte within the file.
 
 Supply exactly one filename. Enhanced modes accept a single drive/user-qualified name such as `B7:FILE.COM`. A drive-only name such as `B:FILE.COM` uses your current user area; an unqualified name uses your current drive and user. Wildcards, file selectors, multiple files, and multiple user areas are not accepted.
 
-`/FIND=` and `/LEN=` are not available. Unknown options, missing operands, incompatible combinations, and invalid values produce a diagnostic and return to the command prompt.
+`/FIND=` is not available. Unknown options, missing operands, incompatible combinations, and invalid values produce a diagnostic and return to the command prompt.
 
 `DUMP /VER` uses the standard BetterCP/M utility identification style:
 
 ```text
-DUMP 1.0 (Build 004)
+DUMP 1.0 (006)
   - - -
  | BetterCP/M Utilities
  | Hexadecimal File Display
 ```
 
-The build number changes with utility updates. Other DUMP commands do not display a sign-on banner.
+The revision number changes with executable updates. Other DUMP commands do not display a sign-on banner.
 
 ### Reading the display
 
@@ -131,7 +134,7 @@ Both layouts use eight-digit offsets, including for files larger than 64K. `/40`
 
 CP/M stores files in 128-byte records. DUMP displays all bytes in those records, including padding after the useful text or data. The text end marker `1Ah` is displayed as an ordinary byte; it does not stop DUMP. No tabs, line endings, or embedded terminal controls are interpreted as display instructions.
 
-Without `/P`, output continues to the end of the file. Ctrl-C stops this output and is consumed, so it does not remain waiting at the command prompt. Other keys do not stop enhanced streaming output. An empty file displays `Empty file` and returns, including when `/P` was requested.
+Without `/P`, output continues to the end of the file or the `/LEN=` limit. Ctrl-C stops this output and is consumed, so it does not remain waiting at the command prompt. Other keys do not stop enhanced streaming output. An empty file displays `Empty file` and returns, including when `/P` was requested.
 
 ### Starting at a particular position
 
@@ -141,11 +144,36 @@ Without `/P`, output continues to the end of the file. Ctrl-C stops this output 
 B0:DUMP A0:FILE.COM /FROM=1237H
 ```
 
-This begins at offset `00001230` in the normal layout: DUMP rounds down to the row containing the requested byte. In `/40` mode it rounds down to a multiple of eight instead of sixteen.
+This begins displaying byte `1237h`. The normal row address remains `00001230`; the first seven byte and ASCII positions are blank. `/40` also keeps aligned row addresses and columns, using multiples of eight. Bytes retain their usual columns.
 
 The position must identify an existing byte. The position immediately after the file’s last byte is invalid, as is any explicit position in an empty file. An invalid `/FROM=` reports an error without displaying file data.
 
 In the paged viewer, press G and enter a position. A successful Go To puts the containing row at the top. Press Enter on empty input or ESC to cancel without moving. Invalid input stays available for correction. To return to the beginning, press G, enter `0`, then press Enter.
+
+### Limiting the displayed range
+
+```text
+B0:DUMP A0:FILE.COM /FROM=7 /LEN=AH
+```
+
+This displays ten bytes, offsets `7h` through `10h`. `/LEN=` is hexadecimal,
+with one to eight digits and an optional H/h suffix, just like `/FROM=`. It counts
+bytes, including CP/M record padding, rather than lines. Excluded positions in
+both edge rows are blank in hex and ASCII. A count past EOF displays only the
+remaining bytes; even a start-plus-count beyond `FFFFFFFFh` stops at EOF without
+wrapping. `/LEN=0` displays no bytes and does not enter the viewer. It still checks
+the file and any explicit `/FROM=`; empty-file handling is unchanged.
+
+With `/P /LEN=`, the range stays fixed. Paging stops at its boundaries; the
+existing `Beginning of file` and `End of file` messages refer to those boundaries.
+Go To accepts only offsets within it and does not restart the count. Find searches
+only this range, and the entire match must fit. The first included byte is the
+search anchor when the row starts before the range.
+
+Without `/LEN=`, `/FROM=` selects only the initial position. You can still page
+back or Go To zero and search the whole file. Initial leading blanks disappear
+after successful repositioning; Go To and Find retain their usual containing-row
+display. A new Find starts at the first included byte of the current page.
 
 ### Preparing the paged viewer
 
@@ -248,7 +276,7 @@ There is no ASCII column or command bar. The four-digit offsets wrap to zero aft
 
 Any pending key stops output at a row boundary. Unlike enhanced mode, `/BARE` does not consume that key: it remains available to the command environment. An empty file produces no data rows or empty-file message. A missing file reports `NO INPUT FILE PRESENT ON DISK`. A nonzero read result ends output without distinguishing EOF from a read error.
 
-`/BARE` accepts an ordinary filename with optional drive qualification in your current user area. It rejects explicit user qualification such as `A0:FILE.COM`, as well as `/P`, `/40`, and `/FROM=`. The `B0:` prefix locating DUMP itself is independent of this operand restriction. You may put `/BARE` before or after the filename.
+`/BARE` accepts an ordinary filename with optional drive qualification in your current user area. It rejects explicit user qualification such as `A0:FILE.COM`, as well as `/P`, `/40`, `/FROM=`, and `/LEN=`. The `B0:` prefix locating DUMP itself is independent of this operand restriction. You may put `/BARE` before or after the filename.
 
 ### Messages and recovery
 

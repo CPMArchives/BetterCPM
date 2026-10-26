@@ -42,7 +42,7 @@ DTEND:
         LD (FNPTR),HL
         LD A,B
         LD (FNLEN),A
-        JR DTPASS
+        JP DTPASS
 DOPTION:
         LD DE,OPBARE
         CALL TOKENEQ
@@ -53,6 +53,27 @@ DOPTION:
         LD DE,OP40
         CALL TOKENEQ
         JR Z,DP40
+        LD HL,(TOKEN)
+        LD DE,OPLEN
+        LD B,5
+DPLENCHECK:
+        LD A,(DE)
+        CP (HL)
+        JR NZ,DPTRYFROM
+        INC HL
+        INC DE
+        DJNZ DPLENCHECK
+        LD A,(TOKLEN)
+        SUB 5
+        JP C,DPBADPOP
+        LD B,A
+        LD DE,COUNT
+        CALL PARSEHEX
+        JP C,DPBADPOP
+        LD A,1
+        LD (LENSET),A
+        JP DTPASS
+DPTRYFROM:
         LD HL,(TOKEN)
         LD DE,OPFROM
         LD B,6
@@ -76,15 +97,15 @@ DPFROMCHECK:
         CALL NC,COPY32
         LD A,1
         LD (FROMSET),A
-        JR DTPASS
+        JP DTPASS
 DPBARE:
         LD A,1
         LD (BARE),A
-        JR DTPASS
+        JP DTPASS
 DPPAGE:
         LD A,1
         LD (PAGED),A
-        JR DTPASS
+        JP DTPASS
 DP40:
         LD A,1
         LD (COMPACT),A
@@ -114,6 +135,9 @@ DPDONE:
         OR B
         LD B,A
         LD A,(FROMSET)
+        OR B
+        LD B,A
+        LD A,(LENSET)
         OR B
         JP NZ,DPBAD
 DPFILE:
@@ -348,3 +372,4 @@ OPBARE: DB '/BARE',0
 OPPAGE: DB '/P',0
 OP40: DB '/40',0
 OPFROM: DB '/FROM='
+OPLEN: DB '/LEN='

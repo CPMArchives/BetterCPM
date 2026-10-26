@@ -1,11 +1,11 @@
 # BetterCP/M DUMP.COM Engineering Specification
 
-**Enhanced read-only viewer design — consolidated 2026-10-22**
+**Enhanced read-only viewer design — range display revision 2026-10-26**
 
 ## 1. Status, scope and references
 
 This is the normative design for the enhanced DUMP. It supersedes the initial
-DRI-only specification and the subsequent review addendum. DUMP 1.0 Build 002 implements this design. Qualification scope and limitations
+DRI-only specification and the subsequent review addendum. DUMP 1.0 revision 006 implements this design. Qualification scope and limitations
 are recorded in [Enhanced DUMP Qualification](DUMP%20Enhanced%20Qualification.md);
 this is not a claim of final Utilities Disk acceptance.
 
@@ -32,6 +32,8 @@ Use the shared [DU syntax](208%20Extended%20DU%20Syntax.md) and
 DUMP file
 DUMP file /P
 DUMP file /FROM=offset
+DUMP file /LEN=count
+DUMP file /FROM=offset /LEN=count
 DUMP file /40
 DUMP file /P /40 /FROM=offset
 DUMP file /BARE
@@ -53,16 +55,15 @@ combinations. Print a diagnostic identifying the offending option or operand
 where applicable, then return to the CCP. Never fail silently. For example:
 
 ```text
-DUMP: Unknown option /LEN.
+DUMP: Invalid option or operand: /UNKNOWN
 ```
 
-Repeated independent flags are harmless. For value options such as `/FROM=`,
+Repeated independent flags are harmless. For value options such as `/FROM=` and `/LEN=`,
 the last valid value wins, but every occurrence must be valid; a later valid
 occurrence does not excuse an earlier malformed one.
 
-`/VER` ignores all other arguments. `/BARE` rejects `/P`, `/40`, `/FROM=` and all other
-extensions rather than ignoring them. Deferred `/FIND=` and `/LEN=` are unknown
-switches in this version.
+`/VER` ignores all other arguments. `/BARE` rejects `/P`, `/40`, `/FROM=`, `/LEN=`
+and all other extensions rather than ignoring them. Deferred `/FIND=` remains unknown.
 
 ### 2.1 File addressing
 
@@ -78,11 +79,11 @@ FCB construction; `/BARE` does not require using the CCP's original FCB.
 
 ## 3. Version identification
 
-`DUMP /VER` shall print the metadata-owned utility version and build using the
+`DUMP /VER` shall print the metadata-owned utility version and revision using the
 finalized compact implied-corner layout:
 
 ```text
-DUMP 1.0 (Build nnn)
+DUMP 1.0 (nnn)
   - - -
  | BetterCP/M Utilities
  | Hexadecimal File Display
@@ -165,9 +166,12 @@ missing digits, invalid characters and overflow without truncation or wrap.
 
 A position must name an existing byte: zero through record-length minus one.
 EOF itself is invalid. Check the supported BDOS position range as well as file
-length. Align successful positions downward to the containing data row: multiples
-of 16 in wide mode or eight in `/40`. That row becomes the first displayed row.
-For example, `/FROM=1237H` in wide mode begins at `00001230`.
+length. `/FROM=` begins displaying at the exact requested byte. Row addresses
+remain aligned to multiples of 16 in wide mode or eight in `/40`; byte and ASCII
+columns before the requested byte are spaces. For example, `/FROM=1237H` starts
+with row address `00001230`, seven blank byte/ASCII positions, then byte `1237h`.
+Do not shift bytes left or change subsequent row alignment. Go To still places
+the containing aligned row at the top; it does not introduce a new clipping boundary.
 
 An invalid or out-of-range `/FROM=` reports a diagnostic and exits without
 emitting file data; do not clamp it. Without `/FROM=`, start at zero.
@@ -183,10 +187,51 @@ retaining the entered text for editing. Use the shared bottom row for diagnostic
 and input; no extra row is reserved. Only successful Go To changes the page
 and resets the continuation anchor as defined in Section 10.
 
+### 6.1 Maximum byte count and interactive range
+
+`/LEN=count` accepts the same one-to-eight-digit hexadecimal syntax and optional
+H/h suffix as `/FROM=`. It is a maximum number of displayed file bytes, not an
+ending offset, row count or decimal quantity. Last valid value wins; validate
+every occurrence syntactically. Zero is valid and displays no data, performs no
+data reads and does not enter `/P`. File opening, explicit `/FROM=` bounds and
+physical-empty-file handling still occur first. Thus an empty file still says
+`Empty file`; explicit `/FROM=0` on it remains an error, even with `/LEN=0`.
+
+With `/LEN=`, the fixed range begins at the final `/FROM=` (default zero) and
+ends exclusively at the smaller of record EOF and the mathematical sum of start
+plus count. A sum beyond 32 bits saturates at EOF; never wrap or reject a valid
+count merely because fewer bytes remain. Numeric values longer than eight digits
+remain invalid. Validate every `/FROM=` against physical EOF as before.
+
+Only bytes within that interval are displayed. Blank both hex digits and the
+ASCII cell for every excluded position in the initial/final row, retaining all
+separators and the 76/37-column width. Emit no wholly excluded data rows. A count
+past EOF displays the available bytes without an error or artificial padding.
+Buffers retain aligned slots, with bounded additional counters only; excluded
+slots do not issue byte reads (BDOS still reads whole 128-byte records).
+
+In `/P`, `/LEN=` defines the fixed range for the whole invocation. Page Down
+adds the screen byte capacity and stops at its exclusive end. Page Up subtracts
+capacity and clamps to the aligned row containing the range start. The existing
+`Beginning of file` / `End of file` status messages denote range boundaries in
+this mode. Go To must name an existing byte inside the range; it retains the
+range and count, and places the containing row at the top. It does not restart
+the count. Invalid/cancelled/failed movement preserves the page and search state.
+Find and continuation stay inside the fixed range; the entire pattern must fit.
+Search and paging mask range-edge cells by the same rule as initial display.
+Continuation anchors use the first included byte when a row starts before the
+range. Existing overlap, cancellation and transactional error rules apply.
+
+Without `/LEN=`, `/FROM=` remains an initial position: subsequent paging, Go To
+and search can access the whole file, including earlier bytes. Only the initial
+page's leading cells are clipped at `/FROM=`; successful repositioning restores
+ordinary whole-row display. A new Find starts at the first included byte of that
+page. Go To and search continue to display their containing aligned row as before.
+
 ## 7. Enhanced streaming output
 
 Without `/P` or `/BARE`, display enhanced rows from the selected starting row
-through EOF, then return on a fresh line. No monitor provider is required.
+through the selected range (EOF when `/LEN=` is absent), then return on a fresh line. No monitor provider is required.
 
 Ctrl-C stops output and returns to the CCP; consume it so it is not pending
 at the next command prompt. Other keys are not dump-abort requests. WordStar
@@ -396,8 +441,7 @@ reporting contract justify it. The current CCP uppercases command tails,
 including quoted text, so command-line case-sensitive ASCII cannot be promised
 without a separate decision. Interactive Find preserves entered case.
 
-Defer `/LEN=` until its range, partial-row, overflow, EOF and `/P` semantics are
-defined. Neither deferred switch is accepted or ignored in this version.
+`/LEN=` is defined in Section 6.1; only `/FIND=` remains deferred.
 
 No editing, patching, memory/sector/track dumping, directory inspection or repair,
 file comparison, archive browsing, decompression, disassembly, multi-file viewing,
@@ -425,7 +469,10 @@ Required coverage includes:
 - Enhanced output: exact 76/37-column formats, every ASCII classification,
   eight-digit offsets beyond 64 KiB, final-record bytes and required `/40` in
   both streaming and paged modes; consumed streaming Ctrl-C.
-- Positions: all accepted numeric forms, aligned/unaligned `/FROM=` and Go To,
+- Positions: exact unaligned `/FROM=`, `/LEN=0/1`, partial initial/final rows,
+  range across rows/records/pages, count past EOF and 32-bit addition carry,
+  fixed-range paging/Go To/search and preservation without `/LEN=`,
+  all accepted numeric forms, aligned/unaligned Go To,
   overflow, EOF rejection, empty files, invalid-input correction and cancellation.
 - Screens: backend-reported dimensions, one shared row, different heights,
   missing capabilities, insufficient geometry, no silent fallback, horizontal
@@ -452,7 +499,7 @@ not be reported as passed.
 
 The consolidated contract above resolves the superseded baseline-only default,
 old `/VER`, variable-width offsets, optional `/40`, default-FCB assumption,
-ambiguous search state and provisional `/FIND=`/`/LEN=` proposals.
+ambiguous search state and provisional range proposals. `/FIND=` remains deferred.
 
 Implementation resolves the remaining bounded details as follows:
 

@@ -23,7 +23,7 @@ def main():
     if not a.utilities:add_file(raw,'DUMP.COM',(ROOT/'build/utilities/DUMP.COM').read_bytes())
     entry,blocks=add_file(raw,'DHEX.BIN',payload)
     add_file(raw,'DQDONE.COM',bytes.fromhex('110b010e09cd0500c30000')+b'DUMP RETURNED$')
-    batch=b'RSX LOAD M4SCRN\r\nRSX LOAD ADM3A\r\nDUMP DHEX.BIN /P\r\nDUMP DHEX.BIN /40 /P\r\nDQDONE\r\n\x1a'
+    batch=b'RSX LOAD M4SCRN\r\nRSX LOAD ADM3A\r\nDUMP DHEX.BIN /P\r\nDUMP DHEX.BIN /40 /P\r\nDUMP DHEX.BIN /FROM=7 /LEN=172 /P\r\nDUMP DHEX.BIN /FROM=7 /LEN=3 /40 /P\r\nDQDONE\r\n\x1a'
     if a.utilities:batch=batch.replace(b'DUMP DHEX',b'B:DUMP DHEX')
     add_file(raw,'STARTUP.SUB',batch)
     initial=bytes(raw);image=w/'private.dmk';image.write_bytes(build(raw))
@@ -46,6 +46,15 @@ def main():
     capture('cancel','., Match')
     cmd+=key_args('Q',delay=25)
     capture('compact','^R Up ^C Down F Find G Go Q Quit')
+    cmd+=key_args('Q',delay=25)
+    capture('range','^R Up ^C Down F Find G Go Q Quit')
+    cmd+=key_args('\x03',delay=25);capture('range-down','00000170')
+    cmd+=key_args('\x03',delay=25);capture('range-end','End of file')
+    cmd+=key_args('\x12',delay=25);capture('range-up','00000000')
+    cmd+=key_args('\x12',delay=25);capture('range-begin','Beginning of file')
+    cmd+=key_args('G178\r',delay=25);capture('range-goto','00000170')
+    cmd+=key_args('Q',delay=25)
+    capture('compact-range','^R Up ^C Down F Find G Go Q Quit')
     cmd+=key_args('Q',delay=25)+['-iw','DUMP RETURNED','-id','120','-it','-ix'];stages.append('returned')
     (w/'invocation.json').write_text(json.dumps(cmd,indent=2)+'\n');run(cmd,cwd=w,timeout=1200)
     files=sorted(w.glob('trs80-text-*.bin'),key=lambda f:int(f.stem.rsplit('-',1)[1]));assert len(files)==len(stages),(len(files),stages)
@@ -55,6 +64,12 @@ def main():
         assert screens[label][:76]==row(payload,pos).encode(),(label,screens[label][:80])
     assert files[stages.index('goprompt')].read_bytes()[23*80+14]==(ord('_')|128), 'software insertion cursor missing'
     assert screens['compact'][:37]==row(payload,0,True).encode()
+    for label,pos in [('range',0),('range-down',368),('range-end',368),('range-up',0),('range-begin',0),('range-goto',368)]:
+        assert screens[label][:76]==row(payload,pos,lower=7,end=377).encode(),(label,screens[label][:80])
+    assert not screens['range-down'][80:160].strip()
+    assert screens['compact-range'][:37]==row(payload,0,True,lower=7,end=10).encode()
+    assert screens['compact-range'][80:117]==row(payload,8,True,lower=7,end=10).encode()
+    assert not screens['compact-range'][160:240].strip()
     assert b'DUMP RETURNED' in screens['returned']
     after=bytes(extract_raw(image.read_bytes()))
     # Startup SUBMIT may create/retire its queue. Check the viewed file's
