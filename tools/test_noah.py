@@ -775,11 +775,12 @@ def main():
         assert all(ark_start <= address < ark_end
                    for address in layout['ark_writer_entries'].values())
         assert set(layout['ark_writer_entries']) == {
-            'ARK_BUILD_HEADER', 'ARK_WRITE_MEMBER', 'ARK_WRITE_END'}
+            'ARK_BUILD_HEADER', 'ARK_WRITE_MEMBER', 'ARK_WRITE_END', 'ARK_COPY_MEMBER'}
         expected_dispatch = {
             'NAW_BUILD_HEADER': ark_start + 27,
             'NAW_WRITE_MEMBER': ark_start + 30,
             'NAW_WRITE_END': ark_start + 33,
+            'NAW_COPY_MEMBER': ark_start + 36,
         }
         assert layout['ark_writer_dispatch'] == expected_dispatch
         overlay = image.overlay
@@ -789,7 +790,7 @@ def main():
         module_length = int.from_bytes(overlay[descriptor + 6:descriptor + 8], 'little')
         module_offset = 128 + (record - 1) * 128
         module = overlay[module_offset:module_offset + module_length]
-        for slot, entry in zip((27, 30, 33), ('ARK_BUILD_HEADER', 'ARK_WRITE_MEMBER', 'ARK_WRITE_END')):
+        for slot, entry in zip((27, 30, 33, 36), ('ARK_BUILD_HEADER', 'ARK_WRITE_MEMBER', 'ARK_WRITE_END', 'ARK_COPY_MEMBER')):
             assert module[slot] == 0xC3
             assert int.from_bytes(module[slot + 1:slot + 3], 'little') == layout['ark_writer_entries'][entry]
         assert build(a.assembler, work / 'repeat') == image
