@@ -11,7 +11,7 @@ from test_lbr import Reader
 from noah_overlays import assemble
 
 ROOT=Path(__file__).resolve().parents[1]
-ENTRIES=('ARK_OPEN','ARK_NEXT','ARK_RAW','ARK_CLOSE','READ_CB','WRITE_CB','ARK_TEST_STORED','ARK_BUILD_HEADER','ARK_WRITE_MEMBER','ARK_WRITE_END')
+ENTRIES=('ARK_OPEN','ARK_NEXT','ARK_RAW','ARK_CLOSE','READ_CB','WRITE_CB','ARK_TEST_STORED','ARK_BUILD_HEADER','ARK_WRITE_MEMBER','ARK_WRITE_END','ARK_COPY_MEMBER')
 
 
 def crc16(data):
@@ -69,7 +69,7 @@ class ArkReader(Reader):
 def build(out):
     out.mkdir(parents=True,exist_ok=True)
     source=' ORG 100H\n'+''.join((ROOT/'src/archive'/n).read_text()+'\n' for n in ('archive.inc','ark.inc','ark.mac','arkwrite.inc','arkwrite.mac'))
-    source+=' DW '+','.join(ENTRIES)+'\n ARK_CODE\n ARK_WRITE_CODE\nREAD_CB: RET\nWRITE_CB: RET\n END\n'
+    source+=''.join(' DW '+name+'\n' for name in ENTRIES)+' ARK_CODE\n ARK_WRITE_CODE\nREAD_CB: RET\nWRITE_CB: RET\n END\n'
     raw,_=assemble(Path.home()/'bin/z80asm',out,'ARKTEST',source)
     core=Path.home()/'projects/git/z80pack/z80core'
     (out/'sim.h').write_text('#define DEF_CPU Z80\n#define EXCLUDE_I8080\n')
@@ -302,7 +302,40 @@ def writer_stream(m):
     assert len(m.output)==29
     assert int.from_bytes(bytes(m.mem[c+74+42:c+74+46]),'little')==29
     assert int.from_bytes(bytes(m.mem[c+74+46:c+74+50]),'little')==len(payload)
-    print('PASS: ARC stream writer emits exact method-2 header/body/terminator bytes across 128-byte boundaries')
+
+    # Updates can retain members whose codec is opaque to this writer. Copy
+    # the original header and stored stream exactly, including legacy method 1.
+    for method in (1,2,4,5,8,9):
+        stored=bytes(range(251))*3+b'opaque-tail'
+        original=member(stored,method=method,name=b'RETAIN.DAT',logical=len(stored) if method==2 else 777)
+        m.configure(original+b'\x1a\0')
+        c=m.ctx
+        opened=m.call('ARK_OPEN');selected=m.call('ARK_NEXT')
+        assert opened==selected==0,(method,opened,selected,original[:29])
+        m.putword(c+20,0x7000)
+        m.putword(c+74+36,m.symbols['WRITE_CB'])
+        m.mem[c+74+42:c+74+46]=bytes(4)
+        assert call('ARK_COPY_MEMBER')==0
+        assert bytes(m.output)==original
+        assert int.from_bytes(bytes(m.mem[c+74+42:c+74+46]),'little')==len(original)
+        assert call('ARK_WRITE_END')==0
+        assert bytes(m.output)==original+b'\x1a\0'
+
+    # A reader failure after copying the header leaves only an unpublished
+    # partial file; a destination failure does not advance the write cursor.
+    retained=member(payload,method=8,name=b'RETAIN.DAT',logical=999)
+    m.configure(retained+b'\x1a\0');c=m.ctx
+    assert m.call('ARK_OPEN')==m.call('ARK_NEXT')==0
+    m.putword(c+20,0x7000);m.putword(c+74+36,m.symbols['WRITE_CB'])
+    m.read_error=29
+    assert raw_call('ARK_COPY_MEMBER')==4 and len(m.output)==29
+    m.configure(retained+b'\x1a\0');c=m.ctx
+    assert m.call('ARK_OPEN')==m.call('ARK_NEXT')==0
+    m.putword(c+20,0x7000);m.putword(c+74+36,m.symbols['WRITE_CB'])
+    m.write_error=29
+    assert raw_call('ARK_COPY_MEMBER')==12 and len(m.output)==29
+    assert int.from_bytes(bytes(m.mem[c+74+42:c+74+46]),'little')==29
+    print('PASS: ARC writer streams new members and preserves opaque retained member bytes exactly; errors prevent cursor advancement')
 
 
 def historical(m,out):
