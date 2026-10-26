@@ -86,6 +86,13 @@ FINDSTART:
         LD HL,PAGE
         LD DE,CAND
         CALL COPY32
+        LD DE,ACTIVELOW
+        CALL CMP32
+        JR NC,FSREADY
+        LD HL,ACTIVELOW
+        LD DE,CAND
+        CALL COPY32
+FSREADY:
         JP SEARCH
 FINDBAD:
         LD HL,BADINPUT
@@ -129,7 +136,10 @@ SEARCH:
         CALL SEARCHKEY
         JP C,FINDCANCEL
         LD HL,CAND
-        LD DE,LENGTH
+        LD DE,RANGELOW
+        CALL CMP32
+        JP C,SEARCHNONE
+        LD DE,RANGEEND
         CALL CMP32
         JP NC,SEARCHNONE
         LD HL,CAND
@@ -141,7 +151,16 @@ SEARCH:
 SEARCHBYTE:
         PUSH BC
         PUSH HL
+        LD HL,POS
+        LD DE,RANGEEND
+        CALL CMP32
+        JR NC,SBEOF
         CALL GETBYTE
+        JR SBDONE
+SBEOF:
+        LD A,1
+        SCF
+SBDONE:
         POP HL
         POP BC
         JR C,SEARCHREAD
@@ -191,6 +210,9 @@ SEARCHFOUND:
         LD DE,NEXT
         CALL COPY32
         CALL ALIGNNEXT
+        LD HL,RANGELOW
+        LD DE,STAGELOW
+        CALL COPY32
         CALL LOADPAGE
         JP C,MOVEERROR
         CALL COMMITPAGE

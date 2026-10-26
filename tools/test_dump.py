@@ -77,7 +77,7 @@ def main():
         if label.startswith('abort'):assert a['key_pending'] and 1 not in a['services']
         count+=1
     version,build=identities()['DUMP']
-    expected=(f'DUMP {version} (Build {build:03d})\r\n  - - -\r\n | BetterCP/M Utilities\r\n | Hexadecimal File Display\r\n').encode()
+    expected=(f'DUMP {version} ({build:03d})\r\n  - - -\r\n | BetterCP/M Utilities\r\n | Hexadecimal File Display\r\n').encode()
     for tail in ['/VER',' /ver  ','/VeR']:
         a=enhanced_execute(tail=tail);assert a['output']==expected and a['services']==[9];count+=1
     for tail in ['/VER x','x /VER','/VER /VER']:

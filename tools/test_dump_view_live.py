@@ -55,6 +55,16 @@ def main():
         step('returned',b'Q',b'A0>_ ')
         step('compact',(b'B:DUMP' if a.utilities else b'DUMP')+b' DHEX.BIN /40 /P\r',hints)
         step('done',b'Q',b'A0>_ ')
+        command_name=b'B:DUMP' if a.utilities else b'DUMP'
+        step('range',command_name+b' DHEX.BIN /FROM=7 /LEN=172 /P\r',hints)
+        step('range-down',b'\x03',hints)
+        step('range-end',b'\x03',b'End of file')
+        step('range-up',b'\x12',hints)
+        step('range-begin',b'\x12',b'Beginning of file')
+        step('range-goto',b'G178\r',hints)
+        step('range-return',b'Q',b'A0>_ ')
+        step('compact-range',command_name+b' DHEX.BIN /FROM=7 /LEN=3 /40 /P\r',hints)
+        step('compact-range-return',b'Q',b'A0>_ ')
     finally:
         os.kill(pid,signal.SIGTERM)
         deadline=time.monotonic()+1
@@ -67,6 +77,12 @@ def main():
     for label,pos in [('wide',0),('down',368),('goto',0),('match',112),('next',368),('previous',112),('cancel',112)]:
         assert screens[label][0].startswith(row(payload,pos)),(label,screens[label][0])
     assert screens['compact'][0].startswith(row(payload,0,True))
+    for label,pos in [('range',0),('range-down',368),('range-end',368),('range-up',0),('range-begin',0),('range-goto',368)]:
+        assert screens[label][0].startswith(row(payload,pos,lower=7,end=377)),(label,screens[label][0])
+    assert not screens['range-down'][1].strip()
+    assert screens['compact-range'][0].startswith(row(payload,0,True,lower=7,end=10))
+    assert screens['compact-range'][1].startswith(row(payload,8,True,lower=7,end=10))
+    assert not screens['compact-range'][2].strip()
     extracted=w/'readback.bin';command('cpmcp','-f','bettercpm-default',str(image),'0:DHEX.BIN',str(extracted));assert extracted.read_bytes()==payload
     command('fsck.cpm','-f','bettercpm-default','-n',str(image));assert sha(original)==report['sha256']
     # Loading RSXs can change access metadata; independently assert file payload

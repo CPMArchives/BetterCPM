@@ -1,0 +1,160 @@
+{
+  "schema": 1,
+  "component": "utility:DUMP",
+  "version": "1.0",
+  "revision": 6,
+  "status": "PASS within stated qualification scope",
+  "program": {
+    "bytes": 14537,
+    "sha256": "3734f5fe0750a52328cc9cf02be502076f0c29f6b7279d0b7789d8596bbf9576"
+  },
+  "native_parity": true,
+  "results": {
+    "cpmsim": {
+      "status": "PASS",
+      "program_sha256": "3734f5fe0750a52328cc9cf02be502076f0c29f6b7279d0b7789d8596bbf9576",
+      "baseline_sha256": "75e0ae5e15972fc92579fe3924a28c9d32c7e23cc6431bd932b54ef0841a9c13",
+      "initial_private_image_sha256": "af082ad7cc7c5a61c8850f533ea1519c7e3e41c4a439781c50df0deb5c6d4d1b",
+      "stages": [
+        "backend",
+        "monitor",
+        "wide",
+        "down",
+        "goto",
+        "match",
+        "next",
+        "previous",
+        "cancel",
+        "returned",
+        "compact",
+        "done",
+        "range",
+        "range-down",
+        "range-end",
+        "range-up",
+        "range-begin",
+        "range-goto",
+        "range-return",
+        "compact-range",
+        "compact-range-return"
+      ],
+      "scope": "Actual cpmsim with shipped ANSISCRN and ANSI, independent pyte cell screens: both layouts, paging, Go To, record-crossing forward/backward Find, ESC cancellation, CCP return; fixture data preserved and filesystem clean."
+    },
+    "cpmsim-packaged": {
+      "status": "PASS",
+      "program_sha256": "3734f5fe0750a52328cc9cf02be502076f0c29f6b7279d0b7789d8596bbf9576",
+      "baseline_sha256": "75e0ae5e15972fc92579fe3924a28c9d32c7e23cc6431bd932b54ef0841a9c13",
+      "initial_private_image_sha256": "a0de1560fb02c21cadfdc7c9e0dda90caf1abab44a0529c532ecf025a58629e8",
+      "stages": [
+        "backend",
+        "monitor",
+        "wide",
+        "down",
+        "goto",
+        "match",
+        "next",
+        "previous",
+        "cancel",
+        "returned",
+        "compact",
+        "done",
+        "range",
+        "range-down",
+        "range-end",
+        "range-up",
+        "range-begin",
+        "range-goto",
+        "range-return",
+        "compact-range",
+        "compact-range-return"
+      ],
+      "scope": "Actual cpmsim with shipped ANSISCRN and ANSI, independent pyte cell screens: both layouts, paging, Go To, record-crossing forward/backward Find, ESC cancellation, CCP return; fixture data preserved and filesystem clean."
+    },
+    "model4-native": {
+      "status": "PASS",
+      "program_sha256": "3734f5fe0750a52328cc9cf02be502076f0c29f6b7279d0b7789d8596bbf9576",
+      "source_image_sha256": "40e7ddeccf2bc0720179045785ed56fd41658c0ab1d6b957e178fdf1e813f72f",
+      "stages": [
+        "wide",
+        "down",
+        "goprompt",
+        "goto",
+        "match",
+        "next",
+        "previous",
+        "cancel",
+        "compact",
+        "range",
+        "range-down",
+        "range-end",
+        "range-up",
+        "range-begin",
+        "range-goto",
+        "compact-range",
+        "returned"
+      ],
+      "scope": "Actual Model 4 execution with shipped monitor/backend: wide/compact page cells, Ctrl-C Page Down, Go To with all four WordStar edit keys and software cursor, cross-record forward/backward Find, physical CLEAR cancellation, direct CCP return and unchanged input allocations/attributes and clean independent filesystem check (startup queue activity is separate)."
+    },
+    "model4-packaged": {
+      "status": "PASS",
+      "program_sha256": "3734f5fe0750a52328cc9cf02be502076f0c29f6b7279d0b7789d8596bbf9576",
+      "source_image_sha256": "40e7ddeccf2bc0720179045785ed56fd41658c0ab1d6b957e178fdf1e813f72f",
+      "stages": [
+        "wide",
+        "down",
+        "goprompt",
+        "goto",
+        "match",
+        "next",
+        "previous",
+        "cancel",
+        "compact",
+        "range",
+        "range-down",
+        "range-end",
+        "range-up",
+        "range-begin",
+        "range-goto",
+        "compact-range",
+        "returned"
+      ],
+      "scope": "Actual Model 4 execution with shipped monitor/backend: wide/compact page cells, Ctrl-C Page Down, Go To with all four WordStar edit keys and software cursor, cross-record forward/backward Find, physical CLEAR cancellation, direct CCP return and unchanged input allocations/attributes and clean independent filesystem check (startup queue activity is separate)."
+    },
+    "compiled-enhanced": {
+      "status": "PASS",
+      "cases": 174,
+      "program_sha256": "3734f5fe0750a52328cc9cf02be502076f0c29f6b7279d0b7789d8596bbf9576",
+      "scope": "Compiled Z80 with hostile public BDOS fixture and independent typed-cell screen; not native platform evidence."
+    },
+    "compiled-bare-version": {
+      "status": "PASS",
+      "cases": 19,
+      "dri_sha256": "f8dd3bb2c9c2082742307f5992f13f2d3057f9e40c55433637c0d59eac338044",
+      "dump_sha256": "3734f5fe0750a52328cc9cf02be502076f0c29f6b7279d0b7789d8596bbf9576",
+      "scope": "Actual compiled programs; synthetic public BDOS record/status fixture. Direct RET/stack balance, output and pending character checked; not live platform qualification."
+    },
+    "cpmsim-streaming": {
+      "status": "PASS",
+      "baseline_sha256": "75e0ae5e15972fc92579fe3924a28c9d32c7e23cc6431bd932b54ef0841a9c13",
+      "program_sha256": "3734f5fe0750a52328cc9cf02be502076f0c29f6b7279d0b7789d8596bbf9576",
+      "transcript_sha256": "b008d363683cc598c321f1e6db8a95aed837c4737e7e8bbfc4e796aad1957c2d",
+      "scope": "Enhanced DUMP live cpmsim on accepted V052 BetterCP/M image: version, exact 256-byte output, empty/missing input, A0 program invoked from A3 with caller user preserved; source data and baseline unchanged; filesystem check."
+    }
+  },
+  "media": {
+    "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk": {
+      "sha256": "ac52f0d29a9701888fa765348deeaa018658cd679b5eed0ccdf36a764e4debac",
+      "status": "PROVISIONAL; file readback/filesystem pass, native roundtrip pass"
+    },
+    "BetterCPM-Utilities-z80pack-332K.dsk": {
+      "sha256": "d5163336815f40b79e4258c7b9ed20b2eb86051109ca90451f0971b31f54908c",
+      "status": "PROVISIONAL; file readback/filesystem pass, native roundtrip pass"
+    }
+  },
+  "limits": [
+    "Emulated platforms, not physical hardware certification",
+    "Distinguishable faults exercised in compiled fixture; no physical disk-fault claim",
+    "Provisional Utilities media; no unrelated component or full package release acceptance",
+    "Initial sandbox application launch failures were pre-execution and excluded from passing results"
+  ]
+}

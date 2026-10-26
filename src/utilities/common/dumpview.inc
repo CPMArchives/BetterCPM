@@ -153,6 +153,17 @@ RENDER:
         LD HL,PAGEBUF
         LD (RENDERPTR),HL
         LD HL,(PAGECOUNT)
+        ; Round slot count up for rendering the final masked row.
+        LD A,(ROWBYTES)
+        DEC A
+        LD E,A
+        LD D,0
+        ADD HL,DE
+        LD A,(ROWBYTES)
+        DEC A
+        CPL
+        AND L
+        LD L,A
         LD (REMAIN),HL
         XOR A
         LD (ROWNUM),A
@@ -222,15 +233,20 @@ PAGEDOWN:
         LD HL,NEXT
         LD DE,(PAGESIZE)
         CALL ADD16
-        LD DE,LENGTH
+        LD DE,RANGEEND
         CALL CMP32
         JR C,DOMOVE
         LD HL,ENDMSG
         CALL STATUS
         JP VIEWLOOP
 PAGEUP:
+        LD HL,RANGELOW
+        LD DE,NEXT
+        CALL COPY32
+        CALL ALIGNNEXT
         LD HL,PAGE
-        CALL NONZERO
+        LD DE,NEXT
+        CALL CMP32
         JR NZ,PUMOVE
         LD HL,BEGMSG
         CALL STATUS
@@ -248,17 +264,20 @@ PUMOVE:
         LD DE,0
         SBC HL,DE
         LD (NEXT+2),HL
-        JR NC,DOMOVE
-        XOR A
+        JR C,PUCLAMP
         LD HL,NEXT
-        LD (HL),A
-        INC HL
-        LD (HL),A
-        INC HL
-        LD (HL),A
-        INC HL
-        LD (HL),A
+        LD DE,RANGELOW
+        CALL CMP32
+        JR NC,DOMOVE
+PUCLAMP:
+        LD HL,RANGELOW
+        LD DE,NEXT
+        CALL COPY32
+        CALL ALIGNNEXT
 DOMOVE:
+        LD HL,RANGELOW
+        LD DE,STAGELOW
+        CALL COPY32
         CALL LOADPAGE
         JR C,MOVEERROR
         CALL COMMITPAGE
@@ -272,6 +291,13 @@ RESETANCHOR:
         LD HL,PAGE
         LD DE,ANCHOR
         CALL COPY32
+        LD DE,ACTIVELOW
+        CALL CMP32
+        JR NC,RAREADY
+        LD HL,ACTIVELOW
+        LD DE,ANCHOR
+        CALL COPY32
+RAREADY:
         XOR A
         LD (MATCHED),A
         RET
@@ -288,9 +314,12 @@ GOCHECK:
         CALL PARSEHEX
         JR C,GOBAD
         LD HL,NEXT
-        LD DE,LENGTH
+        LD DE,RANGEEND
         CALL CMP32
         JR NC,GOBAD
+        LD DE,RANGELOW
+        CALL CMP32
+        JR C,GOBAD
         CALL ALIGNNEXT
         JP DOMOVE
 GOBAD:
