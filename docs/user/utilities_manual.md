@@ -4,9 +4,13 @@ This manual explains how to use the programs supplied on the BetterCP/M Utilitie
 
 The Utilities Disk is being assembled separately from the System Disk. This manual covers DUMP, the initial DDT debugger adaptation, the six standalone compression utilities SQ, USQ, CR, UNCR, LZH and UNLZH, TED, DASM with its DSYM/DLINK companions, and the original ZSM4/LINK development tools. Chapters for other utilities will be added as those programs are completed and selected for distribution.
 
+The COMPARE chapter describes a development utility. COMPARE is not yet qualified
+or included in current Utilities Disk images.
+
 ## Contents
 
 - [Using the Utilities Disk](#using-the-utilities-disk)
+- [COMPARE binary file comparison](#compare-binary-file-comparison)
 - [DUMP hexadecimal file viewer](#dump-hexadecimal-file-viewer)
   - [Quick start](#quick-start)
   - [Command syntax and options](#command-syntax-and-options)
@@ -51,6 +55,145 @@ B0:DUMP A0:README.TXT
 Here, `B0:` locates DUMP itself; `A0:` locates the file it will display. The file operand uses its own drive and user qualification independently of the program’s location. A filename without qualification refers to the caller’s current drive and user area.
 
 In syntax descriptions, `file` and `offset` are placeholders to replace with your own values. `Ctrl-S` means hold Control while pressing S. Do not type the word “Ctrl” or the hyphen.
+
+## COMPARE binary file comparison
+
+**Development utility — qualification pending.** This chapter describes the
+implemented interface. The [engineering specification](../engineering/COMPARE%20Specification.md)
+records the approved design decisions and narrow display layout.
+
+COMPARE compares exactly two files without changing either file, its directory
+entry or its attributes. Use it to check a rebuilt program against a reference,
+examine a patch, or verify a copied file. It compares binary bytes; use DIFF for
+line-oriented text differences.
+
+### Starting a comparison
+
+```text
+COMPARE OLD.COM NEW.COM
+COMPARE /SIDE A0:OLD.COM B7:NEW.COM
+COMPARE /SUMMARY OLD.COM NEW.COM
+COMPARE /FROM=0205H /FROM2=0208H /LEN=0100H /SIDE A.BIN B.BIN
+```
+
+If the utility is on B0: and is not otherwise found by your command environment,
+use `B0:COMPARE`. Options may precede, separate or follow the filenames; option
+names are case-insensitive. Supply exactly two filenames. Each may have its own
+drive and user qualification. Omitted drive or user selections inherit those
+of the caller. Comparing a file with itself is allowed. Wildcards, drive/user
+lists or ranges, and extra filenames are rejected.
+
+### COMPARE options
+
+| Option | Effect |
+| --- | --- |
+| `/LIST` | List individual differences; the default mode. |
+| `/SIDE` | Display corresponding hexadecimal bytes side by side, eight per file per row. |
+| `/SUM`, `/SUMMARY` | Show totals and the result without detailed output. |
+| `/COUNT=n` | Limit the number of displayed `/LIST` entries; default 20. |
+| `/ALL` | Display every differing position in `/LIST`. |
+| `/FROM=hex[H]` | Start both files at this byte offset unless `/FROM2` overrides file 2. |
+| `/FROM2=hex[H]` | Set file 2's starting offset independently. |
+| `/LEN=hex[H]` | Examine at most this many comparison positions. |
+| `/P` | Pause between pages in `/LIST` or `/SIDE`. |
+| `/40` | Four compact bytes per file per row, with both offsets and the marker, in 38 columns. |
+| `/VER` | Display the utility's version and revision without accessing files. |
+| `/HELP` | Display command help without opening files. |
+
+Choose one display mode. `/COUNT` and `/ALL` apply only to `/LIST` and cannot be
+combined. `/P` cannot be combined with summary-only mode; `/40` requires `/SIDE`.
+Repeated identical flags are harmless. Invalid combinations produce an error
+before either file is opened. An exact `/VER` token takes precedence over other
+arguments. Otherwise, an exact `/HELP` token shows help and ignores other
+arguments without accessing files. `/VER` wins if both queries are present.
+
+Offsets and `/LEN` values are hexadecimal, with one to eight digits and an
+optional trailing `H`. Thus `/LEN=0100` means 256 positions. `/COUNT` accepts
+decimal values from 1 through 65,535; zero and larger values are errors.
+Use `/ALL` for unlimited listing. `/LEN=0` selects an empty range.
+
+### Bytes, ranges and results
+
+COMPARE includes every byte in each 128-byte CP/M logical record, including
+final-record padding. `1Ah` is an ordinary byte. No line endings, tabs or high
+bits are translated. File lengths are full logical-record lengths in decimal
+bytes; display offsets are zero-based hexadecimal positions and can exceed 64K.
+
+Without range options, the comparison starts at zero in both files and continues
+until both reach EOF. `/FROM` sets both starting offsets; `/FROM2` overrides the
+second independently, regardless of switch order. `/FROM2=0300` alone starts
+file 1 at zero and file 2 at `0300H`. `/LEN` limits comparison positions, rather
+than limiting each file to an absolute ending offset.
+
+A byte against the same byte matches. Two unequal bytes count as a byte mismatch;
+a byte against EOF counts as an additional byte in the file containing it.
+These categories are reported separately. Starting beyond EOF is permitted.
+When neither side has data left, comparison stops without inventing differences.
+
+The final summary gives full file lengths, mismatch and additional-byte totals,
+and the selected range when applicable. `FILES IDENTICAL` requires established
+equality of the complete files. `SELECTED RANGES IDENTICAL` describes only the
+chosen regions; differences elsewhere may still exist. Unequal full lengths
+are reported separately. An empty selected range does not establish full-file
+identity. Independently offset comparisons always report selected-range results.
+
+### Reading comparison output
+
+`/LIST` shows absolute offsets and unequal byte values. When starting offsets
+differ, both offsets are shown. A missing byte is marked `---- EOF ----`.
+The default limit of 20 entries, `/COUNT`, and `/ALL` control display only:
+comparison continues and the final totals cover the complete selected range.
+
+`/SIDE` shows matching rows as well as differing rows. A fixed `<>` marker
+identifies rows containing any difference, including a byte against EOF.
+Offsets use eight uppercase hexadecimal digits; bytes use two.
+
+File 1 determines row boundaries. An unaligned start leaves leading byte slots
+blank, and a partial final row leaves trailing slots blank. Corresponding bytes
+in file 2 occupy the same horizontal slots, even if its offsets have different
+alignment. Its row label is the conceptual address of slot zero, which may
+precede the first byte actually shown. A negative conceptual row base appears
+as `--------`; this is an alignment placeholder, not EOF. For example,
+`/FROM=0007 /FROM2=0000` labels the first row `00000000` and `--------`.
+
+When one file is exhausted and the other still has bytes, its first fully absent
+row displays `---- EOF ----`; later exhausted rows may remain blank. Existing
+bytes in a partial row remain visible, with unavailable slots left blank; no
+EOF banner is overlaid on that row. In `/40`, the EOF label is shortened to `EOF`
+and padded within the byte field.
+
+`/40` removes spaces between the four byte values on each side. Two spaces
+separate each offset from its byte field; the central marker occupies two
+fixed columns. Data rows use 38 columns:
+
+```text
+00000004        54<>--------        20
+00000008  47495441<>00000001  54414C20
+```
+
+### Paging and errors
+
+`/P` provides forward-only pages using ordinary console output. On a 24-row
+console it reserves the bottom row for the prompt, leaving 23 content rows.
+Press Space or Enter for the next page. Ctrl-C at the prompt stops detailed
+display and further prompts, but comparison continues silently:
+
+```text
+DISPLAY INTERRUPTED
+COMPARISON CONTINUING...
+```
+
+The complete final summary is then printed. Q and Esc at the prompt have the
+same display-stop behavior. There is no backward paging or screen redraw, and
+no particular terminal personality or monitor is required.
+
+During non-paged output, Ctrl-C cancels the operation cleanly and reports
+`COMPARISON INCOMPLETE`. No completed-comparison result is printed; any partial
+statistics are explicitly labelled incomplete.
+
+A file-open error identifies the affected file. A read failure prevents a
+completed comparison result; partial totals must not be treated as complete.
+Handled exits close opened files and restore the caller's drive and user area.
 
 ## DUMP hexadecimal file viewer
 

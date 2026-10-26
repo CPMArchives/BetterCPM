@@ -45,6 +45,13 @@ All membership or layout changes require discussion with the maintainer.
 
 ## Utilities Disk
 
+- COMPARE.COM: development binary file comparison, reporting differing
+  byte values and absolute offsets, with selected ranges, side-by-side hexadecimal
+  display, summary-only reporting and forward-only pagination; [engineering
+  specification](../engineering/COMPARE%20Specification.md). Development implementation
+  exists; Model 4 qualification and final Utilities Disk acceptance are pending.
+  The development executable is not yet included in release disk images.
+
 - XSUB.COM
 - DUMP.COM: enhanced read-only hex/ASCII viewer with `/P`, required `/40`, `/FROM=`, exact DU access, interactive Find/Go To, sealed DRI `/BARE`, and visually styled `/VER`; [engineering specification](../engineering/DUMP%20Specification.md).
 - TED.COM: selected full-screen editor adaptation of Hector Peraza's TED, with

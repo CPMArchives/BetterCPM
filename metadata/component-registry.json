@@ -953,6 +953,26 @@
       "dependency_status": "tracked-conservative",
       "display_format": "numeric",
       "description": "Full-screen Text Editor"
+    },
+    "utility:COMPARE": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/compare.mac",
+        "src/utilities/common/compareparse.inc",
+        "src/utilities/common/compareio.inc",
+        "src/utilities/common/comparedisplay.inc"
+      ],
+      "builders": [
+        "tools/build_compare.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "explicit selected dependency closure",
+      "display_format": "numeric",
+      "description": "Binary File Comparison"
     }
   },
   "legacy_utility_order": [
@@ -997,7 +1017,8 @@
     "DASM",
     "DSYM",
     "DLINK",
-    "TED"
+    "TED",
+    "COMPARE"
   ],
   "legacy_subsystem_rows": [
     {

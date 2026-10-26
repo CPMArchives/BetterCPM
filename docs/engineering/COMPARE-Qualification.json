@@ -1,0 +1,29 @@
+{
+  "component": "COMPARE",
+  "identity": "1.0 (001-dev)",
+  "executable_bytes": 6214,
+  "sha256": "d1d10f76b9b0fb6205e9d37f84fa07b352b94b16177a95f79f4e1ff3e53c2ef1",
+  "compiled_tests": {
+    "status": "PASS",
+    "cases": 87,
+    "scope": "Compiled COM under hostile public-BDOS fixture; not live platform qualification"
+  },
+  "native_zsm4_link": {
+    "result": "PASS",
+    "byte_identical": true
+  },
+  "cpmsim": {
+    "binary_sha256": "d1d10f76b9b0fb6205e9d37f84fa07b352b94b16177a95f79f4e1ff3e53c2ef1",
+    "scope": "focused platform execution; final Utilities Disk acceptance not asserted",
+    "cpmsim": {
+      "result": "PASS",
+      "whole_disk_unchanged": true
+    }
+  },
+  "model4": {
+    "result": "BLOCKED",
+    "reason": "macOS application launch error -10827; direct launch aborted with SIGABRT before guest captures"
+  },
+  "component_qualified": false,
+  "utilities_disk_accepted": false
+}

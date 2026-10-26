@@ -1,0 +1,743 @@
+; COMPARE: bounded, read-only binary comparison through CP/M 2.2 BDOS.
+; IX is a file descriptor (FCB first). SERVICE preserves BC/DE/HL/IX.
+BDOS EQU 5
+FU EQU 36
+FO EQU 37
+FL EQU 38
+FP EQU 42
+FK EQU 46
+FC EQU 49
+FA EQU 50
+FV EQU 51
+FE EQU 52
+FB EQU 55
+FN EQU 53
+FS EQU 184
+        CSEG
+        .PHASE 0103H
+START:
+        LD (OLDSP),SP
+        LD SP,STKTOP
+        LD HL,STATE
+        LD DE,STATE+1
+        LD BC,STATEEND-STATE-1
+        LD (HL),0
+        LDIR
+        CALL TOKENIZE
+        LD HL,OPVER
+        CALL QUERY
+        JP Z,VERSION
+        LD HL,OPHELP
+        CALL QUERY
+        JP Z,HELP
+        LD C,25
+        CALL SERVICE
+        LD (ODRIVE),A
+        LD E,255
+        LD C,32
+        CALL SERVICE
+        LD (OUSER),A
+        LD A,8
+        LD (WIDTH),A
+        LD HL,20
+        LD (LIMIT),HL
+        CALL PARSE
+        JP C,EXIT
+        LD IX,FILE1
+        CALL OPENFILE
+        JP C,EXIT
+        LD IX,FILE2
+        CALL OPENFILE
+        JP C,EXIT
+        CALL RANGE
+        JP C,OVERFLOW
+        LD A,(MODE)
+        CP 2
+        JR Z,COMPARE
+        LD HL,NAME1
+        CALL TEXT
+        LD HL,(FILE1+FN)
+        CALL TEXT
+        CALL LINE
+        LD HL,NAME2
+        CALL TEXT
+        LD HL,(FILE2+FN)
+        CALL TEXT
+        CALL LINE
+        LD A,(MODE)
+        CP 1
+        JR Z,COMPARE
+        LD HL,LISTHEAD
+        CALL TEXT
+        CALL LINE
+COMPARE:
+        LD HL,LEFT
+        CALL NZ32
+        JP Z,FINISH
+        CALL POLL
+        JP C,CANCEL
+        LD IX,FILE1
+        CALL GETBYTE
+        JP C,READERROR
+        LD IX,FILE2
+        CALL GETBYTE
+        JP C,READERROR
+        XOR A
+        LD (DIFF),A
+        LD A,(FILE1+FA)
+        OR A
+        JR Z,ONLY2
+        LD A,(FILE2+FA)
+        OR A
+        JR Z,ONLY1
+        LD HL,PAIRS
+        CALL INC32
+        LD A,(FILE1+FV)
+        LD B,A
+        LD A,(FILE2+FV)
+        CP B
+        JR Z,DETAIL
+        LD HL,MISMATCH
+        CALL INC32
+        JR DIFFERENT
+ONLY1:
+        LD HL,EXTRA1
+        CALL INC32
+        JR DIFFERENT
+ONLY2:
+        LD HL,EXTRA2
+        CALL INC32
+DIFFERENT:
+        LD A,1
+        LD (DIFF),A
+        LD HL,DIFFCNT
+        CALL INC32
+DETAIL:
+        LD A,(STOPPED)
+        OR A
+        JR NZ,ADVANCE
+        LD A,(MODE)
+        CP 2
+        JR Z,ADVANCE
+        CP 1
+        JR Z,SIDEBYTE
+        LD A,(DIFF)
+        OR A
+        CALL NZ,LISTBYTE
+        JR ADVANCE
+SIDEBYTE:
+        CALL STAGEBYTE
+ADVANCE:
+        LD HL,EXAMINED
+        CALL INC32
+        LD HL,LEFT
+        CALL DEC32
+        CALL NZ32
+        JP Z,FINISH
+        LD HL,FILE1+FP
+        CALL INC32
+        LD HL,FILE2+FP
+        CALL INC32
+        JP COMPARE
+FINISH:
+        LD A,(MODE)
+        CP 1
+        JR NZ,SUMMARY
+        LD A,(STOPPED)
+        OR A
+        JR NZ,SUMMARY
+        LD A,(ROWACTIVE)
+        OR A
+        CALL NZ,RENDER
+SUMMARY:
+        XOR A
+        LD (PAGED),A
+        LD HL,SUMHEAD
+        CALL TEXT
+        CALL LINE
+        LD HL,NAME1
+        CALL TEXT
+        LD HL,(FILE1+FN)
+        CALL TEXT
+        CALL LINE
+        LD HL,NAME2
+        CALL TEXT
+        LD HL,(FILE2+FN)
+        CALL TEXT
+        CALL LINE
+        LD HL,FILE1+FL
+        LD DE,LENGTH1
+        CALL STAT
+        LD HL,FILE2+FL
+        LD DE,LENGTH2
+        CALL STAT
+        LD A,(RANGED)
+        OR A
+        JR Z,SUMCOUNTS
+        LD HL,STARTMSG
+        CALL TEXT
+        LD HL,START1
+        CALL HEX32
+        LD HL,SEP
+        CALL TEXT
+        LD HL,START2
+        CALL HEX32
+        CALL LINE
+        LD A,(LENSET)
+        OR A
+        JR Z,SUMCOUNTS
+        LD HL,LENMSG
+        CALL TEXT
+        LD HL,LENGTH
+        CALL HEX32
+        CALL LINE
+SUMCOUNTS:
+        LD HL,EXAMINED
+        LD DE,EXMSG
+        CALL STAT
+        LD HL,PAIRS
+        LD DE,PAIRMSG
+        CALL STAT
+        LD HL,MISMATCH
+        LD DE,MISMSG
+        CALL STAT
+        LD HL,EXTRA1
+        LD DE,EXT1MSG
+        CALL STAT
+        LD HL,EXTRA2
+        LD DE,EXT2MSG
+        CALL STAT
+        LD A,(MODE)
+        OR A
+        JR NZ,SUMRESULT
+        LD HL,DIFFCNT
+        LD DE,TEMP
+        CALL COPY32
+        LD HL,DISPLAYED
+        LD DE,TEMP
+        CALL SUB32
+        LD HL,TEMP
+        LD DE,HIDDENMSG
+        CALL STAT
+SUMRESULT:
+        LD HL,FILE1+FL
+        LD DE,FILE2+FL
+        CALL CMP32
+        JR Z,SUMEQUALSIZE
+        LD HL,SIZEDIFF
+        CALL TEXT
+        CALL LINE
+SUMEQUALSIZE:
+        LD A,(RANGED)
+        OR A
+        JR Z,SUMFULL
+        LD HL,EXAMINED
+        CALL NZ32
+        JR NZ,SUMRANGE
+        LD HL,EMPTYMSG
+        CALL TEXT
+        CALL LINE
+        JP EXIT
+SUMRANGE:
+        LD HL,RANGEEQ
+        LD DE,RANGEDIFF
+        JR SUMSELECT
+SUMFULL:
+        LD HL,FILEEQ
+        LD DE,FILEDIFF
+SUMSELECT:
+        PUSH HL
+        LD HL,DIFFCNT
+        CALL NZ32
+        POP HL
+        JR Z,SUMPRINT
+        EX DE,HL
+SUMPRINT:
+        CALL TEXT
+        CALL LINE
+        JP EXIT
+OVERFLOW:
+        XOR A
+        LD (PAGED),A
+        LD HL,OVMSG
+        CALL TEXT
+        CALL LINE
+        JP EXIT
+READERROR:
+        XOR A
+        LD (PAGED),A
+        LD HL,READMSG
+        CALL TEXT
+        LD L,(IX+FN)
+        LD H,(IX+FN+1)
+        CALL TEXT
+        CALL LINE
+CANCEL:
+        XOR A
+        LD (PAGED),A
+        LD HL,INCOMPLETE
+        CALL TEXT
+        CALL LINE
+EXIT:
+        XOR A
+        LD (PAGED),A
+        LD IX,FILE1
+        CALL CLOSEFILE
+        LD IX,FILE2
+        CALL CLOSEFILE
+        LD A,(OUSER)
+        LD E,A
+        LD C,32
+        CALL SERVICE
+        LD A,(ODRIVE)
+        LD E,A
+        LD C,14
+        CALL SERVICE
+        LD DE,0080H
+        LD C,26
+        CALL SERVICE
+RETURN:
+        LD SP,(OLDSP)
+        RET
+VERSION:
+        LD HL,VERSIONTEXT
+        CALL TEXT
+        JP RETURN
+HELP:
+        LD HL,HELPTEXT
+        CALL TEXT
+        JP RETURN
+SERVICE:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        PUSH IX
+        CALL BDOS
+        POP IX
+        POP HL
+        POP DE
+        POP BC
+        RET
+; Direct output avoids BDOS cooked-output Ctrl-C warm boot.
+PUT:
+        PUSH AF
+        PUSH BC
+        PUSH DE
+        LD E,A
+        LD C,6
+        CALL SERVICE
+        POP DE
+        POP BC
+        POP AF
+        RET
+TEXT:
+        LD A,(HL)
+        OR A
+        RET Z
+        CALL PUT
+        INC HL
+        JR TEXT
+CRLF:
+        LD A,13
+        CALL PUT
+        LD A,10
+        JP PUT
+LINE:
+        CALL CRLF
+        LD A,(PAGED)
+        OR A
+        RET Z
+        LD A,(STOPPED)
+        OR A
+        RET NZ
+        LD A,(LINES)
+        INC A
+        LD (LINES),A
+        CP 23
+        RET C
+        LD HL,PROMPT
+        CALL TEXT
+WAITKEY:
+        LD E,255
+        LD C,6
+        CALL SERVICE
+        OR A
+        JR Z,WAITKEY
+        CALL UPPER
+        CP ' '
+        JR Z,NEXTPAGE
+        CP 13
+        JR Z,NEXTPAGE
+        CP 3
+        JR Z,STOPDISPLAY
+        CP 'Q'
+        JR Z,STOPDISPLAY
+        CP 27
+        JR NZ,WAITKEY
+STOPDISPLAY:
+        LD A,1
+        LD (STOPPED),A
+        XOR A
+        LD (PAGED),A
+        CALL CRLF
+        LD HL,STOPMSG
+        CALL TEXT
+        RET
+NEXTPAGE:
+        CALL CRLF
+        XOR A
+        LD (LINES),A
+        RET
+POLL:
+        LD A,(PAGED)
+        OR A
+        RET NZ
+        LD A,(STOPPED)
+        OR A
+        RET NZ
+        LD C,11
+        CALL SERVICE
+        OR A
+        RET Z
+        LD E,255
+        LD C,6
+        CALL SERVICE
+        CP 3
+        JR Z,POLLCANCEL
+        OR A
+        RET
+POLLCANCEL:
+        SCF
+        RET
+UPPER:
+        CP 'a'
+        RET C
+        CP 'z'+1
+        RET NC
+        SUB 32
+        RET
+; Little-endian 32-bit helpers. COPY/CMP preserve source/destination pointers.
+COPY32:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD BC,4
+        LDIR
+        POP HL
+        POP DE
+        POP BC
+        RET
+CMP32:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD BC,3
+        ADD HL,BC
+        EX DE,HL
+        ADD HL,BC
+        EX DE,HL
+        LD B,4
+CMPLOOP:
+        LD A,(DE)
+        LD C,A
+        LD A,(HL)
+        CP C
+        JR NZ,CMPDONE
+        DEC HL
+        DEC DE
+        DJNZ CMPLOOP
+CMPDONE:
+        POP HL
+        POP DE
+        POP BC
+        RET
+NZ32:
+        PUSH BC
+        PUSH HL
+        LD B,4
+        XOR A
+NZLOOP:
+        OR (HL)
+        INC HL
+        DJNZ NZLOOP
+        POP HL
+        POP BC
+        RET
+INC32:
+        PUSH BC
+        PUSH HL
+        LD B,4
+INCLOOP:
+        INC (HL)
+        JR NZ,INCDONE
+        INC HL
+        DJNZ INCLOOP
+INCDONE:
+        POP HL
+        POP BC
+        RET
+DEC32:
+        PUSH BC
+        PUSH HL
+        LD B,4
+D32LOOP:
+        LD A,(HL)
+        DEC (HL)
+        OR A
+        JR NZ,INCDONE
+        INC HL
+        DJNZ D32LOOP
+        JR INCDONE
+; DE -= HL. Carry is borrow.
+SUB32:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD B,4
+        OR A
+SUBLOOP:
+        LD A,(DE)
+        SBC A,(HL)
+        LD (DE),A
+        INC DE
+        INC HL
+        DJNZ SUBLOOP
+        POP HL
+        POP DE
+        POP BC
+        RET
+; DE += HL. Carry is overflow.
+ADD32:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD B,4
+        OR A
+ADDLOOP:
+        LD A,(DE)
+        ADC A,(HL)
+        LD (DE),A
+        INC DE
+        INC HL
+        DJNZ ADDLOOP
+        POP HL
+        POP DE
+        POP BC
+        RET
+ZERO32:
+        PUSH BC
+        PUSH HL
+        LD B,4
+        XOR A
+ZEROLOOP:
+        LD (HL),A
+        INC HL
+        DJNZ ZEROLOOP
+        POP HL
+        POP BC
+        RET
+HEX32:
+        PUSH HL
+        PUSH BC
+        LD BC,3
+        ADD HL,BC
+        LD B,4
+H32LOOP:
+        LD A,(HL)
+        CALL HEX8
+        DEC HL
+        DJNZ H32LOOP
+        POP BC
+        POP HL
+        RET
+HEX8:
+        PUSH AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        CALL HEX4
+        POP AF
+HEX4:
+        AND 15
+        ADD A,'0'
+        CP '9'+1
+        JR C,H4PUT
+        ADD A,7
+H4PUT:
+        JP PUT
+; Decimal conversion by repeated division by ten. No binary precision loss.
+DECIMAL:
+        PUSH HL
+        LD DE,NUMWORK
+        CALL COPY32
+        LD HL,NUMBUF+10
+        LD (HL),0
+DECOUTER:
+        PUSH HL
+        LD HL,NUMWORK+3
+        LD B,4
+        LD D,0
+DECDIVBYTE:
+        LD E,(HL)
+        PUSH HL
+        LD H,D
+        LD L,E
+        LD DE,10
+        LD C,0
+DECDIV:
+        OR A
+        SBC HL,DE
+        JR C,DECDIVEND
+        INC C
+        JR DECDIV
+DECDIVEND:
+        ADD HL,DE
+        LD D,L
+        POP HL
+        LD (HL),C
+        DEC HL
+        DJNZ DECDIVBYTE
+        POP HL
+        DEC HL
+        LD A,D
+        ADD A,'0'
+        LD (HL),A
+        PUSH HL
+        LD HL,NUMWORK
+        CALL NZ32
+        POP HL
+        JR NZ,DECOUTER
+        CALL TEXT
+        POP HL
+        RET
+STAT:
+        PUSH HL
+        EX DE,HL
+        CALL TEXT
+        POP HL
+        CALL DECIMAL
+        JP LINE
+; @compare-parser@
+; @compare-io@
+; @compare-display@
+; @compare-version@
+OPVER: DB '/VER',0
+OPHELP: DB '/HELP',0
+OPLIST: DB '/LIST',0
+OPSIDE: DB '/SIDE',0
+OPSUM: DB '/SUM',0
+OPSUMMARY: DB '/SUMMARY',0
+OPALL: DB '/ALL',0
+OPPAGE: DB '/P',0
+OP40: DB '/40',0
+OPFROM: DB '/FROM=',0
+OPFROM2: DB '/FROM2=',0
+OPLEN: DB '/LEN=',0
+OPCOUNT: DB '/COUNT=',0
+BADMSG: DB 'COMPARE: Invalid option or operand: ',0
+NEEDMSG: DB 'COMPARE: Exactly two file operands required',0
+OPENMSG: DB 'COMPARE: Cannot open ',0
+READMSG: DB 'COMPARE: Read/size failure: ',0
+OVMSG: DB 'COMPARE: Comparison address overflow',0
+INCOMPLETE: DB 'COMPARISON INCOMPLETE',0
+NAME1: DB 'FILE 1: ',0
+NAME2: DB 'FILE 2: ',0
+LISTHEAD: DB 'FILE1 OFF  FILE2 OFF  FILE1          FILE2',0
+SUMHEAD: DB 'SUMMARY:',0
+LENGTH1: DB 'FILE 1 LENGTH: ',0
+LENGTH2: DB 'FILE 2 LENGTH: ',0
+STARTMSG: DB 'START OFFSETS: ',0
+LENMSG: DB 'LENGTH LIMIT (HEX): ',0
+SEP: DB '  ',0
+EXMSG: DB 'POSITIONS EXAMINED: ',0
+PAIRMSG: DB 'BYTE PAIRS COMPARED: ',0
+MISMSG: DB 'BYTE MISMATCHES: ',0
+EXT1MSG: DB 'ADDITIONAL IN FILE 1: ',0
+EXT2MSG: DB 'ADDITIONAL IN FILE 2: ',0
+HIDDENMSG: DB 'UNDISPLAYED DIFFERENCES: ',0
+SIZEDIFF: DB 'FULL FILE LENGTHS DIFFER',0
+EMPTYMSG: DB 'EMPTY SELECTED RANGE: 0 POSITIONS EXAMINED',0
+FILEEQ: DB 'FILES IDENTICAL',0
+FILEDIFF: DB 'FILES DIFFER',0
+RANGEEQ: DB 'SELECTED RANGES IDENTICAL',0
+RANGEDIFF: DB 'SELECTED RANGES DIFFER',0
+EOFMSG: DB '---- EOF ----',0
+MINUSEIGHT: DB '--------',0
+PROMPT: DB 'Space/Enter: next; Ctrl-C/Q/Esc: stop',0
+STOPMSG: DB 'DISPLAY INTERRUPTED',13,10,'COMPARISON CONTINUING...',13,10,0
+HELPTEXT:
+        DB 'COMPARE - read-only binary comparison',13,10
+        DB 'Usage: COMPARE [options] file1 file2',13,10
+        DB '/LIST /SIDE /SUM /SUMMARY',13,10
+        DB '/COUNT=1..65535 (decimal) /ALL',13,10
+        DB '/FROM=hex[H] /FROM2=hex[H] /LEN=hex[H]',13,10
+        DB '/P /40 (with /SIDE) /VER /HELP',13,10
+        DB 'Single DU operands; no wildcards.',13,10,0
+OLDSP: DW 0
+STATE:
+ODRIVE: DB 0
+OUSER: DB 0
+MODE: DB 0
+MODESET: DB 0
+PAGED: DB 0
+COMPACT: DB 0
+WIDTH: DB 0
+LINES: DB 0
+STOPPED: DB 0
+ALLSET: DB 0
+COUNTSET: DB 0
+FROMSET: DB 0
+FROM2SET: DB 0
+LENSET: DB 0
+RANGED: DB 0
+FILECOUNT: DB 0
+NTOK: DB 0
+TOKEN: DW 0
+SCAN: DW 0
+ALLTOK: DW 0
+COUNTTOK: DW 0
+PAGETOK: DW 0
+NARROWTK: DW 0
+DIFF: DB 0
+ROWDIFF: DB 0
+ROWACTIVE: DB 0
+SLOT: DB 0
+NEGBASE: DB 0
+LIMIT: DW 0
+SHOWN: DW 0
+NVAL: DS 4
+NOLD: DS 4
+START1: DS 4
+START2: DS 4
+LENGTH: DS 4
+LEFT: DS 4
+TEMP: DS 4
+TOTAL: DS 4
+EXAMINED: DS 4
+PAIRS: DS 4
+MISMATCH: DS 4
+EXTRA1: DS 4
+EXTRA2: DS 4
+DIFFCNT: DS 4
+DISPLAYED: DS 4
+BASE1: DS 4
+BASE2: DS 4
+ROW1: DS 8
+ROW2: DS 8
+VALID1: DS 8
+VALID2: DS 8
+NUMWORK: DS 4
+NUMBUF: DS 11
+TOKENS: DS 128
+TAIL: DS 128
+DU_MAP: DS 64
+DU_WORK: DS 12
+FILE1: DS 184
+FILE2: DS 184
+STATEEND:
+        DS 512
+STKTOP:
+; @compare-selector@
+        .DEPHASE
+        END START
