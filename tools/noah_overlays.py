@@ -110,7 +110,11 @@ def production_build(assembler,out,flat_builder):
     ark_imports=''.join(f'{n} EQU {v}\n' for n,v in (rs|cs).items() if n in needed and n not in constant_names)
     ark_text=f' ORG {plan_address}\n'+constants+ark_imports+ark_body+'\n END\n'
     raw,ark_symbols=assemble(assembler,out,'NHARK',ark_text)
-    assert plan_address+(len(raw)+127)//128*128 <= plan_address+12800
+    ark_padded=(len(raw)+127)//128*128
+    ark_plan_address=plan_address+ark_padded
+    ark_plan_end=ark_plan_address+6144
+    ark_arena_end=plan_address+12800
+    assert ark_plan_end <= ark_arena_end, (hex(ark_plan_end),hex(ark_arena_end))
     payloads.append(raw);requirements.append(plan_address-window+(len(raw)+127)//128*128);entries.append((plan_address,0,0))
     (out/'NHARK.MAC').write_bytes(native_export(ark_text))
     ark_bytes=len(raw)
@@ -155,7 +159,8 @@ def production_build(assembler,out,flat_builder):
     combined=(out/'NOAH.lst').read_text(errors='replace')+'\n'+(out/'NHCLI.lst').read_text(errors='replace')
     (out/'noah.lst').write_text(combined)
     report={'resident_bytes':len(image),'window':window,'codec_context':window+2048,
-      'lzw_bytes':len(lzw_raw),'lzw_workspace':[window+4096,window+4096+24576],'ark_bytes':ark_bytes,'ark_address':plan_address,'cli_bytes':len(cli),'writer_plans':[plan_address,plan_address+6144],
+      'lzw_bytes':len(lzw_raw),'lzw_workspace':[window+4096,window+4096+24576],'ark_bytes':ark_bytes,'ark_address':plan_address,'ark_padded_bytes':ark_padded,'cli_bytes':len(cli),'writer_plans':[plan_address,plan_address+6144],
+      'ark_add_plan_workspace':[ark_plan_address,ark_plan_end],'ark_writer_arena_end':ark_arena_end,
       'ark_writer_entries':{name:ark_symbols[name] for name in ('ARK_BUILD_HEADER','ARK_WRITE_MEMBER','ARK_WRITE_END')},
       'ark_writer_dispatch':{name:ark_symbols[name] for name in ('NAW_BUILD_HEADER','NAW_WRITE_MEMBER','NAW_WRITE_END')},
       'transformed_ids':[plan_address+6144,plan_address+12800],
