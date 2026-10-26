@@ -14,12 +14,16 @@ class ArkSqEncoder(Encoder):
     def __init__(self, library, image):
         super().__init__(library, image)
         self.symbols['NASQ_RUN'] = self.word(BASE + (len(ENTRIES) + len(EXTRA)) * 2)
+        self.symbols['NASQ_DISPATCH'] = self.word(BASE + (len(ENTRIES) + len(EXTRA) + 1) * 2)
+        self.arc_mode = 0xF000
 
     def encode_body(self, raw):
         self.configure(raw, name=b'')
         assert self.call('SQ_INIT', budget=500_000_000) == 0
         assert self.call('SQ_SCAN', budget=500_000_000) == 0
-        assert self.call('NASQ_RUN', budget=500_000_000) == 0
+        self.mem[self.arc_mode] = 1
+        assert self.call('NASQ_DISPATCH', budget=500_000_000) == 0
+        self.mem[self.arc_mode] = 0
         assert self.mem[self.ctx + 52] == 0
         return bytes(self.output)
 
@@ -29,13 +33,9 @@ def build(out):
     names = ('codec.inc', 'codec.mac', 'usq.inc', 'usq.mac', 'sq.inc')
     text = ' ORG 100H\n' + ''.join((ROOT / 'src/codec' / n).read_text() + '\n' for n in names)
     sq = (ROOT / 'src/codec/sq.mac').read_text()
-    sq = sq.replace('S_HEADER:\n        LD      A,076H',
-                    'S_HEADER:\n        LD      A,(IX+NASQ_MODE)\n        OR      A\n'
-                    '        JR      NZ,S_HEADER_TREE\n        LD      A,076H', 1)
-    sq = sq.replace('        LD      E,(IX+SQ_TREE_NODES)',
-                    'S_HEADER_TREE:\n        LD      E,(IX+SQ_TREE_NODES)', 1)
     text += sq + '\n'
-    text += ''.join(f' DW {name}\n' for name in ENTRIES + EXTRA + ('NASQ_RUN',))
+    text += ''.join(f' DW {name}\n' for name in ENTRIES + EXTRA + ('NASQ_RUN', 'NASQ_DISPATCH'))
+    text += 'NR_ARC_MODE EQU 0F000H\n'
     text += ' CODEC_CODE\n USQ_CODE\n SQ_CODE\n'
     text += (ROOT / 'src/utilities/common/noahark-sq-bridge.inc').read_text() + '\n'
     text += 'READ_CB: RET\nWRITE_CB: RET\nREWIND_CB: RET\n END\n'
@@ -72,7 +72,12 @@ def main():
         assert m.encode_body(b'') == b'\0\0'
 
         # The ordinary SQ entry retains its complete standalone framing.
-        ordinary = m.squeeze(b'unchanged standalone path', name=b'')
+        ordinary_data = b'unchanged standalone path'
+        m.configure(ordinary_data, name=b'')
+        assert m.call('SQ_INIT', budget=500_000_000) == 0
+        assert m.call('SQ_SCAN', budget=500_000_000) == 0
+        assert m.call('NASQ_DISPATCH', budget=500_000_000) == 0
+        ordinary = bytes(m.output)
         assert host_decode(ordinary) == (b'', b'unchanged standalone path')
 
         # Wrong-state and sink failures leave the context mode cleared.

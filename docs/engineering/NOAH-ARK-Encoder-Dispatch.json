@@ -1,0 +1,313 @@
+{
+  "date": "2026-10-26",
+  "component": "NOAH",
+  "scope": "Production-resident encoder dispatch for ARC methods 4 and 8; overlay module loading; exact body checks. Does not implement ARC archive writes.",
+  "status": "PASS within stated scope",
+  "base_revision": "c0848dd",
+  "production_build": {
+    "noah_com_bytes": 18452,
+    "noah_com_sha256": "546c34bb8fd815b4a24f6cbf79def128b5ef61e7387512a5c318a8e7a0b28595",
+    "overlay_sha256": "155b5d419f40c9974c359641f576bf18199303259874c33d41d5d33f821b4560",
+    "layout": {
+      "resident_bytes": 18452,
+      "window": 18816,
+      "codec_context": 20864,
+      "lzw_bytes": 1705,
+      "lzw_workspace": [
+        22912,
+        47488
+      ],
+      "ark_bytes": 4436,
+      "ark_address": 37376,
+      "cli_bytes": 18527,
+      "writer_plans": [
+        37376,
+        43520
+      ],
+      "transformed_ids": [
+        43520,
+        50176
+      ],
+      "ark8_encoder_bytes": 1650,
+      "ark8_encoder_context_bytes": 25207,
+      "ark8_encoder_required_end": 46071,
+      "stack": [
+        17068,
+        17580
+      ],
+      "required_ceilings": [
+        50176,
+        24388,
+        22304,
+        46071,
+        47446,
+        41856,
+        47488,
+        46071
+      ],
+      "build_id": "cffb3b98a1817f7a",
+      "companion_sha256": "155b5d419f40c9974c359641f576bf18199303259874c33d41d5d33f821b4560"
+    }
+  },
+  "zsm4_link_native_parity": {
+    "z80pack": {
+      "status": "PASS",
+      "groups": [
+        {
+          "group": 0,
+          "modules": [
+            "NOAH",
+            "NHCLI"
+          ],
+          "execution_sha256": "61b10a510cae4b7c2aec04d4a172383418dde9f333bfbb74b9338e662867e1c9",
+          "console_sha256": "eb0d655c40096b98d4a90456b99cef1a6b15f9fc6e021e1c6404b25eac36eb4a",
+          "execution": "z80pack/build-0/execution.json"
+        },
+        {
+          "group": 1,
+          "modules": [
+            "NCSQ",
+            "NCUSQ",
+            "NCCR",
+            "NCUNCR"
+          ],
+          "execution_sha256": "ce883d1f31fd0417475dbf1937be6d5b28bbe1ad424e12382fd4afdd49e069d7",
+          "console_sha256": "d474afd2fcf7c40534f25719d8309106c10604faf3a2a8594945595fe063c16b",
+          "execution": "z80pack/build-1/execution.json"
+        },
+        {
+          "group": 2,
+          "modules": [
+            "NHARK",
+            "NCLZW",
+            "NCAR8"
+          ],
+          "execution_sha256": "4b550b459267458719e57882bae23b3dcf99ddee8db4781413595a1753a73477",
+          "console_sha256": "a4442c0d1502dc49cc59445e97c24bbec61c788940de7085909cb5bcfa999e93",
+          "execution": "z80pack/build-2/execution.json"
+        }
+      ],
+      "modules": {
+        "NOAH": {
+          "cross_bytes": 18452,
+          "cross_sha256": "546c34bb8fd815b4a24f6cbf79def128b5ef61e7387512a5c318a8e7a0b28595",
+          "native_com_bytes": 18560,
+          "native_com_sha256": "88a02f1d531c2bc197db7b29ed40de1b516a94c5eeeebfdf139cb8ddcf459aa1"
+        },
+        "NHCLI": {
+          "cross_bytes": 18527,
+          "cross_sha256": "8df457acb3996d69e77213c7ec1e7d8c26b915a3aecaefb7595966171819576e",
+          "native_com_bytes": 18560,
+          "native_com_sha256": "cffa1a19846309b5563c076064b489ec98d4d77cff5126820531ba3774392247"
+        },
+        "NCSQ": {
+          "cross_bytes": 1435,
+          "cross_sha256": "65b6d69e608587dee7529a816a719ac889c8ecac4f2c6ae5d46eab3ceeaa4528",
+          "native_com_bytes": 1536,
+          "native_com_sha256": "869da5d7a2e58e0e4a686486e0675b8f29373efec0d042bd56dfe62596a3c196"
+        },
+        "NCUSQ": {
+          "cross_bytes": 940,
+          "cross_sha256": "5ae1db07ab426f8ad9bd02475d3c542f6e27040d41126a168ce742c447558c8c",
+          "native_com_bytes": 1024,
+          "native_com_sha256": "14f829966af00301b562d9840aba11cafe27872d1301c907124131f4a072e77d"
+        },
+        "NCCR": {
+          "cross_bytes": 1205,
+          "cross_sha256": "bb09d588d80a781173c0476de95e2bd6e84863c1dd2a1ed0176a6400711c428d",
+          "native_com_bytes": 1280,
+          "native_com_sha256": "e3f6ecb27c1098392a23705b540a2f7959cdd162887107552e19ddae7a082970"
+        },
+        "NCUNCR": {
+          "cross_bytes": 1460,
+          "cross_sha256": "cc0b4f61c664937dd61cfd5749a06f9465289d44126677c3bfe4333f6d4d73ad",
+          "native_com_bytes": 1536,
+          "native_com_sha256": "81e6f6a7a3c226807132c054ef9d266ad30f75a5ef110be629cd866aaf1a5802"
+        },
+        "NHARK": {
+          "cross_bytes": 4436,
+          "cross_sha256": "9a37e764ab67d98b51d16859d9db422c440f8a7e19e9da05705ac01584aacaa2",
+          "native_com_bytes": 4480,
+          "native_com_sha256": "0ff36f27dd2ad420e089680401610f1c0b0d044d2c12643547b8293402c370f6"
+        },
+        "NCLZW": {
+          "cross_bytes": 1705,
+          "cross_sha256": "c21084b9c089188e169c4d1278c9b8e5afa2431482752862beb80bcfb3d55243",
+          "native_com_bytes": 1792,
+          "native_com_sha256": "8a8290f43c2f968177752161c9e438b24c2c303c0d36ed5491a737d5a26ef61f"
+        },
+        "NCAR8": {
+          "cross_bytes": 1650,
+          "cross_sha256": "759cacfd2599c33859ceca5da6ff2b953c73364cc802257537c869649e7223c0",
+          "native_com_bytes": 1664,
+          "native_com_sha256": "f08bf1b5929940d64f7956ae3cdc05389b2985fb20cc729eecd626dcd4c73140"
+        }
+      }
+    },
+    "trs80gp": {
+      "status": "PASS",
+      "groups": [
+        {
+          "group": 0,
+          "modules": [
+            "NOAH",
+            "NHCLI"
+          ],
+          "execution_sha256": "3532cf05020128b07d6a1bfc0d64ef2a341de87095ca5d4f8b2f82237158ec9f",
+          "console_sha256": "9116aa9fb20c4c45c0a5a64dbda4ba1543a02af119cd2144df7620ddd8c51d21",
+          "execution": "trs80gp/build-0/execution.json"
+        },
+        {
+          "group": 1,
+          "modules": [
+            "NCSQ",
+            "NCUSQ",
+            "NCCR",
+            "NCUNCR"
+          ],
+          "execution_sha256": "dd100c2373ebef76dc1371c9af91c8b69f5444aac134ee84eb33190c699a2e35",
+          "console_sha256": "6f353e99369be84b7edeb1371d44426e78c099edd37af4c310814f6bddbe3a71",
+          "execution": "trs80gp/build-1/execution.json"
+        },
+        {
+          "group": 2,
+          "modules": [
+            "NHARK",
+            "NCLZW",
+            "NCAR8"
+          ],
+          "execution_sha256": "976c7915794afc2f42cd29cec8498fc20bd9f81b7796ca1c19e042172f66df92",
+          "console_sha256": "e67bead537dc05ba0f94d0845415c6c302db623c71872006b16b1577c4ca8d40",
+          "execution": "trs80gp/build-2/execution.json"
+        }
+      ],
+      "modules": {
+        "NOAH": {
+          "cross_bytes": 18452,
+          "cross_sha256": "546c34bb8fd815b4a24f6cbf79def128b5ef61e7387512a5c318a8e7a0b28595",
+          "native_com_bytes": 18560,
+          "native_com_sha256": "88a02f1d531c2bc197db7b29ed40de1b516a94c5eeeebfdf139cb8ddcf459aa1"
+        },
+        "NHCLI": {
+          "cross_bytes": 18527,
+          "cross_sha256": "8df457acb3996d69e77213c7ec1e7d8c26b915a3aecaefb7595966171819576e",
+          "native_com_bytes": 18560,
+          "native_com_sha256": "cffa1a19846309b5563c076064b489ec98d4d77cff5126820531ba3774392247"
+        },
+        "NCSQ": {
+          "cross_bytes": 1435,
+          "cross_sha256": "65b6d69e608587dee7529a816a719ac889c8ecac4f2c6ae5d46eab3ceeaa4528",
+          "native_com_bytes": 1536,
+          "native_com_sha256": "869da5d7a2e58e0e4a686486e0675b8f29373efec0d042bd56dfe62596a3c196"
+        },
+        "NCUSQ": {
+          "cross_bytes": 940,
+          "cross_sha256": "5ae1db07ab426f8ad9bd02475d3c542f6e27040d41126a168ce742c447558c8c",
+          "native_com_bytes": 1024,
+          "native_com_sha256": "14f829966af00301b562d9840aba11cafe27872d1301c907124131f4a072e77d"
+        },
+        "NCCR": {
+          "cross_bytes": 1205,
+          "cross_sha256": "bb09d588d80a781173c0476de95e2bd6e84863c1dd2a1ed0176a6400711c428d",
+          "native_com_bytes": 1280,
+          "native_com_sha256": "e3f6ecb27c1098392a23705b540a2f7959cdd162887107552e19ddae7a082970"
+        },
+        "NCUNCR": {
+          "cross_bytes": 1460,
+          "cross_sha256": "cc0b4f61c664937dd61cfd5749a06f9465289d44126677c3bfe4333f6d4d73ad",
+          "native_com_bytes": 1536,
+          "native_com_sha256": "81e6f6a7a3c226807132c054ef9d266ad30f75a5ef110be629cd866aaf1a5802"
+        },
+        "NHARK": {
+          "cross_bytes": 4436,
+          "cross_sha256": "9a37e764ab67d98b51d16859d9db422c440f8a7e19e9da05705ac01584aacaa2",
+          "native_com_bytes": 4480,
+          "native_com_sha256": "0ff36f27dd2ad420e089680401610f1c0b0d044d2c12643547b8293402c370f6"
+        },
+        "NCLZW": {
+          "cross_bytes": 1705,
+          "cross_sha256": "c21084b9c089188e169c4d1278c9b8e5afa2431482752862beb80bcfb3d55243",
+          "native_com_bytes": 1792,
+          "native_com_sha256": "8a8290f43c2f968177752161c9e438b24c2c303c0d36ed5491a737d5a26ef61f"
+        },
+        "NCAR8": {
+          "cross_bytes": 1650,
+          "cross_sha256": "759cacfd2599c33859ceca5da6ff2b953c73364cc802257537c869649e7223c0",
+          "native_com_bytes": 1664,
+          "native_com_sha256": "f08bf1b5929940d64f7956ae3cdc05389b2985fb20cc729eecd626dcd4c73140"
+        }
+      }
+    }
+  },
+  "native_method8_runtime": {
+    "scope": "Native CP/M invocation of isolated NCAR8 via BDOS file callbacks",
+    "input_bytes": 20480,
+    "expected_body_bytes": 27036,
+    "expected_body_sha256": "8cdf60fa1f9a3023a78b3874790b8ed6e6bce8bc434671486ed89654f7d8f440",
+    "verified_systems": {
+      "z80pack": {
+        "source_revision": "507423a08305e52ac64a565ab70d58f497698d59",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1"
+      },
+      "trs80gp": {
+        "source_revision": "507423a08305e52ac64a565ab70d58f497698d59",
+        "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+        "image_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43"
+      }
+    },
+    "platforms": {
+      "z80pack": {
+        "status": "PASS",
+        "runtime_ceiling_hex": "C501",
+        "native_com_sha256": "9ef2beb6f854dfe802f509572f01961e936099158e84776a48b9c08c4af84d60",
+        "encoded_bytes": 27036,
+        "encoded_sha256": "8cdf60fa1f9a3023a78b3874790b8ed6e6bce8bc434671486ed89654f7d8f440",
+        "runtime_console_sha256": "0aea7dd8b6b1c5b4ac395c06d04b5f359d835d9914b6220456e13961f8ff67b6",
+        "execution": "z80pack/execution.json"
+      },
+      "trs80gp": {
+        "status": "PASS",
+        "runtime_ceiling_hex": "CA01",
+        "native_com_sha256": "81c522b532524df3554d91f0646e6a513867467c68faa2898ecc23587b8e6109",
+        "encoded_bytes": 27036,
+        "encoded_sha256": "8cdf60fa1f9a3023a78b3874790b8ed6e6bce8bc434671486ed89654f7d8f440",
+        "runtime_console_sha256": "3d48b707a14a21accf287941fde4a4a845a18f68ad321e78a232a195ac04209e",
+        "execution": "trs80gp/execution.json"
+      }
+    }
+  },
+  "focused_tests": {
+    "noah": {
+      "status": "PASS",
+      "log": "evidence-tests/noah.log",
+      "sha256": "3b43263bc557c5a5be2fcc9215dd0595630d6e10a503a939376f6e44aa04128a"
+    },
+    "sq-bridge": {
+      "status": "PASS",
+      "log": "evidence-tests/sq-bridge.log",
+      "sha256": "ee667f05f2c40785a4f95bd2d3dea2824f8409094b8d2dfcbc920ea1936c98b9"
+    },
+    "sq-regression": {
+      "status": "PASS",
+      "log": "evidence-tests/sq-regression.log",
+      "sha256": "8db70985605a954de2f6b3a550448aa13c2d220cf19e1d3b635d6a3d0c8850b5"
+    },
+    "method8": {
+      "status": "PASS",
+      "log": "evidence-tests/method8.log",
+      "sha256": "a505978d7ba20b8f4ffdfbba7a83b768a6721ea840d10108632b026c0fd80a8a"
+    },
+    "ark-reader": {
+      "status": "PASS",
+      "log": "evidence-tests/ark-reader.log",
+      "sha256": "c127c9dca8e0080b845511d4801577e0276d317293c31508b083e50ba0cb167d"
+    },
+    "lbr-write-regression": {
+      "status": "PASS",
+      "log": "evidence-tests/lbr-write-regression.log",
+      "sha256": "ec82af4ba5216dbfc9486c53fd3c71436c309e8d0238c83e33213c65e43ff0c9"
+    }
+  },
+  "remaining": "NOAH /ADD does not yet create or update ARC archives; ARC member headers, decoded CRC/length accounting, source stability, staging/readback verification, replacement, REMOVE, COMPACT and publication/recovery remain open."
+}
