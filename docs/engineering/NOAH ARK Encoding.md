@@ -6,9 +6,13 @@ z80pack and TRS-80 Model 4, 2026-10-26. The ARC writer entries now share the
 production `NHARK` overlay and pass the resident layout check for the existing
 12,800-byte arena. The current padded NHARK image ends at `A780h`; a 6,144-byte
 ordinary source-plan table can follow it and end at `BF80h`, below the arena end
-at `C400h`. The build and host regression now assert this non-overlap. No NOAH
-command invokes those writer entries yet: this is a memory-layout proof, not an
-archive update feature. The
+at `C400h`. The generated CLI now distinguishes `NW_OVERLAY` (load and dispatch
+address), the existing LBR `NW_PLANS` table, and the reserved `NW_ARC_PLANS`
+address after NHARK. Existing LBR storage and ARC reader dispatch retain their
+current addresses; no writer command consumes `NW_ARC_PLANS` yet. The build and
+host regression assert the non-overlap and unchanged generated CLI bytes. No
+NOAH command invokes those writer entries yet: this is a memory-layout proof,
+not an archive update feature. The
 [NOAH specification](NOAH%20Specification.md) remains normative.
 
 ## Method 4 from the owned SQ encoder
