@@ -1,0 +1,89 @@
+; SEARCH 1.0 development command. Read-only, bounded, CP/M 2.2 BDOS.
+        CSEG
+        .PHASE 0103H
+ENTRY:
+        LD (DOLDSP),SP
+        LD SP,DSTACK
+        LD HL,DSTATE
+        LD DE,DSTATE+1
+        LD BC,DSTEND-DSTATE-1
+        LD (HL),0
+        LDIR
+        LD A,1
+        LD (DOUTPUT),A
+        LD D,0
+        LD E,0
+        CALL DPARSE
+        JP C,DBAD
+        CP 1
+        JP Z,DHELP
+        CP 2
+        JP Z,DVER
+        ; Queries above perform console output only, before DU inquiry.
+        LD C,25
+        CALL RBDOS
+        LD (DCALLD),A
+        LD E,255
+        LD C,32
+        CALL RBDOS
+        LD E,A
+        LD A,(DCALLD)
+        LD D,A
+        CALL DPARSE
+        JP C,DBAD
+        CALL RRUN
+        CALL DSUMMARY
+DRETURN:
+        LD SP,(DOLDSP)
+        RET
+DPARSE:
+        LD HL,0081H
+        LD A,(0080H)
+        LD B,A
+        JP PCOMMAND
+DBAD:
+        LD HL,DBADMSG
+        CALL DTEXT
+        LD HL,DUSAGE
+        CALL DTEXT
+        JP DRETURN
+DHELP:
+        LD HL,DHELPTXT
+        CALL DTEXT
+        JP DRETURN
+DVER:
+        LD HL,DVERSION
+        CALL DTEXT
+        JP DRETURN
+; @search-modules@
+; @search-display@
+; @search-identity@
+DOLDSP: DW 0
+DSTATE:
+DOUTPUT: DB 0
+DSUPP: DB 0
+DCOL: DB 0
+DROWS: DB 0
+DCALLD: DB 0
+DLAST: DS 4
+DPOS: DS 4
+DEND: DS 4
+DFCB: DS 36
+DBUF: DS 128
+DCACHE: DB 0
+DCACHED: DS 3
+DBACK: DB 0
+DLEFT: DB 0
+DSKIPCR: DB 0
+DBUDGET: DB 0
+DBYTE: DB 0
+DREADERR: DB 0
+DNUM: DS 8
+DNUMBUF: DS 21
+DLINEVAL: DS 8
+DSTEND:
+DGUARD: DS 16
+        DS 512
+DSTACK:
+        .DEPHASE
+        END ENTRY

@@ -973,6 +973,28 @@
       "dependency_status": "explicit selected dependency closure",
       "display_format": "numeric",
       "description": "Binary File Comparison"
+    },
+    "utility:SEARCH": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/search.mac",
+        "src/utilities/search/parser.inc",
+        "src/utilities/search/matcher.inc",
+        "src/utilities/search/state.inc",
+        "src/utilities/search/scan.inc",
+        "src/utilities/search/display.inc"
+      ],
+      "builders": [
+        "tools/build_search.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "tracked-conservative; shared FCB builder extracted from RCP",
+      "display_format": "numeric",
+      "description": "File Content Search"
     }
   },
   "legacy_utility_order": [
@@ -1018,7 +1040,8 @@
     "DSYM",
     "DLINK",
     "TED",
-    "COMPARE"
+    "COMPARE",
+    "SEARCH"
   ],
   "legacy_subsystem_rows": [
     {

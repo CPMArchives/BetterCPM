@@ -5056,6 +5056,61 @@
         "tools/build_native_compare.py",
         "tools/build_native_trs80.py"
       ]
+    },
+    "utility:SEARCH": {
+      "status": "tracked-conservative",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "origin": 259
+      },
+      "files": [
+        "src/cpx/rcp.mac",
+        "src/system/layout.inc",
+        "src/utilities/common/attrselect.inc",
+        "src/utilities/common/duselect.inc",
+        "src/utilities/common/filespec.inc",
+        "src/utilities/common/operandqual.inc",
+        "src/utilities/common/rcpselect.inc",
+        "src/utilities/search.mac",
+        "src/utilities/search/display.inc",
+        "src/utilities/search/matcher.inc",
+        "src/utilities/search/parser.inc",
+        "src/utilities/search/scan.inc",
+        "src/utilities/search/state.inc",
+        "tools/build_ccp.py",
+        "tools/build_profiles.py",
+        "tools/build_search.py",
+        "tools/checked_build_contract.py",
+        "tools/checked_carriers.py",
+        "tools/component_build.py",
+        "tools/component_development.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_registry.py",
+        "tools/rsx_container.py",
+        "tools/search_source.py",
+        "tools/system_layout.py",
+        "tools/utility_versions.py"
+      ],
+      "identity_dependencies": [],
+      "registry_fields": [
+        "display_format",
+        "description"
+      ],
+      "modes": [
+        "cross",
+        "native"
+      ],
+      "native_files": [
+        "tools/build_native_search.py",
+        "tools/build_native_trs80.py"
+      ]
     }
   }
 }
