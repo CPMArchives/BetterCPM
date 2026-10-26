@@ -112,7 +112,8 @@ line. SEARCH does not silently shorten a pattern.
 The current CCP uppercases command tails, including quoted text. SEARCH cannot
 recover original case lost before it starts. On that CCP, use `/NOCASE` for
 ASCII text regardless of case, or `/NOTEXT` with HEX to specify exact bytes.
-Embedded quote and TAB notation is not yet defined; do not assume an escape form.
+A double quote ends the pattern; no embedded-quote escape is provided. A TAB
+inside quotes is literal pattern data; outside quotes it separates arguments.
 
 ### Selecting files for SEARCH
 
