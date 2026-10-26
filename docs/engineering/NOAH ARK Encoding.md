@@ -141,16 +141,20 @@ z80pack result does not close the cross-platform gate.
 `NHARK` phase. `tools/test_noah.py` checks that each exported entry falls inside
 the assembled phase and that its record-padded image remains within the
 existing 12,800-byte inactive arena. This adds no resident TPA allocation and
-does not change the overlay jump table or command behavior. The existing
-`tools/test_ark.py` vectors continue to exercise the writer implementation in
-isolation.
+preserves the original nine reader/controller slots. Three stable writer
+dispatch slots now follow those entries; the host layout test pins their
+addresses and target labels. The existing `tools/test_ark.py` vectors continue
+to exercise the writer implementation in isolation.
 
-The entries are not yet connected to `/ADD`, `/REMOVE`, or `/COMPACT`. A future
-transaction integration must supply the read/write callbacks, reconcile ARC
-member enumeration and source-plan metadata, independently reopen and verify
-the staged archive, recheck source stability, and only then use NOAH's existing
-safe publication/rollback path. Neither a native CP/M transaction nor Model 4
-writer qualification is claimed by this packaging step.
+The entries are not yet connected to `/ADD`, `/REMOVE`, or `/COMPACT`. The ARC
+overlay and NOAH source plans currently share this arena, so a command path
+cannot load the writer while retaining those plans. Transaction integration
+must first resolve this workspace overlap, then supply read/write callbacks,
+reconcile ARC member enumeration and source-plan metadata, independently reopen
+and verify the staged archive, recheck source stability, and only then use
+NOAH's existing safe publication/rollback path. Neither a native CP/M
+transaction nor Model 4 writer qualification is claimed by this packaging
+step.
 
 ## Remaining encoding and update work
 
