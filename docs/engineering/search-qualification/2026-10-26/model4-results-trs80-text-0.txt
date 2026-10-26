@@ -1,0 +1,12 @@
+A0>:SEARCH "4142" A31:FIX.DAT
+A31:FIX.DAT [TEXT] line 1: 4142 AB 4142
+A31:FIX.DAT [HEX] offset 00000005
+Files searched: 1
+Files matched: 1
+Text matches: 2
+Hex matches: 1
+Total matches: 3
+
+A0>HOLD
+
+SEARCH TEST STEP

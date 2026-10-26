@@ -1,0 +1,32 @@
+{
+  "sha256": "a771b4fcf0b0b04133f3c8d54eb3d9917f66b366a11e95d049a51dc32aa77862",
+  "platform": "stock CP/M 2.2 cpmsim",
+  "configured_mhz": 0,
+  "system_input_sha256": "c0e63f206f6875398817207c00eb99f749d73b319c86329d5947fb2482d28945",
+  "emulator_sha256": "b91a99964db2492b2ad99bde68952a616a12c3d28f342f03341199ba5462a6c4",
+  "probe_sha256": "d972b3b09be4144e1865e4dea78411a51d8084129d086b6ff41fb5cd2364acfd",
+  "advertised_tpa_payload_bytes": 8192,
+  "tpa_method": "Resident observer at 8000h installs BDOS relay at TPA end and lowers caller SP; original BDOS/BIOS remain resident at their original addresses.",
+  "bad_sector": "Real out-of-image allocation triggers BDOS prompt; Ctrl-C warm boots without SEARCH totals; data image unchanged.",
+  "results": [
+    {
+      "directory_entries": 8,
+      "elapsed_ms": 1,
+      "stack_watermark_bytes": 64,
+      "data_disk_unchanged": true
+    },
+    {
+      "directory_entries": 32,
+      "elapsed_ms": 8,
+      "stack_watermark_bytes": 64,
+      "data_disk_unchanged": true
+    },
+    {
+      "directory_entries": 64,
+      "elapsed_ms": 28,
+      "stack_watermark_bytes": 64,
+      "data_disk_unchanged": true
+    }
+  ],
+  "limits": "Host elapsed time; stack watermark of exercised paths only, not a worst-case BIOS or interrupt proof."
+}

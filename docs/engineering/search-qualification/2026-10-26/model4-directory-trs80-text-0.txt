@@ -1,0 +1,10 @@
+A0>:SEARCH "Z" A5:*.TXT /NOHEX
+Files searched: 80
+Files matched: 0A
+Text matches: 0
+Hex matches: 0
+Total matches: 0
+
+A0>HOLD2
+
+SEARCH DIRECTORY STEP

@@ -1,0 +1,27 @@
+{
+  "binary_sha256": "a771b4fcf0b0b04133f3c8d54eb3d9917f66b366a11e95d049a51dc32aa77862",
+  "scope": "focused complete-command platform checks; not release promotion",
+  "cpmsim": {
+    "result": "PASS",
+    "whole_disk_unchanged": true
+  },
+  "cpmsim_resources": {
+    "directory_files": 56,
+    "advertised_tpa_payload_bytes": 8192,
+    "stack_watermark_bytes": 64
+  },
+  "cpmsim_bad_sector": "BDOS prompt and Ctrl-C warm boot; no SEARCH totals, disk unchanged",
+  "model4_resources": {
+    "directory_files": 80,
+    "advertised_tpa_payload_bytes": 8192,
+    "stack_watermark_bytes": 64,
+    "limits": "Exercised native stack watermark; not a physical interrupt worst-case proof"
+  },
+  "model4": {
+    "result": "PASS",
+    "fixture_contents_unchanged": true,
+    "whole_disk_unchanged": "not asserted: startup SUBMIT writes its spool"
+  },
+  "cpmsim_system_input_sha256": "b0bb6e15b7aaadabeaede1a9e61537fbbb520cd6de1aaa22968d011f6cd0e41a",
+  "model4_system_input_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43"
+}
