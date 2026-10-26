@@ -30,7 +30,8 @@ the implemented interface.
   terminal controls. Canonical filename bytes are also rendered safely.
 - Forward-only `/P`: Space and Enter advance a page. Ctrl-C suppresses later
   detail/prompts while full scanning and final summaries continue. Unpaged
-  Ctrl-C uses the same display-stop policy. Essential diagnostics remain visible.
+  Ctrl-C uses the same display-stop policy, polled at record boundaries as well
+  as result boundaries. Essential diagnostics remain visible.
 - Eight-byte files-searched, files-matched, TEXT, HEX and combined totals,
   including zero values. Empty/partially read files count as searched; failed
   opens do not. Returning errors identify the location/file and a failing
@@ -49,7 +50,8 @@ component revision, distribution manifest, frozen disk or package was changed.
 
 The supported simple console profile is 80 columns by 24 rows. Explicit wrapping
 at 79 characters avoids automatic terminal-wrap ambiguity; `/P` pauses after
-23 rendered content rows. There are no cursor controls or monitor dependencies.
+23 rendered content rows, including essential error rows before suppression.
+There are no cursor controls or monitor dependencies.
 A different geometry/profile is not qualified by these checks.
 
 A TEXT excerpt looks back up to 64 source bytes before its first occurrence
@@ -84,20 +86,20 @@ errors. Owned returning paths restore DU, entry stack and DMA to 0080h.
 
 ## Resources and identity
 
-The current COM image is **8,027 bytes**, including its fixed buffers, **512-byte
+The current COM image is **8,044 bytes**, including its fixed buffers, **512-byte
 private stack** and **16-byte lower stack guard**. The CPU command suite observed
 at most **70 bytes** of that private stack, including the simulated BDOS call
 frames; this is not a worst-case physical-BDOS stack measurement. Guard checks
 pass on query, invalid-command, result, paging, suppression and error paths.
 No allocation grows with file size, line length, match count or directory size.
 
-The image requires 8,027 bytes of TPA payload above 0100h. Execution on a TPA
+The image requires 8,044 bytes of TPA payload above 0100h. Execution on a TPA
 reduced to that exact minimum has not been qualified. Positions/line tags are
 32-bit; aggregate counters and decimal conversion are 64-bit. Both numeric
 boundaries and non-silent overflow paths have compiled-code tests.
 
 Current candidate SHA-256:
-`ebb75a5abe24844cc34d87eddbb6cc3b2290f88b8c8229949a5db13352cb4a65`.
+`a771b4fcf0b0b04133f3c8d54eb3d9917f66b366a11e95d049a51dc32aa77862`.
 The full selected input fingerprint and source provenance are local build-report
 fields, not embedded Git identifiers or release qualification claims.
 
@@ -126,19 +128,20 @@ The complete-command suite additionally verifies query paths use console output
 only, malformed invocations perform no file/DU/DMA operations, normal and bounded
 TEXT excerpts, control escaping, full uint64 decimal output, Enter/Space page
 advancement, Ctrl-C display suppression with identical totals, essential errors
-after suppression and excerpt reread failures without losing primary counts.
+after suppression excerpt reread failures without losing primary counts, correct paging of
+essential error rows, and unpaged Ctrl-C after the final detail.
 
 The native builder runs ZSM4 4.7/LINK 1.3 under stock CP/M 2.2 in cpmsim and
 compares every COM byte with cross output. Its command fixtures verify the full
 help screen, a 513-record file spanning several extents with a late match at
 byte 65,535, all five totals, and Ctrl-C at a paging prompt. The searched fixture
 is read back unchanged. Native and cross program images are byte-identical; the native CP/M file
-is padded to logical records, so parity compares the 8,027-byte program image.
+is padded to logical records, so parity compares the 8,044-byte program image.
 
 `tools/test_search_media.py` stages disposable copies of supplied BetterCP/M
 platform images. The cpmsim case passes help/query precedence, combined users
 3 and 31, independent TEXT/HEX results, final totals, Ctrl-C continuation and a
-whole-disk byte comparison. See `build/search-platform-cpmsim-candidate-2/` for the local transcript/evidence.
+whole-disk byte comparison. See `build/search-platform-final-7/cpmsim/` for the local transcript/evidence.
 
 The Model 4 case passes user-31 TEXT/HEX results, caller-user restoration through
 SUBMIT, a captured 23-row page plus bottom prompt, Ctrl-C display suppression,
@@ -149,12 +152,12 @@ commands are supplied by startup SUBMIT and only Enter/Ctrl-C are injected.
 A small HOLD probe pauses between commands to capture results reliably.
 All searched fixture contents are read back unchanged. Whole-disk immutability
 is not asserted for this case because startup SUBMIT writes/deletes its own spool.
-Local screens and evidence are in `build/search-platform-model4-startup-6/`.
+Local screens and evidence are in `build/search-platform-final-7/model4/`.
 
 | Focused qualification | Result |
 | --- | --- |
 | Assembled matcher, parser, traversal and complete-command CPU fixtures | PASS |
-| Native ZSM4/LINK program-image parity | PASS, 8,027 bytes |
+| Native ZSM4/LINK program-image parity | PASS, 8,044 bytes |
 | Stock CP/M 2.2 full command, large file/extents, help and paging stop | PASS |
 | BetterCP/M cpmsim users 3/31, results, paging stop, whole disk unchanged | PASS |
 | BetterCP/M Model 4 user 31, captured paging/stop, fixture contents unchanged | PASS |

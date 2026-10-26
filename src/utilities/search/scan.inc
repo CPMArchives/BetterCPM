@@ -6,7 +6,8 @@
 ; Directory traversal is replayed after file I/O (ordinary BDOS has no saved
 ; search cursor API). Earlier entries are checked by canonical name so extents
 ; do not duplicate scans. Quadratic directory work is an explicit initial cost.
-; RHOOK callback sees RWHY: 1 opened file, 2 occurrence, 3 error, 4 file ended.
+; RHOOK callback sees RWHY: 1 opened file, 2 occurrence, 3 error,
+; 4 file ended, 5 record consumed (console polling safe point).
 ; RDRIVE/RUSER and RFILE identify file; RERROR identifies an error (see below).
 ; For occurrence, SRESULT and matcher start/line fields are current. Hook must
 ; not mutate engine state. A renderer may clone the open FCB for bounded
@@ -383,6 +384,8 @@ RBYTENXT:
         DEC A
         LD (RBYTES),A
         JR NZ,RBYTE
+        LD A,5
+        CALL RNOTIFY
         LD HL,RRECORD
         CALL SINC32
         LD HL,RRECORDS

@@ -4,6 +4,8 @@
 ; cloned FCB/private DMA and restore scan DMA before returning to the engine.
 RHOOK:
         LD A,(RWHY)
+        CP 5
+        JP Z,DPOLL
         CP 1
         JR Z,DNEWFILE
         CP 3
@@ -393,6 +395,9 @@ DERRHEX:
         CALL DHEX32
 DERRDONE:
         CALL DLINE
+        LD A,(DSUPP)
+        OR A
+        CALL Z,DCOUNT
         POP AF
         LD (DOUTPUT),A
         RET
@@ -586,6 +591,7 @@ DLINEGO:
         LD A,(DOUTPUT)
         OR A
         RET NZ
+DCOUNT:
         LD A,(PPAGED)
         OR A
         RET Z

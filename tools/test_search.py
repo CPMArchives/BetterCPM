@@ -57,6 +57,8 @@ def main():
     assert q['totals'] == [1,1,1,0,1]
     assert '[...]' in q['output'] and 'AB' in q['output']
     assert len(q['output']) < 1000
+    last_detail = run('"AB" A0:*.TXT /NOHEX', {(0,0):[entry('ONE.TXT')]}, {a:payload}, cancel_after=120)
+    assert last_detail['totals'] == q['totals'] and 'DISPLAY INTERRUPTED' in last_detail['output']
     # Mixed line boundaries and a matched terminator spanning CRLF.
     payload = b'X\r\nX\rX\nX'
     payload += b'.'*(-len(payload)%128)
@@ -97,6 +99,14 @@ def main():
     reread = run('"X" A0:*.TXT /NOHEX', dirs, files, render_error=(a,0))
     assert reread['incomplete'] and reread['totals'] == plain['totals']
     assert 'Search incomplete' in reread['output']
+    # Essential errors occupy rendered rows too. After display suppression,
+    # they remain visible and cannot create another prompt.
+    errors = run('"X" [A[16-31],B[16-31]]:*.TXT /NOHEX /P', {}, {},
+                 max_user=15, keys=b'\x03')
+    assert errors['output'].count('Location unavailable') == 32
+    assert errors['output'].count('Space/Enter:') == 1
+    assert 'DISPLAY INTERRUPTED' in errors['output'] and errors['incomplete']
+    assert errors['totals'] == [0]*5
     # Decimal summaries retain full uint64 precision, including saturation.
     c = reread['c']
     for number in (0, 0x100000000, 0xFFFFFFFFFFFFFFFF):
