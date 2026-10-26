@@ -1,4 +1,4 @@
-; ARK is a supplemental module in otherwise unused writer-plan storage.
+; ARK loads at NW_OVERLAY, separate from the reserved NW_ARC_PLANS table.
 ; It never replaces the running controller, its stack, or the frozen queue.
 NH_FORMAT_OPEN:
  XOR A
@@ -36,26 +36,26 @@ NH_ARK_LOAD:
  LD HL,NH_READ_POLL
  LD (IX+AS_READ),L
  LD (IX+AS_READ+1),H
- JP NW_PLANS
+ JP NW_OVERLAY
 NH_REOPEN:
  LD A,(NH_ARK)
  OR A
  JP Z,LBR_OPEN
- JP NW_PLANS
+ JP NW_OVERLAY
 NH_NEXT:
  LD A,(NH_ARK)
  OR A
  JP Z,LBR_NEXT
- JP NW_PLANS+6
+ JP NW_OVERLAY+6
 NH_READ:
  LD A,(NH_ARK)
  OR A
  JP Z,LBR_READ
- JP NW_PLANS+9
+ JP NW_OVERLAY+9
 NH_MEMBER_PROBE:
  LD A,(NH_ARK)
  OR A
  JP Z,NC_MEMBER_PROBE
  XOR A
  LD (NC_MEMBER_PENDING),A
- JP NW_PLANS+12
+ JP NW_OVERLAY+12
