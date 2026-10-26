@@ -32,8 +32,11 @@ streaming decode, exact length and CRC checks. The
 [Huffman/RLE decoder](NOAH%20ARK%20Huffman%20Decoding.md) adds method 4 with bounded
 tree validation. The [LZW decoder](NOAH%20ARK%20LZW%20Decoding.md) adds ARC
 methods 5–9 with bounded dictionary workspace and both-platform qualification.
-ARK updates, broader interoperability/release qualification, the browser and
-release packaging remain open.
+The isolated [method-4 encoding foundation](NOAH%20ARK%20Encoding.md) proves
+that the existing SQ encoder can emit an ARC body without its standalone prefix;
+production ARC writes remain unsupported. Method-8 encoding, staged ARK updates,
+broader interoperability/release qualification, the browser and release
+packaging remain open.
 The bounded [compatibility/API/overlay and Model 4 memory proof](NOAH%20Compatibility%20and%20Memory%20Proof.md)
 records increments 1–2 and prototype limits. Its native LINK gate is now closed
 on source-verified system media; see the [resolution](NOAH-Model4-LINK-Resolution.json).
