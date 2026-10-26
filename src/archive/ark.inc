@@ -9,7 +9,9 @@
 ; AM_LENGTH is declared decoded length; AS_LEFT is remaining STORED bytes.
 ; AM_FLAGS bit1 means CRC present even when zero, not CRC verified.
 ; AM_DATES starts with raw DOS date,time words; byte 41 tags their encoding.
-; Date conversion, duplicate-name audit, writes and CLI integration are separate.
+; Date conversion, duplicate-name audit, payload/archive writes and CLI
+; integration are separate. arkwrite.mac currently supplies header framing
+; only; it does not advertise archive write capability.
 ; On archive EOF, AS_DIR_END = byte immediately after the 1Ah/00h marker.
 ; AS_UNUSED_SEEN: 0 exact EOF, 1 all trailing bytes 00h/1Ah padding,
 ; 2 opaque trailing bytes (unvalidated; never silently claim clean coverage).

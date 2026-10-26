@@ -1,0 +1,229 @@
+; ARC member-header serializer. Static scratch makes this entry non-reentrant.
+ARK_WRITE_CODE MACRO
+ARK_BUILD_HEADER:
+        LD A,(IX+AS_MEMBER+AM_METHOD)
+        CP 2
+        JR Z,ARW_METHOD_OK
+        CP 4
+        JR Z,ARW_METHOD_OK
+        CP 8
+        JR Z,ARW_METHOD_OK
+        LD A,AS_UNSUPPORTED
+        SCF
+        RET
+ARW_METHOD_OK:
+        ; Validate canonical space-padded 8+3 before changing AS_ENTRY.
+        PUSH IX
+        POP DE
+        LD HL,AS_MEMBER+AM_NAME
+        ADD HL,DE
+        LD B,8
+        XOR A
+        LD (ARW_BASE_END),A
+        LD (ARW_BASE_LENGTH),A
+        LD (ARW_DOT),A
+ARW_BASE_CHECK:
+        LD A,(HL)
+        LD (ARW_CHAR),A
+        INC HL
+        CP ' '
+        JR NZ,ARW_BASE_CHAR
+        LD A,1
+        LD (ARW_BASE_END),A
+        JR ARW_BASE_NEXT
+ARW_BASE_CHAR:
+        LD A,(ARW_BASE_END)
+        OR A
+        JP NZ,ARW_BAD_NAME
+        LD A,(ARW_CHAR)
+        CALL ARW_CHECK_CHAR
+        JP C,ARW_BAD_NAME
+        LD A,(ARW_BASE_LENGTH)
+        INC A
+        LD (ARW_BASE_LENGTH),A
+ARW_BASE_NEXT:
+        DJNZ ARW_BASE_CHECK
+        LD A,(ARW_BASE_LENGTH)
+        OR A
+        JP Z,ARW_BAD_NAME
+        LD A,0
+        LD (ARW_EXT_END),A
+        LD B,3
+ARW_EXT_CHECK:
+        LD A,(HL)
+        LD (ARW_CHAR),A
+        INC HL
+        CP ' '
+        JR NZ,ARW_EXT_CHAR
+        LD A,1
+        LD (ARW_EXT_END),A
+        JR ARW_EXT_NEXT
+ARW_EXT_CHAR:
+        LD A,(ARW_EXT_END)
+        OR A
+        JP NZ,ARW_BAD_NAME
+        LD A,(ARW_CHAR)
+        CALL ARW_CHECK_CHAR
+        JP C,ARW_BAD_NAME
+        LD A,1
+        LD (ARW_DOT),A
+ARW_EXT_NEXT:
+        DJNZ ARW_EXT_CHECK
+        ; Commit only after validation. The zero-fill supplies the name NUL,
+        ; zero-initialized metadata defaults and reserved header bytes.
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY
+        ADD HL,DE
+        LD B,ARW_HEADER_SIZE
+        XOR A
+ARW_CLEAR_HEADER:
+        LD (HL),A
+        INC HL
+        DJNZ ARW_CLEAR_HEADER
+        LD (IX+AS_ENTRY),01AH
+        LD A,(IX+AS_MEMBER+AM_METHOD)
+        LD (IX+AS_ENTRY+1),A
+        PUSH IX
+        POP HL
+        LD DE,AS_MEMBER+AM_NAME
+        ADD HL,DE
+        PUSH IX
+        POP DE
+        LD BC,AS_ENTRY+2
+        EX DE,HL
+        ADD HL,BC
+        EX DE,HL
+        LD B,8
+ARW_COPY_BASE:
+        LD A,(HL)
+        CP ' '
+        JR Z,ARW_COPY_EXT_START
+        CALL ARW_UPPER
+        LD (DE),A
+        INC DE
+        INC HL
+        DJNZ ARW_COPY_BASE
+ARW_COPY_EXT_START:
+        LD A,(IX+AS_MEMBER+AM_NAME+8)
+        CP ' '
+        JR Z,ARW_COPY_DONE
+        LD A,'.'
+        LD (DE),A
+        INC DE
+        PUSH IX
+        POP HL
+        LD BC,AS_MEMBER+AM_NAME+8
+        ADD HL,BC
+        LD B,3
+ARW_COPY_EXT:
+        LD A,(HL)
+        CP ' '
+        JR Z,ARW_COPY_DONE
+        CALL ARW_UPPER
+        LD (DE),A
+        INC DE
+        INC HL
+        DJNZ ARW_COPY_EXT
+ARW_COPY_DONE:
+        ; ARC new-format header fields: size, DOS date/time, CRC, logical size.
+        PUSH IX
+        POP HL
+        LD DE,AS_MEMBER+AM_STORED
+        ADD HL,DE
+        PUSH HL
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY+15
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD BC,4
+        LDIR
+        PUSH IX
+        POP HL
+        LD DE,AS_MEMBER+AM_DATES
+        ADD HL,DE
+        PUSH HL
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY+19
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD BC,4
+        LDIR
+        PUSH IX
+        POP HL
+        LD DE,AS_MEMBER+AM_CRC
+        ADD HL,DE
+        PUSH HL
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY+23
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD BC,2
+        LDIR
+        PUSH IX
+        POP HL
+        LD DE,AS_MEMBER+AM_LENGTH
+        ADD HL,DE
+        PUSH HL
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY+25
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD BC,4
+        LDIR
+        LD A,ARW_HEADER_SIZE
+        OR A
+        RET
+ARW_BAD_NAME:
+        LD A,AS_FORMAT
+        SCF
+        RET
+; A=one canonical filename character. AF/HL/BC are scratch.
+ARW_CHECK_CHAR:
+        CP 21H
+        JR C,ARW_CHAR_BAD
+        CP 7FH
+        JR NC,ARW_CHAR_BAD
+        CP '.'
+        JR Z,ARW_CHAR_BAD
+        PUSH HL
+        PUSH BC
+        LD HL,ARW_BAD_CHARS
+        LD B,14
+ARW_CHAR_SCAN:
+        CP (HL)
+        JR Z,ARW_CHAR_REJECT
+        INC HL
+        DJNZ ARW_CHAR_SCAN
+        POP BC
+        POP HL
+        OR A
+        RET
+ARW_CHAR_REJECT:
+        POP BC
+        POP HL
+ARW_CHAR_BAD:
+        SCF
+        RET
+ARW_UPPER:
+        CP 'a'
+        RET C
+        CP 'z'+1
+        RET NC
+        SUB 32
+        RET
+ARW_BAD_CHARS: DB '<>,;:=?*[]/\|"'
+ARW_BASE_END: DB 0
+ARW_BASE_LENGTH: DB 0
+ARW_EXT_END: DB 0
+ARW_DOT: DB 0
+ARW_CHAR: DB 0
+        ENDM
