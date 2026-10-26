@@ -38,8 +38,11 @@ def entry(name, extent=0, attrs=0):
 def execute(image, address, tail, directories, contents, *, caller=(2,7),
             read_error=None, open_error=None, close_error=None,
             dir_error=None, supported_drives=range(16), max_user=31,
-            command=False, keys=b' ', cancel_after=None, render_error=None):
+            command=False, keys=b' ', cancel_after=None, render_error=None,
+            entry_sp=None, bdos_stack_bytes=0):
     c = Z80(b'')
+    if entry_sp is not None:
+        c.sp = entry_sp
     c.min_private_sp = 65535
     original_push = c.push
     private_top = address('DSTACK') if command else 0
@@ -53,10 +56,11 @@ def execute(image, address, tail, directories, contents, *, caller=(2,7),
     c.mem[5:8] = b'\xd3\x00\xc9'
     raw = tail.encode('ascii')
     assert len(raw) <= 127
-    c.mem[0x7000:0x7000+len(raw)] = raw
     if command:
         c.mem[0x80] = len(raw)
         c.mem[0x81:0x81+len(raw)] = raw
+    else:
+        c.mem[0x7000:0x7000+len(raw)] = raw
     c.hl, c.b = 0x7000, len(raw)
     c.d, c.e = caller
     sp = c.sp
@@ -105,6 +109,12 @@ def execute(image, address, tail, directories, contents, *, caller=(2,7),
             return
         assert port == 0
         fn = c.c
+        # Optional service-stack envelope: exercise caller reserve without
+        # pretending this adapter measures a particular physical BDOS/BIOS.
+        for _ in range(bdos_stack_bytes // 2):
+            c.push(0xBDBD)
+        for _ in range(bdos_stack_bytes // 2):
+            assert c.pop() == 0xBDBD
         services.append(fn)
         if fn == 6:
             if c.e == 255:

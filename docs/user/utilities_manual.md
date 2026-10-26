@@ -6,7 +6,8 @@ The Utilities Disk is being assembled separately from the System Disk. This manu
 
 The COMPARE chapter describes a development utility. COMPARE is not yet qualified
 or included in current Utilities Disk images. SEARCH is also a development
-utility; its runnable command has focused qualification but is not on release disks.
+utility; its command and resource checks pass on both BetterCP/M targets, but it
+is not on release disks.
 
 ## Contents
 
@@ -189,7 +190,11 @@ continues elsewhere when safe and marks the final summary incomplete whenever
 selected data could not be searched. Such totals describe observed data only;
 zero matches after an error is not proof that all selected files lack the pattern.
 Some platform disk-error paths prompt or warm boot without returning to SEARCH;
-full recovery and final totals cannot be promised on those paths.
+full recovery and final totals cannot be promised on those paths. Ctrl-C at an
+OS `Bad Sector` prompt may warm boot; it is different from Ctrl-C at SEARCH's
+own paging prompt. SEARCH needs an 8 KiB TPA budget on the qualified platforms.
+Large directories can be slow because it replays directory searches after file
+reads; a full 64-entry directory took about 23 seconds at an emulated 4 MHz.
 
 SEARCH restores the caller's drive and user area on every handled exit. It does
 not alter files or attributes, create temporary result files, search inside

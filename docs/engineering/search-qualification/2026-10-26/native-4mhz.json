@@ -1,0 +1,26 @@
+{
+  "sha256": "a771b4fcf0b0b04133f3c8d54eb3d9917f66b366a11e95d049a51dc32aa77862",
+  "platform": "stock CP/M 2.2 cpmsim",
+  "configured_mhz": 4,
+  "results": [
+    {
+      "directory_entries": 8,
+      "elapsed_ms": 992,
+      "stack_watermark_bytes": 64,
+      "data_disk_unchanged": true
+    },
+    {
+      "directory_entries": 32,
+      "elapsed_ms": 6895,
+      "stack_watermark_bytes": 64,
+      "data_disk_unchanged": true
+    },
+    {
+      "directory_entries": 64,
+      "elapsed_ms": 22990,
+      "stack_watermark_bytes": 64,
+      "data_disk_unchanged": true
+    }
+  ],
+  "limits": "Host elapsed time; stack watermark of exercised paths only, not a worst-case BIOS or interrupt proof."
+}

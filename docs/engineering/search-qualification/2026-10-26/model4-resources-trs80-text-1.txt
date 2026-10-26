@@ -1,0 +1,23 @@
+A0:PAGES.TXT [TEXT] line 11: X
+A0:PAGES.TXT [TEXT] line 12: X
+A0:PAGES.TXT [TEXT] line 13: X
+A0:PAGES.TXT [TEXT] line 14: X
+A0:PAGES.TXT [TEXT] line 15: X
+A0:PAGES.TXT [TEXT] line 16: X
+A0:PAGES.TXT [TEXT] line 17: X
+A0:PAGES.TXT [TEXT] line 18: X
+A0:PAGES.TXT [TEXT] line 19: X
+A0:PAGES.TXT [TEXT] line 20: X
+A0:PAGES.TXT [TEXT] line 21: X
+A0:PAGES.TXT [TEXT] line 22: X
+A0:PAGES.TXT [TEXT] line 23: X
+Space/Enter: next page; Ctrl-C: stop display
+DISPLAY INTERRUPTED
+SEARCH CONTINUING...
+Files searched: 1
+Files matched: 1
+Text matches: 80
+Hex matches: 0
+Total matches: 80
+
+PROBE STACK USED HEX: 0040 GUARD OK

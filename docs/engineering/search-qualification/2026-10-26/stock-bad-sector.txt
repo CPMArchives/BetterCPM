@@ -1,0 +1,18 @@
+Booting...
+
+
+
+62K CP/M Vers. 2.2 (CBIOS V1.3-HD for Z80SIM, Copyright 1988-2019 by Udo Munk)
+
+A>SEARCH "X" B0:F0000000.TXT /NOHEX
+
+
+Bdos Err On B: Bad Sector
+A>[0;31mE (3012) IO: can't read console 0[0m
+
+
+User Interrupt at 0xf3e0
+
+I/O ran for 1 ms, waited for 0 ms
+CPU executed 1325558 t-states in 0 ms
+Clock frequency 2604.23 MHz

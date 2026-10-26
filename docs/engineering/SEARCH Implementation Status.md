@@ -1,7 +1,8 @@
 # SEARCH implementation and qualification status
 
-**Status:** Runnable SEARCH 1.0 development command, 2026-10-26. Release
-qualification and distribution promotion remain separate. The
+**Status:** Runnable SEARCH 1.0 development command, qualification updated 2026-10-27. Additional resource, directory and media-error checks now pass; see the
+[candidate qualification](SEARCH%20Qualification.md). Final paired Utilities Disk
+acceptance and distribution promotion remain separate. The
 [engineering specification](SEARCH%20Specification.md) controls the behavior;
 the [manual](../user/utilities_manual.md#search-file-content-search) describes
 the implemented interface.
@@ -93,8 +94,9 @@ frames; this is not a worst-case physical-BDOS stack measurement. Guard checks
 pass on query, invalid-command, result, paging, suppression and error paths.
 No allocation grows with file size, line length, match count or directory size.
 
-The image requires 8,044 bytes of TPA payload above 0100h. Execution on a TPA
-reduced to that exact minimum has not been qualified. Positions/line tags are
+The image occupies 8,044 bytes of TPA payload above 0100h. An 8 KiB advertised
+TPA budget and lowered caller stack now pass on all three platforms through a
+resident observer; the exact absolute minimum is not claimed. Positions/line tags are
 32-bit; aggregate counters and decimal conversion are 64-bit. Both numeric
 boundaries and non-silent overflow paths have compiled-code tests.
 
@@ -161,16 +163,18 @@ Local screens and evidence are in `build/search-platform-final-7/model4/`.
 | Stock CP/M 2.2 full command, large file/extents, help and paging stop | PASS |
 | BetterCP/M cpmsim users 3/31, results, paging stop, whole disk unchanged | PASS |
 | BetterCP/M Model 4 user 31, captured paging/stop, fixture contents unchanged | PASS |
-| Complete release acceptance, hidden/nonreturning physical faults, minimum TPA | Not claimed |
+| Whole Utilities release acceptance and absolute minimum TPA | Not claimed |
 
 ## Remaining release work
 
-- Broaden Model 4 scripted and interactive command-entry coverage; the focused
-  run verifies startup SUBMIT and the two physical paging keys.
-- Broaden actual-platform error/media and large-directory performance evidence;
-  CPU fault simulation alone does not qualify physical failures.
-- Qualify reduced-TPA operation and the full physical-BDOS stack budget before
-  declaring a minimum supported TPA or release resource ceiling.
-- Review the complete command and qualification evidence, then assign an accepted
-  input baseline and decide distribution separately. Current binaries remain
-  development artifacts and this work does not merge or publish a release.
+The [candidate qualification](SEARCH%20Qualification.md) records measured directory
+cost, an 8 KiB TPA budget, native stack watermarks and actual emulated BIOS read
+failures. No production executable change was required.
+
+- Review the component evidence and accepted input baseline separately.
+- Integrate SEARCH into newly generated paired Utilities images and renew the
+  acceptance receipts bound to those images; existing receipts cannot transfer.
+- Physical media timing, arbitrary BIOS/interrupt stack use and broader Model 4
+  interactive command typing remain explicit limits, not claimed test outcomes.
+
+SEARCH remains a development candidate until final distribution acceptance.
