@@ -47,7 +47,7 @@ boundary against the existing [reference hashes](../../tests/fixtures/noah/refer
 | 1, old stored | 25-byte header | Yes, identity/stored bytes | No |
 | 2, stored | 29-byte header | Yes, identity/stored bytes | No |
 | 3, packed RLE | 29-byte header | Yes, method-3 decoder | No |
-| 4, squeezed | 29-byte header | Yes, Huffman/RLE decoder | No |
+| 4, squeezed | 29-byte header | Yes, Huffman/RLE decoder | No in production; isolated SQ body adapter proof |
 | 5/6/7, historical crunched variants | 29-byte header | Yes, static LZW variants | No |
 | 8, dynamic crunched | 29-byte header | Yes, dynamic LZW/RLE | No |
 | 9, squashed | 29-byte header | Yes, 13-bit dynamic LZW | No |
@@ -59,7 +59,9 @@ standalone CP/M Crunch files cannot be relabelled as native ARC method 8, and an
 explicit selector must not silently fall back to a different method or stored
 output. The [method 5–9 decoder qualification](NOAH%20ARK%20LZW%20Decoding.md)
 records historical interoperability and the measured 24 KiB dictionary bound.
-Encoder provenance and compatible archive creation remain separate gates.
+The [method-4 encoding foundation](NOAH%20ARK%20Encoding.md) reuses the owned SQ
+Huffman/RLE body in an isolated proof; it is not production archive-write support.
+Method-8 encoder provenance and compatible archive creation remain separate gates.
 
 `AM_ID` is the header offset; `AM_OFFSET` is the stored payload offset;
 `AM_STORED` is stored length; `AM_LENGTH` is declared decoded length. Methods 1/2
