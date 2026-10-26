@@ -1,8 +1,7 @@
 # NOAH ARC encoding and writer integration
 
-Status: production command integration implemented, 2026-10-26. Native z80pack
-ZSM4/LINK parity and ARC transactions pass; current Model 4 qualification is in
-progress. See [the integration record](NOAH%20ARC%20Write%20Integration.md) for
+Status: production command integration implemented, 2026-10-26. Native ZSM4/LINK parity, ARC transactions and
+NOAH companion-volume execution pass on z80pack and Model 4. See [the integration record](NOAH%20ARC%20Write%20Integration.md) for
 transaction, workspace and qualification details. The
 [NOAH specification](NOAH%20Specification.md) remains normative.
 

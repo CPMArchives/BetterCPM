@@ -36,8 +36,9 @@ The [ARC encoding and write integration](NOAH%20ARC%20Write%20Integration.md)
 implements production stored/method-4/method-8 creation and ADD/replacement,
 REMOVE and byte-preserving COMPACT. Construction digests, complete staged
 readback, source/archive stability checks and the shared publication/rollback
-path are implemented. Current native z80pack transactions and independent ARC/
-Deark decoding pass; current Model 4 and final media qualification are in progress.
+path are implemented. Native transactions, independent ARC/Deark decoding, exact final
+ZSM4/LINK parity and companion-media execution pass on both platforms; the
+integration record separates full-baseline and final-delta evidence.
 The interactive browser, ZIP and LZH/CrLZH selectors remain deferred.
 The bounded [compatibility/API/overlay and Model 4 memory proof](NOAH%20Compatibility%20and%20Memory%20Proof.md)
 records increments 1–2 and prototype limits. Its native LINK gate is now closed
@@ -713,4 +714,6 @@ in progress until the applicable deliverables are satisfied.
 All substantive user-policy decisions identified by consolidation are settled.
 Historical ARK encodings are required; standalone EXPAND copies ordinary files
 unchanged with notice; from-scratch LBR rebuilds copy active members only.
-Implementation and qualification gates in section 16 remain outstanding.
+Current implementation and qualification evidence is recorded in the
+[ARC integration record](NOAH%20ARC%20Write%20Integration.md). Browser and future
+container selectors remain outside the completed command-line increment.

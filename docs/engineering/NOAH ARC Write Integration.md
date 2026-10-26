@@ -1,8 +1,8 @@
 # NOAH ARC write integration
 
-Status: implementation and host fault qualification complete; current native
-z80pack campaign passes. Current Model 4 and packaged-media qualification remain
-in progress, 2026-10-26. PR 521 remains unmerged. The
+Status: production ARC command integration and both-platform qualification
+complete, 2026-10-26. The exact final binaries pass native ZSM4/LINK comparison
+and execution from the NOAH companion Utilities disks. PR 521 remains unmerged. The
 [NOAH specification](NOAH%20Specification.md) defines behavior; this record
 explains its implementation and evidence without changing that scope.
 
@@ -92,7 +92,7 @@ The current z80pack receipt records resident bytes, rounded window, every phase
 requirement and plan base. Its largest fixed phase ends at BB80h, below the loaded
 C501h z80pack and CA01h Model 4 ceilings. Per-operation plan memory is checked
 separately. Host tests measure a 56-byte maximum stack within the existing
-512-byte allocation. Native Model 4 claims await the current campaign.
+512-byte allocation. Native execution confirms both loaded ceilings.
 
 Disk costs include the original archive, full replacement stage and rollback
 reservation. Compressed preparation additionally retains one current candidate
@@ -101,7 +101,7 @@ encoded record streams. Exact aggregate size depends on actual codec output;
 explicit compression may increase size. Full-media errors never permit an
 in-place update or omitted member.
 
-## Qualification and remaining acceptance
+## Qualification and distribution
 
 `tools/test_noah.py` covers production creation, retained-copy buffers, REMOVE,
 COMPACT, native SQ/CR creation/replacement, empty/binary inputs, TPA bounds,
@@ -118,9 +118,31 @@ Original ARC and Deark independently decode the generated method-2/4/8 archives;
 Deark also checks the larger SQ/CR outputs. Every disposable native filesystem is
 checked and the source System/Utilities images must remain unchanged.
 
-Current z80pack passes. The current Model 4 campaign is running. The disk builder now emits a separate NOAH companion Utilities volume for each
-platform. The 332K primary was 8 KiB short with NOAH.COM, NOAH.OVL and NOAH.TXT;
-no selected primary program or license text was removed. Independent inventory,
-allocation, file readback and DMK/raw checks pass for all four images. Native
-companion-volume execution remains to be qualified. No whole Utilities Disk
-release acceptance or interactive browser completion is claimed here.
+The full transaction campaigns pass on z80pack and Model 4. The exact final
+module bytes and companion-volume execution pass on both platforms. The full
+campaigns precede two small final deltas: opaque-suffix warning reporting and a
+failure outcome for rejected low-memory transactions. The final native/media
+campaign covers the warning path; the final 181-case production host campaign
+also covers the memory-failure outcome. The
+[qualification receipt](NOAH-ARC-Write-Qualification.json) records the exact
+binary/image hashes and this evidence boundary. Its
+[evidence bundle](NOAH-ARC-Write-evidence.tar.gz) includes both full campaigns,
+the final native/media campaigns, generated source, consoles and output files.
+Unchanged native modules may be reused only after exact byte/padding comparison;
+changed modules are assembled and linked again. A clean checkout after merging
+main also reproduces the final NOAH.COM and overlay bytes.
+
+The disk builder emits a separate NOAH companion Utilities volume for each
+platform, containing NOAH.COM, its matching NOAH.OVL and NOAH.TXT:
+
+- `BetterCPM-NOAH-z80pack-332K.dsk`
+- `BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk`
+
+The 332K primary was 8 KiB short with these files; no selected primary program
+or license text was removed. Independent inventory, allocation, file readback
+and DMK/raw checks pass for all four images. Mount the companion in B: to use
+NOAH, and keep archives/sources on the writable work disk. The package retains
+corresponding source and the unchanged third-party tool/license companions.
+ZSM4/LINK are qualification tools, excluded from BetterCP/M-owned versioning.
+NOAH component acceptance does not claim whole Utilities release acceptance.
+The interactive browser, ZIP and LZH/CrLZH selectors remain deferred.

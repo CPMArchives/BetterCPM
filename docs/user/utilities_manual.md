@@ -981,6 +981,8 @@ The host Utilities package includes the complete ZSM4 source companion.
 ## NOAH archive utility
 
 NOAH manages CP/M LBR libraries and ARC-compatible `.ARK`/`.ARC` archives.
+It is supplied on a separate NOAH Utilities disk for each platform. Mount that
+disk in B: in place of the primary Utilities disk when using NOAH.
 Keep `NOAH.COM` and its matching `NOAH.OVL` together. Change to their disk/user
 before starting NOAH, then qualify the archive and source operands with their
 writable work disks. Overlay lookup uses that invocation DU, then A0:.
