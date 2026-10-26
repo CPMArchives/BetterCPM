@@ -117,6 +117,21 @@ isolated library proof, not NOAH command integration. `/ADD`, replacement,
 `/REMOVE`, `/COMPACT`, trailer preservation, staged readback and
 publication/recovery remain open.
 
+`tools/qualify_ark_writer_cpm.py` adds one native CP/M method-2 write check.
+On z80pack, unmodified ZSM4/LINK build the proof, and the program writes a
+522-byte deterministic member plus the ARC end marker. The extracted 640-byte
+CP/M file matches the independent 553-byte ARC oracle followed only by `1Ah`
+record padding. The linked proof ends at `13ACh` against the measured `C501h`
+active TPA ceiling. Its [receipt](NOAH-ARK-Writer-Native.json) records the
+input-system and output hashes. This is an isolated library/runtime check; it
+does not exercise NOAH archive staging, retained members, recovery, or
+publication.
+
+The same run has not completed on the Model 4. The local trs80gp 2.5.8 process
+aborted during startup on macOS 27.2, and LaunchServices could not launch the
+temporary test bundle. Treat Model 4 writer qualification as pending; the
+z80pack result does not close the cross-platform gate.
+
 ## Remaining encoding and update work
 
 - Wire the production method-4/8 encoders and method-2 copy path to `/ADD`,

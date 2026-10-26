@@ -1,0 +1,24 @@
+{
+  "scope": "isolated ARK method-2 member writer under native CP/M",
+  "payload_bytes": 522,
+  "archive_bytes": 553,
+  "archive_sha256": "a40d9906d5b8424b467a659abec5f66a2d4707a9a295f0df848dfc64b192ee30",
+  "verified_systems": {
+    "z80pack": {
+      "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+      "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+      "image_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1"
+    }
+  },
+  "platforms": {
+    "z80pack": {
+      "status": "PASS",
+      "runtime_ceiling_hex": "C501",
+      "image_bytes": 4780,
+      "required_end_hex": "13AC",
+      "native_image_sha256": "4b510d48e7aeaaea8fc91febc30a5e73f3fee49f89ccf1b502e8d36dcb4fad7f",
+      "console_sha256": "f2e9c227174c809d93b8a6a2f31852448313beb187c2e82c8a00276038d06b16",
+      "archive_file_sha256": "9fe6692ba1fea718e0618a45c6b5300a375ae65c6668c6761c86c7c95f03eaf7"
+    }
+  }
+}
