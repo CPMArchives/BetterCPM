@@ -1,4 +1,4 @@
-; ARC member-header serializer. Static scratch makes this entry non-reentrant.
+; ARC member writer. Static scratch makes these entries non-reentrant.
 ARK_WRITE_CODE MACRO
 ARK_BUILD_HEADER:
         LD A,(IX+AS_MEMBER+AM_METHOD)
@@ -182,6 +182,279 @@ ARW_COPY_DONE:
         LD A,ARW_HEADER_SIZE
         OR A
         RET
+; Stream one prepared member. The source and output callbacks transfer the
+; exact AS_COUNT bytes and report AS_ACTUAL; the caller handles disk records.
+ARK_WRITE_MEMBER:
+        LD A,(IX+AS_READ)
+        OR (IX+AS_READ+1)
+        JP Z,ARW_CONFIG
+        LD A,(IX+AS_BUFFER)
+        OR (IX+AS_BUFFER+1)
+        JP Z,ARW_CONFIG
+        LD L,(IX+AS_BUFFER)
+        LD H,(IX+AS_BUFFER+1)
+        LD (ARW_BUFFER_PTR),HL
+        LD A,(IX+AS_MEMBER+AM_WRITE_CB)
+        OR (IX+AS_MEMBER+AM_WRITE_CB+1)
+        JP Z,ARW_CONFIG
+        CALL ARK_BUILD_HEADER
+        RET C
+        LD L,(IX+AS_MEMBER+AM_OUTPUT_OFFSET)
+        LD H,(IX+AS_MEMBER+AM_OUTPUT_OFFSET+1)
+        LD (IX+AS_OFFSET),L
+        LD (IX+AS_OFFSET+1),H
+        LD L,(IX+AS_MEMBER+AM_OUTPUT_OFFSET+2)
+        LD H,(IX+AS_MEMBER+AM_OUTPUT_OFFSET+3)
+        LD (IX+AS_OFFSET+2),L
+        LD (IX+AS_OFFSET+3),H
+        LD HL,AS_ENTRY
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        LD (IX+AS_BUFFER),L
+        LD (IX+AS_BUFFER+1),H
+        LD (IX+AS_COUNT),ARW_HEADER_SIZE
+        LD (IX+AS_COUNT+1),0
+        CALL ARW_CALL_WRITE
+        JP C,ARW_OUTPUT_ERROR
+        LD A,(IX+AS_ACTUAL)
+        CP ARW_HEADER_SIZE
+        JP NZ,ARW_OUTPUT_ERROR
+        LD A,(IX+AS_ACTUAL+1)
+        OR A
+        JP NZ,ARW_OUTPUT_ERROR
+        CALL ARW_ADVANCE_OUTPUT
+        JP C,ARW_RANGE
+        LD HL,AS_MEMBER+AM_STORED
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        PUSH HL
+        LD DE,AS_MEMBER+AM_REMAIN
+        PUSH IX
+        POP HL
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD BC,4
+        LDIR
+        LD HL,AS_MEMBER+AM_OFFSET
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        PUSH HL
+        LD DE,AS_MEMBER+AM_SOURCE_OFFSET
+        PUSH IX
+        POP HL
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD BC,4
+        LDIR
+ARW_MEMBER_LOOP:
+        LD A,(IX+AS_MEMBER+AM_REMAIN)
+        OR (IX+AS_MEMBER+AM_REMAIN+1)
+        OR (IX+AS_MEMBER+AM_REMAIN+2)
+        OR (IX+AS_MEMBER+AM_REMAIN+3)
+        JP Z,ARW_MEMBER_DONE
+        ; Min(remaining,128), represented in the public 16-bit count.
+        LD A,(IX+AS_MEMBER+AM_REMAIN+2)
+        OR (IX+AS_MEMBER+AM_REMAIN+3)
+        JR NZ,ARW_MEMBER_FULL
+        LD A,(IX+AS_MEMBER+AM_REMAIN+1)
+        OR A
+        JR NZ,ARW_MEMBER_FULL
+        LD A,(IX+AS_MEMBER+AM_REMAIN)
+        CP 129
+        JR NC,ARW_MEMBER_FULL
+        LD (IX+AS_COUNT),A
+        JR ARW_MEMBER_COUNT_READY
+ARW_MEMBER_FULL:
+        LD A,128
+        LD (IX+AS_COUNT),A
+ARW_MEMBER_COUNT_READY:
+        XOR A
+        LD (IX+AS_COUNT+1),A
+        LD L,(IX+AS_MEMBER+AM_SOURCE_OFFSET)
+        LD H,(IX+AS_MEMBER+AM_SOURCE_OFFSET+1)
+        LD (IX+AS_OFFSET),L
+        LD (IX+AS_OFFSET+1),H
+        LD L,(IX+AS_MEMBER+AM_SOURCE_OFFSET+2)
+        LD H,(IX+AS_MEMBER+AM_SOURCE_OFFSET+3)
+        LD (IX+AS_OFFSET+2),L
+        LD (IX+AS_OFFSET+3),H
+        LD HL,(ARW_BUFFER_PTR)
+        LD (IX+AS_BUFFER),L
+        LD (IX+AS_BUFFER+1),H
+        CALL ARW_CALL_READ
+        JP C,ARW_READ_ERROR
+        LD A,(IX+AS_ACTUAL)
+        CP (IX+AS_COUNT)
+        JP NZ,ARW_READ_SHORT
+        LD A,(IX+AS_ACTUAL+1)
+        CP (IX+AS_COUNT+1)
+        JP NZ,ARW_READ_SHORT
+        CALL ARW_ADVANCE_SOURCE
+        JP C,ARW_RANGE
+        LD L,(IX+AS_MEMBER+AM_OUTPUT_OFFSET)
+        LD H,(IX+AS_MEMBER+AM_OUTPUT_OFFSET+1)
+        LD (IX+AS_OFFSET),L
+        LD (IX+AS_OFFSET+1),H
+        LD L,(IX+AS_MEMBER+AM_OUTPUT_OFFSET+2)
+        LD H,(IX+AS_MEMBER+AM_OUTPUT_OFFSET+3)
+        LD (IX+AS_OFFSET+2),L
+        LD (IX+AS_OFFSET+3),H
+        LD HL,(ARW_BUFFER_PTR)
+        LD (IX+AS_BUFFER),L
+        LD (IX+AS_BUFFER+1),H
+        CALL ARW_CALL_WRITE
+        JP C,ARW_OUTPUT_ERROR
+        LD A,(IX+AS_ACTUAL)
+        CP (IX+AS_COUNT)
+        JP NZ,ARW_OUTPUT_ERROR
+        LD A,(IX+AS_ACTUAL+1)
+        CP (IX+AS_COUNT+1)
+        JP NZ,ARW_OUTPUT_ERROR
+        CALL ARW_ADVANCE_OUTPUT
+        JP C,ARW_RANGE
+        CALL ARW_SUBTRACT_REMAIN
+        JP C,ARW_RANGE
+        JP ARW_MEMBER_LOOP
+ARW_MEMBER_DONE:
+        XOR A
+        RET
+; Append the ARC 1Ah/00h terminator at the current output offset.
+ARK_WRITE_END:
+        LD A,(IX+AS_MEMBER+AM_WRITE_CB)
+        OR (IX+AS_MEMBER+AM_WRITE_CB+1)
+        JP Z,ARW_CONFIG
+        LD (IX+AS_ENTRY),01AH
+        XOR A
+        LD (IX+AS_ENTRY+1),A
+        LD L,(IX+AS_MEMBER+AM_OUTPUT_OFFSET)
+        LD H,(IX+AS_MEMBER+AM_OUTPUT_OFFSET+1)
+        LD (IX+AS_OFFSET),L
+        LD (IX+AS_OFFSET+1),H
+        LD L,(IX+AS_MEMBER+AM_OUTPUT_OFFSET+2)
+        LD H,(IX+AS_MEMBER+AM_OUTPUT_OFFSET+3)
+        LD (IX+AS_OFFSET+2),L
+        LD (IX+AS_OFFSET+3),H
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY
+        ADD HL,DE
+        LD (IX+AS_BUFFER),L
+        LD (IX+AS_BUFFER+1),H
+        LD (IX+AS_COUNT),2
+        LD (IX+AS_COUNT+1),0
+        CALL ARW_CALL_WRITE
+        JP C,ARW_OUTPUT_ERROR
+        LD A,(IX+AS_ACTUAL)
+        CP 2
+        JP NZ,ARW_OUTPUT_ERROR
+        LD A,(IX+AS_ACTUAL+1)
+        OR A
+        JP NZ,ARW_OUTPUT_ERROR
+        CALL ARW_ADVANCE_OUTPUT
+        JP C,ARW_RANGE
+        XOR A
+        RET
+ARW_CALL_READ:
+        PUSH IX
+        POP HL
+        LD DE,AS_READ
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        JP (HL)
+ARW_CALL_WRITE:
+        PUSH IX
+        POP HL
+        LD DE,AS_MEMBER+AM_WRITE_CB
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        JP (HL)
+ARW_ADVANCE_SOURCE:
+        LD HL,AS_MEMBER+AM_SOURCE_OFFSET
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        JR ARW_ADVANCE32
+ARW_ADVANCE_OUTPUT:
+        LD HL,AS_MEMBER+AM_OUTPUT_OFFSET
+        PUSH IX
+        POP DE
+        ADD HL,DE
+ARW_ADVANCE32:
+        LD A,(IX+AS_COUNT)
+        ADD A,(HL)
+        LD (HL),A
+        INC HL
+        LD A,(IX+AS_COUNT+1)
+        ADC A,(HL)
+        LD (HL),A
+        INC HL
+        LD A,0
+        ADC A,(HL)
+        LD (HL),A
+        INC HL
+        LD A,0
+        ADC A,(HL)
+        LD (HL),A
+        JR C,ARW_RANGE
+        OR A
+        RET
+ARW_SUBTRACT_REMAIN:
+        LD HL,AS_MEMBER+AM_REMAIN
+        PUSH IX
+        POP DE
+        ADD HL,DE
+        LD A,(IX+AS_COUNT)
+        LD B,A
+        LD A,(HL)
+        SUB B
+        LD (HL),A
+        INC HL
+        LD A,(IX+AS_COUNT+1)
+        LD B,A
+        LD A,(HL)
+        SBC A,B
+        LD (HL),A
+        INC HL
+        LD A,(HL)
+        SBC A,0
+        LD (HL),A
+        INC HL
+        LD A,(HL)
+        SBC A,0
+        LD (HL),A
+        RET NC
+        JP ARW_RANGE
+ARW_CONFIG:
+        LD A,AS_CONFIG
+        SCF
+        RET
+ARW_READ_ERROR:
+        LD A,AS_IO
+        SCF
+        RET
+ARW_READ_SHORT:
+        LD A,AS_TRUNC
+        SCF
+        RET
+ARW_OUTPUT_ERROR:
+        LD A,AS_OUTPUT
+        SCF
+        RET
+ARW_RANGE:
+        LD A,AS_RANGE
+        SCF
+        RET
 ARW_BAD_NAME:
         LD A,AS_FORMAT
         SCF
@@ -226,4 +499,5 @@ ARW_BASE_LENGTH: DB 0
 ARW_EXT_END: DB 0
 ARW_DOT: DB 0
 ARW_CHAR: DB 0
+ARW_BUFFER_PTR: DW 0
         ENDM

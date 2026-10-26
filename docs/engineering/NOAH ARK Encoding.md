@@ -95,24 +95,27 @@ the focused tests, native outputs and remaining write scope; its
 [evidence bundle](NOAH-ARK-Encoder-Dispatch-evidence.tar.gz) contains console,
 execution and linked-file results without emulator disk images.
 
-## ARC member-header serializer foundation
+## ARC member stream writer foundation
 
-`src/archive/arkwrite.inc` and `arkwrite.mac` add `ARK_BUILD_HEADER`. Given a
-caller-owned ARC member record, it validates its canonical padded CP/M 8.3 name
-and serializes the new-format 29-byte header for method 2 (stored), 4 (SQ) or 8
-(CR). It copies exact stored/logical lengths, raw DOS date/time words and CRC;
-unknown timestamps remain zero. It does not write payload bytes, produce the
-end marker, stream old members, update an archive, or invoke NOAH's staged
-publication transaction. The API uses five bytes of static validation scratch
-and therefore is not reentrant.
+`src/archive/arkwrite.inc` and `arkwrite.mac` provide `ARK_BUILD_HEADER`,
+`ARK_WRITE_MEMBER`, and `ARK_WRITE_END`. The serializer validates canonical
+padded CP/M 8.3 names and writes the new-format 29-byte header for methods 2
+(stored), 4 (SQ) or 8 (CR), including exact stored/logical lengths, raw DOS
+date/time words and CRC. `ARK_WRITE_MEMBER` streams that header and exactly
+the stored payload length through caller-provided input and output callbacks;
+the caller's 128-byte buffer supports bounded chunks without adding physical
+record padding to member data. `ARK_WRITE_END` emits ARC's `1Ah 00h` marker.
+The caller still owns physical record packing/padding, retained-member order,
+opaque trailer handling, staged readback and NOAH's publication transaction.
+The API uses static scratch and is not reentrant.
 
-`tools/test_ark.py` now assembles this serializer beside the production ARC
-reader. It checks method-2/4/8 header bytes, extensionless and maximum-length
-names, metadata round trips through the reader, and rejection of unsupported
-methods and malformed padded names without changing the output header. This
-closes only the byte-level header proof; `/ADD`, replacement, REMOVE, COMPACT,
-opaque trailer preservation, staged readback and publication/recovery remain
-open.
+`tools/test_ark.py` assembles these routines beside the production ARC reader.
+It checks method-2/4/8 header bytes and metadata round trips, malformed-name
+rejection, a 522-byte member across 128-byte boundaries, an empty member, the
+end marker, source I/O failure, short reads and failed output. This remains an
+isolated library proof, not NOAH command integration. `/ADD`, replacement,
+`/REMOVE`, `/COMPACT`, trailer preservation, staged readback and
+publication/recovery remain open.
 
 ## Remaining encoding and update work
 

@@ -11,7 +11,7 @@ from test_lbr import Reader
 from noah_overlays import assemble
 
 ROOT=Path(__file__).resolve().parents[1]
-ENTRIES=('ARK_OPEN','ARK_NEXT','ARK_RAW','ARK_CLOSE','READ_CB','WRITE_CB','ARK_TEST_STORED','ARK_BUILD_HEADER')
+ENTRIES=('ARK_OPEN','ARK_NEXT','ARK_RAW','ARK_CLOSE','READ_CB','WRITE_CB','ARK_TEST_STORED','ARK_BUILD_HEADER','ARK_WRITE_MEMBER','ARK_WRITE_END')
 
 
 def crc16(data):
@@ -37,9 +37,23 @@ class ArkReader(Reader):
         core.set_hooks(self.symbols['READ_CB'],self.symbols['WRITE_CB'],self.hook)
     def configure(self,*args,**kwargs):
         self.cancel_offsets=set()
+        self.output=bytearray()
+        self.write_error=None
         return super().configure(*args,**kwargs)
     def callback(self,kind):
         try:
+            if kind==1:
+                offset=int.from_bytes(bytes(self.mem[self.ctx+16:self.ctx+20]),'little')
+                count=self.word(self.ctx+22)
+                buffer=self.word(self.ctx+20)
+                if self.write_error==offset:
+                    self.regs['A'].value=255;self.regs['F'].value=1
+                    return
+                assert offset==len(self.output),(offset,len(self.output))
+                self.output.extend(bytes(self.mem[buffer:buffer+count]))
+                self.putword(self.ctx+24,count)
+                self.regs['A'].value=0;self.regs['F'].value=0
+                return
             offset=int.from_bytes(bytes(self.mem[self.ctx+16:self.ctx+20]),'little')
             count=self.word(self.ctx+22)
             assert offset+count<=int.from_bytes(bytes(self.mem[self.ctx+6:self.ctx+10]),'little'),(offset,count)
@@ -213,6 +227,84 @@ def writer_headers(m):
     print('PASS: ARC writer serializes method-2/4/8 headers and production reader round-trips metadata; rejects malformed names/methods')
 
 
+def writer_stream(m):
+    def raw_call(name):
+        steps=m.core.test_run(m.symbols[name],30_000_000)
+        assert steps>=0,(name,steps,hex(m.regs['PC'].value))
+        assert not m.callback_exception,m.callback_exception
+        m.image=bytes(m.mem[0x100:0x100+len(m.image)])
+        return m.regs['A'].value if m.regs['F'].value&1 else 0
+
+    def call(name):
+        result=raw_call(name)
+        assert result==0,(name,result)
+        return result
+
+    def configure_member(source,payload,prefix):
+        m.configure(source)
+        c=m.ctx
+        m.putword(c+20,0x7000)
+        m.mem[c+74:c+85]=b'STREAM  BIN'
+        m.mem[c+74+16:c+74+20]=len(prefix).to_bytes(4,'little')
+        m.mem[c+74+20:c+74+24]=len(payload).to_bytes(4,'little')
+        m.mem[c+74+24:c+74+28]=len(payload).to_bytes(4,'little')
+        m.mem[c+74+28]=2
+        m.mem[c+74+30:c+74+32]=crc16(payload).to_bytes(2,'little')
+        m.putword(c+74+36,m.symbols['WRITE_CB'])
+        m.mem[c+74+42:c+74+46]=bytes(4)
+        return c
+
+    payload=bytes(range(256))*2+b'last bytes'
+    prefix=b'ignored-prefix'
+    c=configure_member(prefix+payload+b'ignored-suffix',payload,prefix)
+    before=(m.regs['IX'].value,m.regs['IY'].value,m.regs['SP'].value)
+    assert call('ARK_WRITE_MEMBER')==0
+    assert before==(m.regs['IX'].value,m.regs['IY'].value,m.regs['SP'].value)
+    expected=member(payload,name=b'STREAM.BIN')
+    assert bytes(m.output)==expected
+    assert int.from_bytes(bytes(m.mem[c+74+42:c+74+46]),'little')==len(expected)
+    assert call('ARK_WRITE_END')==0
+    assert bytes(m.output)==expected+b'\x1a\0'
+    assert int.from_bytes(bytes(m.mem[c+74+42:c+74+46]),'little')==len(expected)+2
+    emitted=bytes(m.output)
+    m.configure(emitted)
+    assert m.call('ARK_OPEN')==m.call('ARK_NEXT')==0
+    assert m.call('ARK_TEST_STORED')==0 and m.call('ARK_NEXT')==1
+
+    # Empty input still emits a valid header and terminator without reading.
+    m.configure(b'')
+    c=m.ctx
+    m.putword(c+20,0x7000)
+    m.mem[c+74:c+74+11]=b'EMPTY   TXT'
+    m.mem[c+74+20:c+74+28]=bytes(8)
+    m.mem[c+74+28]=2
+    m.putword(c+74+36,m.symbols['WRITE_CB'])
+    assert call('ARK_WRITE_MEMBER')==0
+    expected=member(b'',name=b'EMPTY.TXT')
+    assert bytes(m.output)==expected
+    assert call('ARK_WRITE_END')==0 and bytes(m.output)==expected+b'\x1a\0'
+
+    # A read failure or short transfer leaves only an unpublishable header.
+    c=configure_member(prefix+payload,payload,prefix)
+    m.read_error=len(prefix)
+    assert raw_call('ARK_WRITE_MEMBER')==4
+    assert len(m.output)==29
+    assert int.from_bytes(bytes(m.mem[c+74+42:c+74+46]),'little')==29
+    c=configure_member(prefix+payload,payload,prefix)
+    m.short=len(prefix)
+    assert raw_call('ARK_WRITE_MEMBER')==3
+    assert len(m.output)==29
+    # A body write failure reports AS_OUTPUT and does not advance the output
+    # cursor or remaining-byte count for that chunk.
+    c=configure_member(prefix+payload,payload,prefix)
+    m.write_error=29
+    assert raw_call('ARK_WRITE_MEMBER')==12
+    assert len(m.output)==29
+    assert int.from_bytes(bytes(m.mem[c+74+42:c+74+46]),'little')==29
+    assert int.from_bytes(bytes(m.mem[c+74+46:c+74+50]),'little')==len(payload)
+    print('PASS: ARC stream writer emits exact method-2 header/body/terminator bytes across 128-byte boundaries')
+
+
 def historical(m,out):
     pins=json.loads((ROOT/'tests/fixtures/noah/references.json').read_text())['artifacts']
     from noah_compatibility import inventory
@@ -237,4 +329,4 @@ def historical(m,out):
     print('PASS: three pinned historical ARC inventories; opaque trailer reported')
 
 if __name__=='__main__':
-    out=ROOT/'build/ark-reader/host';m=build(out);tests(m);writer_headers(m);historical(m,out)
+    out=ROOT/'build/ark-reader/host';m=build(out);tests(m);writer_headers(m);writer_stream(m);historical(m,out)
