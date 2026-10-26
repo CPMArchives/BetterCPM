@@ -5,12 +5,14 @@ This manual explains how to use the programs supplied on the BetterCP/M Utilitie
 The Utilities Disk is being assembled separately from the System Disk. This manual covers DUMP, the initial DDT debugger adaptation, the six standalone compression utilities SQ, USQ, CR, UNCR, LZH and UNLZH, TED, DASM with its DSYM/DLINK companions, and the original ZSM4/LINK development tools. Chapters for other utilities will be added as those programs are completed and selected for distribution.
 
 The COMPARE chapter describes a development utility. COMPARE is not yet qualified
-or included in current Utilities Disk images.
+or included in current Utilities Disk images. SEARCH is under development; its chapter
+describes the approved interface, not a currently runnable command.
 
 ## Contents
 
 - [Using the Utilities Disk](#using-the-utilities-disk)
 - [NOAH archive utility](#noah-archive-utility)
+- [SEARCH file-content search](#search-file-content-search)
 - [COMPARE binary file comparison](#compare-binary-file-comparison)
 - [DUMP hexadecimal file viewer](#dump-hexadecimal-file-viewer)
   - [Quick start](#quick-start)
@@ -56,6 +58,136 @@ B0:DUMP A0:README.TXT
 Here, `B0:` locates DUMP itself; `A0:` locates the file it will display. The file operand uses its own drive and user qualification independently of the program’s location. A filename without qualification refers to the caller’s current drive and user area.
 
 In syntax descriptions, `file` and `offset` are placeholders to replace with your own values. `Ctrl-S` means hold Control while pressing S. Do not type the word “Ctrl” or the hyphen.
+
+## SEARCH file-content search
+
+**Under development — not yet a runnable or qualified utility, and not included
+on release disks.** This chapter describes the approved SEARCH 1.0 interface.
+The [engineering specification](../engineering/SEARCH%20Specification.md)
+controls the design.
+
+SEARCH finds literal text and byte sequences in files without changing them.
+Use DIR /WHEREIS when you want to locate filenames instead of searching contents.
+
+### SEARCH syntax and options
+
+```text
+SEARCH [options] "pattern" filespec [options]
+SEARCH "Error" A0:*.TXT /NOCASE /NOHEX
+SEARCH "41 42" B[3-7]:*.COM /NOTEXT /P
+SEARCH "4142" [A0,B[-],C[4,7-9]]:*.DAT
+```
+
+Put the quoted pattern first, followed by exactly one filespec. Put options before
+the pattern or after the filespec. Quotes delimit the pattern; spaces and letter
+case inside them are significant. Quoted `/VER` or `/HELP` is search data.
+Options and filenames are case-insensitive. Repeating a flag has no extra effect.
+
+| Option | Meaning |
+| --- | --- |
+| `/NOHEX` | Search only the literal TEXT interpretation. |
+| `/NOTEXT` | Search only decoded HEX bytes; the pattern must be valid HEX. |
+| `/NOCASE` | Ignore ASCII letter case in TEXT; HEX bytes remain exact. |
+| `/P` | Pause result details one page at a time, moving forward only. |
+| `/HELP` | Display help without searching; takes precedence over `/VER`. |
+| `/VER` | Display utility identification without searching. |
+
+By default SEARCH tries **both** interpretations independently. `"4142"` searches
+for the four literal characters `4142` and for the two bytes `41h 42h` (`AB`).
+`"41 42"` searches for those five literal characters and the same two decoded
+bytes. HEX accepts contiguous pairs of hexadecimal digits or pairs separated by
+spaces; hex digit case is insignificant. Odd digit counts, `0x` prefixes, `H`
+suffixes, commas and incomplete byte pairs are not valid HEX. Invalid HEX is
+silently ignored when TEXT is enabled: `"hello"` is an ordinary TEXT search.
+With `/NOTEXT`, invalid HEX is an error. `/NOHEX /NOTEXT` is invalid.
+
+TEXT is literal: no regular expressions, content wildcards or backslash escapes.
+It is case-sensitive unless `/NOCASE` is supplied. `/NOCASE` folds ASCII letters
+only, leaving high-bit bytes unchanged; it has no effect with `/NOTEXT`.
+An empty pattern is invalid. Each enabled interpretation is limited to 64 decoded
+bytes. The entire command tail, including quotes, filespec and options, must fit
+within 127 bytes; consequently a 64-byte HEX pattern cannot fit on the command
+line. SEARCH does not silently shorten a pattern.
+
+The current CCP uppercases command tails, including quoted text. SEARCH cannot
+recover original case lost before it starts. On that CCP, use `/NOCASE` for
+ASCII text regardless of case, or `/NOTEXT` with HEX to specify exact bytes.
+Embedded quote and TAB notation is not yet defined; do not assume an escape form.
+
+### Selecting files for SEARCH
+
+An unqualified filespec searches the caller's current drive and user area.
+Filename `*` and `?` patterns use the shared CP/M 8.3 rules. Extended DU selectors
+can select several locations:
+
+```text
+SEARCH "hello" B7:*.TXT /NOCASE
+SEARCH "1A" B[-]:*.* /NOTEXT
+SEARCH "Error" [A0,B[3-7],D[-]]:*.LOG /NOHEX
+```
+
+`B[-]` means all users 0–31 on B; `B[3-7]` means users 3 through 7 inclusive.
+A bare drive inherits the caller's user, and a bare user inherits the caller's
+drive. Compound terms inherit from the caller, never from the preceding term.
+Overlapping selections do not repeat searches. Selected locations are visited
+in drive order, then user order, with native directory order within each DU.
+Unavailable locations are diagnosed; they are never silently mapped elsewhere.
+Existing shared attribute-selection conventions apply. SEARCH does not adopt
+WHEREIS's global scope or special default inclusion of system files.
+
+### SEARCH results and totals
+
+TEXT results identify the file, `[TEXT]`, and a one-based line number. An ordinary
+matching line is shown once even if it contains several occurrences. Long lines
+use a bounded excerpt containing a match, with omitted edges marked. SEARCH still
+searches the whole line and counts every occurrence, including overlaps.
+CR/LF is one line break; bare CR and bare LF also end lines. A final unterminated
+line is valid. Control bytes are rendered visibly rather than sent to the console.
+
+HEX results identify the file, `[HEX]`, and a zero-based byte offset printed as
+eight hexadecimal digits. TEXT and HEX results are independent, including when
+both interpretations match at the same position. For example, a file beginning
+with `4142 AB 4142` followed by CR/LF yields:
+
+```text
+A0:NOTES.TXT [TEXT] line 1: 4142 AB 4142
+A0:NOTES.TXT [HEX] offset 00000005
+Files searched: 1
+Files matched: 1
+Text matches: 2
+Hex matches: 1
+Total matches: 3
+```
+
+All successfully read 128-byte CP/M records are searched in full, including final
+padding and `1Ah`. `1Ah` does not end TEXT searching. Matches may span records,
+extents or line endings. A TEXT match spanning a line ending belongs to the line
+where it starts. No bytes beyond record EOF are invented.
+
+The final summary always includes files searched, files matched, TEXT matches,
+HEX matches and their sum, including zeros. Files searched includes successfully
+opened empty and partially read files. A file with either kind of match counts
+once in files matched. No matches is a normal result when coverage is complete.
+
+### SEARCH paging and errors
+
+At a `/P` prompt, Space or Enter advances one page. Ctrl-C suppresses subsequent
+details and prompts, prints `DISPLAY INTERRUPTED` and `SEARCH CONTINUING...`,
+and lets SEARCH finish every remaining selected file before printing totals.
+It does not cancel the search. Error messages remain visible. There is no backward
+paging. Unpaged Ctrl-C handling remains to be documented with the implementation;
+interrupted coverage must never be presented as a completed search.
+
+Open, read and directory errors identify the affected location or file. SEARCH
+continues elsewhere when safe and marks the final summary incomplete whenever
+selected data could not be searched. Such totals describe observed data only;
+zero matches after an error is not proof that all selected files lack the pattern.
+Some platform disk-error paths prompt or warm boot without returning to SEARCH;
+full recovery and final totals cannot be promised on those paths.
+
+SEARCH restores the caller's drive and user area on every handled exit. It does
+not alter files or attributes, create temporary result files, search inside
+archives, or replace text.
 
 ## COMPARE binary file comparison
 
