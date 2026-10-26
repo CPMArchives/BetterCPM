@@ -4,8 +4,11 @@ Status: method-4 SQ adapter and method-8 encoder phase; production loader and
 callback routes pass the full Z80 core; the isolated method-8 harness passes on
 z80pack and TRS-80 Model 4, 2026-10-26. The ARC writer entries now share the
 production `NHARK` overlay and pass the resident layout check for the existing
-12,800-byte arena. No NOAH command invokes those writer entries yet: this is a
-code-packaging and memory-boundary step, not an archive update feature. The
+12,800-byte arena. The current padded NHARK image ends at `A780h`; a 6,144-byte
+ordinary source-plan table can follow it and end at `BF80h`, below the arena end
+at `C400h`. The build and host regression now assert this non-overlap. No NOAH
+command invokes those writer entries yet: this is a memory-layout proof, not an
+archive update feature. The
 [NOAH specification](NOAH%20Specification.md) remains normative.
 
 ## Method 4 from the owned SQ encoder
@@ -146,15 +149,17 @@ dispatch slots now follow those entries; the host layout test pins their
 addresses and target labels. The existing `tools/test_ark.py` vectors continue
 to exercise the writer implementation in isolation.
 
-The entries are not yet connected to `/ADD`, `/REMOVE`, or `/COMPACT`. The ARC
-overlay and NOAH source plans currently share this arena, so a command path
-cannot load the writer while retaining those plans. Transaction integration
-must first resolve this workspace overlap, then supply read/write callbacks,
-reconcile ARC member enumeration and source-plan metadata, independently reopen
-and verify the staged archive, recheck source stability, and only then use
-NOAH's existing safe publication/rollback path. Neither a native CP/M
-transaction nor Model 4 writer qualification is claimed by this packaging
-step.
+The entries are not yet connected to `/ADD`, `/REMOVE`, or `/COMPACT`. The
+current overlap has a bounded memory solution for ordinary source plans:
+derive the plan-table start from the record-padded NHARK size and place the table
+after the loaded overlay. The deterministic host build asserts the table fits
+inside the existing arena. The future command path still has to preserve that
+relocated table while loading and calling the overlay, supply read/write
+callbacks, reconcile ARC member enumeration and source-plan metadata,
+independently reopen and verify the staged archive, recheck source stability,
+and only then use NOAH's existing safe publication/rollback path. Neither a
+native CP/M transaction nor Model 4 writer qualification is claimed by this
+layout proof.
 
 ## Remaining encoding and update work
 
