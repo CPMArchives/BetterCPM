@@ -1,8 +1,11 @@
 {
-  "scope": "isolated ARK method-2 member writer under native CP/M",
+  "scope": "isolated ARC member creation and opaque retained-member copy under native CP/M",
   "payload_bytes": 522,
   "archive_bytes": 553,
   "archive_sha256": "a40d9906d5b8424b467a659abec5f66a2d4707a9a295f0df848dfc64b192ee30",
+  "retained_method": 9,
+  "retained_archive_bytes": 552,
+  "retained_archive_sha256": "57e2719b8f4fadd492459202aea461ca1a789ac86c5a936c462b9cfd2d6e22ae",
   "verified_systems": {
     "z80pack": {
       "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
@@ -14,11 +17,12 @@
     "z80pack": {
       "status": "PASS",
       "runtime_ceiling_hex": "C501",
-      "image_bytes": 4780,
-      "required_end_hex": "13AC",
-      "native_image_sha256": "4b510d48e7aeaaea8fc91febc30a5e73f3fee49f89ccf1b502e8d36dcb4fad7f",
-      "console_sha256": "f2e9c227174c809d93b8a6a2f31852448313beb187c2e82c8a00276038d06b16",
-      "archive_file_sha256": "9fe6692ba1fea718e0618a45c6b5300a375ae65c6668c6761c86c7c95f03eaf7"
+      "image_bytes": 6455,
+      "required_end_hex": "1A37",
+      "native_image_sha256": "ef0873693a80639d01d1d66a8c38725fb95d2e41f79138100a824213cfa95e3b",
+      "console_sha256": "fef7b5e5b58e0d407a8f56de7b754d32c815ef35fc09597e0f03abb6ee2cf413",
+      "archive_file_sha256": "9fe6692ba1fea718e0618a45c6b5300a375ae65c6668c6761c86c7c95f03eaf7",
+      "retained_copy_exact": true
     }
   }
 }
