@@ -113,6 +113,20 @@ def production_build(assembler,out,flat_builder):
     assert len(lzw_raw)<=2048, len(lzw_raw)
     payloads.append(lzw_raw);requirements.append(4096+24576);entries.append((window,window+3,window+6))
     (out/'NCLZW.MAC').write_bytes(native_export(lzw_text))
+    # Isolated native ARC method-8 encoder proof. It shares CR's input and RLE
+    # machinery but has its own ARC dynamic-LZW packing and dictionary origin.
+    # The writer does not call this phase yet; CR's existing context is reused.
+    encoder_defs=''.join((ROOT/'src/codec'/p).read_text()+'\n' for p in ('codec.inc','codec.mac','cr.inc','cr.mac'))
+    encoder_body=encoder_defs+' CODEC_CODE\n CR_CODE\n'+(ROOT/'src/utilities/common/noahark-crencode.inc').read_text()
+    needed=set(re.findall(r'\b[A-Z_][A-Z_0-9]*\b',encoder_body,re.I))
+    encoder_imports=''.join(f'{n} EQU {v}\n' for n,v in rs.items() if n in needed and n not in constant_names and n!='NR_WINDOW')
+    encoder_text=f' ORG {window}\nNR_WINDOW EQU {window}\n'+constants+encoder_imports
+    encoder_text+=' JP CR_INIT\n JP CR_INIT\n JP N8_RUN\n'
+    encoder_text+=encoder_defs+' CODEC_CODE\n CR_CODE\n'+(ROOT/'src/utilities/common/noahark-crencode.inc').read_text()+'\n END\n'
+    encoder_raw,_=assemble(assembler,out,'NCAR8',encoder_text)
+    assert len(encoder_raw)<=2048,('NCAR8',len(encoder_raw))
+    payloads.append(encoder_raw);requirements.append(2048+25207);entries.append((window,window+3,window+6))
+    (out/'NCAR8.MAC').write_bytes(native_export(encoder_text))
     build_id=hashlib.sha256(b''.join(payloads)+constants.encode()+resident.encode()+data.encode()+resident_data.encode()).digest()[:8]
     header=bytearray(128);header[:4]=b'NHOV';struct.pack_into('<HH8s',header,4,3,1,build_id)
     header[18]=len(payloads);record=1;companion=bytearray(128)
@@ -133,6 +147,8 @@ def production_build(assembler,out,flat_builder):
     report={'resident_bytes':len(image),'window':window,'codec_context':window+2048,
       'lzw_bytes':len(lzw_raw),'lzw_workspace':[window+4096,window+4096+24576],'ark_bytes':ark_bytes,'ark_address':plan_address,'cli_bytes':len(cli),'writer_plans':[plan_address,plan_address+6144],
       'transformed_ids':[plan_address+6144,plan_address+12800],
+      'ark8_encoder_bytes':len(encoder_raw),'ark8_encoder_context_bytes':25207,
+      'ark8_encoder_required_end':window+2048+25207,
       'stack':[rs['NH_STACK'],rs['NH_STACK_TOP']],'required_ceilings':[window+n for n in requirements],
       'build_id':build_id.hex(),'companion_sha256':hashlib.sha256(companion).hexdigest()}
     (out/'layout.json').write_text(json.dumps(report,indent=2)+'\n')

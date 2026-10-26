@@ -159,10 +159,10 @@ def main():
     a.output.mkdir(parents=True,exist_ok=False)
     cross=a.output/'cross';assembler=Path.home()/'bin/z80asm';image=build(assembler,cross)
     ovl=(cross/'NOAH.OVL').read_bytes();layout=json.loads((cross/'layout.json').read_text())
-    names=['NOAH','NHCLI','NCSQ','NCUSQ','NCCR','NCUNCR','NHARK','NCLZW']
+    names=['NOAH','NHCLI','NCSQ','NCUSQ','NCCR','NCUNCR','NHARK','NCLZW','NCAR8']
     expected={n:(cross/(n+'.bin')).read_bytes() for n in names}
     tools={n:(ROOT/'third_party'/folder/n).read_bytes() for n,folder in [('ZSM4.COM','zsm4'),('LINK.COM','dri-link')]}
-    report={'scope':'NOAH production phases; ARK methods 1-9, LBR and standalone codecs',
+    report={'scope':'NOAH production phases; ARK methods 1-9 decoding, isolated method-8 encoder phase, LBR and standalone codecs',
       'layout':layout,'verified_systems':systems,'resident_sha256':sha(image),
       'companion_sha256':sha(ovl),'platforms':{}}
     if a.stamp_delta_from:
@@ -269,7 +269,7 @@ def main():
                 assert b'Archive/read error 08' in log
                 assert layout['lzw_bytes']==1705 and layout['lzw_workspace'][1]==47488
                 required=layout['lzw_workspace'][1]
-                assert layout['required_ceilings'][-1]==required
+                assert layout['required_ceilings'][6]==required
                 assert required < 0xC501 < 0xCA01
                 report['workspace_proof']={'overlay_bytes':layout['lzw_bytes'],'dictionary_bytes':24576,
                     'workspace_start_hex':f"{layout['lzw_workspace'][0]:04X}",
