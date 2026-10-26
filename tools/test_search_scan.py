@@ -37,22 +37,39 @@ def entry(name, extent=0, attrs=0):
 
 def execute(image, address, tail, directories, contents, *, caller=(2,7),
             read_error=None, open_error=None, close_error=None,
-            dir_error=None, supported_drives=range(16), max_user=31):
+            dir_error=None, supported_drives=range(16), max_user=31,
+            command=False, keys=b' ', cancel_after=None, render_error=None):
     c = Z80(b'')
-    c.mem[0x200:0x200+len(image)] = image
+    c.min_private_sp = 65535
+    original_push = c.push
+    private_top = address('DSTACK') if command else 0
+    def tracked_push(value):
+        original_push(value)
+        if command and c.sp <= private_top:
+            c.min_private_sp = min(c.min_private_sp, c.sp)
+    c.push = tracked_push
+    origin = 0x100 if command else 0x200
+    c.mem[origin:origin+len(image)] = image
     c.mem[5:8] = b'\xd3\x00\xc9'
     raw = tail.encode('ascii')
+    assert len(raw) <= 127
     c.mem[0x7000:0x7000+len(raw)] = raw
+    if command:
+        c.mem[0x80] = len(raw)
+        c.mem[0x81:0x81+len(raw)] = raw
     c.hl, c.b = 0x7000, len(raw)
     c.d, c.e = caller
     sp = c.sp
-    c.run(address('PCOMMAND'), limit=1000000)
-    assert not c.carry and c.a == 0, (tail, c.a)
+    if not command:
+        c.run(address('PCOMMAND'), limit=1000000)
+        assert not c.carry and c.a == 0, (tail, c.a)
     drive, user = caller
     dma = 0x80
     cursor = None
     events, services, reads, opens, closes = [], [], [], [], []
     handles = {}
+    output = bytearray()
+    keypos = 0
     def value(name, size=4):
         p = address(name)
         return int.from_bytes(c.mem[p:p+size], 'little')
@@ -75,7 +92,7 @@ def execute(image, address, tail, directories, contents, *, caller=(2,7),
             c.a = slot
             cursor = (du, items, pos+1)
     def bdos(port, sent):
-        nonlocal drive, user, dma, cursor
+        nonlocal drive, user, dma, cursor, keypos
         port &= 255
         if port == 0x42:
             kind = value('RWHY', 1)
@@ -89,7 +106,18 @@ def execute(image, address, tail, directories, contents, *, caller=(2,7),
         assert port == 0
         fn = c.c
         services.append(fn)
-        if fn == 25:
+        if fn == 6:
+            if c.e == 255:
+                if cancel_after is not None:
+                    c.a = 3 if len(output) >= cancel_after else 0
+                else:
+                    c.a = keys[keypos % len(keys)] if keys else 0
+                    keypos += 1
+            else:
+                output.append(c.e)
+        elif fn == 11:
+            c.a = 255 if cancel_after is not None and len(output) >= cancel_after else 0
+        elif fn == 25:
             c.a = drive
         elif fn == 14:
             if c.e in supported_drives:
@@ -124,11 +152,11 @@ def execute(image, address, tail, directories, contents, *, caller=(2,7),
             c.a = 255  # Function 35 has no defined A status, including on success.
             cursor = None
         elif fn == 33:
-            key = handles[c.de]
+            key = handles.get(c.de, key_at(c.de))
             assert (drive, user) == key[:2]
             record = int.from_bytes(c.mem[c.de+33:c.de+36], 'little')
             reads.append((key, record))
-            if read_error == (key, record):
+            if read_error == (key, record) or (render_error == (key, record) and c.de != address('RFILE')):
                 c.a = 2
             elif record*128 >= len(contents[key]):
                 c.a = 1
@@ -145,12 +173,16 @@ def execute(image, address, tail, directories, contents, *, caller=(2,7),
             raise AssertionError(('unexpected BDOS operation', fn))
         c.bc, c.de, c.hl, c.ix = 0xA5A5, 0x5A5A, 0x1234, 0x4567
     c.port_write = bdos
-    c.run(address('RRUN'), limit=100000000)
+    c.run(0x100 if command else address('RRUN'), limit=100000000)
     assert c.sp == sp and (drive, user) == caller and dma == 0x80
+    if command:
+        guard = address('DGUARD')
+        assert bytes(c.mem[guard:guard+16]) == bytes([255])*16, 'private stack overflow'
     assert not set(services) & {19,21,22,23,30,34,40}, 'write operation issued'
     totals = [value(n, 8) for n in ('RFILES', 'RMATCHED', 'RTEXT', 'RHEX', 'RTOTAL')]
     return dict(totals=totals, incomplete=bool(value('RINCOMP', 1)), events=events,
-                reads=reads, opens=opens, closes=closes, c=c)
+                reads=reads, opens=opens, closes=closes, c=c, output=output.decode('ascii'), services=services, rawoutput=output,
+                stack_bytes=(address('DSTACK')-c.min_private_sp if command else None))
 
 
 def main():

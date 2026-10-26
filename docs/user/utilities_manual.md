@@ -5,8 +5,8 @@ This manual explains how to use the programs supplied on the BetterCP/M Utilitie
 The Utilities Disk is being assembled separately from the System Disk. This manual covers DUMP, the initial DDT debugger adaptation, the six standalone compression utilities SQ, USQ, CR, UNCR, LZH and UNLZH, TED, DASM with its DSYM/DLINK companions, and the original ZSM4/LINK development tools. Chapters for other utilities will be added as those programs are completed and selected for distribution.
 
 The COMPARE chapter describes a development utility. COMPARE is not yet qualified
-or included in current Utilities Disk images. SEARCH is under development; its chapter
-describes the approved interface, not a currently runnable command.
+or included in current Utilities Disk images. SEARCH is also a development
+utility; its runnable command has focused qualification but is not on release disks.
 
 ## Contents
 
@@ -61,8 +61,8 @@ In syntax descriptions, `file` and `offset` are placeholders to replace with you
 
 ## SEARCH file-content search
 
-**Under development — not yet a runnable or qualified utility, and not included
-on release disks.** This chapter describes the approved SEARCH 1.0 interface.
+**Development utility — not included on release disks.** This chapter describes
+the implemented SEARCH 1.0 interface; complete release qualification is pending.
 The [engineering specification](../engineering/SEARCH%20Specification.md)
 controls the design.
 
@@ -139,8 +139,11 @@ WHEREIS's global scope or special default inclusion of system files.
 ### SEARCH results and totals
 
 TEXT results identify the file, `[TEXT]`, and a one-based line number. An ordinary
-matching line is shown once even if it contains several occurrences. Long lines
-use a bounded excerpt containing a match, with omitted edges marked. SEARCH still
+matching line is shown once even if it contains several occurrences. The first
+occurrence on a line chooses its excerpt. Lines of up to 64 bytes are shown in
+full; longer lines use a window of at most 192 source bytes, looking back up to
+64 bytes before that occurrence. `[...]` marks omitted edges. Other distant
+occurrences on the same line still count, even when outside the chosen excerpt. SEARCH still
 searches the whole line and counts every occurrence, including overlaps.
 CR/LF is one line break; bare CR and bare LF also end lines. A final unterminated
 line is valid. Control bytes are rendered visibly rather than sent to the console.
@@ -175,9 +178,11 @@ once in files matched. No matches is a normal result when coverage is complete.
 At a `/P` prompt, Space or Enter advances one page. Ctrl-C suppresses subsequent
 details and prompts, prints `DISPLAY INTERRUPTED` and `SEARCH CONTINUING...`,
 and lets SEARCH finish every remaining selected file before printing totals.
-It does not cancel the search. Error messages remain visible. There is no backward
-paging. Unpaged Ctrl-C handling remains to be documented with the implementation;
-interrupted coverage must never be presented as a completed search.
+It does not cancel the search. Error messages remain visible. The supported
+console profile is 80 columns by 24 rows: output wraps explicitly at 79 columns,
+with 23 content rows per page. No screen backend is required. There is no backward
+paging. Ctrl-C during unpaged output also stops display while searching continues;
+final totals remain available. Neither display-stop action cancels coverage.
 
 Open, read and directory errors identify the affected location or file. SEARCH
 continues elsewhere when safe and marks the final summary incomplete whenever

@@ -9,8 +9,8 @@
 ; RHOOK callback sees RWHY: 1 opened file, 2 occurrence, 3 error, 4 file ended.
 ; RDRIVE/RUSER and RFILE identify file; RERROR identifies an error (see below).
 ; For occurrence, SRESULT and matcher start/line fields are current. Hook must
-; not issue BDOS file/directory operations or mutate engine state. It may output
-; console data; saved registers/flags protect scan accounting from the renderer.
+; not mutate engine state. A renderer may clone the open FCB for bounded
+; read-only lookaround with private DMA, restoring scan DMA before returning; saved registers/flags protect scan accounting from the renderer.
 ; RRUN returns CF set iff RINCOMP nonzero; observed totals always available.
 ; Error codes: 1 location, 2 directory status, 3 open, 4 reserved, 5 read,
 ; 6 close, 7 numeric overflow. Errors are events, never normal EOF.
@@ -299,6 +299,12 @@ ROPENED:
         ; A is unspecified (DRI can return FFh on success), not an error flag.
 RSIZED:
         LD HL,RFILE+33
+        LD DE,RFILELEN
+        LD BC,3
+        LDIR
+        XOR A
+        LD (RFILELEN+3),A
+        LD HL,RFILE+33
         LD DE,RRECORDS
         LD BC,3
         LDIR
@@ -493,6 +499,7 @@ RINDEX: DS 4
 RLEFT: DS 4
 RRECORD: DS 4
 RRECORDS: DS 4
+RFILELEN: DS 4
 RBYTEPTR: DW 0
 RBYTES: DB 0
 RCOUNTS:
