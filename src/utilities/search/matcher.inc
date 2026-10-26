@@ -60,6 +60,8 @@ SCFGHEX:
         LD B,A
         LD DE,SHPAT
         LD C,0
+        XOR A
+        LD (SFORMAT),A
 SPAIR:
         LD A,(HL)
         CALL SNIBBLE
@@ -87,7 +89,19 @@ SPAIR:
         JR Z,SHDONE
         LD A,(HL)
         CP ' '
-        JR NZ,SPAIR
+        JR Z,SSPACED
+        LD A,(SFORMAT)
+        CP 1
+        JR Z,SBADHEX
+        LD A,2
+        LD (SFORMAT),A
+        JR SPAIR
+SSPACED:
+        LD A,(SFORMAT)
+        CP 2
+        JR Z,SBADHEX
+        LD A,1
+        LD (SFORMAT),A
 SHSPACE:
         INC HL
         DEC B

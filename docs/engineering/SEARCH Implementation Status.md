@@ -26,7 +26,7 @@ now describes that contract, with an explicit development notice.
   The consumer must report incomplete coverage rather than continue with wrapped
   positions. Successful configuration resets per-file state automatically.
 
-The core uses 571 bytes of code and 482 bytes of fixed storage (1,053 total in
+The core uses 601 bytes of code and 483 bytes of fixed storage (1,084 total in
 this increment). The ring retains 64 source bytes and 64 four-byte line tags.
 Work per byte is bounded by the two pattern lengths, each at most 64. This is
 an initial straightforward matcher, not a performance qualification. No stack
@@ -62,7 +62,7 @@ pattern at a 128-byte boundary, a stream beyond 64 KiB, reset between files,
 no synthetic final bytes are added.
 
 The second assembles and links the same source with ZSM4 4.7 and LINK 1.3 under
-stock CP/M 2.2 in cpmsim, then compares all 1,053 bytes with cross output at the
+stock CP/M 2.2 in cpmsim, then compares all 1,084 bytes with cross output at the
 same origin. It stages copies of disks in a temporary directory. Logs and
 binaries are local development outputs under `build/search-core/`; they are not
 release artifacts. This checks native toolchain compatibility, not execution of
