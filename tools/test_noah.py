@@ -766,6 +766,8 @@ def main():
         ark_end = ark_start + layout['ark_bytes']
         ark_padded_end = ark_start + layout['ark_padded_bytes']
         add_plan_start, add_plan_end = layout['ark_add_plan_workspace']
+        assert layout['ark_overlay_address'] == ark_start
+        assert layout['ark_add_plan_address'] == add_plan_start
         assert ark_end <= ark_padded_end == add_plan_start
         assert add_plan_end - add_plan_start == 6144
         assert add_plan_end <= layout['ark_writer_arena_end']
