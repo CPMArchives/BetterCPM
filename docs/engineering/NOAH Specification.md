@@ -32,13 +32,14 @@ streaming decode, exact length and CRC checks. The
 [Huffman/RLE decoder](NOAH%20ARK%20Huffman%20Decoding.md) adds method 4 with bounded
 tree validation. The [LZW decoder](NOAH%20ARK%20LZW%20Decoding.md) adds ARC
 methods 5–9 with bounded dictionary workspace and both-platform qualification.
-The isolated [method-4 encoding foundation](NOAH%20ARK%20Encoding.md) proves
-that the existing SQ encoder can emit an ARC body without its standalone prefix;
-the resident route now dispatches method 4 and loads method 8 through NOAH's
-codec callback interface. Method 8 also passes native CP/M callback runs on
-both platforms. Production ARC writes remain unsupported. Staged archive
-creation/update, broader interoperability/release qualification, the browser
-and release packaging remain open.
+The [ARC encoding and write integration](NOAH%20ARC%20Write%20Integration.md)
+implements production stored/method-4/method-8 creation and ADD/replacement,
+REMOVE and byte-preserving COMPACT. Construction digests, complete staged
+readback, source/archive stability checks and the shared publication/rollback
+path are implemented. Native transactions, independent ARC/Deark decoding, exact final
+ZSM4/LINK parity and companion-media execution pass on both platforms; the
+integration record separates full-baseline and final-delta evidence.
+The interactive browser, ZIP and LZH/CrLZH selectors remain deferred.
 The bounded [compatibility/API/overlay and Model 4 memory proof](NOAH%20Compatibility%20and%20Memory%20Proof.md)
 records increments 1–2 and prototype limits. Its native LINK gate is now closed
 on source-verified system media; see the [resolution](NOAH-Model4-LINK-Resolution.json).
@@ -325,8 +326,15 @@ replacement. Warn/authorize under section 7. Keep the selected directory capacit
 unless explicit CAPACITY requests a valid resize; compaction alone does not
 shrink it. Recalculate offsets/integrity fields correctly. A valid empty-member
 library is permitted after explicit REMOVE+COMPACT; its directory still exists.
-COMPACT in other containers requires an advertised, defined implementation;
-do not invent an ARK deleted-entry format or silently recompress its members.
+For ARC, which has no deleted-entry directory or interior payload holes,
+`/COMPACT` does not invent tombstones or recompress members. It stages a rewrite
+of every member in original order, copying each original header and stored
+payload byte-for-byte, then emits the ARC end marker and only the CP/M record
+padding required for the result. This may reclaim excess trailing 00h/1Ah
+padding records. If the reader finds any opaque byte after the ARC end marker,
+COMPACT refuses before staging; that suffix may be meaningful data. When
+combined with ADD or REMOVE, the same rewrite rules apply to the requested
+member set. The ordinary update preserves the entire original suffix exactly.
 
 ## 6. Metadata and timestamps
 
@@ -706,4 +714,6 @@ in progress until the applicable deliverables are satisfied.
 All substantive user-policy decisions identified by consolidation are settled.
 Historical ARK encodings are required; standalone EXPAND copies ordinary files
 unchanged with notice; from-scratch LBR rebuilds copy active members only.
-Implementation and qualification gates in section 16 remain outstanding.
+Current implementation and qualification evidence is recorded in the
+[ARC integration record](NOAH%20ARC%20Write%20Integration.md). Browser and future
+container selectors remain outside the completed command-line increment.

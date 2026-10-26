@@ -1,0 +1,43 @@
+{
+  "scope": "isolated ARC member creation and opaque retained-member copying under native CP/M on z80pack and TRS-80 Model 4",
+  "payload_bytes": 522,
+  "archive_bytes": 553,
+  "archive_sha256": "a40d9906d5b8424b467a659abec5f66a2d4707a9a295f0df848dfc64b192ee30",
+  "retained_method": 9,
+  "retained_archive_bytes": 552,
+  "retained_archive_sha256": "57e2719b8f4fadd492459202aea461ca1a789ac86c5a936c462b9cfd2d6e22ae",
+  "verified_systems": {
+    "z80pack": {
+      "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+      "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+      "image_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1"
+    },
+    "trs80gp": {
+      "source_revision": "370060c2c28944aa58bcc4260813adda95a28952",
+      "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+      "image_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43"
+    }
+  },
+  "platforms": {
+    "z80pack": {
+      "status": "PASS",
+      "runtime_ceiling_hex": "C501",
+      "image_bytes": 6455,
+      "required_end_hex": "1A37",
+      "native_image_sha256": "ef0873693a80639d01d1d66a8c38725fb95d2e41f79138100a824213cfa95e3b",
+      "console_sha256": "fef7b5e5b58e0d407a8f56de7b754d32c815ef35fc09597e0f03abb6ee2cf413",
+      "archive_file_sha256": "9fe6692ba1fea718e0618a45c6b5300a375ae65c6668c6761c86c7c95f03eaf7",
+      "retained_copy_exact": true
+    },
+    "trs80gp": {
+      "status": "PASS",
+      "runtime_ceiling_hex": "CA01",
+      "retained_copy_exact": true,
+      "image_bytes": 6455,
+      "required_end_hex": "1A37",
+      "native_image_sha256": "e806e3bc95fc2ed0b639de97986e19782abb163b5faa7faf8711a219766e3908",
+      "console_sha256": "807c698150618b61a98844f9cfbeb976f8d1268c4e1cc36f2eb9bd530d4c3fe9",
+      "archive_file_sha256": "9fe6692ba1fea718e0618a45c6b5300a375ae65c6668c6761c86c7c95f03eaf7"
+    }
+  }
+}

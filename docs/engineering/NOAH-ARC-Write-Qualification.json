@@ -1,0 +1,274 @@
+{
+  "scope": "current native module parity and companion Utilities volume execution; full runtime baseline recorded separately",
+  "layout": {
+    "resident_bytes": 18955,
+    "window": 19328,
+    "codec_context": 21376,
+    "lzw_bytes": 1705,
+    "lzw_workspace": [
+      23424,
+      48000
+    ],
+    "ark_bytes": 5712,
+    "ark_address": 41344,
+    "ark_padded_bytes": 5760,
+    "cli_bytes": 21939,
+    "writer_plans": [
+      41344,
+      47488
+    ],
+    "ark_overlay_address": 41344,
+    "ark_add_plan_address": 47104,
+    "ark_add_plan_workspace": [
+      47104,
+      53248
+    ],
+    "ark_writer_arena_end": 54144,
+    "ark_writer_entries": {
+      "ARK_BUILD_HEADER": 45874,
+      "ARK_WRITE_MEMBER": 46186,
+      "ARK_WRITE_END": 46776,
+      "ARK_COPY_MEMBER": 46529
+    },
+    "ark_writer_dispatch": {
+      "NAW_BUILD_HEADER": 41371,
+      "NAW_WRITE_MEMBER": 41374,
+      "NAW_WRITE_END": 41377,
+      "NAW_COPY_MEMBER": 41380
+    },
+    "transformed_ids": [
+      47488,
+      54144
+    ],
+    "ark8_encoder_bytes": 1650,
+    "ark8_encoder_context_bytes": 25207,
+    "ark8_encoder_required_end": 46583,
+    "stack": [
+      17569,
+      18081
+    ],
+    "required_ceilings": [
+      41344,
+      24900,
+      22816,
+      46583,
+      47958,
+      47104,
+      48000,
+      46583
+    ],
+    "build_id": "f30690cde51bbb5e",
+    "companion_sha256": "be222a7b6c3e2bc60466fe0920a657cb7afdbf17511d8e9cc8e4f3c43f2cdc1c"
+  },
+  "verified_systems": {
+    "z80pack": {
+      "source_revision": "8864aa58ca7ac26181c6fda15467150cbe6edd05",
+      "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+      "image_sha256": "c6c07791f419321bc661a56d86ba9afc0e68242e8f0ff070e07188a7a5d7563e"
+    }
+  },
+  "binaries": {
+    "NOAH.COM": {
+      "bytes": 18955,
+      "sha256": "b07f73420acf5086f00366d1db75f62260880dca554890ebe22f71a29c7bcfbb"
+    },
+    "NOAH.OVL": {
+      "bytes": 36736,
+      "sha256": "be222a7b6c3e2bc60466fe0920a657cb7afdbf17511d8e9cc8e4f3c43f2cdc1c"
+    }
+  },
+  "platforms": {
+    "z80pack": {
+      "status": "PASS",
+      "runtime_ceiling_hex": "C501",
+      "system_sha256": "c6c07791f419321bc661a56d86ba9afc0e68242e8f0ff070e07188a7a5d7563e",
+      "utilities_sha256": "a7def6fdcb2c63135ad7b0474ca057f7fb0798c2b88ef4b60937b1587cf93360",
+      "native_modules": [
+        {
+          "module": "NOAH",
+          "status": "PASS",
+          "execution": "build-0/execution.json",
+          "sha256": "d366d1e23b45aa8b7d4a9db8d2a37b0ca8e8ef44b16d63fae6282dd127e1ee93"
+        },
+        {
+          "module": "NHCLI",
+          "status": "PASS",
+          "execution": "build-0/execution.json",
+          "sha256": "74289cb21a5f2845459a1085e566c0b4d6c290308f5bf0ced0034654ea1c1028"
+        },
+        {
+          "module": "NCSQ",
+          "status": "PASS",
+          "execution": "build-1/execution.json",
+          "sha256": "5ff79a4c8ec677524943f62ede4172b5ec2a8d24bbdeeaaebf3cdfc7b9a8ab3b"
+        },
+        {
+          "module": "NCUSQ",
+          "status": "PASS",
+          "execution": "build-1/execution.json",
+          "sha256": "7605a84edae4fff5d1cd4a4fd8d0bd5c25a2d18f188e0a236be56b0f84654f2a"
+        },
+        {
+          "module": "NCCR",
+          "status": "PASS",
+          "execution": "build-1/execution.json",
+          "sha256": "31cefefc0b590ca8d42460e9115139988d7c81b14bfcc8d3f48e144f48110f00"
+        },
+        {
+          "module": "NCUNCR",
+          "status": "PASS",
+          "execution": "build-1/execution.json",
+          "sha256": "a6ef020800dbd85084f17c95358068e41f1ecda55fed2bf3d3a93c8aa37091bd"
+        },
+        {
+          "module": "NHARK",
+          "status": "PASS",
+          "execution": "build-2/execution.json",
+          "sha256": "77467da845503cdadab374aa53d2a24d66b2ab1ecef63e00a05e8b72c057555e"
+        },
+        {
+          "module": "NCLZW",
+          "status": "PASS",
+          "execution": "build-2/execution.json",
+          "sha256": "4111b06b1b21c0941e28319b5a978141acb52ec298ff507aa7eb8cd6aca14b9c"
+        },
+        {
+          "module": "NCAR8",
+          "status": "PASS",
+          "execution": "build-2/execution.json",
+          "sha256": "cec8c6260d3caca8055bf786af02b362c1f4377cdc5516e511ab1f2220adfbc6"
+        }
+      ],
+      "native_outputs": {
+        "NOAH": "d366d1e23b45aa8b7d4a9db8d2a37b0ca8e8ef44b16d63fae6282dd127e1ee93",
+        "NHCLI": "74289cb21a5f2845459a1085e566c0b4d6c290308f5bf0ced0034654ea1c1028",
+        "NCSQ": "5ff79a4c8ec677524943f62ede4172b5ec2a8d24bbdeeaaebf3cdfc7b9a8ab3b",
+        "NCUSQ": "7605a84edae4fff5d1cd4a4fd8d0bd5c25a2d18f188e0a236be56b0f84654f2a",
+        "NCCR": "31cefefc0b590ca8d42460e9115139988d7c81b14bfcc8d3f48e144f48110f00",
+        "NCUNCR": "a6ef020800dbd85084f17c95358068e41f1ecda55fed2bf3d3a93c8aa37091bd",
+        "NHARK": "77467da845503cdadab374aa53d2a24d66b2ab1ecef63e00a05e8b72c057555e",
+        "NCLZW": "4111b06b1b21c0941e28319b5a978141acb52ec298ff507aa7eb8cd6aca14b9c",
+        "NCAR8": "cec8c6260d3caca8055bf786af02b362c1f4377cdc5516e511ab1f2220adfbc6"
+      },
+      "runtime_console_sha256": "7ef2e079e9f9706177f9659e18f471fd9eb2317de4d3e93186089c7c6ada3b23",
+      "runtime_outputs": {
+        "SMOKE.ARK": "d3c8992b76d58cd26b056ca2266af918eaf5f4a792590cb12f7961aa4782929f",
+        "OLD.ARK": "e8955b5856e1fad865b70c465ce45714acf80116e85acc9fa558c875646f3fb5",
+        "INPUT.BIN": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880"
+      },
+      "execution": "runtime/execution.json",
+      "paired_original_unchanged": true
+    },
+    "trs80gp": {
+      "status": "PASS",
+      "runtime_ceiling_hex": "CA01",
+      "system_sha256": "37fceca09cc404488e7b274e8a93c690b024767b225451295a742b87bc87d585",
+      "utilities_sha256": "b037c489b8547d936971a742a4152e2ef430bd6acf6bbe0fa137df39c491c83f",
+      "native_modules": [
+        {
+          "module": "NOAH",
+          "status": "PASS",
+          "execution": "build-0/execution.json",
+          "sha256": "d366d1e23b45aa8b7d4a9db8d2a37b0ca8e8ef44b16d63fae6282dd127e1ee93"
+        },
+        {
+          "module": "NHCLI",
+          "status": "PASS",
+          "execution": "build-0/execution.json",
+          "sha256": "74289cb21a5f2845459a1085e566c0b4d6c290308f5bf0ced0034654ea1c1028"
+        },
+        {
+          "module": "NCSQ",
+          "status": "PASS",
+          "execution": "build-1/execution.json",
+          "sha256": "5ff79a4c8ec677524943f62ede4172b5ec2a8d24bbdeeaaebf3cdfc7b9a8ab3b"
+        },
+        {
+          "module": "NCUSQ",
+          "status": "PASS",
+          "execution": "build-1/execution.json",
+          "sha256": "7605a84edae4fff5d1cd4a4fd8d0bd5c25a2d18f188e0a236be56b0f84654f2a"
+        },
+        {
+          "module": "NCCR",
+          "status": "PASS",
+          "execution": "build-1/execution.json",
+          "sha256": "31cefefc0b590ca8d42460e9115139988d7c81b14bfcc8d3f48e144f48110f00"
+        },
+        {
+          "module": "NCUNCR",
+          "status": "PASS",
+          "execution": "build-1/execution.json",
+          "sha256": "a6ef020800dbd85084f17c95358068e41f1ecda55fed2bf3d3a93c8aa37091bd"
+        },
+        {
+          "module": "NHARK",
+          "status": "PASS",
+          "execution": "build-2/execution.json",
+          "sha256": "77467da845503cdadab374aa53d2a24d66b2ab1ecef63e00a05e8b72c057555e"
+        },
+        {
+          "module": "NCLZW",
+          "status": "PASS",
+          "execution": "build-2/execution.json",
+          "sha256": "4111b06b1b21c0941e28319b5a978141acb52ec298ff507aa7eb8cd6aca14b9c"
+        },
+        {
+          "module": "NCAR8",
+          "status": "PASS",
+          "execution": "build-2/execution.json",
+          "sha256": "cec8c6260d3caca8055bf786af02b362c1f4377cdc5516e511ab1f2220adfbc6"
+        }
+      ],
+      "native_outputs": {
+        "NOAH": "d366d1e23b45aa8b7d4a9db8d2a37b0ca8e8ef44b16d63fae6282dd127e1ee93",
+        "NHCLI": "74289cb21a5f2845459a1085e566c0b4d6c290308f5bf0ced0034654ea1c1028",
+        "NCSQ": "5ff79a4c8ec677524943f62ede4172b5ec2a8d24bbdeeaaebf3cdfc7b9a8ab3b",
+        "NCUSQ": "7605a84edae4fff5d1cd4a4fd8d0bd5c25a2d18f188e0a236be56b0f84654f2a",
+        "NCCR": "31cefefc0b590ca8d42460e9115139988d7c81b14bfcc8d3f48e144f48110f00",
+        "NCUNCR": "a6ef020800dbd85084f17c95358068e41f1ecda55fed2bf3d3a93c8aa37091bd",
+        "NHARK": "77467da845503cdadab374aa53d2a24d66b2ab1ecef63e00a05e8b72c057555e",
+        "NCLZW": "4111b06b1b21c0941e28319b5a978141acb52ec298ff507aa7eb8cd6aca14b9c",
+        "NCAR8": "cec8c6260d3caca8055bf786af02b362c1f4377cdc5516e511ab1f2220adfbc6"
+      },
+      "runtime_console_sha256": "ae3902e7368b98edf9ebcb273876069b7855003f24c3fbc5345e09656bf17345",
+      "runtime_outputs": {
+        "SMOKE.ARK": "d3c8992b76d58cd26b056ca2266af918eaf5f4a792590cb12f7961aa4782929f",
+        "OLD.ARK": "e8955b5856e1fad865b70c465ce45714acf80116e85acc9fa558c875646f3fb5",
+        "INPUT.BIN": "40aff2e9d2d8922e47afd4648e6967497158785fbd1da870e7110266bf944880"
+      },
+      "execution": "runtime/execution.json",
+      "paired_original_unchanged": true
+    }
+  },
+  "noah_acceptance": "PASS",
+  "evidence": {
+    "archive": "NOAH-ARC-Write-evidence.tar.gz",
+    "sha256": "6374903ab4d9e2c7eea04d765b3dfe8b21b4b1ff9380dd966f9c928711e8312f",
+    "full_runtime_baselines": [
+      "full-z80pack/report.json",
+      "full-model4/report.json"
+    ],
+    "cross_platform_baseline_outputs_equal": true,
+    "final_scope": "Exact final native module parity and companion-volume runtime on both platforms. Full codec/LBR/ARC/20KiB extent campaigns use the recorded prior baseline; final deltas add opaque-suffix warning reporting and mark low-memory transaction rejection as failure.",
+    "host_checks": {
+      "test_noah.py": {
+        "cases": 181,
+        "status": "PASS",
+        "includes_final_memory_failure_outcome": true
+      },
+      "regressions": {
+        "test_noah_write.py": 38,
+        "test_noah_codecs.py": 51,
+        "test_noah_accounting.py": 18,
+        "test_noah_failures.py": 21,
+        "test_noah_outcomes.py": 20,
+        "test_noah_coverage.py": 15,
+        "test_noah_quiet.py": 31
+      },
+      "regression_scope": "Passed before the final low-memory outcome flag change; production test_noah.py rerun after that change.",
+      "max_stack_bytes": 56
+    },
+    "source_revision": "3620f861f828e47ace8e1d61fea0d096915030b6"
+  }
+}

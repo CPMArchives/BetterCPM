@@ -3329,6 +3329,8 @@
         "src/archive/archive.inc",
         "src/archive/ark.inc",
         "src/archive/ark.mac",
+        "src/archive/arkwrite.inc",
+        "src/archive/arkwrite.mac",
         "src/archive/cpmfile.inc",
         "src/archive/cpmfile.mac",
         "src/archive/lbr.mac",

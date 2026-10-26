@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "scope": "Production NOAH ARK reading: methods 1/2 stored, methods 3/4 RLE/Huffman and methods 5-9 historical/dynamic LZW decoding; reusable ARK reader still exposes raw bytes and stored-only test",
+  "scope": "Production NOAH ARC methods 1-9 reading and native method-2/4/8 creation and update; reusable reader exposes bounded raw streams",
   "reference_pins_sha256": "bec79cad8bfcbeb59bc6991915f0c41d87cc33783e812ebea194521eb0f786d2",
   "methods": [
     {
@@ -21,7 +21,7 @@
       "raw_stored_read": true,
       "decoded_read": true,
       "integrity_test": true,
-      "encode": false
+      "encode": true
     },
     {
       "id": 3,
@@ -41,7 +41,7 @@
       "raw_stored_read": true,
       "decoded_read": true,
       "integrity_test": true,
-      "encode": false
+      "encode": true
     },
     {
       "id": 5,
@@ -90,7 +90,7 @@
       "raw_stored_read": true,
       "decoded_read": true,
       "integrity_test": true,
-      "encode": false,
+      "encode": true,
       "decode_workspace_bytes": 24576,
       "decode_workspace_end_offset": 28672,
       "dictionary": "4096-entry dynamic dictionary plus RLE"
@@ -112,25 +112,24 @@
   "planned_native_selectors": {
     "/SQ": {
       "method": 4,
-      "implemented": false
+      "implemented": true
     },
     "/CR": {
       "method": 8,
-      "implemented": false
+      "implemented": true
     }
   },
   "unknown_method_policy": "reject AS_UNSUPPORTED; do not guess a header length",
   "trailer_policy": {
     "0": "exact end",
     "1": "all trailing bytes 00h/1Ah",
-    "2": "opaque trailer; unvalidated, no clean-coverage or write-preservation claim"
+    "2": "opaque trailer: unvalidated; preserve complete physical suffix on ordinary updates, refuse COMPACT before staging"
   },
   "not_supported": [
     "self-extracting prefixes or header resynchronization",
     "encrypted/Spark high-bit methods",
     "extended headers including methods 10/11/20+",
     "date conversion",
-    "all archive writes",
-    "method 8/9 encoding and compatible ARC creation"
+    "method 9 encoding; new CR output uses native method 8"
   ]
 }

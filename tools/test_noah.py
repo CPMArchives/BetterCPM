@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 from build_noah import build, version_text
 from test_lbr import archive, entry, with_crcs
+from test_ark import member as arc_member
 from test_usq import SHIM
 from test_usq_com import Command, diskkey, padded
 
@@ -32,7 +33,7 @@ class Noah(Command):
             match = re.search(rf'^([0-9a-f]{{4}}).*\b{name}:\s', listing, re.M | re.I)
             assert match, name
             self.symbols[old] = int(match[1], 16)
-        for name in ('AC_OPEN', 'AC_CLOSE', 'LBR_NEXT', 'LBR_READ', 'NH_CONTEXT', 'NX_TEMP', 'NX_VERIFY', 'NI_WAIT', 'NS_YES', 'NW_MEMORY_TEXT', 'NX_BUFFER', 'NR_FCB', 'NR_INPUT', 'NW_SOURCE', 'NR_LOAD', 'NR_CODEC', 'NR_WINDOW', 'NR_DRIVE', 'NR_USER', 'NR_CAPTURED', 'NR_SOURCE', 'NR_SOURCE_USER', 'NR_DESTUSER', 'NR_SINK', 'NR_OUTFCB', 'NR_NAME', 'NR_ARC_MODE', 'NR_STATUS', 'NR_CARRY', 'NR_OUTUSED', 'NR_TOTAL', 'NR_LIMIT'):
+        for name in ('AC_OPEN', 'AC_CLOSE', 'LBR_NEXT', 'LBR_READ', 'NH_CONTEXT', 'NH_DUSER', 'NH_ARK', 'NX_TEMP', 'NX_VERIFY', 'NI_WAIT', 'NS_YES', 'NW_MEMORY_TEXT', 'NX_BUFFER', 'NR_FCB', 'NR_INPUT', 'NW_SOURCE', 'NW_SOURCE_USER', 'NW_ARC_READ_CB', 'NW_ARC_WRITE_CB', 'NW_ARC_PAD_RECORD', 'NW_ARC_FILL', 'NW_ARC_STAGE_SIZE', 'NW_ARC_PLANS', 'NR_LOAD', 'NR_CODEC', 'NR_WINDOW', 'NR_DRIVE', 'NR_USER', 'NR_CAPTURED', 'NR_SOURCE', 'NR_SOURCE_USER', 'NR_DESTUSER', 'NR_SINK', 'NR_OUTFCB', 'NR_NAME', 'NR_ARC_MODE', 'NR_STATUS', 'NR_CARRY', 'NR_OUTUSED', 'NR_TOTAL', 'NR_LIMIT'):
             match = re.search(rf'\b{name}[ \t]+([0-9a-f]{{4}})\b', listing, re.I)
             assert match, name
             self.symbols[name] = int(match[1], 16)
@@ -52,6 +53,7 @@ class Noah(Command):
         self.source_opens=0
         self.cancel_poll = kwargs.pop('cancel_poll', None)
         self.tamper = kwargs.pop('tamper', False)
+        self.disk_exm = kwargs.pop('disk_exm', 1)
         self.polls = 0
         self.keys = list(kwargs.pop('keys', '').encode('ascii'))
         self.attrs = dict(kwargs.pop('attributes', {}))
@@ -94,11 +96,16 @@ class Noah(Command):
         return result
 
     def callback(self, kind):
+        # CP/M Get DPB returns HL, unlike the ordinary byte-returning services.
+        if kind == 0 and self.reg['PC'].value == 5 and self.reg['C'].value == 31:
+            self.mem[0xf004] = self.disk_exm
+            self.reg['H'].value, self.reg['L'].value = 0xf0, 0
+            self.reg['A'].value = 0
+            return
         # The pre-stack low-TPA diagnostic deliberately uses the CCP stack.
         de = self.reg['D'].value * 256 + self.reg['E'].value
-        if kind == 0 and self.reg['PC'].value == 5 and self.reg['C'].value == 9 and de == self.symbols['NW_MEMORY_TEXT']:
+        if kind == 0 and self.reg['PC'].value == 5 and self.reg['C'].value == 9 and de == self.symbols['NW_MEMORY_TEXT'] and self.reg['SP'].value == 0xdffe:
             try:
-                assert self.reg['SP'].value == 0xdffe
                 self.reg['A'].value = self.bdos(9,de)
             except BaseException as error:
                 self.exception = error
@@ -239,10 +246,13 @@ class Noah(Command):
                 return key
             self.polls += 1
             return 3 if self.polls == self.cancel_poll else 0
+        if fn == 22 and de == self.symbols['NX_TEMP']:
+            assert not any(self.mem[de+12:de+36]), 'stale temporary FCB state'
         if fn == 20 and self.fail('verify_read'):
             self.events.append((fn, de))
             return 2
-        if fn == 15 and de == self.symbols['NX_VERIFY'] and self.tamper:
+        if fn == 15 and self.tamper and (de == self.symbols['NX_VERIFY'] or
+                (de == self.symbols['UC_INPUT'] and self.fcbkey(de)[2].endswith('.TMP'))):
             key = self.fcbkey(de)
             if key in self.files and self.files[key]:
                 if self.tamper == 'append':
@@ -761,6 +771,38 @@ def main():
     with tempfile.TemporaryDirectory(prefix='bettercpm-noah-test-') as temp:
         work = Path(temp)
         image = build(a.assembler, work)
+        layout = image.layout
+        ark_start = layout['ark_address']
+        ark_end = ark_start + layout['ark_bytes']
+        ark_padded_end = ark_start + layout['ark_padded_bytes']
+        add_plan_start, add_plan_end = layout['ark_add_plan_workspace']
+        assert layout['ark_overlay_address'] == ark_start
+        assert layout['ark_add_plan_address'] == add_plan_start
+        assert ark_end <= ark_padded_end == add_plan_start
+        assert add_plan_end - add_plan_start == 6144
+        assert add_plan_end <= layout['ark_writer_arena_end']
+        assert layout['ark_bytes'] <= 12800
+        assert all(ark_start <= address < ark_end
+                   for address in layout['ark_writer_entries'].values())
+        assert set(layout['ark_writer_entries']) == {
+            'ARK_BUILD_HEADER', 'ARK_WRITE_MEMBER', 'ARK_WRITE_END', 'ARK_COPY_MEMBER'}
+        expected_dispatch = {
+            'NAW_BUILD_HEADER': ark_start + 27,
+            'NAW_WRITE_MEMBER': ark_start + 30,
+            'NAW_WRITE_END': ark_start + 33,
+            'NAW_COPY_MEMBER': ark_start + 36,
+        }
+        assert layout['ark_writer_dispatch'] == expected_dispatch
+        overlay = image.overlay
+        descriptor = 24 + (6 - 1) * 12
+        assert overlay[descriptor] == 6
+        record = int.from_bytes(overlay[descriptor + 2:descriptor + 4], 'little')
+        module_length = int.from_bytes(overlay[descriptor + 6:descriptor + 8], 'little')
+        module_offset = 128 + (record - 1) * 128
+        module = overlay[module_offset:module_offset + module_length]
+        for slot, entry in zip((27, 30, 33, 36), ('ARK_BUILD_HEADER', 'ARK_WRITE_MEMBER', 'ARK_WRITE_END', 'ARK_COPY_MEMBER')):
+            assert module[slot] == 0xC3
+            assert int.from_bytes(module[slot + 1:slot + 3], 'little') == layout['ark_writer_entries'][entry]
         assert build(a.assembler, work / 'repeat') == image
         (work / 'sim.h').write_text('#define DEF_CPU Z80\n#define EXCLUDE_I8080\n')
         for name in ('simmem.h', 'simport.h'):
@@ -777,10 +819,202 @@ def main():
         m.run('/VER', {})
         overlay_encoder_tests(m)
         tests(m)
+        arc_callback_tests(m)
+        arc_write_tests(m)
         extraction_tests(m)
         selector_overwrite_tests(m)
         print(f'PASS: {m.cases} NOAH command/adapter cases; {len(image)} bytes; deterministic build.')
         print(f'Maximum measured command stack: {m.max_stack} bytes (BDOS intercepted).')
+
+
+def arc_callback_tests(m):
+    # Exercise the production ARC callbacks directly through BDOS: source reads
+    # use record-aligned random I/O; writer chunks can cross record boundaries
+    # and are padded only after the logical ARC stream is complete.
+    m.run('/ADD /Y NEW.LBR B7:NONE.*', {})
+    m.write_allowed = True
+    source = diskkey(2, 'INPUT.BIN', 7)
+    source_data = bytes(range(256))
+    m.files = {source: source_data}
+    m.opened = {m.symbols['NW_SOURCE']: [source, 0]}
+    m.user, m.drive = 0, 1
+    src_fcb = m.symbols['NW_SOURCE']
+    m.mem[src_fcb:src_fcb + 36] = bytes(36)
+    m.mem[src_fcb] = 2
+    m.mem[src_fcb + 1:src_fcb + 12] = b'INPUT   BIN'
+    m.mem[m.symbols['NW_SOURCE_USER']] = 7
+    m.mem[m.symbols['NH_DUSER']] = 0
+    context = m.symbols['NH_CONTEXT']
+    buffer = m.symbols['NX_BUFFER']
+    m.mem[context + 16:context + 20] = (128).to_bytes(4, 'little')
+    m.mem[context + 20:context + 22] = buffer.to_bytes(2, 'little')
+    m.mem[context + 22:context + 24] = (128).to_bytes(2, 'little')
+    assert m.library_call('NW_ARC_READ_CB') == 0
+    assert bytes(m.mem[buffer:buffer + 128]) == source_data[128:]
+    m.mem[context + 16:context + 20] = (1).to_bytes(4, 'little')
+    assert m.library_call('NW_ARC_READ_CB') == 7  # AS_RANGE, misaligned request.
+    m.mem[context + 16:context + 20] = bytes(4)
+    m.failures, m.attempts = {'read': 1}, {}
+    assert m.library_call('NW_ARC_READ_CB') == 4  # AS_IO.
+    assert m.user == 0
+    m.failures, m.attempts = {}, {}
+
+    target = diskkey(1, 'STAGE.TMP')
+    temp_fcb = m.symbols['NX_TEMP']
+    m.files = {target: b''}
+    m.opened = {temp_fcb: [target, 0]}
+    m.mem[temp_fcb:temp_fcb + 36] = bytes(36)
+    m.mem[temp_fcb] = 1
+    m.mem[temp_fcb + 1:temp_fcb + 12] = b'STAGE   TMP'
+    m.mem[m.symbols['NW_ARC_FILL']] = 0
+    m.mem[m.symbols['NW_ARC_STAGE_SIZE']:m.symbols['NW_ARC_STAGE_SIZE']+4] = bytes(4)
+    chunks = (bytes(range(29)), bytes(range(128)), b'\xaa\xbb')
+    offset = 0
+    m.mem[context + 16:context + 20] = (1).to_bytes(4, 'little')
+    m.mem[context + 22:context + 24] = (1).to_bytes(2, 'little')
+    assert m.library_call('NW_ARC_WRITE_CB') == 7  # AS_RANGE, offset/fill mismatch.
+    for chunk in chunks:
+        m.mem[buffer:buffer + len(chunk)] = chunk
+        m.mem[context + 16:context + 20] = offset.to_bytes(4, 'little')
+        m.mem[context + 20:context + 22] = buffer.to_bytes(2, 'little')
+        m.mem[context + 22:context + 24] = len(chunk).to_bytes(2, 'little')
+        assert m.library_call('NW_ARC_WRITE_CB') == 0
+        assert int.from_bytes(bytes(m.mem[context + 24:context + 26]), 'little') == len(chunk)
+        offset += len(chunk)
+    assert m.library_call('NW_ARC_PAD_RECORD') == 0
+    expected = b''.join(chunks) + b'\x1a' * (256 - offset)
+    assert m.files[target] == expected
+
+    # A failed BDOS record write is returned as an error; the caller must not
+    # publish the staged file or advance its own ARC output cursor.
+    m.files[target] = b''
+    m.opened = {temp_fcb: [target, 0]}
+    m.mem[m.symbols['NW_ARC_FILL']] = 0
+    m.mem[context + 16:context + 20] = bytes(4)
+    m.mem[context + 22:context + 24] = (128).to_bytes(2, 'little')
+    m.mem[buffer:buffer + 128] = bytes(128)
+    m.failures, m.attempts = {'write': 1}, {}
+    status = m.library_call('NW_ARC_WRITE_CB')
+    assert status == 4, (status, m.exception, m.console)
+    assert int.from_bytes(bytes(m.mem[context + 24:context + 26]), 'little') == 0
+    m.cases += 5
+
+
+def arc_write_tests(m):
+    # One complete production ARC transaction exercises planning, staged
+    # header/member/end-marker output, readback verification and publication.
+    source = diskkey(3, 'INPUT.BIN', 0)
+    destination = diskkey(2, 'NEW.ARK', 0)
+    payload = bytes(range(128))
+    output = m.run('/ADD /Y B:NEW.ARK C:INPUT.BIN', {source: payload})
+    expected = arc_member(payload, name=b'INPUT.BIN') + b'\x1a\0'
+    expected += b'\x1a' * ((-len(expected)) % 128)
+    assert m.files[destination] == expected, (output, m.files.get(destination))
+    assert m.mem[m.symbols['NW_ARC_PLANS']] == 1, m.mem[m.symbols['NW_ARC_PLANS']:m.symbols['NW_ARC_PLANS']+12]
+    assert 'verified and published' in output, output
+    assert 'completed 00000001' in output, output
+    assert not any(key[2].endswith(('.TMP', '.BAK')) for key in m.files)
+    assert not m.opened and m.user == 0 and m.drive == 1
+    m.intact()
+
+    old = arc_member(b'kept bytes', name=b'KEEP.BIN') + b'\x1a\0'
+    old += b'\x1a' * ((-len(old)) % 128)
+    target = diskkey(2, 'KEEP.ARK', 0)
+    m.instruction_budget = 100_000_000
+    update = m.run('/ADD /Y B:KEEP.ARK C:INPUT.BIN',
+                   {target: old, source: payload})
+    m.instruction_budget = 30_000_000
+    retained = arc_member(b'kept bytes', name=b'KEEP.BIN')
+    expected = (retained + arc_member(payload, name=b'INPUT.BIN') +
+                b'\x1a\0' + old[len(retained) + 2:])
+    expected += b'\x1a' * ((-len(expected)) % 128)
+    assert m.files[target] == expected, (update, m.files.get(target))
+    assert 'verified and published' in update, update
+    assert not any(key[2].endswith(('.TMP', '.BAK')) for key in m.files)
+    assert not m.opened and m.user == 0 and m.drive == 1
+    assert m.files[source] == payload
+
+    # A large retained member catches a reader header buffer being reused as
+    # the stream copy buffer. End-of-directory must also restore writer state.
+    retained = arc_member(bytes(range(256))*16, name=b'KEEP.BIN')
+    dropped = arc_member(b'drop me', name=b'DROP.BIN')
+    original = retained + dropped + b'\x1a\0'
+    original += b'\x1a' * (-len(original) % 128)
+    key = diskkey(1, 'UPDATE.ARK')
+    for ceiling in (0xc501, 0xca01):
+        output = m.run('/REMOVE /Y UPDATE.ARK DROP.BIN', {key: original}, tpa=ceiling)
+        assert 'verified and published' in output, output
+        assert m.files[key].startswith(retained + b'\x1a\0')
+        removed = m.files[key]
+        output = m.run('/COMPACT /Y UPDATE.ARK', {key: removed}, tpa=ceiling)
+        exact = retained + b'\x1a\0'
+        assert m.files[key] == padded(exact) and 'published' in output, output
+        assert not m.opened and m.user == 0 and m.drive == 1
+    for failure in ('write', 'close_output', 'rename', 'read'):
+        output = m.run('/REMOVE /Y UPDATE.ARK DROP.BIN', {key: original}, failures={failure: 1})
+        assert 'verified and published' not in output and m.files[key] == original, (failure, output)
+    # CRC-valid but changed staged bytes still fail the construction digest;
+    # the full byte stream, physical size and retained suffix are authoritative.
+    for tamper in (True, 'append', 'truncate'):
+        output = m.run('/REMOVE /Y UPDATE.ARK DROP.BIN', {key: original}, tamper=tamper)
+        assert 'verified and published' not in output and m.files[key] == original, output
+    output = m.run('/COMPACT /Y UPDATE.ARK', {key: original + b'opaque suffix'})
+    assert m.files[key] == original + b'opaque suffix' and not m.created, output
+    for fmt in ('/FORMAT=LBR',):
+        output = m.run(f'/REMOVE /Y {fmt} UPDATE.ARK DROP.BIN', {key: original})
+        assert m.files[key] == original and not m.created, output
+
+    opaque = original + b'opaque suffix'
+    source = diskkey(3, 'INPUT.BIN')
+    output = m.run('/ADD /Y UPDATE.ARK C:INPUT.BIN', {key: opaque, source: payload})
+    suffix = padded(opaque)[len(retained) + len(dropped) + 2:]
+    assert 'published' in output and 'opaque trailer: unvalidated' in output, output
+    expected = retained + dropped + arc_member(payload, name=b'INPUT.BIN') + b'\x1a\0' + suffix
+    assert m.files[key] == padded(expected), output
+    for failed_renames in (2, (2, 3)):
+        output = m.run('/REMOVE /Y UPDATE.ARK DROP.BIN', {key: original}, failures={'rename': failed_renames})
+        assert 'verified and published' not in output, output
+        if failed_renames == 2:
+            assert m.files[key] == original and 'Temporary retained:' in output
+        else:
+            assert key not in m.files and 'Recovery required; stop.' in output
+            assert m.files[diskkey(1, 'UPDATE00.BAK')] == original
+    output = m.run('/REMOVE /COMPACT /Y UPDATE.ARK NONE.*', {key: opaque})
+    assert 'No members matched' in output and m.files[key] == opaque and not m.created, output
+
+    many = {diskkey(3, ('F%07d' % n)+'.BIN'): b'' for n in range(300)}
+    output = m.run('/ADD LIMIT.ARK C:*.BIN', many, tpa=0xc501)
+    assert 'Insufficient transient memory' in output and 'Outcome: failure.' in output, output
+    assert not m.created and not m.opened
+
+    # Selectors must produce native method-4/8 bodies and retain original
+    # member names. Exercise empty, binary and multi-record sources, creation
+    # and replacement, plus the production reader's decoded-byte comparison.
+    m.instruction_budget = 100_000_000
+    for option, method in (('/SQ', 4), ('/CR', 8)):
+        for payload in (b'', bytes(range(128)), b'abc\x90'*128):
+            target = diskkey(2, 'CODEC.ARK')
+            files = {source: payload}
+            output = m.run(f'/ADD {option} /Y B:CODEC.ARK C:INPUT.BIN', files, tpa=0xc501)
+            assert 'verified and published' in output, output
+            encoded = m.files[target]
+            assert encoded[1] == method and encoded[2:15] == b'INPUT.BIN\0\0\0\0'
+            result = m.run('/X /Y B:CODEC.ARK', {target: encoded}, tpa=0xca01)
+            assert 'Outcome: success.' in result, result
+            assert m.files[diskkey(1, 'INPUT.BIN')] == payload
+        target = diskkey(2, 'CODEC.ARK')
+        payload = bytes(range(256))*2
+        original = arc_member(b'old', name=b'INPUT.BIN') + retained + b'\x1a\0'
+        original += b'\x1a' * (-len(original) % 128)
+        output = m.run(f'/ADD {option} /Y B:CODEC.ARK C:INPUT.BIN',
+                       {target: original, source: payload}, tpa=0xc501)
+        assert 'verified and published' in output, output
+        assert m.files[target].startswith(retained)
+        assert not m.opened and m.files[source] == payload
+        assert not any(k[2].endswith(('.TMP', '.BAK')) for k in m.files)
+    m.instruction_budget = 30_000_000
+    m.cases += 3
+
 
 
 if __name__ == '__main__':

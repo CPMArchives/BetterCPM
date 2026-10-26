@@ -104,7 +104,8 @@
       "build/utilities/UNLZH.COM"
     ],
     "utility:NOAH": [
-      "build/utilities/NOAH.COM"
+      "build/utilities/NOAH.COM",
+      "build/utilities/NOAH.OVL"
     ],
     "utility:BYE": [
       "build/z80pack-tools/BYE.COM"

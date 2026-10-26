@@ -55,9 +55,17 @@ def main():
     files={n:(a.artifacts/path).read_bytes() for n,path in COMPONENTS.items()};result={'status':'PASS','platforms':{}}
     for native,target in ((False,'z80pack'),(True,'trs80gp')):
         fmt=select_fdf(ROOT/'third_party/montezuma'/('DISK-INT.FDF' if native else 'DISK.FDF'),'Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)' if native else DEFAULT_FORMAT)
-        path=next(a.images.glob('*'+target+'*.dmk' if native else '*'+target+'*.dsk'));image=path.read_bytes();raw=dmk_to_raw(image,fmt) if native else image
+        path=a.images/('BetterCPM-Utilities-'+target+('-80T-DS-800K.dmk' if native else '-332K.dsk'));image=path.read_bytes();raw=dmk_to_raw(image,fmt) if native else image
         if native:assert raw_to_dmk(raw,fmt)==image
         r=inspect(raw,fmt,files);r.update(image=path.name,image_sha256=sha(image),raw_bytes=len(raw),files_sha256={n:sha(b) for n,b in files.items()});result['platforms'][target]=r
+        from noah_distribution import COMPONENTS as NOAH_FILES, image_name
+        path=a.images/image_name(target);image=path.read_bytes()
+        raw=dmk_to_raw(image,fmt) if native else image
+        if native:assert raw_to_dmk(raw,fmt)==image
+        expected={n:(a.artifacts/relative).read_bytes() for n,relative in NOAH_FILES.items()}
+        extra=inspect(raw,fmt,expected)
+        extra.update(image=path.name,image_sha256=sha(image),files_sha256={n:sha(b) for n,b in expected.items()})
+        result['platforms'][target]['noah_companion']=extra
     a.output.write_text(json.dumps(result,indent=2)+'\n');print('PASS exact Utilities inventory, user placement, independent file bytes, allocations and native conversion')
 
 

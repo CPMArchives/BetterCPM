@@ -10,6 +10,7 @@ or included in current Utilities Disk images.
 ## Contents
 
 - [Using the Utilities Disk](#using-the-utilities-disk)
+- [NOAH archive utility](#noah-archive-utility)
 - [COMPARE binary file comparison](#compare-binary-file-comparison)
 - [DUMP hexadecimal file viewer](#dump-hexadecimal-file-viewer)
   - [Quick start](#quick-start)
@@ -976,3 +977,59 @@ The Utilities Disk supplies the original [ZSM4 4.7 assembler](ZSM4.md) and
 on a writable drive. Their original command syntax and identities are retained.
 Read `TOOLINFO.TXT`, `ZSM4COPY.TXT` and `LINKCOPY.TXT` for attribution and terms.
 The host Utilities package includes the complete ZSM4 source companion.
+
+## NOAH archive utility
+
+NOAH manages CP/M LBR libraries and ARC-compatible `.ARK`/`.ARC` archives.
+It is supplied on a separate NOAH Utilities disk for each platform. Mount that
+disk in B: in place of the primary Utilities disk when using NOAH.
+Keep `NOAH.COM` and its matching `NOAH.OVL` together. Change to their disk/user
+before starting NOAH, then qualify the archive and source operands with their
+writable work disks. Overlay lookup uses that invocation DU, then A0:.
+
+```text
+B:
+NOAH /LIST C:FILES.ARK
+NOAH /TEST C:FILES.ARK
+NOAH /EXTRACT C:FILES.ARK D:
+NOAH /ADD C:FILES.ARK D:*.TXT
+NOAH /ADD /SQ C:TEXTS.ARK D:*.TXT
+NOAH /ADD /CR C:BINARY.ARK D:*.BIN
+NOAH /REMOVE C:FILES.ARK *.BAK
+NOAH /COMPACT C:FILES.ARK
+```
+
+The same operations work with LBR. ADD requires one exact archive target;
+LIST, TEST, EXTRACT, REMOVE and COMPACT accept archive selectors and member
+patterns. `/CAPACITY=n` sets LBR directory capacity on ADD/COMPACT. Unknown new
+extensions require `/FORMAT=LBR` or `/FORMAT=ARK`; existing files are recognized
+by contents and are never converted by FORMAT.
+
+ARC ADD stores members without compression unless `/SQ` or `/CR` is explicit.
+These select native ARC methods 4 and 8 and preserve the original member name.
+LBR compression retains its standalone SQ/CR representation and marked filename.
+Standalone `/SQ`, `/CR` and `/EXPAND` remain available; `/EXTRACT /EXPAND` decodes
+one inner layer in LBR. ARC extraction decodes its archive-managed method.
+Input bytes include CP/M's final physical-record padding when no exact logical
+length is available; 00h, 1Ah and high-bit bytes are ordinary input data.
+
+`/Y` approves ordinary replacement/removal and explicit COMPACT. It never
+overrides read-only/system protection; `/R` and `/SYS` enable separate protected
+questions. `/Q` suppresses routine progress, retaining choices, warnings, errors
+and the final outcome. Escape or Ctrl-C cancels at safe boundaries.
+
+Ordinary ARC updates preserve retained headers/payloads and the entire suffix
+after the end marker. COMPACT trims only excess 00h/1Ah padding and refuses an
+opaque suffix. It does not recompress retained members. No-match REMOVE leaves
+the archive unchanged, including combined COMPACT.
+
+Every new archive/update is staged, reopened and verified before publication.
+Keep any reported TMP/BAK recovery files until the final state is understood.
+Uncertain rollback stops the batch and reports the affected paths. There is no
+automatic recovery/resume command or power-loss atomicity guarantee.
+
+The frozen selection limit is 512 candidates; actual transaction capacity also
+depends on active TPA and codec/source-plan requirements. Low-memory requests
+fail safely. The interactive browser, ZIP and LZH/CrLZH selectors remain deferred.
+Current qualification and media status are recorded in the
+[engineering integration record](../engineering/NOAH%20ARC%20Write%20Integration.md).

@@ -352,6 +352,8 @@ NS_COPY_TAIL:
         LD (NW_FORMAT),A
         LD (NW_ACTIVE),A
         LD (NW_PROMPT),A
+        LD (NC_ARC_PREP),A
+        LD (NW_ARC_VERIFY),A
         LD (NC_REQUEST),A
         LD (NC_EXPAND),A
 NS_TOKEN_LOOP:

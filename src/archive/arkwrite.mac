@@ -323,6 +323,112 @@ ARW_MEMBER_COUNT_READY:
 ARW_MEMBER_DONE:
         XOR A
         RET
+; Copy the current ARC member without interpreting its encoded method. The
+; reader has already validated the header, name, and complete stored extent.
+ARK_COPY_MEMBER:
+        LD A,(IX+AS_PHASE)
+        CP AS_SELECTED
+        JP NZ,ARW_CONFIG
+        LD A,(IX+AS_BUFFER)
+        OR (IX+AS_BUFFER+1)
+        JP Z,ARW_CONFIG
+        LD A,(IX+AS_MEMBER+AM_WRITE_CB)
+        OR (IX+AS_MEMBER+AM_WRITE_CB+1)
+        JP Z,ARW_CONFIG
+        LD L,(IX+AS_BUFFER)
+        LD H,(IX+AS_BUFFER+1)
+        LD (ARW_BUFFER_PTR),HL
+        LD A,(IX+AS_ENTRY+1)
+        CP 1
+        LD A,ARW_HEADER_SIZE
+        JR NZ,ARW_COPY_HEADER_READY
+        LD A,25
+ARW_COPY_HEADER_READY:
+        LD (ARW_COPY_HEADER),A
+        LD L,(IX+AS_MEMBER+AM_OUTPUT_OFFSET)
+        LD H,(IX+AS_MEMBER+AM_OUTPUT_OFFSET+1)
+        LD (IX+AS_OFFSET),L
+        LD (IX+AS_OFFSET+1),H
+        LD L,(IX+AS_MEMBER+AM_OUTPUT_OFFSET+2)
+        LD H,(IX+AS_MEMBER+AM_OUTPUT_OFFSET+3)
+        LD (IX+AS_OFFSET+2),L
+        LD (IX+AS_OFFSET+3),H
+        PUSH IX
+        POP HL
+        LD DE,AS_ENTRY
+        ADD HL,DE
+        LD (IX+AS_BUFFER),L
+        LD (IX+AS_BUFFER+1),H
+        LD A,(ARW_COPY_HEADER)
+        LD (IX+AS_COUNT),A
+        XOR A
+        LD (IX+AS_COUNT+1),A
+        CALL ARW_CALL_WRITE
+        JP C,ARW_COPY_OUTPUT_ERROR
+        LD A,(IX+AS_ACTUAL)
+        CP (IX+AS_COUNT)
+        JP NZ,ARW_COPY_OUTPUT_ERROR
+        LD A,(IX+AS_ACTUAL+1)
+        OR A
+        JP NZ,ARW_COPY_OUTPUT_ERROR
+        CALL ARW_ADVANCE_OUTPUT
+        JP C,ARW_COPY_RANGE
+ARW_COPY_LOOP:
+        LD A,(IX+AS_LEFT)
+        OR (IX+AS_LEFT+1)
+        OR (IX+AS_LEFT+2)
+        OR (IX+AS_LEFT+3)
+        JR Z,ARW_RETAIN_DONE
+        LD DE,(ARW_BUFFER_PTR)
+        LD BC,128
+        CALL ARK_RAW
+        JP C,ARW_COPY_READER_ERROR
+        LD A,B
+        OR C
+        JP Z,ARW_COPY_TRUNC
+        LD (IX+AS_COUNT),C
+        LD (IX+AS_COUNT+1),B
+        LD L,(IX+AS_MEMBER+AM_OUTPUT_OFFSET)
+        LD H,(IX+AS_MEMBER+AM_OUTPUT_OFFSET+1)
+        LD (IX+AS_OFFSET),L
+        LD (IX+AS_OFFSET+1),H
+        LD L,(IX+AS_MEMBER+AM_OUTPUT_OFFSET+2)
+        LD H,(IX+AS_MEMBER+AM_OUTPUT_OFFSET+3)
+        LD (IX+AS_OFFSET+2),L
+        LD (IX+AS_OFFSET+3),H
+        CALL ARW_CALL_WRITE
+        JP C,ARW_COPY_OUTPUT_ERROR
+        LD A,(IX+AS_ACTUAL)
+        CP (IX+AS_COUNT)
+        JP NZ,ARW_COPY_OUTPUT_ERROR
+        LD A,(IX+AS_ACTUAL+1)
+        CP (IX+AS_COUNT+1)
+        JP NZ,ARW_COPY_OUTPUT_ERROR
+        CALL ARW_ADVANCE_OUTPUT
+        JP C,ARW_COPY_RANGE
+        JP ARW_COPY_LOOP
+ARW_RETAIN_DONE:
+        XOR A
+        JR ARW_COPY_RETURN
+ARW_COPY_READER_ERROR:
+        ; Keep the reader's format/I/O/cancel status for caller recovery.
+        JR ARW_COPY_RETURN
+ARW_COPY_TRUNC:
+        LD A,AS_TRUNC
+        SCF
+        JR ARW_COPY_RETURN
+ARW_COPY_OUTPUT_ERROR:
+        LD A,AS_OUTPUT
+        SCF
+        JR ARW_COPY_RETURN
+ARW_COPY_RANGE:
+        LD A,AS_RANGE
+        SCF
+ARW_COPY_RETURN:
+        LD HL,(ARW_BUFFER_PTR)
+        LD (IX+AS_BUFFER),L
+        LD (IX+AS_BUFFER+1),H
+        RET
 ; Append the ARC 1Ah/00h terminator at the current output offset.
 ARK_WRITE_END:
         LD A,(IX+AS_MEMBER+AM_WRITE_CB)
@@ -500,4 +606,5 @@ ARW_EXT_END: DB 0
 ARW_DOT: DB 0
 ARW_CHAR: DB 0
 ARW_BUFFER_PTR: DW 0
+ARW_COPY_HEADER: DB 0
         ENDM

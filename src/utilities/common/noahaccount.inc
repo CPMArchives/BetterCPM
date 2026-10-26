@@ -161,6 +161,16 @@ NA_TOTAL_NEXT:
  LD (NA_ACCEPTED),HL
  ; Publication follows a complete plan. Status 2 is a superseded version,
  ; not another completed active member (even if deleted payload is retained).
+ LD A,(NH_ARK)
+ OR A
+ JR Z,NA_LBR_ACTIVE_PLAN
+ LD HL,(NA_INDEX)
+ CALL NW_ARC_ACTIVE
+ LD A,2
+ JR Z,NA_CATEGORY
+ XOR A
+ JR NA_CATEGORY
+NA_LBR_ACTIVE_PLAN:
  LD HL,(NA_INDEX)
  LD D,H
  LD E,L
@@ -214,7 +224,7 @@ NA_OFFSET:
  LD HL,(NA_INDEX)
  INC HL
  LD (NA_INDEX),HL
- JR NA_TOTAL_NEXT
+ JP NA_TOTAL_NEXT
  ; LIST/TEST/EXTRACT never use ADD's packed candidate storage.
 NA_CRC_CHECKED EQU NA_STATES
 NA_CRC_UNCHECKED EQU NA_STATES+4

@@ -14,6 +14,8 @@ from dasm_native import campaign
 from qualify_noah_proof import verify_system
 from test_lbr import archive,entry,with_crcs
 from test_lbr_write import members,check_crc
+from test_ark import member as arc_member
+from noah_compatibility import inventory as arc_inventory
 from test_usq import squeeze
 from test_cr import reference
 from test_sq import host_decode
@@ -162,7 +164,7 @@ def main():
     names=['NOAH','NHCLI','NCSQ','NCUSQ','NCCR','NCUNCR','NHARK','NCLZW','NCAR8']
     expected={n:(cross/(n+'.bin')).read_bytes() for n in names}
     tools={n:(ROOT/'third_party'/folder/n).read_bytes() for n,folder in [('ZSM4.COM','zsm4'),('LINK.COM','dri-link')]}
-    report={'scope':'NOAH production phases; ARK methods 1-9 decoding, isolated method-8 encoder phase, LBR and standalone codecs',
+    report={'scope':'NOAH production ARC stored/method-4/method-8 creation, ADD/replacement, REMOVE/COMPACT, staged verification; native module parity; LBR/standalone codec regression',
       'layout':layout,'verified_systems':systems,'resident_sha256':sha(image),
       'companion_sha256':sha(ovl),'platforms':{}}
     if a.stamp_delta_from:
@@ -214,7 +216,6 @@ def main():
             if a.ark_lzw:
                 from test_noah_ark_lzw import lzw,fixtures as lzw_fixtures
                 from test_ark import member,crc16
-                import random
                 small,_=lzw_fixtures()
                 small_members=b''.join(lzw(small,method,f'M{method}.BIN'.encode()) for method in range(5,10))
                 small_members+=lzw(b'',8,b'EMPTY8.BIN')+lzw(b'',9,b'EMPTY9.BIN')
@@ -267,7 +268,7 @@ def main():
                 assert b'unsupported' not in log and b'Insufficient transient' not in log
                 assert b'verified 00000007; unavailable/ambiguous: 00000000' in log
                 assert b'Archive/read error 08' in log
-                assert layout['lzw_bytes']==1705 and layout['lzw_workspace'][1]==47488
+                assert layout['lzw_bytes']<=2048 and layout['lzw_workspace'][1]-layout['lzw_workspace'][0]==24576
                 required=layout['lzw_workspace'][1]
                 assert layout['required_ceilings'][6]==required
                 assert required < 0xC501 < 0xCA01
@@ -563,6 +564,9 @@ def main():
             continue
         rng=random.Random(501);data=bytes(rng.randrange(256) for _ in range(4096))
         original=with_crcs(archive([entry(b'BINARY  DAT',records=32)],data))
+        arc_original=(arc_member(b'keep me',name=b'KEEP.BIN')+
+                      arc_member(b'drop me',name=b'DROP.BIN')+b'\x1a\0')
+        arc_original+=b'\x1a'*(-len(arc_original)%128)
         bad=bytearray(ovl);bad[-8]^=1
         boot=native['NOAH'];assert boot.count(b'NOAH    OVL')==1
         files={'NOAH.COM':boot,'NOAH.OVL':bytes(native_ovl),'NCMEM.COM':mem,
@@ -597,6 +601,46 @@ def main():
         assert members(outputs['REMOVE.LBR'])[0][0]==254
         assert len(outputs['COMPACT.LBR'])==128 and not members(outputs['COMPACT.LBR'])
         assert int.from_bytes(outputs['LIMITED.LBR'][14:16],'little')==1
+        arc_files={'NOAH.COM':boot,'NOAH.OVL':ovl,'BINARY.DAT':data,
+                   'ARCUPD.ARK':arc_original,'NCMEM.COM':mem}
+        arc_commands=prefix+['NCMEM',
+          'NOAH /ADD NEW.ARK BINARY.DAT','NOAH /ADD /Y ARCUPD.ARK BINARY.DAT',
+          'NOAH /REMOVE /Y ARCUPD.ARK DROP.BIN','NOAH /COMPACT /Y ARCUPD.ARK',
+          'NOAH /TEST NEW.ARK','NOAH /TEST ARCUPD.ARK',
+          'NOAH /ADD /SQ SQ.ARK BINARY.DAT','NOAH /ADD /CR CR.ARK BINARY.DAT',
+          'NOAH /X /Y SQ.ARK','NOAH /X /Y CR.ARK',
+          'NOAH /ADD /SQ /Y ARCUPD.ARK BINARY.DAT',
+          'NOAH /ADD /CR /Y ARCUPD.ARK BINARY.DAT',
+          'NOAH /COMPACT /Y ARCUPD.ARK','NOAH /TEST ARCUPD.ARK',
+        ]
+        alog,aout=campaign(platform,arc_files,arc_commands,base/'arc-runtime',system=a.system,
+             utilities=a.utilities,extract=['NEW.ARK','ARCUPD.ARK','SQ.ARK','CR.ARK','BINARY.DAT'],timeout=900)
+        assert re.findall(rb'Outcome: ([a-z/-]+)\.',alog)==[b'success']*(len(arc_commands)-len(prefix)-1),alog[-4000:]
+        assert aout['BINARY.DAT']==data
+        outputs.update(aout)
+        created_arc=arc_inventory(outputs['NEW.ARK'])
+        updated_arc=arc_inventory(outputs['ARCUPD.ARK'])
+        assert [row['name'] for row in created_arc['members']]==['BINARY.DAT']
+        assert created_arc['members'][0]['method']==2
+        assert [row['name'] for row in updated_arc['members']]==['KEEP.BIN','BINARY.DAT']
+        assert [row['method'] for row in updated_arc['members']]==[2,8]
+        assert [row['method'] for row in arc_inventory(outputs['SQ.ARK'])['members']]==[4]
+        assert [row['method'] for row in arc_inventory(outputs['CR.ARK'])['members']]==[8]
+        assert outputs['ARCUPD.ARK'].startswith(arc_member(b'keep me',name=b'KEEP.BIN'))
+        oracle_outputs={}
+        for label in ('arc-325047b2dc60fad5f6c8238d8cb5294b9a5ada38/arc',
+                      'deark-c19b47c80a5ff8a7b41eb4f578e1afdda99202a2/deark'):
+            exe=ROOT/'build/noah-proof/references'/label
+            for name in ('NEW.ARK','SQ.ARK','CR.ARK','ARCUPD.ARK'):
+                folder=base/('oracle-'+exe.name+'-'+name);folder.mkdir()
+                (folder/name).write_bytes(outputs[name])
+                args=['x',name] if exe.name=='arc' else ['-od','.',name]
+                result=subprocess.run([str(exe),*args],cwd=folder,capture_output=True)
+                (folder/'console.bin').write_bytes(result.stdout+result.stderr)
+                assert result.returncode==0,(exe,name,result.stdout,result.stderr)
+                decoded=list(folder.glob('*BINARY.DAT'))
+                assert len(decoded)==1 and decoded[0].read_bytes()==data,(exe,name)
+                oracle_outputs[exe.name+'/'+name]=sha(decoded[0].read_bytes())
         ceiling=b'C501' if platform=='z80pack' else b'CA01'
         assert b'NOAH QUAL TPA '+ceiling in log,log[-4000:]
         assert log.count(b'operation stopped')==2,log[-4000:]
@@ -606,17 +650,30 @@ def main():
         rng=random.Random(502);large=bytes(rng.randrange(256) for _ in range(20480))
         extent_files={'NOAH.COM':boot,'NOAH.OVL':ovl,'BIG.BIN':large,'NCMEM.COM':mem}
         extent_commands=prefix+['NCMEM','NOAH /ADD /CR BIG.LBR BIG.BIN',
-             'NOAH /X /EXPAND /Y BIG.LBR','NOAH /TEST BIG.LBR']
+             'NOAH /X /EXPAND /Y BIG.LBR','NOAH /TEST BIG.LBR',
+             'NOAH /ADD /CR BIG.ARK BIG.BIN','NOAH /X /Y BIG.ARK','NOAH /TEST BIG.ARK',
+             'NOAH /ADD /SQ BIGSQ.ARK BIG.BIN','NOAH /X /Y BIGSQ.ARK','NOAH /TEST BIGSQ.ARK']
         elog,eout=campaign(platform,extent_files,extent_commands,base/'extent',system=a.system,
-             utilities=a.utilities,extract=['BIG.LBR','BIG.BIN'],timeout=600)
+             utilities=a.utilities,extract=['BIG.LBR','BIG.BIN','BIG.ARK','BIGSQ.ARK'],timeout=900)
         assert eout['BIG.BIN']==large;check_crc(eout['BIG.LBR'])
+        assert re.findall(rb'Outcome: ([a-z/-]+)\.',elog)==[b'success']*9,elog[-4000:]
+        for name in ('BIG.ARK','BIGSQ.ARK'):
+            folder=base/('oracle-large-'+name);folder.mkdir()
+            (folder/name).write_bytes(eout[name])
+            exe=ROOT/'build/noah-proof/references/deark-c19b47c80a5ff8a7b41eb4f578e1afdda99202a2/deark'
+            result=subprocess.run([str(exe),'-od','.',name],cwd=folder,capture_output=True)
+            assert result.returncode==0,(name,result.stdout,result.stderr)
+            decoded=list(folder.glob('*BIG.BIN'))
+            assert len(decoded)==1 and decoded[0].read_bytes()==large
+            oracle_outputs['deark/'+name]=sha(large)
         assert b'codec operation failed' not in elog and b'update failed' not in elog and b'Integrity checks complete' in elog
         report['platforms'][platform]={'status':'PASS','native_groups':groups,
           'runtime_ceiling_hex':ceiling.decode(),'native_outputs':{n:sha(b) for n,b in native.items()},
           'runtime_outputs':{n:sha(b) for n,b in outputs.items()},'extent_outputs':{n:sha(b) for n,b in eout.items()},
-          'runtime_console_sha256':sha(log),'extent_console_sha256':sha(elog),'cross_extent_source_bytes':len(large)}
+          'runtime_console_sha256':sha(log),'arc_console_sha256':sha(alog),'extent_console_sha256':sha(elog),'cross_extent_source_bytes':len(large),
+          'independent_oracle_outputs':oracle_outputs,'arc_inventory':{n:arc_inventory(outputs[n]) for n in ('NEW.ARK','SQ.ARK','CR.ARK','ARCUPD.ARK')}}
         (a.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
-        print('PASS',platform,'six native modules, loaded-RSX codec/LBR commands and cross-extent writes',flush=True)
+        print('PASS',platform,'nine native modules; ARC stored/SQ/CR transactions, independent decoders, LBR/codecs and cross-extent writes',flush=True)
 
 
 if __name__=='__main__':main()

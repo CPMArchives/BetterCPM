@@ -1,6 +1,6 @@
 ; NOAH development: LBR and ARK LIST/TEST/EXTRACT with selectors,
 ; member filters, frozen batches and authorized staged replacement.
-; LBR writes and standalone codecs implemented; remaining ARK methods/writes pending.
+; LBR/ARC writes and standalone codecs implemented; interactive browser deferred.
 ; No distribution inclusion until the corresponding qualification is complete.
         ORG 100H
         JP NH_START
@@ -71,7 +71,7 @@ NH_ARCHIVE:
         JP C,NH_FAILED
         LD A,(NH_ARK)
         OR A
-        JP NZ,NW_PLANS+3
+        JP NZ,NW_OVERLAY+3
         LD A,(NH_MODE)
         OR A
         JR Z,NH_LIST_START
@@ -148,7 +148,7 @@ NH_LENGTH_LOOP:
         CALL NH_PRINT
         LD A,(NH_ARK)
         OR A
-        JP NZ,NW_PLANS+15
+        JP NZ,NW_OVERLAY+15
         LD A,(NH_MODE)
         CP 1
         JR NZ,NH_LIST_CONTINUE
@@ -166,7 +166,7 @@ NH_LIST_END:
         JP NZ,NH_FAILED
         LD A,(NH_ARK)
         OR A
-        CALL NZ,NW_PLANS+18
+        CALL NZ,NW_OVERLAY+18
         CALL AC_CLOSE
         JR C,NH_CLOSE_FAILED
         LD A,(NS_MATCHED)

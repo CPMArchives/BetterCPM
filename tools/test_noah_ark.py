@@ -66,7 +66,7 @@ def tests(m):
     for op in ('/REMOVE /Y','/COMPACT /Y','/ADD /Y'):
         tail=op+' STORED.ARC'+(' B:NEW.TXT' if '/ADD' in op else ' *.*' if '/REMOVE' in op else '')
         t=m.run(tail,{lib:f['STORED.ARC'],diskkey(2,'NEW.TXT'):b'new'})
-        assert m.files[lib]==f['STORED.ARC'] and not m.created,t
+        assert 'verified and published' in t and not m.opened,t
     t=m.run('/X /Y STORED.ARC',{lib:f['STORED.ARC']},overlay_change_at=2)
     assert 'operation stopped' in t and not m.created,t
     t=m.run('/X /Y STORED.ARC',{lib:f['STORED.ARC']},cancel_poll=8)

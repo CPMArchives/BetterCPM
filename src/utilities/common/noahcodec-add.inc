@@ -1,5 +1,5 @@
 ; Compressed ADD phase plan is disk-backed: one private scratch LBR-independent
-; file, 32-byte rows followed by verified encoded records. Frozen original IDs
+; file, 64-byte rows followed by verified encoded records. Frozen original IDs
 ; remain in NS_TABLE. Transformed IDs and writer plans share inactive codec RAM.
 NC_ADD_PREPARE:
  XOR A
@@ -87,6 +87,15 @@ NC_ADD_READY:
  LD A,H
  OR L
  RET Z
+ LD A,(NC_ARC_PREP)
+ OR A
+ JR NZ,NC_ADD_ACTIVATE
+ CALL NW_CHECK_ID_MEMORY
+ JR NC,NC_ADD_ID_MEMORY_OK
+ LD DE,NW_MEMORY_TEXT
+ CALL NH_PRINT
+ JP NC_ADD_ABORT
+NC_ADD_ID_MEMORY_OK:
  LD HL,(NS_COUNT)
  LD D,H
  LD E,L
@@ -117,6 +126,7 @@ NC_ADD_NAMES:
  OR A
  SBC HL,DE
  JR NZ,NC_ADD_NAMES
+NC_ADD_ACTIVATE:
  LD A,1
  LD (NC_ADD_ACTIVE),A
  OR A
@@ -270,7 +280,7 @@ NC_ADD_COPY_DONE:
  ; padding and aggregate position. Never expose this scratch format as an API.
  LD HL,NC_META_ROW
  LD DE,NC_META_ROW+1
- LD BC,31
+ LD BC,63
  LD (HL),0
  LDIR
  CALL NC_ADD_RAW_ID
@@ -296,11 +306,21 @@ NC_ADD_COPY_DONE:
  LD DE,NC_META_ROW+24
  LD BC,4
  LDIR
+ LD HL,NC_ORIGINAL_LENGTH
+ LD DE,NC_META_ROW+30
+ LD BC,4
+ LDIR
+ LD HL,(NC_ORIGINAL_CRC)
+ LD (NC_META_ROW+34),HL
+ LD HL,NC_EXPECT
+ LD DE,NC_META_ROW+36
+ LD BC,4
+ LDIR
  LD HL,NC_META_ROW
- LD BC,28
+ LD BC,62
  LD DE,0
  CALL LBR_CRC16
- LD (NC_META_ROW+28),DE
+ LD (NC_META_ROW+62),DE
  CALL NC_META_UPDATE
  RET
 NC_ADD_COPY_BAD:
@@ -314,6 +334,7 @@ NC_ADD_ERROR:
  SCF
  RET
 NC_ADD_CREATE:
+ CALL NC_ADD_GEOMETRY
  CALL NX_TEMP_PAIR
  RET C
  LD HL,NX_TEMP
@@ -343,10 +364,6 @@ NC_ADD_CREATE:
  LD (NC_ADD_OPEN),A
  LD HL,(NS_COUNT)
  INC HL
- INC HL
- INC HL
- SRL H
- RR L
  SRL H
  RR L
  LD (NC_ADD_POS),HL
@@ -378,6 +395,120 @@ NC_ADD_PREFIX:
 NC_ADD_PREFIX_FAIL:
  CALL NC_ADD_CLOSE_FILE
  JP NC_ADD_ERROR
+ ; The target drive can differ from the invocation drive. Get its DPB using
+ ; standard CP/M functions, then restore the entry drive immediately.
+NC_ADD_GEOMETRY:
+ LD C,25
+ CALL AC_BDOS
+ LD (NC_ADD_ENTRY_DRIVE),A
+ LD A,(NH_DEST)
+ LD E,A
+ LD C,14
+ CALL AC_BDOS
+ PUSH IX
+ PUSH IY
+ LD C,31
+ CALL 5
+ LD DE,4
+ ADD HL,DE
+ LD A,(HL)
+ LD (NC_ADD_EXM),A
+ POP IY
+ POP IX
+ LD A,(NC_ADD_ENTRY_DRIVE)
+ LD E,A
+ LD C,14
+ JP AC_BDOS
+; Preserve the high-water FCB for the physical extent holding this metadata
+; row. A random write to an earlier logical extent can lower its directory EX
+; on some CP/M implementations. Restore the complete, already allocated map
+; and high-water EX/RC before CLOSE; no payload allocation occurs in metadata.
+NC_META_HIGH_WATER:
+ LD A,(NC_ADD_EXM)
+ LD L,A
+ LD H,0
+ LD B,7
+NC_META_MASK_SHIFT:
+ ADD HL,HL
+ DJNZ NC_META_MASK_SHIFT
+ LD A,L
+ OR 127
+ LD L,A
+ LD DE,(NC_ADD_INDEX)
+ SRL D
+ RR E
+ LD A,L
+ OR E
+ LD L,A
+ LD A,H
+ OR D
+ LD H,A
+ LD DE,(NC_ADD_POS)
+ DEC DE
+ LD A,(NC_ADD_POS+2)
+ OR A
+ JR NZ,NC_META_HIGH_READY
+ PUSH HL
+ OR A
+ SBC HL,DE
+ POP HL
+ JR C,NC_META_HIGH_READY
+ EX DE,HL
+NC_META_HIGH_READY:
+ LD (NC_ADD_FCB+33),HL
+ XOR A
+ LD (NC_ADD_FCB+35),A
+ LD DE,NR_CHECK
+ LD C,26
+ CALL AC_BDOS
+ LD DE,NC_ADD_FCB
+ LD C,33
+ CALL AC_BDOS
+ OR A
+ JP NZ,NC_ADD_ERROR
+ LD HL,NC_ADD_FCB
+ LD DE,NC_META_SAVED_FCB
+ LD BC,36
+ LDIR
+ OR A
+ RET
+ ; DE is an already-open aggregate FCB. Read the last committed record so
+ ; CLOSE describes the current complete physical extent, including when this
+ ; handle was used only for prefix metadata or an earlier source's payload.
+NC_ADD_TAIL:
+ PUSH DE
+ LD HL,33
+ ADD HL,DE
+ EX DE,HL
+ LD HL,NC_ADD_POS
+ LD BC,3
+ LDIR
+ POP DE
+ PUSH DE
+ LD HL,33
+ ADD HL,DE
+ LD A,(HL)
+ SUB 1
+ LD (HL),A
+ INC HL
+ LD A,(HL)
+ SBC A,0
+ LD (HL),A
+ INC HL
+ LD A,(HL)
+ SBC A,0
+ LD (HL),A
+ LD DE,NR_CHECK
+ LD C,26
+ CALL AC_BDOS
+ POP DE
+ LD C,33
+ CALL AC_BDOS
+ OR A
+ RET Z
+ LD A,AS_IO
+ SCF
+ RET
 NC_ADD_OPEN_FILE:
  LD HL,NC_ADD_SPOOL
  LD DE,NC_ADD_FCB
@@ -420,17 +551,18 @@ NC_META_IO:
  CALL NW_TARGET_USER
  CALL NC_ADD_OPEN_FILE
  RET C
+ CALL NC_META_HIGH_WATER
+ JP C,NC_META_BAD
  LD HL,(NC_ADD_INDEX)
  LD A,L
- AND 3
+ AND 1
+ ADD A,A
  ADD A,A
  ADD A,A
  ADD A,A
  ADD A,A
  ADD A,A
  LD (NC_META_SLOT),A
- SRL H
- RR L
  SRL H
  RR L
  LD (NC_ADD_FCB+33),HL
@@ -455,7 +587,7 @@ NC_META_IO:
  JR Z,NC_META_TRANSFER
  EX DE,HL
 NC_META_TRANSFER:
- LD BC,32
+ LD BC,64
  LDIR
  LD A,(NC_META_WRITE)
  OR A
@@ -485,6 +617,10 @@ NC_META_COMPARE:
  INC DE
  DJNZ NC_META_COMPARE
 NC_META_CLOSE:
+ LD HL,NC_META_SAVED_FCB
+ LD DE,NC_ADD_FCB
+ LD BC,36
+ LDIR
  CALL NC_ADD_CLOSE_FILE
  RET C
  LD A,(NC_META_ROW+23)
@@ -493,7 +629,7 @@ NC_META_CLOSE:
  OR A
  JP NZ,NC_ADD_ERROR
  LD HL,NC_META_ROW
- LD B,32
+ LD B,64
 NC_META_EMPTY:
  OR (HL)
  INC HL
@@ -502,10 +638,10 @@ NC_META_EMPTY:
  RET
 NC_META_CHECK_CRC:
  LD HL,NC_META_ROW
- LD BC,28
+ LD BC,62
  LD DE,0
  CALL LBR_CRC16
- LD HL,(NC_META_ROW+28)
+ LD HL,(NC_META_ROW+62)
  OR A
  SBC HL,DE
  JP NZ,NC_ADD_ERROR
@@ -719,7 +855,11 @@ NC_ADD_SPOOL: DS 36
 NC_STAGE: DS 36
 NC_STAGE_FCB: DS 36
 NC_META_DMA: DS 128
-NC_META_ROW: DS 32
+NC_META_ROW: DS 64
+NC_META_SAVED_FCB: DS 36
+NC_ADD_EXM: DB 0
+NC_ADD_ENTRY_DRIVE: DB 0
+NC_ARC_PREP: DB 0
 NC_META_WRITE: DB 0
 NC_META_SLOT: DB 0
  ENDM
