@@ -73,12 +73,15 @@ def production_build(assembler,out,flat_builder):
     window=(256+len(first)+127)//128*128
     base,rs=assemble(assembler,out,'resident-sizing',boot(window,bytes(128)))
     rs['NW_PLANS']=0x9000
+    rs['NW_OVERLAY']=0x9000
+    rs['NW_ARC_PLANS']=0x9000
     rs['NC_ADD_IDS']=0xa800
     imports=''.join(f'{n} EQU {v}\n' for n,v in rs.items() if n not in constant_names and n!='NR_WINDOW')
     cli,cs=assemble(assembler,out,'NHCLI',f' ORG {window}\n'+constants+imports+' JP NH_START\n'+controller+aliases+' END\n')
     prior_cli_size=len(cli)
     plan_address=window+(len(cli)+127)//128*128
     imports=re.sub(r'(?m)^NW_PLANS EQU .*$',f'NW_PLANS EQU {plan_address}',imports)
+    imports=re.sub(r'(?m)^NW_OVERLAY EQU .*$',f'NW_OVERLAY EQU {plan_address}',imports)
     imports=re.sub(r'(?m)^NC_ADD_IDS EQU .*$',f'NC_ADD_IDS EQU {plan_address+6144}',imports)
     cli,cs=assemble(assembler,out,'NHCLI',f' ORG {window}\n'+constants+imports+' JP NH_START\n'+controller+aliases+' END\n')
     assert len(cli)==prior_cli_size, "phase address changed code size"
@@ -115,6 +118,18 @@ def production_build(assembler,out,flat_builder):
     ark_plan_end=ark_plan_address+6144
     ark_arena_end=plan_address+12800
     assert ark_plan_end <= ark_arena_end, (hex(ark_plan_end),hex(ark_arena_end))
+    imports=re.sub(r'(?m)^NW_ARC_PLANS EQU .*$',f'NW_ARC_PLANS EQU {ark_plan_address}',imports)
+    cli,cs=assemble(assembler,out,'NHCLI',f' ORG {window}\n'+constants+imports+' JP NH_START\n'+controller+aliases+' END\n')
+    assert len(cli)==prior_cli_size, "ARC plan base changed CLI size"
+    assert cli==payloads[0], "ARC workspace symbols changed CLI machine code"
+    # Re-link NHARK against the final CLI symbols so a future overlay caller
+    # that imports NW_ARC_PLANS cannot accidentally capture its sizing value.
+    ark_imports=''.join(f'{n} EQU {v}\n' for n,v in (rs|cs).items() if n in needed and n not in constant_names)
+    ark_text=f' ORG {plan_address}\n'+constants+ark_imports+ark_body+'\n END\n'
+    final_raw,final_symbols=assemble(assembler,out,'NHARK',ark_text)
+    final_padded=(len(final_raw)+127)//128*128
+    assert final_padded==ark_padded, "final ARC plan address changed NHARK size"
+    raw,ark_symbols=final_raw,final_symbols
     payloads.append(raw);requirements.append(plan_address-window+(len(raw)+127)//128*128);entries.append((plan_address,0,0))
     (out/'NHARK.MAC').write_bytes(native_export(ark_text))
     ark_bytes=len(raw)
@@ -160,6 +175,7 @@ def production_build(assembler,out,flat_builder):
     (out/'noah.lst').write_text(combined)
     report={'resident_bytes':len(image),'window':window,'codec_context':window+2048,
       'lzw_bytes':len(lzw_raw),'lzw_workspace':[window+4096,window+4096+24576],'ark_bytes':ark_bytes,'ark_address':plan_address,'ark_padded_bytes':ark_padded,'cli_bytes':len(cli),'writer_plans':[plan_address,plan_address+6144],
+      'ark_overlay_address':plan_address,'ark_add_plan_address':ark_plan_address,
       'ark_add_plan_workspace':[ark_plan_address,ark_plan_end],'ark_writer_arena_end':ark_arena_end,
       'ark_writer_entries':{name:ark_symbols[name] for name in ('ARK_BUILD_HEADER','ARK_WRITE_MEMBER','ARK_WRITE_END')},
       'ark_writer_dispatch':{name:ark_symbols[name] for name in ('NAW_BUILD_HEADER','NAW_WRITE_MEMBER','NAW_WRITE_END')},
