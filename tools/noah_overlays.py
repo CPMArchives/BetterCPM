@@ -85,8 +85,12 @@ def production_build(assembler,out,flat_builder):
     payloads=[cli];requirements=[plan_address-window+6144+6656];entries=[(window,0,0)]
     for codec,size in [('sq',3524),('usq',1440),('cr',25207),('uncr',26582)]:
         name=codec.upper();head={'SQ':'SQ_SCAN','USQ':'USQ_HEAD','CR':'MC_NOHEAD','UNCR':'UNCR_HEAD'}[name]
-        text=f' ORG {window}\n JP {name}_INIT\n JP {head}\n JP {name}_RUN\n'
+        run_entry='NASQ_DISPATCH' if name=='SQ' else name+'_RUN'
+        text=f' ORG {window}\n JP {name}_INIT\n JP {head}\n JP {run_entry}\n'
+        if name=='SQ':
+            text+=f'NR_ARC_MODE EQU {rs["NR_ARC_MODE"]}\n'
         text+=''.join((ROOT/'src/codec'/p).read_text()+'\n' for p in ('codec.inc','codec.mac',codec+'.inc',codec+'.mac'))
+        if name=='SQ':text+=(ROOT/'src/utilities/common/noahark-sq-bridge.inc').read_text()+'\n'
         text+=' CODEC_CODE\n '+name+'_CODE\nMC_NOHEAD: OR A\n RET\n END\n'
         raw,_=assemble(assembler,out,'NC'+name,text)
         assert len(raw)<=2048,(codec,len(raw))
@@ -121,8 +125,8 @@ def production_build(assembler,out,flat_builder):
     needed=set(re.findall(r'\b[A-Z_][A-Z_0-9]*\b',encoder_body,re.I))
     encoder_imports=''.join(f'{n} EQU {v}\n' for n,v in rs.items() if n in needed and n not in constant_names and n!='NR_WINDOW')
     encoder_text=f' ORG {window}\nNR_WINDOW EQU {window}\n'+constants+encoder_imports
-    encoder_text+=' JP CR_INIT\n JP CR_INIT\n JP N8_RUN\n'
-    encoder_text+=encoder_defs+' CODEC_CODE\n CR_CODE\n'+(ROOT/'src/utilities/common/noahark-crencode.inc').read_text()+'\n END\n'
+    encoder_text+=' JP CR_INIT\n JP N8_NO_SCAN\n JP N8_RUN\n'
+    encoder_text+=encoder_defs+' CODEC_CODE\n CR_CODE\n'+(ROOT/'src/utilities/common/noahark-crencode.inc').read_text()+'\nN8_NO_SCAN: OR A\n RET\n END\n'
     encoder_raw,_=assemble(assembler,out,'NCAR8',encoder_text)
     assert len(encoder_raw)<=2048,('NCAR8',len(encoder_raw))
     payloads.append(encoder_raw);requirements.append(2048+25207);entries.append((window,window+3,window+6))

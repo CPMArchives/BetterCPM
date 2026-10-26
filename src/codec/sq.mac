@@ -470,6 +470,9 @@ S_WRITE_WORD:
         JP      S_WRITE
 
 S_HEADER:
+        LD      A,(IX+SQ_RESERVED)
+        OR      A
+        JR      NZ,S_HEADER_TREE
         LD      A,076H
         CALL    S_WRITE
         RET     C
@@ -492,6 +495,7 @@ S_HEADER_NAME:
         RET     C
         INC     HL
         DJNZ    S_HEADER_NAME
+S_HEADER_TREE:
         LD      E,(IX+SQ_TREE_NODES)
         LD      D,(IX+SQ_TREE_NODES+1)
         CALL    S_WRITE_WORD

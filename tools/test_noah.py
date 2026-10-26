@@ -27,11 +27,12 @@ class Noah(Command):
             self.reg[name] = C.c_int.in_dll(library, name)
         self.symbols = {}
         for old, name in (('UC_OLDSP', 'NH_OLDSP'), ('UC_STACK', 'NH_STACK'),
-                          ('UC_STACK_TOP', 'NH_STACK_TOP'), ('UC_INPUT', 'NH_ADAPTER')):
+                          ('UC_STACK_TOP', 'NH_STACK_TOP'), ('UC_INPUT', 'NH_ADAPTER'),
+                          ('NR_EXPECT', 'NR_EXPECT')):
             match = re.search(rf'^([0-9a-f]{{4}}).*\b{name}:\s', listing, re.M | re.I)
             assert match, name
             self.symbols[old] = int(match[1], 16)
-        for name in ('AC_OPEN', 'AC_CLOSE', 'LBR_NEXT', 'LBR_READ', 'NH_CONTEXT', 'NX_TEMP', 'NX_VERIFY', 'NI_WAIT', 'NS_YES', 'NW_MEMORY_TEXT', 'NX_BUFFER', 'NR_FCB', 'NR_INPUT', 'NW_SOURCE'):
+        for name in ('AC_OPEN', 'AC_CLOSE', 'LBR_NEXT', 'LBR_READ', 'NH_CONTEXT', 'NX_TEMP', 'NX_VERIFY', 'NI_WAIT', 'NS_YES', 'NW_MEMORY_TEXT', 'NX_BUFFER', 'NR_FCB', 'NR_INPUT', 'NW_SOURCE', 'NR_LOAD', 'NR_CODEC', 'NR_WINDOW', 'NR_DRIVE', 'NR_USER', 'NR_CAPTURED', 'NR_SOURCE', 'NR_SOURCE_USER', 'NR_DESTUSER', 'NR_SINK', 'NR_OUTFCB', 'NR_NAME', 'NR_ARC_MODE', 'NR_STATUS', 'NR_CARRY', 'NR_OUTUSED', 'NR_TOTAL', 'NR_LIMIT'):
             match = re.search(rf'\b{name}[ \t]+([0-9a-f]{{4}})\b', listing, re.I)
             assert match, name
             self.symbols[name] = int(match[1], 16)
@@ -289,14 +290,14 @@ class Noah(Command):
             return 0
         return super().bdos(fn, de)
 
-    def library_call(self, name, count=0, output=None):
+    def library_call(self, name, count=0, output=None, budget=4000000):
         if output is None: output=self.symbols["NX_BUFFER"]
         self.reg['IX'].value = self.symbols['NH_CONTEXT']
         self.reg['SP'].value = self.symbols['UC_STACK_TOP']
         self.reg['B'].value, self.reg['C'].value = count >> 8, count & 255
         self.reg['D'].value, self.reg['E'].value = output >> 8, output & 255
         before = self.reg['IX'].value, self.reg['IY'].value, self.reg['SP'].value
-        steps = self.lib.test_run(self.symbols[name], 4000000)
+        steps = self.lib.test_run(self.symbols[name], budget)
         assert steps >= 0, (name, steps)
         assert self.exception is None, self.exception
         assert before == (self.reg['IX'].value, self.reg['IY'].value, self.reg['SP'].value), (name, before, self.reg['IX'].value, self.reg['IY'].value, self.reg['SP'].value)
@@ -372,6 +373,96 @@ def tests(m):
     assert 'FILE     BIN' in output and 'error' in output
     assert 'Listing complete' not in output
     m.intact()
+
+
+def overlay_encoder_tests(m):
+    """The production resident codec bridge runs ARC method 4 and method 8."""
+    import struct
+    from test_noah_ark_lzw import dynamic_codes, rle
+    from test_sq import host_decode
+    from test_usq_com import padded
+
+    assert m.overlay is not None
+    overlay_key = diskkey(1, 'NOAH.OVL')
+    m.files[overlay_key] = m.overlay
+    m.mem[m.symbols['NR_DRIVE']] = 0
+    m.mem[m.symbols['NR_USER']] = 0
+    m.mem[m.symbols['NR_CAPTURED']] = 1
+    descriptor = m.symbols['NR_EXPECT']
+    row = bytes(m.mem[descriptor + 24 + 7 * 12:descriptor + 24 + 8 * 12])
+    module_id, version, record, records, length, _needed, _entry = struct.unpack('<BBHHHHH', row)
+    assert module_id == 8 and version == 1 and records > 0 and 0 < length <= records * 128
+    expected = m.overlay[record * 128:record * 128 + length]
+    assert len(expected) == length
+    source = diskkey(2, 'INPUT.BIN')
+    output = diskkey(2, 'ENC.BIN')
+    payload = bytes(range(256)) + b'\x90' * 300 + b'ARC native overlay route'
+    m.files[source] = padded(payload)
+    m.mem[m.symbols['NR_LIMIT']:m.symbols['NR_LIMIT'] + 4] = len(padded(payload)).to_bytes(4, 'little')
+    m.write_allowed = True
+    source_name = b'INPUT   BIN'
+    m.mem[m.symbols['NR_SOURCE']:m.symbols['NR_SOURCE'] + 36] = bytes(36)
+    m.mem[m.symbols['NR_SOURCE']] = 2
+    m.mem[m.symbols['NR_SOURCE'] + 1:m.symbols['NR_SOURCE'] + 12] = source_name
+    m.mem[m.symbols['NR_SOURCE_USER']] = 0
+    m.mem[m.symbols['NR_DESTUSER']] = 0
+    m.mem[m.symbols['NR_ARC_MODE']] = 0
+    m.mem[m.symbols['NR_SINK']] = 1
+    out_fcb = m.symbols['NR_NAME'] + 80
+    m.mem[out_fcb:out_fcb + 36] = bytes(36)
+    m.mem[out_fcb] = 2
+    m.mem[out_fcb + 1:out_fcb + 12] = b'ENC     BIN'
+    assert m.bdos(22, out_fcb) != 255
+    m.mem[m.symbols['NR_OUTFCB']:m.symbols['NR_OUTFCB'] + 2] = out_fcb.to_bytes(2, 'little')
+    m.reg['A'].value = 8
+    assert m.library_call('NR_CODEC', budget=100000000) == 0
+    assert m.bdos(16, out_fcb) != 255
+    assert m.files[output] == padded(b'\x0c' + dynamic_codes(rle(padded(payload)), 12))
+
+    # The production SQ module still emits its standalone framing by default.
+    m.mem[m.symbols['NR_NAME']:m.symbols['NR_NAME'] + 128] = b'INPUT.BIN\0' + bytes(118)
+    standalone_key = diskkey(2, 'SQOUT.BIN')
+    m.mem[out_fcb:out_fcb + 36] = bytes(36)
+    m.mem[out_fcb] = 2
+    m.mem[out_fcb + 1:out_fcb + 12] = b'SQOUT   BIN'
+    assert m.bdos(22, out_fcb) != 255
+    m.mem[m.symbols['NR_OUTFCB']:m.symbols['NR_OUTFCB'] + 2] = out_fcb.to_bytes(2, 'little')
+    m.mem[m.symbols['NR_ARC_MODE']] = 0
+    m.reg['A'].value = 2
+    assert m.library_call('NR_CODEC', budget=100000000) == 0
+    assert m.bdos(16, out_fcb) != 255
+    standalone_count = int.from_bytes(bytes(m.mem[m.symbols['NR_TOTAL']:m.symbols['NR_TOTAL'] + 4]), 'little')
+    assert host_decode(m.files[standalone_key], record_padding=True) == (b'INPUT.BIN', padded(payload))
+    assert standalone_count < len(m.files[standalone_key])
+
+    # The same resident route reaches the method-4 body adapter when the ARC
+    # mode flag is set.
+    method4 = diskkey(2, 'ENC4.BIN')
+    m.mem[out_fcb:out_fcb + 36] = bytes(36)
+    m.mem[out_fcb] = 2
+    m.mem[out_fcb + 1:out_fcb + 12] = b'ENC4    BIN'
+    assert m.bdos(22, out_fcb) != 255
+    m.mem[m.symbols['NR_OUTFCB']:m.symbols['NR_OUTFCB'] + 2] = out_fcb.to_bytes(2, 'little')
+    m.mem[m.symbols['NR_ARC_MODE']] = 1
+    m.reg['A'].value = 2
+    assert m.library_call('NR_CODEC', budget=100000000) == 0
+    m.mem[m.symbols['NR_ARC_MODE']] = 0
+    assert m.bdos(16, out_fcb) != 255
+    method4_count = int.from_bytes(bytes(m.mem[m.symbols['NR_TOTAL']:m.symbols['NR_TOTAL'] + 4]), 'little')
+    method4_body = m.files[method4][:method4_count]
+    standalone = b'\x76\xff' + (sum(padded(payload)) & 0xffff).to_bytes(2, 'little') + b'\0' + method4_body
+    assert host_decode(standalone) == (b'', padded(payload))
+
+    m.reg['A'].value = 8
+    assert m.library_call('NR_LOAD', budget=30000000) == 0
+    start = m.symbols['NR_WINDOW']
+    assert bytes(m.mem[start:start + length]) == expected
+    opens = sum(fn in (15, 16, 20) and de == m.symbols['NR_FCB'] for fn, de in m.events)
+    m.reg['A'].value = 9
+    assert m.library_call('NR_LOAD', budget=30000000) == 13
+    after = sum(fn in (15, 16, 20) and de == m.symbols['NR_FCB'] for fn, de in m.events)
+    assert after == opens
+    m.files.pop(overlay_key)
 
 
 def extraction_tests(m):
@@ -683,6 +774,8 @@ def main():
                         *map(str, sorted(core.glob('simz80*.c'))), '-o', str(work / 'core.so')], check=True)
         m = Noah(C.CDLL(str(work / 'core.so')), image, (work / 'noah.lst').read_text(errors='replace'))
         m.instruction_budget = 30000000  # Full companion validation, including supplemental ARK.
+        m.run('/VER', {})
+        overlay_encoder_tests(m)
         tests(m)
         extraction_tests(m)
         selector_overwrite_tests(m)
