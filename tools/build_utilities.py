@@ -30,6 +30,7 @@ BUILDERS = (
     "pip",
     "dump",
     "noah",
+    "compare",
     "ddt",
     "dasm",
     "dsym",

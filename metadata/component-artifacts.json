@@ -166,6 +166,9 @@
     ],
     "utility:TED": [
       "build/utilities/TED.COM"
+    ],
+    "utility:COMPARE": [
+      "build/utilities/COMPARE.COM"
     ]
   }
 }
