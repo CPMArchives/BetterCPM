@@ -1,5 +1,11 @@
 ARCHIVE_CPM_CODE MACRO
 AC_OPEN:
+        CALL AC_OPEN_RAW
+        RET C
+        JP LBR_OPEN
+; Open and size a CP/M file without imposing the LBR parser. Container-aware
+; callers such as ARC initialize their own format reader after this entry.
+AC_OPEN_RAW:
         PUSH IY
         CALL AC_WORK
         LD A,(IY+AP_OPENED)
@@ -31,6 +37,8 @@ AC_OPEN_NEW:
         LD (IY+33),0
         LD (IY+34),0
         LD (IY+35),0
+        PUSH IY
+        POP DE
         LD C,35
         CALL AC_BDOS
         LD L,(IY+33)
@@ -50,7 +58,8 @@ AC_SIZE_SHIFT:
         LD (IX+AS_READ),L
         LD (IX+AS_READ+1),H
         POP IY
-        JP LBR_OPEN
+        OR A
+        RET
 AC_OPEN_FAIL:
         POP IY
         LD (IX+AS_DETAIL),A

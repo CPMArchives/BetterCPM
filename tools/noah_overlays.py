@@ -73,16 +73,21 @@ def production_build(assembler,out,flat_builder):
     window=(256+len(first)+127)//128*128
     base,rs=assemble(assembler,out,'resident-sizing',boot(window,bytes(128)))
     rs['NW_PLANS']=0x9000
+    rs['NW_OVERLAY']=0x9000
+    rs['NW_ARC_PLANS']=0x9000
     rs['NC_ADD_IDS']=0xa800
     imports=''.join(f'{n} EQU {v}\n' for n,v in rs.items() if n not in constant_names and n!='NR_WINDOW')
     cli,cs=assemble(assembler,out,'NHCLI',f' ORG {window}\n'+constants+imports+' JP NH_START\n'+controller+aliases+' END\n')
     prior_cli_size=len(cli)
     plan_address=window+(len(cli)+127)//128*128
     imports=re.sub(r'(?m)^NW_PLANS EQU .*$',f'NW_PLANS EQU {plan_address}',imports)
+    imports=re.sub(r'(?m)^NW_OVERLAY EQU .*$',f'NW_OVERLAY EQU {plan_address}',imports)
     imports=re.sub(r'(?m)^NC_ADD_IDS EQU .*$',f'NC_ADD_IDS EQU {plan_address+6144}',imports)
     cli,cs=assemble(assembler,out,'NHCLI',f' ORG {window}\n'+constants+imports+' JP NH_START\n'+controller+aliases+' END\n')
     assert len(cli)==prior_cli_size, "phase address changed code size"
-    payloads=[cli];requirements=[plan_address-window+6144+6656];entries=[(window,0,0)]
+    # Load the controller using only its actual code extent. Transaction tables
+    # are count-sized and checked against the active BDOS ceiling before use.
+    payloads=[cli];requirements=[plan_address-window];entries=[(window,0,0)]
     for codec,size in [('sq',3524),('usq',1440),('cr',25207),('uncr',26582)]:
         name=codec.upper();head={'SQ':'SQ_SCAN','USQ':'USQ_HEAD','CR':'MC_NOHEAD','UNCR':'UNCR_HEAD'}[name]
         run_entry='NASQ_DISPATCH' if name=='SQ' else name+'_RUN'
@@ -110,7 +115,26 @@ def production_build(assembler,out,flat_builder):
     ark_imports=''.join(f'{n} EQU {v}\n' for n,v in (rs|cs).items() if n in needed and n not in constant_names)
     ark_text=f' ORG {plan_address}\n'+constants+ark_imports+ark_body+'\n END\n'
     raw,ark_symbols=assemble(assembler,out,'NHARK',ark_text)
-    assert plan_address+(len(raw)+127)//128*128 <= plan_address+12800
+    ark_padded=(len(raw)+127)//128*128
+    ark_plan_address=plan_address+ark_padded
+    ark_plan_end=ark_plan_address+6144
+    ark_arena_end=plan_address+12800
+    assert ark_plan_end <= ark_arena_end, (hex(ark_plan_end),hex(ark_arena_end))
+    imports=re.sub(r'(?m)^NW_ARC_PLANS EQU .*$',f'NW_ARC_PLANS EQU {ark_plan_address}',imports)
+    cli,cs=assemble(assembler,out,'NHCLI',f' ORG {window}\n'+constants+imports+' JP NH_START\n'+controller+aliases+' END\n')
+    assert len(cli)==prior_cli_size, "ARC plan base changed CLI size"
+    # The transaction planner now references the separately reserved ARC plan
+    # table, so final plan placement is expected to relocate those operands.
+    # The size and arena bounds remain invariant and are checked above/below.
+    payloads[0]=cli
+    # Re-link NHARK against the final CLI symbols so a future overlay caller
+    # that imports NW_ARC_PLANS cannot accidentally capture its sizing value.
+    ark_imports=''.join(f'{n} EQU {v}\n' for n,v in (rs|cs).items() if n in needed and n not in constant_names)
+    ark_text=f' ORG {plan_address}\n'+constants+ark_imports+ark_body+'\n END\n'
+    final_raw,final_symbols=assemble(assembler,out,'NHARK',ark_text)
+    final_padded=(len(final_raw)+127)//128*128
+    assert final_padded==ark_padded, "final ARC plan address changed NHARK size"
+    raw,ark_symbols=final_raw,final_symbols
     payloads.append(raw);requirements.append(plan_address-window+(len(raw)+127)//128*128);entries.append((plan_address,0,0))
     (out/'NHARK.MAC').write_bytes(native_export(ark_text))
     ark_bytes=len(raw)
@@ -123,9 +147,9 @@ def production_build(assembler,out,flat_builder):
     assert len(lzw_raw)<=2048, len(lzw_raw)
     payloads.append(lzw_raw);requirements.append(4096+24576);entries.append((window,window+3,window+6))
     (out/'NCLZW.MAC').write_bytes(native_export(lzw_text))
-    # Isolated native ARC method-8 encoder proof. It shares CR's input and RLE
-    # machinery but has its own ARC dynamic-LZW packing and dictionary origin.
-    # The writer does not call this phase yet; CR's existing context is reused.
+    # Native ARC method-8 encoder used by compressed ADD. It shares CR's input
+    # and RLE machinery with ARC dynamic-LZW packing and dictionary origin.
+    # Preparation precedes live plans, reusing CR's existing context.
     encoder_defs=''.join((ROOT/'src/codec'/p).read_text()+'\n' for p in ('codec.inc','codec.mac','cr.inc','cr.mac'))
     encoder_body=encoder_defs+' CODEC_CODE\n CR_CODE\n'+(ROOT/'src/utilities/common/noahark-crencode.inc').read_text()
     needed=set(re.findall(r'\b[A-Z_][A-Z_0-9]*\b',encoder_body,re.I))
@@ -155,9 +179,11 @@ def production_build(assembler,out,flat_builder):
     combined=(out/'NOAH.lst').read_text(errors='replace')+'\n'+(out/'NHCLI.lst').read_text(errors='replace')
     (out/'noah.lst').write_text(combined)
     report={'resident_bytes':len(image),'window':window,'codec_context':window+2048,
-      'lzw_bytes':len(lzw_raw),'lzw_workspace':[window+4096,window+4096+24576],'ark_bytes':ark_bytes,'ark_address':plan_address,'cli_bytes':len(cli),'writer_plans':[plan_address,plan_address+6144],
-      'ark_writer_entries':{name:ark_symbols[name] for name in ('ARK_BUILD_HEADER','ARK_WRITE_MEMBER','ARK_WRITE_END')},
-      'ark_writer_dispatch':{name:ark_symbols[name] for name in ('NAW_BUILD_HEADER','NAW_WRITE_MEMBER','NAW_WRITE_END')},
+      'lzw_bytes':len(lzw_raw),'lzw_workspace':[window+4096,window+4096+24576],'ark_bytes':ark_bytes,'ark_address':plan_address,'ark_padded_bytes':ark_padded,'cli_bytes':len(cli),'writer_plans':[plan_address,plan_address+6144],
+      'ark_overlay_address':plan_address,'ark_add_plan_address':ark_plan_address,
+      'ark_add_plan_workspace':[ark_plan_address,ark_plan_end],'ark_writer_arena_end':ark_arena_end,
+      'ark_writer_entries':{name:ark_symbols[name] for name in ('ARK_BUILD_HEADER','ARK_WRITE_MEMBER','ARK_WRITE_END','ARK_COPY_MEMBER')},
+      'ark_writer_dispatch':{name:ark_symbols[name] for name in ('NAW_BUILD_HEADER','NAW_WRITE_MEMBER','NAW_WRITE_END','NAW_COPY_MEMBER')},
       'transformed_ids':[plan_address+6144,plan_address+12800],
       'ark8_encoder_bytes':len(encoder_raw),'ark8_encoder_context_bytes':25207,
       'ark8_encoder_required_end':window+2048+25207,

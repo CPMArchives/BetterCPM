@@ -52,7 +52,7 @@ def validate_ted_acceptance(receipt,files,target,image):
     return proof
 
 
-def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None, dasm_acceptance=None, ted_acceptance=None):
+def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None, dasm_acceptance=None, ted_acceptance=None, noah_acceptance=None):
     from toolchain_distribution import companions, validate_acceptance
     accompanying = companions(artifacts)
     from dasm_distribution import companions as dasm_companions
@@ -92,7 +92,7 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
                 image=raw_to_dmk(data,fmt);assert dmk_to_raw(image,fmt)==data
             else:image=data
             name=f'BetterCPM-Utilities-{target}-'+('80T-DS-800K.dmk' if native else '332K.dsk')
-            reports.append((name,image,{'target':target,'image':name,'sha256':sha(image),'format':fmt.name,'status':'PROVISIONAL','included':[{'name':n,'sha256':sha(d),'bytes':len(d)} for n,d in files.items()],'pending':PENDING,'deferred':['NOAH full archive interface (post-1.0); development foundation excluded'],'validation':'file readback and filesystem PASS; native DMK/raw round trip PASS; no whole Utilities release acceptance claimed'}))
+            reports.append((name,image,{'target':target,'image':name,'sha256':sha(image),'format':fmt.name,'status':'PROVISIONAL','included':[{'name':n,'sha256':sha(d),'bytes':len(d)} for n,d in files.items()],'pending':PENDING,'deferred':['NOAH interactive browser; command-line utility supplied on companion volume'],'validation':'file readback and filesystem PASS; native DMK/raw round trip PASS; no whole Utilities release acceptance claimed'}))
     # Component evidence is valid only for these exact packaged images.
     for name,data,report in reports:
         verdict={'status':'PENDING_RELEASE_ACCEPTANCE','sha256':sha(files['DDT.COM'])}
@@ -129,6 +129,10 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
             report['pending']=[x for x in report['pending'] if not x.startswith('DASM ')]
         if ted_accepted is not None:
             report['pending']=[x for x in report['pending'] if not x.startswith('TED ')]
+    # NOAH's matching COM/OVL and notes travel on a companion volume. The
+    # 332K primary cannot hold these files alongside the selected tool set.
+    from noah_distribution import media as noah_media
+    reports.extend(noah_media(artifacts, noah_acceptance))
     # The complete source companion travels with both images (GPL section 3a).
     for name,data in {**accompanying,**analysis_companions,**editor_companions}.items():
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
@@ -144,7 +148,7 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
     for name,data,report in reports:
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
         (output/(name+'.json')).write_text(json.dumps(report,indent=2)+'\n')
-        print(f"{output/name}: PROVISIONAL, {len(files)} files; {len(report['pending'])} pending selections/implementations")
+        print(f"{output/name}: PROVISIONAL, {len(report['included'])} files; {len(report['pending'])} pending selections/implementations")
     package={**accompanying,**analysis_companions,**editor_companions}
     for name,data,report in reports:
         package[name]=data
@@ -173,15 +177,16 @@ def main():
     p.add_argument('--toolchain-acceptance',type=Path,help='bind passing native tool campaigns to both exact images and source companions')
     p.add_argument('--dasm-acceptance',type=Path,help='bind both-platform DASM qualification to exact binaries and disk images')
     p.add_argument('--ted-acceptance',type=Path,help='bind TED acceptance to both exact disk images')
+    p.add_argument('--noah-acceptance',type=Path,help='bind NOAH companion-volume qualification to exact images')
     a=p.parse_args()
     if a.build:
-        for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh','dasm','dsym','dlink','ted']:
+        for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh','dasm','dsym','dlink','ted','noah']:
             command=[sys.executable,str(a.artifacts.resolve()/'tools'/f'build_{name}.py')]
             # TED defaults to its development directory; packaging consumes the
             # binary, native source and build records together in utilities.
             if name=='ted':command+=['--output',str(a.artifacts.resolve()/'build/utilities')]
             subprocess.run(command,cwd=a.artifacts.resolve(),check=True)
-    build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance,a.toolchain_acceptance,a.dasm_acceptance,a.ted_acceptance)
+    build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance,a.toolchain_acceptance,a.dasm_acceptance,a.ted_acceptance,a.noah_acceptance)
 
 
 if __name__=='__main__':main()

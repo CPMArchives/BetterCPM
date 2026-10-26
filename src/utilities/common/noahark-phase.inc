@@ -13,7 +13,76 @@
 NAW_BUILD_HEADER: JP ARK_BUILD_HEADER
 NAW_WRITE_MEMBER: JP ARK_WRITE_MEMBER
 NAW_WRITE_END: JP ARK_WRITE_END
+NAW_COPY_MEMBER: JP ARK_COPY_MEMBER
+NAW_AUDIT: JP NK_DUPLICATE_AUDIT
  ARK_CODE
+; Validate every member boundary and reject duplicate canonical names before
+; a write transaction can stage output. The second context is private scratch.
+NK_DUPLICATE_AUDIT:
+ CALL ARK_OPEN
+ RET C
+NK_DUP_OUTER:
+ CALL ARK_NEXT
+ JR C,NK_DUP_END
+ ; Verify every supported method while checking the staged archive. New and
+ ; retained members therefore pass the reader's full length/CRC decoder before
+ ; the caller is allowed to publish the file.
+ LD A,(NH_CONTEXT+AS_MEMBER+AM_METHOD)
+ CP 10
+ JR NC,NK_DUP_TEST_DONE
+ CALL NK_TEST
+ RET C
+NK_DUP_TEST_DONE:
+ LD HL,NH_CONTEXT
+ LD DE,NK_SECOND
+ LD BC,AS_PHASE
+ LDIR
+ PUSH IX
+ LD IX,NK_SECOND
+ CALL ARK_OPEN
+ POP IX
+ RET C
+NK_DUP_INNER:
+ PUSH IX
+ LD IX,NK_SECOND
+ CALL ARK_NEXT
+ POP IX
+ JR C,NK_DUP_INNER_END
+ LD HL,NH_CONTEXT+AS_MEMBER+AM_ID
+ LD DE,NK_SECOND+AS_MEMBER+AM_ID
+ LD B,4
+NK_DUP_ID:
+ LD A,(DE)
+ CP (HL)
+ JR NZ,NK_DUP_NAME
+ INC DE
+ INC HL
+ DJNZ NK_DUP_ID
+ JR NK_DUP_OUTER
+NK_DUP_NAME:
+ LD HL,NH_CONTEXT+AS_MEMBER
+ LD DE,NK_SECOND+AS_MEMBER
+ LD B,11
+NK_DUP_NAME_LOOP:
+ LD A,(DE)
+ CP (HL)
+ JR NZ,NK_DUP_INNER
+ INC DE
+ INC HL
+ DJNZ NK_DUP_NAME_LOOP
+ LD A,AS_DUPLICATE
+ SCF
+ RET
+NK_DUP_INNER_END:
+ CP AS_END
+ JR Z,NK_DUP_OUTER
+ SCF
+ RET
+NK_DUP_END:
+ CP AS_END
+ RET Z
+ SCF
+ RET
 NK_ARCHIVE:
  LD A,(NH_MODE)
  OR A
@@ -163,7 +232,7 @@ NK_TRAILER:
  JP NH_PRINT
 NK_METHOD_TEXT: DB ' ARK method ', '$'
 NK_UNSUPPORTED_TEXT: DB ': unsupported; contents/CRC not tested.',13,10,'$'
-NK_TRAILER_TEXT: DB 'ARK opaque trailer: unvalidated; input retained unchanged.',13,10,'$'
+NK_TRAILER_TEXT: DB 'ARK opaque trailer: unvalidated.',13,10,'$'
 NK_STAMP:
  ; Raw DOS words are not LUDEF dates. There is no safe conversion/setter in
  ; this increment; explicitly report nonzero metadata without interpreting it.

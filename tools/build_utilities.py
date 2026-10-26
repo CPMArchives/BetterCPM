@@ -29,6 +29,7 @@ BUILDERS = (
     "type",
     "pip",
     "dump",
+    "noah",
     "ddt",
     "dasm",
     "dsym",

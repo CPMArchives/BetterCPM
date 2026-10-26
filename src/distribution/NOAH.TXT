@@ -1,0 +1,47 @@
+BETTERCP/M NOAH ARCHIVE UTILITY
+
+Keep NOAH.COM and its matching NOAH.OVL together. Change to the Utilities
+Disk before running NOAH (e.g. B:), then qualify archive/source operands
+with the desired writable disk and user. Overlay lookup uses the current
+invocation DU, then A0:; it does not search arbitrary disks or users.
+
+NOAH /HELP
+NOAH /LIST C:FILES.ARK
+NOAH /TEST C:FILES.ARK
+NOAH /EXTRACT C:FILES.ARK D:
+NOAH /ADD C:FILES.ARK D:*.TXT
+NOAH /ADD /SQ C:TEXTS.ARK D:*.TXT
+NOAH /ADD /CR C:BINARY.ARK D:*.BIN
+NOAH /REMOVE C:FILES.ARK *.BAK
+NOAH /COMPACT C:FILES.ARK
+
+LBR supports the same operations. /CAPACITY=n controls LBR directory
+capacity on ADD/COMPACT. Unknown new extensions need /FORMAT=LBR or
+/FORMAT=ARK. Existing files are recognized by content, never converted.
+Native ARC output is stored method 2, /SQ method 4 or /CR method 8, with
+the original member name. ARC reading supports historical methods 1-9.
+LBR compressed members use standalone SQ/CR streams and marked names.
+Standalone /SQ, /CR and /EXPAND remain available; /LZ is reserved.
+
+/Y approves ordinary replacements/removals and explicit COMPACT. It does
+not override read-only/system protection. /R and /SYS enable separate
+protection questions. /Q suppresses routine progress, preserving warnings,
+failures, choices and the final outcome. ESC/Ctrl-C cancels at safe bounds.
+
+All output is staged, closed, reopened and verified before publication.
+Originals are rechecked; replacement uses private TMP/BAK names. Keep any
+reported recovery files until their contents and the final path are known.
+If rollback is uncertain, the batch stops and reports the actual paths.
+This is not power-loss-atomic filesystem recovery; no automatic resume is
+provided. Sources and CP/M record bytes (including 00h/1Ah) are preserved.
+
+Ordinary ARC updates preserve retained headers/payloads and the entire
+suffix after the end marker. ARC COMPACT trims excess 00h/1Ah padding;
+it refuses opaque suffix bytes rather than deleting possibly useful data.
+COMPACT never recompresses retained members. No-match REMOVE is unchanged.
+
+Selection is frozen, up to 512 candidates; actual transaction capacity
+also depends on active TPA, source plans and codec workspaces. Low-memory
+requests fail before the archive is changed. ZIP, LZH/CrLZH and the
+interactive archive browser remain future work.
+

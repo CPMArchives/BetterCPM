@@ -24,7 +24,9 @@
 ; Source short reads return AS_TRUNC; output short writes/errors return
 ; AS_OUTPUT (detail in A on callback error is not retained). Offsets are
 ; checked for 32-bit overflow. ARK_WRITE_END appends 1Ah/00h at output offset.
-; Both entries advance AM_OUTPUT_OFFSET only after successful transfers.
+; ARK_COPY_MEMBER copies the current selected member's original header and
+; stored payload unchanged via ARK_RAW, preserving opaque but bounded methods.
+; Writer entries advance AM_OUTPUT_OFFSET only after successful transfers.
 ARW_ENTRY_SIZE   EQU 29
 ARW_HEADER_SIZE  EQU 29
 AM_WRITE_CB      EQU 36

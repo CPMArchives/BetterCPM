@@ -430,6 +430,14 @@ NX_EXISTS:
         OR 1
         RET
 NX_TEMP_PAIR:
+        ; A prior codec stage can leave extent, allocation and record fields
+        ; here. MAKE does not reset every field: start each new file at record
+        ; zero rather than carrying the preceding temporary's cursor/map.
+        LD HL,NX_TEMP
+        LD DE,NX_TEMP+1
+        LD BC,35
+        LD (HL),0
+        LDIR
         LD A,(NH_DEST)
         INC A
         LD (NX_TEMP),A

@@ -570,7 +570,7 @@
     "utility:NOAH": {
       "kind": "utility",
       "version": "1.0",
-      "placement": "Unassigned/deferred",
+      "placement": "Utilities",
       "roots": [
         "src/utilities/noah.mac"
       ],

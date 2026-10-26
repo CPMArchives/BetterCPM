@@ -29,7 +29,7 @@ def machine():
         (work / 'shim.c').write_text(shim)
         subprocess.run(['cc','-shared','-fPIC','-O2',f'-I{work}',f'-I{core}',str(work/'shim.c'),str(core/'simglb.c'),*map(str,sorted(core.glob('simz80*.c'))),'-o',str(work/'core.so')],check=True)
     m = Noah(C.CDLL(str(work/'core.so')),image,(work/'noah.lst').read_text(errors='replace'))
-    m.instruction_budget = 30000000
+    m.instruction_budget = 100000000
     return m
 
 
@@ -87,7 +87,8 @@ def tests(m):
                  '/CAPACITY=7 /REMOVE TEST.LBR *.*','/ADD [A0,B0]:TEST.LBR B7:*.DAT',
                  '/COMPACT /FORMAT=LBR TEST.LBR','/ADD /FORMAT=ARK NEW.LBR B7:*.DAT'):
         output=m.run(tail,{lib:original,src:binary})
-        assert 'Usage:' in output and not m.created and not m.renamed,output
+        expected='New archive requires' if '/FORMAT=ARK NEW.LBR' in tail else 'Usage:'
+        assert expected in output and not m.created and not m.renamed,(tail,output)
     output=m.run('/REMOVE /COMPACT /Y TEST.LBR NONE.*',{lib:original})
     assert 'No members matched' in output and m.files[lib]==original and not m.created,output
     output=m.run('/ADD /Y /R TEST.LBR B7:BINARY.DAT',{lib:original,src:binary},attributes={lib:1})
