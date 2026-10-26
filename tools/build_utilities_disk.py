@@ -27,7 +27,8 @@ COMPONENTS.update({'ZSM4.COM':'third_party/zsm4/ZSM4.COM','LINK.COM':'third_part
 COMPONENTS.update({name+'.COM':'build/utilities/'+name+'.COM' for name in ('DASM','DSYM','DLINK')})
 COMPONENTS.update({'DASM.TXT':'src/distribution/DASM.TXT','DASMCOPY.TXT':'src/distribution/DASMCOPY.TXT'})
 COMPONENTS.update({'TED.COM':'build/utilities/TED.COM','TED.TXT':'src/distribution/TED.TXT','TEDCOPY.TXT':'src/distribution/TEDCOPY.TXT'})
-PENDING=['TED final paired-media qualification pending','DASM tool set final release qualification pending']
+COMPONENTS['SEARCH.COM']='build/utilities/SEARCH.COM'
+PENDING=['TED final paired-media qualification pending','DASM tool set final release qualification pending','SEARCH final paired-media qualification pending']
 sha=lambda data:hashlib.sha256(data).hexdigest()
 
 
@@ -52,13 +53,26 @@ def validate_ted_acceptance(receipt,files,target,image):
     return proof
 
 
-def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None, dasm_acceptance=None, ted_acceptance=None, noah_acceptance=None):
+def validate_search_acceptance(receipt,files,target,image):
+    proof=receipt['platforms'][target]
+    if (receipt.get('search_acceptance')!='PASS' or proof.get('status')!='PASS'
+        or proof['utilities_sha256']!=sha(image)
+        or receipt['binary']['sha256']!=sha(files['SEARCH.COM'])
+        or not proof.get('system_sha256') or not proof.get('utilities_unchanged')
+        or not proof.get('fixtures_unchanged') or not proof.get('native_cross_parity')):
+        raise ValueError('SEARCH acceptance does not match packaged '+target)
+    return proof
+
+
+def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None, dasm_acceptance=None, ted_acceptance=None, noah_acceptance=None, search_acceptance=None):
     from toolchain_distribution import companions, validate_acceptance
     accompanying = companions(artifacts)
     from dasm_distribution import companions as dasm_companions
     analysis_companions=dasm_companions(artifacts)
     from ted_distribution import companions as ted_companions
     editor_companions=ted_companions(artifacts)
+    from search_distribution import companions as search_companions
+    search_source_companions=search_companions(artifacts,editor_companions,search_acceptance)
     files={name:(artifacts/path).read_bytes() for name,path in COMPONENTS.items()}
     if not all(files.values()):raise ValueError('empty Utilities artifact')
     accepted=json.loads(ddt_acceptance.read_text()) if ddt_acceptance else None
@@ -68,6 +82,7 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
             raise ValueError('DDT acceptance does not match current artifact')
     dasm_accepted=json.loads(dasm_acceptance.read_text()) if dasm_acceptance else None
     ted_accepted=json.loads(ted_acceptance.read_text()) if ted_acceptance else None
+    search_accepted=json.loads(search_acceptance.read_text()) if search_acceptance else None
     reports=[]
     output.mkdir(parents=True,exist_ok=True)
     for target in ['z80pack','trs80gp']:
@@ -125,6 +140,13 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
             proof=validate_ted_acceptance(ted_accepted,files,report['target'],data)
             verdict.update(status='PASS',evidence_sha256=sha(ted_acceptance.read_bytes()),paired_system_sha256=proof['system_sha256'])
         report['component_acceptance']['TED.COM']=verdict
+        verdict={'status':'PENDING_RELEASE_ACCEPTANCE','sha256':sha(files['SEARCH.COM'])}
+        if search_accepted is not None:
+            proof=validate_search_acceptance(search_accepted,files,report['target'],data)
+            verdict.update(status='PASS',evidence_sha256=sha(search_acceptance.read_bytes()),paired_system_sha256=proof['system_sha256'])
+            report['pending']=[x for x in report['pending'] if not x.startswith('SEARCH ')]
+        report['component_acceptance']['SEARCH.COM']=verdict
+        report['search_companions']={n:sha(d) for n,d in search_source_companions.items()}
         if dasm_accepted is not None:
             report['pending']=[x for x in report['pending'] if not x.startswith('DASM ')]
         if ted_accepted is not None:
@@ -134,8 +156,22 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
     from noah_distribution import media as noah_media
     reports.extend(noah_media(artifacts, noah_acceptance))
     # The complete source companion travels with both images (GPL section 3a).
-    for name,data in {**accompanying,**analysis_companions,**editor_companions}.items():
+    for name,data in {**accompanying,**analysis_companions,**editor_companions,**search_source_companions}.items():
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
+    acceptance_files={}
+    for label,path in [('DDT',ddt_acceptance),('Toolchain',toolchain_acceptance),('DASM',dasm_acceptance),('TED',ted_acceptance)]:
+        if path:
+            payload=path.read_bytes();receipt=json.loads(payload)
+            acceptance_files[label+'-Utilities-Acceptance.json']=payload
+            proof=receipt.get('evidence_archive')
+            if proof:
+                name=proof['name']
+                if Path(name).name!=name:
+                    raise ValueError('acceptance evidence requires a simple filename')
+                data=(path.parent/name).read_bytes()
+                if sha(data)!=proof['sha256']:
+                    raise ValueError('acceptance evidence checksum differs: '+label)
+                acceptance_files[name]=data
     # Construct and validate both before publishing either named image.
     for name,data,report in reports:
         from release_metadata import disk_record
@@ -149,7 +185,7 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
         (output/(name+'.json')).write_text(json.dumps(report,indent=2)+'\n')
         print(f"{output/name}: PROVISIONAL, {len(report['included'])} files; {len(report['pending'])} pending selections/implementations")
-    package={**accompanying,**analysis_companions,**editor_companions}
+    package={**accompanying,**analysis_companions,**editor_companions,**search_source_companions,**acceptance_files}
     for name,data,report in reports:
         package[name]=data
         package[name+'.json']=(output/(name+'.json')).read_bytes()
@@ -178,15 +214,16 @@ def main():
     p.add_argument('--dasm-acceptance',type=Path,help='bind both-platform DASM qualification to exact binaries and disk images')
     p.add_argument('--ted-acceptance',type=Path,help='bind TED acceptance to both exact disk images')
     p.add_argument('--noah-acceptance',type=Path,help='bind NOAH companion-volume qualification to exact images')
+    p.add_argument('--search-acceptance',type=Path,help='bind SEARCH native parity and execution to both exact disk images')
     a=p.parse_args()
     if a.build:
-        for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh','dasm','dsym','dlink','ted','noah']:
+        for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh','dasm','dsym','dlink','ted','noah','search']:
             command=[sys.executable,str(a.artifacts.resolve()/'tools'/f'build_{name}.py')]
             # TED defaults to its development directory; packaging consumes the
             # binary, native source and build records together in utilities.
             if name=='ted':command+=['--output',str(a.artifacts.resolve()/'build/utilities')]
             subprocess.run(command,cwd=a.artifacts.resolve(),check=True)
-    build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance,a.toolchain_acceptance,a.dasm_acceptance,a.ted_acceptance,a.noah_acceptance)
+    build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance,a.toolchain_acceptance,a.dasm_acceptance,a.ted_acceptance,a.noah_acceptance,a.search_acceptance)
 
 
 if __name__=='__main__':main()

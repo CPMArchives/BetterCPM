@@ -5,9 +5,9 @@ This manual explains how to use the programs supplied on the BetterCP/M Utilitie
 The Utilities Disk is being assembled separately from the System Disk. This manual covers DUMP, the initial DDT debugger adaptation, the six standalone compression utilities SQ, USQ, CR, UNCR, LZH and UNLZH, TED, DASM with its DSYM/DLINK companions, and the original ZSM4/LINK development tools. Chapters for other utilities will be added as those programs are completed and selected for distribution.
 
 The COMPARE chapter describes a development utility. COMPARE is not yet qualified
-or included in current Utilities Disk images. SEARCH is also a development
-utility; its command and resource checks pass on both BetterCP/M targets, but it
-is not on release disks.
+or included in current Utilities Disk images. SEARCH 1.0 is included in newly
+generated Utilities candidates and has passed paired-image acceptance on both BetterCP/M targets. Public release publication
+remains separate.
 
 ## Contents
 
@@ -62,8 +62,8 @@ In syntax descriptions, `file` and `offset` are placeholders to replace with you
 
 ## SEARCH file-content search
 
-**Development utility — not included on release disks.** This chapter describes
-the implemented SEARCH 1.0 interface; complete release qualification is pending.
+**SEARCH 1.0 — included in newly generated Utilities candidates.** This chapter
+describes the interface qualified on both paired emulator targets.
 The [engineering specification](../engineering/SEARCH%20Specification.md)
 controls the design.
 

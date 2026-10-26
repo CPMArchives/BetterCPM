@@ -1,0 +1,113 @@
+{
+  "status": "PASS",
+  "platforms": {
+    "z80pack": {
+      "files": 24,
+      "user": 0,
+      "allocated_blocks": 145,
+      "free_blocks": 21,
+      "exact_membership": "PASS",
+      "independent_record_readback": "PASS",
+      "allocation": "PASS",
+      "image": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "image_sha256": "98041729962f77b0ea7300077696e679384a487785b57823781c43256c7a2d19",
+      "raw_bytes": 368640,
+      "files_sha256": {
+        "DDT.COM": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467",
+        "DUMP.COM": "3734f5fe0750a52328cc9cf02be502076f0c29f6b7279d0b7789d8596bbf9576",
+        "XSUB.COM": "7ad7eb5d68639b4669830565fee214dd3e4baf68c1b80e3c3dead9b8459f1448",
+        "BATCHIO.RSX": "0347270c05d040e0c7b82d73402803e26baa6a7977880d2764f0700fc1dc5ee0",
+        "SQ.COM": "f8de3fad6f285206ed7af49aa285adebc9d76b3b70da98cb614f09c59422b5d5",
+        "USQ.COM": "88c6b54a4084a4ee47dc7e22427cbf0863e4ed9de147a719624c542a764d9ff9",
+        "UNCR.COM": "a5347e631aa1ea3ca96377f731c7a87ae1cee24ccc75cd801c5ef58d6468febf",
+        "CR.COM": "f02a8a6f438f50261e3d27475fc95ecfb21bf73eb25e2ec4d89df5b0a2204f15",
+        "UNLZH.COM": "4c368e060c7c4053c23db60ce667ff426e424a4bca5f7f2369d0d9bf694d8b1d",
+        "LZH.COM": "a42706a3609f16589484148de3317305c24517a6993dbe6d431f9b76336fc0ec",
+        "ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+        "LINK.COM": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677",
+        "TOOLINFO.TXT": "e3d2a9812bf8710c30b218d1e210710493904fd4886dab8ea52f31459a955a21",
+        "ZSM4COPY.TXT": "7d4f2be9be7a1d1fdb705986ce2701619cfcc8825356670aaa1e29a3d12c7d0f",
+        "LINKCOPY.TXT": "d7d6e20ff86b7a2a09ced46db14f722d246374ff8f24a9a3ddbb9332fe8735ad",
+        "DASM.COM": "8034d629ee464d33659684c39493022bd48c7cb1227952428c751fbf169b66e9",
+        "DSYM.COM": "8cd2d1e09fc60432a3345e1321b54a92316f18fb7ef30b9e8c8da18c2f63f98a",
+        "DLINK.COM": "2bc9912e769b6d8e6635afa47d6ca6121a53ba60870cac7330b441ff0dbed8f7",
+        "DASM.TXT": "6987b2d5357a338742f1677ae119b4b2bcbc757413e839bc069fb68c3942b2b3",
+        "DASMCOPY.TXT": "48cd81363e19e946e2f163beaff87ca04320ed163cc286e430d8aaf3267a1ddd",
+        "TED.COM": "272c31a168d63d4b5a5f2c5517d0c614a00fccf746dc966e8a180f16cc9f959c",
+        "TED.TXT": "40dbb575999e1751ed12749f13697d657c6b0ec90b1b1e46e1f97cda60a4b087",
+        "TEDCOPY.TXT": "3b83eebfc6c3c07ff9eb6ad8492dc7002ad2fb7fb4f144b1822a8fd92303cd33",
+        "SEARCH.COM": "aca7362a046488c0dd0880e00bf7d03ecaaf875a09e6fc3ae8ee0830bf7271bd"
+      },
+      "noah_companion": {
+        "files": 3,
+        "user": 0,
+        "allocated_blocks": 31,
+        "free_blocks": 135,
+        "exact_membership": "PASS",
+        "independent_record_readback": "PASS",
+        "allocation": "PASS",
+        "image": "BetterCPM-NOAH-z80pack-332K.dsk",
+        "image_sha256": "a7def6fdcb2c63135ad7b0474ca057f7fb0798c2b88ef4b60937b1587cf93360",
+        "files_sha256": {
+          "NOAH.COM": "b07f73420acf5086f00366d1db75f62260880dca554890ebe22f71a29c7bcfbb",
+          "NOAH.OVL": "be222a7b6c3e2bc60466fe0920a657cb7afdbf17511d8e9cc8e4f3c43f2cdc1c",
+          "NOAH.TXT": "2d10cfdfa7b9c2e577030a823c02078cf04ef866377d932541ee0407e1a89753"
+        }
+      }
+    },
+    "trs80gp": {
+      "files": 24,
+      "user": 0,
+      "allocated_blocks": 146,
+      "free_blocks": 254,
+      "exact_membership": "PASS",
+      "independent_record_readback": "PASS",
+      "allocation": "PASS",
+      "image": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "image_sha256": "9722108bfc189f7847accfdbc160ed2de0b40ea4acccb8f08a212b5035106850",
+      "raw_bytes": 819200,
+      "files_sha256": {
+        "DDT.COM": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467",
+        "DUMP.COM": "3734f5fe0750a52328cc9cf02be502076f0c29f6b7279d0b7789d8596bbf9576",
+        "XSUB.COM": "7ad7eb5d68639b4669830565fee214dd3e4baf68c1b80e3c3dead9b8459f1448",
+        "BATCHIO.RSX": "0347270c05d040e0c7b82d73402803e26baa6a7977880d2764f0700fc1dc5ee0",
+        "SQ.COM": "f8de3fad6f285206ed7af49aa285adebc9d76b3b70da98cb614f09c59422b5d5",
+        "USQ.COM": "88c6b54a4084a4ee47dc7e22427cbf0863e4ed9de147a719624c542a764d9ff9",
+        "UNCR.COM": "a5347e631aa1ea3ca96377f731c7a87ae1cee24ccc75cd801c5ef58d6468febf",
+        "CR.COM": "f02a8a6f438f50261e3d27475fc95ecfb21bf73eb25e2ec4d89df5b0a2204f15",
+        "UNLZH.COM": "4c368e060c7c4053c23db60ce667ff426e424a4bca5f7f2369d0d9bf694d8b1d",
+        "LZH.COM": "a42706a3609f16589484148de3317305c24517a6993dbe6d431f9b76336fc0ec",
+        "ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+        "LINK.COM": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677",
+        "TOOLINFO.TXT": "e3d2a9812bf8710c30b218d1e210710493904fd4886dab8ea52f31459a955a21",
+        "ZSM4COPY.TXT": "7d4f2be9be7a1d1fdb705986ce2701619cfcc8825356670aaa1e29a3d12c7d0f",
+        "LINKCOPY.TXT": "d7d6e20ff86b7a2a09ced46db14f722d246374ff8f24a9a3ddbb9332fe8735ad",
+        "DASM.COM": "8034d629ee464d33659684c39493022bd48c7cb1227952428c751fbf169b66e9",
+        "DSYM.COM": "8cd2d1e09fc60432a3345e1321b54a92316f18fb7ef30b9e8c8da18c2f63f98a",
+        "DLINK.COM": "2bc9912e769b6d8e6635afa47d6ca6121a53ba60870cac7330b441ff0dbed8f7",
+        "DASM.TXT": "6987b2d5357a338742f1677ae119b4b2bcbc757413e839bc069fb68c3942b2b3",
+        "DASMCOPY.TXT": "48cd81363e19e946e2f163beaff87ca04320ed163cc286e430d8aaf3267a1ddd",
+        "TED.COM": "272c31a168d63d4b5a5f2c5517d0c614a00fccf746dc966e8a180f16cc9f959c",
+        "TED.TXT": "40dbb575999e1751ed12749f13697d657c6b0ec90b1b1e46e1f97cda60a4b087",
+        "TEDCOPY.TXT": "3b83eebfc6c3c07ff9eb6ad8492dc7002ad2fb7fb4f144b1822a8fd92303cd33",
+        "SEARCH.COM": "aca7362a046488c0dd0880e00bf7d03ecaaf875a09e6fc3ae8ee0830bf7271bd"
+      },
+      "noah_companion": {
+        "files": 3,
+        "user": 0,
+        "allocated_blocks": 32,
+        "free_blocks": 368,
+        "exact_membership": "PASS",
+        "independent_record_readback": "PASS",
+        "allocation": "PASS",
+        "image": "BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk",
+        "image_sha256": "b037c489b8547d936971a742a4152e2ef430bd6acf6bbe0fa137df39c491c83f",
+        "files_sha256": {
+          "NOAH.COM": "b07f73420acf5086f00366d1db75f62260880dca554890ebe22f71a29c7bcfbb",
+          "NOAH.OVL": "be222a7b6c3e2bc60466fe0920a657cb7afdbf17511d8e9cc8e4f3c43f2cdc1c",
+          "NOAH.TXT": "2d10cfdfa7b9c2e577030a823c02078cf04ef866377d932541ee0407e1a89753"
+        }
+      }
+    }
+  }
+}

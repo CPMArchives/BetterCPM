@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Build development SEARCH.COM without changing any release media."""
+"""Build SEARCH.COM and prepared native source without changing disk images."""
 import argparse
 from pathlib import Path
 import hashlib
+import json
+import re
 from build_ccp import assemble
 from component_build import recorded_build
 from component_identity import identification, title
@@ -38,6 +40,12 @@ def expanded_source():
                         assembly_string('DHELPTXT', help_text))
 
 
+def native_source():
+    text=re.sub(r'(?m)^(?:(\w+:)\s*)? +DS +([0-9]+) *$',
+                r'\1\n        REPT \2\n        DB 0FFH\n        ENDM',expanded_source())
+    return text.replace('\n','\r\n').encode('ascii')+b'\x1a'
+
+
 @recorded_build('utility:SEARCH')
 def build(assembler, destination):
     source = expanded_source().replace('        CSEG\n', '        ASEG\n').replace(
@@ -45,6 +53,11 @@ def build(assembler, destination):
     raw = assemble(assembler, source, destination/'search.bin', destination/'search.lst', 0x103)
     data = b'\xc3\x03\x01'+raw
     (destination/'SEARCH.COM').write_bytes(data)
+    native=native_source()
+    (destination/'SEARCH-NATIVE.MAC').write_bytes(native)
+    (destination/'SEARCH-native.json').write_text(json.dumps({
+        'binary_sha256':hashlib.sha256(data).hexdigest(),
+        'native_source_sha256':hashlib.sha256(native).hexdigest()},indent=2)+'\n')
     return data
 
 

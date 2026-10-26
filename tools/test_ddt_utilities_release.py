@@ -90,7 +90,7 @@ def model4(w,system,utility):
 
 def main():
     global SHA
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--system',type=Path,required=True);p.add_argument('--artifacts',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim');args=p.parse_args()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--system',type=Path,required=True);p.add_argument('--artifacts',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim');p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp']);args=p.parse_args()
     w=args.output.resolve();w.mkdir(parents=True,exist_ok=False)
     defs=disk_definition(select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT))+'''diskdef ddt-system
  libdsk:format pcw800
@@ -110,7 +110,10 @@ end
     result={}
     try:
         for target,image,report in packaged:
-            platform=report['target'];dest=w/platform;dest.mkdir();(dest/'diskdefs').write_text(defs)
+            platform=report['target']
+            if platform not in args.platforms or not any(row['name']=='DDT.COM' for row in report['included']):
+                continue
+            dest=w/platform;dest.mkdir();(dest/'diskdefs').write_text(defs)
             system=args.system/platform/json.loads((args.system/platform/'report.json').read_text())['image']
             utility=w/'packaged'/target
             assert next(x for x in report['included'] if x['name']=='DDT.COM')['sha256']==SHA
@@ -118,6 +121,7 @@ end
             result[platform]['utilities_image']=target
             result[platform]['utilities_sha256']=sha(image)
             result[platform]['ddt_sha256']=SHA
+            result[platform]['system_sha256']=sha(system.read_bytes())
             assert utility.read_bytes()==image
     finally:
         for p,data in sources.items():assert p.read_bytes()==data,('source image changed',p)

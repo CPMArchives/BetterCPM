@@ -1,0 +1,56 @@
+{
+  "ddt_utilities_acceptance": "PASS",
+  "whole_utilities_disk": "PROVISIONAL",
+  "platforms": {
+    "z80pack": {
+      "status": "PASS",
+      "interactions": 26,
+      "utilities_unchanged": true,
+      "debuggee_unchanged": true,
+      "filesystem": "PASS",
+      "caller_drive": "A0",
+      "transcript_sha256": "5c917db15d5ba7068a242704d84124e45ad6d7fa352446310182c62310ad0c0f",
+      "utilities_image": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "utilities_sha256": "98041729962f77b0ea7300077696e679384a487785b57823781c43256c7a2d19",
+      "ddt_sha256": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467",
+      "system_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1"
+    },
+    "trs80gp": {
+      "status": "PASS",
+      "stages": [
+        "boot",
+        "providers",
+        "version",
+        "loaded",
+        "debuggee",
+        "editing",
+        "provisional",
+        "cancel",
+        "uncommitted",
+        "breakpoint",
+        "stepped",
+        "return",
+        "restart",
+        "break"
+      ],
+      "utilities_unchanged": true,
+      "debuggee_unchanged": true,
+      "filesystem": "PASS",
+      "caller_drive": "A0",
+      "providers": [
+        "M4SCRN",
+        "ADM3A"
+      ],
+      "utilities_image": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "utilities_sha256": "9722108bfc189f7847accfdbc160ed2de0b40ea4acccb8f08a212b5035106850",
+      "ddt_sha256": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467",
+      "system_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43"
+    }
+  },
+  "ddt_sha256": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467",
+  "evidence_archive": {
+    "name": "DDT-Utilities-Refresh-Evidence.tar.gz",
+    "sha256": "e8c7f3a9168f69ac2517542aa5a3e2bf39d46e5903805d4caa84f8a4a24f6b62",
+    "bytes": 762775
+  }
+}

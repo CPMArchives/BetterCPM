@@ -1,0 +1,85 @@
+{
+  "sha256": "aca7362a046488c0dd0880e00bf7d03ecaaf875a09e6fc3ae8ee0830bf7271bd",
+  "image_bytes": 8036,
+  "adapter_tpa_payload_bytes": 8038,
+  "simulated_service_stack_bytes": 256,
+  "resources": [
+    {
+      "case": "help",
+      "stack_bytes": 290,
+      "incomplete": false
+    },
+    {
+      "case": "invalid",
+      "stack_bytes": 290,
+      "incomplete": false
+    },
+    {
+      "case": "results",
+      "stack_bytes": 306,
+      "incomplete": false
+    },
+    {
+      "case": "paging",
+      "stack_bytes": 318,
+      "incomplete": false
+    },
+    {
+      "case": "suppression",
+      "stack_bytes": 320,
+      "incomplete": false
+    },
+    {
+      "case": "read-error",
+      "stack_bytes": 308,
+      "incomplete": true
+    },
+    {
+      "case": "excerpt-error",
+      "stack_bytes": 326,
+      "incomplete": true
+    },
+    {
+      "case": "open-error",
+      "stack_bytes": 306,
+      "incomplete": true
+    },
+    {
+      "case": "close-error",
+      "stack_bytes": 308,
+      "incomplete": true
+    },
+    {
+      "case": "directory-error",
+      "stack_bytes": 310,
+      "incomplete": true
+    }
+  ],
+  "directory_growth": [
+    {
+      "entries": 8,
+      "search_first": 16,
+      "search_next": 57,
+      "reads": 8
+    },
+    {
+      "entries": 32,
+      "search_first": 64,
+      "search_next": 993,
+      "reads": 32
+    },
+    {
+      "entries": 64,
+      "search_first": 128,
+      "search_next": 4033,
+      "reads": 64
+    },
+    {
+      "entries": 128,
+      "search_first": 256,
+      "search_next": 16257,
+      "reads": 128
+    }
+  ],
+  "limits": "Adapter evidence only; no physical BDOS depth, hardware timing, or actual reduced-system TPA claim."
+}

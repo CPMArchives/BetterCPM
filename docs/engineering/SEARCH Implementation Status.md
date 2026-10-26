@@ -1,8 +1,10 @@
 # SEARCH implementation and qualification status
 
-**Status:** Runnable SEARCH 1.0 development command, qualification updated 2026-10-27. Additional resource, directory and media-error checks now pass; see the
-[candidate qualification](SEARCH%20Qualification.md). Final paired Utilities Disk
-acceptance and distribution promotion remain separate. The
+**Status:** SEARCH 1.0 revision 001 integrated into Utilities; acceptance updated 2026-10-27.
+Assigned-byte and paired Utilities checks pass; see the
+[Utilities acceptance](SEARCH%20Utilities%20Acceptance.md). The historical
+[candidate qualification](SEARCH%20Qualification.md) remains distinct. Whole
+Utilities release publication is separate. The
 [engineering specification](SEARCH%20Specification.md) controls the behavior;
 the [manual](../user/utilities_manual.md#search-file-content-search) describes
 the implemented interface.
@@ -38,14 +40,15 @@ the implemented interface.
   opens do not. Returning errors identify the location/file and a failing
   offset when available, and mark the summary incomplete. Numeric overflow
   saturates counters and reports an accounting error, never a wrapped total.
-- Metadata-owned `SEARCH 1.0 (001-dev)` identification and help, private stack,
+- Metadata-owned `SEARCH 1.0 (001)` identification and help, private stack,
   direct return, caller DU restoration and conventional DMA restoration.
 
 `src/utilities/search.mac` supplies the entry/return path. The `search/` modules
-separate parser, matcher/state, file traversal and display. Builders create local
-development outputs only. Component registration starts SEARCH at revision 001
-with development display because no accepted input baseline exists. No existing
-component revision, distribution manifest, frozen disk or package was changed.
+separate parser, matcher/state, file traversal and display. The builder emits
+the COM image, prepared native source and program/source
+checksums. Revision 001 now has cross/native input baselines for both targets.
+SEARCH is included in newly generated Utilities candidates with exact paired-image
+acceptance; no System image or existing public release is overwritten.
 
 ## Bounded display and traversal choices
 
@@ -87,21 +90,21 @@ errors. Owned returning paths restore DU, entry stack and DMA to 0080h.
 
 ## Resources and identity
 
-The current COM image is **8,044 bytes**, including its fixed buffers, **512-byte
+The current COM image is **8,036 bytes**, including its fixed buffers, **512-byte
 private stack** and **16-byte lower stack guard**. The CPU command suite observed
 at most **70 bytes** of that private stack, including the simulated BDOS call
 frames; this is not a worst-case physical-BDOS stack measurement. Guard checks
 pass on query, invalid-command, result, paging, suppression and error paths.
 No allocation grows with file size, line length, match count or directory size.
 
-The image occupies 8,044 bytes of TPA payload above 0100h. An 8 KiB advertised
+The image occupies 8,036 bytes of TPA payload above 0100h. An 8 KiB advertised
 TPA budget and lowered caller stack now pass on all three platforms through a
 resident observer; the exact absolute minimum is not claimed. Positions/line tags are
 32-bit; aggregate counters and decimal conversion are 64-bit. Both numeric
 boundaries and non-silent overflow paths have compiled-code tests.
 
 Current candidate SHA-256:
-`a771b4fcf0b0b04133f3c8d54eb3d9917f66b366a11e95d049a51dc32aa77862`.
+`aca7362a046488c0dd0880e00bf7d03ecaaf875a09e6fc3ae8ee0830bf7271bd`.
 The full selected input fingerprint and source provenance are local build-report
 fields, not embedded Git identifiers or release qualification claims.
 
@@ -138,10 +141,12 @@ compares every COM byte with cross output. Its command fixtures verify the full
 help screen, a 513-record file spanning several extents with a late match at
 byte 65,535, all five totals, and Ctrl-C at a paging prompt. The searched fixture
 is read back unchanged. Native and cross program images are byte-identical; the native CP/M file
-is padded to logical records, so parity compares the 8,044-byte program image.
+is padded to logical records, so parity compares the 8,036-byte program image.
 
 `tools/test_search_media.py` stages disposable copies of supplied BetterCP/M
-platform images. The cpmsim case passes help/query precedence, combined users
+platform images. The `build/search-platform-final-7/` paths below identify the
+historical 001-dev runs; current assigned-byte Utilities B execution and native
+builds are bound by [Utilities acceptance](SEARCH%20Utilities%20Acceptance.md). The cpmsim case passes help/query precedence, combined users
 3 and 31, independent TEXT/HEX results, final totals, Ctrl-C continuation and a
 whole-disk byte comparison. See `build/search-platform-final-7/cpmsim/` for the local transcript/evidence.
 
@@ -159,22 +164,19 @@ Local screens and evidence are in `build/search-platform-final-7/model4/`.
 | Focused qualification | Result |
 | --- | --- |
 | Assembled matcher, parser, traversal and complete-command CPU fixtures | PASS |
-| Native ZSM4/LINK program-image parity | PASS, 8,044 bytes |
+| Native ZSM4/LINK program-image parity | PASS, 8,036 bytes |
 | Stock CP/M 2.2 full command, large file/extents, help and paging stop | PASS |
 | BetterCP/M cpmsim users 3/31, results, paging stop, whole disk unchanged | PASS |
 | BetterCP/M Model 4 user 31, captured paging/stop, fixture contents unchanged | PASS |
 | Whole Utilities release acceptance and absolute minimum TPA | Not claimed |
 
-## Remaining release work
+## Release boundary
 
-The [candidate qualification](SEARCH%20Qualification.md) records measured directory
-cost, an 8 KiB TPA budget, native stack watermarks and actual emulated BIOS read
-failures. No production executable change was required.
+SEARCH's assigned revision, Utilities membership and paired acceptance are now
+recorded in [SEARCH Utilities Acceptance](SEARCH%20Utilities%20Acceptance.md).
+The historical candidate evidence is preserved rather than relabelled.
 
-- Review the component evidence and accepted input baseline separately.
-- Integrate SEARCH into newly generated paired Utilities images and renew the
-  acceptance receipts bound to those images; existing receipts cannot transfer.
-- Physical media timing, arbitrary BIOS/interrupt stack use and broader Model 4
-  interactive command typing remain explicit limits, not claimed test outcomes.
-
-SEARCH remains a development candidate until final distribution acceptance.
+Whole Utilities release publication remains separate. Physical media timing,
+arbitrary BIOS/interrupt stack use and broader Model 4 interactive command typing
+remain explicit limits, not claimed outcomes. No merge or public release occurs
+as part of this work.

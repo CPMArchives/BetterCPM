@@ -97,7 +97,7 @@ def main():
         r = json.loads((a.system / platform / 'report.json').read_text())
         system = a.system / platform / r['image']
         source = system.read_bytes()
-        utilities = next(a.utilities.glob('*'+platform+('*.dmk' if native else '*.dsk')))
+        utilities = a.utilities/('BetterCPM-Utilities-'+platform+('-80T-DS-800K.dmk' if native else '-332K.dsk'))
         ub = utilities.read_bytes()
         pr = {'status': 'IN_PROGRESS', 'system_sha256': sha(source), 'utilities_sha256': sha(ub), 'cases': {}}
         result['platforms'][platform] = pr
