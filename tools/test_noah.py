@@ -761,6 +761,14 @@ def main():
     with tempfile.TemporaryDirectory(prefix='bettercpm-noah-test-') as temp:
         work = Path(temp)
         image = build(a.assembler, work)
+        layout = image.layout
+        ark_start = layout['ark_address']
+        ark_end = ark_start + layout['ark_bytes']
+        assert layout['ark_bytes'] <= 12800
+        assert all(ark_start <= address < ark_end
+                   for address in layout['ark_writer_entries'].values())
+        assert set(layout['ark_writer_entries']) == {
+            'ARK_BUILD_HEADER', 'ARK_WRITE_MEMBER', 'ARK_WRITE_END'}
         assert build(a.assembler, work / 'repeat') == image
         (work / 'sim.h').write_text('#define DEF_CPU Z80\n#define EXCLUDE_I8080\n')
         for name in ('simmem.h', 'simport.h'):

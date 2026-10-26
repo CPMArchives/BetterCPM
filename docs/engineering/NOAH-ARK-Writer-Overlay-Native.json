@@ -1,0 +1,47 @@
+{
+  "scope": "NHARK production overlay ARC writer entry packaging",
+  "status": "z80pack ZSM4/LINK source parity passed; Model 4 native build pending",
+  "source_commit": "0e0e7a5",
+  "system_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1",
+  "utilities_sha256": "1645ddddb44aa49d194bc864764869af64d7fee1300143b3c1791eb5799181b7",
+  "phase_layout": {
+    "start_hex": "9200",
+    "bytes": 5370,
+    "record_padded_bytes": 5440,
+    "padded_end_hex": "A740",
+    "arena_end_hex": "C400",
+    "writer_entries": {
+      "ARK_BUILD_HEADER": "9200",
+      "ARK_WRITE_MEMBER": "9338",
+      "ARK_WRITE_END": "948F"
+    }
+  },
+  "platforms": {
+    "z80pack": {
+      "status": "PASS",
+      "commands": [
+        "B:ZSM4 NHARK=NHARK",
+        "B:ZSM4 NCLZW=NCLZW",
+        "B:ZSM4 NCAR8=NCAR8",
+        "B:LINK NHARK[A]",
+        "B:LINK NCLZW[A]",
+        "B:LINK NCAR8[A]"
+      ],
+      "nhark_source_sha256": "eebb804fda944a10295743183a4df631eb4e3e14851d707bc5669c6abdafcffd",
+      "nhark_linked_com_sha256": "f4b13b99d7b647245c6cbe594ca0548a6fb1060a40aac155d842a0d7b076d58d",
+      "all_native_outputs_match_cross_assembly": true,
+      "console_sha256": "bfa3ad29218b4349e88d9e22820c90cd668a9baf19f5367e7bce4468f2ae8b66",
+      "original_media_unchanged": true
+    },
+    "trs80gp": {
+      "status": "PENDING",
+      "reason": "Local emulator startup failure recorded for PR 521; no native Model 4 result claimed."
+    }
+  },
+  "limitations": [
+    "Writer entries are packaged but not dispatched by NOAH commands.",
+    "This receipt verifies assembly parity and overlay layout, not native ARC archive transactions or publication.",
+    "The broader z80pack NOAH qualification stopped in its existing LBR /ADD /CR scenario after source preflight failed, before the later extent campaign.",
+    "The trs80gp process still fails during local startup, so Model 4 native parity/runtime qualification remains pending."
+  ]
+}
