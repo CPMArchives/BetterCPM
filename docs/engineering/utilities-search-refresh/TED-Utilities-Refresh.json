@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "ted_acceptance": "PASS",
+  "scope": "Fresh paired-media native/workflow revalidation; unchanged full-component coverage retained from identified historical acceptance",
+  "prior_full_acceptance": {
+    "name": "TED-Qualification.json",
+    "sha256": "d032150f864e8396969c0f84436daa9b50e310a947cf181567ffb143a448495f"
+  },
+  "platforms": {
+    "z80pack": {
+      "status": "PASS",
+      "system_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1",
+      "utilities_sha256": "98041729962f77b0ea7300077696e679384a487785b57823781c43256c7a2d19",
+      "fresh_report_sha256": "0d195a6f14cd01497fb2c3dc009eeb6ba1694e6184fc23d9dbfd44dafea2e872",
+      "fresh_execution_sha256": "897a218dd5fb40da486c02599fc4bac5cd0364a48afff9c9409d3dced10a2d11",
+      "fresh_scope": "one-boot installed groups/interaction/large and real-capacity API execution; native product parity separate field",
+      "prior_utilities_sha256": "1645ddddb44aa49d194bc864764869af64d7fee1300143b3c1791eb5799181b7",
+      "unchanged_programs": {
+        "TED.COM": {
+          "sha256": "272c31a168d63d4b5a5f2c5517d0c614a00fccf746dc966e8a180f16cc9f959c",
+          "bytes": 30380
+        }
+      },
+      "native_cross_parity": true
+    },
+    "trs80gp": {
+      "status": "PASS",
+      "system_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43",
+      "utilities_sha256": "9722108bfc189f7847accfdbc160ed2de0b40ea4acccb8f08a212b5035106850",
+      "fresh_report_sha256": "2711fb7ec2bbfb498590eab122422cb82c9f61109814132e66fb41942e879c01",
+      "fresh_execution_sha256": "410839194473d853b1ca78b52c5aaf2e355349582b96ad4cf31bd46f27fdafad",
+      "fresh_scope": "one-boot installed groups/interaction/large and real-capacity API execution; native product parity separate field",
+      "prior_utilities_sha256": "e5693ae7c54fe16fa7464f4d4b75bce99c04138d64a9705cd4290f2bdd27d769",
+      "unchanged_programs": {
+        "TED.COM": {
+          "sha256": "272c31a168d63d4b5a5f2c5517d0c614a00fccf746dc966e8a180f16cc9f959c",
+          "bytes": 30380
+        }
+      },
+      "native_cross_parity": true
+    }
+  },
+  "limits": [
+    "Physical hardware NOT RUN",
+    "ROM/XIP and checked-profile application acceptance NOT RUN",
+    "Physical arrow/control collisions use primary agreed control navigation",
+    "Model 4 physical Ctrl-underscore chord unavailable; ASCII US binding tested separately",
+    "Recovery restores committed checkpoint, not the latest unflushed RAM line"
+  ],
+  "binary": {
+    "sha256": "272c31a168d63d4b5a5f2c5517d0c614a00fccf746dc966e8a180f16cc9f959c",
+    "bytes": 30380
+  },
+  "evidence_archive": {
+    "name": "TED-Utilities-Refresh-Evidence.tar.gz",
+    "sha256": "abe4b2de33e4ba9723c4531ea591830913f09929be99959a4d9ee38c68661755",
+    "bytes": 2707694
+  }
+}

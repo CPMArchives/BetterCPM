@@ -4,12 +4,10 @@ import argparse
 import hashlib
 import io
 import json
-import re
 from pathlib import Path
 import subprocess
 import zipfile
 from search_source import ROOT
-from build_search import expanded_source
 
 sha = lambda data: hashlib.sha256(data).hexdigest()
 
@@ -38,13 +36,14 @@ def main():
     for name in ('tools/qualify_search_native.py','tools/qualify_search_resources.py','tools/package_search_candidate.py'):
         sources[name] = (ROOT/name).read_bytes()
     source_manifest = {name:sha(data) for name,data in sorted(sources.items())}
-    native = re.sub(r'(?m)^(?:(\w+:)\s*)? +DS +([0-9]+) *$',
-                    r'\1\n        REPT \2\n        DB 0FFH\n        ENDM',expanded_source())
+    native = (ROOT/'build/utilities/SEARCH-NATIVE.MAC').read_bytes()
+    label=f"SEARCH {record['identity']['version']} ({record['identity']['revision']:03d}"
+    label+=('-dev)' if record['display_selection']['development'] else ')')
     files = {'SEARCH.COM':binary,'SEARCH-build-report.json':build,
              'SEARCH-Qualification.json':args.qualification.read_bytes(),
-             'native/SEARCH.MAC':native.replace('\n','\r\n').encode('ascii')+b'\x1a',
+             'native/SEARCH.MAC':native,
              'SEARCH-SOURCE-MANIFEST.json':(json.dumps(source_manifest,indent=2)+'\n').encode(),
-             'README.txt':b'''SEARCH 1.0 development candidate, revision 001-dev
+             'README.txt':(label+' review candidate\n').encode()+b'''
 This review package is not a published Utilities Disk or an accepted baseline.
 SEARCH.COM is the exact binary identified by the build/qualification records.
 Complete tracked sources, documentation, tests and licenses are under source/.

@@ -6690,6 +6690,256 @@
       "schema": 1,
       "status": "selected-input-capture"
     },
+    "utility:SEARCH|trs80gp|default|cross": {
+      "assigned_identity": {
+        "revision": 1,
+        "version": "1.0"
+      },
+      "fingerprint": "536da6b30b7b274605b39e75a3a87111d7c85965ba17b2319c0da3b6528dd00e",
+      "inputs": {
+        "component": "utility:SEARCH",
+        "configuration": {
+          "origin": 259
+        },
+        "files": {
+          "src/cpx/rcp.mac": "8c943865b0a17853e0ac2ed2dd5afc3144aa80771e193fec45e063826d0db312",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/search.mac": "3c1e4cc89908b96279a7c84b2cca18a983e3ff9e8374dd9d607bbbc3fa841e38",
+          "src/utilities/search/display.inc": "792d8c01acb6cd4d2f9dbf2ca94388ba986991e8aea1f2a53701350392982eeb",
+          "src/utilities/search/matcher.inc": "d6638b5f1a456aeeb108a2ba84fbae3ec2728e479337460def8f84f4fbf4bb5d",
+          "src/utilities/search/parser.inc": "363554c4a218c40fb5e47101c072e1b6b7cc17563eb76369b520ed941617104b",
+          "src/utilities/search/scan.inc": "fc4f88488ab6e661c3f19bb428b8de7520d63ddd09cc4576030adb6825e7f9c7",
+          "src/utilities/search/state.inc": "02100b8d929612b7f9b368b620a10703f2326f569ef96ef74870ed1a5fd3930c",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_search.py": "1297ebb8710145d2b458edd6f346e846cf93da72ceb16104dc9487ce136a5a7f",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/search_source.py": "536f3c504db327e0deefdf355b8c9bc2a0f38ab12c2896f436a1fb7bfa7d2340",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_versions.py": "b2ace8532510365911d1263407b6583b4461ee1a03f8579b50e3459f6dc830ee"
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "File Content Search",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "trs80gp"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "utility:SEARCH|trs80gp|default|native": {
+      "assigned_identity": {
+        "revision": 1,
+        "version": "1.0"
+      },
+      "fingerprint": "6415488900c14c2cb95bfefc57c25d57b901a69c1174835635b841d4dd16d499",
+      "inputs": {
+        "component": "utility:SEARCH",
+        "configuration": {
+          "origin": 259
+        },
+        "files": {
+          "src/cpx/rcp.mac": "8c943865b0a17853e0ac2ed2dd5afc3144aa80771e193fec45e063826d0db312",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/search.mac": "3c1e4cc89908b96279a7c84b2cca18a983e3ff9e8374dd9d607bbbc3fa841e38",
+          "src/utilities/search/display.inc": "792d8c01acb6cd4d2f9dbf2ca94388ba986991e8aea1f2a53701350392982eeb",
+          "src/utilities/search/matcher.inc": "d6638b5f1a456aeeb108a2ba84fbae3ec2728e479337460def8f84f4fbf4bb5d",
+          "src/utilities/search/parser.inc": "363554c4a218c40fb5e47101c072e1b6b7cc17563eb76369b520ed941617104b",
+          "src/utilities/search/scan.inc": "fc4f88488ab6e661c3f19bb428b8de7520d63ddd09cc4576030adb6825e7f9c7",
+          "src/utilities/search/state.inc": "02100b8d929612b7f9b368b620a10703f2326f569ef96ef74870ed1a5fd3930c",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_native_search.py": "b9859a934ffba0f8bb5f62837233f201925de352796bd8746a0477587159627e",
+          "tools/build_native_trs80.py": "7bd6b2bf85c2edf3505f674a662c4b600adc934ad786e519dff6baee44e2b4cf",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_search.py": "1297ebb8710145d2b458edd6f346e846cf93da72ceb16104dc9487ce136a5a7f",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/search_source.py": "536f3c504db327e0deefdf355b8c9bc2a0f38ab12c2896f436a1fb7bfa7d2340",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_versions.py": "b2ace8532510365911d1263407b6583b4461ee1a03f8579b50e3459f6dc830ee"
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "File Content Search",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+          "linker_sha256": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677"
+        },
+        "variant": {
+          "build_mode": "native",
+          "profile": "default",
+          "target": "trs80gp"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "utility:SEARCH|z80pack|default|cross": {
+      "assigned_identity": {
+        "revision": 1,
+        "version": "1.0"
+      },
+      "fingerprint": "d16109b9785f60998afc6fb887241872258a26dfe5cdee4449c04536d91af9a2",
+      "inputs": {
+        "component": "utility:SEARCH",
+        "configuration": {
+          "origin": 259
+        },
+        "files": {
+          "src/cpx/rcp.mac": "8c943865b0a17853e0ac2ed2dd5afc3144aa80771e193fec45e063826d0db312",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/search.mac": "3c1e4cc89908b96279a7c84b2cca18a983e3ff9e8374dd9d607bbbc3fa841e38",
+          "src/utilities/search/display.inc": "792d8c01acb6cd4d2f9dbf2ca94388ba986991e8aea1f2a53701350392982eeb",
+          "src/utilities/search/matcher.inc": "d6638b5f1a456aeeb108a2ba84fbae3ec2728e479337460def8f84f4fbf4bb5d",
+          "src/utilities/search/parser.inc": "363554c4a218c40fb5e47101c072e1b6b7cc17563eb76369b520ed941617104b",
+          "src/utilities/search/scan.inc": "fc4f88488ab6e661c3f19bb428b8de7520d63ddd09cc4576030adb6825e7f9c7",
+          "src/utilities/search/state.inc": "02100b8d929612b7f9b368b620a10703f2326f569ef96ef74870ed1a5fd3930c",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_search.py": "1297ebb8710145d2b458edd6f346e846cf93da72ceb16104dc9487ce136a5a7f",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/search_source.py": "536f3c504db327e0deefdf355b8c9bc2a0f38ab12c2896f436a1fb7bfa7d2340",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_versions.py": "b2ace8532510365911d1263407b6583b4461ee1a03f8579b50e3459f6dc830ee"
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "File Content Search",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "utility:SEARCH|z80pack|default|native": {
+      "assigned_identity": {
+        "revision": 1,
+        "version": "1.0"
+      },
+      "fingerprint": "38b7e4d1ab9b5ed5d12f126572088c9d630f9a25e7b4294fcac0619968cd92fb",
+      "inputs": {
+        "component": "utility:SEARCH",
+        "configuration": {
+          "origin": 259
+        },
+        "files": {
+          "src/cpx/rcp.mac": "8c943865b0a17853e0ac2ed2dd5afc3144aa80771e193fec45e063826d0db312",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/search.mac": "3c1e4cc89908b96279a7c84b2cca18a983e3ff9e8374dd9d607bbbc3fa841e38",
+          "src/utilities/search/display.inc": "792d8c01acb6cd4d2f9dbf2ca94388ba986991e8aea1f2a53701350392982eeb",
+          "src/utilities/search/matcher.inc": "d6638b5f1a456aeeb108a2ba84fbae3ec2728e479337460def8f84f4fbf4bb5d",
+          "src/utilities/search/parser.inc": "363554c4a218c40fb5e47101c072e1b6b7cc17563eb76369b520ed941617104b",
+          "src/utilities/search/scan.inc": "fc4f88488ab6e661c3f19bb428b8de7520d63ddd09cc4576030adb6825e7f9c7",
+          "src/utilities/search/state.inc": "02100b8d929612b7f9b368b620a10703f2326f569ef96ef74870ed1a5fd3930c",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_native_search.py": "b9859a934ffba0f8bb5f62837233f201925de352796bd8746a0477587159627e",
+          "tools/build_native_trs80.py": "7bd6b2bf85c2edf3505f674a662c4b600adc934ad786e519dff6baee44e2b4cf",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_search.py": "1297ebb8710145d2b458edd6f346e846cf93da72ceb16104dc9487ce136a5a7f",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/search_source.py": "536f3c504db327e0deefdf355b8c9bc2a0f38ab12c2896f436a1fb7bfa7d2340",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_versions.py": "b2ace8532510365911d1263407b6583b4461ee1a03f8579b50e3459f6dc830ee"
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "File Content Search",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+          "linker_sha256": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677"
+        },
+        "variant": {
+          "build_mode": "native",
+          "profile": "default",
+          "target": "z80pack"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
     "utility:SQ|trs80gp|default|cross": {
       "assigned_identity": {
         "revision": 5,

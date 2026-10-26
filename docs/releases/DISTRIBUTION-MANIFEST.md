@@ -45,6 +45,12 @@ All membership or layout changes require discussion with the maintainer.
 
 ## Utilities Disk
 
+- SEARCH.COM: SEARCH 1.0 revision 001, read-only TEXT/HEX content search with
+  shared DU selectors, bounded excerpts, forward paging and complete accounting.
+  Included in newly generated candidate images; [paired Utilities acceptance](../engineering/SEARCH%20Utilities%20Acceptance.md)
+  binds native/cross parity and both-platform execution to exact program and media
+  hashes. Whole Utilities release publication remains separate.
+
 - COMPARE.COM: development binary file comparison, reporting differing
   byte values and absolute offsets, with selected ranges, side-by-side hexadecimal
   display, summary-only reporting and forward-only pagination; [engineering

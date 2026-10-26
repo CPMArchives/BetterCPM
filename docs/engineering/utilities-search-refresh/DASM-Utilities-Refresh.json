@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "dasm_acceptance": "PASS",
+  "scope": "Fresh paired-media native/workflow revalidation; unchanged full-component coverage retained from identified historical acceptance",
+  "prior_full_acceptance": {
+    "name": "DASM-Qualification.json",
+    "sha256": "d313093e8a891eb9cbbb49df4659807fb957b966005a14afd42066bbf345ecc8"
+  },
+  "platforms": {
+    "z80pack": {
+      "status": "PASS",
+      "system_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1",
+      "utilities_sha256": "98041729962f77b0ea7300077696e679384a487785b57823781c43256c7a2d19",
+      "fresh_report_sha256": "9a5176a46c3ebee4d083567f7ee75d9ea88c5327d11b0a6c0a384d3fd6d0cd44",
+      "fresh_execution_sha256": "853e1c6401d0eaf434cf90aa5ba35eefaaa182c7939ff71a4804fc8e2850c87b",
+      "fresh_scope": "native integration gate; full release acceptance pending",
+      "prior_utilities_sha256": "b4161c1f94be5b81528b40abf24a0e63db3528e95168a4b5463b40112ebecaa4",
+      "unchanged_programs": {
+        "DASM.COM": {
+          "sha256": "8034d629ee464d33659684c39493022bd48c7cb1227952428c751fbf169b66e9",
+          "bytes": 20736
+        },
+        "DSYM.COM": {
+          "sha256": "8cd2d1e09fc60432a3345e1321b54a92316f18fb7ef30b9e8c8da18c2f63f98a",
+          "bytes": 10386
+        },
+        "DLINK.COM": {
+          "sha256": "2bc9912e769b6d8e6635afa47d6ca6121a53ba60870cac7330b441ff0dbed8f7",
+          "bytes": 6216
+        }
+      },
+      "native_cross_parity": true
+    },
+    "trs80gp": {
+      "status": "PASS",
+      "system_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43",
+      "utilities_sha256": "9722108bfc189f7847accfdbc160ed2de0b40ea4acccb8f08a212b5035106850",
+      "fresh_report_sha256": "99ad6585d62602e8fcdc0ceecd7e5caa87e2fb8f6def7aaa7d2ea096e14950e1",
+      "fresh_execution_sha256": "baed745f9c8f0231638590a61b1f80a39bb5b1460d65752b7b2824821a91b4e7",
+      "fresh_scope": "native integration gate; full release acceptance pending",
+      "prior_utilities_sha256": "9af91fe09fdffeee5c84240ad444ea0312d1e03f96293768c047487e94da0e57",
+      "unchanged_programs": {
+        "DASM.COM": {
+          "sha256": "8034d629ee464d33659684c39493022bd48c7cb1227952428c751fbf169b66e9",
+          "bytes": 20736
+        },
+        "DSYM.COM": {
+          "sha256": "8cd2d1e09fc60432a3345e1321b54a92316f18fb7ef30b9e8c8da18c2f63f98a",
+          "bytes": 10386
+        },
+        "DLINK.COM": {
+          "sha256": "2bc9912e769b6d8e6635afa47d6ca6121a53ba60870cac7330b441ff0dbed8f7",
+          "bytes": 6216
+        }
+      },
+      "native_cross_parity": true
+    }
+  },
+  "limits": [
+    "8 KiB input; fixed bounded metadata arenas",
+    "BDOS active ceiling at least B200H; normal Model 4 M4SCRN+ADM3A and z80pack ZPRTC profiles",
+    "Fault-model injections cover individual BDOS failures and publication transitions; native media witnesses cover directory/data full, read-only file/media and cancellation",
+    "Single-byte LINK workaround adds explicit 1Ah outside the declared logical interval; physical padding checked separately",
+    "Owned binaries retain 1.0 (001-dev); external ZSM4/LINK retain upstream identities"
+  ],
+  "binaries": {
+    "DASM.COM": {
+      "sha256": "8034d629ee464d33659684c39493022bd48c7cb1227952428c751fbf169b66e9",
+      "bytes": 20736
+    },
+    "DSYM.COM": {
+      "sha256": "8cd2d1e09fc60432a3345e1321b54a92316f18fb7ef30b9e8c8da18c2f63f98a",
+      "bytes": 10386
+    },
+    "DLINK.COM": {
+      "sha256": "2bc9912e769b6d8e6635afa47d6ca6121a53ba60870cac7330b441ff0dbed8f7",
+      "bytes": 6216
+    }
+  },
+  "evidence_archive": {
+    "name": "DASM-Utilities-Refresh-Evidence.tar.gz",
+    "sha256": "6b3922429c6f99ce84e15250644ae068e0ff5d74881ec9f16efcbfafd555f304",
+    "bytes": 2109209
+  }
+}

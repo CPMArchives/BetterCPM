@@ -1,5 +1,8 @@
 # SEARCH 1.0 candidate qualification
 
+Historical 001-dev evidence. The current assigned executable and Utilities
+images are recorded in [SEARCH Utilities Acceptance](SEARCH%20Utilities%20Acceptance.md).
+
 **2026-10-26–27: component checks PASS; Utilities Disk acceptance pending.**
 The tested executable remains `SEARCH 1.0 (001-dev)`. This record does not assign
 an accepted input baseline, publish a release, or reuse another component's

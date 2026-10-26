@@ -132,7 +132,7 @@ def qualify(system,utilities,output,platform,skip_native_build=False,reuse_group
     else:
         key(b'QGROUP\r',b'TED GROUPS PASS');key(b'B:TED IMIX.TXT\r',b'TED>')
     key(b'SU /SECOND/CHANGED/\r',command_ready);key(b'P 1\r',command_ready)
-    key(b'/ALPHA/\r',b'Found.');key(b'\x14',b'BETA'.ljust(80));key(b'\x16',b'INS')
+    key(b'/ALPHA/\r',b'Found.');key(b'\x14',b'BETA'.ljust(80) if native else b'BETA  ');key(b'\x16',b'INS')
     key(b'ALPHA ',b'ALPHA BETA');key(b'\x16',b'OVR')
     for control in (1,6,19,4,5,24,18,3,17,15,12,21,31):
         if native and control==31:continue

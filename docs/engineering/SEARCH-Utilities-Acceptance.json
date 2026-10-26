@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "search_acceptance": "PASS",
+  "scope": "SEARCH 1.0 revision 001 on exact paired RAM emulator media; whole Utilities release separate",
+  "binary": {
+    "bytes": 8036,
+    "name": "SEARCH.COM",
+    "sha256": "aca7362a046488c0dd0880e00bf7d03ecaaf875a09e6fc3ae8ee0830bf7271bd"
+  },
+  "identity": {
+    "revision": 1,
+    "version": "1.0"
+  },
+  "input_fingerprint": "d16109b9785f60998afc6fb887241872258a26dfe5cdee4449c04536d91af9a2",
+  "native_source_sha256": "3d25e6176f495eec59b565b528eeb2595cac0812b15da6c8a40f799295c3f50d",
+  "platforms": {
+    "z80pack": {
+      "status": "PASS",
+      "system_sha256": "b9a616bafec41dc4c3206e5054712c88ead80624fde0e56b5899c09d1be7c7d1",
+      "utilities_sha256": "98041729962f77b0ea7300077696e679384a487785b57823781c43256c7a2d19",
+      "utilities_unchanged": true,
+      "fixtures_unchanged": true,
+      "native_cross_parity": true,
+      "native_file_sha256": "27ef3e79872c1701c09414224440a242e1a3368bec2b688bdefd14894b7d9145",
+      "directory_files": 48,
+      "advertised_tpa_payload_bytes": 8192,
+      "stack_watermark_bytes": 64,
+      "directory_inventory": "PASS"
+    },
+    "trs80gp": {
+      "status": "PASS",
+      "system_sha256": "578bc34cb377537e47a7e9bb1f019b20ffd9b98abc36e8acee74dfb56056eb43",
+      "utilities_sha256": "9722108bfc189f7847accfdbc160ed2de0b40ea4acccb8f08a212b5035106850",
+      "utilities_unchanged": true,
+      "fixtures_unchanged": true,
+      "native_cross_parity": true,
+      "native_file_sha256": "27ef3e79872c1701c09414224440a242e1a3368bec2b688bdefd14894b7d9145",
+      "directory_files": 80,
+      "advertised_tpa_payload_bytes": 8192,
+      "stack_watermark_bytes": 64,
+      "limits": "Exercised native stack watermark; not a physical interrupt worst-case proof",
+      "directory_inventory": "PASS"
+    }
+  },
+  "evidence": {
+    "name": "SEARCH-Utilities-Evidence.tar.gz",
+    "sha256": "a33dae0e7dc5d339e6fd7623e2f6c2f32c4af51aad5cbd4ebd9b9d1f65bf80c6",
+    "bytes": 800234
+  },
+  "limits": [
+    "Physical hardware and arbitrary third-party BIOS/interrupt stack depth not qualified",
+    "80x24 console; Model 4 command text supplied by SUBMIT; physical Ctrl-C pager suppression verified",
+    "BDOS Bad Sector Ctrl-C can warm boot without returning totals; directory replay remains quadratic"
+  ]
+}

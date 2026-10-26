@@ -32,7 +32,9 @@ def main():
         q = run(tail)
         assert set(q['services']) == {6}, q
         assert not q['opens'] and not q['reads']
-        assert 'SEARCH 1.0 (001-dev)' in q['output']
+        from utility_versions import display_development
+        expected = 'SEARCH 1.0 (001-dev)' if display_development('utility:SEARCH') else 'SEARCH 1.0 (001)'
+        assert expected in q['output']
         if '/HELP' in tail:
             assert 'Usage:' in q['output']
         assert all(len(line) <= 79 for line in q['output'].splitlines())
