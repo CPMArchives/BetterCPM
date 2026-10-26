@@ -11,7 +11,7 @@ from test_lbr import Reader
 from noah_overlays import assemble
 
 ROOT=Path(__file__).resolve().parents[1]
-ENTRIES=('ARK_OPEN','ARK_NEXT','ARK_RAW','ARK_CLOSE','READ_CB','WRITE_CB','ARK_TEST_STORED')
+ENTRIES=('ARK_OPEN','ARK_NEXT','ARK_RAW','ARK_CLOSE','READ_CB','WRITE_CB','ARK_TEST_STORED','ARK_BUILD_HEADER')
 
 
 def crc16(data):
@@ -54,8 +54,8 @@ class ArkReader(Reader):
 
 def build(out):
     out.mkdir(parents=True,exist_ok=True)
-    source=' ORG 100H\n'+''.join((ROOT/'src/archive'/n).read_text()+'\n' for n in ('archive.inc','ark.inc','ark.mac'))
-    source+=' DW '+','.join(ENTRIES)+'\n ARK_CODE\nREAD_CB: RET\nWRITE_CB: RET\n END\n'
+    source=' ORG 100H\n'+''.join((ROOT/'src/archive'/n).read_text()+'\n' for n in ('archive.inc','ark.inc','ark.mac','arkwrite.inc','arkwrite.mac'))
+    source+=' DW '+','.join(ENTRIES)+'\n ARK_CODE\n ARK_WRITE_CODE\nREAD_CB: RET\nWRITE_CB: RET\n END\n'
     raw,_=assemble(Path.home()/'bin/z80asm',out,'ARKTEST',source)
     core=Path.home()/'projects/git/z80pack/z80core'
     (out/'sim.h').write_text('#define DEF_CPU Z80\n#define EXCLUDE_I8080\n')
@@ -139,6 +139,80 @@ def tests(m):
     print(f'PASS: {m.cases} ARC reader cases; {len(m.image)-16} library bytes; 138-byte context')
 
 
+def writer_headers(m):
+    def canonical(name):
+        base, dot, ext = name.partition('.')
+        return (base.upper().ljust(8) + (ext.upper().ljust(3) if dot else '   ')).encode('ascii')
+
+    for method, name, logical, crc, dates, payload in (
+            (2, 'README.TXT', 28, 0xBEEF, b'\x34\x12\x78\x56', b'A'*28),
+            (4, 'NOEXT', 0, 0, bytes(4), b''),
+            (8, 'LONGNAME.DAT', 0x01020304, 0, b'\x00\x80\xFF\x7F', b'encoded-body')):
+        m.configure(b'\x1a\x00')
+        c=m.ctx
+        stored=len(payload)
+        m.mem[c+74:c+85]=canonical(name)
+        m.mem[c+102]=method
+        m.mem[c+94:c+98]=stored.to_bytes(4,'little')
+        m.mem[c+98:c+102]=logical.to_bytes(4,'little')
+        m.mem[c+104:c+106]=crc.to_bytes(2,'little')
+        m.mem[c+106:c+110]=dates
+        before=(m.regs['IX'].value,m.regs['IY'].value,m.regs['SP'].value)
+        steps=m.core.test_run(m.symbols['ARK_BUILD_HEADER'],1_000_000)
+        assert steps>=0 and not m.callback_exception, (name,steps,m.callback_exception)
+        assert before==(m.regs['IX'].value,m.regs['IY'].value,m.regs['SP'].value)
+        assert m.regs['A'].value==29 and (m.regs['F'].value&1)==0
+        # The serializer's five-byte non-reentrant scratch is statically
+        # allocated with the linked library and is intentionally writable.
+        m.image=bytes(m.mem[0x100:0x100+len(m.image)])
+        header=bytes(m.mem[c+42:c+71])
+        dotted=name.upper().encode('ascii')
+        name_field=dotted.ljust(13,b'\0')
+        expected=(bytes((26,method))+name_field+struct.pack('<IHHH',stored,*struct.unpack('<HH',dates),crc)+struct.pack('<I',logical))
+        assert header==expected,(name,header.hex(),expected.hex())
+        # The production reader must consume the serialized member and return
+        # the exact stored name/method/length/CRC/date fields.
+        m.configure(header+payload+b'\x1a\0')
+        assert m.call('ARK_OPEN')==m.call('ARK_NEXT')==0,name
+        meta=m.member()
+        normalized=canonical(name)
+        assert meta[:11]==normalized and meta[28]==method,(name,meta[:32].hex())
+        assert meta[20:24]==stored.to_bytes(4,'little')
+        assert meta[24:28]==logical.to_bytes(4,'little')
+        assert meta[30:32]==crc.to_bytes(2,'little') and meta[32:36]==dates
+
+    for method, rawname, status in ((1,b'FILE    BIN',13),(2,b'BAD NAME',2),
+                                    (2,b'NAME    B D',2),(2,b'BAD?    TXT',2),
+                                    (4,b'        TXT',2)):
+        m.configure(b'\x1a\x00')
+        c=m.ctx
+        m.mem[c+42:c+71]=b'\xE5'*29
+        m.mem[c+74:c+85]=rawname.ljust(11,b' ')
+        m.mem[c+102]=method
+        before=bytes(m.mem[c+42:c+71])
+        m.core.test_run(m.symbols['ARK_BUILD_HEADER'],1_000_000)
+        m.image=bytes(m.mem[0x100:0x100+len(m.image)])
+        assert m.regs['F'].value&1,(method,rawname)
+        assert m.regs['A'].value==status,(method,rawname,m.regs['A'].value)
+        assert bytes(m.mem[c+42:c+71])==before,(method,rawname)
+    m.configure(b'\x1a\0')
+    c=m.ctx
+    m.mem[c+74:c+85]=canonical('WIDE.DAT')
+    m.mem[c+102]=8
+    m.mem[c+94:c+98]=(0xF1234567).to_bytes(4,'little')
+    m.mem[c+98:c+102]=(0x89ABCDEF).to_bytes(4,'little')
+    m.mem[c+104:c+106]=b'\xCD\xAB'
+    m.mem[c+106:c+110]=b'\x11\x22\x33\x44'
+    m.core.test_run(m.symbols['ARK_BUILD_HEADER'],1_000_000)
+    m.image=bytes(m.mem[0x100:0x100+len(m.image)])
+    header=bytes(m.mem[c+42:c+71])
+    assert header[15:19]==bytes.fromhex('674523f1')
+    assert header[19:23]==b'\x11\x22\x33\x44'
+    assert header[23:25]==b'\xCD\xAB'
+    assert header[25:29]==bytes.fromhex('efcdab89')
+    print('PASS: ARC writer serializes method-2/4/8 headers and production reader round-trips metadata; rejects malformed names/methods')
+
+
 def historical(m,out):
     pins=json.loads((ROOT/'tests/fixtures/noah/references.json').read_text())['artifacts']
     from noah_compatibility import inventory
@@ -163,4 +237,4 @@ def historical(m,out):
     print('PASS: three pinned historical ARC inventories; opaque trailer reported')
 
 if __name__=='__main__':
-    out=ROOT/'build/ark-reader/host';m=build(out);tests(m);historical(m,out)
+    out=ROOT/'build/ark-reader/host';m=build(out);tests(m);writer_headers(m);historical(m,out)

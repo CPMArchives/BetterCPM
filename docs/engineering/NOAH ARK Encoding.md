@@ -95,11 +95,30 @@ the focused tests, native outputs and remaining write scope; its
 [evidence bundle](NOAH-ARK-Encoder-Dispatch-evidence.tar.gz) contains console,
 execution and linked-file results without emulator disk images.
 
+## ARC member-header serializer foundation
+
+`src/archive/arkwrite.inc` and `arkwrite.mac` add `ARK_BUILD_HEADER`. Given a
+caller-owned ARC member record, it validates its canonical padded CP/M 8.3 name
+and serializes the new-format 29-byte header for method 2 (stored), 4 (SQ) or 8
+(CR). It copies exact stored/logical lengths, raw DOS date/time words and CRC;
+unknown timestamps remain zero. It does not write payload bytes, produce the
+end marker, stream old members, update an archive, or invoke NOAH's staged
+publication transaction. The API uses five bytes of static validation scratch
+and therefore is not reentrant.
+
+`tools/test_ark.py` now assembles this serializer beside the production ARC
+reader. It checks method-2/4/8 header bytes, extensionless and maximum-length
+names, metadata round trips through the reader, and rejection of unsupported
+methods and malformed padded names without changing the output header. This
+closes only the byte-level header proof; `/ADD`, replacement, REMOVE, COMPACT,
+opaque trailer preservation, staged readback and publication/recovery remain
+open.
+
 ## Remaining encoding and update work
 
-- Wire `NCAR8` to `/ADD /CR`, including ARC member header creation,
-  length/CRC accounting, source-stability checks, staged verification and
-  publication/recovery. Standalone CR output is not an ARC method-8 stream.
+- Wire the production method-4/8 encoders and method-2 copy path to `/ADD`,
+  including length/CRC accounting, source-stability checks, staged verification
+  and publication/recovery. Standalone CR output is not an ARC method-8 stream.
 - Add ARC creation, replacement, REMOVE and COMPACT with exact retained member,
   raw metadata, opaque suffix and trailer preservation rules.
 - Qualify the integrated writer with native ZSM4/LINK and runtime transactions
