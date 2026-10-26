@@ -764,6 +764,11 @@ def main():
         layout = image.layout
         ark_start = layout['ark_address']
         ark_end = ark_start + layout['ark_bytes']
+        ark_padded_end = ark_start + layout['ark_padded_bytes']
+        add_plan_start, add_plan_end = layout['ark_add_plan_workspace']
+        assert ark_end <= ark_padded_end == add_plan_start
+        assert add_plan_end - add_plan_start == 6144
+        assert add_plan_end <= layout['ark_writer_arena_end']
         assert layout['ark_bytes'] <= 12800
         assert all(ark_start <= address < ark_end
                    for address in layout['ark_writer_entries'].values())
