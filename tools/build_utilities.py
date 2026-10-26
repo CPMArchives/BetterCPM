@@ -29,6 +29,7 @@ BUILDERS = (
     "type",
     "pip",
     "dump",
+    "compare",
     "ddt",
     "dasm",
     "dsym",
