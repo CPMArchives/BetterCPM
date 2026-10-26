@@ -325,8 +325,15 @@ replacement. Warn/authorize under section 7. Keep the selected directory capacit
 unless explicit CAPACITY requests a valid resize; compaction alone does not
 shrink it. Recalculate offsets/integrity fields correctly. A valid empty-member
 library is permitted after explicit REMOVE+COMPACT; its directory still exists.
-COMPACT in other containers requires an advertised, defined implementation;
-do not invent an ARK deleted-entry format or silently recompress its members.
+For ARC, which has no deleted-entry directory or interior payload holes,
+`/COMPACT` does not invent tombstones or recompress members. It stages a rewrite
+of every member in original order, copying each original header and stored
+payload byte-for-byte, then emits the ARC end marker and only the CP/M record
+padding required for the result. This may reclaim excess trailing 00h/1Ah
+padding records. If the reader finds any opaque byte after the ARC end marker,
+COMPACT refuses before staging; that suffix may be meaningful data. When
+combined with ADD or REMOVE, the same rewrite rules apply to the requested
+member set. The ordinary update preserves the entire original suffix exactly.
 
 ## 6. Metadata and timestamps
 
