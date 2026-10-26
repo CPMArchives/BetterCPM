@@ -214,7 +214,6 @@ def main():
             if a.ark_lzw:
                 from test_noah_ark_lzw import lzw,fixtures as lzw_fixtures
                 from test_ark import member,crc16
-                import random
                 small,_=lzw_fixtures()
                 small_members=b''.join(lzw(small,method,f'M{method}.BIN'.encode()) for method in range(5,10))
                 small_members+=lzw(b'',8,b'EMPTY8.BIN')+lzw(b'',9,b'EMPTY9.BIN')

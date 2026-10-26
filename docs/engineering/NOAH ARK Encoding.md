@@ -2,8 +2,10 @@
 
 Status: method-4 SQ adapter and method-8 encoder phase; production loader and
 callback routes pass the full Z80 core; the isolated method-8 harness passes on
-z80pack and TRS-80 Model 4, 2026-10-26. These are format-codec foundations only.
-They do not enable `/ADD` to create or update ARC archives. The
+z80pack and TRS-80 Model 4, 2026-10-26. The ARC writer entries now share the
+production `NHARK` overlay and pass the resident layout check for the existing
+12,800-byte arena. No NOAH command invokes those writer entries yet: this is a
+code-packaging and memory-boundary step, not an archive update feature. The
 [NOAH specification](NOAH%20Specification.md) remains normative.
 
 ## Method 4 from the owned SQ encoder
@@ -131,6 +133,24 @@ The same run has not completed on the Model 4. The local trs80gp 2.5.8 process
 aborted during startup on macOS 27.2, and LaunchServices could not launch the
 temporary test bundle. Treat Model 4 writer qualification as pending; the
 z80pack result does not close the cross-platform gate.
+
+## Writer entry points in the production overlay
+
+`tools/noah_overlays.py` now assembles the shared ARC framing library and
+`ARK_BUILD_HEADER`, `ARK_WRITE_MEMBER`, and `ARK_WRITE_END` into the reloadable
+`NHARK` phase. `tools/test_noah.py` checks that each exported entry falls inside
+the assembled phase and that its record-padded image remains within the
+existing 12,800-byte inactive arena. This adds no resident TPA allocation and
+does not change the overlay jump table or command behavior. The existing
+`tools/test_ark.py` vectors continue to exercise the writer implementation in
+isolation.
+
+The entries are not yet connected to `/ADD`, `/REMOVE`, or `/COMPACT`. A future
+transaction integration must supply the read/write callbacks, reconcile ARC
+member enumeration and source-plan metadata, independently reopen and verify
+the staged archive, recheck source stability, and only then use NOAH's existing
+safe publication/rollback path. Neither a native CP/M transaction nor Model 4
+writer qualification is claimed by this packaging step.
 
 ## Remaining encoding and update work
 
