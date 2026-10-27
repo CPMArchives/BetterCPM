@@ -50,7 +50,9 @@ All membership or layout changes require discussion with the maintainer.
   local verification against native lists and original SIG/M catalogs.
   Newly generated candidate images include CRCKSUM with its prepared native source
   and provenance in the shared source package. Packaged execution and native
-  cross-build parity pass on cpmsim; Model 4 execution acceptance is pending.
+  cross-build parity pass on cpmsim. The maintainer waived the remaining Model 4
+  validation for PR finalization; full Model 4 and paired release acceptance
+  are not asserted.
   See [CRC implementation notes](../engineering/CRC-Implementation.md).
 
 - SEARCH.COM: SEARCH 1.0 revision 001, read-only TEXT/HEX content search with

@@ -1,7 +1,7 @@
 # BetterCP/M CRCKSUM.COM Engineering Specification
 
 **Target:** CRCKSUM 1.0, BetterCP/M Utilities Disk
-**Status:** Implemented development candidate; paired candidate images integrated; cpmsim checks pass, Model 4 execution and release acceptance pending\
+**Status:** Implemented development candidate; paired candidate images integrated; cpmsim checks pass; remaining Model 4 validation waived by the maintainer for PR finalization; release acceptance not asserted\
 **Date:** 2026-10-28
 **Authority:** Maintainer decisions in the CRC, CHECKSUM and HASH design discussion. Implementation was subsequently authorized after PR #528 merged. Release promotion is not asserted. See [implementation and qualification notes](CRC-Implementation.md).
 

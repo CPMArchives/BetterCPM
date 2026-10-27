@@ -113,9 +113,18 @@ directory supplies `-CATALOG.310`, `ZMD146.LBR` and `ZMDOVL2.LBR`. Historical
 material is not fetched or modified by these tests. Reports record sample
 SHA-256 identities. Reconstructed `-CATALOG.ALL` is not a substitute.
 
-## Remaining qualification
+## Qualification disposition
 
-Model 4 execution was attempted using the existing disposable-media harness.
+The maintainer explicitly waived the remaining Model 4 validation for PR #529
+finalization. This waiver does not constitute a Model 4 pass, a qualified baseline
+or paired release acceptance. No acceptance receipt is fabricated or promoted.
+
+Limited manual Model 4 evidence from revision 003 shows version/help output and
+generation of a native list with all eight expected values for the one-record
+fixture. Native linking reported `NO FILE` and was not completed. The current
+revision 004 compact-output build has not completed Model 4 qualification.
+
+Automated Model 4 execution was attempted using the existing disposable-media harness.
 LaunchServices failed before emulator startup (`kLSNoExecutableErr`); direct
 launch aborted before boot. Therefore **no Model 4 runtime pass is claimed**.
 The checked-in media test includes the Model 4 historical-anchor, large-file,
@@ -144,4 +153,5 @@ Stack guard checks are not a physical-interrupt worst-case stack proof. The
 directory replay design has no entry-count truncation, but a maximum-size
 physical directory and all 512 DUs were not exercised on hardware. Paired disk
 placement, capacity, readback and corresponding-source packaging now pass;
-Model 4 runtime and exact paired release acceptance remain pending.
+The remaining Model 4 runtime checks are waived for this PR; exact paired
+release acceptance is not asserted. Fixtures remain available for future testing.

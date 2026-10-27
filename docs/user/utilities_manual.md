@@ -4,7 +4,7 @@ This manual explains how to use the programs supplied on the BetterCP/M Utilitie
 
 The Utilities Disk is being assembled separately from the System Disk. This manual covers DUMP, the initial DDT debugger adaptation, the six standalone compression utilities SQ, USQ, CR, UNCR, LZH and UNLZH, TED, DASM with its DSYM/DLINK companions, and the original ZSM4/LINK development tools. Chapters for other utilities will be added as those programs are completed and selected for distribution.
 
-CRCKSUM has a development implementation; CRCKSUM is included in newly built candidate Utilities images; Model 4 execution qualification and release acceptance remain pending.
+CRCKSUM has a development implementation; CRCKSUM is included in newly built candidate Utilities images; the maintainer waived the remaining Model 4 validation for PR finalization; full Model 4 qualification and release acceptance are not asserted.
 
 The COMPARE chapter describes a development utility. COMPARE is not yet qualified
 or included in current Utilities Disk images. SEARCH 1.0 is included in newly
@@ -344,7 +344,7 @@ Handled exits close opened files and restore the caller's drive and user area.
 
 ## CRCKSUM file checksums and verification lists
 
-**CRCKSUM 1.0 development candidate.** The implementation and focused cpmsim checks are available; CRCKSUM is included in newly built candidate Utilities images; Model 4 execution qualification and release acceptance remain pending. This chapter does not claim that CRCKSUM.COM is present on released Utilities Disk images. The [engineering specification](../engineering/CRC-Specification.md) is the controlling design.
+**CRCKSUM 1.0 development candidate.** The implementation and focused cpmsim checks are available; CRCKSUM is included in newly built candidate Utilities images; the maintainer waived the remaining Model 4 validation for PR finalization; full Model 4 qualification and release acceptance are not asserted. This chapter does not claim that CRCKSUM.COM is present on released Utilities Disk images. The [engineering specification](../engineering/CRC-Specification.md) is the controlling design.
 
 CRCKSUM answers two related questions: what check values identify these files, and do the files still agree with an earlier list? It calculates eight values: the original CP/M CRCK calculation, corrected CRCK, CHEK, CRC-32, SUM8, SUM16, KERM6 and KERM12. You can display them, save a list, or check a directory against a saved reference. No input file is altered.
 
