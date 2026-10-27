@@ -5,6 +5,9 @@
 **Date:** 2026-10-28
 **Authority:** Maintainer decisions in the CRC, CHECKSUM and HASH design discussion. Implementation was subsequently authorized after PR #528 merged. Release promotion is not asserted. See [implementation and qualification notes](CRC-Implementation.md).
 
+Revision 005 corrects `/LEGACY` console output to match the historical saved-list
+layout; native column headers and record counts are suppressed in that mode.
+
 ## 1. Purpose, scope and controlling conventions
 
 CRCKSUM calculates file-integrity values, writes portable verification lists, and verifies files against native lists, historical CRCKLIST/CRCKFILE lists, and original SIG/M catalogs. It supports historical CRCK, corrected CRCK, CHEK, CRC-32/ISO-HDLC, SUM8, SUM16, KERM6 and KERM12. CRCKSUM.COM supersedes the developing CRC.COM name; internal source/tool paths retain `crc` to preserve continuity. Historical CRCK is an intentionally preserved nonstandard calculation; do not replace it with a mathematically conventional CRC.

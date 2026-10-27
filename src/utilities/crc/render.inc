@@ -1,4 +1,4 @@
-; One row builder feeds both output destinations. Console /40 is independent.
+; Shared native/legacy rows feed console and saved lists. /40 wraps console only.
 PUTNAME:
         LD HL,LASTNAME
         LD B,8
@@ -18,6 +18,9 @@ PNEXT:
         RET
 HEADERS:
         CALL WSECTION
+        LD A,(LEGACY)
+        OR A
+        RET NZ
         CALL NEWLINE
         LD HL,TITLELIN
         CALL PUTS
@@ -60,6 +63,9 @@ HEADERSA:
         RET NZ
         JP WLINE
 RESULTRO:
+        LD A,(LEGACY)
+        OR A
+        JP NZ,LEGACYRO
         CALL NEWLINE
         CALL PUTNAME
         CALL SPACE2
@@ -80,9 +86,8 @@ RESULTRO:
 ROWSTACK:
         CALL STACKED
 ROWSAVE:
-        LD A,(LEGACY)
-        OR A
-        JP Z,WLINE
+        JP WLINE
+LEGACYRO:
         CALL NEWLINE
         LD HL,LEGACYPR
         CALL PUTS
@@ -111,6 +116,10 @@ LEGEXT:
         CALL HEXBYTE
         XOR A
         CALL PUT
+        LD HL,LINE
+        CALL TEXT
+        CALL NL
+        CALL NL
         CALL WLINE
         CALL NEWLINE
         XOR A

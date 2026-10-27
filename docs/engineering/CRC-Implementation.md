@@ -11,8 +11,8 @@ controlling design is [CRC-Specification.md](CRC-Specification.md).
 `src/utilities/crc.mac` composes modules for command validation, sorted DU
 traversal, eight streaming integrity values, display, reference parsing and output
 transactions. The builder reuses the existing shared DU/filespec/attribute parser
-and RCP FCB builder. The component registry assigns CRCKSUM 1.0 revision 004; without
-a qualified baseline the displayed identity remains `CRCKSUM 1.0 (004-dev)`.
+and RCP FCB builder. The component registry assigns CRCKSUM 1.0 revision 005; without
+a qualified baseline the displayed identity remains `CRCKSUM 1.0 (005-dev)`.
 
 ```sh
 python3 tools/build_crc.py
@@ -30,9 +30,9 @@ candidate retains 20K free after allocating 22K to CRCKSUM. The Model 4 candidat
 uses the existing 800K data format.
 
 The current COM image has SHA-256
-`7d8c2914413fe029e2c98970b4969f3690df9f6659d62e0c2a0521efccd7fdd5`.
-It occupies 22,123 bytes, including private data and its
-512-byte stack; it loads at 0100h and ends at 576Bh. Storage is bounded by
+`d91d9f2b6abf6eecc221271cd94b12fd1aa9d292824ca2475213cd3b2efc36bd`.
+It occupies 22,142 bytes, including private data and its
+512-byte stack; it loads at 0100h and ends at 577Eh. Storage is bounded by
 the 127-byte command tail: at most 64 operand tokens, 512 selected DUs, 64
 active filename patterns, fixed line/record buffers and two output streams.
 There is no fixed directory-entry or reference-entry array. Alphabetical
@@ -70,9 +70,20 @@ The unused per-DU snapshot storage is removed. Saved lists and checksum
 calculations are unchanged. Revision 003 manual disks remain intact; revision
 004 replacements contain the updated B: executable and D: native source.
 
+Revision 005 fixes a console-only `/LEGACY` formatting defect: saved lists already
+used historical rows, but the console still rendered a native CRCK table. Both
+destinations now use historical rows, including the prefix and double spacing.
+Regression assertions cover console-only and saved-list commands with mixed
+algorithm switches. The Model 4 waiver remains in effect; no new Model 4 pass
+is claimed.
+
 ## Focused results
 
-- 123 compiled routine and command fixtures pass. They cover the independent algorithm vectors,
+Revision 005 passes the compiled fixtures and native byte-parity/command checks.
+The historical corpus and disposable packaged-media results below were recorded
+for revision 004; those broader campaigns were not repeated for this display fix.
+
+- 129 compiled routine and command fixtures pass. They cover the independent algorithm vectors,
   all eight defaults/subsets, queries before DU services, shared selectors,
   overlapping operands, sorting, fixed-column native lists, reordered algorithm
   columns, blank extensions, legacy bytes, repeated sections and duplicate

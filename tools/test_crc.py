@@ -260,6 +260,13 @@ def main():
         r=run(f,flags+' /FILE=CRC.LST')
         saved=r['files'][2,7,name83('CRC.LST')].split(b'\x1a')[0]
         assert saved==b'\r\n--> FILE:  NOEXT   .   \t\tCRC = 00 00\r\n\r\n--> FILE:  TEST    .DAT\t\tCRC = A6 87\r\n\r\n',saved
+        assert '; BetterCP/M' not in r['text'] and 'RECS' not in r['text'],r['text']
+        for row in saved.decode().splitlines():
+            if row:
+                assert row+'\r\n\r\n' in r['text'],r['text']
+        console=run(f,flags)
+        assert '--> FILE:  TEST    .DAT\t\tCRC = A6 87\r\n\r\n' in console['text'],console['text']
+        assert '; BetterCP/M' not in console['text'] and 'RECS' not in console['text'],console['text']
         assert total(run({**f,(2,7,'CRCKLIST.CRC'):saved},'/CHECK'),'Files verified')==2
     r=run(f,'/FILE=CRC.LST /40')
     assert all(len(line)<=40 for line in r['text'].splitlines()),r['text']
