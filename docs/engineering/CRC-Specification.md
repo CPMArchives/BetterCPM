@@ -1,9 +1,9 @@
 # BetterCP/M CRC.COM Engineering Specification
 
 **Target:** CRC 1.0, BetterCP/M Utilities Disk  
-**Status:** Consolidated engineering design; implementation and qualification not yet performed  
+**Status:** Implemented development candidate; focused cpmsim checks pass, Model 4 execution and release integration pending  
 **Date:** 2026-10-27  
-**Authority:** Maintainer decisions in the CRC, CHECKSUM and HASH design discussion. This document authorizes no implementation or release promotion.
+**Authority:** Maintainer decisions in the CRC, CHECKSUM and HASH design discussion. Implementation was subsequently authorized after PR #528 merged. Release promotion is not asserted. See [implementation and qualification notes](CRC-Implementation.md).
 
 ## 1. Purpose, scope and controlling conventions
 

@@ -343,6 +343,12 @@ class Z80:
                 self.carry = self.a < value
                 self.a = (self.a - value) & 0xFF
                 self.z = self.a == 0
+            elif op == 0xDE:            # SBC A,n
+                value = self.mem[self.pc]+int(self.carry)
+                self.pc += 1
+                self.carry = self.a < value
+                self.a = (self.a-value) & 255
+                self.z = self.a == 0
             elif op == 0x91:            # SUB C
                 self.carry = self.a < self.c
                 self.a = (self.a - self.c) & 0xFF
@@ -646,6 +652,22 @@ class Z80:
                 self.carry = bool(self.d & 1)
                 self.d >>= 1
                 self.z = self.d == 0
+            elif op == 0xCB and self.mem[self.pc] == 0x38:  # SRL B
+                self.pc += 1
+                self.carry = bool(self.b & 1)
+                self.b >>= 1
+                self.z = self.b == 0
+            elif op == 0xCB and self.mem[self.pc] == 0x09:  # RRC C
+                self.pc += 1
+                self.carry = bool(self.c & 1)
+                self.c = (self.c >> 1) | ((self.c & 1) << 7)
+                self.z = self.c == 0
+            elif op == 0xCB and self.mem[self.pc] == 0x19:  # RR C
+                self.pc += 1
+                old_carry = self.carry
+                self.carry = bool(self.c & 1)
+                self.c = (self.c >> 1) | (int(old_carry) << 7)
+                self.z = self.c == 0
             elif op == 0xCB and self.mem[self.pc] == 0x39:  # SRL C
                 self.pc += 1
                 self.carry = bool(self.c & 1)
@@ -772,6 +794,17 @@ class Z80:
             elif op == 0xAB:            # XOR E
                 self.a ^= self.e
                 self.z, self.carry = self.a == 0, False
+            elif op == 0xAA:            # XOR D
+                self.a ^= self.d
+                self.z, self.carry = self.a == 0, False
+            elif op == 0x90:            # SUB B
+                self.carry = self.a < self.b
+                self.a = (self.a-self.b) & 255
+                self.z = self.a == 0
+            elif op == 0x8E:            # ADC A,(HL)
+                total = self.a+self.mem[self.hl]+int(self.carry)
+                self.a = total & 255
+                self.z, self.carry = self.a == 0, total > 255
             elif op == 0xB2:            # OR D
                 self.a |= self.d
                 self.z, self.carry = self.a == 0, False
@@ -795,8 +828,8 @@ class Z80:
                 old_carry = self.carry
                 self.carry = bool(self.a & 0x80)
                 self.a = ((self.a << 1) | int(old_carry)) & 0xFF
-            elif op in (0x98, 0x9E, 0x9F):  # SBC A,B / (HL) / A
-                operand = self.b if op == 0x98 else (self.mem[self.hl] if op == 0x9E else self.a)
+            elif op in (0x98, 0x99, 0x9E, 0x9F):  # SBC A,B / C / (HL) / A
+                operand = self.b if op == 0x98 else (self.c if op == 0x99 else (self.mem[self.hl] if op == 0x9E else self.a))
                 total = self.a - operand - int(self.carry)
                 self.a = total & 0xFF
                 self.z, self.carry = self.a == 0, total < 0
