@@ -31,6 +31,7 @@ BUILDERS = (
     "dump",
     "noah",
     "compare",
+    "crc",
     "ddt",
     "dasm",
     "dsym",

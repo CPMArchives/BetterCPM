@@ -995,6 +995,31 @@
       "dependency_status": "tracked-conservative; shared FCB builder extracted from RCP",
       "display_format": "numeric",
       "description": "File Content Search"
+    },
+    "utility:CRCKSUM": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/crc.mac",
+        "src/utilities/crc/algorithms.inc",
+        "src/utilities/crc/command.inc",
+        "src/utilities/crc/list-parser.inc",
+        "src/utilities/crc/lists.inc",
+        "src/utilities/crc/output.inc",
+        "src/utilities/crc/render.inc",
+        "src/utilities/crc/support.inc",
+        "src/utilities/crc/traverse.inc"
+      ],
+      "builders": [
+        "tools/build_crc.py"
+      ],
+      "revision": 4,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "tracked-conservative; shared DU/filespec/attribute parser and FCB builder",
+      "display_format": "numeric",
+      "description": "File Integrity Checking"
     }
   },
   "legacy_utility_order": [
@@ -1041,7 +1066,8 @@
     "DLINK",
     "TED",
     "COMPARE",
-    "SEARCH"
+    "SEARCH",
+    "CRCKSUM"
   ],
   "legacy_subsystem_rows": [
     {

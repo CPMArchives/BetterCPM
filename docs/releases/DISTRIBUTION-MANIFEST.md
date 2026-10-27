@@ -45,6 +45,16 @@ All membership or layout changes require discussion with the maintainer.
 
 ## Utilities Disk
 
+- CRCKSUM.COM: CRCKSUM 1.0 revision 004 development candidate, supporting historical
+  CRCK, corrected CRCK5, CHEK, CRC-32, SUM8, SUM16, KERM6 and KERM12, native and legacy saved lists, and
+  local verification against native lists and original SIG/M catalogs.
+  Newly generated candidate images include CRCKSUM with its prepared native source
+  and provenance in the shared source package. Packaged execution and native
+  cross-build parity pass on cpmsim. The maintainer waived the remaining Model 4
+  validation for PR finalization; full Model 4 and paired release acceptance
+  are not asserted.
+  See [CRC implementation notes](../engineering/CRC-Implementation.md).
+
 - SEARCH.COM: SEARCH 1.0 revision 001, read-only TEXT/HEX content search with
   shared DU selectors, bounded excerpts, forward paging and complete accounting.
   Included in newly generated candidate images; [paired Utilities acceptance](../engineering/SEARCH%20Utilities%20Acceptance.md)
@@ -135,11 +145,18 @@ All membership or layout changes require discussion with the maintainer.
 `tools/build_utilities_disk.py --build` assembles the currently implemented
 selected components: DUMP.COM, DDT.COM, XSUB.COM and its required BATCHIO.RSX,
 SQ.COM, USQ.COM, CR.COM, UNCR.COM, LZH.COM and UNLZH.COM, plus the selected
-ZSM4/LINK binaries and their three notice files (15 files total). DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign passes on disposable current-system media. DDT also passes [Utilities release acceptance](../engineering/DDT%20Utilities%20Release%20Acceptance.md) from B: beside normal System A: on both platforms. `--ddt-acceptance REPORT` binds that component verdict to the exact artifact and image hashes; it does not promote the whole disk. The builder verifies
+ZSM4/LINK binaries and their three notice files, the DASM/DSYM/DLINK set and
+its two notice files, TED and its two notice files, SEARCH.COM and CRCKSUM.COM
+(25 files total). CRCKSUM occupies 22K of allocation on the 332K candidate, which
+has 20K free. DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign passes on disposable current-system media. DDT also passes [Utilities release acceptance](../engineering/DDT%20Utilities%20Release%20Acceptance.md) from B: beside normal System A: on both platforms. `--ddt-acceptance REPORT` binds that component verdict to the exact artifact and image hashes; it does not promote the whole disk. The builder verifies
 file readback and the filesystem, and produces a 332K raw cpmsim image and an
 80T DS 800K data DMK for Model 4. Reports explicitly list pending selections;
 these are provisional daily media, not a fully qualified Utilities release.
 No third-party program is silently selected or substituted.
+
+`--crc-acceptance REPORT` binds CRCKSUM acceptance to the exact paired images and
+prepared native-source identity. Without that evidence, CRCKSUM is explicitly
+pending; including its binary does not claim platform or whole-disk acceptance.
 
 The tracked `tools/bcpm` launcher mirrors the maintainer's personal script.
 After its ordinary System Disk build, `bcpm build` creates these Utilities media
