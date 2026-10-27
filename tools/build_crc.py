@@ -36,7 +36,7 @@ def expanded_source():
                  '     /KERM12     Kermit 12-bit checksum.\n'
                  '     /FILE=name  Write a master list.\n'
                  '     /LOCAL=name Write a list in each target DU.\n'
-                 '     /LEGACY     Save historical CRCKLIST format; force CRCK.\n'
+                 '     /LEGACY     Use historical CRCKLIST format; force CRCK.\n'
                  '     /CHECK[=name] Verify against a list in each target DU.\n'
                  '     /40         Stacked screen display.\n\n'
                  '     /HELP       Display this help.\n'

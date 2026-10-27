@@ -133,7 +133,7 @@ CRCKSUM B3:*.* /FILE=CRCKLIST.CRC /LEGACY
 CRCKSUM B[1-3]: /LOCAL=CRCKLIST.CRC /LEGACY
 ```
 
-`/LEGACY` reproduces the original prefix, padded dotted filename, two TABs before `CRC =`, space-separated hexadecimal bytes and blank lines between entries:
+`/LEGACY` uses the historical layout for both console output and saved lists. It reproduces the original prefix, padded dotted filename, two TABs before `CRC =`, space-separated hexadecimal bytes and blank lines between entries:
 
 ```text
 --> FILE:  ZMD146  .LBR          CRC = 13 6B
