@@ -28,23 +28,23 @@ def main():
     a = p.parse_args()
     report = a.report.resolve()
     report.mkdir(parents=True, exist_ok=False)
-    binary = (ROOT/'build/utilities/CRC.COM').read_bytes()
+    binary = (ROOT/'build/utilities/CRCKSUM.COM').read_bytes()
     fixture = b'123456789'+b'\x1a'*119
     large = bytes(range(256))*257  # 514 records, includes high bits and 1Ah.
-    expected = '  '.join(f'{x:0{8 if i==3 else 4}X}'.rjust(5 if i==1 else 0)
+    expected = '  '.join(f'{x:0{8 if i==3 else 2 if i in (4,6) else 3 if i==7 else 4}X}'.rjust(5 if i in (1,5,6) else 6 if i==7 else 4 if i==4 else 0)
                          for i,x in enumerate(oracle(large)))
-    files = [('CRC.COM',binary,'0:CRC.COM'), ('FIX.DAT',fixture,'31:FIX.DAT'),
+    files = [('CRCKSUM.COM',binary,'0:CRCKSUM.COM'), ('FIX.DAT',fixture,'31:FIX.DAT'),
              ('LARGE.DAT',large,'3:LARGE.DAT')]
     native_source = None
     if a.utilities:
-        native_source = (a.utilities/'CRC-NATIVE.MAC').read_bytes()
-        assert native_source == (ROOT/'build/utilities/CRC-NATIVE.MAC').read_bytes()
-        files = [item for item in files if item[0] != 'CRC.COM']
+        native_source = (a.utilities/'CRCKSUM-NATIVE.MAC').read_bytes()
+        assert native_source == (ROOT/'build/utilities/CRCKSUM-NATIVE.MAC').read_bytes()
+        files = [item for item in files if item[0] != 'CRCKSUM.COM']
     for name in ('ZMD146.LBR','ZMDOVL2.LBR','-CATALOG.310'):
         files.append((name,(a.historical_volume/name).read_bytes(),'7:'+name))
     evidence = {'binary_sha256':hashlib.sha256(binary).hexdigest(),
                 'binary':{'bytes':len(binary),'sha256':hashlib.sha256(binary).hexdigest()},
-                'native_source_sha256':hashlib.sha256((ROOT/'build/utilities/CRC-NATIVE.MAC').read_bytes()).hexdigest(),
+                'native_source_sha256':hashlib.sha256((ROOT/'build/utilities/CRCKSUM-NATIVE.MAC').read_bytes()).hexdigest(),
                 'platforms':{},
                 'large_fixture_records':len(large)//128,
                 'scope':'focused development qualification; release media unchanged'}
@@ -67,29 +67,29 @@ def main():
         if a.utilities:
             utility_before = (a.utilities/'BetterCPM-Utilities-z80pack-332K.dsk').read_bytes()
             (w/'disks/driveb.dsk').write_bytes(utility_before)
-            cpm('cpmcp','0:CRC.COM',w/'PACKAGED.COM',disk_path=w/'disks/driveb.dsk')
+            cpm('cpmcp','0:CRCKSUM.COM',w/'PACKAGED.COM',disk_path=w/'disks/driveb.dsk')
             assert (w/'PACKAGED.COM').read_bytes()[:len(binary)] == binary
             for letter in ('c','d'):
                 target = w/f'disks/drive{letter}.dsk'
                 target.write_bytes((a.image_dir/'disks/drivea.dsk').read_bytes())
                 cpm('cpmrm','0:*.*',disk_path=target)
-            (w/'CRC.MAC').write_bytes(native_source)
-            cpm('cpmcp',w/'CRC.MAC','0:CRC.MAC',disk_path=w/'disks/drivec.dsk')
+            (w/'CRCKSUM.MAC').write_bytes(native_source)
+            cpm('cpmcp',w/'CRCKSUM.MAC','0:CRCKSUM.MAC',disk_path=w/'disks/drivec.dsk')
             native_commands = [(b'D:\r',b'D0>_ ',30),
-                               (b'B:ZSM4 CRC=C:CRC\r',b'D0>_ ',60),
-                               (b'B:LINK CRC[A]\r',b'D0>_ ',30),
+                               (b'B:ZSM4 CRCKSUM=C:CRCKSUM\r',b'D0>_ ',60),
+                               (b'B:LINK CRCKSUM[A]\r',b'D0>_ ',30),
                                (b'A:\r',b'A0>_ ',30)]
         commands = [
-            (b':CRC /HELP /VER\r',b'A0>_ ',30),
-            (b':CRC A7:*.LBR /LOCAL=CRC.LST\r',b'A0>_ ',30),
-            (b':CRC /CHECK A7:*.LBR\r',b'A0>_ ',30),
-            (b':CRC /CHECK=-CATALOG.310 A7:*.LBR\r',b'A0>_ ',30),
-            (b':CRC A3:LARGE.DAT /LOCAL=CRC.LST\r',b'A0>_ ',30),
-            (b':CRC /CHECK A3:LARGE.DAT\r',b'A0>_ ',30),
-            (b':CRC A31:FIX.DAT /LEGACY /LOCAL=CRC.LST\r',b'A0>_ ',30),
-            (b':CRC /CHECK A31:FIX.DAT\r',b'A0>_ ',30)]
+            (b':CRCKSUM /HELP /VER\r',b'A0>_ ',30),
+            (b':CRCKSUM A7:*.LBR /LOCAL=CRC.LST\r',b'A0>_ ',30),
+            (b':CRCKSUM /CHECK A7:*.LBR\r',b'A0>_ ',30),
+            (b':CRCKSUM /CHECK=-CATALOG.310 A7:*.LBR\r',b'A0>_ ',30),
+            (b':CRCKSUM A3:LARGE.DAT /LOCAL=CRC.LST\r',b'A0>_ ',30),
+            (b':CRCKSUM /CHECK A3:LARGE.DAT\r',b'A0>_ ',30),
+            (b':CRCKSUM A31:FIX.DAT /LEGACY /LOCAL=CRC.LST\r',b'A0>_ ',30),
+            (b':CRCKSUM /CHECK A31:FIX.DAT\r',b'A0>_ ',30)]
         if a.utilities:
-            commands = [(command.replace(b':CRC',b'B:CRC'),prompt,wait) for command,prompt,wait in commands]
+            commands = [(command.replace(b':CRCKSUM',b'B:CRCKSUM'),prompt,wait) for command,prompt,wait in commands]
         text = session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',w/'disks',
                        native_commands+commands,w/'transcript.txt').decode('ascii',errors='replace')
         assert text.count('Verification complete:')==4,text[-4000:]
@@ -100,7 +100,7 @@ def main():
             cpm('cpmcp',destination,out)
             assert out.read_bytes()[:len(payload)]==payload,(destination,'changed')
         if a.utilities:
-            cpm('cpmcp','0:CRC.COM',w/'NATIVE.COM',disk_path=w/'disks/drived.dsk')
+            cpm('cpmcp','0:CRCKSUM.COM',w/'NATIVE.COM',disk_path=w/'disks/drived.dsk')
             assert (w/'NATIVE.COM').read_bytes()[:len(binary)] == binary
             assert 'Errors: 0' in text and 'CODE SIZE' in text
             assert (w/'disks/driveb.dsk').read_bytes() == utility_before
@@ -139,21 +139,21 @@ MSG:    DB 13,10,'CRC TEST DONE',13,10,'$'
             utility_before = (a.utilities/'BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk').read_bytes()
             (w/'b.dmk').write_bytes(utility_before)
         steps = [
-            ('history',b':CRC A7:*.LBR /LOCAL=CRC.LST\r\n:CRC /CHECK=-CATALOG.310 A7:*.LBR\r\n',7,2),
-            ('large',b':CRC A3:LARGE.DAT /LOCAL=CRC.LST\r\n:CRC /CHECK A3:LARGE.DAT\r\n',3,1),
-            ('legacy',b':CRC A31:FIX.DAT /LEGACY /LOCAL=CRC.LST\r\n:CRC /CHECK A31:FIX.DAT\r\n',31,1)]
+            ('history',b':CRCKSUM A7:*.LBR /LOCAL=CRC.LST\r\n:CRCKSUM /CHECK=-CATALOG.310 A7:*.LBR\r\n',7,2),
+            ('large',b':CRCKSUM A3:LARGE.DAT /LOCAL=CRC.LST\r\n:CRCKSUM /CHECK A3:LARGE.DAT\r\n',3,1),
+            ('legacy',b':CRCKSUM A31:FIX.DAT /LEGACY /LOCAL=CRC.LST\r\n:CRCKSUM /CHECK A31:FIX.DAT\r\n',31,1)]
         if a.utilities:
-            steps.insert(0,('native',b'B:ZSM4 CRC=CRC\r\nB:LINK CRC[A]\r\n',0,0))
+            steps.insert(0,('native',b'B:ZSM4 CRCKSUM=CRCKSUM\r\nB:LINK CRCKSUM[A]\r\n',0,0))
         for step,script,user,n in steps:
             raw.write_bytes(pristine)
             if step == 'native':
                 for name in ('ZMD146.LBR','ZMDOVL2.LBR','-CATALOG.310'):
                     cpm('cpmrm','7:'+name)
                 cpm('cpmrm','3:LARGE.DAT')
-                (w/'CRC.MAC').write_bytes(native_source)
-                cpm('cpmcp',w/'CRC.MAC','0:CRC.MAC')
+                (w/'CRCKSUM.MAC').write_bytes(native_source)
+                cpm('cpmcp',w/'CRCKSUM.MAC','0:CRCKSUM.MAC')
             if a.utilities:
-                script = script.replace(b':CRC',b'B:CRC')
+                script = script.replace(b':CRCKSUM',b'B:CRCKSUM')
             startup = w/'STARTUP.SUB'
             startup.write_bytes(b'RSX LOAD M4SCRN\r\nRSX LOAD ADM3A\r\n'+script+b'HOLD\r\n\x1a')
             cpm('cpmcp',startup,'0:STARTUP.SUB')
@@ -173,7 +173,7 @@ MSG:    DB 13,10,'CRC TEST DONE',13,10,'$'
             raw.write_bytes(extract_raw(disk.read_bytes()))
             if step == 'native':
                 assert 'Errors: 0' in text and 'CODE SIZE' in text,text
-                cpm('cpmcp','0:CRC.COM',out/'NATIVE.COM')
+                cpm('cpmcp','0:CRCKSUM.COM',out/'NATIVE.COM')
                 assert (out/'NATIVE.COM').read_bytes()[:len(binary)] == binary
                 assert (w/'b.dmk').read_bytes() == utility_before
                 continue
@@ -197,7 +197,7 @@ MSG:    DB 13,10,'CRC TEST DONE',13,10,'$'
             'fixtures_unchanged':True,'native_cross_parity':bool(a.utilities),
             'utilities_unchanged':bool(a.utilities),
             'utilities_sha256':hashlib.sha256(utility_before).hexdigest() if utility_before else None}
-        evidence['model4'] = 'PASS: four algorithms, historical anchors, >64K, catalog/native/legacy checks, user31, unchanged inputs'
+        evidence['model4'] = 'PASS: eight algorithms, historical anchors, >64K, catalog/native/legacy checks, user31, unchanged inputs'
         print(evidence['model4'],flush=True)
     (report/'evidence.json').write_text(json.dumps(evidence,indent=2)+'\n')
 

@@ -528,7 +528,7 @@ SKIPSPAC:
 SKIPONE:
         INC HL
         JR SKIPSPAC
-; Parsed entry: ENAME11, EMASK, EVALUES10, ESIZE4, ESIZETYPE0/1recs/2K.
+; Parsed entry: ENAME11, EMASK, EVALUES16, ESIZE4, ESIZETYPE0/1recs/2K.
 CANDIDAT:
         LD A,(LISTMODE)
         OR A
@@ -568,6 +568,12 @@ CMUSABLE:
         LD A,1
         LD (CMBIT),A
 CMALGORI:
+        LD B,1
+        LD A,(CMBIT)
+        CP 16
+        JR Z,CMSIZE
+        CP 64
+        JR Z,CMSIZE
         LD B,2
         LD A,(CMBIT)
         CP 8
@@ -595,7 +601,7 @@ CMNEXT:
         LD A,(CMBIT)
         ADD A,A
         LD (CMBIT),A
-        CP 16
+        OR A
         JR NZ,CMALGORI
         LD A,1
         LD (MATCHENT),A
@@ -665,7 +671,7 @@ CANDVLOP:
         LD D,0
         ADD HL,DE
         LD B,(IX+4)
-        CALL HEXVALUE
+        CALL FIELDHEX
         LD A,' '
         CALL PUT
 CANDVNXT:
@@ -674,7 +680,7 @@ CANDVNXT:
         LD A,(DETBIT)
         ADD A,A
         LD (DETBIT),A
-        CP 16
+        OR A
         JR NZ,CANDVLOP
         JP ENDLINE
 MSGCAND: DB '  Candidate at line ',0
@@ -795,7 +801,7 @@ SAVEDALG: DB 0
 OLDALG: DB 0
 ENAME: DS 11
 EMASK: DB 0
-EVALUES: DS 10
+EVALUES: DS 16
 ESIZE: DS 4
 ESIZETYP: DB 0
 EMATCHMA: DB 0

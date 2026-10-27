@@ -184,8 +184,14 @@ CMDLOOP:
         JP NZ,CMDOPER
         CALL OPTION
         RET C
+        CP 13
+        JR C,CMDOLDAL
+        SUB 8
+        JR CMDALGIN
+CMDOLDAL:
         CP 5
         JR NC,CMDOTHER
+CMDALGIN:
         DEC A
         LD B,A
         LD A,1
@@ -272,7 +278,7 @@ CMDDEFAU:
         LD A,(ALGSEL)
         OR A
         JR NZ,CMDLEGAC
-        LD A,15
+        LD A,255
         LD (ALGSEL),A
 CMDLEGAC:
         LD A,(LEGACY)
@@ -431,6 +437,10 @@ OPTIONS:
         DB 3,10,'/40'
         DB 5,11,'/HELP'
         DB 4,12,'/VER'
+        DB 5,13,'/SUM8'
+        DB 6,14,'/SUM16'
+        DB 6,15,'/KERM6'
+        DB 7,16,'/KERM12'
         DB 0
 ; Explicit sources cannot also be destinations. Wildcard exclusions are
 ; handled during traversal, including declined existing destinations.

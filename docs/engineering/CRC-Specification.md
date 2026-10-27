@@ -1,17 +1,17 @@
-# BetterCP/M CRC.COM Engineering Specification
+# BetterCP/M CRCKSUM.COM Engineering Specification
 
-**Target:** CRC 1.0, BetterCP/M Utilities Disk  
+**Target:** CRCKSUM 1.0, BetterCP/M Utilities Disk
 **Status:** Implemented development candidate; paired candidate images integrated; cpmsim checks pass, Model 4 execution and release acceptance pending\
-**Date:** 2026-10-27  
+**Date:** 2026-10-28
 **Authority:** Maintainer decisions in the CRC, CHECKSUM and HASH design discussion. Implementation was subsequently authorized after PR #528 merged. Release promotion is not asserted. See [implementation and qualification notes](CRC-Implementation.md).
 
 ## 1. Purpose, scope and controlling conventions
 
-CRC calculates file-integrity values, writes portable verification lists, and verifies files against native lists, historical CRCKLIST/CRCKFILE lists, and original SIG/M catalogs. It supports historical CRCK, corrected CRCK, CHEK and CRC-32/ISO-HDLC. Historical CRCK is an intentionally preserved nonstandard calculation; do not replace it with a mathematically conventional CRC.
+CRCKSUM calculates file-integrity values, writes portable verification lists, and verifies files against native lists, historical CRCKLIST/CRCKFILE lists, and original SIG/M catalogs. It supports historical CRCK, corrected CRCK, CHEK, CRC-32/ISO-HDLC, SUM8, SUM16, KERM6 and KERM12. CRCKSUM.COM supersedes the developing CRC.COM name; internal source/tool paths retain `crc` to preserve continuity. Historical CRCK is an intentionally preserved nonstandard calculation; do not replace it with a mathematically conventional CRC.
 
-CRC is a streaming Z80 transient using ordinary CP/M 2.2 BDOS services. Support the BetterCP/M cpmsim and TRS-80 Model 4 targets, files larger than 64 KiB, and the existing extended drive/user namespace. Do not change OS interfaces or require a resident service, terminal personality or screen-control protocol. Input files and reference lists are read-only. Only requested output lists and their transaction files may be changed.
+CRCKSUM is a streaming Z80 transient using ordinary CP/M 2.2 BDOS services. Support the BetterCP/M cpmsim and TRS-80 Model 4 targets, files larger than 64 KiB, and the existing extended drive/user namespace. Do not change OS interfaces or require a resident service, terminal personality or screen-control protocol. Input files and reference lists are read-only. Only requested output lists and their transaction files may be changed.
 
-No additive checksum, Fletcher, Adler, cryptographic hash, archive-member calculation, recursive host directory handling, list editing or automatic repair is included. CHECKSUM.COM and HASH.COM are not specified here.
+Fletcher, Adler, cryptographic hashes, archive-member calculation, recursive host directory handling, list editing and automatic repair are outside this specification. HASH.COM is not specified here.
 
 Repository references:
 
@@ -22,9 +22,9 @@ Repository references:
 ## 2. Command contract
 
 ```text
-CRC [options] [filespec ...] [options]
+CRCKSUM [options] [filespec ...] [options]
 
-/CRCK  /CRCK5  /CHEK  /CRC32
+/CRCK  /CRCK5  /CHEK  /CRC32  /SUM8  /SUM16  /KERM6  /KERM12
 /FILE=filespec  /LOCAL=filename  /LEGACY
 /CHECK[=filename]  /40  /HELP  /VER
 ```
@@ -37,6 +37,10 @@ Options may precede, separate or follow operands. Names are case-insensitive. An
 | `/CRCK5` | Select corrected CRCK. The 5 is a family label, not a CRC width. |
 | `/CHEK` | Select the CHEK-compatible calculation. |
 | `/CRC32` | Select CRC-32/ISO-HDLC. |
+| `/SUM8` | Select the unsigned byte sum modulo 256. |
+| `/SUM16` | Select the unsigned byte sum modulo 65536. |
+| `/KERM6` | Select the Kermit type-1 six-bit checksum applied to the whole file. |
+| `/KERM12` | Select the Kermit type-2 twelve-bit checksum applied to the whole file. |
 | `/FILE=filespec` | Generate one master list at an explicit destination; a single-DU qualifier is allowed. Unqualified destination uses the original logged DU. |
 | `/LOCAL=filename` | Generate one list of this name in each selected target DU. A DU qualifier is an error. |
 | `/LEGACY` | Force historical CRCK alone and historical saved-list formatting, including double spacing. Other algorithm switches are ignored regardless of order. |
@@ -45,7 +49,7 @@ Options may precede, separate or follow operands. Names are case-insensitive. An
 | `/40` | Use the stacked screen layout; does not change saved lists. |
 | `/HELP`, `/VER` | Common help and metadata-only queries. |
 
-Without algorithm switches, calculation selects all four algorithms. With one or more algorithm switches, select their union, not the last algorithm mentioned. `/LEGACY` overrides this selection after parsing. Repeated flags are harmless. For repeated value options, validate every occurrence and use the last valid value; bare `/CHECK` does not erase an explicit reference filename.
+Without algorithm switches, calculation selects all eight algorithms. With one or more algorithm switches, select their union, not the last algorithm mentioned. `/LEGACY` overrides this selection after parsing. Repeated flags are harmless. For repeated value options, validate every occurrence and use the last valid value; bare `/CHECK` does not erase an explicit reference filename.
 
 `/FILE=` and `/LOCAL=` may be combined. Both require an unambiguous CP/M 8.3 destination filename; no wildcards or DU sets. `/CHECK=filename` also requires an unambiguous name. A colon/DU qualification on `/CHECK=` or `/LOCAL=` is an explicit command-line error: abort before traversal, file processing or output creation; do not strip or silently ignore it.
 
@@ -62,11 +66,11 @@ Use the shared extended DU/filespec parser and its 512-bit/64-byte selection bit
 Examples:
 
 ```text
-CRC
-CRC B3:FILE.TXT
-CRC B[1,3,4-5]:*.COM C7:*.TXT
-CRC /CHECK B[1-3]:FILE.TXT
-CRC /CHECK B[1,3,4-5]:
+CRCKSUM
+CRCKSUM B3:FILE.TXT
+CRCKSUM B[1,3,4-5]:*.COM C7:*.TXT
+CRCKSUM /CHECK B[1-3]:FILE.TXT
+CRCKSUM /CHECK B[1,3,4-5]:
 ```
 
 Process separate filespec operands in command-line order, assigning each DU to its first encounter. Within one extended selector, retain shared canonical drive-major/user-minor enumeration; the textual order of bracket terms does not override specification 208. Union all filename selections for a DU before processing it. Each DU produces one section and each physical logical file is processed once, despite overlapping operands, duplicate terms or multiple extent entries.
@@ -112,13 +116,39 @@ Width 16; normal polynomial `1021h`; initial value `0000h`; no reflection; final
 
 CRC-32/ISO-HDLC: width 32; normal polynomial `04C11DB7h`; initial value `FFFFFFFFh`; reflected input and output; final XOR `FFFFFFFFh`. A reflected implementation uses right shifts and polynomial `EDB88320h`. Print the conventional numerical value as eight hex digits, most significant digit first; do not byte-reverse the printed result or add a second reflection to a reflected implementation.
 
-### 5.5 Independent acceptance vectors
+### 5.5 Additive sums (`SUM8`, `SUM16`)
 
-| Exact input | CRCK | CRCK5 | CHEK | CRC32 |
-| --- | --- | --- | --- | --- |
-| Empty byte stream | `0000` | `0000` | `0000` | `00000000` |
-| ASCII `123456789`, nine bytes | `53C5` | `0FB3` | `31C3` | `CBF43926` |
-| Same nine bytes followed by 119 bytes of `1Ah` | `A687` | `5D45` | `E447` | `2F263492` |
+Initialize to zero; add each unsigned byte once. SUM8 retains the low eight bits;
+SUM16 retains the low sixteen bits, including carries from the low byte. There is
+no final complement, carry folding, word grouping or XOR. Print SUM8 as two hex
+digits and SUM16 as four. Their historical precedents include the XMODEM block
+sum and SQ/USQ data sum; whole-file coverage here follows section 4.
+
+### 5.6 Kermit sums (`KERM6`, `KERM12`)
+
+Let `s` be the unsigned arithmetic sum of all input bytes. KERM6 is
+`(s + ((s & C0h) >> 6)) & 3Fh`. Only bits 6 and 7 are folded into the low six;
+do not repeatedly fold higher carries or substitute a simple modulo-64 sum.
+KERM12 is `s & 0FFFh`. Bounded byte/word sums are sufficient to calculate both.
+Print KERM6 as two uppercase hex digits (`00`–`3F`) and KERM12 as three
+(`000`–`FFF`), with leading zeros.
+
+These reproduce Kermit's type-1 and type-2 checksum arithmetic over the file's
+stored bytes, including high-bit bytes and record padding. They do not create
+packets, add LEN/SEQ/TYPE fields, quote data, reset at packet boundaries, strip
+parity, or apply the printable `tochar()` wire encoding. Consequently these are
+whole-file checks, not predictions of a Kermit transfer's packet check bytes.
+The controlling arithmetic is documented in the
+[Kermit packet reference](https://www.kermitproject.org/kpackets.html#blockchecks)
+and the [Kermit Protocol Manual](https://www.kermitproject.org/kproto.pdf).
+
+### 5.7 Independent acceptance vectors
+
+| Exact input | CRCK | CRCK5 | CHEK | CRC32 | SUM8 | SUM16 | KERM6 | KERM12 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Empty byte stream | `0000` | `0000` | `0000` | `00000000` | `00` | `0000` | `00` | `000` |
+| ASCII `123456789`, nine bytes | `53C5` | `0FB3` | `31C3` | `CBF43926` | `DD` | `01DD` | `20` | `1DD` |
+| Same nine bytes followed by 119 bytes of `1Ah` | `A687` | `5D45` | `E447` | `2F263492` | `F3` | `0DF3` | `36` | `DF3` |
 
 The nine-byte case tests the routines, not a nine-byte CP/M file length. The padded case tests real record coverage. Historical file anchors from HUMONGOUS's restored SIG/M Volume 310:
 
@@ -133,18 +163,18 @@ Each native DU section begins with the informational comment, a column header an
 
 ```text
 ; BetterCP/M CRC list
-NAME     EXT  RECS  CRCK  CRCK5  CHEK  CRC32
--------- ---  ----  ----  -----  ----  --------
-CATALOG  035    24  CBBC   0FB3  31C3  CBF43926
+NAME     EXT  RECS  CRCK  CRCK5  CHEK  CRC32     SUM8  SUM16  KERM6  KERM12
+-------- ---  ----  ----  -----  ----  --------  ----  -----  -----  ------
+TEST     DAT     1  A687   5D45  E447  2F263492    F3   0DF3     36     DF3
 ```
 
-The row is illustrative, not a claim that those four values belong to a real CATALOG.035. The filename contains no dot: eight left-aligned basename positions, one space, then three left-aligned extension positions. Blank extension positions remain blank. There is no unlabeled extension field: the labels are `NAME` and `EXT`.
+The row illustrates formatting; its values are for a one-record padded `123456789` fixture. The filename contains no dot: eight left-aligned basename positions, one space, then three left-aligned extension positions. Blank extension positions remain blank. There is no unlabeled extension field: the labels are `NAME` and `EXT`.
 
 Separate later columns with two spaces. Header labels are left-aligned over their dash fields. Numeric values are right-aligned to the right edge of the dash fields, not to the end of the header labels. The five-character CRCK5 field therefore has one leading space before a four-digit result. RECS has a minimum four-character width; determine a sufficient width for the complete DU section before emitting its separator. Keep positions stable within that section; never let a wider value spill into the next field. Different DU sections may have different RECS widths.
 
-With `/CRCK /CHEK` the columns are `NAME EXT RECS CRCK CHEK`. Omit unselected algorithm columns. Writer order is always CRCK, CRCK5, CHEK, CRC32. The reader identifies algorithms by header labels and accepts any algorithm order.
+With `/CRCK /CHEK` the columns are `NAME EXT RECS CRCK CHEK`. Omit unselected algorithm columns. Writer order is always CRCK, CRCK5, CHEK, CRC32, SUM8, SUM16, KERM6, KERM12. The reader identifies algorithms by header labels and accepts any algorithm order.
 
-The separator's dash runs define field starts and widths. Parse native data by these columns, not by whitespace splitting. Associate the header labels with their fields. Require NAME width 8, EXT width 3, a decimal RECS field, at least one recognized algorithm column, and sufficient widths for each declared result. Left/right padding within numeric fields is permitted on input, but their trimmed values must contain exactly four or eight hex digits as appropriate. Reject missing values, overflow, unknown/duplicate columns and nonspace garbage between fields or after the final field. Accept hex letters in either case.
+The separator's dash runs define field starts and widths. Parse native data by these columns, not by whitespace splitting. Associate the header labels with their fields. Require NAME width 8, EXT width 3, a decimal RECS field, at least one recognized algorithm column, and sufficient widths for each declared result. Left/right padding within numeric fields is permitted on input, but their trimmed values must contain exactly the documented two, three, four or eight hex digits as appropriate, with KERM6 limited to 3Fh. Reject missing values, overflow, unknown/duplicate columns and nonspace garbage between fields or after the final field. Accept hex letters in either case.
 
 Readers skip blank lines and lines whose first nonblank character is `;`. A repeated valid header and separator starts a fresh section and replaces the previous column map. Validate both lines together before accepting subsequent rows; a malformed header or separator is a list error, not an ignored comment. The title and separator are not file records. Do not silently skip malformed data rows. A header cannot be confused with a data file named NAME because recognition also requires the column labels and corresponding separator.
 
@@ -209,7 +239,7 @@ Detect format from content rather than filename alone. Support native tables (in
 
 Recognize `--> FILE:  ` followed by padded dotted 8.3 name and `CRC = HH HH`. Accept the actual TAB separators, space-expanded equivalents and single or double spacing. The historical CRC label means historical CRCK. Accept a missing presentation prefix on otherwise unambiguous filename/label records as discussed, but never require old readers to accept such output.
 
-Also retain input support for the earlier discussed labelled extension: fields `CRC`, `CRCK5`, `CHEK`, `CRC32` may appear in any order after the filename. CRC uses separated historical bytes; accept separated or contiguous four-digit forms for recognized 16-bit labelled fields and eight contiguous digits for CRC32. This is input compatibility, not the chosen native writer format. Reject unknown or repeated algorithm fields rather than guess. This does not promise compatibility with every historical utility's display transcript.
+Also retain input support for the earlier discussed labelled extension: fields `CRC`, `CRCK5`, `CHEK`, `CRC32`, `SUM8`, `SUM16`, `KERM6`, `KERM12` may appear in any order after the filename. CRC uses separated historical bytes; accept separated or contiguous four-digit forms for recognized 16-bit labelled fields and eight contiguous digits for CRC32. SUM8 and KERM6 use two contiguous digits; KERM12 uses three. SUM16 accepts the same separated or contiguous four-digit forms as other 16-bit fields. This is input compatibility, not the chosen native writer format. Reject unknown or repeated algorithm fields rather than guess. This does not promise compatibility with every historical utility's display transcript.
 
 ### 10.2 SIG/M catalogs
 

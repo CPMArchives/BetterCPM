@@ -5112,7 +5112,7 @@
         "tools/build_native_trs80.py"
       ]
     },
-    "utility:CRC": {
+    "utility:CRCKSUM": {
       "status": "tracked-conservative",
       "target": "z80pack",
       "targets": [

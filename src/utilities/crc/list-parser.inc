@@ -2,7 +2,7 @@
 ; text is bounded to 255 columns; malformed entries never become comments.
 PARSELIN:
         LD HL,ENAME
-        LD BC,27
+        LD BC,33
         CALL ZERO
         LD HL,LISTLINE
         CALL SKIPSPAC
@@ -88,6 +88,7 @@ PARSESEP:
         XOR A
         LD (MAPCOUNT),A
         LD (MAPSEEN),A
+        LD (MAPSEEN+1),A
         LD IX,COLUMNMA
         LD HL,LISTLINE
         LD C,0
@@ -100,7 +101,7 @@ SEPSPACE:
         CP '-'
         JP NZ,PARSEERR
         LD A,(MAPCOUNT)
-        CP 7
+        CP 11
         JP NC,PARSEERR
         LD (IX+0),C
         LD B,0
@@ -120,8 +121,14 @@ SEPDASH:
         ADD HL,DE
         CALL COPYTRIM
         CALL COLUMNID
-        JR C,SEPBADPO
+        JP C,SEPBADPO
         LD (IX+2),A
+        LD HL,MAPSEEN
+        CP 9
+        JR C,SEPIDLOW
+        INC HL
+        SUB 8
+SEPIDLOW:
         LD C,A
         LD B,1
 SEPIDBIT:
@@ -130,29 +137,37 @@ SEPIDBIT:
         SLA B
         JR SEPIDBIT
 SEPIDREA:
-        LD A,(MAPSEEN)
+        LD A,(HL)
         AND B
-        JR NZ,SEPBADPO
-        LD A,(MAPSEEN)
+        JP NZ,SEPBADPO
+        LD A,(HL)
         OR B
-        LD (MAPSEEN),A
+        LD (HL),A
         LD A,(IX+2)
         CP 1
         JR NZ,SEPEXT
         LD A,(IX+1)
         CP 8
-        JR NZ,SEPBADPO
+        JP NZ,SEPBADPO
         JR SEPVALID
 SEPEXT:
         CP 2
         JR NZ,SEPNUM
         LD A,(IX+1)
         CP 3
-        JR NZ,SEPBADPO
+        JP NZ,SEPBADPO
         JR SEPVALID
 SEPNUM:
         CP 3
         JR Z,SEPVALID
+        LD B,2
+        CP 10
+        JR Z,SEPHEXWI
+        CP 8
+        JR Z,SEPHEXWI
+        LD B,3
+        CP 11
+        JR Z,SEPHEXWI
         LD B,4
         CP 7
         JR NZ,SEPHEXWI
@@ -160,7 +175,7 @@ SEPNUM:
 SEPHEXWI:
         LD A,(IX+1)
         CP B
-        JR C,SEPBADPO
+        JP C,SEPBADPO
 SEPVALID:
         LD HL,HEADERCO
         LD E,(IX+0)
@@ -207,7 +222,10 @@ SEPDONE:
         CP 7
         JP NZ,PARSEERR
         LD A,(MAPSEEN)
-        AND 078H
+        AND 0F8H
+        LD B,A
+        LD A,(MAPSEEN+1)
+        OR B
         JP Z,PARSEERR
         LD A,1
         LD (LISTFORM),A
@@ -234,7 +252,7 @@ COLSKIP:
         JR NZ,COLSKIP
         INC C
         LD A,C
-        CP 8
+        CP 12
         JR C,COLNEXT
         SCF
         RET
@@ -443,13 +461,9 @@ SHIFTNUM:
         INC HL
         RL (HL)
         RET
-; B trimmed hex digit count, HL text, PARSEALG 0..3. Fixed conventional hex.
+; B trimmed hex digit count, HL text, PARSEALG 0..7. Fixed conventional hex.
 HEXFIELD:
-        LD A,(PARSEALG)
-        LD C,4
-        CP 3
-        JR NZ,HFWIDTH
-        LD C,8
+        CALL HEXWIDTH
 HFWIDTH:
         LD A,B
         CP C
@@ -474,14 +488,17 @@ HFMASK:
         LD A,(EMASK)
         OR E
         LD (EMASK),A
+        PUSH HL
         LD A,(PARSEALG)
-        ADD A,A
         LD E,A
         LD D,0
-        PUSH HL
+        LD HL,ALGOFFSE
+        ADD HL,DE
+        LD E,(HL)
         LD HL,EVALUES
         ADD HL,DE
         LD A,C
+        INC A
         SRL A
         LD B,A
         LD E,A
@@ -489,6 +506,24 @@ HFMASK:
         ADD HL,DE
         EX DE,HL
         POP HL
+        LD A,(PARSEALG)
+        CP 6
+        JR NZ,HFK12
+        CALL NIBBLE
+        RET C
+        CP 4
+        CCF
+        RET C
+HFK12:
+        LD A,(PARSEALG)
+        CP 7
+        JR NZ,HFBYTE
+        CALL NIBBLE
+        RET C
+        DEC DE
+        LD (DE),A
+        INC HL
+        DEC B
 HFBYTE:
         CALL NIBBLE
         RET C
@@ -507,6 +542,19 @@ HFBYTE:
         DJNZ HFBYTE
         OR A
         RET
+HEXWIDTH:
+        PUSH HL
+        PUSH DE
+        LD A,(PARSEALG)
+        LD E,A
+        LD D,0
+        LD HL,HFCOUNTS
+        ADD HL,DE
+        LD C,(HL)
+        POP DE
+        POP HL
+        RET
+HFCOUNTS: DB 4,4,4,8,2,4,2,3
 NIBBLE:
         LD A,(HL)
         CP '0'
@@ -683,10 +731,8 @@ LABELW01:
         LD (PARSEALG),A
         LD HL,(HPTR)
         LD DE,HEXTEXT
-        LD B,4
-        CP 3
-        JR NZ,LABELHEX
-        LD B,8
+        CALL HEXWIDTH
+        LD B,C
 LABELHEX:
         ; 16-bit values may contain whitespace between the two bytes.
         CALL NIBBLE
@@ -701,6 +747,12 @@ LABELH01:
         LD A,(PARSEALG)
         CP 3
         JR Z,LABELHEX
+        CP 4
+        JR Z,LABELHEX
+        CP 6
+        JR Z,LABELHEX
+        CP 7
+        JR Z,LABELHEX
         LD A,B
         CP 2
         JR NZ,LABELHEX
@@ -709,11 +761,8 @@ LABELH01:
 LABELH02:
         LD (HPTR),HL
         LD HL,HEXTEXT
-        LD B,4
-        LD A,(PARSEALG)
-        CP 3
-        JR NZ,LABELCON
-        LD B,8
+        CALL HEXWIDTH
+        LD B,C
 LABELCON:
         CALL HEXFIELD
         RET C
@@ -942,13 +991,14 @@ CATHNAME: DB 'NAME'
 CATCRC: DB 0
 CATORDER: DB 0
 CATSIZEF: DB 0
-COLUMNNA: DB 'NAME',0,'EXT',0,'RECS',0,'CRCK',0,'CRCK5',0,'CHEK',0,'CRC32',0
+COLUMNNA: DB 'NAME',0,'EXT',0,'RECS',0,'CRCK',0,'CRCK5',0,'CHEK',0,'CRC32',0,'SUM8',0,'SUM16',0,'KERM6',0,'KERM12',0
+ALGOFFSE: DB 0,2,4,6,10,11,13,14
 LEGCRC: DB 'CRC',0
 PARSESTA: DW 0
 HEADERCO: DS 256
-COLUMNMA: DS 21
+COLUMNMA: DS 33
 MAPCOUNT: DB 0
-MAPSEEN: DB 0
+MAPSEEN: DS 2
 COLLEFT: DB 0
 FIELDTEX: DS 256
 FIELDSTA: DW 0

@@ -21,7 +21,7 @@ def main():
     listing = (ROOT/'build/utilities/crc.lst').read_text()
     symbols = {n:int(next(x[:4] for x in listing.splitlines() if re.search(r'\b'+n+':',x)),16)
                for n in ('PARSELIN','LISTLINE','LISTFORM','LISTPEND','ENAME','EMASK','EVALUES','CATCRC')}
-    binary = (ROOT/'build/utilities/CRC.COM').read_bytes()
+    binary = (ROOT/'build/utilities/CRCKSUM.COM').read_bytes()
     samples = sorted(set(a.corpus.glob('sigmv*/CRCKLIST.*')) |
                      set(a.corpus.glob('sigmv*/CRCKFILE.*')) |
                      set(a.corpus.glob('sigmv*/-CATALOG.*')))

@@ -138,6 +138,12 @@ FIELDNEX:
         LD B,(IX+4)
         LD C,B
         SLA C
+        LD A,(IX+3)
+        CP 14
+        JR NZ,FIELDDIG
+        DEC C
+FIELDDIG:
+        LD A,(IX+2)
         SUB C
         CALL PAD
         LD HL,CVALUES
@@ -145,7 +151,7 @@ FIELDNEX:
         LD D,0
         ADD HL,DE
         LD B,(IX+4)
-        CALL HEXVALUE
+        CALL FIELDHEX
         JR FIELDSKI
 FIELDLAB:
         LD L,(IX+0)
@@ -162,7 +168,7 @@ FIELDSKI:
         LD A,(FIELDBIT)
         ADD A,A
         LD (FIELDBIT),A
-        CP 16
+        OR A
         JR NZ,FIELDNEX
         RET
 PAD:
@@ -211,7 +217,7 @@ STACKNEX:
         LD D,0
         ADD HL,DE
         LD B,(IX+4)
-        CALL HEXVALUE
+        CALL FIELDHEX
         CALL ENDLINE
 STACKSKI:
         LD DE,5
@@ -219,7 +225,7 @@ STACKSKI:
         LD A,(FIELDBIT)
         ADD A,A
         LD (FIELDBIT),A
-        CP 16
+        OR A
         JR NZ,STACKNEX
         LD HL,ROWCOPY
         LD DE,LINE
@@ -235,6 +241,10 @@ LABELCRC: DB 'CRCK',0
 LABELC01: DB 'CRCK5',0
 LABELCHE: DB 'CHEK',0
 LABELC02: DB 'CRC32   ',0
+LABELS08: DB 'SUM8',0
+LABELS16: DB 'SUM16',0
+LABELK06: DB 'KERM6',0
+LABELK12: DB 'KERM12',0
 FIELDTAB:
         DW LABELCRC
         DB 4,0,2
@@ -244,8 +254,28 @@ FIELDTAB:
         DB 4,4,2
         DW LABELC02
         DB 8,6,4
+        DW LABELS08
+        DB 4,10,1
+        DW LABELS16
+        DB 5,11,2
+        DW LABELK06
+        DB 5,13,1
+        DW LABELK12
+        DB 6,14,2
 LEGACYPR: DB '--> FILE:  ',0
 LEGACYSU: DB 9,9,'CRC = ',0
 FIELDMOD: DB 0
 FIELDBIT: DB 0
 ROWCOPY: DS 256
+
+; IX descriptor, HL little-endian value, B bytes. KERM12 is three hex digits.
+FIELDHEX:
+        LD A,(IX+3)
+        CP 14
+        JP NZ,HEXVALUE
+        INC HL
+        LD A,(HL)
+        CALL HEXDIGIT
+        DEC HL
+        LD A,(HL)
+        JP HEXBYTE

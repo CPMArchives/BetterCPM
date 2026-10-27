@@ -456,7 +456,7 @@ FILEDIAG:
         LD HL,MSGREAD
         CALL PUTS
         JP ENDLINE
-MSGLOCAT: DB 'CRC: DU unavailable or directory error',13,10,0
+MSGLOCAT: DB 'CRCKSUM: DU unavailable or directory error',13,10,0
 ACTLEFT: DB 0
 SELLEFT: DB 0
 

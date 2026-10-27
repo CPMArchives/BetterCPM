@@ -1,6 +1,6 @@
-; Four independent streaming accumulators. Numerical state is little endian.
+; Eight streaming integrity values. Numerical state is little endian.
 ; CINIT resets, CUPDATE consumes A (destroys AF/BC/DE/HL), CFINISH finalizes.
-; Always calculate all four: checking can discover the recorded subset later.
+; Always calculate all eight: checking can discover the recorded subset later.
 CINIT:
         LD HL,CVALUES
         LD B,6
@@ -15,9 +15,25 @@ CI32:
         LD (HL),A
         INC HL
         DJNZ CI32
+        LD HL,CVALUES+10
+        LD B,3
+        XOR A
+CISUM:
+        LD (HL),A
+        INC HL
+        DJNZ CISUM
         RET
 CUPDATE:
         LD (CBYTE),A
+        LD HL,CVALUES+10
+        ADD A,(HL)
+        LD (HL),A
+        LD HL,(CVALUES+11)
+        LD A,(CBYTE)
+        LD E,A
+        LD D,0
+        ADD HL,DE
+        LD (CVALUES+11),HL
         LD HL,(CVALUES)
         ADD HL,HL
         PUSH AF
@@ -93,6 +109,19 @@ CU16NEXT:
         DJNZ CU16BIT
         RET
 CFINISH:
+        LD A,(CVALUES+10)
+        LD B,A
+        RLCA
+        RLCA
+        AND 3
+        ADD A,B
+        AND 03FH
+        LD (CVALUES+13),A
+        LD HL,(CVALUES+11)
+        LD A,H
+        AND 00FH
+        LD H,A
+        LD (CVALUES+14),HL
         LD HL,CVALUES+6
         LD B,4
 CF32:
@@ -102,5 +131,5 @@ CF32:
         INC HL
         DJNZ CF32
         RET
-CVALUES: DS 10
+CVALUES: DS 16
 CBYTE: DB 0

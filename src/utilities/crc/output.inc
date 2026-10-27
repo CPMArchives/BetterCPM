@@ -680,5 +680,5 @@ WPUSER: DS 4
 WRESPONS: DB 0
 WTEMPLAT: DB 'CRC00000$$$'
 MSGPROMP: DB ' exists.',13,10,'Overwrite? (Y/n/a) ',0
-MSGOUTPU: DB 'CRC: output transaction failed',13,10,0
-MSGRECOV: DB 'CRC: recovery incomplete; retain CRC*.BAK',13,10,0
+MSGOUTPU: DB 'CRCKSUM: output transaction failed',13,10,0
+MSGRECOV: DB 'CRCKSUM: recovery incomplete; retain CRC*.BAK',13,10,0

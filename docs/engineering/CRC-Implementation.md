@@ -1,17 +1,18 @@
-# CRC 1.0 development implementation
+# CRCKSUM 1.0 development implementation
 
-Date: 2026-10-27. Implements the interface approved in PR #528. This is a
+Date: 2026-10-28. Implements PR #528 plus the subsequent maintainer-approved
+CRCKSUM rename and SUM8/SUM16/KERM6/KERM12 additions. This is a
 development candidate, not a Utilities Disk release or completed paired-platform
-acceptance. CRC is integrated in newly built paired candidate images. The
+acceptance. CRCKSUM is integrated in newly built paired candidate images. The
 controlling design is [CRC-Specification.md](CRC-Specification.md).
 
 ## Source and build
 
 `src/utilities/crc.mac` composes modules for command validation, sorted DU
-traversal, four streaming accumulators, display, reference parsing and output
+traversal, eight streaming integrity values, display, reference parsing and output
 transactions. The builder reuses the existing shared DU/filespec/attribute parser
-and RCP FCB builder. The component registry assigns CRC 1.0 revision 001; without
-a qualified baseline the displayed identity remains `CRC 1.0 (001-dev)`.
+and RCP FCB builder. The component registry assigns CRCKSUM 1.0 revision 002; without
+a qualified baseline the displayed identity remains `CRCKSUM 1.0 (002-dev)`.
 
 ```sh
 python3 tools/build_crc.py
@@ -19,19 +20,19 @@ python3 tools/test_crc.py
 python3 tools/build_native_crc.py
 ```
 
-The collection and Utilities Disk builders include CRC. `build/utilities/CRC.COM`, the prepared
-`CRC-NATIVE.MAC`, native-source hash record and component build report are
+The collection and Utilities Disk builders include CRCKSUM. `build/utilities/CRCKSUM.COM`, the prepared
+`CRCKSUM-NATIVE.MAC`, native-source hash record and component build report are
 development outputs. No release disk image, manifest, acceptance receipt or
-qualified baseline is promoted by this change. The package carries CRC's native
+qualified baseline is promoted by this change. The package carries CRCKSUM's native
 source and build provenance alongside the existing full corresponding-source
 archive. Its input closure is checked against that archive. The 25-file 332K
-candidate retains 20K free after allocating 22K to CRC. The Model 4 candidate
+candidate retains 20K free after allocating 22K to CRCKSUM. The Model 4 candidate
 uses the existing 800K data format.
 
 The current COM image has SHA-256
-`039a91f2ce19a233162d92321a9171e1a7a45f744afc1425c7e32a19ded595bb`.
-It occupies 21,508 bytes, including private data and its
-512-byte stack; it loads at 0100h and ends at 5504h. Storage is bounded by
+`7084784ff5e1e7d3a0d603fcbb9ad939a77704e63b1302358356d88ca915de5d`.
+It occupies 22,021 bytes, including private data and its
+512-byte stack; it loads at 0100h and ends at 5705h. Storage is bounded by
 the 127-byte command tail: at most 64 operand tokens, 512 selected DUs, 64
 active filename patterns, fixed line/record buffers and two output streams.
 There is no fixed directory-entry or reference-entry array. Alphabetical
@@ -45,10 +46,25 @@ names. Existing final files remain intact until the temporary is closed. Failed
 promotion restores the old name where possible; failed recovery reports the
 recovery filename. This handles reported failures, not sudden power loss.
 
+SUM8 and SUM16 are the byte sum modulo 256 and 65536. KERM6 derives the
+six-bit Kermit fold from SUM8; KERM12 is SUM16 masked to twelve bits. These
+are whole-file numeric values, not packet framing, quoting or printable wire
+encoding. The native reader now permits eleven columns, tracks their identities
+in two bytes, and accepts the new widths/ranges in any order. The algorithm
+selection mask uses all eight bits. Earlier four-algorithm lists remain readable;
+`/LEGACY` still selects historical CRCK alone.
+
+The public executable and component identity are CRCKSUM. Internal `crc` source
+paths, builder entry points, `--crc-acceptance`, receipt schema keys, native list
+comment and reference discovery names remain stable. CRC.LST is still the first
+automatically discovered reference; the rename does not change user filenames.
+Old CRC development evidence does not qualify the changed binary. The manual
+Model 4 disks prepared before this extension contain the earlier CRC binary.
+
 ## Focused results
 
-- 84 compiled routine and command fixtures pass. They cover the independent algorithm vectors,
-  all four defaults/subsets, queries before DU services, shared selectors,
+- 113 compiled routine and command fixtures pass. They cover the independent algorithm vectors,
+  all eight defaults/subsets, queries before DU services, shared selectors,
   overlapping operands, sorting, fixed-column native lists, reordered algorithm
   columns, blank extensions, legacy bytes, repeated sections and duplicate
   candidates, rounded sizes, discovery/locality, and simultaneous output.
@@ -64,7 +80,7 @@ recovery filename. This handles reported failures, not sudden power loss.
   as the usual size-before-CRC form. Volume 310 yields `136B` and `B06D`.
 - ZSM4/LINK under stock CP/M 2.2 produces a byte-identical COM. Native query,
   generate and check commands pass. The original SIG/M CRC 5.0 executable
-  successfully verifies a `/LEGACY` list produced by the new CRC.
+  successfully verifies a `/LEGACY` list produced by CRCKSUM.
 - Disposable BetterCP/M full-RAM cpmsim media pass calculation and verification
   of both real Volume 310 LBR files, including all four specified anchor values;
   original catalog verification; a 65,792-byte/high-bit fixture crossing 64 KiB;
@@ -96,10 +112,10 @@ launch aborted before boot. Therefore **no Model 4 runtime pass is claimed**.
 The checked-in media test includes the Model 4 historical-anchor, large-file,
 legacy-list and user-31 fixtures for execution in a working emulator session.
 
-Subsequent candidate-image integration checks pass on cpmsim with CRC and
+Subsequent candidate-image integration checks pass on cpmsim with CRCKSUM and
 ZSM4/LINK invoked from the exact Utilities B: image. Native assembly uses
-disposable C:/D: workspace, produces a byte-identical CRC, and leaves Utilities
-B: unchanged. The package test checks both image inventories, CRC native-source
+disposable C:/D: workspace, produces a byte-identical CRCKSUM, and leaves Utilities
+B: unchanged. The package test checks both image inventories, CRCKSUM native-source
 and executable hashes, the complete corresponding-source closure, and refusal
 of incomplete or mismatched acceptance evidence:
 

@@ -38,13 +38,13 @@ def oracle(data):
                 chek = current
             else:
                 corrected = current
-    return (old, corrected, chek, zlib.crc32(data))
+    return (old, corrected, chek, zlib.crc32(data), sum(data) & 255, sum(data) & 65535, ((sum(data) & 255) + ((sum(data) >> 6) & 3)) & 63, sum(data) & 4095)
 
 
 def execute(files=None, tail='', *, caller=(2, 7), keys=b'Y', fault=None,
             cancel_at=None, size_override=None, limit=30000000):
     c = Z80(b'')
-    image = (ROOT/'build/utilities/CRC.COM').read_bytes()
+    image = (ROOT/'build/utilities/CRCKSUM.COM').read_bytes()
     c.mem[0x100:0x100+len(image)] = image
     c.mem[5:8] = b'\xd3\x00\xc9'
     c.mem[0:3] = b'\xc3\xfe\xff'
@@ -195,8 +195,8 @@ def main():
     def total(r, label):
         text = r['text'].split('Overall totals:\r\n')[-1]
         return int(re.search(re.escape(label)+r': (\d+)', text)[1])
-    def native(rows, columns=('CRCK','CRCK5','CHEK','CRC32')):
-        widths = {'CRCK':4,'CRCK5':5,'CHEK':4,'CRC32':8}
+    def native(rows, columns=('CRCK','CRCK5','CHEK','CRC32','SUM8','SUM16','KERM6','KERM12')):
+        widths = {'CRCK':4,'CRCK5':5,'CHEK':4,'CRC32':8,'SUM8':4,'SUM16':5,'KERM6':5,'KERM12':6}
         result = ['; BetterCP/M CRC list',
                   'NAME     EXT  RECS  '+'  '.join(x.ljust(widths[x]) for x in columns),
                   '-------- ---  ----  '+'  '.join('-'*widths[x] for x in columns)]
@@ -206,23 +206,24 @@ def main():
                           '  '.join(values[x].rjust(widths[x]) for x in columns))
         return ('\r\n'.join(result)+'\r\n').encode()
     def values(data):
-        return dict(zip(('CRCK','CRCK5','CHEK','CRC32'),
-                        (f'{x:0{8 if i==3 else 4}X}' for i,x in enumerate(oracle(data)))))
+        return dict(zip(('CRCK','CRCK5','CHEK','CRC32','SUM8','SUM16','KERM6','KERM12'),
+                        (f'{x:0{8 if i==3 else 2 if i in (4,6) else 3 if i==7 else 4}X}' for i,x in enumerate(oracle(data)))))
     # Exercise the actual compiled update routines independently of file logic.
     listing = (ROOT/'build/utilities/crc.lst').read_text()
     symbols = {n:int(next(x[:4] for x in listing.splitlines() if re.search(r'\b'+n+':',x)),16)
                for n in ('CINIT','CUPDATE','CFINISH','CVALUES')}
-    image = (ROOT/'build/utilities/CRC.COM').read_bytes()
-    for raw, expected in ((b'',(0,0,0,0)),(b'123456789',(0x53c5,0xfb3,0x31c3,0xcbf43926)),
-                          (records(b'123456789'),(0xa687,0x5d45,0xe447,0x2f263492)),
-                          (bytes(range(256)),oracle(bytes(range(256))))):
+    image = (ROOT/'build/utilities/CRCKSUM.COM').read_bytes()
+    for raw, expected in ((b'',(0,0,0,0,0,0,0,0)),(b'123456789',(0x53c5,0xfb3,0x31c3,0xcbf43926,0xdd,0x1dd,0x20,0x1dd)),
+                          (records(b'123456789'),(0xa687,0x5d45,0xe447,0x2f263492,0xf3,0xdf3,0x36,0xdf3)),
+                          (bytes(range(256)),oracle(bytes(range(256)))),
+                          (b'\xff'*258,oracle(b'\xff'*258))):
         c = Z80(b'');c.mem[256:256+len(image)] = image
         c.run(symbols['CINIT'])
         for byte in raw:
             c.a=byte;c.run(symbols['CUPDATE'])
         c.run(symbols['CFINISH'])
-        raw_result=bytes(c.mem[symbols['CVALUES']:symbols['CVALUES']+10])
-        actual=tuple(int.from_bytes(raw_result[a:b],'little') for a,b in ((0,2),(2,4),(4,6),(6,10)))
+        raw_result=bytes(c.mem[symbols['CVALUES']:symbols['CVALUES']+16])
+        actual=tuple(int.from_bytes(raw_result[a:b],'little') for a,b in ((0,2),(2,4),(4,6),(6,10),(10,11),(11,13),(13,14),(14,16)))
         assert actual==expected,(actual,expected)
         count += 1
     data = records(b'123456789');v=values(data)
@@ -237,14 +238,16 @@ def main():
     for tail in bad:
         r=run(f,tail);assert 'invalid command' in r['text'] and not set(r['services']) & {15,17,19,21,22,23},(tail,r['text'])
     for flags, cols in (('',tuple(v)),('/CRCK',('CRCK',)),('/CHEK /CRCK',('CRCK','CHEK')),
-                        ('/CRCK5 /CRCK5',('CRCK5',)),('/CRC32',('CRC32',))):
+                        ('/CRCK5 /CRCK5',('CRCK5',)),('/CRC32',('CRC32',)),('/SUM8',('SUM8',)),('/SUM16',('SUM16',)),('/KERM6',('KERM6',)),('/KERM12',('KERM12',)),
+                        ('/KERM12 /SUM8 /KERM6 /KERM12',('SUM8','KERM6','KERM12')),
+                        ('/SUM16 /CRCK /SUM8 /SUM8',('CRCK','SUM8','SUM16'))):
         r=run(f,'/FILE=CRC.LST '+flags)
         saved=r['files'][2,7,name83('CRC.LST')].split(b'\x1a')[0]
         assert saved==native([('NOEXT',0,values(b'')),('TEST.DAT',1,v)],cols),(flags,saved)
         assert total(r,'Lists completed')==1,r['text']
         checked=run({**f,(2,7,'CRC.LST'):saved},'/CHECK')
         assert total(checked,'Files verified')==2 and 'Verification complete:' in checked['text'],checked['text']
-    for flags in ('/LEGACY /CRC32','/CRC32 /LEGACY','/CRCK5 /LEGACY /CHEK'):
+    for flags in ('/LEGACY /CRC32','/CRC32 /LEGACY','/CRCK5 /LEGACY /CHEK','/SUM8 /LEGACY /SUM16','/LEGACY /SUM16 /SUM8','/KERM6 /LEGACY /KERM12'):
         r=run(f,flags+' /FILE=CRC.LST')
         saved=r['files'][2,7,name83('CRC.LST')].split(b'\x1a')[0]
         assert saved==b'\r\n--> FILE:  NOEXT   .   \t\tCRC = 00 00\r\n\r\n--> FILE:  TEST    .DAT\t\tCRC = A6 87\r\n\r\n',saved
@@ -294,12 +297,19 @@ def main():
     assert (2,7,name83('CRC.LST')) not in r['files']
     # Independent reference fixtures, rather than just writer/reader agreement.
     one={(2,7,'TEST.DAT'):data}
-    for ref in (native([('TEST.DAT',1,v)],('CRC32','CHEK','CRCK5','CRCK')),
+    for ref in (native([('TEST.DAT',1,v)],('KERM12','SUM16','CRC32','KERM6','CHEK','SUM8','CRCK5','CRCK')),
                 b'--> FILE:  TEST    .DAT\t\tCRC = A6 87\r\n',
-                b'TEST.DAT CHEK = E447 CRC = A687 CRC32 = 2F263492 CRCK5 = 5D45\n',
+                b'TEST.DAT KERM6 = 36 KERM12 = DF3 SUM8 = F3 SUM16 = 0D F3 CHEK = E447 CRC = A687 CRC32 = 2F263492 CRCK5 = 5D45\n',
                 b'Index Name Size CRC Description\r\n310.01\tTEST    .DAT 1K A6 87 fixture\r\n'):
         r=run({**one,(2,7,'CRC.LST'):ref},'/CHECK')
         assert total(r,'Files verified')==1 and 'Verification complete:' in r['text'],r['text']
+    # Each new checksum independently rejects a mismatch; old four-column lists remain valid.
+    for alg in ('SUM8','SUM16','KERM6','KERM12'):
+        ref=native([('TEST.DAT',1,{**v,alg:'00' if alg in ('SUM8','KERM6') else '000' if alg=='KERM12' else '0000'})],(alg,))
+        r=run({**one,(2,7,'CRC.LST'):ref},'/CHECK /'+alg)
+        assert total(r,'Files failed')==1,r['text']
+    ref=native([('TEST.DAT',1,v)],('CRCK','CRCK5','CHEK','CRC32'))
+    assert total(run({**one,(2,7,'CRC.LST'):ref},'/CHECK'),'Files verified')==1
     wrong={**v,'CRCK':'FFFF','CRC32':'00000000'}
     ref=native([('TEST.DAT',1,wrong)])+b'\r\n'+native([('TEST.DAT',1,v)])
     r=run({**one,(2,7,'CRC.LST'):ref},'/CHECK')
@@ -325,6 +335,11 @@ def main():
                native([('TEST.DAT',1,v)])+b'junk\r\n',
                b'--> FILE:  TEST    .DAT CRC = A687 CHEK = E447 CHEK = E447\n',
                b'--> FILE:  TEST    .DAT BOGUS = A687\n',
+               native([('TEST.DAT',1,v)],('SUM16','SUM16')),
+               native([('TEST.DAT',1,v)],('KERM12','KERM12')),
+               native([('TEST.DAT',1,v)],('KERM6',)).replace(b'36',b'FF'),
+               native([('TEST.DAT',1,v)],('KERM12',)).replace(b'DF3',b'1DF3'),
+               native([('TEST.DAT',1,v)],('SUM8',)).replace(b'F3',b'FFF'),
                b'; empty\n',b'NAME     EXT  RECS  CRCK\nBAD SEPARATOR\n')
     for ref in malformed:
         r=run({**one,(2,7,'CRC.LST'):ref},'/CHECK')

@@ -313,7 +313,7 @@ ENDLINE:
         LD HL,LINE
         CALL TEXT
         JP NL
-MSGCOMMA: DB 'CRC: invalid command; use /HELP',13,10,0
+MSGCOMMA: DB 'CRCKSUM: invalid command; use /HELP',13,10,0
 MSGREAD: DB ' READ ERROR',0
 MSGDONE: DB 'Files calculated: ',0
 TOTALS:
@@ -431,4 +431,4 @@ SUMMODE: DB 0
 SUMLEFT: DB 0
 SUMCOUNT: DW 0
 SUMSNAP: DW 0
-MSGCANCE: DB 'CRC: cancelled; operation incomplete',13,10,0
+MSGCANCE: DB 'CRCKSUM: cancelled; operation incomplete',13,10,0

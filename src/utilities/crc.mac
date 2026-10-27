@@ -1,4 +1,4 @@
-; CRC 1.0: ordinary CP/M 2.2 transient. Prepared by tools/build_crc.py.
+; CRCKSUM 1.0: ordinary CP/M 2.2 transient. Prepared by tools/build_crc.py.
         CSEG
         .PHASE 0103H
 ENTRY:

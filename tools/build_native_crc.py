@@ -33,13 +33,13 @@ def main():
         for drive in 'bcd':
             blank(a.disk_template, disks/f'drive{drive}.dsk')
         run('cpmcp', '-f', 'ibm-3740', str(disks/'drivec.dsk'),
-            str(ROOT/'build/utilities/CRC-NATIVE.MAC'), '0:CRC.MAC')
+            str(ROOT/'build/utilities/CRCKSUM-NATIVE.MAC'), '0:CRCKSUM.MAC')
         for tool in ('ZSM4.COM', 'LINK.COM'):
             run('cpmcp', '-f', 'ibm-3740', str(disks/'drived.dsk'), str(a.tools/tool), '0:'+tool)
         legacy = ''
         if a.legacy_reader:
             run('cpmcp', '-f', 'ibm-3740', str(disks/'drived.dsk'), str(a.legacy_reader), '0:OLDCRC.COM')
-            legacy = '''send -- "CRC FIX.DAT /LEGACY /FILE=CRCKLIST.CRC\\r"
+            legacy = '''send -- "CRCKSUM FIX.DAT /LEGACY /FILE=CRCKLIST.CRC\\r"
 expect "Lists completed: 1"
 expect "B>"
 send -- "D:OLDCRC\\r"
@@ -55,20 +55,20 @@ expect_before timeout {{exit 2}}
 expect "A>"
 send -- "B:\r"
 expect "B>"
-send -- "D:ZSM4 B:CRC=C:CRC\r"
+send -- "D:ZSM4 B:CRCKSUM=C:CRCKSUM\r"
 expect -re {{Errors: +0}}
 expect "B>"
-send -- "D:LINK CRC\\[A\\]\r"
+send -- "D:LINK CRCKSUM\\[A\\]\r"
 expect "CODE SIZE"
 expect "B>"
-send -- "CRC /HELP /VER\r"
-expect "Usage: CRC"
+send -- "CRCKSUM /HELP /VER\r"
+expect "Usage: CRCKSUM"
 expect "B>"
-send -- "CRC FIX.DAT /FILE=CRC.LST\r"
+send -- "CRCKSUM FIX.DAT /FILE=CRC.LST\r"
 expect "A687   5D45  E447  2F263492"
 expect "Lists completed: 1"
 expect "B>"
-send -- "CRC /CHECK FIX.DAT\r"
+send -- "CRCKSUM /CHECK FIX.DAT\r"
 expect "Verification complete:"
 expect "B>"
 {legacy}send -- "\\034"
@@ -79,9 +79,9 @@ expect eof
         (report/'NATIVE-CRC-BUILD.LOG').write_text(transcript)
         if result.returncode:
             raise SystemExit('Native CRC build/runtime failed:\n'+transcript)
-        native = work/'CRC.COM'
-        run('cpmcp', '-f', 'ibm-3740', str(disks/'driveb.dsk'), '0:CRC.COM', str(native))
-        cross = (ROOT/'build/utilities/CRC.COM').read_bytes()
+        native = work/'CRCKSUM.COM'
+        run('cpmcp', '-f', 'ibm-3740', str(disks/'driveb.dsk'), '0:CRCKSUM.COM', str(native))
+        cross = (ROOT/'build/utilities/CRCKSUM.COM').read_bytes()
         (report/'CRC-native.COM').write_bytes(native.read_bytes()[:len(cross)])
         if native.read_bytes()[:len(cross)] != cross:
             mismatch = next(i for i,(x,y) in enumerate(zip(native.read_bytes(),cross)) if x!=y)

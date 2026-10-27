@@ -28,8 +28,8 @@ COMPONENTS.update({name+'.COM':'build/utilities/'+name+'.COM' for name in ('DASM
 COMPONENTS.update({'DASM.TXT':'src/distribution/DASM.TXT','DASMCOPY.TXT':'src/distribution/DASMCOPY.TXT'})
 COMPONENTS.update({'TED.COM':'build/utilities/TED.COM','TED.TXT':'src/distribution/TED.TXT','TEDCOPY.TXT':'src/distribution/TEDCOPY.TXT'})
 COMPONENTS['SEARCH.COM']='build/utilities/SEARCH.COM'
-COMPONENTS['CRC.COM']='build/utilities/CRC.COM'
-PENDING=['TED final paired-media qualification pending','DASM tool set final release qualification pending','SEARCH final paired-media qualification pending','CRC final paired-media qualification pending']
+COMPONENTS['CRCKSUM.COM']='build/utilities/CRCKSUM.COM'
+PENDING=['TED final paired-media qualification pending','DASM tool set final release qualification pending','SEARCH final paired-media qualification pending','CRCKSUM final paired-media qualification pending']
 sha=lambda data:hashlib.sha256(data).hexdigest()
 
 
@@ -151,12 +151,12 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
             report['pending']=[x for x in report['pending'] if not x.startswith('SEARCH ')]
         report['component_acceptance']['SEARCH.COM']=verdict
         report['search_companions']={n:sha(d) for n,d in search_source_companions.items()}
-        verdict={'status':'PENDING_RELEASE_ACCEPTANCE','sha256':sha(files['CRC.COM'])}
+        verdict={'status':'PENDING_RELEASE_ACCEPTANCE','sha256':sha(files['CRCKSUM.COM'])}
         if crc_accepted is not None:
             proof=validate_crc_acceptance(crc_accepted,files,report['target'],data)
             verdict.update(status='PASS',evidence_sha256=sha(crc_acceptance.read_bytes()),paired_system_sha256=proof['system_sha256'])
-            report['pending']=[x for x in report['pending'] if not x.startswith('CRC ')]
-        report['component_acceptance']['CRC.COM']=verdict
+            report['pending']=[x for x in report['pending'] if not x.startswith('CRCKSUM ')]
+        report['component_acceptance']['CRCKSUM.COM']=verdict
         report['crc_companions']={n:sha(d) for n,d in crc_source_companions.items()}
         if dasm_accepted is not None:
             report['pending']=[x for x in report['pending'] if not x.startswith('DASM ')]

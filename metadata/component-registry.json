@@ -996,7 +996,7 @@
       "display_format": "numeric",
       "description": "File Content Search"
     },
-    "utility:CRC": {
+    "utility:CRCKSUM": {
       "kind": "utility",
       "version": "1.0",
       "placement": "Utilities",
@@ -1014,7 +1014,7 @@
       "builders": [
         "tools/build_crc.py"
       ],
-      "revision": 1,
+      "revision": 2,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "tracked-conservative; shared DU/filespec/attribute parser and FCB builder",
@@ -1067,7 +1067,7 @@
     "TED",
     "COMPARE",
     "SEARCH",
-    "CRC"
+    "CRCKSUM"
   ],
   "legacy_subsystem_rows": [
     {

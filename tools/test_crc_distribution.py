@@ -15,9 +15,9 @@ def main():
     p.add_argument('--package', type=Path, required=True)
     a = p.parse_args()
     with zipfile.ZipFile(a.package/'BetterCPM-Utilities-package.zip') as package:
-        native = package.read('CRC-NATIVE.MAC')
-        provenance = json.loads(package.read('CRC-Build-Provenance.json'))
-        binary = (Path(__file__).resolve().parents[1]/'build/utilities/CRC.COM').read_bytes()
+        native = package.read('CRCKSUM-NATIVE.MAC')
+        provenance = json.loads(package.read('CRCKSUM-Build-Provenance.json'))
+        binary = (Path(__file__).resolve().parents[1]/'build/utilities/CRCKSUM.COM').read_bytes()
         assert provenance['artifact']['sha256'] == sha(binary)
         with tarfile.open(fileobj=io.BytesIO(package.read('BetterCPM-TED-SOURCE.tar.gz')),mode='r:gz') as source:
             for name,wanted in provenance['input_record']['inputs']['files'].items():
@@ -27,30 +27,30 @@ def main():
             image = package.read(filename)
             report = json.loads(package.read(filename+'.json'))
             assert report['sha256'] == sha(image)
-            row = next(x for x in report['included'] if x['name']=='CRC.COM')
+            row = next(x for x in report['included'] if x['name']=='CRCKSUM.COM')
             assert row['sha256'] == sha(binary) and row['bytes'] == len(binary)
-            assert report['crc_companions']['CRC-NATIVE.MAC'] == sha(native)
-            assert report['component_acceptance']['CRC.COM']['status'] == 'PENDING_RELEASE_ACCEPTANCE'
-            assert any(x.startswith('CRC ') for x in report['pending'])
+            assert report['crc_companions']['CRCKSUM-NATIVE.MAC'] == sha(native)
+            assert report['component_acceptance']['CRCKSUM.COM']['status'] == 'PENDING_RELEASE_ACCEPTANCE'
+            assert any(x.startswith('CRCKSUM ') for x in report['pending'])
             # An otherwise complete receipt cannot qualify another image,
             # another COM, or a run lacking the native/source/immutability checks.
             good = {'crc_acceptance':'PASS','binary':{'sha256':sha(binary)},
                     'platforms':{target:{'status':'PASS','utilities_sha256':sha(image),
                         'system_sha256':'1'*64,'utilities_unchanged':True,
                         'fixtures_unchanged':True,'native_cross_parity':True}}}
-            validate_acceptance(good,{'CRC.COM':binary},target,image)
+            validate_acceptance(good,{'CRCKSUM.COM':binary},target,image)
             for field in ('status','utilities_sha256','system_sha256','utilities_unchanged',
                           'fixtures_unchanged','native_cross_parity'):
                 bad = copy.deepcopy(good)
                 bad['platforms'][target][field] = 'FAIL' if field=='status' else False
                 try:
-                    validate_acceptance(bad,{'CRC.COM':binary},target,image)
+                    validate_acceptance(bad,{'CRCKSUM.COM':binary},target,image)
                 except ValueError:
                     pass
                 else:
                     raise AssertionError('accepted incomplete proof: '+field)
             try:
-                validate_acceptance(good,{'CRC.COM':binary+b'X'},target,image)
+                validate_acceptance(good,{'CRCKSUM.COM':binary+b'X'},target,image)
             except ValueError:
                 pass
             else:
