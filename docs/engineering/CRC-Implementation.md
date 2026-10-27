@@ -11,8 +11,8 @@ controlling design is [CRC-Specification.md](CRC-Specification.md).
 `src/utilities/crc.mac` composes modules for command validation, sorted DU
 traversal, eight streaming integrity values, display, reference parsing and output
 transactions. The builder reuses the existing shared DU/filespec/attribute parser
-and RCP FCB builder. The component registry assigns CRCKSUM 1.0 revision 002; without
-a qualified baseline the displayed identity remains `CRCKSUM 1.0 (002-dev)`.
+and RCP FCB builder. The component registry assigns CRCKSUM 1.0 revision 003; without
+a qualified baseline the displayed identity remains `CRCKSUM 1.0 (003-dev)`.
 
 ```sh
 python3 tools/build_crc.py
@@ -30,9 +30,9 @@ candidate retains 20K free after allocating 22K to CRCKSUM. The Model 4 candidat
 uses the existing 800K data format.
 
 The current COM image has SHA-256
-`7084784ff5e1e7d3a0d603fcbb9ad939a77704e63b1302358356d88ca915de5d`.
-It occupies 22,021 bytes, including private data and its
-512-byte stack; it loads at 0100h and ends at 5705h. Storage is bounded by
+`2d1c765aba6f0ccca6e028d6f58797afab737f5ce6ca8792d78214584b0e6002`.
+It occupies 22,162 bytes, including private data and its
+512-byte stack; it loads at 0100h and ends at 5792h. Storage is bounded by
 the 127-byte command tail: at most 64 operand tokens, 512 selected DUs, 64
 active filename patterns, fixed line/record buffers and two output streams.
 There is no fixed directory-entry or reference-entry array. Alphabetical
@@ -51,7 +51,10 @@ six-bit Kermit fold from SUM8; KERM12 is SUM16 masked to twelve bits. These
 are whole-file numeric values, not packet framing, quoting or printable wire
 encoding. The native reader now permits eleven columns, tracks their identities
 in two bytes, and accepts the new widths/ranges in any order. The algorithm
-selection mask uses all eight bits. Earlier four-algorithm lists remain readable;
+selection mask uses all eight bits. Explicit selections append ordered field
+descriptors on first occurrence; duplicate switches retain their original
+position. Default selection uses canonical order. The same descriptors drive
+wide/narrow display, saved lists and verification reports. Earlier four-algorithm lists remain readable;
 `/LEGACY` still selects historical CRCK alone.
 
 The public executable and component identity are CRCKSUM. Internal `crc` source
@@ -63,7 +66,7 @@ Model 4 disks prepared before this extension contain the earlier CRC binary.
 
 ## Focused results
 
-- 113 compiled routine and command fixtures pass. They cover the independent algorithm vectors,
+- 120 compiled routine and command fixtures pass. They cover the independent algorithm vectors,
   all eight defaults/subsets, queries before DU services, shared selectors,
   overlapping operands, sorting, fixed-column native lists, reordered algorithm
   columns, blank extensions, legacy bytes, repeated sections and duplicate

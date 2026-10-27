@@ -168,6 +168,8 @@ QUERYPRI:
         OR A
         RET
 COMMAND:
+        LD HL,FIELDTAB
+        LD (ALGWRITE),HL
         XOR A
         LD (TOKINDEX),A
         LD HL,OPERANDS
@@ -193,6 +195,7 @@ CMDOLDAL:
         JR NC,CMDOTHER
 CMDALGIN:
         DEC A
+        LD (CMDALGID),A
         LD B,A
         LD A,1
         JR Z,CMDALGSE
@@ -202,8 +205,12 @@ CMDALGBI:
 CMDALGSE:
         LD B,A
         LD A,(ALGSEL)
+        AND B
+        JP NZ,CMDNEXT
+        LD A,(ALGSEL)
         OR B
         LD (ALGSEL),A
+        CALL APPENDAL
         JP CMDNEXT
 CMDOTHER:
         CP 7
@@ -280,12 +287,24 @@ CMDDEFAU:
         JR NZ,CMDLEGAC
         LD A,255
         LD (ALGSEL),A
+        LD HL,ALGTEMPL
+        LD DE,FIELDTAB
+        LD BC,50
+        LDIR
 CMDLEGAC:
         LD A,(LEGACY)
         OR A
         JR Z,CMDIMPLI
         LD A,1
         LD (ALGSEL),A
+        LD HL,ALGTEMPL
+        LD DE,FIELDTAB
+        LD BC,6
+        LDIR
+        XOR A
+        LD (DE),A
+        INC DE
+        LD (DE),A
 CMDIMPLI:
         LD A,(OPERCOUN)
         OR A
@@ -504,3 +523,28 @@ QVER: DB 0
 VALUEID: DB 0
 DESTDRIV: DB 0
 DESTUSER: DB 0
+
+; Append a newly selected algorithm's descriptor; duplicates never reach here.
+; CMDALGID is the canonical accumulator index (0..7).
+APPENDAL:
+        LD A,(CMDALGID)
+        LD L,A
+        LD H,0
+        ADD HL,HL
+        LD D,H
+        LD E,L
+        ADD HL,HL
+        ADD HL,DE
+        LD DE,ALGTEMPL
+        ADD HL,DE
+        LD DE,(ALGWRITE)
+        LD BC,6
+        LDIR
+        LD (ALGWRITE),DE
+        XOR A
+        LD (DE),A
+        INC DE
+        LD (DE),A
+        RET
+CMDALGID: DB 0
+ALGWRITE: DW 0

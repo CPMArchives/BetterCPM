@@ -120,9 +120,12 @@ LEGEXT:
 FIELDS:
         LD (FIELDMOD),A
         LD IX,FIELDTAB
-        LD A,1
-        LD (FIELDBIT),A
 FIELDNEX:
+        LD A,(IX+0)
+        OR (IX+1)
+        RET Z
+        LD A,(IX+5)
+        LD (FIELDBIT),A
         LD A,(ALGSEL)
         LD B,A
         LD A,(FIELDBIT)
@@ -163,14 +166,9 @@ FIELDDAS:
         LD A,'-'
         CALL REPEATPU
 FIELDSKI:
-        LD DE,5
+        LD DE,6
         ADD IX,DE
-        LD A,(FIELDBIT)
-        ADD A,A
-        LD (FIELDBIT),A
-        OR A
-        JR NZ,FIELDNEX
-        RET
+        JP FIELDNEX
 PAD:
         OR A
         RET Z
@@ -197,9 +195,12 @@ STACKED:
         CALL PUTDEC
         CALL ENDLINE
         LD IX,FIELDTAB
-        LD A,1
-        LD (FIELDBIT),A
 STACKNEX:
+        LD A,(IX+0)
+        OR (IX+1)
+        JR Z,STACKEND
+        LD A,(IX+5)
+        LD (FIELDBIT),A
         LD A,(ALGSEL)
         LD B,A
         LD A,(FIELDBIT)
@@ -220,13 +221,10 @@ STACKNEX:
         CALL FIELDHEX
         CALL ENDLINE
 STACKSKI:
-        LD DE,5
+        LD DE,6
         ADD IX,DE
-        LD A,(FIELDBIT)
-        ADD A,A
-        LD (FIELDBIT),A
-        OR A
-        JR NZ,STACKNEX
+        JR STACKNEX
+STACKEND:
         LD HL,ROWCOPY
         LD DE,LINE
         LD BC,256
@@ -245,23 +243,26 @@ LABELS08: DB 'SUM8',0
 LABELS16: DB 'SUM16',0
 LABELK06: DB 'KERM6',0
 LABELK12: DB 'KERM12',0
-FIELDTAB:
+ALGTEMPL:
         DW LABELCRC
-        DB 4,0,2
+        DB 4,0,2,1
         DW LABELC01
-        DB 5,2,2
+        DB 5,2,2,2
         DW LABELCHE
-        DB 4,4,2
+        DB 4,4,2,4
         DW LABELC02
-        DB 8,6,4
+        DB 8,6,4,8
         DW LABELS08
-        DB 4,10,1
+        DB 4,10,1,16
         DW LABELS16
-        DB 5,11,2
+        DB 5,11,2,32
         DW LABELK06
-        DB 5,13,1
+        DB 5,13,1,64
         DW LABELK12
-        DB 6,14,2
+        DB 6,14,2,128
+        DB 0,0
+; Ordered descriptors followed by a zero pointer; at most eight selections.
+FIELDTAB: DS 50
 LEGACYPR: DB '--> FILE:  ',0
 LEGACYSU: DB 9,9,'CRC = ',0
 FIELDMOD: DB 0

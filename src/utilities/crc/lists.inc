@@ -653,9 +653,12 @@ CANDVAL:
         CALL NEWLINE
         CALL PUTS
         LD IX,FIELDTAB
-        LD A,1
-        LD (DETBIT),A
 CANDVLOP:
+        LD A,(IX+0)
+        OR (IX+1)
+        JP Z,ENDLINE
+        LD A,(IX+5)
+        LD (DETBIT),A
         LD A,(EMATCHMA)
         LD B,A
         LD A,(DETBIT)
@@ -675,14 +678,9 @@ CANDVLOP:
         LD A,' '
         CALL PUT
 CANDVNXT:
-        LD DE,5
+        LD DE,6
         ADD IX,DE
-        LD A,(DETBIT)
-        ADD A,A
-        LD (DETBIT),A
-        OR A
-        JR NZ,CANDVLOP
-        JP ENDLINE
+        JR CANDVLOP
 MSGCAND: DB '  Candidate at line ',0
 MSGRECVA: DB '    Recorded: ',0
 MSGACTVA: DB '    Actual:   ',0

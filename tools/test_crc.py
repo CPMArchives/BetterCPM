@@ -237,10 +237,11 @@ def main():
          'TEST.DAT /LOCAL=TEST.DAT','/LOCAL=B:LST /LOCAL=LST')
     for tail in bad:
         r=run(f,tail);assert 'invalid command' in r['text'] and not set(r['services']) & {15,17,19,21,22,23},(tail,r['text'])
-    for flags, cols in (('',tuple(v)),('/CRCK',('CRCK',)),('/CHEK /CRCK',('CRCK','CHEK')),
+    for flags, cols in (('',tuple(v)),('/CRCK',('CRCK',)),('/CHEK /CRCK',('CHEK','CRCK')),
                         ('/CRCK5 /CRCK5',('CRCK5',)),('/CRC32',('CRC32',)),('/SUM8',('SUM8',)),('/SUM16',('SUM16',)),('/KERM6',('KERM6',)),('/KERM12',('KERM12',)),
-                        ('/KERM12 /SUM8 /KERM6 /KERM12',('SUM8','KERM6','KERM12')),
-                        ('/SUM16 /CRCK /SUM8 /SUM8',('CRCK','SUM8','SUM16'))):
+                        ('/KERM12 /SUM8 /KERM6 /KERM12',('KERM12','SUM8','KERM6')),
+                        ('/SUM16 /CRCK /SUM8 /SUM8',('SUM16','CRCK','SUM8')),
+                        ('/KERM12 /KERM6 /SUM16 /SUM8 /CRC32 /CHEK /CRCK5 /CRCK',tuple(reversed(v)))):
         r=run(f,'/FILE=CRC.LST '+flags)
         saved=r['files'][2,7,name83('CRC.LST')].split(b'\x1a')[0]
         assert saved==native([('NOEXT',0,values(b'')),('TEST.DAT',1,v)],cols),(flags,saved)
@@ -255,6 +256,18 @@ def main():
     r=run(f,'/FILE=CRC.LST /40')
     assert all(len(line)<=40 for line in r['text'].splitlines()),r['text']
     assert r['files'][2,7,name83('CRC.LST')].split(b'\x1a')[0]==native([('NOEXT',0,values(b'')),('TEST.DAT',1,v)])
+    for narrow in ('',' /40'):
+        ordered=run(f,'/FILE=CRC.LST /KERM12 /SUM8 /CRCK'+narrow)
+        if narrow:
+            row=ordered['text'].split('TEST     DAT')[-1]
+            assert row.index('KERM12')<row.index('SUM8')<row.index('CRCK'),row
+        saved=ordered['files'][2,7,name83('CRC.LST')]
+        checked=run({**f,(2,7,'CRC.LST'):saved},'/CHECK /SUM8 /KERM12'+narrow)
+        row=checked['text'].split('TEST     DAT MATCH')[-1]
+        assert row.index('SUM8')<row.index('KERM12'),row
+    wrong_order=native([('TEST.DAT',1,{**v,'SUM8':'00','KERM12':'000'})])
+    result=run({(2,7,'TEST.DAT'):data,(2,7,'CRC.LST'):wrong_order},'/CHECK /KERM12 /SUM8')
+    assert 'KERM12=000 SUM8=00' in result['text'],result['text']
     # Operand DU order, selector canonical order, overlap dedup, sorted names,
     # simultaneous output, and a master/local coincident identity.
     many={(1,3,'Z.DAT'):data,(1,3,'A.DAT'):b'',(1,1,'A.DAT'):data,(2,7,'C.DAT'):data}

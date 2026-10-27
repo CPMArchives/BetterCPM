@@ -44,7 +44,7 @@ CRCKSUM [options] [filespec ...] [options]
 | `/HELP` | Display help without accessing files. |
 | `/VER` | Display the utility's version and revision without accessing files. |
 
-Option names are case-insensitive, and options may appear before, between or after filespecs. Without algorithm switches, calculation displays all eight values. Supplying switches selects their combination: `/CRCK /CHEK` displays those two. Repeated identical switches are harmless. When a value option is repeated, every occurrence must be valid and the last value is used. `/HELP` takes precedence over `/VER`; either query suppresses ordinary command processing.
+Option names are case-insensitive, and options may appear before, between or after filespecs. Without algorithm switches, calculation displays all eight values. Supplying switches selects their combination: `/CRCK /CHEK` displays those two. Explicit algorithm switches also determine output order: `/SUM16 /CRCK /KERM6` puts those three columns in that order. Repeating a switch neither moves nor duplicates its column. This order also applies to the narrow display and verification reports. When a value option is repeated, every occurrence must be valid and the last value is used. `/HELP` takes precedence over `/VER`; either query suppresses ordinary command processing.
 
 `/LEGACY` always selects historical CRCK only. All other algorithm switches are ignored when `/LEGACY` is present, regardless of their order. You do not have to add `/CRCK` as well.
 
@@ -63,7 +63,7 @@ retains the low twelve bits. Results are numeric hexadecimal, not Kermit's
 printable packet encoding. No packet headers or data quoting are included.
 These values therefore do not represent an individual transfer packet's check.
 
-The four new fields follow CRC32 in the order SUM8, SUM16, KERM6, KERM12.
+In the default layout, the four new fields follow CRC32 in the order SUM8, SUM16, KERM6, KERM12.
 They contain two, four, two and three hex digits respectively, right-aligned
 within fields wide enough for their headings. All eight algorithms are selected
 by default; for example, `CRCKSUM B3:*.COM /SUM8 /KERM12` displays just those two.
