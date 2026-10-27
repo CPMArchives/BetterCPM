@@ -1,6 +1,6 @@
 ## CRC file checksums and verification lists
 
-**CRC 1.0 development candidate.** The implementation and focused cpmsim checks are available; Model 4 execution qualification and Utilities Disk release integration remain pending. This chapter does not claim that CRC.COM is present on released Utilities Disk images. The [engineering specification](../engineering/CRC-Specification.md) is the controlling design.
+**CRC 1.0 development candidate.** The implementation and focused cpmsim checks are available; CRC is included in newly built candidate Utilities images; Model 4 execution qualification and release acceptance remain pending. This chapter does not claim that CRC.COM is present on released Utilities Disk images. The [engineering specification](../engineering/CRC-Specification.md) is the controlling design.
 
 CRC answers two related questions: what check values identify these files, and do the files still agree with an earlier list? It calculates four values: the original CP/M CRCK calculation, corrected CRCK, CHEK and CRC-32. You can display them, save a list, or check a directory against a saved reference. No input file is altered.
 

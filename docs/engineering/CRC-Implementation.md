@@ -2,7 +2,8 @@
 
 Date: 2026-10-27. Implements the interface approved in PR #528. This is a
 development candidate, not a Utilities Disk release or completed paired-platform
-acceptance. The controlling design is [CRC-Specification.md](CRC-Specification.md).
+acceptance. CRC is integrated in newly built paired candidate images. The
+controlling design is [CRC-Specification.md](CRC-Specification.md).
 
 ## Source and build
 
@@ -18,10 +19,14 @@ python3 tools/test_crc.py
 python3 tools/build_native_crc.py
 ```
 
-The collection builder includes CRC. `build/utilities/CRC.COM`, the prepared
+The collection and Utilities Disk builders include CRC. `build/utilities/CRC.COM`, the prepared
 `CRC-NATIVE.MAC`, native-source hash record and component build report are
 development outputs. No release disk image, manifest, acceptance receipt or
-qualified baseline is promoted by this change.
+qualified baseline is promoted by this change. The package carries CRC's native
+source and build provenance alongside the existing full corresponding-source
+archive. Its input closure is checked against that archive. The 25-file 332K
+candidate retains 20K free after allocating 22K to CRC. The Model 4 candidate
+uses the existing 800K data format.
 
 The current COM image has SHA-256
 `039a91f2ce19a233162d92321a9171e1a7a45f744afc1425c7e32a19ded595bb`.
@@ -91,8 +96,27 @@ launch aborted before boot. Therefore **no Model 4 runtime pass is claimed**.
 The checked-in media test includes the Model 4 historical-anchor, large-file,
 legacy-list and user-31 fixtures for execution in a working emulator session.
 
+Subsequent candidate-image integration checks pass on cpmsim with CRC and
+ZSM4/LINK invoked from the exact Utilities B: image. Native assembly uses
+disposable C:/D: workspace, produces a byte-identical CRC, and leaves Utilities
+B: unchanged. The package test checks both image inventories, CRC native-source
+and executable hashes, the complete corresponding-source closure, and refusal
+of incomplete or mismatched acceptance evidence:
+
+```sh
+python3 tools/build_utilities_disk.py --build --output build/crc-utilities-candidate
+python3 tools/test_crc_distribution.py --package build/crc-utilities-candidate
+# Add this to test_crc_media.py's arguments to exercise packaged B: tools:
+# --utilities build/crc-utilities-candidate
+```
+
+The sandbox's permission policy rejects an out-of-sandbox emulator launch.
+Desktop automation briefly connected but then lost window/capture access;
+it did not produce a Model 4 execution result. A normal local Terminal session
+can run the checked-in media harness without changing the test contract.
+
 Stack guard checks are not a physical-interrupt worst-case stack proof. The
 directory replay design has no entry-count truncation, but a maximum-size
-physical directory and all 512 DUs were not exercised on hardware. Exact
-paired Utilities Disk placement, capacity, source packaging and release
-acceptance remain separate from this implementation candidate.
+physical directory and all 512 DUs were not exercised on hardware. Paired disk
+placement, capacity, readback and corresponding-source packaging now pass;
+Model 4 runtime and exact paired release acceptance remain pending.
