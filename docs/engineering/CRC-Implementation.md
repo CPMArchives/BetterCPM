@@ -11,8 +11,8 @@ controlling design is [CRC-Specification.md](CRC-Specification.md).
 `src/utilities/crc.mac` composes modules for command validation, sorted DU
 traversal, eight streaming integrity values, display, reference parsing and output
 transactions. The builder reuses the existing shared DU/filespec/attribute parser
-and RCP FCB builder. The component registry assigns CRCKSUM 1.0 revision 003; without
-a qualified baseline the displayed identity remains `CRCKSUM 1.0 (003-dev)`.
+and RCP FCB builder. The component registry assigns CRCKSUM 1.0 revision 004; without
+a qualified baseline the displayed identity remains `CRCKSUM 1.0 (004-dev)`.
 
 ```sh
 python3 tools/build_crc.py
@@ -30,9 +30,9 @@ candidate retains 20K free after allocating 22K to CRCKSUM. The Model 4 candidat
 uses the existing 800K data format.
 
 The current COM image has SHA-256
-`2d1c765aba6f0ccca6e028d6f58797afab737f5ce6ca8792d78214584b0e6002`.
-It occupies 22,162 bytes, including private data and its
-512-byte stack; it loads at 0100h and ends at 5792h. Storage is bounded by
+`7d8c2914413fe029e2c98970b4969f3690df9f6659d62e0c2a0521efccd7fdd5`.
+It occupies 22,123 bytes, including private data and its
+512-byte stack; it loads at 0100h and ends at 576Bh. Storage is bounded by
 the 127-byte command tail: at most 64 operand tokens, 512 selected DUs, 64
 active filename patterns, fixed line/record buffers and two output streams.
 There is no fixed directory-entry or reference-entry array. Alphabetical
@@ -64,9 +64,15 @@ automatically discovered reference; the rename does not change user filenames.
 Old CRC development evidence does not qualify the changed binary. The manual
 Model 4 disks prepared before this extension contain the earlier CRC binary.
 
+The console prints a single compact combined summary, omits zero secondary
+counts and per-DU blocks, and retains failure/incomplete/cancellation status.
+The unused per-DU snapshot storage is removed. Saved lists and checksum
+calculations are unchanged. Revision 003 manual disks remain intact; revision
+004 replacements contain the updated B: executable and D: native source.
+
 ## Focused results
 
-- 120 compiled routine and command fixtures pass. They cover the independent algorithm vectors,
+- 123 compiled routine and command fixtures pass. They cover the independent algorithm vectors,
   all eight defaults/subsets, queries before DU services, shared selectors,
   overlapping operands, sorting, fixed-column native lists, reordered algorithm
   columns, blank extensions, legacy bytes, repeated sections and duplicate

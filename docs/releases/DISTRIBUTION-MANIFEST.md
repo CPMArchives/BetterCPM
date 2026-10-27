@@ -45,7 +45,7 @@ All membership or layout changes require discussion with the maintainer.
 
 ## Utilities Disk
 
-- CRCKSUM.COM: CRCKSUM 1.0 revision 003 development candidate, supporting historical
+- CRCKSUM.COM: CRCKSUM 1.0 revision 004 development candidate, supporting historical
   CRCK, corrected CRCK5, CHEK, CRC-32, SUM8, SUM16, KERM6 and KERM12, native and legacy saved lists, and
   local verification against native lists and original SIG/M catalogs.
   Newly generated candidate images include CRCKSUM with its prepared native source

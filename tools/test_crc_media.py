@@ -92,7 +92,7 @@ def main():
             commands = [(command.replace(b':CRCKSUM',b'B:CRCKSUM'),prompt,wait) for command,prompt,wait in commands]
         text = session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',w/'disks',
                        native_commands+commands,w/'transcript.txt').decode('ascii',errors='replace')
-        assert text.count('Verification complete:')==4,text[-4000:]
+        assert text.count(' verified.')==4,text[-4000:]
         assert '136B   A548  D24B  82A2F154' in text and 'B06D   6B36  C153  DE35205C' in text
         assert expected in text, expected
         for name,payload,destination in files:
@@ -177,7 +177,7 @@ MSG:    DB 13,10,'CRC TEST DONE',13,10,'$'
                 assert (out/'NATIVE.COM').read_bytes()[:len(binary)] == binary
                 assert (w/'b.dmk').read_bytes() == utility_before
                 continue
-            assert 'Verification complete:' in text and f'Files verified: {n}' in text,text
+            assert f'{n} verified.' in text,text
             cpm('cpmcp',f'{user}:CRC.LST',out/'CRC.LST')
             saved = (out/'CRC.LST').read_bytes().split(b'\x1a')[0]
             if step=='history':

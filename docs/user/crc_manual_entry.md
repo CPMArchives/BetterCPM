@@ -187,6 +187,13 @@ Expect separate reports for:
 - **SKIPPED:** no selected algorithm is recorded for the applicable entry.
 - **READ ERROR / LIST ERROR:** verification could not be completed reliably.
 
-Per-DU and overall totals distinguish files from entries and show missing references and other incomplete jobs. Zero verified files is not an all-clear result. Individual matches can be reported even when another file or malformed entry prevents overall success.
+One compact final summary covers all selected DUs. For example:
+
+```text
+1 file calculated; 1 list written.
+12 verified; 1 failed; 2 missing; incomplete.
+```
+
+Zero counters are omitted. File-specific errors remain beside the affected file. A successful check ends with a summary such as `1 verified.` A check with no verified files reports `No files verified; incomplete.` (with any nonzero error counts included). Cancellation ends with `; cancelled.` Individual matches can still appear when another file or malformed entry makes the overall job incomplete. No per-DU counter block or duplicate total follows the checksum rows.
 
 Ctrl-C cancels and reports an incomplete operation. Completed independent output lists remain, but uncommitted output is discarded. CRCKSUM restores your original drive/user selection before returning.

@@ -287,7 +287,9 @@ Keep all /40 headings, prompts and diagnostic lines within 40 columns by wrappin
 
 Verification displays a result for each selected file and enough algorithm/candidate detail to explain failures and matches. Distinguish MATCH, SIZE MISMATCH, CHECKSUM MISMATCH, FILE NOT FOUND, FILE NOT LISTED, SKIPPED, READ ERROR, LIST ERROR and missing/ambiguous reference. Identify native section/entry or line when useful for duplicate/malformed entries.
 
-Print per-DU totals and overall totals: distinct files verified, failed files, missing listed files, unlisted selected files, skipped files/entries, malformed entries, DU/reference failures and output destinations completed/declined/failed. Label file and entry counts separately so duplicates do not inflate verified-file totals. Avoid double-counting a failed candidate as another failed physical file.
+Print one compact combined summary after processing all target DUs. Do not print per-DU counter blocks or duplicate overall totals. In calculation mode, report files calculated and nonzero output/error counts, for example `1 file calculated; 1 list written.` In verification mode, report verified files and nonzero failure/omission counts, for example `12 verified; 1 failed; 2 missing; incomplete.` Omit zero secondary counters and counters irrelevant to the mode. If the primary count is zero, say `No files calculated` or `No files verified` rather than implying success. Keep skipped entries distinct from skipped files and list failures distinct from file failures. Singular and plural nouns must agree with their counts. Saved list contents are unaffected.
+
+Preserve file-specific errors beside the affected file. Append `; incomplete` when verification has any failure, omission, skipped selection or list error, or an internal incomplete condition remains. Append `; cancelled` on cancellation. A successful check needs only its compact summary, such as `1 verified.`; do not add a second success banner. `/40` wraps the console summary within 40 columns.
 
 Report complete verification success only when at least one file was verified and no relevant failure, omission, skipped selection or list error remains. Zero checked files is never proof of success. A matched file may be reported individually even if another file or malformed list entry makes the overall job unsuccessful.
 
@@ -300,7 +302,7 @@ Use bounded buffers and private FCBs. Restore the caller drive/user, DMA and ret
 Before implementation qualification, verify these directly relevant groups:
 
 1. Independent algorithm vectors, real historical catalog anchors, record padding/high bits and files crossing 64 KiB.
-2. Four-default/subset/union selection; LEGACY override in either switch order; query paths and malformed commands before mutation.
+2. Eight-default/subset/union selection; LEGACY override in either switch order; query paths and malformed commands before mutation.
 3. Shared DU grammar, caller inheritance, operand/canonical ordering, overlaps and within-DU sorting.
 4. Native fixed columns, blank extension, right alignment, RECS-width expansion, omitted/reordered algorithm columns and repeated sections.
 5. Exact legacy prefix/TABs/hex byte spacing/double spacing and read compatibility with CRC 5.0 or 6.4 where feasible.

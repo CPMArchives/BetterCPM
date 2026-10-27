@@ -5,10 +5,6 @@ DUJOB:
         LD A,(CANCEL)
         OR A
         JP NZ,RUNEND
-        LD HL,COUNTERS
-        LD DE,SNAPSHOT
-        LD BC,COUNTEND-COUNTERS
-        LDIR
         XOR A
         LD (DUBAD),A
         LD HL,(DUINDEX)
@@ -107,8 +103,6 @@ CALCFAIL:
 CALCDONE:
         CALL WLOCALEN
 DUNEXT:
-        LD A,1
-        CALL SUMMARY
         LD HL,(DUINDEX)
         INC HL
         LD (DUINDEX),HL

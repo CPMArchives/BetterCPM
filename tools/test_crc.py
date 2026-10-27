@@ -182,7 +182,8 @@ def execute(files=None, tail='', *, caller=(2, 7), keys=b'Y', fault=None,
     stack = bytes(c.mem[256+len(image)-512:256+len(image)])
     assert stack[:64] == b'\xff'*64, 'private stack guard touched'
     return dict(text=output.decode('ascii'), files={k: bytes(v) for k, v in disk.items()},
-                services=services, reads=reads, writes=writes)
+                services=services, reads=reads, writes=writes,
+                complete=bool(re.search(r'\d+ verified\.\r\n$',output.decode('ascii'))))
 
 
 def main():
@@ -193,8 +194,15 @@ def main():
         count += 1
         return execute(*args, **kwargs)
     def total(r, label):
-        text = r['text'].split('Overall totals:\r\n')[-1]
-        return int(re.search(re.escape(label)+r': (\d+)', text)[1])
+        patterns={'Files calculated':r'(\d+) files? calculated',
+                  'Files verified':r'(\d+) verified','Files failed':r'(\d+) failed',
+                  'Listed files missing':r'(\d+) missing','Files not listed':r'(\d+) unlisted',
+                  'Files skipped':r'(\d+) skipped','Malformed/list errors':r'(\d+) list errors?',
+                  'DU/reference failures':r'(\d+) DU/reference errors?',
+                  'Lists completed':r'(\d+) lists? written','Lists declined':r'(\d+) lists? declined',
+                  'Lists failed':r'(\d+) lists? failed','Entries skipped':r'(\d+) entr(?:y|ies) skipped'}
+        found=re.search(patterns[label],r['text'].replace('\r\n',' '))
+        return int(found[1]) if found else 0
     def native(rows, columns=('CRCK','CRCK5','CHEK','CRC32','SUM8','SUM16','KERM6','KERM12')):
         widths = {'CRCK':4,'CRCK5':5,'CHEK':4,'CRC32':8,'SUM8':4,'SUM16':5,'KERM6':5,'KERM12':6}
         result = ['; BetterCP/M CRC list',
@@ -247,7 +255,7 @@ def main():
         assert saved==native([('NOEXT',0,values(b'')),('TEST.DAT',1,v)],cols),(flags,saved)
         assert total(r,'Lists completed')==1,r['text']
         checked=run({**f,(2,7,'CRC.LST'):saved},'/CHECK')
-        assert total(checked,'Files verified')==2 and 'Verification complete:' in checked['text'],checked['text']
+        assert total(checked,'Files verified')==2 and checked['complete'],checked['text']
     for flags in ('/LEGACY /CRC32','/CRC32 /LEGACY','/CRCK5 /LEGACY /CHEK','/SUM8 /LEGACY /SUM16','/LEGACY /SUM16 /SUM8','/KERM6 /LEGACY /KERM12'):
         r=run(f,flags+' /FILE=CRC.LST')
         saved=r['files'][2,7,name83('CRC.LST')].split(b'\x1a')[0]
@@ -279,6 +287,7 @@ def main():
         identity=(key[0],key[1],name83(key[2]))
         assert sum(1 for k,pos in r['reads'] if k==identity)==len(payload)//128+1
     assert total(r,'Lists completed')==3,r['text']
+    assert r['text'].endswith('4 files calculated; 3 lists written.\r\n'),r['text']
     for keys in (b'N',b'Y',b'A',b'\x03'):
         old=records(b'ORIGINAL')
         r=run({**f,(2,7,'CRC.LST'):old},'/FILE=CRC.LST',keys=keys)
@@ -315,7 +324,7 @@ def main():
                 b'TEST.DAT KERM6 = 36 KERM12 = DF3 SUM8 = F3 SUM16 = 0D F3 CHEK = E447 CRC = A687 CRC32 = 2F263492 CRCK5 = 5D45\n',
                 b'Index Name Size CRC Description\r\n310.01\tTEST    .DAT 1K A6 87 fixture\r\n'):
         r=run({**one,(2,7,'CRC.LST'):ref},'/CHECK')
-        assert total(r,'Files verified')==1 and 'Verification complete:' in r['text'],r['text']
+        assert total(r,'Files verified')==1 and r['complete'],r['text']
     # Each new checksum independently rejects a mismatch; old four-column lists remain valid.
     for alg in ('SUM8','SUM16','KERM6','KERM12'):
         ref=native([('TEST.DAT',1,{**v,alg:'00' if alg in ('SUM8','KERM6') else '000' if alg=='KERM12' else '0000'})],(alg,))
@@ -334,7 +343,7 @@ def main():
                            (native([('TEST.DAT',1,v)],('CHEK',)),'/CRCK','SKIPPED'),
                            (native([('OTHER.DAT',1,v)]),'','FILE NOT LISTED')):
         r=run({**one,(2,7,'CRC.LST'):ref},'/CHECK '+flag)
-        assert expect in r['text'] and 'Verification complete:' not in r['text'],r['text']
+        assert expect in r['text'] and not r['complete'],r['text']
         if expect=='SIZE MISMATCH':
             assert not [x for x in r['reads'] if x[0][2]==name83('TEST.DAT')],r['reads']
     r=run({**one,(2,7,'CRC.LST'):native([('TEST.DAT',1,v)])},'/CHECK /40')
@@ -356,7 +365,15 @@ def main():
                b'; empty\n',b'NAME     EXT  RECS  CRCK\nBAD SEPARATOR\n')
     for ref in malformed:
         r=run({**one,(2,7,'CRC.LST'):ref},'/CHECK')
-        assert total(r,'Malformed/list errors') and 'Verification complete:' not in r['text'],r['text']
+        assert total(r,'Malformed/list errors') and not r['complete'],r['text']
+    # Summaries keep the checksum rows visible and never repeat per DU.
+    simple=run(one,'/LOCAL=CRC.LST')
+    assert simple['text'].endswith('1 file calculated; 1 list written.\r\n'),simple['text']
+    assert 'totals:' not in simple['text'] and ': 0' not in simple['text'],simple['text']
+    checked=run({**one,(2,7,'CRC.LST'):native([('TEST.DAT',1,v)])},'/CHECK')
+    assert checked['text'].endswith('1 verified.\r\n') and checked['complete'],checked['text']
+    empty=run({},'/CHECK')
+    assert empty['text'].endswith('No files verified; 1 DU/reference error; incomplete.\r\n'),empty['text']
     # Priority, no malformed-reference fallback, ambiguity, locality.
     good=native([('TEST.DAT',1,v)])
     r=run({**one,(2,7,'CRC.LST'):good,(2,7,'CRCKLIST.CRC'):b'bad'},'/CHECK')

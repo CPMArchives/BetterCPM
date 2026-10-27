@@ -40,7 +40,7 @@ def main():
         if a.legacy_reader:
             run('cpmcp', '-f', 'ibm-3740', str(disks/'drived.dsk'), str(a.legacy_reader), '0:OLDCRC.COM')
             legacy = '''send -- "CRCKSUM FIX.DAT /LEGACY /FILE=CRCKLIST.CRC\\r"
-expect "Lists completed: 1"
+expect "1 file calculated; 1 list written."
 expect "B>"
 send -- "D:OLDCRC\\r"
 expect "*Match*"
@@ -66,10 +66,10 @@ expect "Usage: CRCKSUM"
 expect "B>"
 send -- "CRCKSUM FIX.DAT /FILE=CRC.LST\r"
 expect "A687   5D45  E447  2F263492"
-expect "Lists completed: 1"
+expect "1 file calculated; 1 list written."
 expect "B>"
 send -- "CRCKSUM /CHECK FIX.DAT\r"
-expect "Verification complete:"
+expect "1 verified."
 expect "B>"
 {legacy}send -- "\\034"
 expect eof

@@ -315,24 +315,19 @@ ENDLINE:
         JP NL
 MSGCOMMA: DB 'CRCKSUM: invalid command; use /HELP',13,10,0
 MSGREAD: DB ' READ ERROR',0
-MSGDONE: DB 'Files calculated: ',0
+ ; One compact final summary. Counters are retained for accounting, but only
+; nonzero secondary counts are displayed; no per-DU report scrolls the rows.
 TOTALS:
         XOR A
-        CALL SUMMARY
-        LD A,(CANCEL)
+        LD (SUMBAD),A
+        LD A,(INCOMPLE)
         OR A
-        LD HL,MSGCANCE
-        JP NZ,TEXT
+        JR NZ,TOTALBAD
         LD A,(CHECK)
         OR A
-        RET Z
-        LD HL,VERIFIED
-        LD B,4
-        XOR A
-TOTALVN:
-        OR (HL)
-        INC HL
-        DJNZ TOTALVN
+        JR Z,SUMMARY
+        LD IX,SUMVER
+        CALL SUMNONZE
         JR Z,TOTALBAD
         LD HL,FAILED
         LD B,24
@@ -341,94 +336,137 @@ TOTALFN:
         OR (HL)
         INC HL
         DJNZ TOTALFN
-        JR NZ,TOTALBAD
-        LD A,(INCOMPLE)
-        OR A
-        JR NZ,TOTALBAD
-        LD HL,MSGOK
-        JP TEXT
+        JR Z,SUMMARY
 TOTALBAD:
-        LD HL,MSGNOTOK
-        JP TEXT
-; A=0 overall,1 DU delta. Labels and count order remain a single table.
+        LD A,1
+        LD (SUMBAD),A
 SUMMARY:
-        LD (SUMMODE),A
-        LD HL,MSGOVER
+        LD IX,SUMCALC
+        LD HL,SMNOCALC
+        LD A,(CHECK)
         OR A
-        JR Z,SUMTITLE
-        LD HL,MSGDUTOT
-SUMTITLE:
+        JR Z,SUMPRIM
+        LD IX,SUMVER
+        LD HL,SMNOVER
+SUMPRIM:
+        PUSH HL
+        CALL SUMNONZE
+        POP HL
+        JR NZ,SUMPRNUM
         CALL TEXT
-        LD HL,COUNTERS
-        LD (SUMCOUNT),HL
-        LD HL,SNAPSHOT
-        LD (SUMSNAP),HL
+        JR SUMOTHERS
+SUMPRNUM:
+        CALL SUMVALUE
+SUMOTHERS:
         LD IX,SUMTABLE
-        LD A,12
+        LD A,10
         LD (SUMLEFT),A
 SUMNEXT:
-        LD L,(IX+0)
-        LD H,(IX+1)
+        CALL SUMNONZE
+        JR Z,SUMSKIP
+        LD HL,SMSEP
         CALL TEXT
-        LD HL,(SUMCOUNT)
-        LD A,(SUMMODE)
-        OR A
-        JR Z,SUMVALUE
-        LD DE,(SUMSNAP)
-        LD B,4
-        PUSH IX
-        LD IX,NUMVALUE
-        OR A
-SUMSUB:
-        LD A,(DE)
-        LD C,A
-        LD A,(HL)
-        SBC A,C
-        LD (IX+0),A
-        INC HL
-        INC DE
-        INC IX
-        DJNZ SUMSUB
-        POP IX
-        LD HL,NUMVALUE
-SUMVALUE:
-        CALL DECIMAL
-        LD HL,(NUMPTR)
-        CALL TEXT
-        CALL NL
-        LD HL,(SUMCOUNT)
-        LD DE,4
-        ADD HL,DE
-        LD (SUMCOUNT),HL
-        LD HL,(SUMSNAP)
-        ADD HL,DE
-        LD (SUMSNAP),HL
-        INC IX
-        INC IX
+        CALL SUMVALUE
+SUMSKIP:
+        LD DE,6
+        ADD IX,DE
         LD A,(SUMLEFT)
         DEC A
         LD (SUMLEFT),A
         JR NZ,SUMNEXT
+        LD A,(CANCEL)
+        OR A
+        LD HL,SMCANCEL
+        JR NZ,SUMSTATUS
+        LD A,(SUMBAD)
+        OR A
+        LD HL,SMINCOMP
+        CALL NZ,TEXT
+        JR SUMEND
+SUMSTATUS:
+        CALL TEXT
+SUMEND:
+        LD A,'.'
+        CALL CHAR
+        JP NL
+; Descriptor = counter pointer, singular suffix, plural suffix.
+SUMNONZE:
+        LD L,(IX+0)
+        LD H,(IX+1)
+        LD B,4
+        XOR A
+SUMNZ:
+        OR (HL)
+        INC HL
+        DJNZ SUMNZ
         RET
-MSGOVER: DB 'Overall totals:',13,10,0
-MSGDUTOT: DB 'DU totals:',13,10,0
+SUMVALUE:
+        LD L,(IX+0)
+        LD H,(IX+1)
+        LD (SUMCOUNT),HL
+        LD A,(HL)
+        CP 1
+        JR NZ,SUMPLURAL
+        INC HL
+        LD B,3
+        XOR A
+SUMONE:
+        OR (HL)
+        INC HL
+        DJNZ SUMONE
+        JR NZ,SUMPLURAL
+        LD L,(IX+2)
+        LD H,(IX+3)
+        JR SUMWORD
+SUMPLURAL:
+        LD L,(IX+4)
+        LD H,(IX+5)
+SUMWORD:
+        LD (SUMSUFF),HL
+        LD HL,(SUMCOUNT)
+        CALL DECIMAL
+        LD HL,(NUMPTR)
+        CALL TEXT
+        LD HL,(SUMSUFF)
+        JP TEXT
+SUMCALC: DW FILES,SMCALC1,SMCALCS
+SUMVER: DW VERIFIED,SMVER,SMVER
 SUMTABLE:
-        DW MSGDONE,SMVER,SMFAIL,SMMISS,SMUNLIST,SMSKIP,SMLIST,SMDU,SMOUT,SMDCL,SMERR,SMENTRY
-SMVER: DB 'Files verified: ',0
-SMFAIL: DB 'Files failed: ',0
-SMMISS: DB 'Listed files missing: ',0
-SMUNLIST: DB 'Files not listed: ',0
-SMSKIP: DB 'Files skipped: ',0
-SMLIST: DB 'Malformed/list errors: ',0
-SMDU: DB 'DU/reference failures: ',0
-SMOUT: DB 'Lists completed: ',0
-SMDCL: DB 'Lists declined: ',0
-SMERR: DB 'Lists failed: ',0
-SMENTRY: DB 'Entries skipped: ',0
-MSGOK: DB 'Verification complete: all selected files match',13,10,0
-MSGNOTOK: DB 'Verification incomplete or failed',13,10,0
-SUMMODE: DB 0
+        DW FAILED,SMFAIL,SMFAIL
+        DW MISSING,SMMISS,SMMISS
+        DW UNLISTED,SMUNLIST,SMUNLIST
+        DW SKIPPED,SMSKIP,SMSKIP
+        DW LISTERRO,SMLIST1,SMLISTS
+        DW DUERRORS,SMDU1,SMDUS
+        DW OUTDONE,SMOUT1,SMOUTS
+        DW OUTDECLI,SMDCL1,SMDCLS
+        DW OUTERROR,SMERR1,SMERRS
+        DW SKIPENTS,SMENTRY1,SMENTRYS
+SMCALC1: DB ' file calculated',0
+SMCALCS: DB ' files calculated',0
+SMVER: DB ' verified',0
+SMFAIL: DB ' failed',0
+SMMISS: DB ' missing',0
+SMUNLIST: DB ' unlisted',0
+SMSKIP: DB ' skipped',0
+SMLIST1: DB ' list error',0
+SMLISTS: DB ' list errors',0
+SMDU1: DB ' DU/reference error',0
+SMDUS: DB ' DU/reference errors',0
+SMOUT1: DB ' list written',0
+SMOUTS: DB ' lists written',0
+SMDCL1: DB ' list declined',0
+SMDCLS: DB ' lists declined',0
+SMERR1: DB ' list failed',0
+SMERRS: DB ' lists failed',0
+SMENTRY1: DB ' entry skipped',0
+SMENTRYS: DB ' entries skipped',0
+SMNOCALC: DB 'No files calculated',0
+SMNOVER: DB 'No files verified',0
+SMSEP: DB '; ',0
+SMINCOMP: DB '; incomplete',0
+SMCANCEL: DB '; cancelled',0
+SUMBAD: DB 0
 SUMLEFT: DB 0
 SUMCOUNT: DW 0
-SUMSNAP: DW 0
-MSGCANCE: DB 'CRCKSUM: cancelled; operation incomplete',13,10,0
+SUMSUFF: DW 0
