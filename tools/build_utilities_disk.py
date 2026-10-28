@@ -79,6 +79,8 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
     crc_source_companions=crc_companions(artifacts,editor_companions,crc_acceptance)
     from md5sum_distribution import companions as md5sum_companions, validate_acceptance as validate_md5sum_acceptance
     md5sum_source_companions=md5sum_companions(artifacts,editor_companions,md5sum_acceptance)
+    from patch_distribution import companions as patch_companions
+    patch_source_companions=patch_companions(artifacts,editor_companions)
     files={name:(artifacts/path).read_bytes() for name,path in COMPONENTS.items()}
     if not all(files.values()):raise ValueError('empty Utilities artifact')
     accepted=json.loads(ddt_acceptance.read_text()) if ddt_acceptance else None
@@ -176,9 +178,12 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
     # NOAH's matching COM/OVL and notes travel on a companion volume. The
     # 332K primary cannot hold these files alongside the selected tool set.
     from noah_distribution import media as noah_media
-    reports.extend(noah_media(artifacts, noah_acceptance))
+    companion_reports=noah_media(artifacts, noah_acceptance)
+    for _,_,report in companion_reports:
+        report['patch_companions']={n:sha(d) for n,d in patch_source_companions.items()}
+    reports.extend(companion_reports)
     # The complete source companion travels with both images (GPL section 3a).
-    for name,data in {**accompanying,**analysis_companions,**editor_companions,**search_source_companions,**crc_source_companions,**md5sum_source_companions}.items():
+    for name,data in {**accompanying,**analysis_companions,**editor_companions,**search_source_companions,**crc_source_companions,**md5sum_source_companions,**patch_source_companions}.items():
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
     acceptance_files={}
     for label,path in [('DDT',ddt_acceptance),('Toolchain',toolchain_acceptance),('DASM',dasm_acceptance),('TED',ted_acceptance)]:
@@ -207,7 +212,7 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
         (output/(name+'.json')).write_text(json.dumps(report,indent=2)+'\n')
         print(f"{output/name}: PROVISIONAL, {len(report['included'])} files; {len(report['pending'])} pending selections/implementations")
-    package={**accompanying,**analysis_companions,**editor_companions,**search_source_companions,**crc_source_companions,**md5sum_source_companions,**acceptance_files}
+    package={**accompanying,**analysis_companions,**editor_companions,**search_source_companions,**crc_source_companions,**md5sum_source_companions,**patch_source_companions,**acceptance_files}
     for name,data,report in reports:
         package[name]=data
         package[name+'.json']=(output/(name+'.json')).read_bytes()

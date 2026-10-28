@@ -10,7 +10,9 @@ from convert_fdf_image import raw_to_dmk, dmk_to_raw
 
 COMPONENTS = {'NOAH.COM':'build/utilities/NOAH.COM',
               'NOAH.OVL':'build/utilities/NOAH.OVL',
-              'NOAH.TXT':'src/distribution/NOAH.TXT'}
+              'NOAH.TXT':'src/distribution/NOAH.TXT',
+              'PATCH.COM':'build/utilities/PATCH.COM',
+              'PATCH.TXT':'src/distribution/PATCH.TXT'}
 sha = lambda data: hashlib.sha256(data).hexdigest()
 
 
@@ -66,8 +68,8 @@ def media(artifacts, acceptance=None):
         report = {'target':target,'image':image_name(target),'sha256':sha(image),
                   'format':fmt.name,'status':'PROVISIONAL','volume':'NOAH companion Utilities Disk',
                   'included':[{'name':n,'bytes':len(b),'sha256':sha(b)} for n,b in files.items()],
-                  'component_acceptance':{'NOAH.COM':proof},
-                  'pending':[] if receipt else ['NOAH paired-media qualification pending'],
+                  'component_acceptance':{'NOAH.COM':proof,'PATCH.COM':{'status':'PENDING_RELEASE_ACCEPTANCE','sha256':sha(files['PATCH.COM'])}},
+                  'pending':(['NOAH paired-media qualification pending'] if not receipt else [])+['PATCH paired-media qualification pending'],
                   'deferred':['interactive browser','ZIP','LZH/CrLZH selectors'],
                   'validation':'exact file readback, filesystem and DMK/raw round trip PASS; whole release acceptance separate'}
         reports.append((image_name(target),image,report))

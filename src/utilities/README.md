@@ -42,3 +42,14 @@ this directory.
 Its single/compound scope parser and bitmap iterator are qualified by
 `tools/test_du_select.py`, with native assembler parity checked by
 `tools/build_native_du_select.py`. STAT file inspection adopts bracketed selectors; DIR adoption remains pending. Callers supply the selection map and workspace described in the include.
+
+## PATCH verified binary replacements
+
+PATCH is built by `python3 tools/build_patch.py`; its self-contained native source
+is `build/utilities/PATCH-NATIVE.MAC`. On CP/M, copy it as PATCH.MAC and run
+`ZSM4 PATCH=PATCH`, then `LINK PATCH[A]`. The stock CP/M parity/execution runner is
+`tools/build_native_patch.py`; compiled failure-injection tests are in
+`tools/test_patch.py`. The controlling contract and current qualification limits
+are in `docs/engineering/PATCH-Specification.md` and `PATCH-Implementation.md`.
+Candidate Utilities packages put PATCH.COM/PATCH.TXT on the NOAH companion disk,
+not the full primary disk. Model 4 qualification remains pending.

@@ -1,0 +1,23 @@
+PATCH 1.0 -- Verified Binary File Patching
+
+PATCH FIX.PAT [/INPUT=file] [/OUTPUT=file] [/VERBOSE]
+PATCH /HELP
+
+The instruction file names INPUT and OUTPUT, unless overridden above.
+One instruction: 0120: CD 05 00 C9 -> 00 00
+Offsets are hexadecimal FILE byte offsets. OLD verifies the original input;
+NEW replaces its leading bytes and cannot be longer. Write ranges cannot
+overlap. All preflight checks pass before output creation. The original
+input is retained; a separate patched copy is read back and verified fully.
+Stored 128-byte records and padding are preserved.
+
+An existing output asks Overwrite? (y/N/r/?), default No. R chooses a new
+output name; ? explains the choices. Ctrl-C cancels at safe boundaries.
+Protected outputs are refused. Keep any reported backup/recovery files.
+No power-loss atomicity is promised.
+
+PATCH.COM travels on the NOAH companion Utilities disk because the primary
+332K Utilities disk is full. Use C0:PATCH when that companion is in C:.
+This is a development candidate; paired-platform release acceptance is
+pending. See the Utilities manual and engineering qualification record.
+

@@ -24,8 +24,8 @@ class RegistryTests(unittest.TestCase):
                 registry.load(path)
 
     def test_complete_import_and_paths(self):
-        self.assertEqual(len(self.data['components']), 59)
-        self.assertEqual(len(identities()), 46)
+        self.assertEqual(len(self.data['components']), 60)
+        self.assertEqual(len(identities()), 47)
         self.assertEqual(identities()['DDT'], ('1.0', 3))
         self.assertEqual(identities()['PIP'], ('1.0', 30))
         self.assertEqual(identities()['BYE'], ('1.0', 2))

@@ -1,8 +1,8 @@
 # BetterCP/M PATCH.COM 1.0 — Engineering Specification
 
-**Status:** Approved functional engineering specification; implementation and qualification pending\
+**Status:** Implemented development candidate; native/cross and cpmsim qualification recorded separately; Model 4 qualification pending\
 **Target:** BetterCP/M Utilities Disk, CP/M 2.2-compatible Z80 environment\
-**Implementation authorization:** None; this document specifies behavior only\
+**Implementation authorization:** Maintainer instruction after PR #536 merged; see [implementation and qualification notes](PATCH-Implementation.md)\
 **Historical DRI patch translations:** Separate project; not part of the PATCH parser\
 **Repository review:** 2026-10-28; functional design retained, with the integration assessment in Section 11
 
@@ -53,7 +53,7 @@ OUTPUT PROGRAM.NEW
 - The parser shall reject malformed syntax with the patch filename and physical line number before creating an output.
 - Patch instruction count is not arbitrarily capped; process with bounded RAM and multiple passes as necessary.
 
-The patch file is read as CP/M logical records. CR/LF is the normal line terminator; support bare CR and bare LF for portability. A conventional trailing `1Ah` may terminate the *textual instruction file*; this does not change binary input/output semantics. Reject embedded NUL and unsupported control characters in statements. These line-ending/control rules are **proposed integration details**, to be checked against existing BetterCP/M text parsers before implementation.
+The patch file is read as CP/M logical records. CR/LF is the normal line terminator; support bare CR and bare LF for portability. A conventional trailing `1Ah` may terminate the *textual instruction file*; this does not change binary input/output semantics. Reject embedded NUL and unsupported control characters in statements. The implementation accepts these line endings, counts CRLF once, and rejects embedded NUL/unsupported controls before textual EOF. After a `1Ah`, only `00h` or `1Ah` record padding is accepted; other trailing bytes are an error. These text rules never apply to the binary input/output.
 
 ## 4. Replacement semantics
 
@@ -166,7 +166,7 @@ Before qualification, inspect the current repository conventions for `/HELP` and
 
 Do not implement direct DRI/DDT/ASM import in PATCH.COM. Historical DRI corrections will be separately translated into verified native `.PAT` files and may be distributed alongside PATCH.COM after independent qualification.
 
-**Release status:** Functional specification retained for implementation review. This repository addition documents the design only; it makes no implementation, runtime qualification, Utilities-image inclusion or release-acceptance claim.
+**Release status:** Development implementation and candidate-media inclusion are recorded in [PATCH-Implementation.md](PATCH-Implementation.md). Full paired-platform qualification and release acceptance remain pending; this functional contract is not a release receipt.
 
 
 ## 11. Repository assessment — 2026-10-28
@@ -184,24 +184,22 @@ The Utilities manual entry is maintained in
 The approved source document was supplied as
 `BetterCPM_PATCH_Engineering_Specification_v1.0(1).md`.
 
-### Policy details requiring a decision before implementation
+### Implementation policy defaults
 
-These details are not specified in the supplied functional contract. The
-recommendations below are review findings, not newly approved behavior:
+The following review recommendations were adopted as implementation defaults
+when development was authorized after PR #536. They add no switches or actions.
 
-| Detail | Recommended disposition |
+| Detail | Behavior |
 | --- | --- |
-| Ctrl-C during processing, collision prompts and rename entry | Cancel at safe boundaries, restore caller state and apply the same cleanup/restoration rules as a handled failure. Do not interrupt the short backup/install/restore sequence between its recovery steps. Report cancellation without a completed-patch claim. |
-| A patch file containing no replacement statements | Reject before output creation. A nonempty patch whose replacement bytes equal the originals remains valid and reports zero bytes actually changed. |
-| Existing read-only or system output | Refuse replacement with an explicit diagnostic; do not clear protection silently or add protection-override switches in 1.0. Preserve input and patch attributes as well as their bytes. Define new-output attribute policy explicitly before qualification. |
-
-The reviewed manual does not promise behavior for these unresolved cases.
+| Ctrl-C during processing, collision prompts and rename entry | Cancel at safe boundaries, restore caller state and apply handled-failure cleanup. Do not poll between backup/install/restore recovery steps. Report cancellation without a completed-patch claim. |
+| No replacement statements | Reject before output creation. A nonempty patch writing identical bytes is valid and reports zero changed bytes. |
+| Existing read-only or system output | Refuse replacement without clearing protection or adding override switches. Check again before installing. Input/patch data and attributes remain unmodified. |
+| New output attributes | Create an ordinary read/write, directory-visible file. Do not copy input or old-output attributes to the new file. |
 
 ### Implementation audits and qualification details
 
-- Settle the proposed instruction-text EOF/control rules in Section 3 explicitly.
-  In particular, define whether non-padding text after a `1Ah` is an error, and
-  test CRLF as one physical line terminator. Never apply text EOF handling to
+- Apply the instruction-text EOF/control rules in Section 3. Test non-padding
+  bytes after `1Ah` as errors and CRLF as one physical line terminator. Never apply text EOF handling to
   binary input or output.
 - Define wide numeric representation and limits from CP/M 2.2 random-record
   addressing, not from a 16-bit file offset. Bounds must be checked before
@@ -221,8 +219,8 @@ The reviewed manual does not promise behavior for these unresolved cases.
   protection and rollback on disposable media. Do not assume ordinary overwrite
   authorization bypasses CP/M protection or that rename is atomic.
 - Add component identity, builders, corresponding-source packaging and capacity
-  checks during implementation. Do not register a nonexistent executable or
-  claim disk inclusion in this documentation-only change. Current Utilities
-  capacity must be measured again when the binary exists.
+  checks during implementation. Register only actual built artifacts and distinguish candidate inclusion from
+  release acceptance. The implementation notes record current capacity and
+  placement on the NOAH companion volume.
 - Obtain PATCH's own native/cross parity and target runtime evidence. Existing
   CRCKSUM/MD5SUM Model 4 deferrals do not automatically waive PATCH qualification.

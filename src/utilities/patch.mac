@@ -1,0 +1,409 @@
+; PATCH 1.0. FCB descriptors are private and use absolute random-record reads.
+; Every record plan is validated before being consumed. All expected bytes
+; refer to the original file. No complete file/instruction table lives in RAM.
+BDOS EQU 5
+FU EQU 36
+FO EQU 37
+FL EQU 38
+FP EQU 42
+FK EQU 46
+FC EQU 49
+FA EQU 50
+FV EQU 51
+FN EQU 53
+FB EQU 55
+FS EQU 184
+        CSEG
+        .PHASE 0103H
+START:
+        LD (OLDSP),SP
+        LD SP,STKTOP
+        LD HL,STATE
+        LD DE,STATE+1
+        LD BC,STATEEND-STATE-1
+        LD (HL),0
+        LDIR
+        CALL TOKENIZE
+        LD HL,OPHELP
+        CALL QUERY
+        JP Z,HELP
+        LD HL,OPVER
+        CALL QUERY
+        JP Z,VERSION
+        LD C,25
+        CALL SERVICE
+        LD (ODRIVE),A
+        LD C,32
+        LD E,255
+        CALL SERVICE
+        LD (OUSER),A
+        CALL COMMAND
+        LD IX,PATFILE
+        CALL OPENFILE
+        XOR A
+        LD (PHASE),A
+        CALL SCANPATCH
+        LD HL,CVALUES
+        LD DE,PATSIG
+        LD BC,16
+        LDIR
+        LD HL,INFILE
+        LD DE,OUTFILE
+        CALL SAMEFILE
+        JP Z,IDENTERROR
+        LD HL,PATFILE
+        CALL SAMEFILE
+        JP Z,IDENTERROR
+        LD A,(INSET)
+        LD B,A
+        LD A,(OUTSET)
+        AND B
+        JP Z,NAMEERROR
+        LD IX,INFILE
+        CALL OPENFILE
+        LD HL,NINST
+        CALL NZ32
+        JP Z,EMPTYERROR
+        CALL INPUTSIGN
+        LD HL,CVALUES
+        LD DE,INSIG
+        LD BC,16
+        LDIR
+        LD A,1
+        LD (PHASE),A
+        CALL PROCESS
+        LD A,(BADVALID)
+        OR A
+        JP NZ,VALIDERROR
+        CALL COLLISION
+        LD IX,STAGE
+        LD HL,OUTFILE
+        CALL ALLOCATE
+        CALL MAKEFILE
+        LD A,1
+        LD (STAGED),A
+        LD A,2
+        LD (PHASE),A
+        CALL PROCESS
+        LD IX,STAGE
+        CALL CLOSECHECK
+        CALL OPENFILE
+        LD A,3
+        LD (PHASE),A
+        CALL PROCESS
+        LD IX,STAGE
+        CALL CLOSECHECK
+        CALL INSTALL
+        LD HL,SUCCMSG
+        CALL TEXT
+        LD IX,INFILE
+        CALL PRINTFILE
+        LD HL,ARROWMSG
+        CALL TEXT
+        LD IX,OUTFILE
+        CALL PRINTFILE
+        CALL LINE
+        LD HL,INSTMSG
+        CALL TEXT
+        LD HL,NINST
+        CALL DECIMAL
+        LD HL,WRITMSG
+        CALL TEXT
+        LD HL,NWRITE
+        CALL DECIMAL
+        LD HL,CHNGMSG
+        CALL TEXT
+        LD HL,NCHANGE
+        CALL DECIMAL
+        CALL LINE
+        LD HL,INFILE+FL
+        CALL DECIMAL
+        LD HL,VERIFMSG
+        CALL TEXT
+        CALL LINE
+        JP EXIT
+VERSION:
+        LD HL,VERSIONTEXT
+        CALL TEXT
+        JP RETURN
+HELP:
+        LD HL,HELPTEXT
+        CALL TEXT
+        JP RETURN
+; Error jumps discard nested frames but keep all transaction state for cleanup.
+FAIL:
+        LD SP,STKTOP
+        PUSH HL
+        LD HL,ERRORMSG
+        CALL TEXT
+        POP HL
+        CALL TEXT
+        CALL LINE
+        LD A,(INSIDE)
+        OR A
+        JR Z,EXIT
+        CALL LOCATION
+EXIT:
+        LD SP,STKTOP
+        LD IX,PATFILE
+        CALL CLOSEFILE
+        LD IX,INFILE
+        CALL CLOSEFILE
+        LD IX,STAGE
+        CALL CLOSEFILE
+        LD A,(STAGED)
+        OR A
+        JR Z,EXITSTATE
+        LD IX,STAGE
+        CALL DELETEFILE
+        JR NZ,EXITSTATE
+        LD HL,CLEANMSG
+        CALL TEXT
+        CALL PRINTFILE
+        CALL LINE
+EXITSTATE:
+        LD E,0
+ODRIVEX:
+        LD A,(ODRIVE)
+        LD E,A
+        LD C,14
+        CALL SERVICE
+        LD A,(OUSER)
+        LD E,A
+        LD C,32
+        CALL SERVICE
+        LD DE,0080H
+        LD C,26
+        CALL SERVICE
+RETURN:
+        LD SP,(OLDSP)
+        RET
+BADCOMMAND:
+        LD HL,CMDMSG
+        JP FAIL
+SYNTAXERROR:
+        LD A,(INSIDE)
+        OR A
+        JP Z,BADCOMMAND
+        LD HL,SYNTMSG
+        JP FAIL
+IDENTERROR:
+        LD HL,IDENTMSG
+        JP FAIL
+NAMEERROR:
+        LD HL,NAMEMSG
+        JP FAIL
+EMPTYERROR:
+        LD HL,EMPTYMSG
+        JP FAIL
+VALIDERROR:
+        LD HL,VALIDMSG
+        JP FAIL
+RANGEERROR:
+        LD HL,RANGEMSG
+        JP FAIL
+CHANGEDERROR:
+        LD HL,CHANGEDMSG
+        JP FAIL
+CANCEL:
+        LD HL,CANCELMSG
+        JP FAIL
+SERVICE:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        PUSH IX
+        CALL BDOS
+        POP IX
+        POP HL
+        POP DE
+        POP BC
+        RET
+PUT:
+        PUSH AF
+        PUSH BC
+        PUSH DE
+        LD E,A
+        LD C,6
+        CALL SERVICE
+        POP DE
+        POP BC
+        POP AF
+        RET
+TEXT:
+        LD A,(HL)
+        OR A
+        RET Z
+        CALL PUT
+        INC HL
+        JR TEXT
+LINE:
+CRLF:
+        LD A,13
+        CALL PUT
+        LD A,10
+        JP PUT
+UPPER:
+        CP 'a'
+        RET C
+        CP 'z'+1
+        RET NC
+        SUB 32
+        RET
+POLL:
+        LD C,11
+        CALL SERVICE
+        OR A
+        RET Z
+        LD C,6
+        LD E,255
+        CALL SERVICE
+        CP 3
+        JP Z,CANCEL
+        RET
+KEY:
+        LD C,6
+        LD E,255
+        CALL SERVICE
+        OR A
+        JR Z,KEY
+        CP 3
+        JP Z,CANCEL
+        CALL UPPER
+        RET
+ZERO:
+        LD A,B
+        OR C
+        RET Z
+        LD (HL),0
+        INC HL
+        DEC BC
+        JR ZERO
+; @command@
+; @scan@
+; @engine@
+; @transaction@
+; @shared@
+; @fingerprint@
+; @identity@
+OPHELP: DB '/HELP',0
+OPVER: DB '/VER',0
+OPVERBOSE: DB '/VERBOSE',0
+OPINPUT: DB '/INPUT=',0
+OPOUTPUT: DB '/OUTPUT=',0
+DIRINPUT: DB 'INPUT',0
+DIROUTPUT: DB 'OUTPUT',0
+ERRORMSG: DB 'PATCH: ',0
+CMDMSG: DB 'Invalid command.',13,10
+        DB 'Usage: PATCH patchfile [/INPUT=file] [/OUTPUT=file] [/VERBOSE]',13,10
+        DB 'Use PATCH /HELP for help.',0
+SYNTMSG: DB 'Malformed patch statement',0
+IDENTMSG: DB 'Output must differ from input and patch file',0
+NAMEMSG: DB 'INPUT and OUTPUT names required',0
+EMPTYMSG: DB 'No patch instructions',0
+RANGEMSG: DB 'Offset/range overflow or beyond EOF',0
+VALIDMSG: DB 'Validation failed; patch incomplete',0
+CHANGEDMSG: DB 'Input or patch file changed between passes',0
+CANCELMSG: DB 'Cancelled; patch incomplete',0
+OPENMSG: DB 'Cannot open ',0
+READMSG: DB 'Read/size failure: ',0
+WRITEMSG: DB 'Output create/write/close failure',0
+CLEANMSG: DB 'Cleanup failed; retained ',0
+CHUNKMSG: DB 'Full-output verification failed',0
+OVERMSG: DB 'Overlapping write ranges',0
+MISMSG: DB 'Expected-byte mismatch at ',0
+ACTMSG: DB ' expected ',0
+FOUNDM: DB ' found ',0
+LOCTEXT: DB 'Patch ',0
+LINETEXT: DB ', line ',0
+COLLMSG: DB ' exists.',13,10,'Overwrite? (y/N/r/?) ',0
+PROMHELP: DB 'Y Yes, N No (abort), R Rename, ? Help',0
+RENAMEMSG: DB 'New output filename: ',0
+PROTMSG: DB 'Read-only/system output cannot be replaced',0
+RENAMEERR: DB 'Cannot install output; patch incomplete',0
+RESTOREERR: DB 'Restore failed; original retained in ',0
+STATEREM: DB 'Verified staged file retained in ',0
+BAKWARN: DB 'Warning: output installed; backup retained in ',0
+SUCCMSG: DB 'Patched ',0
+ARROWMSG: DB ' -> ',0
+INSTMSG: DB 'Instructions: ',0
+WRITMSG: DB '; replacement bytes: ',0
+CHNGMSG: DB '; changed bytes: ',0
+VERIFMSG: DB ' output bytes; full verification passed.',0
+OKMSG: DB ' OK',0
+OLDSP: DW 0
+STATE:
+ODRIVE: DB 0
+OUSER: DB 0
+NTOK: DB 0
+TOKENS: DS 128
+TAIL: DS 128
+TOKEN: DW 0
+SCAN: DW 0
+ODIGITS: DB 0
+INOPT: DB 0
+OUTOPT: DB 0
+INSET: DB 0
+OUTSET: DB 0
+PSET: DB 0
+VERBOSE: DB 0
+PHASE: DB 0
+INSIDE: DB 0
+SEENIN: DB 0
+SEENOUT: DB 0
+EOFCHAR: DB 0
+CRSEEN: DB 0
+LINELEN: DB 0
+LINEBUF: DS 256
+LINENO: DS 4
+NINST: DS 4
+NWRITE: DS 4
+NCHANGE: DS 4
+OFFSET: DS 4
+ENDOFF: DS 4
+BYTEPOS: DS 4
+RECORD: DS 4
+RECLIMIT: DS 4
+WORKPOS: DS 4
+NUMWORK: DS 4
+NUMBUF: DS 11
+OLDBYTES: DS 84
+NEWBYTES: DS 84
+OLDLEN: DB 0
+NEWLEN: DB 0
+SEQDEST: DW 0
+SEQLEN: DB 0
+WHICH: DB 0
+INDEX: DB 0
+EXPECTED: DS 128
+WRITEMAP: DS 128
+BADVALID: DB 0
+BADLINE: DB 0
+WANTED: DB 0
+FOUND: DB 0
+STAGED: DB 0
+BACKED: DB 0
+SLOTNUM: DW 0
+ALLOCPTR: DW 0
+ALLOCEXT: DB 0
+RENDEST: DW 0
+RENBUF: DS 36
+PATFILE: DS 184
+INFILE: DS 184
+OUTFILE: DS 184
+STAGE: DS 184
+BACKUP: DS 184
+SCRATCH: DS 184
+PATSIG: DS 16
+INSIG: DS 16
+INLENGTH: DS 4
+OUTEXIST: DB 0
+APPROVED: DB 0
+DU_MAP: DS 64
+DU_WORK: DS 12
+STATEEND:
+        DS 512
+STKTOP:
+; @selectors@
+        .DEPHASE
+        END START

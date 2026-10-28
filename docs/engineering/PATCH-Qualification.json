@@ -1,0 +1,638 @@
+{
+  "schema": 1,
+  "date": "2026-10-28",
+  "component": "PATCH",
+  "version": "1.0",
+  "revision": 1,
+  "status": "DEVELOPMENT; MODEL4_BLOCKED; PAIRED_ACCEPTANCE_PENDING",
+  "binary": {
+    "bytes": 9896,
+    "sha256": "9f4bde87442942f3bc735ac454c046abbafb26cdc7948aed609260a46a4866ba",
+    "end_exclusive": "27A8h",
+    "private_stack_bytes": 512
+  },
+  "native_source": {
+    "binary_sha256": "9f4bde87442942f3bc735ac454c046abbafb26cdc7948aed609260a46a4866ba",
+    "native_source_sha256": "8ca5356b53acc8bda9a9649a25ccaa9c6676f5b2ddec7f3517c89fedde28a47a"
+  },
+  "compiled_bdos_model": {
+    "status": "PASS",
+    "cases": 87,
+    "binary_sha256": "9f4bde87442942f3bc735ac454c046abbafb26cdc7948aed609260a46a4866ba"
+  },
+  "stock_cpm22": {
+    "native_cross_parity": "PASS",
+    "patch_execution": "PASS",
+    "independent_complete_output_comparison": "PASS"
+  },
+  "bettercpm_cpmsim": {
+    "status": "PASS",
+    "scope": "Packaged PATCH under BetterCP/M: repeated help, staged replacement, 65792-byte input, unsorted 4000-instruction patch larger than 64 KiB (bounded memory), exact complete host byte comparison, unchanged sources and B/C disks",
+    "binary_sha256": "9f4bde87442942f3bc735ac454c046abbafb26cdc7948aed609260a46a4866ba",
+    "volumes": {
+      "b": "d4642386326532972fc6d0e1069028cf67b08343523e40690fa9d3aa541ac5cf",
+      "c": "6e4e3ef052136a940fd6cdeebaacbfbb02b7cd21b3d980eb58ff78dd1c6b488a"
+    },
+    "exported_sha256": {
+      "BIG.DAT": "120c518a83325c66464701a6ee080302f332bc768ea3f60473b209f1bfb091df",
+      "BIG.PAT": "053d04a921bfe5b4f02d2fedb5465c8a77c3080ab613aa8932869827fafb8c60",
+      "IN.DAT": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+      "FIX.PAT": "e8c84cd070bfd8d647469aac76955dd4a040038aa48f77b7407eb7788d54f5ff",
+      "OUT.DAT": "3ee30123ff02b4f088135c56c4dfadab572b82bd0bfdde44ab4358b2a0811aa9",
+      "MANY.DAT": "c8f5d0341d54d951a71b136e6e2afcb14d11ed8489a7ae126a8fee0df6ecf193",
+      "MANY.PAT": "689bdeef0c5f3b66136f772dba2a9b365dd0c2bc01f8b8da01d1b6699252e5df",
+      "BIG.NEW": "af6bb6c47595bffea33f991ee484ea6f334a00f1495a135db321ffc16e3ce66c",
+      "MANY.NEW": "068c8c082a8cc6aeff038a1df9e63709584d431c7cb6a8635a585b9936d4770a"
+    },
+    "large_patch_bytes": 91767
+  },
+  "model4": {
+    "status": "BLOCKED",
+    "test_executed": false,
+    "waived": false,
+    "reason": "LaunchServices preflight: BOOTSTRAP_NOT_PRIVILEGED (1100). trs80gp not started."
+  },
+  "media": {
+    "BetterCPM-NOAH-z80pack-332K.dsk": {
+      "sha256": "6e4e3ef052136a940fd6cdeebaacbfbb02b7cd21b3d980eb58ff78dd1c6b488a",
+      "included": [
+        {
+          "name": "NOAH.COM",
+          "bytes": 19068,
+          "sha256": "076c5486cf5638811258df6297ea122e046f885eecfd27f30bf878c87f10a51c"
+        },
+        {
+          "name": "NOAH.OVL",
+          "bytes": 36864,
+          "sha256": "49a1708ccdd11f00ab710e65feb50f2aa8487c5fcb5c94669f282e1cb511d818"
+        },
+        {
+          "name": "NOAH.TXT",
+          "bytes": 2762,
+          "sha256": "1aca37e799daa9609869d9c647301c1fb5ddcaf28255cb445c22639049a4bf41"
+        },
+        {
+          "name": "PATCH.COM",
+          "bytes": 9896,
+          "sha256": "9f4bde87442942f3bc735ac454c046abbafb26cdc7948aed609260a46a4866ba"
+        },
+        {
+          "name": "PATCH.TXT",
+          "bytes": 1143,
+          "sha256": "e36eae244b511e17c77ac19af2a04c53699855026ebc2b2b24f70eb2be0e8f68"
+        }
+      ],
+      "component_acceptance": {
+        "NOAH.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "076c5486cf5638811258df6297ea122e046f885eecfd27f30bf878c87f10a51c",
+          "overlay_sha256": "49a1708ccdd11f00ab710e65feb50f2aa8487c5fcb5c94669f282e1cb511d818"
+        },
+        "PATCH.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "9f4bde87442942f3bc735ac454c046abbafb26cdc7948aed609260a46a4866ba"
+        }
+      }
+    },
+    "BetterCPM-Utilities-z80pack-332K.dsk": {
+      "sha256": "d4642386326532972fc6d0e1069028cf67b08343523e40690fa9d3aa541ac5cf",
+      "included": [
+        {
+          "name": "DDT.COM",
+          "sha256": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467",
+          "bytes": 6528
+        },
+        {
+          "name": "DUMP.COM",
+          "sha256": "3734f5fe0750a52328cc9cf02be502076f0c29f6b7279d0b7789d8596bbf9576",
+          "bytes": 14537
+        },
+        {
+          "name": "XSUB.COM",
+          "sha256": "7ad7eb5d68639b4669830565fee214dd3e4baf68c1b80e3c3dead9b8459f1448",
+          "bytes": 368
+        },
+        {
+          "name": "BATCHIO.RSX",
+          "sha256": "0347270c05d040e0c7b82d73402803e26baa6a7977880d2764f0700fc1dc5ee0",
+          "bytes": 1029
+        },
+        {
+          "name": "SQ.COM",
+          "sha256": "f8de3fad6f285206ed7af49aa285adebc9d76b3b70da98cb614f09c59422b5d5",
+          "bytes": 8037
+        },
+        {
+          "name": "USQ.COM",
+          "sha256": "88c6b54a4084a4ee47dc7e22427cbf0863e4ed9de147a719624c542a764d9ff9",
+          "bytes": 5306
+        },
+        {
+          "name": "UNCR.COM",
+          "sha256": "a5347e631aa1ea3ca96377f731c7a87ae1cee24ccc75cd801c5ef58d6468febf",
+          "bytes": 31114
+        },
+        {
+          "name": "CR.COM",
+          "sha256": "f02a8a6f438f50261e3d27475fc95ecfb21bf73eb25e2ec4d89df5b0a2204f15",
+          "bytes": 29351
+        },
+        {
+          "name": "UNLZH.COM",
+          "sha256": "4c368e060c7c4053c23db60ce667ff426e424a4bca5f7f2369d0d9bf694d8b1d",
+          "bytes": 12123
+        },
+        {
+          "name": "LZH.COM",
+          "sha256": "a42706a3609f16589484148de3317305c24517a6993dbe6d431f9b76336fc0ec",
+          "bytes": 17133
+        },
+        {
+          "name": "ZSM4.COM",
+          "sha256": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+          "bytes": 22400
+        },
+        {
+          "name": "LINK.COM",
+          "sha256": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677",
+          "bytes": 15616
+        },
+        {
+          "name": "TOOLINFO.TXT",
+          "sha256": "e3d2a9812bf8710c30b218d1e210710493904fd4886dab8ea52f31459a955a21",
+          "bytes": 906
+        },
+        {
+          "name": "ZSM4COPY.TXT",
+          "sha256": "7d4f2be9be7a1d1fdb705986ce2701619cfcc8825356670aaa1e29a3d12c7d0f",
+          "bytes": 18432
+        },
+        {
+          "name": "LINKCOPY.TXT",
+          "sha256": "d7d6e20ff86b7a2a09ced46db14f722d246374ff8f24a9a3ddbb9332fe8735ad",
+          "bytes": 1888
+        },
+        {
+          "name": "DASM.COM",
+          "sha256": "8034d629ee464d33659684c39493022bd48c7cb1227952428c751fbf169b66e9",
+          "bytes": 20736
+        },
+        {
+          "name": "DSYM.COM",
+          "sha256": "8cd2d1e09fc60432a3345e1321b54a92316f18fb7ef30b9e8c8da18c2f63f98a",
+          "bytes": 10386
+        },
+        {
+          "name": "DLINK.COM",
+          "sha256": "2bc9912e769b6d8e6635afa47d6ca6121a53ba60870cac7330b441ff0dbed8f7",
+          "bytes": 6216
+        },
+        {
+          "name": "DASM.TXT",
+          "sha256": "6987b2d5357a338742f1677ae119b4b2bcbc757413e839bc069fb68c3942b2b3",
+          "bytes": 3403
+        },
+        {
+          "name": "DASMCOPY.TXT",
+          "sha256": "48cd81363e19e946e2f163beaff87ca04320ed163cc286e430d8aaf3267a1ddd",
+          "bytes": 1007
+        },
+        {
+          "name": "TED.COM",
+          "sha256": "272c31a168d63d4b5a5f2c5517d0c614a00fccf746dc966e8a180f16cc9f959c",
+          "bytes": 30380
+        },
+        {
+          "name": "TED.TXT",
+          "sha256": "40dbb575999e1751ed12749f13697d657c6b0ec90b1b1e46e1f97cda60a4b087",
+          "bytes": 5328
+        },
+        {
+          "name": "TEDCOPY.TXT",
+          "sha256": "3b83eebfc6c3c07ff9eb6ad8492dc7002ad2fb7fb4f144b1822a8fd92303cd33",
+          "bytes": 599
+        },
+        {
+          "name": "SEARCH.COM",
+          "sha256": "aca7362a046488c0dd0880e00bf7d03ecaaf875a09e6fc3ae8ee0830bf7271bd",
+          "bytes": 8036
+        },
+        {
+          "name": "CRCKSUM.COM",
+          "sha256": "ce4ce0711f893b6a9e4b2491f3644424b8e6caccdc1efde24e3499d2a9c7041d",
+          "bytes": 22189
+        },
+        {
+          "name": "MD5SUM.COM",
+          "sha256": "692a83f1e21911987cdabba8747463a306ac5b46e6d91b7c8bc47d00a5576022",
+          "bytes": 18316
+        }
+      ],
+      "component_acceptance": {
+        "DDT.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467"
+        },
+        "ZSM4.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8"
+        },
+        "LINK.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677"
+        },
+        "DASM.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "8034d629ee464d33659684c39493022bd48c7cb1227952428c751fbf169b66e9"
+        },
+        "DSYM.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "8cd2d1e09fc60432a3345e1321b54a92316f18fb7ef30b9e8c8da18c2f63f98a"
+        },
+        "DLINK.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "2bc9912e769b6d8e6635afa47d6ca6121a53ba60870cac7330b441ff0dbed8f7"
+        },
+        "TED.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "272c31a168d63d4b5a5f2c5517d0c614a00fccf746dc966e8a180f16cc9f959c"
+        },
+        "SEARCH.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "aca7362a046488c0dd0880e00bf7d03ecaaf875a09e6fc3ae8ee0830bf7271bd"
+        },
+        "CRCKSUM.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "ce4ce0711f893b6a9e4b2491f3644424b8e6caccdc1efde24e3499d2a9c7041d"
+        },
+        "MD5SUM.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "692a83f1e21911987cdabba8747463a306ac5b46e6d91b7c8bc47d00a5576022"
+        }
+      }
+    },
+    "BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk": {
+      "sha256": "2db7ac826212d3fdd0c4dfaf4d8fb2ab62dd184651d37d376037d7b67b9182dd",
+      "included": [
+        {
+          "name": "NOAH.COM",
+          "bytes": 19068,
+          "sha256": "076c5486cf5638811258df6297ea122e046f885eecfd27f30bf878c87f10a51c"
+        },
+        {
+          "name": "NOAH.OVL",
+          "bytes": 36864,
+          "sha256": "49a1708ccdd11f00ab710e65feb50f2aa8487c5fcb5c94669f282e1cb511d818"
+        },
+        {
+          "name": "NOAH.TXT",
+          "bytes": 2762,
+          "sha256": "1aca37e799daa9609869d9c647301c1fb5ddcaf28255cb445c22639049a4bf41"
+        },
+        {
+          "name": "PATCH.COM",
+          "bytes": 9896,
+          "sha256": "9f4bde87442942f3bc735ac454c046abbafb26cdc7948aed609260a46a4866ba"
+        },
+        {
+          "name": "PATCH.TXT",
+          "bytes": 1143,
+          "sha256": "e36eae244b511e17c77ac19af2a04c53699855026ebc2b2b24f70eb2be0e8f68"
+        }
+      ],
+      "component_acceptance": {
+        "NOAH.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "076c5486cf5638811258df6297ea122e046f885eecfd27f30bf878c87f10a51c",
+          "overlay_sha256": "49a1708ccdd11f00ab710e65feb50f2aa8487c5fcb5c94669f282e1cb511d818"
+        },
+        "PATCH.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "9f4bde87442942f3bc735ac454c046abbafb26cdc7948aed609260a46a4866ba"
+        }
+      }
+    },
+    "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk": {
+      "sha256": "eb8ecb008dd649e7e016d1fd906942ac9935a48e2074e9d15a0d7e2036eb79f9",
+      "included": [
+        {
+          "name": "DDT.COM",
+          "sha256": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467",
+          "bytes": 6528
+        },
+        {
+          "name": "DUMP.COM",
+          "sha256": "3734f5fe0750a52328cc9cf02be502076f0c29f6b7279d0b7789d8596bbf9576",
+          "bytes": 14537
+        },
+        {
+          "name": "XSUB.COM",
+          "sha256": "7ad7eb5d68639b4669830565fee214dd3e4baf68c1b80e3c3dead9b8459f1448",
+          "bytes": 368
+        },
+        {
+          "name": "BATCHIO.RSX",
+          "sha256": "0347270c05d040e0c7b82d73402803e26baa6a7977880d2764f0700fc1dc5ee0",
+          "bytes": 1029
+        },
+        {
+          "name": "SQ.COM",
+          "sha256": "f8de3fad6f285206ed7af49aa285adebc9d76b3b70da98cb614f09c59422b5d5",
+          "bytes": 8037
+        },
+        {
+          "name": "USQ.COM",
+          "sha256": "88c6b54a4084a4ee47dc7e22427cbf0863e4ed9de147a719624c542a764d9ff9",
+          "bytes": 5306
+        },
+        {
+          "name": "UNCR.COM",
+          "sha256": "a5347e631aa1ea3ca96377f731c7a87ae1cee24ccc75cd801c5ef58d6468febf",
+          "bytes": 31114
+        },
+        {
+          "name": "CR.COM",
+          "sha256": "f02a8a6f438f50261e3d27475fc95ecfb21bf73eb25e2ec4d89df5b0a2204f15",
+          "bytes": 29351
+        },
+        {
+          "name": "UNLZH.COM",
+          "sha256": "4c368e060c7c4053c23db60ce667ff426e424a4bca5f7f2369d0d9bf694d8b1d",
+          "bytes": 12123
+        },
+        {
+          "name": "LZH.COM",
+          "sha256": "a42706a3609f16589484148de3317305c24517a6993dbe6d431f9b76336fc0ec",
+          "bytes": 17133
+        },
+        {
+          "name": "ZSM4.COM",
+          "sha256": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+          "bytes": 22400
+        },
+        {
+          "name": "LINK.COM",
+          "sha256": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677",
+          "bytes": 15616
+        },
+        {
+          "name": "TOOLINFO.TXT",
+          "sha256": "e3d2a9812bf8710c30b218d1e210710493904fd4886dab8ea52f31459a955a21",
+          "bytes": 906
+        },
+        {
+          "name": "ZSM4COPY.TXT",
+          "sha256": "7d4f2be9be7a1d1fdb705986ce2701619cfcc8825356670aaa1e29a3d12c7d0f",
+          "bytes": 18432
+        },
+        {
+          "name": "LINKCOPY.TXT",
+          "sha256": "d7d6e20ff86b7a2a09ced46db14f722d246374ff8f24a9a3ddbb9332fe8735ad",
+          "bytes": 1888
+        },
+        {
+          "name": "DASM.COM",
+          "sha256": "8034d629ee464d33659684c39493022bd48c7cb1227952428c751fbf169b66e9",
+          "bytes": 20736
+        },
+        {
+          "name": "DSYM.COM",
+          "sha256": "8cd2d1e09fc60432a3345e1321b54a92316f18fb7ef30b9e8c8da18c2f63f98a",
+          "bytes": 10386
+        },
+        {
+          "name": "DLINK.COM",
+          "sha256": "2bc9912e769b6d8e6635afa47d6ca6121a53ba60870cac7330b441ff0dbed8f7",
+          "bytes": 6216
+        },
+        {
+          "name": "DASM.TXT",
+          "sha256": "6987b2d5357a338742f1677ae119b4b2bcbc757413e839bc069fb68c3942b2b3",
+          "bytes": 3403
+        },
+        {
+          "name": "DASMCOPY.TXT",
+          "sha256": "48cd81363e19e946e2f163beaff87ca04320ed163cc286e430d8aaf3267a1ddd",
+          "bytes": 1007
+        },
+        {
+          "name": "TED.COM",
+          "sha256": "272c31a168d63d4b5a5f2c5517d0c614a00fccf746dc966e8a180f16cc9f959c",
+          "bytes": 30380
+        },
+        {
+          "name": "TED.TXT",
+          "sha256": "40dbb575999e1751ed12749f13697d657c6b0ec90b1b1e46e1f97cda60a4b087",
+          "bytes": 5328
+        },
+        {
+          "name": "TEDCOPY.TXT",
+          "sha256": "3b83eebfc6c3c07ff9eb6ad8492dc7002ad2fb7fb4f144b1822a8fd92303cd33",
+          "bytes": 599
+        },
+        {
+          "name": "SEARCH.COM",
+          "sha256": "aca7362a046488c0dd0880e00bf7d03ecaaf875a09e6fc3ae8ee0830bf7271bd",
+          "bytes": 8036
+        },
+        {
+          "name": "CRCKSUM.COM",
+          "sha256": "ce4ce0711f893b6a9e4b2491f3644424b8e6caccdc1efde24e3499d2a9c7041d",
+          "bytes": 22189
+        },
+        {
+          "name": "MD5SUM.COM",
+          "sha256": "692a83f1e21911987cdabba8747463a306ac5b46e6d91b7c8bc47d00a5576022",
+          "bytes": 18316
+        }
+      ],
+      "component_acceptance": {
+        "DDT.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467"
+        },
+        "ZSM4.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8"
+        },
+        "LINK.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677"
+        },
+        "DASM.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "8034d629ee464d33659684c39493022bd48c7cb1227952428c751fbf169b66e9"
+        },
+        "DSYM.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "8cd2d1e09fc60432a3345e1321b54a92316f18fb7ef30b9e8c8da18c2f63f98a"
+        },
+        "DLINK.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "2bc9912e769b6d8e6635afa47d6ca6121a53ba60870cac7330b441ff0dbed8f7"
+        },
+        "TED.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "272c31a168d63d4b5a5f2c5517d0c614a00fccf746dc966e8a180f16cc9f959c"
+        },
+        "SEARCH.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "aca7362a046488c0dd0880e00bf7d03ecaaf875a09e6fc3ae8ee0830bf7271bd"
+        },
+        "CRCKSUM.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "ce4ce0711f893b6a9e4b2491f3644424b8e6caccdc1efde24e3499d2a9c7041d"
+        },
+        "MD5SUM.COM": {
+          "status": "PENDING_RELEASE_ACCEPTANCE",
+          "sha256": "692a83f1e21911987cdabba8747463a306ac5b46e6d91b7c8bc47d00a5576022"
+        }
+      }
+    }
+  },
+  "packaging": "Both targets: exact file readback, fsck, DMK/raw round trip and selected source closure PASS; receipt mismatch/incomplete-proof refusal PASS",
+  "evidence": {
+    "name": "PATCH-Qualification-Evidence.tar.gz",
+    "sha256": "0ee9ad82127d850a8b6a0d021db95d41174e041671d43b543b69d14f3b01a78e",
+    "members": {
+      "build/utilities/PATCH.COM": "9f4bde87442942f3bc735ac454c046abbafb26cdc7948aed609260a46a4866ba",
+      "build/utilities/PATCH-NATIVE.MAC": "8ca5356b53acc8bda9a9649a25ccaa9c6676f5b2ddec7f3517c89fedde28a47a",
+      "build/utilities/PATCH-native.json": "55d3604e3d2c3aadf6aa756358d5c18df3943dfdc7303b673fac79bb528ae8f7",
+      "build/utilities/PATCH-build-report.json": "6180cda3328be497a920a8b4a9459e02fffa3340597dfd8a9b35ab560f2ecb46",
+      "build/patch-development/PATCH-native.COM": "9f4bde87442942f3bc735ac454c046abbafb26cdc7948aed609260a46a4866ba",
+      "build/patch-development/NATIVE-PATCH-BUILD.LOG": "967cd7d16102929a903aaf682f316f27cba6690d80d8d7baa47e4f2581cbd239",
+      "build/patch-development/model-evidence.json": "c6ef94961a74bb8f251c7319ebc64cb7304dd48a3317f732c8fa9d8b752a74c3",
+      "build/patch-development/cpmsim-release-candidate/evidence.json": "5fe5cbf661ffbdd0372af565d74b489d0c202db03530ee6451b9e6b3196321d6",
+      "build/patch-development/cpmsim-release-candidate/transcript.txt": "4511516f47fe604620d204e7ceb312195ac9c1171c2557045c8f5c7e75b9c084",
+      "build/patch-development/inventory.json": "277b274a6cbead9504b04ab508feea9298a2204c3a5a8c46f455bdc2dff48a91"
+    }
+  },
+  "limitations": [
+    "Model-based injected failures are not physical floppy error qualification",
+    "No Model 4 run or waiver",
+    "No acceptance receipt, qualification baseline or public release promoted",
+    "Repeated patch scans cost O(input records x patch bytes) per planning pass",
+    "MD5 fingerprints detect consistency changes; no patch authentication or malicious-collision guarantee"
+  ],
+  "independent_inventory": {
+    "status": "PASS",
+    "platforms": {
+      "z80pack": {
+        "files": 26,
+        "user": 0,
+        "allocated_blocks": 165,
+        "free_blocks": 1,
+        "exact_membership": "PASS",
+        "independent_record_readback": "PASS",
+        "allocation": "PASS",
+        "image": "BetterCPM-Utilities-z80pack-332K.dsk",
+        "image_sha256": "d4642386326532972fc6d0e1069028cf67b08343523e40690fa9d3aa541ac5cf",
+        "raw_bytes": 368640,
+        "files_sha256": {
+          "DDT.COM": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467",
+          "DUMP.COM": "3734f5fe0750a52328cc9cf02be502076f0c29f6b7279d0b7789d8596bbf9576",
+          "XSUB.COM": "7ad7eb5d68639b4669830565fee214dd3e4baf68c1b80e3c3dead9b8459f1448",
+          "BATCHIO.RSX": "0347270c05d040e0c7b82d73402803e26baa6a7977880d2764f0700fc1dc5ee0",
+          "SQ.COM": "f8de3fad6f285206ed7af49aa285adebc9d76b3b70da98cb614f09c59422b5d5",
+          "USQ.COM": "88c6b54a4084a4ee47dc7e22427cbf0863e4ed9de147a719624c542a764d9ff9",
+          "UNCR.COM": "a5347e631aa1ea3ca96377f731c7a87ae1cee24ccc75cd801c5ef58d6468febf",
+          "CR.COM": "f02a8a6f438f50261e3d27475fc95ecfb21bf73eb25e2ec4d89df5b0a2204f15",
+          "UNLZH.COM": "4c368e060c7c4053c23db60ce667ff426e424a4bca5f7f2369d0d9bf694d8b1d",
+          "LZH.COM": "a42706a3609f16589484148de3317305c24517a6993dbe6d431f9b76336fc0ec",
+          "ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+          "LINK.COM": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677",
+          "TOOLINFO.TXT": "e3d2a9812bf8710c30b218d1e210710493904fd4886dab8ea52f31459a955a21",
+          "ZSM4COPY.TXT": "7d4f2be9be7a1d1fdb705986ce2701619cfcc8825356670aaa1e29a3d12c7d0f",
+          "LINKCOPY.TXT": "d7d6e20ff86b7a2a09ced46db14f722d246374ff8f24a9a3ddbb9332fe8735ad",
+          "DASM.COM": "8034d629ee464d33659684c39493022bd48c7cb1227952428c751fbf169b66e9",
+          "DSYM.COM": "8cd2d1e09fc60432a3345e1321b54a92316f18fb7ef30b9e8c8da18c2f63f98a",
+          "DLINK.COM": "2bc9912e769b6d8e6635afa47d6ca6121a53ba60870cac7330b441ff0dbed8f7",
+          "DASM.TXT": "6987b2d5357a338742f1677ae119b4b2bcbc757413e839bc069fb68c3942b2b3",
+          "DASMCOPY.TXT": "48cd81363e19e946e2f163beaff87ca04320ed163cc286e430d8aaf3267a1ddd",
+          "TED.COM": "272c31a168d63d4b5a5f2c5517d0c614a00fccf746dc966e8a180f16cc9f959c",
+          "TED.TXT": "40dbb575999e1751ed12749f13697d657c6b0ec90b1b1e46e1f97cda60a4b087",
+          "TEDCOPY.TXT": "3b83eebfc6c3c07ff9eb6ad8492dc7002ad2fb7fb4f144b1822a8fd92303cd33",
+          "SEARCH.COM": "aca7362a046488c0dd0880e00bf7d03ecaaf875a09e6fc3ae8ee0830bf7271bd",
+          "CRCKSUM.COM": "ce4ce0711f893b6a9e4b2491f3644424b8e6caccdc1efde24e3499d2a9c7041d",
+          "MD5SUM.COM": "692a83f1e21911987cdabba8747463a306ac5b46e6d91b7c8bc47d00a5576022"
+        },
+        "noah_companion": {
+          "files": 5,
+          "user": 0,
+          "allocated_blocks": 37,
+          "free_blocks": 129,
+          "exact_membership": "PASS",
+          "independent_record_readback": "PASS",
+          "allocation": "PASS",
+          "image": "BetterCPM-NOAH-z80pack-332K.dsk",
+          "image_sha256": "6e4e3ef052136a940fd6cdeebaacbfbb02b7cd21b3d980eb58ff78dd1c6b488a",
+          "files_sha256": {
+            "NOAH.COM": "076c5486cf5638811258df6297ea122e046f885eecfd27f30bf878c87f10a51c",
+            "NOAH.OVL": "49a1708ccdd11f00ab710e65feb50f2aa8487c5fcb5c94669f282e1cb511d818",
+            "NOAH.TXT": "1aca37e799daa9609869d9c647301c1fb5ddcaf28255cb445c22639049a4bf41",
+            "PATCH.COM": "9f4bde87442942f3bc735ac454c046abbafb26cdc7948aed609260a46a4866ba",
+            "PATCH.TXT": "e36eae244b511e17c77ac19af2a04c53699855026ebc2b2b24f70eb2be0e8f68"
+          }
+        }
+      },
+      "trs80gp": {
+        "files": 26,
+        "user": 0,
+        "allocated_blocks": 166,
+        "free_blocks": 234,
+        "exact_membership": "PASS",
+        "independent_record_readback": "PASS",
+        "allocation": "PASS",
+        "image": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+        "image_sha256": "eb8ecb008dd649e7e016d1fd906942ac9935a48e2074e9d15a0d7e2036eb79f9",
+        "raw_bytes": 819200,
+        "files_sha256": {
+          "DDT.COM": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467",
+          "DUMP.COM": "3734f5fe0750a52328cc9cf02be502076f0c29f6b7279d0b7789d8596bbf9576",
+          "XSUB.COM": "7ad7eb5d68639b4669830565fee214dd3e4baf68c1b80e3c3dead9b8459f1448",
+          "BATCHIO.RSX": "0347270c05d040e0c7b82d73402803e26baa6a7977880d2764f0700fc1dc5ee0",
+          "SQ.COM": "f8de3fad6f285206ed7af49aa285adebc9d76b3b70da98cb614f09c59422b5d5",
+          "USQ.COM": "88c6b54a4084a4ee47dc7e22427cbf0863e4ed9de147a719624c542a764d9ff9",
+          "UNCR.COM": "a5347e631aa1ea3ca96377f731c7a87ae1cee24ccc75cd801c5ef58d6468febf",
+          "CR.COM": "f02a8a6f438f50261e3d27475fc95ecfb21bf73eb25e2ec4d89df5b0a2204f15",
+          "UNLZH.COM": "4c368e060c7c4053c23db60ce667ff426e424a4bca5f7f2369d0d9bf694d8b1d",
+          "LZH.COM": "a42706a3609f16589484148de3317305c24517a6993dbe6d431f9b76336fc0ec",
+          "ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+          "LINK.COM": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677",
+          "TOOLINFO.TXT": "e3d2a9812bf8710c30b218d1e210710493904fd4886dab8ea52f31459a955a21",
+          "ZSM4COPY.TXT": "7d4f2be9be7a1d1fdb705986ce2701619cfcc8825356670aaa1e29a3d12c7d0f",
+          "LINKCOPY.TXT": "d7d6e20ff86b7a2a09ced46db14f722d246374ff8f24a9a3ddbb9332fe8735ad",
+          "DASM.COM": "8034d629ee464d33659684c39493022bd48c7cb1227952428c751fbf169b66e9",
+          "DSYM.COM": "8cd2d1e09fc60432a3345e1321b54a92316f18fb7ef30b9e8c8da18c2f63f98a",
+          "DLINK.COM": "2bc9912e769b6d8e6635afa47d6ca6121a53ba60870cac7330b441ff0dbed8f7",
+          "DASM.TXT": "6987b2d5357a338742f1677ae119b4b2bcbc757413e839bc069fb68c3942b2b3",
+          "DASMCOPY.TXT": "48cd81363e19e946e2f163beaff87ca04320ed163cc286e430d8aaf3267a1ddd",
+          "TED.COM": "272c31a168d63d4b5a5f2c5517d0c614a00fccf746dc966e8a180f16cc9f959c",
+          "TED.TXT": "40dbb575999e1751ed12749f13697d657c6b0ec90b1b1e46e1f97cda60a4b087",
+          "TEDCOPY.TXT": "3b83eebfc6c3c07ff9eb6ad8492dc7002ad2fb7fb4f144b1822a8fd92303cd33",
+          "SEARCH.COM": "aca7362a046488c0dd0880e00bf7d03ecaaf875a09e6fc3ae8ee0830bf7271bd",
+          "CRCKSUM.COM": "ce4ce0711f893b6a9e4b2491f3644424b8e6caccdc1efde24e3499d2a9c7041d",
+          "MD5SUM.COM": "692a83f1e21911987cdabba8747463a306ac5b46e6d91b7c8bc47d00a5576022"
+        },
+        "noah_companion": {
+          "files": 5,
+          "user": 0,
+          "allocated_blocks": 38,
+          "free_blocks": 362,
+          "exact_membership": "PASS",
+          "independent_record_readback": "PASS",
+          "allocation": "PASS",
+          "image": "BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk",
+          "image_sha256": "2db7ac826212d3fdd0c4dfaf4d8fb2ab62dd184651d37d376037d7b67b9182dd",
+          "files_sha256": {
+            "NOAH.COM": "076c5486cf5638811258df6297ea122e046f885eecfd27f30bf878c87f10a51c",
+            "NOAH.OVL": "49a1708ccdd11f00ab710e65feb50f2aa8487c5fcb5c94669f282e1cb511d818",
+            "NOAH.TXT": "1aca37e799daa9609869d9c647301c1fb5ddcaf28255cb445c22639049a4bf41",
+            "PATCH.COM": "9f4bde87442942f3bc735ac454c046abbafb26cdc7948aed609260a46a4866ba",
+            "PATCH.TXT": "e36eae244b511e17c77ac19af2a04c53699855026ebc2b2b24f70eb2be0e8f68"
+          }
+        }
+      }
+    }
+  }
+}
