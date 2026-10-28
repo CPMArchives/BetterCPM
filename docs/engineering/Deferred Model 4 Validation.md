@@ -21,3 +21,11 @@ manual procedure must identify exact executable/overlay/image hashes, commands,
 expected results and observed outcomes. Never substitute a historical binary's
 PASS for the current candidate. The per-utility engineering specifications and
 qualification records supply the detailed assertions for that procedure.
+
+## Final release campaign
+
+[Model 4 Release Checklist](Model%204%20Release%20Checklist.md) reconciles the
+above revisions with the latest packaged-inventory evidence and supplies the
+manual campaign and result-record requirements. All rows remain PENDING until
+actual execution is recorded. Its inventory hashes are reference identities,
+not new Model 4 test results or acceptance of an uninspected package.

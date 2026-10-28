@@ -418,6 +418,8 @@ Getting started with BetterCP/M is much like getting started with conventional C
 
 The exact steps required to prepare and start BetterCP/M depend on the computer or emulator you're using. Rather than duplicate those instructions here, this chapter describes the general process and introduces the facilities you'll encounter when the system starts.
 
+For the required patched cpmsim, source pin, patch series, build steps and release-media launch procedure, see [Installing BetterCP/M on z80pack / cpmsim](../platform/CPMSIM-INSTALLATION.md). Stock upstream cpmsim is insufficient.
+
 For current platform preparation and launch instructions, see [Default high-capacity test disks](../platform/DEFAULT-TEST-DISKS.md) and the [z80pack / cpmsim adapter](../../src/platform/z80pack/README.md). For the selected System Disk build procedure, see [Building the current BetterCP/M System Disks](../releases/DISTRIBUTION-BUILD.md). These are working build/platform instructions; a consolidated Supported Platforms user manual is not yet available.
 
 <a id="section-3-1"></a>

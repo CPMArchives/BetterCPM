@@ -2,9 +2,9 @@
 
 The authoritative [manifest in progress](DISTRIBUTION-MANIFEST.md) selects disk
 membership. `metadata/distribution.json` records its System Disk projection,
-implementation status, target applicability, and user area. Planned PIP,
-WHEREIS, and the full-screen editor are reported as omissions until integrated.
-Utilities and CP/M Tools disks are not assembled by this first builder.
+implementation status, target applicability, and user area. PIP and WHEREIS are
+selected System Disk utilities; TED is on the primary Utilities Disk.
+This builder does not assemble Utilities or the separate CP/M Tools Disk.
 
 Both System Disks include `README.TXT` in user 0. Its authoritative source is
 `src/distribution/README.TXT`, ASCII with CR/LF lines and CP/M text EOF. Source
@@ -18,6 +18,11 @@ python3 tools/build_distribution.py
 python3 tools/build_distribution.py --target z80pack
 python3 tools/build_distribution.py --target trs80gp
 ```
+
+The cpmsim target requires the patched emulator described in
+[Installing BetterCP/M on z80pack / cpmsim](../platform/CPMSIM-INSTALLATION.md).
+Include its source lock, complete patches, builder, instructions and license in
+the release; stock upstream cpmsim is insufficient.
 
 Prerequisites are those used by the existing build/qualification tools:
 `~/bin/z80asm`, Python 3, cpmtools (`cpmcp`, `cpmls`, `fsck.cpm`), the qualified

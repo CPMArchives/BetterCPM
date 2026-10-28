@@ -175,9 +175,11 @@ pending; including its binary does not claim platform or whole-disk acceptance.
 
 The tracked `tools/bcpm` launcher mirrors the maintainer's personal script.
 After its ordinary System Disk build, `bcpm build` creates these Utilities media
-and mounts the raw image as cpmsim B:. `bcpm z` also selects Utilities as B:;
-`bcpm t` selects the native Utilities image as B: and the existing development
-build disk as C:. Neither automatically mounts the conformance suite. Replacing
+and mounts the raw image as cpmsim B:. `bcpm z` selects primary Utilities as B:
+and the historical BetterCPM-NOAH companion image as C:. `bcpm t` selects the
+corresponding native images as B: and C:, with development/work media as D:.
+The companion contains NOAH, PATCH and COMPARE; CRCKSUM and MD5SUM are on B:.
+Neither automatically mounts the conformance suite. Replacing
 an existing cpmsim B: symlink preserves its old target; a regular disk file is
 never overwritten. Existing emulator sessions must be closed before rebuilding
 or switching mounted media.
@@ -331,3 +333,11 @@ implemented tool set to the packaged artifacts; the complete Utilities release
 remains provisional. DLINK preserves the BIOS vector and redirects only the two
 verified exit operands in LINK's loaded memory copy; LINK.COM on disk is unchanged. ZSM4 and Digital Research LINK retain their third-party identities
 and versions.
+
+## Required cpmsim host dependency
+
+The z80pack release requires the patched runtime and helpers described in
+[the installation instructions](../platform/CPMSIM-INSTALLATION.md). Include the
+pinned source lock, complete patch series, reconstruction builder, instructions
+and license in the host package. Bind any shipped executable to its
+`environment.json` and corresponding source; stock cpmsim is insufficient.
