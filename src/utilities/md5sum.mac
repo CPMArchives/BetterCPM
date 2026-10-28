@@ -114,7 +114,8 @@ SKIPENTS: DS 4
 COUNTEND:
 NUMVALUE: DS 4
 LINEPTR: DW 0
-LINE: DS 256
+; MD5 rows/diagnostics are at most 128 bytes; reference text has its own buffer.
+LINE: DS 128
 NUMCOPY: DS 4
 NUMBUF: DS 11
 NUMPTR: DW 0

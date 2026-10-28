@@ -119,8 +119,13 @@ Exclude every resolved output identity, existing or newly created, and every tra
 Before replacing an existing output, identify its full DU/name:
 
 ```text
-B3:MD5SUM.LST exists. Overwrite? (Y/n/a)
+B3:MD5SUM.LST exists. Overwrite? (Y/n/a/?)
 ```
+
+`?` prints `Y Yes, N No, A All, ? Help` and repeats the full DU/name and
+original prompt. Repeated help does not change choices, defaults, All policy,
+counters or staged/final output. This follows the
+[interactive prompt convention](Interactive%20Prompt%20Convention.md).
 
 Y or Enter replaces it; N leaves it unchanged and continues other destinations and screen output; A authorizes this and later replacements for this invocation. Accept either case. Ctrl-C cancels. Count declined outputs separately from completed outputs.
 

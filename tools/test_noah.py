@@ -644,7 +644,7 @@ def selector_overwrite_tests(m):
         assert m.files[target] == b'R' * 128 and m.files[source] == one
         assert not any(k[2].endswith(('.BAK', '.TMP')) for k in m.files)
         assert not m.opened and 'failed: 00000000' in output
-        if keys.startswith('z'): assert output.count('Replace? Y/N/A/C [N]:') == 2
+        if keys.startswith('z'): assert output.count('Replace? Y/N/A/C/? [N]:') == 2
     for keys in ('N', '\r', '\x1b', 'C', '\x03'):
         output = m.run('/X B7:TEXTS.LBR', {source: one, target: b'OLD'}, user=7, keys=keys)
         assert m.files[target] == b'OLD' and not m.created and not m.renamed

@@ -31,7 +31,7 @@ def tests(m):
     # Quiet does not imply Yes, suppress authorization, or consume different keys.
     for answer in ('Y','N'):
         text=m.run('/X /Q TEST.LBR C3:',{lib:raw,target:b'OLD'},keys=answer)
-        assert 'Replace? Y/N/A/C [N]:' in text,text
+        assert 'Replace? Y/N/A/C/? [N]:' in text,text
         assert m.files[target]==(padded(data) if answer=='Y' else b'OLD'),text
         if answer=='N':assert 'declined' in text and 'skipped: 00000001' in text,text
     text=m.run('/X /Q /Y /R TEST.LBR C3:',{lib:raw,target:b'OLD'},attributes={target:1})

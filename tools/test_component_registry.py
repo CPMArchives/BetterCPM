@@ -42,7 +42,7 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(next(x for x in rows() if x['component'] == 'BDOS')['implementation_version'], '1.10')
 
     def test_new_utility_assignments(self):
-        for name in ('MOVE', 'WARM', 'DASM', 'DSYM', 'DLINK', 'SEARCH', 'MD5SUM'):
+        for name in ('MOVE', 'WARM', 'DASM', 'DSYM', 'DLINK', 'SEARCH'):
             self.assertEqual(registry.identity('utility:' + name, self.data), ('1.0', 1))
 
     def test_ted_initial_adaptation_identity(self):

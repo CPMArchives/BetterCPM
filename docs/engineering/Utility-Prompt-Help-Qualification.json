@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "date": "2026-10-28",
+  "scope": "Focused inline-help compliance; no new Model 4 runtime qualification or release promotion",
+  "components": {
+    "CRCKSUM": {
+      "version": "1.0",
+      "revision": 6,
+      "bytes": 22189,
+      "sha256": "ce4ce0711f893b6a9e4b2491f3644424b8e6caccdc1efde24e3499d2a9c7041d"
+    },
+    "MD5SUM": {
+      "version": "1.0",
+      "revision": 2,
+      "bytes": 18316,
+      "sha256": "692a83f1e21911987cdabba8747463a306ac5b46e6d91b7c8bc47d00a5576022"
+    },
+    "NOAH": {
+      "version": "1.0",
+      "revision": 18,
+      "bytes": 19068,
+      "sha256": "076c5486cf5638811258df6297ea122e046f885eecfd27f30bf878c87f10a51c",
+      "overlay_sha256": "49a1708ccdd11f00ab710e65feb50f2aa8487c5fcb5c94669f282e1cb511d818"
+    }
+  },
+  "prompt_scenarios": {
+    "checksums": 16,
+    "NOAH": 29
+  },
+  "existing_compiled_fixtures": {
+    "CRCKSUM": 129,
+    "MD5SUM": 87,
+    "NOAH_write_failure_quiet_cumulative": 90
+  },
+  "native": {
+    "CRCKSUM": "PASS",
+    "MD5SUM": "PASS",
+    "NOAH_changed_modules": {
+      "NOAH": {
+        "bytes": 19068,
+        "sha256": "076c5486cf5638811258df6297ea122e046f885eecfd27f30bf878c87f10a51c",
+        "native_parity": "PASS"
+      },
+      "NHCLI": {
+        "bytes": 22029,
+        "sha256": "f01221a583635a0ef779e5f51c239589c3bb92d42baab72519a6b5b839e90921",
+        "native_parity": "PASS"
+      }
+    }
+  },
+  "packaged_cpmsim": {
+    "status": "PASS",
+    "scope": "Repeated inline help then No; exact packaged primary and NOAH companion; unchanged target files and B/C images",
+    "volumes": {
+      "b": "d4642386326532972fc6d0e1069028cf67b08343523e40690fa9d3aa541ac5cf",
+      "c": "b39c3dbb4c833b38fd234f196af867c593f9b28efa200a501f66d32bbb5ff47e"
+    },
+    "binaries": {
+      "CRCKSUM.COM": "ce4ce0711f893b6a9e4b2491f3644424b8e6caccdc1efde24e3499d2a9c7041d",
+      "MD5SUM.COM": "692a83f1e21911987cdabba8747463a306ac5b46e6d91b7c8bc47d00a5576022",
+      "NOAH.COM": "076c5486cf5638811258df6297ea122e046f885eecfd27f30bf878c87f10a51c",
+      "NOAH.OVL": "49a1708ccdd11f00ab710e65feb50f2aa8487c5fcb5c94669f282e1cb511d818"
+    }
+  },
+  "primary_free_kib": 2,
+  "model4": "Not rerun; prior checksum deferrals retained; no NOAH waiver inferred"
+}

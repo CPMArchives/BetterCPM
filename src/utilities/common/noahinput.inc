@@ -49,6 +49,7 @@ NI_YES:
 ; Call only at a confirmed safe restart boundary: candidate staging must be
 ; absent and inputs restartable/closed. /Y never waits; Enter defaults to Skip.
 NI_FAILURE:
+        LD (NI_FCONTEXT),HL
         LD A,1
         LD (NS_WARNINGS),A
         LD A,(NS_YES)
@@ -94,8 +95,7 @@ NI_READ:
 NI_PAINT:
         LD A,(NI_FAILURE_MODE)
         OR A
-        LD DE,NI_FAILURE_TEXT
-        JP NZ,NH_PRINT
+        JR NZ,NI_FAIL_PAINT
         LD A,(NW_PROMPT)
         OR A
         JP NZ,NW_PAINT
@@ -113,6 +113,47 @@ NI_PAINT:
         JP Z,NH_PRINT
         LD DE,NI_BOTH_TEXT
         JP NH_PRINT
+NI_FAIL_PAINT:
+        CALL NI_FCALL
+        LD DE,NI_FAILURE_TEXT
+        JP NH_PRINT
+NI_FCALL:
+        LD HL,(NI_FCONTEXT)
+        JP (HL)
+; Failure context callbacks repeat the current identity without selecting it.
+NI_TARGET_CTX:
+        LD HL,NX_FINAL
+        CALL NX_PRINT_FCB
+        LD DE,NI_CONTEXT_SEP
+        JP NH_PRINT
+NI_WRITE_CTX:
+        PUSH IX
+        LD IX,NW_CONTEXT
+        CALL NW_PRINT_SOURCE
+        POP IX
+        RET
+NI_CODEC_CTX:
+        CALL NC_PRINT_SOURCE
+        LD DE,NI_CONTEXT_SEP
+        JP NH_PRINT
+; Only choice prompts consume help here. NI_READ also serves paging and stays raw.
+NI_CHOICE_READ:
+        CALL NI_READ
+        CP '?'
+        RET NZ
+        LD A,(NI_FAILURE_MODE)
+        OR A
+        LD DE,NI_FAILURE_HELP
+        JR NZ,NI_HELP
+        LD A,(NI_PROTECTED)
+        OR A
+        LD A,'?'
+        RET NZ
+        LD DE,NI_ORDINARY_HELP
+NI_HELP:
+        CALL NH_PRINT
+        CALL NI_PAINT
+        JR NI_CHOICE_READ
 NI_ERROR:
         LD DE,NI_INVALID_TEXT
         CALL NH_PRINT
@@ -133,23 +174,27 @@ NI_ECHO:
 NI_NEWLINE:
         LD DE,NH_NEWLINE
         JP NH_PRINT
-UIREAD EQU NI_READ
+UIREAD EQU NI_CHOICE_READ
 UI_VALID EQU NI_VALID
 UI_CLOSE EQU NI_CLOSE
 UC_PAINT EQU NI_PAINT
 UC_ERROR EQU NI_ERROR
 ; @choice-modules@
 NI_FAILURE_KEYS: DB 'RSA'
-NI_FAILURE_TEXT: DB 'Retry/Skip/Abort? R/S/A [S]: ','$'
+NI_FAILURE_TEXT: DB 'Retry/Skip/Abort? R/S/A/? [S]: ','$'
 NI_ABORT_TEXT: DB 'NOAH: Cancelled; remaining work unprocessed.',13,10,'$'
 NI_ORDINARY: DB 'YNAC'
 NI_PROTECTION: DB 'YN'
-NI_NORMAL_TEXT: DB ' exists. Replace? Y/N/A/C [N]: ','$'
+NI_NORMAL_TEXT: DB ' exists. Replace? Y/N/A/C/? [N]: ','$'
 NI_RO_TEXT: DB ' is protected [RO]. Replace? Y/N [N]: ','$'
 NI_SYS_TEXT: DB ' is protected [SYS]. Replace? Y/N [N]: ','$'
 NI_BOTH_TEXT: DB ' is protected [RO SYS]. Replace? Y/N [N]: ','$'
+NI_ORDINARY_HELP: DB '?',13,10,'Y Yes, N No, A All, C Cancel, ? Help',13,10,'$'
+NI_FAILURE_HELP: DB '?',13,10,'R Retry, S Skip, A Abort all, ? Help',13,10,'$'
+NI_CONTEXT_SEP: DB ' ','$'
 NI_INVALID_TEXT: DB 13,10,'Invalid choice. ','$'
 NOAH_INPUT_DATA MACRO
+NI_FCONTEXT: DW 0
 NI_FAILURE_MODE: DB 0
 NI_PROTECTED: DB 0
 NI_WAIT: DB 0

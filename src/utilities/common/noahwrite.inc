@@ -438,6 +438,7 @@ NW_SOURCE_FAILED:
  JP NZ,NW_IO_ERROR
  LD A,3
  CALL NA_WRITER_SET
+ LD HL,NI_WRITE_CTX
  CALL NI_FAILURE
  JP C,NW_CANCEL
  CP 'R'
@@ -864,6 +865,7 @@ NW_FAIL:
  JR C,NW_FINISH
  CALL NX_RETRY_CLEANUP
  JR C,NW_FINISH
+ LD HL,NI_TARGET_CTX
  CALL NI_FAILURE
  JR C,NW_FINISH
  CP 'R'
@@ -2580,7 +2582,7 @@ NW_DIR_ARROW: DB ' / ','$'
 NW_ACCEPTED_TEXT: DB 'Accepted source versions (hex): ', '$'
 NW_PARTIAL_TEXT: DB '; some sources skipped/failed', '$'
 NW_REPLACE_TEXT: DB ' member collision, incoming ', '$'
-NW_REPLACE_ASK: DB '. Replace? Y/N/A/C [N]: ','$'
+NW_REPLACE_ASK: DB '. Replace? Y/N/A/C/? [N]: ','$'
 NW_REMOVE_ASK: DB ' remove listed members? Y/N [N]: ','$'
 NW_COMPACT_ASK: DB ' discard deleted recovery data (and listed removals)? Y/N [N]: ','$'
 NOAH_WRITE_DATA MACRO

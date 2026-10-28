@@ -402,6 +402,17 @@ invocation. Show the currently accepted origin and incoming source where names
 collide. No unconditional first-source-wins rule exists: a larger replacement
 is safe because it is built separately, not over the old allocated region.
 
+Apply the [interactive prompt convention](Interactive%20Prompt%20Convention.md)
+to multi-action replacement and recovery prompts. Ordinary replacement displays
+`Replace? Y/N/A/C/? [N]:`; `?` prints
+`Y Yes, N No, A All, C Cancel, ? Help`. Safe recovery displays
+`Retry/Skip/Abort? R/S/A/? [S]:`; help is
+`R Retry, S Skip, A Abort all, ? Help`. Help repeats the same resolved
+output/member or failed source/archive context without changing policy,
+accounting or media. Repeated help is harmless. Simple protected/destructive
+Y/N questions and paging do not acquire help actions. `/Y` never waits for help;
+`/Q` retains these prompts and explanations. No new file actions are implied.
+
 Use the [shared input/UI library](Shared%20Input%20and%20UI%20Specification.md).
 Single-character answers are case-insensitive/immediate; invalid answers retain
 the question. Enter chooses displayed No defaults; ordinary collision prompts

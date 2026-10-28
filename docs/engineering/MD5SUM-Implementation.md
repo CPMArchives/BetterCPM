@@ -29,13 +29,13 @@ python3 tools/test_md5sum.py
 python3 tools/build_native_md5sum.py
 ```
 
-The registry assigns MD5SUM version 1.0, revision 001. Without a qualified
-baseline, identification displays `MD5SUM 1.0 (001-dev)`. The current COM is
-18,397 bytes, including fixed working storage and a 512-byte private stack. It
-loads at 0100h and ends at 48DDh (exclusive). SHA-256:
+The registry assigns MD5SUM version 1.0, revision 002. Without a qualified
+baseline, identification displays `MD5SUM 1.0 (002-dev)`. The current COM is
+18,316 bytes, including fixed working storage and a 512-byte private stack. It
+loads at 0100h and ends at 488Ch (exclusive). SHA-256:
 
 ```text
-dc96564312b1fbf18c0114c295febfea27a521dea369f2358c96f9b533e6f9a4
+692a83f1e21911987cdabba8747463a306ac5b46e6d91b7c8bc47d00a5576022
 ```
 
 MD5 uses a 64-byte block, sixteen-byte state, four-byte step temporary and
@@ -53,8 +53,9 @@ unsupported, embedded-NUL/high-bit, invalid-filename and overlong records.
 Reference line numbers include malformed physical lines. Input mode markers
 never enable target text conversion.
 
-A checked-in [qualification summary](MD5SUM-Qualification.json) binds these
-results to the current binary, native source and cpmsim Utilities image.
+The original revision 001 [qualification summary](MD5SUM-Qualification.json)
+binds that earlier campaign to its binary and images. The current prompt-help
+increment has separate evidence linked at the end of this document.
 
 ## Focused evidence
 
@@ -158,3 +159,16 @@ would not complete the full Model 4 campaign. Stack guards are not a physical
 interrupt worst-case stack proof; maximum directory sizes and all 512 DUs have
 not been exhaustively run on hardware. No qualified baseline, frozen disk
 release or whole-disk acceptance is promoted here.
+
+## Inline prompt-help increment
+
+The current revision adds `?` to existing multi-action replacement prompts;
+choices and defaults are unchanged. Older broad campaigns above apply to their
+recorded artifacts. Current focused/native/packaged evidence is described in
+[Utility Prompt Help Qualification](Utility%20Prompt%20Help%20Qualification.md).
+The Model 4 validation deferral remains in effect; no new Model 4 PASS is claimed.
+
+MD5SUM's console-row buffer is now 128 bytes; reference text retains its separate
+256-byte buffer. The longest generated digest/name row is 46 characters, and
+verification diagnostics fit within the console buffer. This avoids spending
+another allocation block merely to add help; saved formats are unchanged.

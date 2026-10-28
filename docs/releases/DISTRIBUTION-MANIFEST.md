@@ -45,7 +45,7 @@ All membership or layout changes require discussion with the maintainer.
 
 ## Utilities Disk
 
-- CRCKSUM.COM: CRCKSUM 1.0 revision 005 development candidate, supporting historical
+- CRCKSUM.COM: CRCKSUM 1.0 revision 006 development candidate, supporting historical
   CRCK, corrected CRCK5, CHEK, CRC-32, SUM8, SUM16, KERM6 and KERM12, native and legacy saved lists, and
   local verification against native lists and original SIG/M catalogs.
   Newly generated candidate images include CRCKSUM with its prepared native source
@@ -55,7 +55,7 @@ All membership or layout changes require discussion with the maintainer.
   are not asserted.
   See [CRC implementation notes](../engineering/CRC-Implementation.md).
 
-- MD5SUM.COM: MD5SUM 1.0 revision 001 development candidate. Conventional
+- MD5SUM.COM: MD5SUM 1.0 revision 002 development candidate. Conventional
   md5sum lists, stored-record byte coverage, master/local output and local
   verification. Native/cross parity and focused packaged cpmsim checks pass;
   The maintainer waived/deferred remaining Model 4 validation; paired release

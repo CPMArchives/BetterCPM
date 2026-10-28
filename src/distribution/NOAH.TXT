@@ -44,4 +44,11 @@ Selection is frozen, up to 512 candidates; actual transaction capacity
 also depends on active TPA, source plans and codec workspaces. Low-memory
 requests fail before the archive is changed. ZIP, LZH/CrLZH and the
 interactive archive browser remain future work.
+
+Inline help: ordinary replacement offers Y/N/A/C/? (default No).
+? explains: Y Yes, N No, A All, C Cancel, ? Help.
+Safe recovery offers R/S/A/? (default Skip).
+? explains: R Retry, S Skip, A Abort all, ? Help.
+Help repeats the same item without changing policy or files. /Y never waits;
+/Q retains required prompts/help. Simple Y/N and paging are unchanged.
 

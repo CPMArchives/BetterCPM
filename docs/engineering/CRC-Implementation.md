@@ -11,8 +11,8 @@ controlling design is [CRC-Specification.md](CRC-Specification.md).
 `src/utilities/crc.mac` composes modules for command validation, sorted DU
 traversal, eight streaming integrity values, display, reference parsing and output
 transactions. The builder reuses the existing shared DU/filespec/attribute parser
-and RCP FCB builder. The component registry assigns CRCKSUM 1.0 revision 005; without
-a qualified baseline the displayed identity remains `CRCKSUM 1.0 (005-dev)`.
+and RCP FCB builder. The component registry assigns CRCKSUM 1.0 revision 006; without
+a qualified baseline the displayed identity remains `CRCKSUM 1.0 (006-dev)`.
 
 ```sh
 python3 tools/build_crc.py
@@ -30,9 +30,9 @@ candidate retains 20K free after allocating 22K to CRCKSUM. The Model 4 candidat
 uses the existing 800K data format.
 
 The current COM image has SHA-256
-`d91d9f2b6abf6eecc221271cd94b12fd1aa9d292824ca2475213cd3b2efc36bd`.
-It occupies 22,142 bytes, including private data and its
-512-byte stack; it loads at 0100h and ends at 577Eh. Storage is bounded by
+`ce4ce0711f893b6a9e4b2491f3644424b8e6caccdc1efde24e3499d2a9c7041d`.
+It occupies 22,189 bytes, including private data and its
+512-byte stack; it loads at 0100h and ends at 57ADh. Storage is bounded by
 the 127-byte command tail: at most 64 operand tokens, 512 selected DUs, 64
 active filename patterns, fixed line/record buffers and two output streams.
 There is no fixed directory-entry or reference-entry array. Alphabetical
@@ -166,3 +166,11 @@ physical directory and all 512 DUs were not exercised on hardware. Paired disk
 placement, capacity, readback and corresponding-source packaging now pass;
 The remaining Model 4 runtime checks are waived for this PR; exact paired
 release acceptance is not asserted. Fixtures remain available for future testing.
+
+## Inline prompt-help increment
+
+The current revision adds `?` to existing multi-action replacement prompts;
+choices and defaults are unchanged. Older broad campaigns above apply to their
+recorded artifacts. Current focused/native/packaged evidence is described in
+[Utility Prompt Help Qualification](Utility%20Prompt%20Help%20Qualification.md).
+The Model 4 validation deferral remains in effect; no new Model 4 PASS is claimed.

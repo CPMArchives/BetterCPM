@@ -6,3 +6,6 @@ third_party/ted/** -text -whitespace
 # Preserve CP/M distribution text with CRLF and terminal EOF bytes.
 src/distribution/TED.TXT -text whitespace=cr-at-eol
 src/distribution/TEDCOPY.TXT -text whitespace=cr-at-eol
+
+# CP/M text retains CRLF line endings.
+src/distribution/NOAH.TXT whitespace=cr-at-eol

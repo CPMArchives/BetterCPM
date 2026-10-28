@@ -469,8 +469,11 @@ Output lists and temporary files are excluded from input selection. If master an
 If a destination exists, CRCKSUM displays its full identity:
 
 ```text
-B3:CRC.LST exists. Overwrite? (Y/n/a)
+B3:CRC.LST exists. Overwrite? (Y/n/a/?)
 ```
+
+Type `?` for `Y Yes, N No, A All, ? Help`; the same file's question is
+then repeated. Help changes no files or choices. Enter still means Yes.
 
 Y or Enter replaces that list. N leaves it alone and continues other requested outputs. A authorizes this and subsequent list replacements for this run. Ctrl-C cancels. CRCKSUM stages output before replacing a completed list. A failed or cancelled operation does not deliberately install a partial list under the final name; any recovery failure identifies the files left behind. Check the final output totals to see which lists were completed, declined or failed.
 
@@ -632,8 +635,11 @@ LOCAL takes only a name because each target DU supplies its location. For exampl
 Before replacing a list, MD5SUM asks:
 
 ```text
-B3:MD5SUM.LST exists. Overwrite? (Y/n/a)
+B3:MD5SUM.LST exists. Overwrite? (Y/n/a/?)
 ```
+
+Type `?` for `Y Yes, N No, A All, ? Help`; the same file's question is
+then repeated. Help changes no files or choices. Enter still means Yes.
 
 Y or Enter replaces this destination. N leaves it alone and continues other outputs. A authorizes this and later replacements in this run. Ctrl-C cancels. Output is staged before replacing a completed list. Handled failures or cancellation discard uncommitted output; recovery failures identify any files left behind. Completed independent local lists remain available even if another output fails.
 
@@ -1492,6 +1498,13 @@ length is available; 00h, 1Ah and high-bit bytes are ordinary input data.
 overrides read-only/system protection; `/R` and `/SYS` enable separate protected
 questions. `/Q` suppresses routine progress, retaining choices, warnings, errors
 and the final outcome. Escape or Ctrl-C cancels at safe boundaries.
+
+NOAH's ordinary replacement prompt offers `Y/N/A/C/?`, default No. Type `?`
+for `Y Yes, N No, A All, C Cancel, ? Help`. Safe failure recovery offers
+`R/S/A/?`, default Skip; its help is `R Retry, S Skip, A Abort all, ? Help`.
+Each explanation returns to the same file/member or failed source/archive.
+Repeated help changes no files or choices. Simple protection/removal/COMPACT
+Yes/No confirmations and paging retain their existing controls.
 
 Ordinary ARC updates preserve retained headers/payloads and the entire suffix
 after the end marker. COMPACT trims only excess 00h/1Ah padding and refuses an
