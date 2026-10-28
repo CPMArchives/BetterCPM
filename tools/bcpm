@@ -20,6 +20,8 @@ disksloc="$z80packloc/disks"
 trs80_distribution="$repo/build/trs80/BetterCPM-Distribution-trs80gp-80T-DS-System.dmk"
 utilitiesloc="$repo/build/utilities-disks"
 cpmsim_utilities="$utilitiesloc/BetterCPM-Utilities-z80pack-332K.dsk"
+cpmsim_companion="$utilitiesloc/BetterCPM-NOAH-z80pack-332K.dsk"
+trs80_companion="$utilitiesloc/BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk"
 trs80_utilities="$utilitiesloc/BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk"
 trs80gp_exe="$HOME/trs80/trs80gp-2/mac/trs80gp.app/Contents/MacOS/trs80gp"
 prog="$(basename "$0")"
@@ -162,7 +164,7 @@ Usage: $prog build
        $prog build -h
 
 Build fresh System and provisional Utilities images for both emulators.
-Mount Utilities as drive B for subsequent launches.
+Mount primary Utilities as B: and companion Utilities as C:.
 EOF2
 }
 
@@ -183,7 +185,7 @@ t_usage()
 Usage: $prog t
        $prog t -h
 
-Launch trs80gp with the System Disk as A: and Utilities as B:.
+Launch trs80gp with System A:, primary Utilities B:, companion C:, work D:.
 EOF2
 }
 
@@ -201,6 +203,21 @@ mount_utilities_b()
     fi
     ln -sfn "$cpmsim_utilities" "$driveb"
     printf 'driveb.dsk -> %s\n' "$cpmsim_utilities"
+}
+
+mount_utilities_c()
+{
+    if [ ! -f "$cpmsim_companion" ]; then
+        echo "$prog: companion Utilities disk not found; run '$prog build' first" >&2
+        return 1
+    fi
+    local drivec="$disksloc/drivec.dsk"
+    if [ -e "$drivec" ] && [ ! -L "$drivec" ]; then
+        echo "$prog: refusing to replace non-symlink drive C: $drivec" >&2
+        return 1
+    fi
+    ln -sfn "$cpmsim_companion" "$drivec"
+    printf 'drivec.dsk -> %s\n' "$cpmsim_companion"
 }
 
 trs80_keyboard_cheat_sheet()
@@ -253,10 +270,15 @@ cmd_t()
         exit 1
     fi
     trs80_keyboard_cheat_sheet
-    # B: is Utilities. Keep the development/build disk available as C:.
+    if [ ! -f "$trs80_companion" ]; then
+        echo "$prog t: companion Utilities disk not found; run '$prog build' first" >&2
+        exit 1
+    fi
+    # B: primary Utilities; C: companion; D: development/work disk.
     "$trs80gp_exe" -frehd -d0 "$trs80_distribution" \
         -d1 "$trs80_utilities" \
-        -d2 "$repo/build/trs80/BetterCPM-Build-80T-DS-800K.dmk" &
+        -d2 "$trs80_companion" \
+        -d3 "$repo/build/trs80/BetterCPM-Build-80T-DS-800K.dmk" &
 }
 
 cmd_build()
@@ -285,6 +307,7 @@ cmd_build()
     fi
     BCPM_REPO="$repo" python3 "$utilities_builder" --build
     mount_utilities_b
+    mount_utilities_c
 }
 
 cmd_z()
@@ -312,6 +335,7 @@ cmd_z()
         exit 1
     fi
     mount_utilities_b
+    mount_utilities_c
     ln -sfn "$cpmsim_distribution" "$drivea"
     printf 'drivea.dsk -> %s\n' "$cpmsim_distribution"
     cd "$z80packloc"
