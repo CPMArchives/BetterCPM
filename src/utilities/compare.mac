@@ -666,14 +666,7 @@ EOFMSG: DB '---- EOF ----',0
 MINUSEIGHT: DB '--------',0
 PROMPT: DB 'Space/Enter: next; Ctrl-C/Q/Esc: stop',0
 STOPMSG: DB 'DISPLAY INTERRUPTED',13,10,'COMPARISON CONTINUING...',13,10,0
-HELPTEXT:
-        DB 'COMPARE - read-only binary comparison',13,10
-        DB 'Usage: COMPARE [options] file1 file2',13,10
-        DB '/LIST /SIDE /SUM /SUMMARY',13,10
-        DB '/COUNT=1..65535 (decimal) /ALL',13,10
-        DB '/FROM=hex[H] /FROM2=hex[H] /LEN=hex[H]',13,10
-        DB '/P /40 (with /SIDE) /VER /HELP',13,10
-        DB 'Single DU operands; no wildcards.',13,10,0
+; @compare-help@
 OLDSP: DW 0
 STATE:
 ODRIVE: DB 0

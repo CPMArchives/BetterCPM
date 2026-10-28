@@ -119,6 +119,15 @@ def main():
     def run(*args,**kwargs):
         nonlocal count
         count+=1;return execute(*args,**kwargs)
+    from component_identity import title
+    from utility_versions import identities,display_development
+    version,revision=identities()['COMPARE']
+    help_result=run(tail='/HELP')['text']
+    lines=help_result.splitlines()
+    assert lines[:5]==[title('COMPARE',version,revision,development=display_development('utility:COMPARE')),'  - - -',' | Binary File Comparison',' |',' |   Usage: COMPARE [options] file1 file2 [options]']
+    assert len(lines)<=23 and max(map(len,lines))<=79
+    assert 'BetterCP/M Utilities' not in help_result
+    assert lines[-2:]==['     /HELP         Display this help.','     /VER          Display utility identification.']
     for tail in ('/VER','BAD /help /VER','/HELP invalid','/helper /help'):
         r=run(tail=tail);assert not set(r['services'])&{15,25,32},r
     for tail in ('','A.BIN','A.BIN B.BIN C.BIN','*.BIN B.BIN','A[3]:A.BIN B.BIN',

@@ -17,8 +17,7 @@ OPENFILE:
         CALL FCBDE
         LD C,35
         CALL SERVICE
-        CP 255
-        JR Z,SIZEBAD
+        ; Function 35 returns size in the FCB, not a defined accumulator value.
         LD A,(IX+33)
         LD (IX+FL),A
         LD A,(IX+34)

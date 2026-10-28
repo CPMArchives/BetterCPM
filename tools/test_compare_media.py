@@ -55,7 +55,7 @@ def main():
                (b'\x03',b'A0>_ ',30)]
         steps=[(out.replace(b':COMPARE',executable.encode()),wanted,timeout) for out,wanted,timeout in steps]
         text=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',w/'disks',steps,w/'transcript.txt')
-        for marker in (b'COMPARE 1.0 (001-dev)',b'BYTE MISMATCHES: 2',b'ADDITIONAL IN FILE 1: 128',b'00000004        07<>--------        01',b'DISPLAY INTERRUPTED',b'COMPARISON CONTINUING...'):
+        for marker in (b'COMPARE 1.0 (002-dev)',b'BYTE MISMATCHES: 2',b'ADDITIONAL IN FILE 1: 128',b'00000004        07<>--------        01',b'DISPLAY INTERRUPTED',b'COMPARISON CONTINUING...'):
             assert marker in text,(marker,text[-2000:])
         assert disk.read_bytes()==before,'COMPARE changed cpmsim media'
         for drive,before_volume in volumes.items():
