@@ -6,10 +6,31 @@ import tempfile
 import unittest
 import zipfile
 from build_qualified_cpmsim import project_revision
-from package_release_candidates import checked_name, encoded, read_report, sha, write_package
+from package_release_candidates import checked_name, encoded, read_report, sha, write_package, upstream_bundle
 
 
 class ReleaseCandidateTests(unittest.TestCase):
+    def test_offline_bundle_restores_exact_unreferenced_pin(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);repo=root/'upstream';repo.mkdir()
+            subprocess.run(['git','init','-q',str(repo)],check=True)
+            (repo/'source.c').write_text('pinned source\n')
+            subprocess.run(['git','-C',str(repo),'add','.'],check=True)
+            subprocess.run(['git','-C',str(repo),'-c','user.name=Test','-c',
+                            'user.email=test@example.com','commit','-qm','pin'],check=True)
+            pin=subprocess.check_output(['git','-C',str(repo),'rev-parse','HEAD']).decode().strip()
+            (repo/'source.c').write_text('later source\n')
+            subprocess.run(['git','-C',str(repo),'-c','user.name=Test','-c',
+                            'user.email=test@example.com','commit','-qam','later'],check=True)
+            refs=subprocess.check_output(['git','-C',str(repo),'show-ref'])
+            bundle=root/'source.bundle';upstream_bundle(repo,pin,bundle)
+            self.assertEqual(refs,subprocess.check_output(['git','-C',str(repo),'show-ref']))
+            restored=root/'offline';subprocess.run(['git','init','-q',str(restored)],check=True)
+            subprocess.run(['git','-C',str(restored),'fetch',str(bundle),
+                            'refs/heads/bettercpm-pinned'],check=True,capture_output=True)
+            self.assertEqual(subprocess.check_output(['git','-C',str(restored),'show',
+                             pin+':source.c']),b'pinned source\n')
+
     def test_rejects_image_drift_and_wrong_commit(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);(root/'system.dsk').write_bytes(b'original')

@@ -89,6 +89,19 @@ def source_files():
     return result
 
 
+def upstream_bundle(repository, commit, destination):
+    """Bundle an exact commit without adding a ref to the caller's repository."""
+    with tempfile.TemporaryDirectory(prefix='bcpm-bundle-source-') as tmp:
+        private=Path(tmp)/'source.git'
+        subprocess.run(['git','clone','--bare','--shared',str(repository),str(private)],
+                       check=True,capture_output=True)
+        subprocess.run(['git','-C',str(private),'update-ref','refs/heads/bettercpm-pinned',commit],check=True)
+        subprocess.run(['git','-C',str(private),'bundle','create',str(destination),
+                        'refs/heads/bettercpm-pinned'],check=True)
+        subprocess.run(['git','-C',str(private),'bundle','verify',str(destination)],
+                       check=True,capture_output=True)
+
+
 def assemble(args):
     if git('status','--porcelain','--untracked-files=no').strip():
         raise ValueError('candidate assembly requires clean tracked source')
@@ -110,13 +123,12 @@ def assemble(args):
         raise ValueError('runtime reconstruction receipt differs from candidate source')
     with tempfile.TemporaryDirectory(prefix='bcpm-upstream-bundle-') as tmp:
         bundle=Path(tmp)/'z80pack-pinned.bundle'
-        subprocess.run(['git','-C',str(args.upstream),'bundle','create',str(bundle),pin['commit']],check=True)
-        subprocess.run(['git','-C',str(args.upstream),'bundle','verify',str(bundle)],check=True,capture_output=True)
+        upstream_bundle(args.upstream,pin['commit'],bundle)
         upstream=bundle.read_bytes()
     upstream_name='z80pack-'+pin['commit']+'.bundle'
     restore=('Pinned upstream source for offline emulator reconstruction\n\n'
              'From this directory run:\n  git init z80pack-upstream\n'
-             f'  git -C z80pack-upstream fetch ../{upstream_name} {pin["commit"]}\n'
+             f'  git -C z80pack-upstream fetch ../{upstream_name} refs/heads/bettercpm-pinned\n'
              f'  git -C z80pack-upstream checkout --detach {pin["commit"]}\n'
              'Then pass that repository to tools/build_qualified_cpmsim.py --source.\n'
              'Use --profile runtime for ordinary operation. Keep the build environment.json.\n').encode()
