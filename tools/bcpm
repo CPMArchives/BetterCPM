@@ -203,6 +203,32 @@ mount_utilities_b()
     printf 'driveb.dsk -> %s\n' "$cpmsim_utilities"
 }
 
+trs80_keyboard_cheat_sheet()
+{
+    # Physical host keys from trs80gp Keyboard help; Ctrl punctuation from
+    # src/platform/trs80m4/m4cons.inc (BetterCP/M editor-key mapping).
+    cat <<'KEYBOARD_HELP'
++--------------------------------------------------------+
+| TRS80GP Keyboard Cheat Sheet                           |
+|                                                        |
+| Set Keyboard -> Physical Layout                        |
+| Mac keyboard / BetterCP/M Model 4                      |
+|                                                        |
+| Character   Press          Character   Press           |
+| :           -              =           Shift+=         |
+| -           =              *           Shift+-         |
+| [           Ctrl+8         ]           Ctrl+9          |
+| ^           Ctrl+5         _           Ctrl+=          |
+| (           Shift+8        )           Shift+9         |
+| +           Shift+;        @           [               |
+| "           Shift+2        '           Shift+7         |
+|                                                        |
+| CLEAR / ESC: Fn+Left (Home)                            |
+| Break / Ctrl-C: Esc                                    |
++--------------------------------------------------------+
+KEYBOARD_HELP
+}
+
 cmd_t()
 {
     if [ "$#" -eq 1 ] && [ "$1" = "-h" ]; then
@@ -226,6 +252,7 @@ cmd_t()
         echo "$prog t: Utilities disk not found; run '$prog build' first" >&2
         exit 1
     fi
+    trs80_keyboard_cheat_sheet
     # B: is Utilities. Keep the development/build disk available as C:.
     "$trs80gp_exe" -frehd -d0 "$trs80_distribution" \
         -d1 "$trs80_utilities" \
