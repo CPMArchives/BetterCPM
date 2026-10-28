@@ -180,6 +180,8 @@ WPKEY:
         CALL BDOS
         CP 3
         JR Z,WPCANCEL
+        CP '?'
+        JR Z,WPHELP
         CP 13
         JR Z,WPYES
         AND 0DFH
@@ -195,6 +197,11 @@ WPYES:
 WPANSWER:
         LD (WRESPONS),A
         JP NL
+WPHELP:
+        CALL NL
+        LD HL,MSGPHELP
+        CALL TEXT
+        JP WPROMPT
 WPCANCEL:
         LD A,1
         LD (CANCEL),A
@@ -679,6 +686,7 @@ WTNUMBER: DW 0
 WPUSER: DS 4
 WRESPONS: DB 0
 WTEMPLAT: DB 'CRC00000$$$'
-MSGPROMP: DB ' exists.',13,10,'Overwrite? (Y/n/a) ',0
+MSGPHELP: DB 'Y Yes, N No, A All, ? Help',13,10,0
+MSGPROMP: DB ' exists.',13,10,'Overwrite? (Y/n/a/?) ',0
 MSGOUTPU: DB 'CRCKSUM: output transaction failed',13,10,0
 MSGRECOV: DB 'CRCKSUM: recovery incomplete; retain CRC*.BAK',13,10,0

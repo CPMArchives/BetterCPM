@@ -196,8 +196,13 @@ If master and local output resolve to the same DU/name, open, prompt and write t
 Before replacing any existing destination, identify the full DU and filename:
 
 ```text
-B3:CRC.LST exists. Overwrite? (Y/n/a)
+B3:CRC.LST exists. Overwrite? (Y/n/a/?)
 ```
+
+`?` prints `Y Yes, N No, A All, ? Help` and repeats the full DU/name and
+original prompt. Repeated help does not change choices, defaults, All policy,
+counters or staged/final output. This follows the
+[interactive prompt convention](Interactive%20Prompt%20Convention.md).
 
 Y or Enter replaces this destination. N leaves it unchanged and skips this destination, continuing screen output and other destinations. A replaces this and subsequent existing output destinations in this invocation without more prompts. Ctrl-C cancels. Responses are case-insensitive. Declined outputs must be counted and reported, not claimed as generated.
 

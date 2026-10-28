@@ -577,7 +577,7 @@
       "builders": [
         "tools/build_noah.py"
       ],
-      "revision": 17,
+      "revision": 18,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -1014,7 +1014,7 @@
       "builders": [
         "tools/build_crc.py"
       ],
-      "revision": 5,
+      "revision": 6,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "tracked-conservative; shared DU/filespec/attribute parser and FCB builder",
@@ -1037,7 +1037,7 @@
       "builders": [
         "tools/build_md5sum.py"
       ],
-      "revision": 1,
+      "revision": 2,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "tracked-conservative; shared CRCKSUM file engine and DU parser",

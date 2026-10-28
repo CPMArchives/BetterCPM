@@ -1,7 +1,8 @@
 # BetterCP/M 1.0 interactive inline-help convention
 
-Status: common UI convention proposed and recorded on 2026-10-10. This document
-does not change existing executable behavior or introduce a general help service.
+Status: established common UI convention, recorded on 2026-10-10 and reaffirmed
+by the maintainer on 2026-10-28. It introduces no general help service. Individual
+utility implementations and their qualification are recorded separately.
 
 ## Scope and behavior
 
@@ -95,3 +96,26 @@ changing counts, policy, or media. Check R/S/A individually, invalid responses,
 and the utility's established Ctrl-C behavior. Verify unattended modes never
 prompt. Quiet-mode checks must follow each utility's documented interaction
 policy. Simple Y/N and paging behavior must not acquire a help menu.
+
+## Recent utility compliance — 2026-10-28
+
+CRCKSUM, MD5SUM and NOAH now apply this convention to existing multi-action
+prompts. These are help/reprompt corrections, not additional file operations.
+
+| Prompt | Choices and default | One-line help |
+| --- | --- | --- |
+| CRCKSUM/MD5SUM list replacement | `Overwrite? (Y/n/a/?)`; Enter still means Yes | `Y Yes, N No, A All, ? Help` |
+| NOAH ordinary output/member replacement | `Replace? Y/N/A/C/? [N]:`; Enter still means No | `Y Yes, N No, A All, C Cancel, ? Help` |
+| NOAH safe failure recovery | `Retry/Skip/Abort? R/S/A/? [S]:`; Enter still means Skip | `R Retry, S Skip, A Abort all, ? Help` |
+
+Repeated help repeats the original resolved DU/filename, or archive/member
+collision context. NOAH recovery also repeats the failed source, output or
+archive identity. Help is consumed before the choice controller accepts an
+action: it does not set All, retry, skip, approve protection, modify accounting
+or change staged/final files. `/Y` remains unattended, while `/Q` retains
+required prompts/help. Protected and destructive Yes/No confirmations, paging,
+and file-action availability remain unchanged. Rename/View/Expand/Delete are
+not introduced by this correction.
+
+See [the compliance qualification notes](Utility%20Prompt%20Help%20Qualification.md)
+for current revisions, measured artifacts and verification limits.

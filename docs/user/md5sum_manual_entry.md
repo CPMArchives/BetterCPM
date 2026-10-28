@@ -84,8 +84,11 @@ LOCAL takes only a name because each target DU supplies its location. For exampl
 Before replacing a list, MD5SUM asks:
 
 ```text
-B3:MD5SUM.LST exists. Overwrite? (Y/n/a)
+B3:MD5SUM.LST exists. Overwrite? (Y/n/a/?)
 ```
+
+Type `?` for `Y Yes, N No, A All, ? Help`; the same file's question is
+then repeated. Help changes no files or choices. Enter still means Yes.
 
 Y or Enter replaces this destination. N leaves it alone and continues other outputs. A authorizes this and later replacements in this run. Ctrl-C cancels. Output is staged before replacing a completed list. Handled failures or cancellation discard uncommitted output; recovery failures identify any files left behind. Completed independent local lists remain available even if another output fails.
 

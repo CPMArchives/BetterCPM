@@ -121,8 +121,11 @@ Output lists and temporary files are excluded from input selection. If master an
 If a destination exists, CRCKSUM displays its full identity:
 
 ```text
-B3:CRC.LST exists. Overwrite? (Y/n/a)
+B3:CRC.LST exists. Overwrite? (Y/n/a/?)
 ```
+
+Type `?` for `Y Yes, N No, A All, ? Help`; the same file's question is
+then repeated. Help changes no files or choices. Enter still means Yes.
 
 Y or Enter replaces that list. N leaves it alone and continues other requested outputs. A authorizes this and subsequent list replacements for this run. Ctrl-C cancels. CRCKSUM stages output before replacing a completed list. A failed or cancelled operation does not deliberately install a partial list under the final name; any recovery failure identifies the files left behind. Check the final output totals to see which lists were completed, declined or failed.
 
