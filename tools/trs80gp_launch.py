@@ -1,6 +1,7 @@
 """Launch trs80gp with a valid macOS application context and writable cwd."""
 from __future__ import annotations
 
+import ctypes
 import os
 import shlex
 import signal
@@ -12,15 +13,59 @@ from pathlib import Path
 from typing import Sequence
 
 
+
+class LaunchServicesUnavailable(RuntimeError):
+    """The caller cannot use the macOS service required to initialize AppKit."""
+
+
+def launch_services_lookup() -> int:
+    """Read-only Mach-service lookup; do not launch an app to test permission.
+
+    1100 is BOOTSTRAP_NOT_PRIVILEGED, defined in the macOS SDK bootstrap.h.
+    A successful lookup merely obtains a send right, which is released here.
+    """
+    lib = ctypes.CDLL('/usr/lib/libSystem.B.dylib')
+    bootstrap = ctypes.c_uint.in_dll(lib, 'bootstrap_port').value
+    task = ctypes.c_uint.in_dll(lib, 'mach_task_self_').value
+    lib.bootstrap_look_up.argtypes = [ctypes.c_uint, ctypes.c_char_p,
+                                     ctypes.POINTER(ctypes.c_uint)]
+    lib.bootstrap_look_up.restype = ctypes.c_int
+    lib.mach_port_deallocate.argtypes = [ctypes.c_uint, ctypes.c_uint]
+    lib.mach_port_deallocate.restype = ctypes.c_int
+    port = ctypes.c_uint()
+    result = lib.bootstrap_look_up(bootstrap,
+        b'com.apple.coreservices.launchservicesd', ctypes.byref(port))
+    if result == 0:
+        lib.mach_port_deallocate(task, port.value)
+    return result
+
+
+def require_launch_services() -> None:
+    result = launch_services_lookup()
+    if result == 0:
+        return
+    reason = ('permission denied (BOOTSTRAP_NOT_PRIVILEGED)' if result == 1100
+              else 'service lookup failed')
+    raise LaunchServicesUnavailable(
+        f'macOS LaunchServices {reason}, code {result}. '
+        'trs80gp was not started: AppKit application registration cannot '
+        'complete in this execution context. Permit this launch through the '
+        'host approval mechanism or run the same test from a normal Terminal. '
+        'This is a host launch failure, not a Model 4 test result.')
+
+
 def run(command: Sequence[str], *, cwd: Path, timeout: int,
         check: bool = True) -> subprocess.CompletedProcess:
     """Run one batch command, using LaunchServices for a macOS app bundle."""
     invocation = [str(item) for item in command]
     executable = Path(invocation[0]).resolve()
     if (sys.platform != "darwin" or
-            os.environ.get("BETTERCPM_TRS80GP_DIRECT") == "1" or
             executable.parent.name != "MacOS" or
             executable.parent.parent.parent.suffix != ".app"):
+        return subprocess.run(invocation, cwd=cwd, check=check, timeout=timeout)
+
+    require_launch_services()
+    if os.environ.get("BETTERCPM_TRS80GP_DIRECT") == "1":
         return subprocess.run(invocation, cwd=cwd, check=check, timeout=timeout)
 
     cwd = Path(cwd).resolve()
