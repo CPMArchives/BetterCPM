@@ -80,6 +80,14 @@ mechanism. The broader terminal-capability redesign remains post-1.0 work.
 
 The authoritative scope and implementation sequence are defined by the [`BetterCP/M 1.0 Roadmap`](docs/releases/1.0-ROADMAP.md) and [`1.0 Implementation Contracts`](docs/releases/1.0-IMPLEMENTATION-CONTRACTS.md).
 
+## Release downloads
+
+The planned BetterCP/M 1.0 release has five downloads: System for cpmsim, System
+for Model 4, Utilities, Source and Documentation. See the
+[release-package layout](docs/releases/1.0-RELEASE-PACKAGES.md) for contents,
+source/patch requirements and outstanding acceptance checks. These are planned
+assets, not a published or accepted release.
+
 ## Building BetterCP/M
 
 The complete current development image can be generated with:
