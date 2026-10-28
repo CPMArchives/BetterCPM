@@ -1,0 +1,437 @@
+{
+  "date": "2026-10-28",
+  "status": "CANDIDATES ONLY; release acceptance pending",
+  "candidate_commit": "021f53143292e80f2739b7c99f3e6e180816d6fd",
+  "candidate_archives": [
+    {
+      "filename": "BetterCPM-1.0-System-cpmsim-candidate.zip",
+      "sha256": "b47103b53c25081ca42aba04e522051091bf2dfb1061dbfc636d789c02c048ab",
+      "size_bytes": 76741845
+    },
+    {
+      "filename": "BetterCPM-1.0-System-Model4-candidate.zip",
+      "sha256": "e0befd29578ba478a7ded919ac9fde8f9959274660418850e7c772924c714d9c",
+      "size_bytes": 3773414
+    },
+    {
+      "filename": "BetterCPM-Utilities-1.0-candidate.zip",
+      "sha256": "9dc1adb29ce06382aba87e813cabce6c0d4c175db35e027319a6d67ac308e6c4",
+      "size_bytes": 194914822
+    },
+    {
+      "filename": "BetterCPM-1.0-Source-candidate.zip",
+      "sha256": "8de7bfb4a668119870d064302ec7ab1bf4452215efd884b920479486efb036a2",
+      "size_bytes": 366034959
+    },
+    {
+      "filename": "BetterCPM-1.0-Documentation-candidate.zip",
+      "sha256": "dfdc28695b4646747e75a553f9a4974084c57764a9fc6a566863889b0a80862e",
+      "size_bytes": 3233257
+    }
+  ],
+  "system_candidates": {
+    "z80pack": {
+      "image": "BetterCPM-Distribution-z80pack-332K.dsk",
+      "sha256": "11f0179d5ab9b6cbee1a07996f5113e51e0af3e70541d20a99423f5e15870793",
+      "validation": {
+        "filesystem": "PASS",
+        "file_integrity": "PASS",
+        "config_fingerprint": "PASS",
+        "boot": "PASS"
+      },
+      "CONFIG": {
+        "name": "CONFIG.COM",
+        "artifact": "build/utilities/CONFIG.COM",
+        "status": "implemented",
+        "targets": [
+          "z80pack",
+          "trs80gp"
+        ],
+        "user": 0,
+        "bytes": 15554,
+        "sha256": "7045522e8d8135f12d6b2ebcc9d553ebb658fdf2c49c37d0c7364c25c5bb7bd4"
+      },
+      "release_record_revision": "1c32669477fa119868190478cc79fcbb79aea6297c3d748da17fc4adf75190c1",
+      "report_sha256": "852aed68ff0795b3b8c4e23f8081471b4b1cce6b2c01bbf88ae25c393a246e24"
+    },
+    "trs80gp": {
+      "image": "BetterCPM-Distribution-trs80gp-80T-DS-System.dmk",
+      "sha256": "804be0fdad95ea96cc71c4bf943d37959b49caa69bf6519c9dbad9cfa8970b86",
+      "validation": {
+        "filesystem": "PASS",
+        "file_integrity": "PASS",
+        "config_fingerprint": "PASS",
+        "boot": "PENDING manual execution; no automated Model 4 launch attempted"
+      },
+      "CONFIG": {
+        "name": "CONFIG.COM",
+        "artifact": "build/utilities/CONFIG.COM",
+        "status": "implemented",
+        "targets": [
+          "z80pack",
+          "trs80gp"
+        ],
+        "user": 0,
+        "bytes": 15524,
+        "sha256": "053075bbc84b0a5116ce5406928ed5ea093e87a75e935b4b9b96203e737ffdef"
+      },
+      "release_record_revision": "443b2756944a9d40d58f708a7f40f810a3ea628f0533506b7857914b9bf6e510",
+      "report_sha256": "7909f6ea08b8dc25731cf90d7233e7011ad278ab4cb7826008843d14f64c71e7"
+    }
+  },
+  "utilities_inventory": {
+    "status": "PASS",
+    "platforms": {
+      "z80pack": {
+        "files": 26,
+        "user": 0,
+        "allocated_blocks": 165,
+        "free_blocks": 1,
+        "exact_membership": "PASS",
+        "independent_record_readback": "PASS",
+        "allocation": "PASS",
+        "image": "BetterCPM-Utilities-z80pack-332K.dsk",
+        "image_sha256": "3ceeb406b3d1d10519a5d3948037a9e13eca62a31690324a7387ac609c5c3670",
+        "raw_bytes": 368640,
+        "files_sha256": {
+          "DDT.COM": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467",
+          "DUMP.COM": "b9c449aad54e29f6cc718a1f2d42a75e5b4296bfeeea766b1743e8133f5070d0",
+          "XSUB.COM": "7ad7eb5d68639b4669830565fee214dd3e4baf68c1b80e3c3dead9b8459f1448",
+          "BATCHIO.RSX": "0347270c05d040e0c7b82d73402803e26baa6a7977880d2764f0700fc1dc5ee0",
+          "SQ.COM": "f8de3fad6f285206ed7af49aa285adebc9d76b3b70da98cb614f09c59422b5d5",
+          "USQ.COM": "88c6b54a4084a4ee47dc7e22427cbf0863e4ed9de147a719624c542a764d9ff9",
+          "UNCR.COM": "a5347e631aa1ea3ca96377f731c7a87ae1cee24ccc75cd801c5ef58d6468febf",
+          "CR.COM": "f02a8a6f438f50261e3d27475fc95ecfb21bf73eb25e2ec4d89df5b0a2204f15",
+          "UNLZH.COM": "4c368e060c7c4053c23db60ce667ff426e424a4bca5f7f2369d0d9bf694d8b1d",
+          "LZH.COM": "a42706a3609f16589484148de3317305c24517a6993dbe6d431f9b76336fc0ec",
+          "ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+          "LINK.COM": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677",
+          "TOOLINFO.TXT": "e3d2a9812bf8710c30b218d1e210710493904fd4886dab8ea52f31459a955a21",
+          "ZSM4COPY.TXT": "7d4f2be9be7a1d1fdb705986ce2701619cfcc8825356670aaa1e29a3d12c7d0f",
+          "LINKCOPY.TXT": "d7d6e20ff86b7a2a09ced46db14f722d246374ff8f24a9a3ddbb9332fe8735ad",
+          "DASM.COM": "690ed903df06f7f211ef0dea0228d2f5063301f45b5e4fdd7c3cd250df33bba7",
+          "DSYM.COM": "6b8d8229d4cee393c8d6dabafe68eb1ae98f50bbfd87688a0133284fbc14e4f1",
+          "DLINK.COM": "2bc9912e769b6d8e6635afa47d6ca6121a53ba60870cac7330b441ff0dbed8f7",
+          "DASM.TXT": "6987b2d5357a338742f1677ae119b4b2bcbc757413e839bc069fb68c3942b2b3",
+          "DASMCOPY.TXT": "48cd81363e19e946e2f163beaff87ca04320ed163cc286e430d8aaf3267a1ddd",
+          "TED.COM": "2d13d1bc4562f97c4e65b343d0b6e580915bd08bb3ba3188ae0ebfda49377080",
+          "TED.TXT": "40dbb575999e1751ed12749f13697d657c6b0ec90b1b1e46e1f97cda60a4b087",
+          "TEDCOPY.TXT": "3b83eebfc6c3c07ff9eb6ad8492dc7002ad2fb7fb4f144b1822a8fd92303cd33",
+          "SEARCH.COM": "aca7362a046488c0dd0880e00bf7d03ecaaf875a09e6fc3ae8ee0830bf7271bd",
+          "CRCKSUM.COM": "ce4ce0711f893b6a9e4b2491f3644424b8e6caccdc1efde24e3499d2a9c7041d",
+          "MD5SUM.COM": "692a83f1e21911987cdabba8747463a306ac5b46e6d91b7c8bc47d00a5576022"
+        },
+        "noah_companion": {
+          "files": 7,
+          "user": 0,
+          "allocated_blocks": 41,
+          "free_blocks": 125,
+          "exact_membership": "PASS",
+          "independent_record_readback": "PASS",
+          "allocation": "PASS",
+          "image": "BetterCPM-NOAH-z80pack-332K.dsk",
+          "image_sha256": "909d3f9568cacb88a4240b07a12114e779a715fd9ffb8cda1067fc678aa7750c",
+          "files_sha256": {
+            "NOAH.COM": "6b8f0b9ab4819f721428a02fb11d27f2b179f87117e649bb8ece7e2688294e8e",
+            "NOAH.OVL": "446d6baa47bcefb1dd18fe6e2733e537c3f1d377810e49cd1b39c535fe02fcba",
+            "NOAH.TXT": "1aca37e799daa9609869d9c647301c1fb5ddcaf28255cb445c22639049a4bf41",
+            "PATCH.COM": "9f4bde87442942f3bc735ac454c046abbafb26cdc7948aed609260a46a4866ba",
+            "PATCH.TXT": "e36eae244b511e17c77ac19af2a04c53699855026ebc2b2b24f70eb2be0e8f68",
+            "COMPARE.COM": "39d0dd800729c3e2cc88c5fe18f53d1d6084b046a10fe2d754725ca01f34236e",
+            "COMPARE.TXT": "85ee059025f136532e36afe23fe765ffcdb44a74d274337cc4c9147a93148ba0"
+          }
+        }
+      },
+      "trs80gp": {
+        "files": 26,
+        "user": 0,
+        "allocated_blocks": 166,
+        "free_blocks": 234,
+        "exact_membership": "PASS",
+        "independent_record_readback": "PASS",
+        "allocation": "PASS",
+        "image": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+        "image_sha256": "75bd8cfaf6c543c64a5997e178329586a9dd46b1fb03983f21cf7dc059129198",
+        "raw_bytes": 819200,
+        "files_sha256": {
+          "DDT.COM": "eff7f5369b9f2903e71d9cf7b3fa47d9dc2cad65714ee79a0b31e9680281e467",
+          "DUMP.COM": "b9c449aad54e29f6cc718a1f2d42a75e5b4296bfeeea766b1743e8133f5070d0",
+          "XSUB.COM": "7ad7eb5d68639b4669830565fee214dd3e4baf68c1b80e3c3dead9b8459f1448",
+          "BATCHIO.RSX": "0347270c05d040e0c7b82d73402803e26baa6a7977880d2764f0700fc1dc5ee0",
+          "SQ.COM": "f8de3fad6f285206ed7af49aa285adebc9d76b3b70da98cb614f09c59422b5d5",
+          "USQ.COM": "88c6b54a4084a4ee47dc7e22427cbf0863e4ed9de147a719624c542a764d9ff9",
+          "UNCR.COM": "a5347e631aa1ea3ca96377f731c7a87ae1cee24ccc75cd801c5ef58d6468febf",
+          "CR.COM": "f02a8a6f438f50261e3d27475fc95ecfb21bf73eb25e2ec4d89df5b0a2204f15",
+          "UNLZH.COM": "4c368e060c7c4053c23db60ce667ff426e424a4bca5f7f2369d0d9bf694d8b1d",
+          "LZH.COM": "a42706a3609f16589484148de3317305c24517a6993dbe6d431f9b76336fc0ec",
+          "ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+          "LINK.COM": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677",
+          "TOOLINFO.TXT": "e3d2a9812bf8710c30b218d1e210710493904fd4886dab8ea52f31459a955a21",
+          "ZSM4COPY.TXT": "7d4f2be9be7a1d1fdb705986ce2701619cfcc8825356670aaa1e29a3d12c7d0f",
+          "LINKCOPY.TXT": "d7d6e20ff86b7a2a09ced46db14f722d246374ff8f24a9a3ddbb9332fe8735ad",
+          "DASM.COM": "690ed903df06f7f211ef0dea0228d2f5063301f45b5e4fdd7c3cd250df33bba7",
+          "DSYM.COM": "6b8d8229d4cee393c8d6dabafe68eb1ae98f50bbfd87688a0133284fbc14e4f1",
+          "DLINK.COM": "2bc9912e769b6d8e6635afa47d6ca6121a53ba60870cac7330b441ff0dbed8f7",
+          "DASM.TXT": "6987b2d5357a338742f1677ae119b4b2bcbc757413e839bc069fb68c3942b2b3",
+          "DASMCOPY.TXT": "48cd81363e19e946e2f163beaff87ca04320ed163cc286e430d8aaf3267a1ddd",
+          "TED.COM": "2d13d1bc4562f97c4e65b343d0b6e580915bd08bb3ba3188ae0ebfda49377080",
+          "TED.TXT": "40dbb575999e1751ed12749f13697d657c6b0ec90b1b1e46e1f97cda60a4b087",
+          "TEDCOPY.TXT": "3b83eebfc6c3c07ff9eb6ad8492dc7002ad2fb7fb4f144b1822a8fd92303cd33",
+          "SEARCH.COM": "aca7362a046488c0dd0880e00bf7d03ecaaf875a09e6fc3ae8ee0830bf7271bd",
+          "CRCKSUM.COM": "ce4ce0711f893b6a9e4b2491f3644424b8e6caccdc1efde24e3499d2a9c7041d",
+          "MD5SUM.COM": "692a83f1e21911987cdabba8747463a306ac5b46e6d91b7c8bc47d00a5576022"
+        },
+        "noah_companion": {
+          "files": 7,
+          "user": 0,
+          "allocated_blocks": 42,
+          "free_blocks": 358,
+          "exact_membership": "PASS",
+          "independent_record_readback": "PASS",
+          "allocation": "PASS",
+          "image": "BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk",
+          "image_sha256": "f7f5ccbbf502666adbdec45377f45009901cdcbb9fbc9cc716f02d3b9a39dfcc",
+          "files_sha256": {
+            "NOAH.COM": "6b8f0b9ab4819f721428a02fb11d27f2b179f87117e649bb8ece7e2688294e8e",
+            "NOAH.OVL": "446d6baa47bcefb1dd18fe6e2733e537c3f1d377810e49cd1b39c535fe02fcba",
+            "NOAH.TXT": "1aca37e799daa9609869d9c647301c1fb5ddcaf28255cb445c22639049a4bf41",
+            "PATCH.COM": "9f4bde87442942f3bc735ac454c046abbafb26cdc7948aed609260a46a4866ba",
+            "PATCH.TXT": "e36eae244b511e17c77ac19af2a04c53699855026ebc2b2b24f70eb2be0e8f68",
+            "COMPARE.COM": "39d0dd800729c3e2cc88c5fe18f53d1d6084b046a10fe2d754725ca01f34236e",
+            "COMPARE.TXT": "85ee059025f136532e36afe23fe765ffcdb44a74d274337cc4c9147a93148ba0"
+          }
+        }
+      }
+    }
+  },
+  "fresh_cpmsim_package": {
+    "status": "PASS scoped cpmsim fresh-package smoke; no Model 4 result",
+    "source_commit": "021f53143292e80f2739b7c99f3e6e180816d6fd",
+    "system_archive_sha256": "b47103b53c25081ca42aba04e522051091bf2dfb1061dbfc636d789c02c048ab",
+    "utilities_archive_sha256": "9dc1adb29ce06382aba87e813cabce6c0d4c175db35e027319a6d67ac308e6c4",
+    "upstream_bundle_sha256": "51e22719629b9a236c673a4eddf5ac827cd1188636e04c6c66acbc9d60d4ee76",
+    "offline_upstream_pin": "91fd28eb04e675c2127df88ed3f40675e15282e2",
+    "runtime_manifest_sha256": "95dafbaac620875f2bfc1c01ad13868f81f2b2a8f4216d6dcd83a24775f47856",
+    "runtime_executables": {
+      "cpmsim/cpmsim": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05",
+      "cpmsim/srctools/cpmrecv": "9a3a7f11a228a8000c7ae97c7d77cd5ccfbe2d79a5294bc77787b7f0b44a13e1",
+      "cpmsim/srctools/cpmsend": "c046dcb77849e63f1e1efa03a989c0f99c35d4c5a449eb80beb8d4b763aae448",
+      "cpmsim/srctools/mkdskimg": "2841cdb54f4c9494dabd807f6771b1889435395dd9b8edf47b31c86051f531cd",
+      "cpmsim/srctools/bin2hex": "5e2fbfeb136c57c1ce82e912ad800d00ca5f9ca418ec5b2dee7f92b0b35d78cd",
+      "cpmsim/srctools/ptp2bin": "c13bae047331e38085aaf486a155c52f0dee2b253e3df026d3507968e885887d"
+    },
+    "same_reconstructed_inputs_and_executables": "PASS",
+    "initial_images": {
+      "driveb.dsk": "3ceeb406b3d1d10519a5d3948037a9e13eca62a31690324a7387ac609c5c3670",
+      "drivec.dsk": "909d3f9568cacb88a4240b07a12114e779a715fd9ffb8cda1067fc678aa7750c",
+      "drivea.dsk": "11f0179d5ab9b6cbee1a07996f5113e51e0af3e70541d20a99423f5e15870793",
+      "drived.dsk": "67c99c31d81a5c3429131e872d8f2737607dd8383587c8bb97f9355f04e0dbab"
+    },
+    "final_images": {
+      "driveb.dsk": "3ceeb406b3d1d10519a5d3948037a9e13eca62a31690324a7387ac609c5c3670",
+      "drivec.dsk": "909d3f9568cacb88a4240b07a12114e779a715fd9ffb8cda1067fc678aa7750c",
+      "drivea.dsk": "b87ecfe7eaecd56c4ab79e8ec766bc208527fb1cb6fa0ca6d155b4195774a50e",
+      "drived.dsk": "67c99c31d81a5c3429131e872d8f2737607dd8383587c8bb97f9355f04e0dbab"
+    },
+    "scope": "Extracted System host kit, offline bundled source restore, runtime reconstruction, actual packaged A/B/C/D boot and directory/version queries, BYE; B/C/D unchanged; A differs only by the deleted startup SUBMIT entry and its freed command record; all shipped files and system tracks unchanged",
+    "startup_writes": [
+      {
+        "directory_byte_offset": 30912,
+        "startup_record_byte_offset": 218112
+      }
+    ],
+    "unchanged_shipped_system_files": [
+      "README.TXT",
+      "STARTUP.SUB",
+      "DIR.COM",
+      "ERA.COM",
+      "TYPE.COM",
+      "REN.COM",
+      "VER.COM",
+      "COPY.COM",
+      "CONFIG.COM",
+      "DUP.COM",
+      "TIME.COM",
+      "SYSGEN.COM",
+      "STAT.COM",
+      "SUBMIT.COM",
+      "CPX.COM",
+      "RSX.COM",
+      "DISK.FDB",
+      "RCP.CPX",
+      "ZPRTC.RSX",
+      "R3PACK.RSX",
+      "PIP.COM",
+      "ED.COM",
+      "BYE.COM",
+      "ADM3A.RSX",
+      "ADMTST.COM",
+      "VT52.RSX",
+      "VT52TST.COM",
+      "ANSI.RSX",
+      "ANSITST.COM",
+      "ANSISCRN.RSX"
+    ],
+    "system_tracks_unchanged": true,
+    "filesystem": "PASS",
+    "transcript_sha256": "7c3e71f8ea985d4a984f68f94a5fba42b6220f180f87a56e57ad0b7c9d29c671"
+  },
+  "returning_groups": {
+    "BDOSTEST /GROUP:REQUIRED": {
+      "receipt_sha256": "fa1bbba7c3ac083bd2ebeaa98ffcbf71b799f8e755221085485183579ab3de14",
+      "counts": {
+        "-": 3,
+        "P": 56
+      },
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "6cb0b0b08ec2e6d121ede892ea6431d821724402e8b3787509d86cc8dba729dc",
+      "image_sha256": "11f0179d5ab9b6cbee1a07996f5113e51e0af3e70541d20a99423f5e15870793",
+      "simulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05"
+    },
+    "BIOSTEST /SAFE": {
+      "receipt_sha256": "e9f2797fb0cf71f8377181bcb900d0754a807023361525d7dd73f8dd8912180b",
+      "counts": {
+        "-": 30,
+        "O": 11,
+        "P": 5
+      },
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "e62a67529cbef91d7177028668644882c8d1ea4ec753894880f71c16a3b3f922",
+      "image_sha256": "11f0179d5ab9b6cbee1a07996f5113e51e0af3e70541d20a99423f5e15870793",
+      "simulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05"
+    },
+    "CCPTEST /GROUP:REQUIRED": {
+      "receipt_sha256": "54bf9b96a119bbbfc62426b3809e5530008b8a0dfe468f795b1c2be717acf153",
+      "counts": {
+        "-": 29,
+        "P": 12
+      },
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "df97481f57a92c3c900e6b39d3fe4dd425f4280cde6c07ea99aeac78bf34419c",
+      "image_sha256": "11f0179d5ab9b6cbee1a07996f5113e51e0af3e70541d20a99423f5e15870793",
+      "simulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05"
+    },
+    "CPUTEST /ALL": {
+      "receipt_sha256": "52f82b3d9f01c0a709c8cdc435e265f29c8609821872c8cef76e4af345089578",
+      "counts": {
+        "-": 2,
+        "O": 1,
+        "P": 2
+      },
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "18ed2c9fb3beaa98dcedfb985199016f5ff2fd38338f6cdf294f5e91e30dfa9b",
+      "image_sha256": "11f0179d5ab9b6cbee1a07996f5113e51e0af3e70541d20a99423f5e15870793",
+      "simulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05"
+    },
+    "DIRTEST /SAFE": {
+      "receipt_sha256": "ce8b62d2a2616ad21b0e75f4157743a0489cf4b59996596488fdcac3aa87a382",
+      "counts": {
+        "P": 49
+      },
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "46d3c4e58f275140b228034e169e1cba4150568003dc4a32af76f6531bc4f7bd",
+      "image_sha256": "11f0179d5ab9b6cbee1a07996f5113e51e0af3e70541d20a99423f5e15870793",
+      "simulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05"
+    },
+    "DISKTEST /SAFE": {
+      "receipt_sha256": "45b10056c70ec7514cc1bacc66a7799086f5d8274dd1cc552ab750a8f1f761c8",
+      "counts": {
+        "P": 7
+      },
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "7457e73a227282547b510b45c63741c7a93bc0d6429bbb3efae4c38385837d1b",
+      "image_sha256": "11f0179d5ab9b6cbee1a07996f5113e51e0af3e70541d20a99423f5e15870793",
+      "simulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05"
+    },
+    "ECOTEST /GROUP:REQUIRED": {
+      "receipt_sha256": "56a463eaf9277ab995e8cca5debca54c099fd5c6c711f69f0806cdb323997f1c",
+      "counts": {
+        "-": 4,
+        "P": 1
+      },
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "110c1326b49a32c87608790e302102a8743081aef10479118d26e4197ecdd28c",
+      "image_sha256": "11f0179d5ab9b6cbee1a07996f5113e51e0af3e70541d20a99423f5e15870793",
+      "simulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05"
+    },
+    "ENTRYTST /GROUP:REQUIRED": {
+      "receipt_sha256": "bbadc458a39d775b9a505be26b7c505ad9954b6aeabeea1ab6680760502f0f89",
+      "counts": {
+        "-": 13,
+        "P": 25
+      },
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "f85ca4616e34a2264423b25285b0c0731a950bb4825ca7b75b04cde1396063de",
+      "image_sha256": "11f0179d5ab9b6cbee1a07996f5113e51e0af3e70541d20a99423f5e15870793",
+      "simulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05"
+    },
+    "ERRTEST /SAFE": {
+      "receipt_sha256": "9000f43b2324ec90a3b32b59f82e1890df1f7fa489ea45eb9e0a035f8085873c",
+      "counts": {
+        "-": 26,
+        "O": 12,
+        "P": 5
+      },
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "c100c2213a561da1fba7b68c02ca53283f044902ca195e8f3cfcb1f7c7b692b0",
+      "image_sha256": "11f0179d5ab9b6cbee1a07996f5113e51e0af3e70541d20a99423f5e15870793",
+      "simulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05"
+    },
+    "FILETEST /SAFE": {
+      "receipt_sha256": "b8adb83f911a2260689e06287340e912532950b741904622d65b1c320cd99165",
+      "counts": {
+        "P": 28
+      },
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "a07880af68acf8282557a084a0e346d4cde7f0c762206601895f76270ff2efe5",
+      "image_sha256": "11f0179d5ab9b6cbee1a07996f5113e51e0af3e70541d20a99423f5e15870793",
+      "simulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05"
+    },
+    "RANDTEST /SAFE": {
+      "receipt_sha256": "14d95434cbbdca41b9f88e9604d182228c141ef65c3e3dc3662804978426eac6",
+      "counts": {
+        "-": 2,
+        "P": 39
+      },
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "041bddda388acdf9284566ab7c410ca5a520198b78a3973ba1af1d84a329f2c0",
+      "image_sha256": "11f0179d5ab9b6cbee1a07996f5113e51e0af3e70541d20a99423f5e15870793",
+      "simulator_sha256": "3a41c74a8e70562fefc9d4e6c0e532259bb82b83518f7bfc259230699fe82c05"
+    }
+  },
+  "group_row_counts": {
+    "-": 109,
+    "P": 229,
+    "O": 24
+  },
+  "packaging_tests": "6 passed",
+  "compiled_regressions": {
+    "both_platform_builds": [
+      "CONFIG full-tail/menu/identity/query-state checks PASS",
+      "DUP parsing/dispatch/cleanup/version checks PASS",
+      "SYSGEN 10 package validation cases PASS"
+    ]
+  },
+  "pending": [
+    "Manual Model 4 runtime campaign",
+    "Fresh-package installation on both platforms",
+    "Final conformance applicability/accounting",
+    "Manual/generated-edition reconciliation",
+    "License/attribution/source-completeness audit",
+    "Maintainer release acceptance"
+  ],
+  "historical_attempts": [
+    "Linux cpmcp SIGABRT retained in prior stabilization record; macOS fresh packaging/readback passes",
+    "Initial bundle-by-raw-SHA attempt failed empty; private ref and offline restoration regression now pass",
+    "Earlier candidate v2/v3 reused cpmsim CONFIG for Model 4; withdrawn and superseded by independently built platform snapshots",
+    "Fresh-package initial oracle expected generic DUMP/NOAH banners; corrected to their established component identifications",
+    "Initial all-media-unchanged oracle rejected expected startup SUBMIT residuals; exact deleted entry/freed record now audited while all shipped files/system tracks and B/C/D remain unchanged",
+    "CONFIG/DUP older title-only query tests updated to full established identification; one missed CONFIG branch was corrected before final assembly"
+  ],
+  "host_tools": {
+    "cpmcp": "073857e735958aff4a87dd82ee99a4ed7e3b5c712d2d4603d4b9efbbc110aa28",
+    "cpmls": "7a1fc0b074667e6535bff114e6c9530f695271e515faa7439db36f12fd539c89",
+    "fsck.cpm": "46b3b5c84dd70c0f5742dab5d786b08dfb9b876dc4045628a5016ab6f7fd954b"
+  },
+  "source_kit_test_runner_sha256": "63e30c2b6c5d288dd5596c7b403fb6dbbe2c5de883c94b1e419876507be51fed"
+}

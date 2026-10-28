@@ -35,6 +35,11 @@ python3 tools/build_qualified_cpmsim.py --source z80pack-upstream \
   --output build/cpmsim-runtime --profile runtime
 ```
 
+An extracted source package carries SOURCE-IDENTITY.json so the builder can
+record its source commit without a .git directory. For offline reconstruction,
+restore the supplied pinned upstream Git bundle as described in the package
+README, then pass that repository to --source.
+
 The output directory must be new. The builder extracts committed files at the
 pin, checks patch hashes, applies patches in order and builds a private tree.
 It ignores working edits and existing installed binaries. It does not fetch

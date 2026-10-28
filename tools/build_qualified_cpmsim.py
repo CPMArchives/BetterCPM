@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
 import subprocess
 
@@ -19,6 +20,20 @@ def sha(path):
 
 def command(args, **kw):
     return subprocess.run(list(map(str,args)),check=True,capture_output=True,**kw).stdout
+
+
+def project_revision(root=ROOT):
+    """Use this checkout's identity, or the explicit identity of a source ZIP."""
+    root=Path(root).resolve()
+    top=subprocess.run(['git','rev-parse','--show-toplevel'],cwd=root,
+                       capture_output=True,text=True)
+    if top.returncode==0 and Path(top.stdout.strip()).resolve()==root:
+        return command(['git','rev-parse','HEAD'],cwd=root).decode().strip()
+    record=json.loads((root/'SOURCE-IDENTITY.json').read_text())
+    revision=record.get('source_commit')
+    if not isinstance(revision,str) or not re.fullmatch(r'[0-9a-f]{40}',revision):
+        raise ValueError('source archive requires a full source_commit in SOURCE-IDENTITY.json')
+    return revision
 
 
 def build(repository, output, profile):
@@ -62,7 +77,7 @@ def build(repository, output, profile):
         for path in binaries:command(['codesign','--force','--sign','-',path])
     manifest={'status':'BUILT','profile':profile,'upstream':pin,'source_archive_sha256':archive_hash,
               'patches':applied,'patch_set_sha256':hashlib.sha256(json.dumps(applied,sort_keys=True).encode()).hexdigest(),
-              'bettercpm_revision':command(['git','rev-parse','HEAD'],cwd=ROOT).decode().strip(),
+              'bettercpm_revision':project_revision(),
               'builder_sha256':sha(Path(__file__)),'host':platform.platform(),'architecture':platform.machine(),
               'compiler':command([compiler,'--version']).decode(),'make':command([make,'--version']).decode(),
               'build_commands':builds,'patched_input_sha256':source_hashes,
