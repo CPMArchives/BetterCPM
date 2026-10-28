@@ -22,6 +22,8 @@ def expanded_source():
     text += "        DB ' | Hexadecimal File Display',13,10,'$'\n"
     query = (ROOT/'src/utilities/common/version.inc').read_text()
     text += query[query.index('\nUV_QUERY:') + 1:]
+    from utility_help import source as help_source, query_source
+    text += query_source(ROOT)+help_source('DUMP','DHELP',title)
     source = (ROOT/'src/utilities/dump.mac').read_text().replace('; @dump-version@', text)
     common = ROOT/'src/utilities/common'
     for part in ('parser', 'io', 'view', 'search', 'bare'):

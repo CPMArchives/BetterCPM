@@ -893,6 +893,10 @@ and qualifying those files is separate from implementing PATCH.
 
 ## DUMP hexadecimal file viewer
 
+`/HELP` shows the compact utility quick reference. `/HELP` and `/VER` are
+case-insensitive exact tokens, ignore other arguments, and return before file,
+drive/user or screen-provider services; HELP takes precedence when both occur.
+
 DUMP displays the bytes of one file in hexadecimal and readable ASCII. Use it to inspect binary programs, examine text control characters, or locate a particular byte sequence. DUMP reads the file without changing its contents or attributes. It does not disassemble instructions or edit files.
 
 ### Quick start
@@ -934,6 +938,7 @@ If DUMP is on B0: and is not otherwise found by your command environment, use `B
 | `/FROM=offset` | Begin displaying at the exact hexadecimal byte position; earlier columns are blank. |
 | `/BARE` | Use the original CP/M hex-only display and interruption behavior. |
 | `/LEN=count` | Display at most this many bytes, in hexadecimal; optional H/h suffix. |
+| `/HELP` | Show the compact help screen without opening a file. |
 | `/VER` | Show DUMP’s version and revision, then return. Other arguments are ignored. |
 
 Options may appear before or after the filename and are case-insensitive. `/P`, `/40`, `/FROM=`, and `/LEN=` may be combined. `/BARE` cannot be combined with them. Repeating a flag is harmless. For `/FROM=` and `/LEN=`, the last value wins, but every occurrence must be valid. Every `/FROM=` must also identify a byte within the file.
@@ -1170,6 +1175,10 @@ BetterCP/M cpmsim command/input checks and Model 4/trs80gp screen/physical-keybo
 
 ## TED full-screen text editor
 
+`/HELP` shows the compact utility quick reference. `/HELP` and `/VER` are
+case-insensitive exact tokens, ignore other arguments, and return before file,
+drive/user or screen-provider services; HELP takes precedence when both occur.
+
 TED edits one text document using command, screen and browse modes. It retains
 TED's editing behavior with an agreed subset of WordStar command sequences.
 There is no undo, persistent block marking, WordStar document formatting or
@@ -1361,6 +1370,12 @@ accompany the host package in `BetterCPM-TED-SOURCE.tar.gz`; retain that compani
 and `TEDCOPY.TXT` when redistributing.
 
 ## DASM Z80 disassembler and symbol tools
+
+`/HELP` shows the compact utility quick reference. `/HELP` and `/VER` are
+case-insensitive exact tokens, ignore other arguments, and return before file,
+drive/user or screen-provider services; HELP takes precedence when both occur. DSYM
+uses the same help/query convention. DASM's interactive H command still provides
+its full command reference.
 
 DASM is the maintained Richard Conn 1.5 Z80 disassembler adaptation. It inspects
 loaded bytes, records symbols/comments and code/data classifications, saves

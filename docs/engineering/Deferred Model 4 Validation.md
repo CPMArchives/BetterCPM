@@ -8,6 +8,7 @@ Earlier blocked-attempt records remain historical evidence.
 
 | Utility | Remaining manual work |
 | --- | --- |
+| DUMP 007, DASM 002, DSYM 002, TED 002 | Help/version presentation, HELP precedence, query-state preservation and basic launch/exit regression checks for these new revisions. Earlier platform results remain tied to their original binaries. |
 | COMPARE 002 | Native build/parity, packaged execution, cross-user summary, narrow unaligned ranges, pager controls and nonpaged cancellation, state/media preservation. |
 | CRCKSUM 006 | Complete current-revision runtime campaign: historical and added algorithms, legacy/native lists, local/master generation and checking, large files, prompts and state preservation. |
 | MD5SUM 002 | Native build, exact stored-byte and large-file digests, conventional lists, local/master generation/checking, display/prompts and state preservation. |

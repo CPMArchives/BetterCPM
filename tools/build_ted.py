@@ -58,6 +58,8 @@ def source(reference=False, legacy=False):
         text = (base/(module+'.mac')).read_text(encoding='ascii')
         if module == 'frontend':
             text = text.replace('; @ted-version@', strings('TED', label='TE_VERMSG'))
+            from utility_help import source as help_source
+            text = text.replace('; @ted-help@',help_source('TED','TE_HELPMSG'))
             from shared_ui import input_source, controller_source
             query = (ROOT/'src/utilities/common/version.inc').read_text()
             query = query[query.index('\nUV_QUERY:')+1:]

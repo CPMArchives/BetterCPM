@@ -9,10 +9,6 @@ UC_USER_FILES EQU 1
 SY_START:
         LD (UC_OLDSP),SP
         LD SP,UC_STACK_TOP
-        LD E,255
-        LD C,32
-        CALL UC_BDOS
-        LD (SY_OLDUSER),A
         LD HL,SY_STATE
         LD DE,SY_STATE+1
         LD BC,SY_STATE_END-SY_STATE-1
@@ -24,9 +20,19 @@ SY_START:
         LD HL,81H
         LD A,(80H)
         LD B,A
+        LD DE,SY_HELP
+        CALL UH_QUERY
+        JP C,SY_QRETURN
+        LD HL,81H
+        LD A,(80H)
+        LD B,A
         LD DE,SY_VERSION
         CALL UV_QUERY
-        JP C,UC_EXIT
+        JP C,SY_QRETURN
+        LD E,255
+        LD C,32
+        CALL UC_BDOS
+        LD (SY_OLDUSER),A
         LD HL,(6)
         LD DE,SY_END+256
         OR A
@@ -315,6 +321,9 @@ SY_FINISH:
         CALL PN_U16
         LD DE,SY_SUCCESS
         JP UC_ERROR
+SY_QRETURN:
+        LD SP,(UC_OLDSP)
+        RET
 SY_PLAIN_EXIT:
         CALL UC_PRINT
         JP UC_EXIT
