@@ -12,7 +12,7 @@ generated Utilities candidates and has passed paired-image acceptance on both Be
 remains separate.
 
 MD5SUM has a development implementation in newly built Utilities candidates;
-Model 4 execution and paired release acceptance remain pending.
+The maintainer has waived and deferred the remaining Model 4 validation; full Model 4 qualification and paired release acceptance are not asserted.
 
 ## Contents
 
@@ -548,7 +548,7 @@ Ctrl-C cancels and reports an incomplete operation. Completed independent output
 
 ## MD5SUM file digests and verification lists
 
-**MD5SUM 1.0 development candidate.** MD5SUM is included in newly built candidate Utilities images. Focused native-build and cpmsim checks pass; Model 4 execution and paired release acceptance remain pending. This is not a released-disk qualification claim. The [engineering specification](../engineering/MD5SUM-Specification.md) controls the design.
+**MD5SUM 1.0 development candidate.** MD5SUM is included in newly built candidate Utilities images. Focused native-build and cpmsim checks pass; the maintainer has waived and deferred the remaining Model 4 validation; full Model 4 qualification and paired release acceptance are not asserted. This is not a released-disk qualification claim. The [engineering specification](../engineering/MD5SUM-Specification.md) controls the design.
 
 MD5SUM calculates one MD5 digest for each selected file. Save the results, and you can later check whether the files still agree with that list. Its selection, master/local output, overwrite and checking behavior follows CRCKSUM. There is only one algorithm and one saved-list format.
 

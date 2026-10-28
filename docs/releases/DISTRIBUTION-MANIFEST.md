@@ -58,7 +58,8 @@ All membership or layout changes require discussion with the maintainer.
 - MD5SUM.COM: MD5SUM 1.0 revision 001 development candidate. Conventional
   md5sum lists, stored-record byte coverage, master/local output and local
   verification. Native/cross parity and focused packaged cpmsim checks pass;
-  Model 4 execution and paired release acceptance are pending. Prepared native
+  The maintainer waived/deferred remaining Model 4 validation; paired release
+  acceptance is not asserted. Prepared native
   source and build provenance accompany the shared corresponding-source archive.
   See [implementation notes](../engineering/MD5SUM-Implementation.md).
 

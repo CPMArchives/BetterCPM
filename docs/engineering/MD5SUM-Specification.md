@@ -1,7 +1,7 @@
 # BetterCP/M MD5SUM.COM Engineering Specification
 
 **Target:** MD5SUM 1.0, BetterCP/M Utilities Disk\
-**Status:** Implemented development candidate; native/cross and cpmsim checks pass; Model 4 execution and paired release acceptance pending\
+**Status:** Implemented development candidate; native/cross and cpmsim checks pass; remaining Model 4 validation waived/deferred by the maintainer; paired release acceptance not asserted\
 **Date:** 2026-10-28\
 **Authority:** Maintainer decisions in the CRC, CHECKSUM and HASH discussion. Implementation was authorized after PR #532 merged. See [implementation and qualification notes](MD5SUM-Implementation.md) for measured results and remaining qualification.
 

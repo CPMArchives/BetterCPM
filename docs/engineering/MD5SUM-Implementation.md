@@ -2,8 +2,8 @@
 
 Date: 2026-10-28. Implements the design merged in PR #532 and the maintainer's
 subsequent implementation authorization. MD5SUM is an implemented development
-candidate, integrated in newly generated paired Utilities images. Model 4
-execution and paired release acceptance remain pending. The controlling contract
+candidate, integrated in newly generated paired Utilities images. The maintainer has waived and deferred the remaining Model 4 validation for
+PR finalization; paired release acceptance is not asserted. The controlling contract
 is [MD5SUM-Specification.md](MD5SUM-Specification.md).
 
 ## Source and build
@@ -113,11 +113,15 @@ existing companion volume. Use writable target/workspace disks for lists and
 native build products; the primary cpmsim Utilities disk has very little spare
 capacity. Further additions require another capacity assessment.
 
-## Remaining qualification
+## Deferred Model 4 qualification
 
-Model 4 execution is pending, including native linking, actual console display,
-large-file processing, local lists and input/state preservation on that target.
-The earlier CRCKSUM-only waiver is not applied to MD5SUM. A fresh attempt on
+On 2026-10-28 the maintainer explicitly waived the remaining Model 4 validation
+for now, with the intention to return to it later. This permits PR finalization;
+it is not a runtime PASS, a qualified baseline or paired release acceptance.
+No acceptance receipt is fabricated. The deferred work includes native linking,
+actual console display, large-file processing, local lists and input/state
+preservation on that target. Retain the fixtures and launch-failure evidence
+below for resumption. This is an explicit MD5SUM waiver, separate from CRCKSUM. A fresh attempt on
 2026-10-28 used disposable System A: and exact candidate Utilities B: images.
 Both the existing LaunchServices wrapper and opening the original installed app
 failed with `kLSNoExecutableErr` (-10827), although its executable exists. Direct

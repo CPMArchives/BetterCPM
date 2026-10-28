@@ -32,8 +32,8 @@
       "native_cross_parity": true
     },
     "trs80gp": {
-      "status": "BLOCKED_BEFORE_GUEST_VALIDATION",
-      "waived": false,
+      "status": "DEFERRED_BY_MAINTAINER",
+      "waived": true,
       "attempted": true,
       "launch_results": [
         {
@@ -49,7 +49,11 @@
           "result": "SIGABRT (exit -6)"
         }
       ],
-      "guest_capture": false
+      "guest_capture": false,
+      "last_attempt_status": "BLOCKED_BEFORE_GUEST_VALIDATION",
+      "waiver_date": "2026-10-28",
+      "waiver_scope": "Remaining Model 4 validation waived for PR finalization; return to it later",
+      "follow_up": "Resume native build, display, stored-byte/large-file/local-list and state-preservation checks when launch access is available"
     }
   },
   "packaging": "PASS: paired readback/filesystem, DMK/raw parity, source closure and acceptance refusals",
