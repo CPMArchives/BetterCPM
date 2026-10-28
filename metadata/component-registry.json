@@ -1020,6 +1020,29 @@
       "dependency_status": "tracked-conservative; shared DU/filespec/attribute parser and FCB builder",
       "display_format": "numeric",
       "description": "File Integrity Checking"
+    },
+    "utility:MD5SUM": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "Utilities",
+      "roots": [
+        "src/utilities/md5sum.mac",
+        "src/utilities/md5sum/algorithms.inc",
+        "src/utilities/md5sum/candidates.inc",
+        "src/utilities/md5sum/command.inc",
+        "src/utilities/md5sum/list-parser.inc",
+        "src/utilities/md5sum/render.inc",
+        "src/utilities/md5sum/reference.inc"
+      ],
+      "builders": [
+        "tools/build_md5sum.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "tracked-conservative; shared CRCKSUM file engine and DU parser",
+      "display_format": "numeric",
+      "description": "MD5 File Digests"
     }
   },
   "legacy_utility_order": [
@@ -1067,7 +1090,8 @@
     "TED",
     "COMPARE",
     "SEARCH",
-    "CRCKSUM"
+    "CRCKSUM",
+    "MD5SUM"
   ],
   "legacy_subsystem_rows": [
     {

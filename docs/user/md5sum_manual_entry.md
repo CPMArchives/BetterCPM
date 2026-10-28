@@ -1,6 +1,6 @@
 ## MD5SUM file digests and verification lists
 
-**Planned utility.** This chapter records the approved MD5SUM 1.0 interface for subsequent implementation. MD5SUM.COM is not yet supplied or qualified. The [engineering specification](../engineering/MD5SUM-Specification.md) controls the design.
+**MD5SUM 1.0 development candidate.** MD5SUM is included in newly built candidate Utilities images. Focused native-build and cpmsim checks pass; Model 4 execution and paired release acceptance remain pending. This is not a released-disk qualification claim. The [engineering specification](../engineering/MD5SUM-Specification.md) controls the design.
 
 MD5SUM calculates one MD5 digest for each selected file. Save the results, and you can later check whether the files still agree with that list. Its selection, master/local output, overwrite and checking behavior follows CRCKSUM. There is only one algorithm and one saved-list format.
 
@@ -95,12 +95,12 @@ Y or Enter replaces this destination. N leaves it alone and continues other outp
 MD5SUM /CHECK
 MD5SUM /CHECK B3:FILE.TXT
 MD5SUM /CHECK B[1-3]:*.COM
-MD5SUM /CHECK=REFERENCE.LST B[1-3]:
+MD5SUM /CHECK=REF.LST B[1-3]:
 ```
 
 Bare CHECK looks for MD5SUM.LST in each target DU. It does not search other names or fall back to your logged DU. If no list is found, MD5SUM reports it and continues to the next selected DU. With no target operand, your logged DU is itself the target.
 
-CHECK=REFERENCE.LST selects that exact filename independently in each target DU. It does not select a central reference for all targets. A DU qualifier, such as `/CHECK=A0:REFERENCE.LST`, is an error. Place a reference beside the files it describes and select that location.
+CHECK=REF.LST selects that exact filename independently in each target DU. It does not select a central reference for all targets. A DU qualifier, such as `/CHECK=A0:REF.LST`, is an error. Place a reference beside the files it describes and select that location.
 
 The target filespec limits both existing files and reference names being checked. MD5SUM reports selected files absent from the reference and selected reference names whose files are missing. The reference itself is excluded from wildcard targets. Unselected filenames do not become failures merely because they occur elsewhere in the list. A malformed list still prevents an overall successful check.
 
@@ -118,5 +118,7 @@ Zero secondary counters and per-DU total blocks are omitted. A successful check 
 ### Exchanging lists with a host system
 
 Export the target files without altering their stored bytes, and keep filename case consistent with the list. Saved CP/M lists may have trailing Ctrl-Z padding. If a host md5sum reader reports that padding as malformed input, remove only the trailing padding from the host copy of the list. Leave target-file padding intact: it contributes to the digest.
+
+Some host readers require LF line endings or the two-space entry form. Convert those list details on the host if needed; target-file bytes must stay unchanged.
 
 The common entry syntax permits exchange of these lists. MD5SUM does not reproduce every host command-line option or support host directory paths inside entries.

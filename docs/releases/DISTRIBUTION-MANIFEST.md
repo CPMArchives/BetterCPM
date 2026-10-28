@@ -55,6 +55,13 @@ All membership or layout changes require discussion with the maintainer.
   are not asserted.
   See [CRC implementation notes](../engineering/CRC-Implementation.md).
 
+- MD5SUM.COM: MD5SUM 1.0 revision 001 development candidate. Conventional
+  md5sum lists, stored-record byte coverage, master/local output and local
+  verification. Native/cross parity and focused packaged cpmsim checks pass;
+  Model 4 execution and paired release acceptance are pending. Prepared native
+  source and build provenance accompany the shared corresponding-source archive.
+  See [implementation notes](../engineering/MD5SUM-Implementation.md).
+
 - SEARCH.COM: SEARCH 1.0 revision 001, read-only TEXT/HEX content search with
   shared DU selectors, bounded excerpts, forward paging and complete accounting.
   Included in newly generated candidate images; [paired Utilities acceptance](../engineering/SEARCH%20Utilities%20Acceptance.md)
@@ -147,8 +154,8 @@ selected components: DUMP.COM, DDT.COM, XSUB.COM and its required BATCHIO.RSX,
 SQ.COM, USQ.COM, CR.COM, UNCR.COM, LZH.COM and UNLZH.COM, plus the selected
 ZSM4/LINK binaries and their three notice files, the DASM/DSYM/DLINK set and
 its two notice files, TED and its two notice files, SEARCH.COM and CRCKSUM.COM
-(25 files total). CRCKSUM occupies 22K of allocation on the 332K candidate, which
-has 20K free. DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign passes on disposable current-system media. DDT also passes [Utilities release acceptance](../engineering/DDT%20Utilities%20Release%20Acceptance.md) from B: beside normal System A: on both platforms. `--ddt-acceptance REPORT` binds that component verdict to the exact artifact and image hashes; it does not promote the whole disk. The builder verifies
+(26 files total). CRCKSUM occupies 22K and MD5SUM 18K of allocation on the
+332K candidate, which has 2K free. DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign passes on disposable current-system media. DDT also passes [Utilities release acceptance](../engineering/DDT%20Utilities%20Release%20Acceptance.md) from B: beside normal System A: on both platforms. `--ddt-acceptance REPORT` binds that component verdict to the exact artifact and image hashes; it does not promote the whole disk. The builder verifies
 file readback and the filesystem, and produces a 332K raw cpmsim image and an
 80T DS 800K data DMK for Model 4. Reports explicitly list pending selections;
 these are provisional daily media, not a fully qualified Utilities release.

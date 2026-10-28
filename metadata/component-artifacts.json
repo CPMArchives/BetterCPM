@@ -172,6 +172,9 @@
     ],
     "utility:SEARCH": [
       "build/utilities/SEARCH.COM"
+    ],
+    "utility:MD5SUM": [
+      "build/utilities/MD5SUM.COM"
     ]
   }
 }

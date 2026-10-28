@@ -1,9 +1,9 @@
 # BetterCP/M MD5SUM.COM Engineering Specification
 
 **Target:** MD5SUM 1.0, BetterCP/M Utilities Disk\
-**Status:** Design approved; specification for subsequent implementation\
+**Status:** Implemented development candidate; native/cross and cpmsim checks pass; Model 4 execution and paired release acceptance pending\
 **Date:** 2026-10-28\
-**Authority:** Maintainer decisions in the CRC, CHECKSUM and HASH discussion. This change documents the approved interface; it does not implement the utility or claim qualification or disk inclusion.
+**Authority:** Maintainer decisions in the CRC, CHECKSUM and HASH discussion. Implementation was authorized after PR #532 merged. See [implementation and qualification notes](MD5SUM-Implementation.md) for measured results and remaining qualification.
 
 ## 1. Purpose and controlling contracts
 
@@ -108,7 +108,7 @@ The second form has two spaces after the digest. Both hash the same complete sto
 
 The remainder must be a legal, unqualified CP/M 8.3 filename, without wildcards, embedded whitespace or trailing garbage. Do not strip host directories or DU qualifiers and then guess a target. Tagged `MD5 (name) = ...` output, GNU escaped filenames, NUL-delimited lists, host pathnames and other algorithms are outside the accepted format. Report unsupported or malformed nonblank lines with their reference identity and line number; do not silently skip them. Bounded line buffers must detect overlong lines and drain them safely rather than parse a truncated prefix. A list without a valid digest entry is unusable.
 
-The file bytes of a CP/M list may include trailing 1Ah padding that a host reader does not accept. When necessary, remove only that trailing list padding from the host copy before passing it to host md5sum. Do not remove padding from the target files. Host filename case must also agree with the exported names. The interoperability promise is the ordinary supported entry syntax and identical digest for identical target bytes, not every GNU command-line or filename feature.
+The file bytes of a CP/M list may include trailing 1Ah padding that a host reader does not accept. When necessary, remove only that trailing list padding from the host copy before passing it to host md5sum. Do not remove padding from the target files. A host reader may also require LF line endings or the conventional two-space input marker; converting those list details does not change a digest. Host filename case must also agree with the exported names. The interoperability promise is the ordinary supported entry syntax and identical digest for identical target bytes, not every GNU command-line or filename feature.
 
 ## 7. Master/local output and replacement
 
@@ -150,9 +150,9 @@ Retain detailed errors beside affected files. Any verification failure, omission
 
 ## 10. Implementation boundaries and acceptance
 
-Implementation is the next task, not part of this documentation change. Source sharing with CRCKSUM is an engineering choice; it must preserve CRCKSUM behavior and must not require architectural consolidation of the executables. Use bounded buffers, private FCBs and stack space; restore caller drive/user, DMA and return state on all handled exits. Do not impose an undocumented directory/reference-entry count limit. Additional passes are preferable to unbounded storage.
+Implementation follows this contract; current evidence and limitations are recorded in the linked implementation notes. Source sharing with CRCKSUM is an engineering choice; it must preserve CRCKSUM behavior and must not require architectural consolidation of the executables. Use bounded buffers, private FCBs and stack space; restore caller drive/user, DMA and return state on all handled exits. Do not impose an undocumented directory/reference-entry count limit. Additional passes are preferable to unbounded storage.
 
-On implementation, register MD5SUM's own version/revision, integrate the existing cross/native builders and corresponding-source packaging, and measure executable size, working memory and disk capacity before claiming inclusion. Rebuilding identical source does not advance the revision. No MD5SUM registry identity, binary, disk image, receipt or qualified baseline is created by this spec.
+On implementation, register MD5SUM's own version/revision, integrate the existing cross/native builders and corresponding-source packaging, and measure executable size, working memory and disk capacity before claiming inclusion. Rebuilding identical source does not advance the revision. The implementation assigns its own registry identity and candidate artifacts; this specification does not itself qualify or promote them.
 
 Focused acceptance must cover:
 

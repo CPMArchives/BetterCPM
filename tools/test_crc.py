@@ -42,9 +42,9 @@ def oracle(data):
 
 
 def execute(files=None, tail='', *, caller=(2, 7), keys=b'Y', fault=None,
-            cancel_at=None, size_override=None, limit=30000000):
+            cancel_at=None, size_override=None, limit=30000000, program='CRCKSUM'):
     c = Z80(b'')
-    image = (ROOT/'build/utilities/CRCKSUM.COM').read_bytes()
+    image = (ROOT/('build/utilities/'+program+'.COM')).read_bytes()
     c.mem[0x100:0x100+len(image)] = image
     c.mem[5:8] = b'\xd3\x00\xc9'
     c.mem[0:3] = b'\xc3\xfe\xff'

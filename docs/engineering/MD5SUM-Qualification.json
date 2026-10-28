@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "component": "utility:MD5SUM",
+  "version": "1.0",
+  "revision": 1,
+  "display": "001-dev",
+  "date": "2026-10-28",
+  "scope": "development candidate; not paired release acceptance",
+  "binary": {
+    "bytes": 18397,
+    "sha256": "dc96564312b1fbf18c0114c295febfea27a521dea369f2358c96f9b533e6f9a4"
+  },
+  "native_source_sha256": "c04f719e49b1b7e06ad30a0d9d0f7f871688acc2959eaa9ecbcb3ffbc765830d",
+  "compiled_fixtures": {
+    "status": "PASS",
+    "count": 87,
+    "oracle": "Python hashlib MD5"
+  },
+  "crcksum_regression": {
+    "status": "PASS",
+    "count": 129
+  },
+  "stock_cpm_native_build": "PASS: ZSM4/LINK byte parity and command checks",
+  "host_interoperability": "PASS: host md5sum --check (two-space/LF list, exact stored target bytes)",
+  "platforms": {
+    "z80pack": {
+      "status": "PASS",
+      "system_sha256": "482b13f1fe35def81889ea20b3955dab4345b0236c2dc96f1a2a774315d65943",
+      "utilities_sha256": "878b3c839e6d5cf5dccdf84a139a06eb7c5853180d58f2c7afede79f7ff5c381",
+      "utilities_unchanged": true,
+      "fixtures_unchanged": true,
+      "native_cross_parity": true
+    },
+    "trs80gp": {
+      "status": "PENDING",
+      "waived": false
+    }
+  },
+  "packaging": "PASS: paired readback/filesystem, DMK/raw parity, source closure and acceptance refusals",
+  "capacity": {
+    "primary_z80pack_files": 26,
+    "primary_z80pack_free_kib": 2
+  },
+  "limitations": [
+    "Model 4 execution not completed",
+    "No qualified baseline or release promotion",
+    "Stack guards are not worst-case hardware interrupt proof"
+  ]
+}
