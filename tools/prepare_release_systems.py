@@ -58,6 +58,8 @@ def prepare(output, simulator):
                 'work_image_sha256':digest((out/'work-image').read_bytes()),
                 'work_image_inventory':'PASS empty directory/allocation independent inspection'}
         if target=='z80pack':report['emulator_sha256']=digest(simulator.read_bytes())
+        from release_metadata import disk_record
+        report['release_record']=disk_record(report,image,root=root)
         (out/'report.json').write_text(json.dumps(report,indent=2)+'\n')
         print(target,result,flush=True)
     return output
