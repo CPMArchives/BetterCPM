@@ -3,7 +3,7 @@
 from pathlib import Path
 from test_bios import Z80
 from test_utility_versions import address
-from utility_versions import identities, display_development
+from utility_versions import banner, identities, display_development
 from component_identity import identification
 from component_registry import load
 ROOT=Path(__file__).resolve().parents[1]
@@ -33,6 +33,10 @@ def main():
         assert bytes(c.mem[129:129+len(data)])==data
     for tail in ['/SHOW X','/SHO','/SHOW/VER','X','/STARTUP=X','/STARTUP="X','/STARTUP="X" /SHOW','/STARTUP="X"Y','/STARTUP="a\tb"','/STARTUP="X" /VER','x'*128]:
         c,_=setup(tail);c.run(address(listing,'CF_PARSE'),limit=100000);assert c.carry,tail
+    version,revision=identities()['CONFIG']
+    expected=identification('CONFIG',version,revision,
+        load()['components']['utility:CONFIG']['description'],
+        development=display_development('utility:CONFIG'))
     for tail in ['/VER',' /ver ','/SHOW /VER','/STARTUP="X" /VER','/STARTUP="Mixed /VER /B"','/SHOW X']:
         c,_=setup(tail);calls=[];out=[]
         # Reaching INIT is enough: the prefix must not intercept quoted /VER.
@@ -45,14 +49,10 @@ def main():
             out.append(c.e);return 0
         c.port_read=io;c.run(256,limit=100000)
         if tail.strip().upper()=='/VER':
-            version,revision=identities()['CONFIG']
-            expected=identification('CONFIG',version,revision,
-                load()['components']['utility:CONFIG']['description'],
-                development=display_development('utility:CONFIG'))
             assert calls==[9] and bytes(out)==expected.encode()
         elif tail.startswith('/STARTUP="Mixed'):assert calls==[] and not out
         elif tail=='/SHOW X':assert bytes(out)==b'Invalid CONFIG usage.\r\n'
-        else:assert calls==[9] and bytes(out)==(banner('CONFIG')+'\r\n').encode()
+        else:assert calls==[9] and bytes(out)==expected.encode()
     def zstring(label):
         start=address(listing,label);end=image.index(0,start-256)
         return image[start-256:end]
