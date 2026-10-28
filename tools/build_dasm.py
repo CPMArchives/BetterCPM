@@ -24,7 +24,8 @@ def source(reference=False):
             text=text.replace('INCLUDE '+include,(ROOT/'src/utilities/common'/include).read_text())
         text=text.replace('\tORG\t$/100H*100H+100H',
                           ' REPT 100H-($ MOD 100H)\n DB 0FFH\n ENDM')
-        text=text.replace('; @dasm-version@',strings('DASM',label='D_VERSION_MSG'))
+        from utility_help import source as help_source, query_source
+        text=text.replace('; @dasm-version@',strings('DASM',label='D_VERSION_MSG')+query_source(ROOT)+help_source('DASM','D_HELP_MSG'))
     # Both assemblers need the workspace EQU dependency chain after ENDALL.
     definitions=[]
     def move(match):

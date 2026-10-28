@@ -14,6 +14,12 @@ START:
         LD HL,0081H
         LD A,(0080H)
         LD B,A
+        LD DE,DHELP
+        CALL UH_QUERY
+        JP C,RETURN
+        LD HL,0081H
+        LD A,(0080H)
+        LD B,A
         LD DE,UV_TEXT
         CALL UV_QUERY
         JP C,RETURN

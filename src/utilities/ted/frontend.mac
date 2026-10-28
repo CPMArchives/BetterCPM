@@ -1201,11 +1201,7 @@ TE_SCREENMSG: db 'TED requires SCRN 1.1, 80x24; select ANSI with M4SCRN/ANSISCRN
 TE_HELP_TOKEN: db '/HELP',0
 TE_VER_TOKEN: db '/VER',0
 ; @ted-version@
-TE_HELPMSG: db 'TED [DU:]FILE - TED behavior with WordStar key aliases.',13,10
- db '^Z command; S screen; R/W/M/MD/D/SU use TED arguments.',13,10
- db '^K: C copy,V move,Y delete,R read,W write,S save,X save+exit,Q quit.',13,10
- db '^A/^F word left/right; ^T delete word; ^Q/^O tab stops.',13,10
- db '^L line ends; ^N browse; ^U screen top/bottom; ^_ redraw.',13,10,'$'
+; @ted-help@
 UILIMITMSG: db 'Field limit reached.',0
 UI_NEED: db 'Value required.',0
 EDITLEN: db 0

@@ -3283,7 +3283,8 @@
         "tools/rsx_container.py",
         "tools/shared_ui.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -4810,7 +4811,8 @@
         "tools/component_identity.py",
         "tools/component_inputs.py",
         "tools/component_registry.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "modes": [
         "cross",
@@ -4853,7 +4855,8 @@
         "tools/component_identity.py",
         "tools/component_inputs.py",
         "tools/component_registry.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "modes": [
         "cross",
@@ -5001,7 +5004,8 @@
         "tools/component_inputs.py",
         "tools/component_registry.py",
         "tools/shared_ui.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "native_files": [],
       "registry_fields": [

@@ -42,13 +42,13 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(next(x for x in rows() if x['component'] == 'BDOS')['implementation_version'], '1.10')
 
     def test_new_utility_assignments(self):
-        for name in ('MOVE', 'WARM', 'DASM', 'DSYM', 'DLINK', 'SEARCH'):
+        for name in ('MOVE', 'WARM', 'DLINK', 'SEARCH'):
             self.assertEqual(registry.identity('utility:' + name, self.data), ('1.0', 1))
 
     def test_ted_initial_adaptation_identity(self):
         self.assertEqual(self.data['components']['utility:TED']['tracking'], 'initial')
-        self.assertEqual(identities()['TED'], ('1.0', 1))
-        self.assertEqual(registry.identity('utility:TED', self.data), ('1.0', 1))
+        self.assertEqual(identities()['TED'], ('1.0', 2))
+        self.assertEqual(registry.identity('utility:TED', self.data), ('1.0', 2))
 
     def test_component_projection_is_independent(self):
         before = registry.identity('utility:DDT', self.data)

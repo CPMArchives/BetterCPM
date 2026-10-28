@@ -113,7 +113,9 @@ def tests(m):
         m.execute(tail)
         assert not m.providers and not m.mutations
         assert b'TED' in m.console
-        if b'help' in tail.lower():assert b'^K:' in m.console
+        if b'help' in tail.lower():
+            from utility_help import text
+            assert text('TED').encode() in m.console
         cases.append('query without provider/file operations '+tail.decode())
     original=padded(b'Original\t spaces  \r\nLF\nCR\rend  ')
     m.execute(b'INPUT.TXT',b'S\rX\x0bSY\r\x0bQ',files={(1,7,'INPUT.TXT'):original})

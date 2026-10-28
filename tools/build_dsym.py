@@ -17,7 +17,8 @@ def source():
     for name in ('codecfile.mac','dsymdu.inc','dsymlog.inc','printnum.inc','duselect.inc','filespec.inc','zsm4words.inc','version.inc'):
         text=text.replace('        INCLUDE '+name,
                           (ROOT/'src/utilities/common'/name).read_text())
-    text=text.replace('; @dsym-version@',strings('DSYM',label='SY_VERSION'))
+    from utility_help import source as help_source, query_source
+    text=text.replace('; @dsym-version@',strings('DSYM',label='SY_VERSION')+query_source(ROOT)+help_source('DSYM','SY_HELP'))
     definitions=[]
     def move(match):
         definitions.append(match[0]);return ''
