@@ -6,7 +6,7 @@ Remove this notice only after the release acceptance checks pass.
 
 Contains the Model 4 System Disk and formatted work media. Utilities are a separate download.
 
-Read the included Model 4 installation/startup instructions before booting. Select the supplied disk geometry and work on writable image copies. Optional FreHD clock support requires appropriate hardware/emulation.
+Read docs/platform/MODEL4-INSTALLATION.md before booting. Select the supplied disk geometry and work on writable image copies. Optional FreHD clock support requires appropriate hardware/emulation.
 
 Combined layout: A: System, B: primary Utilities, C: companion Utilities, D: work. The startup script loads the Model 4 screen backend and ADM-3A personality before displaying the banner.
 
