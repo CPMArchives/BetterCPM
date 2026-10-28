@@ -33,6 +33,7 @@ BUILDERS = (
     "compare",
     "crc",
     "md5sum",
+    "patch",
     "ddt",
     "dasm",
     "dsym",

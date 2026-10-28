@@ -8,7 +8,7 @@ The utility is implemented in native Z80 assembly. It uses the existing single-D
 lexer and exact filename validator, two 128-byte record caches, 32-bit byte offsets
 and statistics, and ordinary CP/M 2.2 BDOS services. It has no monitor or screen
 backend dependency. The normal utility collection builder includes COMPARE;
-release disk builders deliberately do not include it yet.
+candidate disk builders include COMPARE.COM and COMPARE.TXT on the NOAH companion volume.
 
 ## Evidence
 
@@ -51,3 +51,21 @@ Focused cpmsim runtime checks and fixture coverage are not a substitute for the
 complete platform qualification matrix in §9. In particular, Model 4 execution,
 platform console interruption behavior, and final disk packaging/acceptance must
 be completed before release promotion.
+
+## Candidate integration and maintainer disposition — 2026-10-28
+
+COMPARE.COM remains byte-identical to revision 001. Prepared native source and
+selected-input provenance now accompany both Utilities formats. Stock CP/M native
+assembly/linking and actual comparison execution pass, as do all 87 compiled
+fixtures. Exact packaged execution from C0: passes cross-user comparison, narrow
+ranges, pager interruption and whole-disk immutability. Independent inventory,
+allocation, complete file readback, source closure and receipt-refusal checks pass.
+The primary disk is unchanged; COMPARE shares the NOAH companion with PATCH.
+
+The maintainer waived remaining Model 4 validation for finalization. This is a
+deferral for a later combined manual campaign, not a Model 4 PASS. Retain these
+manual checks: native ZSM4/LINK parity; exact packaged C0: execution; cross-user
+summary (two mismatches, 128 additional bytes); unaligned /SIDE /40 range display;
+paging Space/Enter and Ctrl-C/Q/Esc display-stop with complete totals; nonpaged
+Ctrl-C cancellation; caller-state restoration and unchanged source/media bytes.
+No paired runtime acceptance receipt or release baseline is promoted.

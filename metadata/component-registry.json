@@ -1043,6 +1043,27 @@
       "dependency_status": "tracked-conservative; shared CRCKSUM file engine and DU parser",
       "display_format": "numeric",
       "description": "MD5 File Digests"
+    },
+    "utility:PATCH": {
+      "version": "1.0",
+      "api_version": null,
+      "revision": 1,
+      "tracking": "initial",
+      "roots": [
+        "src/utilities/patch.mac",
+        "src/utilities/patch/command.inc",
+        "src/utilities/patch/engine.inc",
+        "src/utilities/patch/scan.inc",
+        "src/utilities/patch/transaction.inc"
+      ],
+      "builders": [
+        "tools/build_patch.py"
+      ],
+      "dependency_status": "tracked-conservative; shared DU, file access, arithmetic and MD5 fingerprint routines",
+      "kind": "utility",
+      "placement": "Utilities",
+      "display_format": "numeric",
+      "description": "Verified Binary Patching"
     }
   },
   "legacy_utility_order": [
@@ -1091,7 +1112,8 @@
     "COMPARE",
     "SEARCH",
     "CRCKSUM",
-    "MD5SUM"
+    "MD5SUM",
+    "PATCH"
   ],
   "legacy_subsystem_rows": [
     {

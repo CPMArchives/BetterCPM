@@ -2,6 +2,8 @@
 """Build the streaming COMPARE utility; does not promote it to release media."""
 import argparse
 import hashlib
+import json
+import re
 from pathlib import Path
 from build_ccp import assemble
 from component_identity import identification
@@ -30,10 +32,18 @@ def expanded_source():
 
 @recorded_build('utility:COMPARE')
 def build(assembler, destination):
-    source = expanded_source().replace('        CSEG\n', '        ASEG\n').replace('        .PHASE 0103H\n', '        ORG 0103H\n').replace('        .DEPHASE\n', '')
+    text = expanded_source()
+    source = text.replace('        CSEG\n', '        ASEG\n').replace('        .PHASE 0103H\n', '        ORG 0103H\n').replace('        .DEPHASE\n', '')
     raw = assemble(assembler, source, destination/'compare.bin', destination/'compare.lst', 0x103)
     data = b'\xc3\x03\x01' + raw
     (destination/'COMPARE.COM').write_bytes(data)
+    native = re.sub(r'(?m)^(?:(\w+:)\s*)? +DS +([0-9]+) *$',
+                    r'\1\n        REPT \2\n        DB 0FFH\n        ENDM', text)
+    prepared = native.replace('\n', '\r\n').encode('ascii')+b'\x1a'
+    (destination/'COMPARE-NATIVE.MAC').write_bytes(prepared)
+    (destination/'COMPARE-native.json').write_text(json.dumps({
+        'binary_sha256': hashlib.sha256(data).hexdigest(),
+        'native_source_sha256': hashlib.sha256(prepared).hexdigest()}, indent=2)+'\n')
     return data
 
 

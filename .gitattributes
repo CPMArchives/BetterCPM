@@ -9,3 +9,5 @@ src/distribution/TEDCOPY.TXT -text whitespace=cr-at-eol
 
 # CP/M text retains CRLF line endings.
 src/distribution/NOAH.TXT whitespace=cr-at-eol
+src/distribution/PATCH.TXT -text whitespace=cr-at-eol
+src/distribution/COMPARE.TXT -text whitespace=cr-at-eol

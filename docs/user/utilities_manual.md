@@ -6,16 +6,16 @@ The Utilities Disk is being assembled separately from the System Disk. This manu
 
 CRCKSUM has a development implementation; CRCKSUM is included in newly built candidate Utilities images; the maintainer waived the remaining Model 4 validation for PR finalization; full Model 4 qualification and release acceptance are not asserted.
 
-The COMPARE chapter describes a development utility. COMPARE is not yet qualified
-or included in current Utilities Disk images. SEARCH 1.0 is included in newly
+The COMPARE chapter describes a development utility. COMPARE is included on the candidate NOAH companion disk. Remaining Model 4
+validation is deferred by the maintainer for a later manual campaign. SEARCH 1.0 is included in newly
 generated Utilities candidates and has passed paired-image acceptance on both BetterCP/M targets. Public release publication
 remains separate.
 
 MD5SUM has a development implementation in newly built Utilities candidates;
 The maintainer has waived and deferred the remaining Model 4 validation; full Model 4 qualification and paired release acceptance are not asserted.
 
-PATCH has an engineering specification and a prospective manual chapter. It is
-not implemented or included in Utilities images; qualification remains pending.
+PATCH is included in newly built candidate NOAH companion disks. Its native/cross
+and cpmsim checks pass; Model 4 qualification and release acceptance remain pending.
 
 ## Contents
 
@@ -213,7 +213,8 @@ archives, or replace text.
 
 ## COMPARE binary file comparison
 
-**Development utility — qualification pending.** This chapter describes the
+**Development candidate — included on the NOAH companion disk.** Remaining Model 4
+validation is waived for finalization and deferred to a later manual campaign. This chapter describes the
 implemented interface. The [engineering specification](../engineering/COMPARE%20Specification.md)
 records the approved design decisions and narrow display layout.
 
@@ -231,8 +232,8 @@ COMPARE /SUMMARY OLD.COM NEW.COM
 COMPARE /FROM=0205H /FROM2=0208H /LEN=0100H /SIDE A.BIN B.BIN
 ```
 
-If the utility is on B0: and is not otherwise found by your command environment,
-use `B0:COMPARE`. Options may precede, separate or follow the filenames; option
+With primary Utilities in B: and the NOAH companion in C:, use `C0:COMPARE`
+if your command environment does not otherwise find it. Options may precede, separate or follow the filenames; option
 names are case-insensitive. Supply exactly two filenames. Each may have its own
 drive and user qualification. Omitted drive or user selections inherit those
 of the caller. Comparing a file with itself is allowed. Wildcards, drive/user
@@ -683,11 +684,12 @@ The common entry syntax permits exchange of these lists. MD5SUM does not reprodu
 
 ## PATCH verified binary file patching
 
-**PATCH 1.0 — specified; implementation and qualification pending.** PATCH is
-not yet included in Utilities images. This chapter describes the intended
-interface, controlled by the [engineering specification](../engineering/PATCH-Specification.md).
-Its repository assessment identifies a few policy details to settle before
-implementation; this chapter does not promise behavior for those cases.
+**PATCH 1.0 development candidate.** Newly built Utilities packages include PATCH
+on the NOAH companion disk. Native/cross parity and cpmsim execution checks pass;
+Model 4 qualification and paired release acceptance remain pending. The
+[engineering specification](../engineering/PATCH-Specification.md) controls the
+interface, and [implementation notes](../engineering/PATCH-Implementation.md)
+record qualification limits.
 
 PATCH applies verified byte replacements from a patch instruction file to a
 binary input file, producing a separate output. The original input remains
@@ -732,7 +734,9 @@ The output must differ from both the input and the instruction file after DU
 resolution. Alternate spellings of the same identity do not bypass this rule.
 
 If needed, qualify the executable separately, for example
-`B0:PATCH A3:FIX.PAT`. The executable's location does not change filename defaults.
+`C0:PATCH A3:FIX.PAT`. The executable's location does not change filename defaults. With the primary
+Utilities disk in B:, mount the NOAH companion in C: and keep D: as your work
+disk. PATCH shares the companion because the primary 332K disk lacks space.
 
 ### Writing a patch file
 
@@ -769,7 +773,10 @@ OLD and NEW contain nonempty sequences of two-digit hexadecimal bytes separated
 by spaces or tabs. Letter case does not matter. NEW may be shorter than OLD but
 cannot be longer. Whitespace around the colon and ASCII arrow `->` is allowed.
 Each physical line may contain at most 255 characters, excluding its line ending.
-Longer or malformed lines are errors, not truncated instructions. There is no
+Longer or malformed lines are errors, not truncated instructions. CRLF, bare CR
+and bare LF are accepted. A Ctrl-Z terminates instruction text; following stored
+padding may contain zeros or Ctrl-Z bytes, but no further statements. NUL bytes
+before Ctrl-Z are errors. There is no
 arbitrary limit on the number of instructions; large patch files may require
 additional disk passes.
 
@@ -828,6 +835,26 @@ CP/M replacement is not atomic. Power loss can leave backup or temporary files,
 and can temporarily leave the requested destination name absent. PATCH cannot
 promise cleanup after power loss or a BDOS/BIOS error that never returns.
 
+### Cancellation and protection
+
+Ctrl-C cancels at safe boundaries, including while answering a collision or
+entering a new filename. PATCH cleans up uncommitted output where possible and
+restores your logged drive/user. It completes any immediate backup/install/
+restore recovery sequence before responding to cancellation.
+
+An instruction file with no replacements is an error. An explicit replacement
+that writes the same bytes is allowed; its changed-byte count is zero.
+
+PATCH refuses to replace a read-only or system output, without clearing its
+attributes. Choose a different output or manage protection separately. A new
+output is an ordinary read/write, directory-visible file; it does not inherit
+the input's or former output's attributes.
+
+Keep the input and patch file mounted and unchanged until the command finishes.
+PATCH fingerprints the complete stored patch on every scan and checks input
+fingerprints between phases to detect changes. These checks support consistent
+processing; they do not authenticate the author of a patch.
+
 ### Results and errors
 
 PATCH preserves every stored 128-byte logical record, including Ctrl-Z bytes,
@@ -838,8 +865,8 @@ supported within the implementation's documented addressing limits.
 After writing and closing the output, PATCH rereads and compares every byte
 against the expected patched copy, including untouched regions. This is mandatory;
 there is no NOVERIFY option. A successful summary identifies the input and output,
-instruction count, byte totals, actual changed-byte count and full verification
-status. Writing a replacement equal to the original does not count as an actual
+instruction count, replacement-byte count, actual changed-byte count, total
+output bytes and full verification status. Writing a replacement equal to the original does not count as an actual
 byte change.
 
 Normal mode stops at the first validation failure. VERBOSE shows individual

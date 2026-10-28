@@ -62,6 +62,12 @@ All membership or layout changes require discussion with the maintainer.
   acceptance is not asserted. Prepared native
   source and build provenance accompany the shared corresponding-source archive.
   See [implementation notes](../engineering/MD5SUM-Implementation.md).
+- PATCH.COM: PATCH 1.0 revision 001 development candidate, supplied with
+  PATCH.TXT on the NOAH companion Utilities volume. The primary 332K Utilities
+  disk remains unchanged at 2K free. Native/cross parity and cpmsim checks pass;
+  Model 4 qualification and paired release acceptance remain pending. Prepared
+  native source and build provenance travel in the Utilities host package.
+  See [implementation notes](../engineering/PATCH-Implementation.md).
 
 - SEARCH.COM: SEARCH 1.0 revision 001, read-only TEXT/HEX content search with
   shared DU selectors, bounded excerpts, forward paging and complete accounting.
@@ -74,7 +80,8 @@ All membership or layout changes require discussion with the maintainer.
   display, summary-only reporting and forward-only pagination; [engineering
   specification](../engineering/COMPARE%20Specification.md). Development implementation
   exists; Model 4 qualification and final Utilities Disk acceptance are pending.
-  The development executable is not yet included in release disk images.
+  Candidate companion disks include COMPARE.COM and COMPARE.TXT. Remaining Model 4
+  validation is waived for finalization and deferred to a combined manual campaign.
 
 - XSUB.COM
 - DUMP.COM: enhanced read-only hex/ASCII viewer with `/P`, required `/40`, `/FROM=`, exact DU access, interactive Find/Go To, sealed DRI `/BARE`, and visually styled `/VER`; [engineering specification](../engineering/DUMP%20Specification.md).
