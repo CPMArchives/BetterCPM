@@ -117,9 +117,21 @@ capacity. Further additions require another capacity assessment.
 
 Model 4 execution is pending, including native linking, actual console display,
 large-file processing, local lists and input/state preservation on that target.
-The earlier CRCKSUM-only waiver is not applied to MD5SUM. No automatic GUI run
-was attempted in the previously unreliable trs80gp environment, and no Model 4
-runtime pass or paired release acceptance is claimed. The prepared native source
+The earlier CRCKSUM-only waiver is not applied to MD5SUM. A fresh attempt on
+2026-10-28 used disposable System A: and exact candidate Utilities B: images.
+Both the existing LaunchServices wrapper and opening the original installed app
+failed with `kLSNoExecutableErr` (-10827), although its executable exists. Direct
+execution exited immediately with SIGABRT (-6), without stdout/stderr or a guest
+screen capture. No Model 4 runtime pass or paired release acceptance is claimed.
+The failure occurred before guest validation; it does not establish a defect
+in MD5SUM. Launch arguments and results are retained under
+`build/md5sum-development/model4-fresh-attempt`.
+
+Manual fallback media are prepared under
+`build/md5sum-development/manual-model4-001/MD5SUM-Model4-001.zip`: disposable
+System/fixture A:, exact Utilities B:, NOAH companion C: and native-source work
+disk D:, with README steps and file identities. Startup returns to the normal
+prompt. No normal emulator image was replaced or drive ejected. The prepared native source
 can be copied as MD5SUM.MAC to a disposable work disk and built with:
 
 ```text

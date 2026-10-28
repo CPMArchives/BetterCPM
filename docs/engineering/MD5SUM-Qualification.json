@@ -32,8 +32,24 @@
       "native_cross_parity": true
     },
     "trs80gp": {
-      "status": "PENDING",
-      "waived": false
+      "status": "BLOCKED_BEFORE_GUEST_VALIDATION",
+      "waived": false,
+      "attempted": true,
+      "launch_results": [
+        {
+          "mode": "existing-wrapper",
+          "result": "LaunchServices kLSNoExecutableErr (-10827)"
+        },
+        {
+          "mode": "original-app",
+          "result": "LaunchServices kLSNoExecutableErr (-10827)"
+        },
+        {
+          "mode": "direct-executable",
+          "result": "SIGABRT (exit -6)"
+        }
+      ],
+      "guest_capture": false
     }
   },
   "packaging": "PASS: paired readback/filesystem, DMK/raw parity, source closure and acceptance refusals",
