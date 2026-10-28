@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "release_title": "BetterCP/M 1.0",
+  "version": "1.0",
+  "status": "planned; assembly and acceptance pending",
+  "accepted_commit": null,
+  "tag": null,
+  "specification": "docs/releases/1.0-RELEASE-PACKAGES.md",
+  "release_index": "BetterCPM-1.0-RELEASE.json",
+  "release_checksums": "BetterCPM-1.0-SHA256SUMS.txt",
+  "assets": [
+    {
+      "id": "system-cpmsim",
+      "title": "BetterCP/M 1.0 System — cpmsim",
+      "filename": "BetterCPM-1.0-System-cpmsim.zip",
+      "archive_root": "BetterCPM-1.0-System-cpmsim",
+      "platforms": [
+        "cpmsim"
+      ],
+      "readme_template": "packaging/1.0/README-System-cpmsim.txt",
+      "status": "planned",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "system-model4",
+      "title": "BetterCP/M 1.0 System — Model 4",
+      "filename": "BetterCPM-1.0-System-Model4.zip",
+      "archive_root": "BetterCPM-1.0-System-Model4",
+      "platforms": [
+        "Model4"
+      ],
+      "readme_template": "packaging/1.0/README-System-Model4.txt",
+      "status": "planned",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "utilities",
+      "title": "BetterCP/M Utilities 1.0",
+      "filename": "BetterCPM-Utilities-1.0.zip",
+      "archive_root": "BetterCPM-Utilities-1.0",
+      "platforms": [
+        "cpmsim",
+        "Model4"
+      ],
+      "readme_template": "packaging/1.0/README-Utilities.txt",
+      "status": "planned",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "source",
+      "title": "BetterCP/M 1.0 Source",
+      "filename": "BetterCPM-1.0-Source.zip",
+      "archive_root": "BetterCPM-1.0-Source",
+      "platforms": [],
+      "readme_template": "packaging/1.0/README-Source.txt",
+      "status": "planned",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "documentation",
+      "title": "BetterCP/M 1.0 Documentation",
+      "filename": "BetterCPM-1.0-Documentation.zip",
+      "archive_root": "BetterCPM-1.0-Documentation",
+      "platforms": [],
+      "readme_template": "packaging/1.0/README-Documentation.txt",
+      "status": "planned",
+      "sha256": null,
+      "size_bytes": null
+    }
+  ]
+}

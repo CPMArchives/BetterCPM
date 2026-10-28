@@ -14,6 +14,10 @@ trs80gp/Model 4. Utilities and CP/M Tools disk assembly can follow separately.
 The two System Disks require their own platform boot and BIOS implementations.
 All membership or layout changes require discussion with the maintainer.
 
+The five host downloads and their archive structure are specified in
+[BetterCP/M 1.0 release packages](1.0-RELEASE-PACKAGES.md). That layout does not
+change the disk membership below.
+
 ## System Disk
 
 - README.TXT: introductory ASCII text in user 0, from `src/distribution/README.TXT`.

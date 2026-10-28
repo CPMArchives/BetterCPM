@@ -3,5 +3,5 @@
   "name": "BetterCP/M release package",
   "version": "1.0",
   "status": "in-progress",
-  "notes": "Release-package target; documentation and Utilities Disk completion remain separate from the frozen core OS milestone."
+  "notes": "Five separately downloadable assets under one BetterCP/M 1.0 release; layout in docs/releases/1.0-RELEASE-PACKAGES.md and metadata/release-assets.json. Assembly and validation remain pending."
 }
