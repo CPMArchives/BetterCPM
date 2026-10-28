@@ -2,7 +2,9 @@
 """DUP parser, direct dispatch and cleanup gates without media side effects."""
 from pathlib import Path
 from test_utility_versions import address, runner, output
-from utility_versions import banner
+from utility_versions import identities, display_development
+from component_identity import identification
+from component_registry import load
 ROOT=Path(__file__).resolve().parents[1]
 def main():
     image=(ROOT/'build/utilities/DUP.COM').read_bytes()
@@ -34,6 +36,10 @@ def main():
     for tail in ['/VER','/VER /CHECK B:']:
         c=runner(image);data=tail.encode();c.mem[128]=len(data);c.mem[129:129+len(data)]=data
         c.run(256,limit=100000)
-        assert output(c)==(banner('DUP')+'\r\n')
+    version,revision=identities()['DUP']
+    expected=identification('DUP',version,revision,
+        load()['components']['utility:DUP']['description'],
+        development=display_development('utility:DUP'))
+    assert output(c)==expected
     print('DUP command parsing, direct engine dispatch, one-shot exit and /VER checks pass')
 if __name__=='__main__':main()

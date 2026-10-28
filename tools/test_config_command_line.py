@@ -3,7 +3,9 @@
 from pathlib import Path
 from test_bios import Z80
 from test_utility_versions import address
-from utility_versions import banner
+from utility_versions import identities, display_development
+from component_identity import identification
+from component_registry import load
 ROOT=Path(__file__).resolve().parents[1]
 
 
@@ -42,7 +44,12 @@ def main():
             assert c.c==2,('unexpected mutation',c.c)
             out.append(c.e);return 0
         c.port_read=io;c.run(256,limit=100000)
-        if tail.strip().upper()=='/VER':assert calls==[9] and bytes(out)==(banner('CONFIG')+'\r\n').encode()
+        if tail.strip().upper()=='/VER':
+            version,revision=identities()['CONFIG']
+            expected=identification('CONFIG',version,revision,
+                load()['components']['utility:CONFIG']['description'],
+                development=display_development('utility:CONFIG'))
+            assert calls==[9] and bytes(out)==expected.encode()
         elif tail.startswith('/STARTUP="Mixed'):assert calls==[] and not out
         elif tail=='/SHOW X':assert bytes(out)==b'Invalid CONFIG usage.\r\n'
         else:assert calls==[9] and bytes(out)==(banner('CONFIG')+'\r\n').encode()

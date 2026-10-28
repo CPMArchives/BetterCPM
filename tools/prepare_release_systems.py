@@ -21,10 +21,10 @@ def prepare(output, simulator):
         raise ValueError('System candidate preparation requires clean tracked source')
     output.mkdir(parents=True,exist_ok=False)
     identity=source_identity();manifest=json.loads(MANIFEST.read_text())
-    # This existing build path emits both common Model 4 and target cpmsim
-    # artifacts, without starting trs80gp. Images have private filesystems.
-    root=current_build(output/'work','z80pack',identity,False)
     for target in ('z80pack','trs80gp'):
+        # CONFIG embeds platform-specific descriptors. Keep the two complete
+        # build snapshots separate; the cpmsim build rewrites shared paths.
+        root=current_build(output/'work',target,identity,False)
         out=output/target;out.mkdir()
         files,omitted=selected_files(manifest,target,root)
         g=geometry(target,root);totals=capacity(files,g)
