@@ -477,11 +477,11 @@ The System Disk contains the operating system and the following user-0 files. Th
 
 A supplied clock provider is available for explicit loading; neither platform loads one by default. Model 4 startup does load its screen backend and ADM-3A personality, as shown in [Section 7.3](#section-7-3).
 
-The separate **Utilities Disk** is selected for `XSUB.COM`, `DUMP.COM`, ZSM4 and LINK, along with additional tools whose exact selections remain pending. Utilities Disk assembly and the remaining selections are separate from the current System Disk. The [BetterCP/M Utilities Manual](utilities_manual.md) covers Utilities Disk programs, beginning with the enhanced DUMP command reference. The **CP/M Tools Disk** is another separate collection, selected for SYSINFO, BIOSINFO, DISKINFO, MEMINFO and related portable diagnostics; it is not the System Disk or Utilities Disk.
+The separate **primary Utilities Disk** (B:) includes DDT, DUMP, XSUB/BATCHIO, compression utilities, ZSM4/LINK, DASM/DSYM/DLINK, TED, SEARCH, CRCKSUM and MD5SUM. The **companion Utilities Disk** (C:) retains the historical BetterCPM-NOAH image name and contains NOAH.COM/OVL/TXT, PATCH.COM/TXT and COMPARE.COM/TXT. Use matching NOAH executable and overlay files. D: is work media where applicable. Inclusion does not replace outstanding platform acceptance; the candidate inventory and qualification records identify the exact files. The [BetterCP/M Utilities Manual](utilities_manual.md) covers Utilities Disk programs, beginning with the enhanced DUMP command reference. The **CP/M Tools Disk** is another separate collection, selected for SYSINFO, BIOSINFO, DISKINFO, MEMINFO and related portable diagnostics; it is not the System Disk or Utilities Disk.
 
 An implemented or buildable component is not automatically a selected distribution file. In particular, `CLS.COM`, `P2DOS.RSX`, the 104/105 clock-compatibility adapters, and `FDF.RSX` are not selected System Disk contents. CLS is available through `RCP.CPX`. Optional adapters and FDF support require separately prepared, compatible files; a maintainer can build these from the matching BetterCP/M source, then install extension files in A0 as described in [Section 8.2](#section-8-2). Diagnostic and conformance packages are also outside the selected distribution.
 
-Historical ASM, LOAD and DDT examples assume separately obtained compatible tools; these programs are not selected BetterCP/M disk contents. ED is supplied on the System Disk. Refer to the distribution manifest and the disk's release report for the approved inventory and any outstanding packaging decisions, rather than treating a development disk or build directory as a release inventory.
+Historical ASM and LOAD examples assume separately obtained compatible tools; those programs are not selected BetterCP/M disk contents. DDT is supplied on the primary Utilities Disk; ED is supplied on the System Disk. Refer to the distribution manifest and the disk's release report for the approved inventory and any outstanding packaging decisions, rather than treating a development disk or build directory as a release inventory.
 
 <a id="section-3-3"></a>
 
@@ -13764,7 +13764,7 @@ These references describe the commands available to users, their syntax, options
 
 ##### Development Utilities
 
-The System Disk supplies ED. The separate Utilities Disk selection includes ZSM4 and LINK. Traditional tools such as ASM, LOAD and DDT must be obtained separately if needed; they are not selected BetterCP/M distribution contents.
+The System Disk supplies ED. The primary Utilities Disk includes DDT, ZSM4 and LINK. Traditional tools such as ASM and LOAD must be obtained separately if needed; they are not selected BetterCP/M distribution contents.
 
 These familiar tools have distinct purposes:
 
