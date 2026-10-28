@@ -32,12 +32,19 @@ def build(repository, output, profile):
         subprocess.run(['git','-C',str(repository),'archive',commit,'cpmsim','z80core','iodevices','LICENSE'],stdout=stream,check=True)
     archive_hash=sha(archive)
     command(['tar','-xf',archive,'-C',source]);archive.unlink()
+    # git apply otherwise discovers a surrounding BetterCP/M checkout when
+    # output is under build/, and silently skips paths outside that prefix.
+    # Apply to this standalone archive, independent of caller Git state.
+    patch_env=dict(os.environ)
+    for name in ('GIT_DIR','GIT_WORK_TREE','GIT_INDEX_FILE'):
+        patch_env.pop(name,None)
+    patch_env['GIT_CEILING_DIRECTORIES']=str(output)
     applied=[]
     for name in pin['profiles'][profile]:
         patch=PIN.parent/'patches'/name;entry=next(x for x in pin['patches'] if x['file']==name)
         if sha(patch)!=entry['sha256']:raise ValueError('patch digest mismatch: '+name)
-        command(['git','apply','--check',patch],cwd=source)
-        command(['git','apply',patch],cwd=source);applied.append(entry)
+        command(['git','apply','--check',patch],cwd=source,env=patch_env)
+        command(['git','apply',patch],cwd=source,env=patch_env);applied.append(entry)
     # The archive cannot carry ignored local executables/objects. Hash all inputs.
     source_hashes={str(p.relative_to(source)):sha(p) for p in sorted(source.rglob('*')) if p.is_file()}
     compiler=shutil.which('cc');make=shutil.which('make')

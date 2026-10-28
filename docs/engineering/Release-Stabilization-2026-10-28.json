@@ -1,0 +1,463 @@
+{
+  "date": "2026-10-28",
+  "implementation_commit": "13075d06fd37121f562155c7a561066b3af0ac16",
+  "tested_system_build_commit": "2f79c31e63ea711e3ac811ce4e8dac8619dab910",
+  "status": "PASS selected returning groups and cpmsim reconstruction primitives; release NOT accepted",
+  "scope": "11 selected returning groups; observations and not-run rows are not passes; no Model 4 execution",
+  "group_row_counts": {
+    "-": 109,
+    "P": 229,
+    "O": 24
+  },
+  "runs": {
+    "BDOSTEST /GROUP:REQUIRED": {
+      "baseline_revision": "2f79c31e63ea711e3ac811ce4e8dac8619dab910",
+      "baseline_sha256": "a6300d4febc44410426e0e6925749793d54265ebf02331432c30f3b89479faf1",
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "6cb0b0b08ec2e6d121ede892ea6431d821724402e8b3787509d86cc8dba729dc",
+      "simulator_sha256": "c61d4e6258886ec23466af79c3dd179ac1766fa90e1bf41fde2089668b9d460c",
+      "counts": {
+        "-": 3,
+        "P": 56
+      },
+      "failed_or_error_rows": [],
+      "receipt_sha256": "e36a6e70df322196b578bd020af63094ead786bc888e3f0fbb05c6afbee41df7"
+    },
+    "BIOSTEST /SAFE": {
+      "baseline_revision": "2f79c31e63ea711e3ac811ce4e8dac8619dab910",
+      "baseline_sha256": "a6300d4febc44410426e0e6925749793d54265ebf02331432c30f3b89479faf1",
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "e62a67529cbef91d7177028668644882c8d1ea4ec753894880f71c16a3b3f922",
+      "simulator_sha256": "c61d4e6258886ec23466af79c3dd179ac1766fa90e1bf41fde2089668b9d460c",
+      "counts": {
+        "-": 30,
+        "O": 11,
+        "P": 5
+      },
+      "failed_or_error_rows": [],
+      "receipt_sha256": "7c84f3992839c4647c491a621b8e2f779f8e057c1a99990a071df4e216288f5f"
+    },
+    "CCPTEST /GROUP:REQUIRED": {
+      "baseline_revision": "2f79c31e63ea711e3ac811ce4e8dac8619dab910",
+      "baseline_sha256": "a6300d4febc44410426e0e6925749793d54265ebf02331432c30f3b89479faf1",
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "df97481f57a92c3c900e6b39d3fe4dd425f4280cde6c07ea99aeac78bf34419c",
+      "simulator_sha256": "c61d4e6258886ec23466af79c3dd179ac1766fa90e1bf41fde2089668b9d460c",
+      "counts": {
+        "-": 29,
+        "P": 12
+      },
+      "failed_or_error_rows": [],
+      "receipt_sha256": "07239dd0883899498dd3852e7c2797cb266fdf4f8f9c09323382b3abe4a2ddf4"
+    },
+    "CPUTEST /ALL": {
+      "baseline_revision": "2f79c31e63ea711e3ac811ce4e8dac8619dab910",
+      "baseline_sha256": "a6300d4febc44410426e0e6925749793d54265ebf02331432c30f3b89479faf1",
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "18ed2c9fb3beaa98dcedfb985199016f5ff2fd38338f6cdf294f5e91e30dfa9b",
+      "simulator_sha256": "c61d4e6258886ec23466af79c3dd179ac1766fa90e1bf41fde2089668b9d460c",
+      "counts": {
+        "-": 2,
+        "O": 1,
+        "P": 2
+      },
+      "failed_or_error_rows": [],
+      "receipt_sha256": "a99819f13950f04b3c0c7c0f9df8a05322886e3e4559b7f996aaa4aceecdb203"
+    },
+    "DIRTEST /SAFE": {
+      "baseline_revision": "2f79c31e63ea711e3ac811ce4e8dac8619dab910",
+      "baseline_sha256": "a6300d4febc44410426e0e6925749793d54265ebf02331432c30f3b89479faf1",
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "46d3c4e58f275140b228034e169e1cba4150568003dc4a32af76f6531bc4f7bd",
+      "simulator_sha256": "c61d4e6258886ec23466af79c3dd179ac1766fa90e1bf41fde2089668b9d460c",
+      "counts": {
+        "P": 49
+      },
+      "failed_or_error_rows": [],
+      "receipt_sha256": "553527ad803392a5e49e166ef61129c15a7521c36aa7954db2341cb321701beb"
+    },
+    "DISKTEST /SAFE": {
+      "baseline_revision": "2f79c31e63ea711e3ac811ce4e8dac8619dab910",
+      "baseline_sha256": "a6300d4febc44410426e0e6925749793d54265ebf02331432c30f3b89479faf1",
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "7457e73a227282547b510b45c63741c7a93bc0d6429bbb3efae4c38385837d1b",
+      "simulator_sha256": "c61d4e6258886ec23466af79c3dd179ac1766fa90e1bf41fde2089668b9d460c",
+      "counts": {
+        "P": 7
+      },
+      "failed_or_error_rows": [],
+      "receipt_sha256": "2d7705544d708b2002e883be172679fe16a5f6f2916eda1f5d5efe4ab90bd722"
+    },
+    "ECOTEST /GROUP:REQUIRED": {
+      "baseline_revision": "2f79c31e63ea711e3ac811ce4e8dac8619dab910",
+      "baseline_sha256": "a6300d4febc44410426e0e6925749793d54265ebf02331432c30f3b89479faf1",
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "110c1326b49a32c87608790e302102a8743081aef10479118d26e4197ecdd28c",
+      "simulator_sha256": "c61d4e6258886ec23466af79c3dd179ac1766fa90e1bf41fde2089668b9d460c",
+      "counts": {
+        "-": 4,
+        "P": 1
+      },
+      "failed_or_error_rows": [],
+      "receipt_sha256": "01a1795c9a41d03cb4f20f15db76976a76383f52d2b19b7d4953f55be4be2327"
+    },
+    "ENTRYTST /GROUP:REQUIRED": {
+      "baseline_revision": "2f79c31e63ea711e3ac811ce4e8dac8619dab910",
+      "baseline_sha256": "a6300d4febc44410426e0e6925749793d54265ebf02331432c30f3b89479faf1",
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "f85ca4616e34a2264423b25285b0c0731a950bb4825ca7b75b04cde1396063de",
+      "simulator_sha256": "c61d4e6258886ec23466af79c3dd179ac1766fa90e1bf41fde2089668b9d460c",
+      "counts": {
+        "-": 13,
+        "P": 25
+      },
+      "failed_or_error_rows": [],
+      "receipt_sha256": "2a068dcc564a05e5c7cd44d1c38beae3dd5744095a9e1cd5ae46f41be7cfbf60"
+    },
+    "ERRTEST /SAFE": {
+      "baseline_revision": "2f79c31e63ea711e3ac811ce4e8dac8619dab910",
+      "baseline_sha256": "a6300d4febc44410426e0e6925749793d54265ebf02331432c30f3b89479faf1",
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "c100c2213a561da1fba7b68c02ca53283f044902ca195e8f3cfcb1f7c7b692b0",
+      "simulator_sha256": "c61d4e6258886ec23466af79c3dd179ac1766fa90e1bf41fde2089668b9d460c",
+      "counts": {
+        "-": 26,
+        "O": 12,
+        "P": 5
+      },
+      "failed_or_error_rows": [],
+      "receipt_sha256": "639d3e8e4408f869da7f5b79ccfa049ba786531ebf1714e0780ec3aef5ef07b3"
+    },
+    "FILETEST /SAFE": {
+      "baseline_revision": "2f79c31e63ea711e3ac811ce4e8dac8619dab910",
+      "baseline_sha256": "a6300d4febc44410426e0e6925749793d54265ebf02331432c30f3b89479faf1",
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "a07880af68acf8282557a084a0e346d4cde7f0c762206601895f76270ff2efe5",
+      "simulator_sha256": "c61d4e6258886ec23466af79c3dd179ac1766fa90e1bf41fde2089668b9d460c",
+      "counts": {
+        "P": 28
+      },
+      "failed_or_error_rows": [],
+      "receipt_sha256": "1530cbf9d8cff1581d53602846857e0f6dae733dbac4db8a312d053816bd5e26"
+    },
+    "RANDTEST /SAFE": {
+      "baseline_revision": "2f79c31e63ea711e3ac811ce4e8dac8619dab910",
+      "baseline_sha256": "a6300d4febc44410426e0e6925749793d54265ebf02331432c30f3b89479faf1",
+      "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+      "program_sha256": "041bddda388acdf9284566ab7c410ca5a520198b78a3973ba1af1d84a329f2c0",
+      "simulator_sha256": "c61d4e6258886ec23466af79c3dd179ac1766fa90e1bf41fde2089668b9d460c",
+      "counts": {
+        "-": 2,
+        "P": 39
+      },
+      "failed_or_error_rows": [],
+      "receipt_sha256": "c494924612c283690dc8aa5a43b0209dd14c5c5f957e69209143c71102921028"
+    }
+  },
+  "reconstruction": {
+    "status": "PASS",
+    "poisoned_working_tree_reconstruction": "PASS",
+    "guard_cases": 7,
+    "geometry_version": 2,
+    "runtime_manifest_sha256": "78f1264efb6b3568188c6a16d705d5c694afd17842cbb0e4b89c149abce1555b",
+    "qualification_manifest_sha256": "ab744b3284f235d34c182fa099be87365a8505f0e16a37f8b363d6b121e754fb"
+  },
+  "runtime": {
+    "status": "BUILT",
+    "profile": "runtime",
+    "upstream": {
+      "repository": "https://github.com/udo-munk/z80pack.git",
+      "commit": "91fd28eb04e675c2127df88ed3f40675e15282e2",
+      "upstream_confirmation": "https://github.com/udo-munk/z80pack/commit/91fd28eb04e675c2127df88ed3f40675e15282e2",
+      "geometry_interface": 2,
+      "patches": [
+        {
+          "file": "0001-disk-geometry.patch",
+          "sha256": "44644855fc50d650ea0c476c2fb419a04f25e57ac536590ca03a85a252f6b3a2"
+        },
+        {
+          "file": "0002-raw-fdf-backend.patch",
+          "sha256": "8fabbc3344f4183c302affe02cfb6f29107106d711e672e7a962581563fdd9be"
+        },
+        {
+          "file": "0003-rom-qualification.patch",
+          "sha256": "ab5acdba64a4ac2bfe8518e7df354be2c171653515d2763821debcae886be3f9"
+        }
+      ],
+      "profiles": {
+        "runtime": [
+          "0001-disk-geometry.patch",
+          "0002-raw-fdf-backend.patch"
+        ],
+        "qualification": [
+          "0001-disk-geometry.patch",
+          "0002-raw-fdf-backend.patch",
+          "0003-rom-qualification.patch"
+        ]
+      }
+    },
+    "source_archive_sha256": "9347c70d1b4d7599ed73a0c2020d33219056f5e71e22a49292b2bc650e0ecf13",
+    "patches": [
+      {
+        "file": "0001-disk-geometry.patch",
+        "sha256": "44644855fc50d650ea0c476c2fb419a04f25e57ac536590ca03a85a252f6b3a2"
+      },
+      {
+        "file": "0002-raw-fdf-backend.patch",
+        "sha256": "8fabbc3344f4183c302affe02cfb6f29107106d711e672e7a962581563fdd9be"
+      }
+    ],
+    "patch_set_sha256": "55fe42e876f1816755a6b4c863ff5c62728602532b2a883549e3c77e209a961b",
+    "bettercpm_revision": "2f79c31e63ea711e3ac811ce4e8dac8619dab910",
+    "builder_sha256": "1029b1632fc2c4520226554734dd0c97776c8e179eacdcec2f8f49221662e525",
+    "host": "Linux-6.18.55-x86_64-with-glibc2.39",
+    "architecture": "x86_64",
+    "compiler": "cc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+    "make": "GNU Make 4.3\nBuilt for x86_64-pc-linux-gnu\nCopyright (C) 1988-2020 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n",
+    "build_commands": [
+      [
+        "/usr/bin/make",
+        "-j4",
+        "CC=/usr/bin/cc",
+        "INFOPANEL=NO",
+        "WANT_SDL=NO",
+        "MODE=RELEASE",
+        "DEBUG=",
+        "SIM=/workspace/scratch/fc223928de8c/BetterCPM-release-1.0/build/release-runtime/z80pack/cpmsim/cpmsim",
+        "ROM_QUALIFY=NO",
+        "all"
+      ],
+      [
+        "/usr/bin/make",
+        "CC=/usr/bin/cc",
+        "all"
+      ]
+    ],
+    "patched_input_sha256": {
+      "LICENSE": "e23596559cc34a4ddb7fe2ec14425f9e7bbb54a059cf5e848c4592ac1b023cb1",
+      "cpmsim/conf/net_client.conf.example": "621b856794741b4238d2a7baf9c1439bfc641652a317e24268472b674e5e6a82",
+      "cpmsim/conf/net_server.conf.example": "8d9998615bf7dcb912ff865fae12e3bd6551dc5007a63738d1f804561319fad0",
+      "cpmsim/cpm13": "c2d2fb1b6d1365e54dab934b49947a4b0e9aff779eef04ba83cf388f39fb3986",
+      "cpmsim/cpm14": "262037e38df3aef51deeef73f81aca130a9f03f589c02578680b779623ccb12b",
+      "cpmsim/cpm1975": "9d711936019d25fd5f83e3c81042c9fe21e82d2cb670c07c10577289e0404136",
+      "cpmsim/cpm22": "523a395b5147ba97817cb206d90b7aa795ab5e4941d5b64644cefcb8d983ccd6",
+      "cpmsim/cpm3": "78b09fbb4fcbe3ff0f3e81bc5636cc40257af13f9d613af5409b48fbad92b106",
+      "cpmsim/disks/library/cpm13.dsk": "35e5a3c5e974d44bb57bbcc966da3541fd2af79801d91d48bea22ce0119b1a8f",
+      "cpmsim/disks/library/cpm14.dsk": "81dddc7b9213daf79c97e1b60a520f0258127ef6c184f8ac1e2c87c18f805d41",
+      "cpmsim/disks/library/cpm1975.dsk": "d2469be5eb1488d0a76844ed9fca098e99032a88411355a086578101ab75673b",
+      "cpmsim/disks/library/cpm22-1.dsk": "86ac7cb1bdd6bac05fe6299b50f94cb26a047022ce00135fbecf7bbc5d3303d2",
+      "cpmsim/disks/library/cpm22-2.dsk": "30d3f145e86179801a72963f7ddd59ef83a1c045d3d19901d0a4a697b26a8a7a",
+      "cpmsim/disks/library/cpm22-62khd.dsk": "c0e63f206f6875398817207c00eb99f749d73b319c86329d5947fb2482d28945",
+      "cpmsim/disks/library/cpm3-1.dsk": "598af02b496eaf5a7119b26876a53038df08589ea118863f3bf1e0a06942fb44",
+      "cpmsim/disks/library/cpm3-2.dsk": "45164c4403d70fc2fd17e3184386014e35f61107a2fbf591cd106d3a5234f33e",
+      "cpmsim/disks/library/hd-tools.dsk": "39fefc78d07c463ad4084f5ab959d3e63458f3fbbd2ad9eba86834641a641977",
+      "cpmsim/disks/library/hd-toolsrc.dsk": "2bd31203c602338cd7f37649c41fa2c74b2b5c7330ebf30271d00b2d8bdcd68b",
+      "cpmsim/disks/library/i8080tests.dsk": "14324cfed54236b11b892f281235245f833b4845a9510ce205f23eaf5f70e41e",
+      "cpmsim/disks/library/mpm-1.dsk": "fa28490669079bb1c8817134cfc228d79656826f0f8d91e133aed10f5c858e46",
+      "cpmsim/disks/library/mpm-2.dsk": "1f94e86582dc2f6d93d3b1da6a13009bfafb257edabc566028d212465d45bd89",
+      "cpmsim/disks/library/ucsd-iv-1.dsk": "db3da74aef59c26dd5736f693e63a2e472a4de7ee58b32351f6309caa9f5e379",
+      "cpmsim/disks/library/ucsd-iv-2.dsk": "5ff1a265d91c7aaa141bde3f19c5d1fef2d9102208543a5916e0b0694fdeb8bf",
+      "cpmsim/disks/library/ucsd-iv-interp.dsk": "f9f62e70947bf372f6e30f7f99804e9b4fa5fa6d1bcedfae43ef96baf4ad1708",
+      "cpmsim/disks/library/z80tests.dsk": "0aac0caa4ce0da4a4f4e40d004907fe8e96ba3f4dcbf2f8e088c42688d518d33",
+      "cpmsim/mpm": "6fd58b822b5fb281a099dcd164cb3bb4230e1a71bea0020ed0429236b94bd795",
+      "cpmsim/srccpm2/Makefile": "e9637a66be26dab44a935d6a54e24dd8237a180712771a2e3fbf077a50dfff70",
+      "cpmsim/srccpm2/bios.asm": "68569b8c97262db434ccb9baa1952d8416ba59cd5a8fdd703e9719d48ec54a4d",
+      "cpmsim/srccpm2/bios8080.asm": "ea9d80bf2cce21b6a1f96d138dab20cd94333b88032d6e1a6a31bb604957a871",
+      "cpmsim/srccpm2/boot.asm": "1225468f7c3c9aaf7c56a80178955dffbe6e92c6fcc819a4f6ad55e564539a19",
+      "cpmsim/srccpm2/cpm.bin": "f347038cca279081054a7cbb218af2a7618da4ddaa43c7e578838143314b0c5b",
+      "cpmsim/srccpm2/putsys.c": "c98ccbd554274625505e053ad1ff01107a7c143baed1a7470040252b739ac7db",
+      "cpmsim/srccpm2/snios-0.asm": "3914c9c5553189b97c21d7e5200945d4e19c510ce522f96aefb3c5ed7da3facb",
+      "cpmsim/srccpm2/snios-1.asm": "21170e1164e3baf707933d15c639031bd9fc0823b63331cbcaf6e24ef60b5050",
+      "cpmsim/srccpm2/snios-2.asm": "b52efebb7f1f7fce3fce68fe8bc397b3cd76ca530890abc34e49ceb587bc1254",
+      "cpmsim/srccpm3/Makefile": "22c2e217921cb2f592c6a3326c7fcb97bc76b90af05094ad1865651c0a70784e",
+      "cpmsim/srccpm3/bios3.mac": "f7a75897a16389763d4990ce15b0b4e63549f45b8020c06d4df585d454b9765e",
+      "cpmsim/srccpm3/boot.asm": "7d18538c782adf14184a31e2fbc30cb89fd44b8df2747b841367935b908224dc",
+      "cpmsim/srccpm3/ccp.bin": "f6b1e73675d7dfd981a48d7bebf8b8278a46ecaaf942e689f969ce5ce232ead4",
+      "cpmsim/srccpm3/cpmldr.bin": "f8b6ba869841a625eea1d8be057850891efac07268a1fb023d2e9679434085fa",
+      "cpmsim/srccpm3/ldrbios3.mac": "eb4e8b8756e7c7782aa7d6bd695b2717a9bf17ef994631bdbef94fbcb91b96e9",
+      "cpmsim/srccpm3/putsys.c": "2bee48f976d22d39d077f9730902638cad83f5588270b018d3ed55101a38bbcb",
+      "cpmsim/srcmpm/Makefile": "22c2e217921cb2f592c6a3326c7fcb97bc76b90af05094ad1865651c0a70784e",
+      "cpmsim/srcmpm/bnkxios-net-0.mac": "ddca65bde4360c6b8d677e7d1e7f804b98c5d2857f775e94422254f0cca69ad8",
+      "cpmsim/srcmpm/bnkxios-net-1.mac": "6080ab295f89d5b0f08b13ea643c18ccaaf1476081838361f54e3a0cfcd6506d",
+      "cpmsim/srcmpm/bnkxios-net-2.mac": "cd954a8a8d56d2cb97489fe0318ecaca30f624441e6a9c1780c3fe740590a109",
+      "cpmsim/srcmpm/bnkxios.mac": "c7aac419e21ced841b5ff550727cb99d7b703e28ee315113469c5e10657c8dcc",
+      "cpmsim/srcmpm/boot.asm": "65bb97cbc23634afecf61da143489e2e0789504a19e51c13787622519fcb1e12",
+      "cpmsim/srcmpm/ldrbios.mac": "93faf462e16f445155b462641683b9a779f612627c396d873d3b93bd1403a3f1",
+      "cpmsim/srcmpm/mpmldr.bin": "e804f0773ae4df24586968a7a46a1071bbfdc7b2d1ae4b6ee45b0e8b673f40e1",
+      "cpmsim/srcmpm/netwrkif-0.asm": "e61343df6c764fac095a7f31b93dc72eadb3bae74acbb44764d689b63b59cf47",
+      "cpmsim/srcmpm/netwrkif-1.asm": "d4353d8701446f7f51842b79983860fdfd2620ddda2a11607aebb8cc767885fb",
+      "cpmsim/srcmpm/netwrkif-2.asm": "d9b43febfe8d5cb018cf274697b8f9088a759302963456a59587d182ec4e5294",
+      "cpmsim/srcmpm/putsys.c": "d1319163303259375c8d18b9fc2b08d0882fafad5a7c025b4f4f50383c334dca",
+      "cpmsim/srcsim/COPYING": "3e177fc40a979051c1194dae480bfe30fd5fa08d23060a9568e93fdb2b04863a",
+      "cpmsim/srcsim/Makefile": "e904b24b8b90e6efd44f806e5410b6f4d47eb7d28a0ac3512617ea22bd02c13d",
+      "cpmsim/srcsim/sim.h": "2131e97375901138d03ab8429e00f6352fec44caa107be8d1d811aa490abf3dc",
+      "cpmsim/srcsim/simcfg.c": "0d7f310a7aaec6d0b677a99aad3dad58c6bd452ae2948da7c23e5916ccbcd56f",
+      "cpmsim/srcsim/simcfg.h": "11a8176aff9ed990daa8dbb10237af898f536011c56fa032196e361e8dcfface",
+      "cpmsim/srcsim/simctl.c": "e0584cd16dd8e42d760a25bcb6f0092b1faae235a1dd9f3fdb17c8c2270dbde8",
+      "cpmsim/srcsim/simctl.h": "3c784a6b4789f0b9ec6ab2ca9e7e5a7cbfc9841889ad1d4c4aa8fc058d607505",
+      "cpmsim/srcsim/simio.c": "873e3495f1e53988df7db63c18c93337ce3df5fdf44b5eeac20aa14c58f2e3f3",
+      "cpmsim/srcsim/simio.h": "4cb28c621ec6a916884f2095ea16dbfc10a79dc112e2c9bce0b66e13c650e0c5",
+      "cpmsim/srcsim/simmem.c": "87897269f48c4b26563e1625f7248b504480d309d0c57c58e49a9bc8a464290b",
+      "cpmsim/srcsim/simmem.h": "3c8b5b20fabcdacc6bb94a6c5df83e42fec8fd3711a61e5065010cca9af8fe17",
+      "cpmsim/srcsim/simport.h": "ba387a9d9473e2a23ff2ead8e7b7545f061481b727d23b4c46704111aa66f8ba",
+      "cpmsim/srctools/Makefile": "3f55256e0f16c89e3d79bc777810c8a1103c4b5c4e57e324aef321db8c7c23aa",
+      "cpmsim/srctools/bin2hex.c": "30417e73ae5594747b0b2a73f49a979fbd7a7f8663d9eb1f3fbaff2d9fc69090",
+      "cpmsim/srctools/cpmr.sh": "9ca9e7b8baca1630b21ac6b8a468344f2c540a60cd61a66faf413fb44df4b2d9",
+      "cpmsim/srctools/cpmrecv.c": "3151f0fd3d44865cfb4a52afd7afff921e2f6d32036b2960c5fd043dae172100",
+      "cpmsim/srctools/cpmsend.c": "cbb13a148fc45d89485dc8c100fa9efd5c21470472e846363f3cb249b05c8430",
+      "cpmsim/srctools/cpmw.sh": "12acadf7a4994ffc72402a0201b5bba2a04dd073366fcc6ff62f2dc88db6ed06",
+      "cpmsim/srctools/mkdskimg.c": "18bc2cae6b3e791be01399b0dc3e75234dd264ccdb837d1037312dcef1a084ba",
+      "cpmsim/srctools/ptp2bin.c": "7d8daeaa5d2bf5d83e767d16dc7b6d93504a13b366fea78ef1c6f89d47e714ee",
+      "cpmsim/srcucsd-iv/Makefile": "649559489c7aa8a56ba59a977d5aa4925d46952762a203801e38ea116c838b36",
+      "cpmsim/srcucsd-iv/bios.asm": "7a98dda6c46d54ae0075ee3dcbc302c269afccf2ff0e159fdf2be626b84927dc",
+      "cpmsim/srcucsd-iv/boot.asm": "1af0d817b0620f3980ce786b711e8328f23bd355e2a340ad9b67e1be43836f51",
+      "cpmsim/srcucsd-iv/putsys.c": "d687505d50a7064e6858cd91f13053d18a8a9a8fd66331ff561c26344111fe06",
+      "cpmsim/ucsd-iv": "f23da2dfd19cf8c0d0088f24b1a7b89f172b1a689f51a56b2b3b86a74e042064",
+      "iodevices/COPYING": "57cbb3f8dbd1bda91fea826d33faa8271a55040d0e1463fbf3ec0da3900247d1",
+      "iodevices/altair-88-2sio.c": "41cf0179bc4bc53839e63b4790f05e5809f9ecce0456470c43abaf216731c3c1",
+      "iodevices/altair-88-2sio.h": "7ce043e1eab6e4b650058d57e0005fa5a9169eb5322890942647b2d8a2efc5bc",
+      "iodevices/altair-88-dcdd.c": "a870d884411ab151eb3af4b0654ffa466f3e721af6d1112f7a3b74dc8432c6b2",
+      "iodevices/altair-88-dcdd.h": "0cb2c9a4fd847973098f0fbcd86dda60d85f3fdf9b0418135e20616bac6b2855",
+      "iodevices/altair-88-sio.c": "4ca52414332155573426658d962a7ca44380e2d1fb31970b467a8ff4c3a7846a",
+      "iodevices/altair-88-sio.h": "f8beb8c7c1ed3d0b5a054b21adb69be807000b7585a381f5d0142fc3ebb6d37d",
+      "iodevices/apu/LICENSE": "0a599476a242e7b19bc17332b01e0483200c7375ef53591363dce8c7d8474286",
+      "iodevices/apu/README.md": "eeb23867c22c258f080adaa0306eb3b32c6f235f038f391d5aee1df43ef05396",
+      "iodevices/apu/am9511.c": "ee6069ae1ef2ed355122fa6b5c7578a582d24bcebc0bd218e7077f7e0f52f090",
+      "iodevices/apu/am9511.h": "fe5631cc40ba18f4f862be6e5804f851ef464cae7616b4a81054d055eb791454",
+      "iodevices/apu/floatcnv.c": "01e447e5a641e0d69b5234f35be0ff2d6ce3092c294b5c32fd088f9b9db2b9c0",
+      "iodevices/apu/floatcnv.h": "8942b0dabfc36fb720129f235968818ce9b3f60a71599b8f34adbb97516447aa",
+      "iodevices/apu/ova.c": "778da664e98c163f713d21f4f61e5bdc8ba14e8bac0cc69c630b4b8bd7c8dc88",
+      "iodevices/apu/ova.h": "67ad094769514dde510e9a6b5178ec103435586ce447fa5050826993f8cd048c",
+      "iodevices/apu/types.h": "595b181242d75d8a73bc2d9e216aa8484ea5342c94250c374a93a42136588d5c",
+      "iodevices/cromemco-88ccc.c": "ec049bcfa29fa3c612a166505b488058757516c8fde6cd4ea7016b3f5935ed0e",
+      "iodevices/cromemco-88ccc.h": "a80807442d2182a2a0862b6e3ec51c646eaee95bf2eb82427dda1fbcd9767ce3",
+      "iodevices/cromemco-d+7a.c": "290e6d1b89dffac5f4113ba9171f23234c022186509529d34162544574bcc804",
+      "iodevices/cromemco-d+7a.h": "d23be2a988b39605257fd6426157e530f74b613570d807eb6ef3139dab62014e",
+      "iodevices/cromemco-dazzler.c": "aa072e675136d7cee513d7ec79f7e586424d9f87be299f4b9cb2bd5d03bbb650",
+      "iodevices/cromemco-dazzler.h": "49b538f55ed4701f348a55af59ea16416809f77bdc0489cd2aaa2606a4d0b2c2",
+      "iodevices/cromemco-fdc.c": "c0bac5cd1a7412b187251d7dd4878a554ae5f06c7064164d7ac12726d75e49b9",
+      "iodevices/cromemco-fdc.h": "ffb7748056df49094db6f14cdead582f6103482ab1c0982c65780c6fae259144",
+      "iodevices/cromemco-hal.c": "40691871c0356ab3786bfa4a5e06f97d25c03c642eeca16b665509be25d5b8d4",
+      "iodevices/cromemco-hal.h": "53d8c6a8b72a1ecca29d0d1e28ced18157b1633567ee1de5a1ccdec4dea8abc5",
+      "iodevices/cromemco-tu-art.c": "f6cee797c7b0fc6e187f579a980e0593a3c8f6bb0b571bbeb3c45e96574cbdcd",
+      "iodevices/cromemco-tu-art.h": "58f381072593c8db079864eae1330e305cfe27967c2adbc640d9990a751d820c",
+      "iodevices/cromemco-wdi.c": "fa2ac540c49e91f4d4ec4ccfb81fb83107132788002a85897a11c06e75001346",
+      "iodevices/cromemco-wdi.h": "1c2466b4339d4e51aa84f0f1f20bf819b2c51393e23dcf613875cd4b9c316a2d",
+      "iodevices/diskmanager.c": "8f46c6a21d7b778beefb0a473e41616492012e564fc516e1b06aff500770a424",
+      "iodevices/diskmanager.h": "12b8d802bec7eae7beeaaf5f905c82dd98edbf5cb57eeacd0108c3bffb30fbfa",
+      "iodevices/generic-at-modem.c": "5a081efa11d3be75919c7b6748397b20b208e7dc9c488206cc0748c1fcd26bdb",
+      "iodevices/generic-at-modem.h": "9398bfa3aaa7725941f9297f0828a40ac69f35fa36b3e2041ceab439c71f4670",
+      "iodevices/imsai-fif.c": "888a416b83ac67dfaed29e9cb031df4031a11559a1cb6fa9299323be302a6447",
+      "iodevices/imsai-fif.h": "b44bee0170d0bd47b533304049ec4f652ed4a8008c063c36df6a181bcd5bd81f",
+      "iodevices/imsai-hal.c": "a6975d2b265d4a3d3ceadc445bdd2559bcf268b42d3be635368f6df6e567d581",
+      "iodevices/imsai-hal.h": "2118ac09fabb01d28cfd8690ce6ec668289869a98b7cb348a70c58c628f8bfb8",
+      "iodevices/imsai-sio2.c": "7e771d27fa80c9d49fa823060a30169cb68f5ce3e034d9694ca21d4e980c62d6",
+      "iodevices/imsai-sio2.h": "9db5867c37d72d17ba98fb7fceb891d6655fed76a24de9b5c59a25f2e6ac5653",
+      "iodevices/imsai-vio-charset.h": "0b1327ae4f610fe5aeabf975d3f8cb4b55241617847d358edd77e581cad00394",
+      "iodevices/imsai-vio.c": "49c3171883e9412f3f17b6cf216c24d7b69090d8b58461ff0556a6c2f1e58c43",
+      "iodevices/imsai-vio.h": "6efd16d7050fc34ce377f0a8e65300d9eb19cba7cbd7a5af728fe436ed3c8991",
+      "iodevices/libtelnet.c": "94e41c2b8f30977b174772f369cfb6be698b67f0c27ea91d76d041856291953d",
+      "iodevices/libtelnet.h": "51e384a01cc5d08d36db645e1b1836c3c0f3d6bbc3ab258b5337a84f29f4dd05",
+      "iodevices/mds-isbc201.c": "78806232a7d46b73e6fc4d606c39735d33be073c80b25b1f8ef04d28f9253458",
+      "iodevices/mds-isbc201.h": "8c6532a35a38af28b655adf9acf72af1ab262bd5361b451f19c1a997311ddc22",
+      "iodevices/mds-isbc202.c": "48e9121450bccad815889e212960bdd2f2636b86bd387986360144d3b1492063",
+      "iodevices/mds-isbc202.h": "c3e903186a7c4cfed3981cef80b9be3f0da79a8e01626cc6a0c824acc51a6bed",
+      "iodevices/mds-isbc206.c": "6d127f11651dd7622c819b9001b6fe6112e369bdfd9a6beb7b4e42027cd1d147",
+      "iodevices/mds-isbc206.h": "8fb1fa8f0fc9f73834f5e67dfa54117b3ab3c6c080f99469fc8528b60c4c8fb9",
+      "iodevices/mds-monitor.c": "95c8a139443e768082d41450fe7578c4915ff1ba623ea76aa2335c86c87f6caa",
+      "iodevices/mds-monitor.h": "e868ba2db6cb4b65e36fa4e0ed88ac1b6945fea5e72037b0cb060bdea3ad0b3d",
+      "iodevices/mostek-cpu.c": "a9215682c49e161755f4fa9acadc1095424980577786e93888b7999be2b8c24f",
+      "iodevices/mostek-cpu.h": "857120c808b5ee29184dd69f35336ed4bebbb7fd10a05d906a63d161fa51ddc0",
+      "iodevices/mostek-fdc.c": "498ae0cb6570c301dc5a7fa9c939c33fd263e5d90989042407de7b22062a13c0",
+      "iodevices/mostek-fdc.h": "8bff378ec7db1a4f91955c678948981fdcdbd7ce853c9f4a1863d2b4cd677ac2",
+      "iodevices/proctec-vdm-charset.h": "db0d8bc234c2fa763d6e538000565480f3d94eb77f8455d2c8a09917098cb663",
+      "iodevices/proctec-vdm.c": "64fbd189b1ea2b625b3dabf02def29871c569aa21b958a5b3addb4e3e50147ee",
+      "iodevices/proctec-vdm.h": "f3f567ac5b34770ff742f1c8ee03126e5c34cbef1b30760179316804d75b3071",
+      "iodevices/rtc80.c": "bed7bbb2fa3253f65ca5b8d1426c717d79f75b231a26a277b69ba43cd9dcb851",
+      "iodevices/rtc80.h": "850db555567c0efa1dfe26885854d21c437aed543da218f131e317cba14c413e",
+      "iodevices/sd-fdc.c": "3f0978f5f2273e754da43c65e3ba8a40a2a7d7d78fdc3fef6fae97244b531201",
+      "iodevices/sd-fdc.h": "c06daa89bba9b0a5e8ca14250149352c569fd9a4695aa4e1dd53356ce8d97ff8",
+      "iodevices/simbdos.c": "e8adfdc8c36f471d7f511bee9a579b9f2a3bf151459e9721f1cc3ad5ef2cefdf",
+      "iodevices/simbdos.h": "cf29be5a0fbd52ab44598025fd9926e2c22f1bfbf9af2aaded795ae00e5e0967",
+      "iodevices/tarbell_fdc.c": "4f786da2dc04cc0cdc76076796909014ecfbd3ea2d08214053198d94e8082a30",
+      "iodevices/tarbell_fdc.h": "b54b5e623dfbd38aba5eaf3430a3bebdbcf1683070bc2efc6663c4fb76f10cb9",
+      "iodevices/unix_network.c": "16f1e587b7c6e44b48cd80a46122601ff2bf0a45667c89f05df76c2edd96d3ab",
+      "iodevices/unix_network.h": "65c6ca75d914dce2d54f7279240ba4f07a75747772fb4663a39ba6298e40a3ef",
+      "iodevices/unix_terminal.c": "85e2c9b88b0f3545e6abcdc7782e4e0f345764ff6d6fdea74d1fd68e71de081d",
+      "iodevices/unix_terminal.h": "2867f22a0903e97e7e61f8d8c1994a9a36f9cd2c8a87fbfbca49ca0cf479ce0e",
+      "z80core/COPYING": "f53dcb1f1a0d55d219938d76d040540dba383170b5be3090db1d30986a1404fb",
+      "z80core/Makefile.in-os": "21a434ac5ab7a0a4ac4cc348be49b65d692295d2f3b8bb5079c37f5314432b0c",
+      "z80core/alt8080.h": "1b2f92e37d8c501a7bc6550fed54c3a1acd131d5cee91461bda54438ba2a2943",
+      "z80core/altregs.h": "3c7abc003d5e63565ad525cf41c1a813cbee7c34f6d1ca28e60ec5aa47031541",
+      "z80core/altz80.h": "9059928263484def56cc6d4579a584b4c8e0bcadcc447d23da10c2f3f7d08b06",
+      "z80core/fonts/Makefile": "f6625b89763931b7e6b763d9307f4c81914b4d4fd31769bdf68441aa1d9b0cb2",
+      "z80core/fonts/OFL.TXT": "29e51260692fca30c51c3c81c5aa12205cfaa1be7180bf5e7c8192e745e78308",
+      "z80core/fonts/bdf2c.c": "8789a06bd1c98b188b2749df07be7e35e21ab8cb448ee15191170d3514b01e70",
+      "z80core/fonts/font12.h": "170b241abba1fd5d339ec2a8e2ad35ccd4e75a4b548befabc366173325f44782",
+      "z80core/fonts/font14.h": "fa668ae4e972f2980c4d9f66d160f28eebcd35910e6d989e9e739f9e97874303",
+      "z80core/fonts/font16.h": "43034b719b3c88d7d8da1df3b1baf8e8958325e5ed2ba9666e1a5a61bc51cd93",
+      "z80core/fonts/font18.h": "c357fea98daf63a68ddcae58bd85cd296854b6d3ce9c5731c7e71297503bb857",
+      "z80core/fonts/font20.h": "7326e8ab3110e15fbef35d1263fd2fe8fd2373e4665990663a6b1c28fa4d1482",
+      "z80core/fonts/font22.h": "f2894d7d2ecce90d4cd897f5f2dc245bb7c8f0a5dec29695a54386e8aeb8c562",
+      "z80core/fonts/font24.h": "9fba88bd3bcce9c37313af3a2ab6d35692dcb765c51f60041f78031b5a225fef",
+      "z80core/fonts/font28.h": "2ca85e4bae185d04f992b06794b9ba1504082a03d5abfdc7e5568900c5351452",
+      "z80core/fonts/font32.h": "ddaf366a9a518184a64726c605db3bf3d10cf72bfffe9b78be0fbf1e8b34cdfa",
+      "z80core/log.h": "b935903f0daa783180bc5468d1b3631a031c8d70910d09525a5b8728f92ded8c",
+      "z80core/sim8080.c": "1adacdc95b91ecf5d697b60ca77a0edc3c0db0316603ab291146d6247095b57e",
+      "z80core/sim8080.h": "87d7592ee7181b9587c031ac019eed766ad00d472c668160bfd2c0f0c219ff42",
+      "z80core/simcore.c": "b3e48d549f856ca05c224e01bc126d8432ce3b9ef45bc2a249a8e51be3c78ad6",
+      "z80core/simcore.h": "0bf580e33f3a4cfbeb4c75da20f3249fc1fc2376793a8f3c0b70fb3bedc6289e",
+      "z80core/simdefs.h": "014b17da525817b92e59359c0b2f89510f949debec1c902d2a1ce3a4adb3776b",
+      "z80core/simdis.c": "1f41c539cf0808eff7e2d0f479f1e34ebe3aa35ff752539708ff172211624916",
+      "z80core/simdis.h": "7172bf044dc0e3cf28b9cee7ca6fd9bb588e4edc85dc44e280c2aecf504d56cc",
+      "z80core/simfun.c": "71b56cafd7d69c7bd37741c956f47221691329f8bb53fc4f0a18e23be05d7abe",
+      "z80core/simfun.h": "811b0af2b891ffb61ba3476154bdc3512a75c7cc887abd13d948199c5f6ca1df",
+      "z80core/simglb.c": "308fb22d26ae1b630fcc70f676d8c6260b9038949adcf3d41981d89abd1afe1d",
+      "z80core/simglb.h": "5f81eee2b3aad5f404031c7b8427b3b6fc2219aa1edb12c186e8d5958f1e3c4d",
+      "z80core/simice.c": "c09bf17b88a73dec163c284cb082c31fbb0a76abbe9947b2cba4eb042141ab58",
+      "z80core/simice.h": "370ece5d5c70297e126de7bd2d58647bcff07d72bdcbe9d1b3d6530551dd3761",
+      "z80core/simint.c": "1792a8a3ba9b16ac88e05b3e1ef6bd066335a234f5fc54516d70ac7bd7e094cc",
+      "z80core/simint.h": "93fc569ee7d18d14f5377f373a4dc643aec836fbe421649c784361f7c653fc91",
+      "z80core/simmain.c": "13a53639462a22732c1712a6df9ede36baa00fdac755fe69891ee3258c008e2d",
+      "z80core/simmain.h": "446ae8577b81da403c615394a58c9c6cbe5e562a26033b14b4105fc11d940595",
+      "z80core/simpanel.c": "8ccf5b91fdbc82ab937a6bce9f7cc79275e3fc5541325f5298b33a01f1a2207c",
+      "z80core/simpanel.h": "3417076b313e959bc6313f3f5c6df1b67871c8506ca328d301cf5039a9a0923f",
+      "z80core/simsdl.c": "5a3ee210cf7a628f8025e3814bae5826dc6bd6bd245f8b78a3240ed5ca355de0",
+      "z80core/simsdl.h": "9ebb94f7c58bde61a2bbbafec7e2f505a4d630656dc4dc64b11ca5e5e5612c05",
+      "z80core/simz80-cb.c": "a72e2c55588ba26521aab6876bc98c10d10c9b0d3f9a32b689e25e8dfa9a0543",
+      "z80core/simz80-cb.h": "16d57946214192fb597d541df11c8be8c674c48561b327468313fd8e443cb54a",
+      "z80core/simz80-dd.c": "f546c5d82518e1f52e3833a71e356bb0fb910821fa99ac4fa06af5e3bf1f1de1",
+      "z80core/simz80-dd.h": "023bf331a1acade16fa1fea31375b855ad4be37aa98689022af8cbbdd5e40f24",
+      "z80core/simz80-ddcb.c": "91457c6538f7831f23f967543c8c26315270c3a53fbd1ce8500ada2b0cc7e2f3",
+      "z80core/simz80-ddcb.h": "f695be39e78774c43415f733e5f809f4e292e29a86e687c4b7d9f6d26a18f605",
+      "z80core/simz80-ed.c": "5c9e8da0a03f3cab2726c59d5b0ef202adb26f0785bfdea74107330ccaaee1ff",
+      "z80core/simz80-ed.h": "c7548c93eae2d441a6ac1ecb6d4b7f6bd9cb75e82978ced5d37830fafe8508f5",
+      "z80core/simz80-fd.c": "e573e282b516ab75eef12705d0efca7ee671c630c462d695ca4f75bcc2609484",
+      "z80core/simz80-fd.h": "da43592c0fc36c1afd5bc38f9aeb8be6ff8219dcddeaf68d9b76daaa74274255",
+      "z80core/simz80-fdcb.c": "fffc90bfec6a05bbb6c157cb261b083b573ff092b70fbc2a138542f08a852e93",
+      "z80core/simz80-fdcb.h": "d6b366b78b5ac55254004d3e0824ccc32e77afbc2c0245f165515606de54616b",
+      "z80core/simz80.c": "8f27786b283c14b23f6d876b36f46f1a9b9faab03a13087eb83f97b60d35b752",
+      "z80core/simz80.h": "4ddaf2601da8a505b5684dbc2724c092831c816ff0c33338726fbdee80974563"
+    },
+    "executables": {
+      "cpmsim/cpmsim": "c61d4e6258886ec23466af79c3dd179ac1766fa90e1bf41fde2089668b9d460c",
+      "cpmsim/srctools/cpmrecv": "438ce08239e450405ba05d2c39748340deb6077085db8feb4f5df5a8abd3e400",
+      "cpmsim/srctools/cpmsend": "e59976f02ce09195b1cb43ae698b4099be9ce8a5695eb2683172f9e85730f9ea",
+      "cpmsim/srctools/mkdskimg": "a2637aad41a5ca8074efb0a2000e57cb724bdc2b37c680f97be14ee8d9adaf28",
+      "cpmsim/srctools/bin2hex": "c1d3724bd84ff526e50c31919707c2326e9640a7c9e7f990e5865b037dcb2b9a",
+      "cpmsim/srctools/ptp2bin": "e9e0ddd2b6b7d9789e4aaaeba5720c777f6e9e3a294006856c07ac611e01acbf"
+    },
+    "build_log_sha256": {
+      "srcsim-build.log": "06da512c695b13e89596856f407f825727fbe1eaa2b82a53f87fdb97186aa3f1",
+      "srctools-build.log": "8ce82b7393e5e9f296bc02483497f1112c86705795a3e6bd8fcd56f2379714e5"
+    }
+  },
+  "qualification_environment_sha256": "ab744b3284f235d34c182fa099be87365a8505f0e16a37f8b363d6b121e754fb",
+  "limitations": [
+    "Full release acceptance/accounting not completed",
+    "Model 4 manual campaign pending",
+    "Utilities packaging failed on host cpmcp SIGABRT during 800K companion readback",
+    "Platform packages and fresh-package installation not accepted",
+    "Earlier travel-paused workstation receipts unavailable in current environment"
+  ]
+}

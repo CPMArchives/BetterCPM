@@ -1,5 +1,8 @@
 # z80pack / cpmsim adapter
 
+For release installation, including required emulator patches and build steps,
+see [Installing BetterCP/M on cpmsim](../../../docs/platform/CPMSIM-INSTALLATION.md).
+
 This is a second hardware binding for BetterCP/M, not a Model 4 BIOS running
 under another machine. Shared BIOS vectors/state, BDOS, gateway, file loader,
 CCP, CPXs and RSX manager retain the common memory layout. This target uses
