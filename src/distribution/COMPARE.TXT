@@ -1,0 +1,21 @@
+COMPARE -- Binary File Comparison
+
+C0:COMPARE file1 file2 [options]
+C0:COMPARE /HELP
+
+Two exact file names are required; each may have a single drive/user prefix.
+The default lists up to 20 differences. /ALL lists all; /COUNT=n sets the
+limit. /SIDE shows paired hexadecimal bytes; /SIDE /40 uses four positions
+per row. /SUM or /SUMMARY prints totals only. /P pauses detailed display.
+/FROM=hex, /FROM2=hex and /LEN=hex select positions; offsets are file offsets.
+Both files are read-only, including all stored 128-byte records and padding.
+
+At a page prompt, Space/Enter continues; Ctrl-C, Q or Escape stops detailed
+display while the comparison continues to completion. Ctrl-C in nonpaged
+output cancels with an incomplete-comparison report.
+
+COMPARE is supplied on the NOAH companion Utilities disk because the primary
+332K disk lacks space. With primary Utilities in B: and the companion in C:,
+use C0:COMPARE and retain D: for work files. Candidate status and remaining
+Model 4 qualification are documented in the Utilities manual.
+

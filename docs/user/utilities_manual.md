@@ -6,8 +6,8 @@ The Utilities Disk is being assembled separately from the System Disk. This manu
 
 CRCKSUM has a development implementation; CRCKSUM is included in newly built candidate Utilities images; the maintainer waived the remaining Model 4 validation for PR finalization; full Model 4 qualification and release acceptance are not asserted.
 
-The COMPARE chapter describes a development utility. COMPARE is not yet qualified
-or included in current Utilities Disk images. SEARCH 1.0 is included in newly
+The COMPARE chapter describes a development utility. COMPARE is included on the candidate NOAH companion disk. Remaining Model 4
+validation is deferred by the maintainer for a later manual campaign. SEARCH 1.0 is included in newly
 generated Utilities candidates and has passed paired-image acceptance on both BetterCP/M targets. Public release publication
 remains separate.
 
@@ -213,7 +213,8 @@ archives, or replace text.
 
 ## COMPARE binary file comparison
 
-**Development utility — qualification pending.** This chapter describes the
+**Development candidate — included on the NOAH companion disk.** Remaining Model 4
+validation is waived for finalization and deferred to a later manual campaign. This chapter describes the
 implemented interface. The [engineering specification](../engineering/COMPARE%20Specification.md)
 records the approved design decisions and narrow display layout.
 
@@ -231,8 +232,8 @@ COMPARE /SUMMARY OLD.COM NEW.COM
 COMPARE /FROM=0205H /FROM2=0208H /LEN=0100H /SIDE A.BIN B.BIN
 ```
 
-If the utility is on B0: and is not otherwise found by your command environment,
-use `B0:COMPARE`. Options may precede, separate or follow the filenames; option
+With primary Utilities in B: and the NOAH companion in C:, use `C0:COMPARE`
+if your command environment does not otherwise find it. Options may precede, separate or follow the filenames; option
 names are case-insensitive. Supply exactly two filenames. Each may have its own
 drive and user qualification. Omitted drive or user selections inherit those
 of the caller. Comparing a file with itself is allowed. Wildcards, drive/user
