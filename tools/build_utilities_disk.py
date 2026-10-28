@@ -249,7 +249,7 @@ def main():
     p.add_argument('--md5sum-acceptance',type=Path,help='bind MD5SUM execution to exact paired images')
     a=p.parse_args()
     if a.build:
-        for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh','dasm','dsym','dlink','ted','noah','search','crc','md5sum']:
+        for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh','dasm','dsym','dlink','ted','noah','search','crc','md5sum','patch','compare']:
             command=[sys.executable,str(a.artifacts.resolve()/'tools'/f'build_{name}.py')]
             # TED defaults to its development directory; packaging consumes the
             # binary, native source and build records together in utilities.
