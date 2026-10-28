@@ -6,7 +6,7 @@ import json
 import re
 from pathlib import Path
 from build_ccp import assemble
-from component_identity import identification
+from component_identity import identification, title
 from component_build import recorded_build
 from utility_versions import identities, display_development
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,7 +27,25 @@ def expanded_source():
     selector = (common / 'duselect.inc').read_text() + '\n' + (common / 'filespec.inc').read_text()
     text = text.replace('; @compare-selector@', selector)
     version = 'VERSIONTEXT:\n' + ''.join("        DB '"+line+"',13,10\n" for line in version_text().splitlines()) + '        DB 0\n'
-    return text.replace('; @compare-version@', version)
+    v,r=identities()['COMPARE']
+    help_text=(title('COMPARE',v,r,development=display_development('utility:COMPARE'))+
+        '\n  - - -\n | Binary File Comparison\n |\n'
+        ' |   Usage: COMPARE [options] file1 file2 [options]\n\n'
+        '   Options:\n'
+        '     /LIST         List differences (default).\n'
+        '     /SIDE         Show bytes side by side.\n'
+        '     /SUM /SUMMARY Show totals only.\n'
+        '     /COUNT=n      Limit listed differences (decimal 1..65535).\n'
+        '     /ALL          List every difference.\n'
+        '     /FROM=hex[H]  Set both starting offsets.\n'
+        '     /FROM2=hex[H] Set file 2 starting offset.\n'
+        '     /LEN=hex[H]   Limit comparison positions.\n'
+        '     /P            Pause detailed output.\n'
+        '     /40           Narrow /SIDE display.\n\n'
+        '     /HELP         Display this help.\n'
+        '     /VER          Display utility identification.\n')
+    help_source='HELPTEXT:\n'+''.join("        DB '"+line+"',13,10\n" if line else '        DB 13,10\n' for line in help_text.splitlines())+'        DB 0\n'
+    return text.replace('; @compare-version@', version).replace('; @compare-help@',help_source)
 
 
 @recorded_build('utility:COMPARE')

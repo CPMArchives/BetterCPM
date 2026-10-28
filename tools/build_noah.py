@@ -8,14 +8,36 @@ import shutil
 import subprocess
 import tempfile
 from utility_versions import identities
-from component_identity import identification
+from component_identity import identification, title
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def version_text():
     version, counter = identities()['NOAH']
-    return identification('NOAH',version,counter,'Archive Utility - Development')
+    return identification('NOAH',version,counter,'Archive Utility')
+
+
+def help_text():
+    version,revision=identities()['NOAH']
+    return (title('NOAH',version,revision)+'\r\n  - - -\r\n'
+        ' | Archive Utility\r\n |\r\n'
+        ' |   Usage: NOAH [operation] operands [options]\r\n\r\n'
+        '   Options:\r\n'
+        '     /LIST              List archive members.\r\n'
+        '     /TEST /T           Test member data and integrity.\r\n'
+        '     /EXTRACT /X        Extract selected members.\r\n'
+        '     /ADD               Add files to one archive.\r\n'
+        '     /REMOVE            Remove selected members.\r\n'
+        '     /COMPACT           Rebuild without deleted data.\r\n'
+        '     /SQ /CR /EXPAND    Compress or expand files.\r\n'
+        '     /CAPACITY=n        Set LBR directory capacity.\r\n'
+        '     /FORMAT=LBR|ARK    Set format for an unknown extension.\r\n'
+        '     /Y                 Approve ordinary replacements.\r\n'
+        '     /R /SYS            Enable protected-file questions.\r\n'
+        '     /Q                 Suppress routine progress.\r\n\r\n'
+        '     /HELP              Display this help.\r\n'
+        '     /VER               Display utility identification.\r\n')
 
 
 def build_flat(assembler, destination, source_only=False):
@@ -24,7 +46,7 @@ def build_flat(assembler, destination, source_only=False):
     texts = {
         'NH_VERSION': version_text(),
         'NH_USAGE': 'NOAH: Invalid or unsupported usage.\r\nUsage: NOAH [/LIST|/TEST] archives [member]\r\n       NOAH /EXTRACT archives [destination:pattern]\r\nUse NOAH /HELP for current scope.\r\n',
-        'NH_HELP': 'NOAH LBR/ARK development build\r\nUsage: NOAH [/LIST|/TEST] archives [member]\r\n       NOAH /EXTRACT archives [destination:pattern]\r\nAliases: /T /X. /VER and /HELP ignore other arguments; /HELP takes precedence.\r\nShared archive filespecs: wildcards, DU sets and attribute predicates.\r\nArchive order: drive, user, filename; frozen limit 512 archives.\r\nMember names are 8.3 patterns; README means exact extensionless README.\r\nExtraction destination is one DU, default caller DU.\r\nOverwrite: Y/N/All/Cancel, default No; ? explains choices. ESC/Ctrl-C cancels.\r\n/Y approves ordinary replacement; /R and /SYS enable separate protection prompts.\r\n/Y always skips protected outputs; extraction never replaces input archives.\r\nLBR/ARK writes: /ADD archive sources; /REMOVE archives member; /COMPACT archives.\r\n/CAPACITY=n for LBR ADD/COMPACT; /FORMAT=LBR or /FORMAT=ARK for unknown extensions.\r\nNormal updates retain deleted data; rebuild/COMPACT discards recovery data.\r\nCodecs: /SQ sources [destination:] and /CR sources [destination:].\r\n/EXPAND sources [destination:] decodes one recognized layer or copies ordinary files.\r\n/ADD /SQ or /CR stores compressed members; /X /EXPAND expands one inner layer.\r\nMatching NOAH.OVL required except VER/HELP; invocation DU then A0.\r\n/Q hides routine progress/success.\r\nSafe failures: Retry/Skip/Abort/? [Skip]; /Y skips.\r\nARK methods 1-9 supported; TEST/EXTRACT verify length/CRC.\r\nARK creates stored members; /ADD /SQ selects method 4, /CR method 8. /LZ pending.\r\nLIST does not test contents. TEST/EXTRACT audit structure and CRCs.\r\n',
+        'NH_HELP': help_text(),
     }
     emitted = []
     for label, text in texts.items():

@@ -54,31 +54,18 @@ def main() -> None:
         for tool in ("ZSM4.COM", "LINK.COM"):
             run("cpmcp", "-f", "ibm-3740", str(disks / "drived.dsk"),
                 str(args.tools / tool), f"0:{tool}")
-        commands = f'''set timeout 15
-spawn {args.cpmsim} -z -d {disks}
-expect "A>"
-send -- "B:\r"
-expect "B>"
-send -- "D:ZSM4 B:COMPARE=C:COMPARE\r"
-expect -re {{Errors: +0}}
-expect "B>"
-send -- "D:LINK COMPARE\\[A\\]\r"
-expect "CODE SIZE"
-expect "B>"
-send -- "COMPARE A.BIN B.BIN /SUMMARY\r"
-expect "BYTE MISMATCHES: 2"
-expect "ADDITIONAL IN FILE 1: 128"
-expect "FILES DIFFER"
-expect "B>"
-send "\034"
-expect eof
-'''
-        result = run("expect", "-c", commands, check=False)
-        transcript = result.stdout + result.stderr
-        (BUILD / "NATIVE-COMPARE-BUILD.LOG").write_text(transcript,
-                                                      encoding="utf-8")
-        if result.returncode or "Errors: 0" not in transcript or "CODE SIZE" not in transcript:
-            raise SystemExit(f"native COMPARE build failed\n{transcript}")
+        from test_z80pack_sysgen_install import session
+        transcript=session(args.cpmsim,disks,[
+            (b'B:\r',b'B>',15),
+            (b'D:ZSM4 B:COMPARE=C:COMPARE\r',b'Errors: 0',30),
+            (b'',b'B>',15),
+            (b'D:LINK COMPARE[A]\r',b'CODE SIZE',30),
+            (b'',b'B>',15),
+            (b'COMPARE A.BIN B.BIN /SUMMARY\r',b'BYTE MISMATCHES: 2',15),
+            (b'',b'ADDITIONAL IN FILE 1: 128',15),
+            (b'',b'FILES DIFFER',15),
+            (b'',b'B>',15),
+        ],BUILD/'NATIVE-COMPARE-BUILD.LOG',initial_prompt=b'A>')
         native_com = work / "COMPARE.COM"
         run("cpmcp", "-f", "ibm-3740", str(disks / "driveb.dsk"),
             "0:COMPARE.COM", str(native_com))

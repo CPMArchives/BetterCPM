@@ -1,11 +1,11 @@
 {
   "component": "COMPARE",
-  "identity": "1.0 (001-dev)",
-  "executable_bytes": 6214,
-  "sha256": "d1d10f76b9b0fb6205e9d37f84fa07b352b94b16177a95f79f4e1ff3e53c2ef1",
+  "identity": "1.0 (002-dev)",
+  "executable_bytes": 6658,
+  "sha256": "39d0dd800729c3e2cc88c5fe18f53d1d6084b046a10fe2d754725ca01f34236e",
   "compiled_tests": {
     "status": "PASS",
-    "cases": 87,
+    "cases": 88,
     "scope": "Compiled COM under hostile public-BDOS fixture; not live platform qualification"
   },
   "native_zsm4_link": {
@@ -13,7 +13,7 @@
     "byte_identical": true
   },
   "cpmsim": {
-    "binary_sha256": "d1d10f76b9b0fb6205e9d37f84fa07b352b94b16177a95f79f4e1ff3e53c2ef1",
+    "binary_sha256": "39d0dd800729c3e2cc88c5fe18f53d1d6084b046a10fe2d754725ca01f34236e",
     "scope": "focused platform execution; final Utilities Disk acceptance not asserted",
     "cpmsim": {
       "result": "PASS",
@@ -22,7 +22,7 @@
       "utilities_unchanged": true,
       "volumes": {
         "b": "d4642386326532972fc6d0e1069028cf67b08343523e40690fa9d3aa541ac5cf",
-        "c": "99f6b1a7ff5d15db5c56b62d7ad8fc3b6b5b83c49df7a784fd81a1ad538bf139"
+        "c": "909d3f9568cacb88a4240b07a12114e779a715fd9ffb8cda1067fc678aa7750c"
       }
     }
   },
@@ -159,5 +159,6 @@
         }
       }
     }
-  }
+  },
+  "current_help_layout": "Common metadata title, short corner, aligned options, at most 23 lines"
 }

@@ -5054,7 +5054,8 @@
       ],
       "native_files": [
         "tools/build_native_compare.py",
-        "tools/build_native_trs80.py"
+        "tools/build_native_trs80.py",
+        "tools/test_z80pack_sysgen_install.py"
       ]
     },
     "utility:SEARCH": {
