@@ -80,7 +80,8 @@ All membership or layout changes require discussion with the maintainer.
   display, summary-only reporting and forward-only pagination; [engineering
   specification](../engineering/COMPARE%20Specification.md). Development implementation
   exists; Model 4 qualification and final Utilities Disk acceptance are pending.
-  The development executable is not yet included in release disk images.
+  Candidate companion disks include COMPARE.COM and COMPARE.TXT. Remaining Model 4
+  validation is waived for finalization and deferred to a combined manual campaign.
 
 - XSUB.COM
 - DUMP.COM: enhanced read-only hex/ASCII viewer with `/P`, required `/40`, `/FROM=`, exact DU access, interactive Find/Go To, sealed DRI `/BARE`, and visually styled `/VER`; [engineering specification](../engineering/DUMP%20Specification.md).

@@ -13,6 +13,8 @@ COMPONENTS = {'NOAH.COM':'build/utilities/NOAH.COM',
               'NOAH.TXT':'src/distribution/NOAH.TXT',
               'PATCH.COM':'build/utilities/PATCH.COM',
               'PATCH.TXT':'src/distribution/PATCH.TXT'}
+COMPONENTS.update({'COMPARE.COM':'build/utilities/COMPARE.COM',
+                   'COMPARE.TXT':'src/distribution/COMPARE.TXT'})
 sha = lambda data: hashlib.sha256(data).hexdigest()
 
 
@@ -72,5 +74,7 @@ def media(artifacts, acceptance=None):
                   'pending':(['NOAH paired-media qualification pending'] if not receipt else [])+['PATCH paired-media qualification pending'],
                   'deferred':['interactive browser','ZIP','LZH/CrLZH selectors'],
                   'validation':'exact file readback, filesystem and DMK/raw round trip PASS; whole release acceptance separate'}
+        report['component_acceptance']['COMPARE.COM']={'status':'PENDING_RELEASE_ACCEPTANCE','sha256':sha(files['COMPARE.COM'])}
+        report['pending'].append('COMPARE paired-media qualification pending')
         reports.append((image_name(target),image,report))
     return reports

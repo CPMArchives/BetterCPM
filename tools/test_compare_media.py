@@ -20,6 +20,7 @@ PROMPT='Space/Enter: next; Ctrl-C/Q/Esc: stop'
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--image-dir',type=Path,required=True,help='existing cpmsim image directory with disks/ and diskdefs')
+    p.add_argument('--utilities',type=Path,help='exact paired Utilities package directory; execute COMPARE from companion C:')
     p.add_argument('--report',type=Path,required=True)
     p.add_argument('--model4-image',type=Path,default=ROOT/'build/trs80/BetterCPM-Distribution-trs80gp-80T-DS-System.dmk')
     p.add_argument('--target',choices=['both','cpmsim','model4'],default='both')
@@ -35,17 +36,32 @@ def main():
         cpm('cpmrm','0:*.*')
         for name,payload,dest in [('COMPARE.COM',binary,'0:COMPARE.COM'),('A.BIN',first,'3:A.BIN'),('B.BIN',second,'7:B.BIN')]:
             (w/name).write_bytes(payload);cpm('cpmcp',w/name,dest)
+        volumes={}
+        executable=':COMPARE'
+        if a.utilities:
+            for drive,name in [('b','BetterCPM-Utilities-z80pack-332K.dsk'),('c','BetterCPM-NOAH-z80pack-332K.dsk')]:
+                volumes[drive]=(a.utilities/name).read_bytes()
+                (w/f'disks/drive{drive}.dsk').write_bytes(volumes[drive])
+            receipt=json.loads((a.utilities/'BetterCPM-NOAH-z80pack-332K.dsk.json').read_text())
+            row=next(x for x in receipt['included'] if x['name']=='COMPARE.COM')
+            assert row['sha256']==hashlib.sha256(binary).hexdigest()
+            cpm('cpmrm','0:COMPARE.COM')
+            executable='C0:COMPARE'
         before=disk.read_bytes()
         steps=[(b':COMPARE /VER\r',b'A0>_ ',30),
                (b':COMPARE A3:A.BIN A7:B.BIN /SUMMARY\r',b'A0>_ ',30),
                (b':COMPARE A3:A.BIN A7:B.BIN /FROM=7 /FROM2=0 /LEN=5 /SIDE /40\r',b'A0>_ ',30),
                (b':COMPARE A3:A.BIN A7:B.BIN /SIDE /40 /P\r',PROMPT.encode(),30),
                (b'\x03',b'A0>_ ',30)]
+        steps=[(out.replace(b':COMPARE',executable.encode()),wanted,timeout) for out,wanted,timeout in steps]
         text=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',w/'disks',steps,w/'transcript.txt')
         for marker in (b'COMPARE 1.0 (001-dev)',b'BYTE MISMATCHES: 2',b'ADDITIONAL IN FILE 1: 128',b'00000004        07<>--------        01',b'DISPLAY INTERRUPTED',b'COMPARISON CONTINUING...'):
             assert marker in text,(marker,text[-2000:])
         assert disk.read_bytes()==before,'COMPARE changed cpmsim media'
-        result['cpmsim']={'result':'PASS','whole_disk_unchanged':True}
+        for drive,before_volume in volumes.items():
+            assert (w/f'disks/drive{drive}.dsk').read_bytes()==before_volume,'Utilities media changed'
+        result['cpmsim']={'result':'PASS','whole_disk_unchanged':True,'packaged_execution':bool(a.utilities),'utilities_unchanged':True if a.utilities else None,'volumes':{k:hashlib.sha256(v).hexdigest() for k,v in volumes.items()}}
+
         print('PASS cpmsim: version, cross-user comparison, range/40, Ctrl-C display-stop, immutable media',flush=True)
     if a.target in ('both','model4'):
         w=work/'model4';w.mkdir();disk=w/'a.dmk'
