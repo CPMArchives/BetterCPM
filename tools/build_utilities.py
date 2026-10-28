@@ -32,6 +32,7 @@ BUILDERS = (
     "noah",
     "compare",
     "crc",
+    "md5sum",
     "ddt",
     "dasm",
     "dsym",

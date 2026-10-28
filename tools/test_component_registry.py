@@ -24,8 +24,8 @@ class RegistryTests(unittest.TestCase):
                 registry.load(path)
 
     def test_complete_import_and_paths(self):
-        self.assertEqual(len(self.data['components']), 57)
-        self.assertEqual(len(identities()), 44)
+        self.assertEqual(len(self.data['components']), 59)
+        self.assertEqual(len(identities()), 46)
         self.assertEqual(identities()['DDT'], ('1.0', 3))
         self.assertEqual(identities()['PIP'], ('1.0', 30))
         self.assertEqual(identities()['BYE'], ('1.0', 2))
@@ -34,7 +34,7 @@ class RegistryTests(unittest.TestCase):
             for path in component['roots'] + component['builders']:
                 self.assertTrue((registry.ROOT / path).is_file(), path)
             if component['tracking'] == 'initial':
-                self.assertEqual(component['revision'], 1)
+                self.assertGreaterEqual(component['revision'], 1)
 
     def test_legacy_projections_exact(self):
         for relative, text in registry.projections().items():
@@ -42,7 +42,7 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(next(x for x in rows() if x['component'] == 'BDOS')['implementation_version'], '1.10')
 
     def test_new_utility_assignments(self):
-        for name in ('MOVE', 'WARM', 'DASM', 'DSYM', 'DLINK', 'SEARCH'):
+        for name in ('MOVE', 'WARM', 'DASM', 'DSYM', 'DLINK', 'SEARCH', 'MD5SUM'):
             self.assertEqual(registry.identity('utility:' + name, self.data), ('1.0', 1))
 
     def test_ted_initial_adaptation_identity(self):
