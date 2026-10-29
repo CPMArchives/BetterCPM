@@ -47,3 +47,25 @@ identities for version batches: libfile_c751f5c662148191b6c8181410d7ae08,
 libfile_e2fedb8554108191b30ac5d8f19983fd, libfile_afb7ebf0f68081919717025403de28bd.
 COMPARE failure: libfile_77165d8989708191b0563e9f6672fc6c,
 libfile_9c61b77239148191bbd39c814951f762.
+
+## COMPARE fix verification (host and cpmsim, not Model 4)
+
+Root cause: START queried OPVER before OPHELP. Reordered the exact-token
+queries so HELP wins independent of token order. COMPARE advances to 1.0
+(003-dev); no other component revision changes. The observed 002 failure
+above is retained.
+
+- PASS: 92 compiled COMPARE cases, including exact help-output equality for
+  /VER /HELP /BOGUS and three other order/case variants. Query cases call
+  console-only BDOS; harness checks caller stack, drive/user, default DMA,
+  read-only behavior, comparisons, paging, cancellation and 64-KiB boundaries.
+- PASS: ZSM4/LINK native build under cpmsim, all 6658 COM body bytes identical
+  to cross build; native summary comparison executes successfully.
+- Fixed COM SHA-256: 8388454c4a5affbf6dccb2e8e75bf16fa17a22d1481251e22e3dd42a12b4ada4.
+- Commands: python3 tools/build_compare.py; python3 tools/test_compare.py;
+  python3 tools/build_native_compare.py.
+
+Existing downloaded candidates still contain COMPARE 002. No release images
+were replaced or promoted by this fix. A rebuilt candidate must identify 003
+and repeat the affected packaged cpmsim and manual Model 4 query checks.
+Functional Model 4 coverage remains pending.

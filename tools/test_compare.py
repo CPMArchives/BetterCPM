@@ -128,6 +128,11 @@ def main():
     assert len(lines)<=23 and max(map(len,lines))<=79
     assert 'BetterCP/M Utilities' not in help_result
     assert lines[-2:]==['     /HELP         Display this help.','     /VER          Display utility identification.']
+    for tail in ('/VER /HELP /BOGUS', '/HELP /VER /BOGUS',
+                 '/BOGUS /VER /HELP', 'BAD /help /VER'):
+        r=run(tail=tail)
+        assert r['text']==help_result,(tail,r['text'])
+        assert set(r['services']) <= {6},(tail,r['services'])
     for tail in ('/VER','BAD /help /VER','/HELP invalid','/helper /help'):
         r=run(tail=tail);assert not set(r['services'])&{15,25,32},r
     for tail in ('','A.BIN','A.BIN B.BIN C.BIN','*.BIN B.BIN','A[3]:A.BIN B.BIN',
