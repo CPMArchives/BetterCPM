@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-29",
+  "source_commit": "6ee4f26eec70be3f7342c1996e107bdd50df7f11",
+  "status": "CANDIDATES; NOT ACCEPTED",
+  "assets": [
+    {
+      "platform": "cpmsim",
+      "filename": "BetterCPM-Utilities-1.0-cpmsim-candidate.zip",
+      "sha256": "6c9e9aeaa2c9015f5da4dc1b9514bf2d85976670a42e7340461b61214d6e8ab3",
+      "size_bytes": 194743737,
+      "images": [
+        "BetterCPM-NOAH-z80pack-332K.dsk",
+        "BetterCPM-Utilities-z80pack-332K.dsk"
+      ],
+      "matching_image_receipts": "PASS",
+      "independent_inventory_scope": "PASS",
+      "shared_source_notice_members": 24,
+      "shared_source_notice_hashes_unchanged": "PASS",
+      "unwanted_platform_media_absent": "PASS"
+    },
+    {
+      "platform": "Model4",
+      "filename": "BetterCPM-Utilities-1.0-Model4-candidate.zip",
+      "sha256": "fce48f8a01d7546b3c80db4f489a26bf1542309bc35099833637fc9d07903980",
+      "size_bytes": 194775967,
+      "images": [
+        "BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk",
+        "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk"
+      ],
+      "matching_image_receipts": "PASS",
+      "independent_inventory_scope": "PASS",
+      "shared_source_notice_members": 24,
+      "shared_source_notice_hashes_unchanged": "PASS",
+      "unwanted_platform_media_absent": "PASS"
+    }
+  ],
+  "release_asset_count": 6,
+  "system_images_identical_to_021f531": {
+    "z80pack": true,
+    "trs80gp": true
+  },
+  "all_utilities_images_identical_to_021f531": true,
+  "packaging_tests": "8 passed",
+  "scope": "Packaging split only. Exact image equality establishes applicability of earlier candidate runtime evidence; no new Model 4 runtime pass claimed.",
+  "pending": [
+    "Manual Model 4 runtime campaign and fresh-package validation",
+    "Remaining documentation/source/license audits and maintainer release acceptance"
+  ],
+  "runtime_executables_identical_to_021f531": true
+}
