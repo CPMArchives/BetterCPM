@@ -4,7 +4,7 @@ BetterCP/M 1.0 System — Model 4
 ASSEMBLY TEMPLATE — not a completed or accepted release package.
 Remove this notice only after the release acceptance checks pass.
 
-Contains the Model 4 System Disk and formatted work media. Utilities are a separate download.
+Contains the Model 4 System Disk and formatted work media. Utilities are a separate download for the same platform.
 
 Read docs/platform/MODEL4-INSTALLATION.md before booting. Select the supplied disk geometry and work on writable image copies. Optional FreHD clock support requires appropriate hardware/emulation.
 

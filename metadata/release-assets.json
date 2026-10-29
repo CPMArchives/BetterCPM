@@ -36,15 +36,27 @@
       "size_bytes": null
     },
     {
-      "id": "utilities",
-      "title": "BetterCP/M Utilities 1.0",
-      "filename": "BetterCPM-Utilities-1.0.zip",
-      "archive_root": "BetterCPM-Utilities-1.0",
+      "id": "utilities-cpmsim",
+      "title": "BetterCP/M Utilities 1.0 — cpmsim",
+      "filename": "BetterCPM-Utilities-1.0-cpmsim.zip",
+      "archive_root": "BetterCPM-Utilities-1.0-cpmsim",
       "platforms": [
-        "cpmsim",
+        "cpmsim"
+      ],
+      "readme_template": "packaging/1.0/README-Utilities-cpmsim.txt",
+      "status": "planned",
+      "sha256": null,
+      "size_bytes": null
+    },
+    {
+      "id": "utilities-model4",
+      "title": "BetterCP/M Utilities 1.0 — Model 4",
+      "filename": "BetterCPM-Utilities-1.0-Model4.zip",
+      "archive_root": "BetterCPM-Utilities-1.0-Model4",
+      "platforms": [
         "Model4"
       ],
-      "readme_template": "packaging/1.0/README-Utilities.txt",
+      "readme_template": "packaging/1.0/README-Utilities-Model4.txt",
       "status": "planned",
       "sha256": null,
       "size_bytes": null

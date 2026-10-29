@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assemble five review-only ZIPs from exact source and validated media receipts.
+"""Assemble six review-only ZIPs from exact source and validated media receipts.
 
 No emulator launches, baseline promotions, tags or uploads. Model 4 execution
 and fresh-package installation remain explicit acceptance gates.
@@ -102,6 +102,29 @@ def upstream_bundle(repository, commit, destination):
                        check=True,capture_output=True)
 
 
+def utilities_members(platform, sums, images, reports, inventory):
+    """Keep matching disk images/receipts and the complete shared source kit."""
+    target={'cpmsim':'z80pack','Model4':'trs80gp'}[platform]
+    selected={name for name,owner in images.items() if owner==platform}
+    if len(selected)!=2:
+        raise ValueError('Utilities package requires primary and companion images')
+    files={}
+    for name,data in sums.items():
+        image=name[:-5] if name.endswith('.json') else name
+        if image in images:
+            if image not in selected:
+                continue
+            destination=('images/'+platform+'/'+name if name in images
+                         else 'evidence/'+name)
+        else:
+            destination='source/'+name
+        files[destination]=data
+    proof={**inventory,'platforms':{target:inventory['platforms'][target]}}
+    files['evidence/independent-inventory.json']=encoded(proof)
+    return files,{'images':{name:reports[name] for name in sorted(selected)},
+                  'independent_inventory':proof}
+
+
 def assemble(args):
     if git('status','--porcelain','--untracked-files=no').strip():
         raise ValueError('candidate assembly requires clean tracked source')
@@ -197,14 +220,12 @@ def assemble(args):
             if platform=='cpmsim':
                 files.update({'host/BetterCPM/'+n:d for n,d in host.items()})
                 evidence['emulator']=runtime
-        elif id=='utilities':
-            for name,data in sums.items():
-                dest='images/'+images[name]+'/'+name if name in images else 'source/'+name
-                files[dest]=data
-            files['evidence/independent-inventory.json']=args.inventory.read_bytes()
+        elif id in ('utilities-cpmsim','utilities-model4'):
+            selected,evidence=utilities_members(asset['platforms'][0],sums,images,
+                                                util_reports,inventory)
+            files.update(selected)
             files['docs/user/utilities_manual.md']=tracked['docs/user/utilities_manual.md']
             files['docs/engineering/Model 4 Release Checklist.md']=tracked['docs/engineering/Model 4 Release Checklist.md']
-            evidence={'images':util_reports,'independent_inventory':inventory}
         elif id=='source':
             files.update({'source/BetterCPM/'+n:d for n,d in tracked.items()})
             files['source/BetterCPM/SOURCE-IDENTITY.json']=identity
