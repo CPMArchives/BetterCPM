@@ -69,3 +69,75 @@ Existing downloaded candidates still contain COMPARE 002. No release images
 were replaced or promoted by this fix. A rebuilt candidate must identify 003
 and repeat the affected packaged cpmsim and manual Model 4 query checks.
 Functional Model 4 coverage remains pending.
+
+## Further manual execution — COMPARE 002
+
+PASS (same-file summary only): C:COMPARE A:README.TXT A:README.TXT /SUMMARY.
+Both lengths, positions examined and byte pairs compared: 3584. Mismatches
+and additional bytes in either file: 0. FILES IDENTICAL. Screenshot
+2026-10-29 2.51.30 PM, libfile_7a6ad1373dac819182e0de1445af5268.
+This is partial M4-11 coverage on the original candidate, not revision 003.
+
+PASS (bounded different-file summary): C:COMPARE A:README.TXT A:STARTUP.SUB
+/SUMMARY /LEN=80. Lengths 3584 and 128; 128 positions/pairs examined,
+127 mismatches, no additional selected-range bytes. FULL FILE LENGTHS DIFFER;
+SELECTED RANGES DIFFER. Screenshot 2.53.34 PM,
+libfile_91b7529199408191b497d8cab45ea079. Initial mistyped operand was
+rejected; corrected command produced this result. Prior instruction predicted
+FILES DIFFER, but bounded comparisons correctly use SELECTED RANGES DIFFER.
+
+PASS (narrow unaligned comparison, observed): C:COMPARE A:README.TXT
+A:STARTUP.SUB /SIDE /40 /FROM=7 /FROM2=0 /LEN=9. Four-byte rows begin
+at 00000004, 00000008 and 0000000C, with the first selected pair at the last
+slot of the first row. Summary: offsets 7 and 0, limit 9, positions/pairs 9,
+mismatches 8, additional bytes 0 in either file; selected ranges differ.
+Screenshot 3.11.00 PM, libfile_ce2e8ab63fac8191a56a5123094fb606.
+Partial M4-11 coverage, COMPARE 002; pager/cancellation remain pending.
+
+PASS (paging pause/advance and normal completion, maintainer reported):
+C:COMPARE A:README.TXT A:STARTUP.SUB /SIDE /40 /P. Screenshots 3.15.29,
+3.15.44 and 3.15.57 PM show successive pauses with Space/Enter next and
+Ctrl-C/Q/Esc stop. Maintainer reports advancing through 30-odd pages and
+reaching the end. Q-stop was not exercised and remains PENDING; no cancellation
+PASS is inferred. Screenshot refs: libfile_45004d3a2ad48191aa943750f3b9e917,
+libfile_a3322d9164b4819180fdd7c1e8c42fa7,
+libfile_d011793ef48081919d22b65bf3b777e2.
+
+PASS (first-page pager quit): maintainer quit at the first screen of the
+same /SIDE /40 /P command. Screenshot 3.22.12 PM,
+libfile_81994aff7fdc819187abd9b2538d0b4b shows DISPLAY INTERRUPTED,
+COMPARISON CONTINUING..., then full summary: 3584 positions, 128 byte pairs,
+127 mismatches, 3456 additional bytes in file 1 and 0 in file 2; FILES DIFFER.
+This supersedes the pending first-page quit item above, not nonpaged Ctrl-C
+or other pager-key coverage. Tested COMPARE remains 002.
+
+PASS (DUMP 007 basic bounded display and return): B:DUMP A:STARTUP.SUB
+/LEN=40 produces four 16-byte rows at 00000000/10/20/30 and returns to B0>.
+Bytes show RSX LOAD M4SCRN, RSX LOAD ADM3A, CLS, :VER /BANNER with CR/LF,
+then 1A and zero padding. Screenshot 3.24.32 PM,
+libfile_bc5a46c432ec8191b8808a7c51c4f212. Partial M4-03 coverage.
+
+PASS (DASM 002 launch only): DASM A:VER.COM displays current identity,
+Richard Conn engine attribution and interactive H/? guidance. Screenshot
+3.28.03 PM, libfile_926d1c7dde148191aab0af1585bbddbf. This does not establish
+that the command-tail filename was loaded or disassembled. Exit pending.
+
+PASS (DASM 002 exit): G at the interactive # prompt returns to B0>.
+Screenshot 3.29.31 PM, libfile_afa38826193481918b751a848feb4efd.
+Together with the launch observation this covers basic DASM launch/exit only.
+
+BLOCKED (TED 002 normal launch in default ADM3A session): B:TED reports
+TED requires SCRN 1.1, 80x24; select ANSI with M4SCRN/ANSISCRN.
+Screenshot 3.30.57 PM, libfile_e94be5f7021081919ab5e6c4bc09bae5.
+M4SCRN was loaded, but default ADM3A personality conflicts with TED's documented
+ANSI requirement. No editor launch/exit PASS. Retest with ANSI pending.
+
+PASS (TED 002 launch with required personality): after A:RSX UNLOAD ADM3A
+and A:RSX LOAD ANSI, TED reaches TED>. Screenshot 3.34.17 PM,
+libfile_0eea7cc7fd94819195d2647b89d8a5eb. Earlier ADM3A rejection remains
+historical prerequisite evidence. Exit and screen editing are not yet passed.
+
+PASS (TED 002 exit, maintainer reported): EX at TED> returns to B0>.
+Combined with the ANSI-session launch above, basic launch/exit passes.
+Screen editing, saved-file integrity and broader functional checks are not
+inferred from this empty-session check.
