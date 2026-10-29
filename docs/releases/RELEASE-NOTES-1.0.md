@@ -8,8 +8,8 @@ and separate cpmsim and TRS-80 Model 4 hardware bindings. The 1.0 distribution
 includes system configuration/installation utilities, CPX/RSX extension support,
 persistent command history, terminal providers and a separate Utilities set.
 
-The five downloads are System for cpmsim, System for Model 4, Utilities for both
-platforms, complete Source, and Documentation. All carry the same candidate
+The six downloads are System for cpmsim, System for Model 4, Utilities for cpmsim,
+Utilities for Model 4, complete Source, and Documentation. All carry the same candidate
 source commit, with exact artifact hashes and evidence in RELEASE.json. Utility
 component revisions are independent of the package version. Candidate names and
 existing -dev banners do not indicate final acceptance.

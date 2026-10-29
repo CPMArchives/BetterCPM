@@ -1,12 +1,12 @@
-BetterCP/M Utilities 1.0
-========================
+BetterCP/M Utilities 1.0 — Model 4
+==================================
 
 ASSEMBLY TEMPLATE — not a completed or accepted release package.
 Remove this notice only after the release acceptance checks pass.
 
-Contains primary and companion Utilities images for cpmsim and Model 4, with the Utilities Manual and corresponding-source/provenance companions.
+Contains only the 800K DMK primary and companion .dmk images for Model 4, with the Utilities Manual and required shared corresponding-source/provenance companions.
 
-Choose images matching the platform. Mount primary Utilities as B: and companion as C: beside System A: and work D:. The companion retains the BetterCPM-NOAH name and contains NOAH, PATCH and COMPARE. CRCKSUM and MD5SUM are on the primary disk. Keep NOAH.COM and NOAH.OVL matched.
+Use this download with the Model 4 System package. The other platform has a separate Utilities download. Mount primary Utilities as B: and companion as C: beside System A: and work D:. The companion retains the BetterCPM-NOAH name and contains NOAH, PATCH and COMPARE. CRCKSUM and MD5SUM are on the primary disk. Keep NOAH.COM and NOAH.OVL matched.
 
 Consult the Utilities Manual for per-program requirements. These disks are not bootable replacements for the System Disk.
 

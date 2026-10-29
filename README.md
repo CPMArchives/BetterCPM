@@ -82,8 +82,8 @@ The authoritative scope and implementation sequence are defined by the [`BetterC
 
 ## Release downloads
 
-The planned BetterCP/M 1.0 release has five downloads: System for cpmsim, System
-for Model 4, Utilities, Source and Documentation. See the
+The planned BetterCP/M 1.0 release has six downloads: System for cpmsim, System
+for Model 4, Utilities for cpmsim, Utilities for Model 4, Source and Documentation. See the
 [release-package layout](docs/releases/1.0-RELEASE-PACKAGES.md) for contents,
 source/patch requirements and outstanding acceptance checks. These are planned
 assets, not a published or accepted release.

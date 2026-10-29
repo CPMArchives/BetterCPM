@@ -6,10 +6,40 @@ import tempfile
 import unittest
 import zipfile
 from build_qualified_cpmsim import project_revision
-from package_release_candidates import checked_name, encoded, read_report, sha, write_package, upstream_bundle
+from package_release_candidates import checked_name, encoded, read_report, sha, write_package, upstream_bundle, utilities_members
 
 
 class ReleaseCandidateTests(unittest.TestCase):
+    def test_utilities_platform_archives_keep_only_matching_media_and_receipts(self):
+        images={'primary.dsk':'cpmsim','companion.dsk':'cpmsim',
+                'primary.dmk':'Model4','companion.dmk':'Model4'}
+        sums={name:name.encode() for name in images}
+        sums.update({name+'.json':encoded({'image':name}) for name in images})
+        sums['shared-source.tar.gz']=b'corresponding source'
+        sums['NOTICE.txt']=b'notice'
+        reports={name:{'image':name} for name in images}
+        inventory={'status':'PASS','platforms':{'z80pack':{'files':26},'trs80gp':{'files':26}}}
+        for platform,target in [('cpmsim','z80pack'),('Model4','trs80gp')]:
+            with self.subTest(platform=platform),tempfile.TemporaryDirectory() as tmp:
+                files,evidence=utilities_members(platform,sums,images,reports,inventory)
+                selected={name for name,owner in images.items() if owner==platform}
+                self.assertEqual({n.split('/')[-1] for n in files if n.startswith('images/')},selected)
+                for name in images:
+                    self.assertEqual('evidence/'+name+'.json' in files,name in selected)
+                self.assertEqual(files['source/shared-source.tar.gz'],sums['shared-source.tar.gz'])
+                self.assertEqual(files['source/NOTICE.txt'],sums['NOTICE.txt'])
+                self.assertEqual(set(evidence['images']),selected)
+                self.assertEqual(set(evidence['independent_inventory']['platforms']),{target})
+                path=Path(tmp)/'utilities.zip';write_package(path,'utilities',files,{'platform':platform})
+                with zipfile.ZipFile(path) as z:
+                    actual={n.rsplit('/',1)[-1] for n in z.namelist() if '/images/' in n}
+                    self.assertEqual(actual,selected)
+
+    def test_utilities_requires_both_primary_and_companion(self):
+        with self.assertRaises(ValueError):
+            utilities_members('cpmsim',{'one.dsk':b'x'},{'one.dsk':'cpmsim'},
+                              {'one.dsk':{}},{'platforms':{'z80pack':{}}})
+
     def test_offline_bundle_restores_exact_unreferenced_pin(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);repo=root/'upstream';repo.mkdir()

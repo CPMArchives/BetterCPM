@@ -8,7 +8,7 @@ Contains the matching system and Utilities source, build tools, metadata, native
 
 Start with the included build instructions. Reconstruct the required cpmsim runtime from the pinned upstream revision and patches; preserve the resulting build manifest. Use declared tool inputs and record the resulting executable/image hashes.
 
-The separate Utilities package retains its required source companions. This convenient complete-source download does not replace their provenance or notices.
+Each platform Utilities package retains its required source companions. This convenient complete-source download does not replace their provenance or notices.
 
 Verify SHA256SUMS.txt before use. RELEASE.json identifies the exact source commit, included artifacts and qualification evidence. Preserve original media; use disposable copies for validation.
 
