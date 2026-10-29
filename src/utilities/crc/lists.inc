@@ -3,6 +3,7 @@
 CHECKDU:
         XOR A
         LD (REFREADY),A
+        LD (REFFAIL),A
         CALL DISCOVER
         JP C,DUNEXT
         LD A,1
@@ -21,6 +22,9 @@ REFPRINT:
         XOR A
         LD (LISTMODE),A
         CALL LISTSCAN
+        LD A,(REFFAIL)
+        OR A
+        JP NZ,DUNEXT
         LD HL,LASTNAME
         LD BC,11
         CALL ZERO
@@ -125,21 +129,25 @@ CHECKFOU:
         JR Z,CHECKNOM
         LD HL,VERIFIED
         CALL INC32
-        CALL NEWLINE
-        CALL PUTNAME
+        LD HL,LASTNAME
+        CALL PRINTNAM
         LD HL,MSGMATCH
-        CALL PUTS
+        CALL TEXT
         LD A,(MATCHMAS)
-        LD (SAVEDALG),A
-        LD A,(ALGSEL)
-        LD (OLDALG),A
-        LD A,(SAVEDALG)
-        LD (ALGSEL),A
-        XOR A
-        CALL FIELDS
-        LD A,(OLDALG)
-        LD (ALGSEL),A
-        CALL ENDLINE
+        LD B,8
+        LD C,0
+MATCHCNT:
+        RRCA
+        JR NC,MCHNEXT
+        INC C
+MCHNEXT:
+        DJNZ MATCHCNT
+        LD A,C
+        ADD A,'0'
+        CALL CHAR
+        LD HL,MCHEND
+        CALL TEXT
+        CALL NL
         LD A,(DIFFENTR)
         OR A
         RET Z
@@ -350,7 +358,7 @@ LISTSCAN:
         LD C,15
         CALL BDOS
         CP 255
-        JP Z,LISTIOER
+        JP Z,REFOPENERR
         XOR A
         LD (LISTFORM),A
         LD (LISTPEND),A
@@ -420,6 +428,17 @@ LISTBAD:
         LD HL,(NUMPTR)
         CALL TEXT
         JP NL
+REFOPENERR:
+        LD A,1
+        LD (REFFAIL),A
+        LD HL,DUERRORS
+        CALL INC32
+        LD HL,MSGREFOPEN
+        CALL TEXT
+        CALL NL
+        RET
+REFFAIL: DB 0
+MSGREFOPEN: DB 'Cannot open reference list',0
 LISTIOER:
         CALL LISTBAD
         LD A,1
@@ -768,7 +787,8 @@ MSGAMBIG: DB 'Ambiguous CRC lists; use /CHECK=filename',13,10,0
 MSGLISTE: DB 'LIST ERROR, line ',0
 MSGNOTFO: DB ' FILE NOT FOUND',0
 MSGNOTLI: DB ' FILE NOT LISTED',0
-MSGMATCH: DB ' MATCH',0
+MSGMATCH: DB ': MATCH (all ',0
+MCHEND: DB ' checksums)',0
 MSGSKIPP: DB ' SKIPPED (no selected algorithm)',0
 MSGSIZEM: DB ' SIZE MISMATCH',0
 MSGCRCMI: DB ' CHECKSUM MISMATCH',0

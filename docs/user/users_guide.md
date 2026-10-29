@@ -5571,9 +5571,13 @@ Transient DIR reports file counts and allocated-space totals.
 
 When several user areas are selected, each is listed separately.
 
-Free space is reported once per selected drive rather than repeated for every user area.
+Each DU keeps its heading above the files. File sizes are right-aligned within their columns. Each listing ends with a combined summary, for example:
 
-For example, selecting both B3 and B4 produces separate listings but only one free-space total for drive B.
+```text
+---- 30 FILES, 184K TOTAL, 146K FREE ----
+```
+
+Free space is included for each selected user area. An empty listing reports `NO FILE`, followed by its free space. Free space always uses KiB, regardless of the selected file-size unit.
 
 ##### Examples
 

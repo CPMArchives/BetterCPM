@@ -274,12 +274,11 @@ def main():
     for narrow in ('',' /40'):
         ordered=run(f,'/FILE=CRC.LST /KERM12 /SUM8 /CRCK'+narrow)
         if narrow:
-            row=ordered['text'].split('TEST     DAT')[-1]
+            row=ordered['text'].split('NAME     EXT',1)[1]
             assert row.index('KERM12')<row.index('SUM8')<row.index('CRCK'),row
         saved=ordered['files'][2,7,name83('CRC.LST')]
         checked=run({**f,(2,7,'CRC.LST'):saved},'/CHECK /SUM8 /KERM12'+narrow)
-        row=checked['text'].split('TEST     DAT MATCH')[-1]
-        assert row.index('SUM8')<row.index('KERM12'),row
+        assert 'TEST.DAT: MATCH (all 2 checksums)' in checked['text'],checked['text']
     wrong_order=native([('TEST.DAT',1,{**v,'SUM8':'00','KERM12':'000'})])
     result=run({(2,7,'TEST.DAT'):data,(2,7,'CRC.LST'):wrong_order},'/CHECK /KERM12 /SUM8')
     assert 'KERM12=000 SUM8=00' in result['text'],result['text']
@@ -355,8 +354,18 @@ def main():
             assert not [x for x in r['reads'] if x[0][2]==name83('TEST.DAT')],r['reads']
     r=run({**one,(2,7,'CRC.LST'):native([('TEST.DAT',1,v)])},'/CHECK /40')
     assert all(len(line)<=40 for line in r['text'].splitlines()),r['text']
+    for columns in (('CRCK',),('CRCK','SUM16','KERM6'),tuple(v)):
+        ref=native([('TEST.DAT',1,v)],columns)
+        result=run({**one,(2,7,'CRC.LST'):ref},'/CHECK')
+        assert f'TEST.DAT: MATCH (all {len(columns)} checksums)' in result['text'],result['text']
+    absent=run(one,'/CHECK=ABSENT.LST')
+    assert 'Cannot open reference list' in absent['text'],absent['text']
+    assert '4294967295' not in absent['text'] and 'FILE NOT LISTED' not in absent['text'],absent['text']
+    assert total(absent,'Files verified')==0 and not absent['complete'],absent['text']
+    failed_open=run({**one,(2,7,'CRC.LST'):native([('TEST.DAT',1,v)])},'/CHECK',fault=(15,1))
+    assert 'Cannot open reference list' in failed_open['text'] and 'FILE NOT LISTED' not in failed_open['text'],failed_open['text']
     # Rounded K rejects only incompatible ranges.
-    for k,expect in ((0,'SIZE MISMATCH'),(1,' MATCH'),(2,'SIZE MISMATCH')):
+    for k,expect in ((0,'SIZE MISMATCH'),(1,': MATCH'),(2,'SIZE MISMATCH')):
         ref=f'INDEX NAME SIZE CRC\n310.1 TEST.DAT {k}K A6 87 comment\n'.encode()
         r=run({**one,(2,7,'CRC.LST'):ref},'/CHECK');assert expect in r['text'],r['text']
     malformed=(native([('TEST.DAT',1,v)]).replace(b'A687',b'G687'),

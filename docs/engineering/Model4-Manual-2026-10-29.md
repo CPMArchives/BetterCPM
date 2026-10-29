@@ -320,3 +320,61 @@ checksum columns in selection order, one file calculated and one list written.
 /CHECK=THREE.LST resolves D0:THREE.LST and reports MATCH CRCK SUM16 KERM6,
 one verified. This is baseline evidence for subset-list verification; the
 approved future `MATCH (all 3 checksums)` wording is not yet implemented.
+
+## Stabilization implementation after this manual session
+
+The findings above remain historical results for the mounted candidate binaries.
+The following replacements are implemented locally, not yet packaged or tested
+in Model 4. Earlier OPEN entries now have implementations awaiting platform
+revalidation; their original evidence is preserved.
+
+- CRCKSUM 1.0 revision 007: /40 wraps the native table into aligned groups,
+  retaining filename/record count on the first row and leaving saved lists
+  unchanged. Successful verification uses the dotted filename and
+  `: MATCH (all N checksums)`, counting the matching entry's checked checksum
+  mask. Missing/unopenable references report `Cannot open reference list`, a
+  DU/reference error and incomplete, without stale line numbers or cascading
+  FILE NOT LISTED after the initial open failure. Help and manuals updated.
+- DIR 1.0 revision 010: retains DU headings and ` : ` delimiters, right-aligns
+  file sizes within each DU's measured columns, and reports
+  `---- N FILES, nK TOTAL, nK FREE ----` (singular FILE where appropriate).
+  Free space appears for every DU, including empty listings, and the trailing
+  once-per-drive block is removed. Alternate S/E file-size units retain K free.
+- RSX 1.0 revision 006: a newline separates the last enumerated service from
+  `TPA available`. A dispatch branch was widened to accommodate the code growth.
+- COMPARE revision 003 remains the previously implemented HELP-precedence fix.
+- MD5SUM behavior and expanded assembly source remain unchanged. Its builder
+  excludes the CRC-only additions from shared source; comparison with the
+  pre-fix expanded assembly was exact. No MD5SUM revision advance.
+
+Replacement binary identities (SHA-256):
+
+| Component | Bytes | SHA-256 |
+| --- | ---: | --- |
+| CRCKSUM 007 | 22279 | 94ab2baca93dc49da201cc5743f6dc30c17030b99b9cce7e6350f1dc2daf9170 |
+| DIR 010 | 9798 | bb2394fcdb0329b7f39c2bbe945564882f3602a2c4e988a9b005baefe73aaef9 |
+| RSX 006 | 1012 | 1aaa034df6f87824e5c49002266e7d595dc6d86d42380b6fe9bd4cf6ce4f7918 |
+| COMPARE 003 | 6658 | 8388454c4a5affbf6dccb2e8e75bf16fa17a22d1481251e22e3dd42a12b4ada4 |
+
+Affected verification:
+
+- `tools/test_crc.py`: compiled command/routine suite PASS, including subset
+  counts, default and ordered /40 table output, unchanged saved-list bytes,
+  missing reference and failed-open diagnostics, plus existing regressions.
+- `tools/build_native_crc.py`: 22279-byte cross/native parity and native CP/M
+  command fixtures PASS using the final help text.
+- `tools/test_release_presentation.py`: compiled DIR output across K/S/E,
+  attributes, users 0/12, populated/empty DUs, aligned numeric cells and inline
+  free space PASS; RSX LIST zero/one/two-entry newline checks PASS.
+- Existing DIR column-fit, metrics and sort checks PASS. Native RCP-derived
+  builder confirms DIR's 9798-byte cross/native parity.
+- Broader `tools/test_utility_versions.py` stopped on an unrelated stale STAT
+  /VER binary (`BetterCP/M STAT 1.0 (Build 002)`); no whole-suite pass claimed.
+- The older `tools/build_native_rsx.py` first lacked its default inputs; after
+  supplying the available paths/building prerequisite carriers, cpmsim could
+  not execute cpmrecv and interrupted the harness. No native RSX parity or
+  runtime platform pass claimed from that attempt. No trs80gp launch attempted.
+
+Before acceptance: package a new candidate tied to the implementation commit,
+then manually retest changed CRCKSUM/DIR/RSX/COMPARE binaries against their exact
+versions and image identities. No NOAH runtime result has yet been recorded.

@@ -17,6 +17,17 @@ ROOT = Path(__file__).resolve().parents[1]
 def shared(name, start=None, end=None):
     """Compose whole labelled routines, failing if their shared boundary moves."""
     text = (ROOT/f'src/utilities/crc/{name}.inc').read_text()
+    # CRC-only reference failure guard and report strings must not alter MD5's
+    # independently qualified discovery and single-digest report paths.
+    if name == 'lists':
+        text = text.replace('        LD (REFFAIL),A\n', '')
+        text = text.replace('        LD A,(REFFAIL)\n        OR A\n        JP NZ,DUNEXT\n', '')
+        text = text.replace('        JP Z,REFOPENERR', '        JP Z,LISTIOER')
+        begin = text.index('REFOPENERR:\n')
+        finish = text.index('LISTIOER:\n', begin)
+        text = text[:begin] + text[finish:]
+        text = text.replace("MSGMATCH: DB ': MATCH (all ',0\nMCHEND: DB ' checksums)',0",
+                            "MSGMATCH: DB ' MATCH',0")
     if start:
         text = text[text.index(start+':\n'):]
     if end:

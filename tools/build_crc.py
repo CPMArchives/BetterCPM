@@ -38,7 +38,7 @@ def expanded_source():
                  '     /LOCAL=name Write a list in each target DU.\n'
                  '     /LEGACY     Use historical CRCKLIST format; force CRCK.\n'
                  '     /CHECK[=name] Verify against a list in each target DU.\n'
-                 '     /40         Stacked screen display.\n\n'
+                 '     /40         Wrapped table display.\n\n'
                  '     /HELP       Display this help.\n'
                  '     /VER        Display utility identification.\n')
     def assembly_string(label, value):

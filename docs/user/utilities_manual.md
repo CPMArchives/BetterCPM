@@ -393,11 +393,11 @@ CRCKSUM [options] [filespec ...] [options]
 | `/LEGACY` | Write historical CRCKLIST records and force historical CRCK alone. |
 | `/CHECK` | Verify against a reference discovered in each selected DU. |
 | `/CHECK=filename` | Verify against this exact list name in each selected DU. Supply a filename only. |
-| `/40` | Stack screen results for a 40-column display. Saved lists are unchanged. |
+| `/40` | Wrap table columns for a 40-column display. Saved lists are unchanged. |
 | `/HELP` | Display help without accessing files. |
 | `/VER` | Display the utility's version and revision without accessing files. |
 
-Option names are case-insensitive, and options may appear before, between or after filespecs. Without algorithm switches, calculation displays all eight values. Supplying switches selects their combination: `/CRCK /CHEK` displays those two. Explicit algorithm switches also determine output order: `/SUM16 /CRCK /KERM6` puts those three columns in that order. Repeating a switch neither moves nor duplicates its column. This order also applies to the narrow display and verification reports. When a value option is repeated, every occurrence must be valid and the last value is used. `/HELP` takes precedence over `/VER`; either query suppresses ordinary command processing.
+Option names are case-insensitive, and options may appear before, between or after filespecs. Without algorithm switches, calculation displays all eight values. Supplying switches selects their combination: `/CRCK /CHEK` displays those two. Explicit algorithm switches also determine output order: `/SUM16 /CRCK /KERM6` puts those three columns in that order. Repeating a switch neither moves nor duplicates its column. This order also applies to the narrow display and mismatch details. Successful verification reports `FILENAME.EXT: MATCH (all N checksums)`, counting the checksum fields verified from the matching list entry. When a value option is repeated, every occurrence must be valid and the last value is used. `/HELP` takes precedence over `/VER`; either query suppresses ordinary command processing.
 
 `/LEGACY` always selects historical CRCK only. All other algorithm switches are ignored when `/LEGACY` is present, regardless of their order. You do not have to add `/CRCK` as well.
 
@@ -450,7 +450,7 @@ The name and extension occupy separate fixed fields with no dot. An extensionles
 
 The column header identifies the calculations; the dash runs establish their positions. CRC reads data by columns, so an empty extension cannot be confused with a record count. Keep the header, separator and rows aligned if editing a list. The reader accepts algorithm columns in any order, blank lines, comments beginning with `;`, and repeated section headers. Unknown or duplicate columns, missing values and malformed records are reported rather than guessed.
 
-`/40` puts the filename on one line and the record count and each selected value on separate lines. It changes screen presentation only. Saved lists retain the standard table, and `/LEGACY` retains its historical file layout.
+`/40` retains the table: filename and record count appear on the first row, and excess checksum columns wrap onto continuation rows aligned beneath the first checksum column. Headings and values use the same grouping. It changes screen presentation only. Saved lists retain the standard table, and `/LEGACY` retains its historical file layout.
 
 ### Saving master and local lists
 

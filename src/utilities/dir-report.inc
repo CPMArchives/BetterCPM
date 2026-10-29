@@ -182,6 +182,9 @@ DT_REPORT:
         JR NZ,DT_ROWS
         LD DE,BC_NOFILE
         CALL BC_PRINT
+        CALL DX_CURRENT
+        LD DE,BC_NL
+        CALL BC_PRINT
         JP RD_NEXT
 DT_ROWS:
         CALL DN_SORT
@@ -207,7 +210,11 @@ DT_ROW:
         LD HL,(DT_SCAN)
         LD DE,12
         ADD HL,DE
+        LD A,1
+        LD (DT_PADSIZE),A
         CALL DT_SIZE
+        XOR A
+        LD (DT_PADSIZE),A
         CALL DT_SUFFIX
         CALL DT_ATTRIBUTES
         LD HL,(DT_SCAN)
@@ -224,6 +231,8 @@ DT_ROW:
         JP DT_ROW
 DT_ROWEND:
         LD DE,BC_NL
+        CALL BC_PRINT
+        LD DE,DT_RULE
         CALL BC_PRINT
         LD HL,(DT_FILES)
         LD (DTD_NUM),HL
@@ -243,6 +252,9 @@ DT_SUMMARY:
         CALL DT_SIZE
         CALL DT_SUFFIX
         LD DE,DT_SUMMSG
+        CALL BC_PRINT
+        CALL DX_CURRENT
+        LD DE,DT_ENDRULE
         CALL BC_PRINT
         JP RD_NEXT
 ; Display selection does not change the allocated-record sort key.
@@ -323,7 +335,9 @@ DT_HEADING: DB ':',13,10,'$'
 DT_SPACE: DB '  $'
 DT_FILEMSG: DB ' FILES, $'
 DT_ONEMSG: DB ' FILE, $'
-DT_SUMMSG: DB ' TOTAL',13,10,'$'
+DT_SUMMSG: DB ' TOTAL, $'
+DT_RULE: DB '---- $'
+DT_ENDRULE: DB ' ----',13,10,'$'
 DT_FULLMSG: DB 13,10,'Directory too large.',13,10,'$'
 
 ; Stable comparison of the selected key, with name/extension tie-breaks. Move whole
@@ -471,3 +485,35 @@ DN_DIR:
 DN_NORMAL:
         POP AF
         RET
+
+; Pad only file-row numbers to the DU's measured maximum numeric width.
+DT_NUMPAD:
+        LD A,(DT_PADSIZE)
+        OR A
+        RET Z
+        LD HL,(DTD_PTR)
+        LD DE,DTD_DIG
+        OR A
+        SBC HL,DE
+        LD B,L
+        LD A,(DC_WIDTH)
+        SUB 15
+        SUB B
+        LD B,A
+        LD A,(DT_SHOWATTR)
+        OR A
+        LD A,B
+        JR Z,DT_PADNUM
+        SUB 5
+DT_PADNUM:
+        OR A
+        RET Z
+        LD B,A
+DT_PADLOOP:
+        PUSH BC
+        LD A,' '
+        CALL BC_PCHAR
+        POP BC
+        DJNZ DT_PADLOOP
+        RET
+DT_PADSIZE: DB 0
