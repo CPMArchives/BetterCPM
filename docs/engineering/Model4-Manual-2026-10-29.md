@@ -141,3 +141,182 @@ PASS (TED 002 exit, maintainer reported): EX at TED> returns to B0>.
 Combined with the ANSI-session launch above, basic launch/exit passes.
 Screen editing, saved-file integrity and broader functional checks are not
 inferred from this empty-session check.
+
+Checksum run observed: CRCKSUM 006 and MD5SUM 002 calculate A:STARTUP.SUB,
+1 record, 1 file each. Screenshot 3.37.47 PM,
+libfile_f2e7d4325bf48191a0408008a41f7330. Independent host reference extracted
+with cpmcp from build/review-systems-v5/trs80gp/system.raw using its diskdefs:
+cpmcp exports 53 logical bytes; zero-fill to one 128-byte stored record
+(as shown by the prior DUMP and candidate packaging). CRCK 73B2, CRCKS E958, CHEK 143C, CRC32 2A5741FF,
+SUM8 3B, SUM16 0C3B, KERM6 3B, KERM12 C3B;
+MD5 35766c8f12f4e49cd793173edc257665. Screenshot text extraction is ambiguous
+for some digits; exact visual/transcribed equality remains to be confirmed
+before a complete all-algorithm reference PASS is asserted.
+
+PASS (small stored-record checksum references): maintainer confirms all eight
+CRCKSUM values and the MD5 digest above match the Model 4 display exactly.
+This resolves the digit-reading uncertainty for this fixture. Covers default
+algorithm calculation on one 128-byte STARTUP.SUB record only; lists, prompts,
+large files and other outstanding checksum assertions remain pending.
+
+PASS (CRCKSUM 006 order/duplicate behavior only): /SUM16 /CRCK /SUM16
+/KERM6 /40 shows SUM16 0C3B, CRCK 73B2, KERM6 3B in that order, once each.
+Screenshot 3.42.16 PM, libfile_e0bb9cbf746881919224f823de1c28b0.
+OPEN presentation correction approved by maintainer: /40 should retain columns,
+wrap excess checksum columns onto aligned continuation rows, rather than stack
+one labeled value per line. Saved list format remains unchanged. Implementation
+and affected revision/retest are pending; current presentation is not accepted.
+
+PASS (CRCKSUM 006 local list generation and verification, one fixture):
+A:PIP D:STARTUP.SUB=A:STARTUP.SUB, then B:CRCKSUM D:STARTUP.SUB
+/LOCAL=CRC.LST and B:CRCKSUM D:STARTUP.SUB /CHECK=CRC.LST.
+One file calculated, one list written; D0:CRC.LST verification reports MATCH
+for all eight algorithms and one file verified. Screenshot 3.49.42 PM,
+libfile_27a316ffc4ac8191b5a5c76343a87127. No broader list/error/prompt or
+media-preservation PASS is inferred.
+
+OPEN CRCKSUM verification-report correction approved by maintainer:
+successful verification should read `STARTUP.SUB: MATCH (all 8 checksums)`.
+The number must reflect the checksum columns actually present in the checked
+list (for example, three columns produce `MATCH (all 3 checksums)`), not the
+eight algorithms supported by CRCKSUM. Preserve the saved list format.
+Implementation, affected revision, regression checks and Model 4 revalidation
+remain pending; the existing CRCKSUM 006 results above do not validate this
+future change. MD5SUM requires no corresponding report change because it uses
+one algorithm; the maintainer explicitly leaves MD5SUM unchanged.
+
+OPEN DIR.COM presentation correction approved by maintainer: move free-space
+reporting from the separate trailing per-drive block into each DU's report.
+Retain the existing separate DU heading above each listing (for example,
+`A0:`). The maintainer considered and rejected moving the DU into the footer
+or prefixing every file row. Right-align the numeric file sizes within their
+existing fixed-width size fields, so the K suffixes line up (for example,
+`ADM3A    RSX   2K : ADMTST   COM  12K`). Move padding before the number
+instead of after the K; retain the file-column positions and row width.
+Retain ` : ` as the column delimiter, consistent with resident DIR.
+For populated listings use `---- 30 FILES, 184K TOTAL, 146K FREE ----`;
+the maintainer approved inline four-hyphen separators with one space on each
+side of the totals text, preserving a screen row instead of adding a separate
+horizontal-rule line. For an empty
+listing retain `NO FILE` followed by the free-space line. Repeat the drive's
+shared free-space value for each selected user area, including user ranges;
+no additional `ON DRIVE` qualifier or explanatory text is wanted. Remove the
+redundant trailing free-space block. This is an output-placement correction;
+free-space calculation is unchanged. Implementation, affected revision,
+regression checks and applicable platform revalidation remain pending.
+
+PASS (MD5SUM 002 local list generation and verification, one fixture):
+B:MD5SUM D:STARTUP.SUB /LOCAL=MD5.LST, then
+B:MD5SUM D:STARTUP.SUB /CHECK=MD5.LST. Screenshot 8.17.15 PM,
+libfile_f8a677e4c4988191822e70401eeb7e36, reports one file calculated,
+one list written, reference D0:MD5.LST, STARTUP.SUB MATCH and one verified.
+This records successful local-list round trip only; no new precise digest
+transcription or broader error/prompt/media-preservation PASS is inferred.
+
+PASS (MD5SUM 002 changed-content rejection, one fixture): after
+A:PIP D:STARTUP.SUB=A:README.TXT, verification against D0:MD5.LST reports
+recorded and actual digests, STARTUP.SUB MD5 MISMATCH, and
+`No files verified; 1 failed; incomplete.` Screenshot 8.22.06 PM,
+libfile_d1946c1bd300819189ab75668db27d0e. The final command copies
+A:STARTUP.SUB back to D:STARTUP.SUB and returns to the prompt without a
+visible error; restored-byte verification remains pending. Exact actual-digest
+transcription is not inferred from OCR.
+
+PASS (restored fixture verification): screenshot 9.33.22 PM,
+libfile_de532c192f6881918be60cc84edeafbf, shows a further PIP copy from
+A:STARTUP.SUB to D:, followed by MD5SUM 002 /CHECK=MD5.LST and CRCKSUM 006
+/CHECK=CRC.LST for D:STARTUP.SUB. Both report MATCH and one verified.
+This resolves the pending restored-content check for the fixture using both
+saved lists; it does not establish whole-media preservation.
+
+PASS (MD5SUM 002 missing reference handling): /CHECK=ABSENT.LST for
+D:STARTUP.SUB reports no MD5 list found, no files verified, one DU/reference
+error and incomplete. Screenshot 9.36.38 PM,
+libfile_ba2c36a42894819195be5fdad93f9594.
+
+FAIL (CRCKSUM 006 missing-reference diagnostic): the same missing-list check
+reports reference D0:ABSENT.LST, `LIST ERROR, line 4294967295`, then
+STARTUP.SUB FILE NOT LISTED and no files verified, one unlisted, one list error,
+incomplete. Same screenshot. It does not falsely report a verification pass,
+but the nonexistent list has no meaningful line number and the unlisted-file
+report is misleading after reference-open failure. OPEN stabilization fix:
+report the missing/unreadable reference clearly without a bogus line number or
+cascading FILE NOT LISTED diagnosis; affected revision/regression and Model 4
+revalidation remain pending.
+
+PASS (MD5SUM 002 overwrite prompt/default acceptance, maintainer report):
+repeating B:MD5SUM D:STARTUP.SUB /LOCAL=MD5.LST prompted for overwrite;
+the maintainer pressed Enter and the program wrote the file. No screenshot
+was captured. This agrees with the documented `(Y/n/a/?)` default Yes.
+Records prompt appearance and default acceptance only; explicit No, All,
+help, cancellation and post-operation list verification remain pending.
+
+PASS (MD5SUM 002 overwrite prompt help): screenshot 9.41.37 PM,
+libfile_a97928bea2988191932988075fe793a2, shows /LOCAL=MD5.LST encountering
+existing D0:MD5.LST, accepting ?, displaying `Y Yes, N No, A All, ? Help`,
+and repeating the same destination's overwrite question. The screenshot ends
+at that repeated prompt; No-response outcome and file preservation are not
+yet established.
+
+PASS (MD5SUM 002 explicit No response): screenshot 9.42.14 PM,
+libfile_3a11219bb30481919f4a4e4f27f4b428, continues the help/repeated prompt
+with N and reports one file calculated, one list declined. The requested
+subsequent /CHECK=MD5.LST command is not shown; retained-list verification
+and byte-for-byte preservation remain pending.
+
+PASS (MD5SUM 002 retained-list usability after No): screenshot 9.43.38 PM,
+libfile_43dfd86c9ec8819198eedeb46ba4cc22, shows D:STARTUP.SUB
+/CHECK=MD5.LST resolving D0:MD5.LST and reporting MATCH, one verified.
+The declined list remains usable and matches the fixture; this is not an
+independent byte-for-byte before/after comparison of the list.
+
+PASS (MD5SUM 002 overwrite-prompt cancellation and retained-list usability):
+following the instructed Ctrl-C at the existing MD5.LST overwrite prompt,
+screenshot 9.46.38 PM, libfile_e3cdfcb8482081918e520d0861e4c38c, shows return
+to the command prompt and subsequent /CHECK=MD5.LST reporting MATCH and
+one verified. The control character itself is not echoed in the screenshot.
+No byte-for-byte list or temporary-file cleanup comparison is inferred.
+
+PASS (CRCKSUM 006 overwrite help, No and retained-list usability): screenshot
+9.48.55 PM, libfile_ffb42dd78450819184b8afc8162d8168, shows existing
+D0:CRC.LST, ? displaying Y/N/A/help choices and repeating the same prompt,
+then N yielding one file calculated and one list declined. Subsequent
+D:STARTUP.SUB /CHECK=CRC.LST reports MATCH and one verified. No independent
+byte-for-byte list preservation or whole-media comparison is inferred.
+
+PASS (CRCKSUM 006 overwrite-prompt cancellation and retained-list usability):
+following instructed Ctrl-C, screenshot 10.05.40 PM,
+libfile_f7eb3b0526308191b0b2d75c4f402b20, shows return from the existing
+CRC.LST overwrite prompt to CP/M. An initial mistyped verification command
+is rejected with ?, then the corrected D:STARTUP.SUB /CHECK=CRC.LST reports
+MATCH and one verified. The control character is not echoed. This does not
+establish byte-for-byte list preservation or temporary-file cleanup.
+
+PASS (MD5SUM 002 /40 console layout, one fixture): screenshot 10.13.19 PM,
+libfile_874dde4881ec8191b45b35d660271678, shows D:STARTUP.SUB /40 with
+STARTUP.SUB on its own line, the digest on the next line, and one file
+calculated. The digest is presented as a single line; no precise new digest
+transcription or actual 40-column terminal-mode validation is inferred.
+
+PASS (CRCKSUM 006 changed-size rejection and restored verification):
+screenshot 10.28.52 PM, libfile_5f381840cda88191baea3accf3630629, shows
+README.TXT copied over D:STARTUP.SUB; /CHECK=CRC.LST reports candidate at
+line 4, expected one record versus actual 28 records, SIZE MISMATCH, no files
+verified, one failed, incomplete. The subsequent restore copy returns to CP/M.
+Screenshot 10.30.03 PM, libfile_626895fcba208191952a11e595047235, then
+shows MATCH and one verified against CRC.LST. This covers size-change
+rejection; equal-length changed-content checksum mismatch remains untested.
+
+PASS (CRCKSUM 006 default overwrite acceptance): screenshot 10.32.55 PM,
+libfile_9af7bc0861fc81918ed53370106248e2, shows existing D0:CRC.LST,
+the overwrite prompt with no printable response following the instructed
+Enter, then one file calculated and one list written. This covers default Yes
+acceptance; All across multiple destinations remains pending.
+
+PASS (CRCKSUM 006 selected-algorithm local list, three columns): screenshot
+10.35.26 PM, libfile_291cbdf6268081919dd4127670cab215, shows
+D:STARTUP.SUB /CRCK /SUM16 /KERM6 /LOCAL=THREE.LST producing those three
+checksum columns in selection order, one file calculated and one list written.
+/CHECK=THREE.LST resolves D0:THREE.LST and reports MATCH CRCK SUM16 KERM6,
+one verified. This is baseline evidence for subset-list verification; the
+approved future `MATCH (all 3 checksums)` wording is not yet implemented.
