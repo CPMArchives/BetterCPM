@@ -89,6 +89,24 @@ Use the freshly built executable and its helpers. A cpmrecv execution error
 means the helper/PATH setup is incomplete. `tools/bcpm` contains maintainer-specific
 paths and is not a portable installer for a fresh package.
 
+If you already have a configured `bcpm` installation, you can select the
+extracted writable copies explicitly:
+
+```sh
+bcpm mount a /path/to/system-copy.dsk
+bcpm mount b /path/to/primary-utilities-copy.dsk
+bcpm mount c /path/to/companion-utilities-copy.dsk
+bcpm mount d /path/to/work-copy.dsk
+bcpm z /usecurrent
+```
+
+`mount` accepts A–D in either case, with an optional colon (`A:` also works).
+`z /usecurrent` leaves all current drive assignments unchanged and does not
+require locally built distribution images. A: must be present and configured
+images must resolve to regular files. Plain `bcpm z` retains automatic selection
+of the built System/Utilities images on A–C, leaving D: as configured. Close the
+emulator before changing its mounts.
+
 At the guest prompt:
 
 ```text

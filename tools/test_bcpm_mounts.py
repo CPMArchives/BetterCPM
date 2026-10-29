@@ -13,6 +13,8 @@ def main():
         system=repo/'build/z80pack/disks/library/BetterCPM-Distribution-z80pack-332K.dsk';system.parent.mkdir(parents=True);system.write_bytes(b'A')
         trs=repo/'build/trs80/BetterCPM-Distribution-trs80gp-80T-DS-System.dmk';trs.parent.mkdir(parents=True);trs.write_bytes(b'A')
         utils=repo/'build/utilities-disks';utils.mkdir();raw=utils/'BetterCPM-Utilities-z80pack-332K.dsk';raw.write_bytes(b'B');(utils/'BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk').write_bytes(b'B')
+        (utils/'BetterCPM-NOAH-z80pack-332K.dsk').write_bytes(b'C')
+        (utils/'BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk').write_bytes(b'C')
         (daily/'launch-z80pack.command').write_text('#!/bin/sh\nexit 0\n');(daily/'launch-z80pack.command').chmod(0o755)
         exe=home/'trs80/trs80gp-2/mac/trs80gp.app/Contents/MacOS/trs80gp';exe.parent.mkdir(parents=True);exe.write_text('#!/bin/sh\nprintf "%s\\n" "$@" > "$HOME/launch-args"\n');exe.chmod(0o755)
         env=dict(os.environ,HOME=str(home));script=ROOT/'tools/bcpm'
