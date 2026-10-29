@@ -6,8 +6,8 @@
 #
 # 1. Create disk image with bcpm mkdisk
 # 2. Copy files onto disk image with bcpm cp
-# 3. Mount image as drive B, C or D with bcpm mount
-# 4. Launch z80pack with bcpm z, or trs80gp with bcpm t
+# 3. Mount images as drives A-D with bcpm mount
+# 4. Launch those images with bcpm z /usecurrent, or use bcpm z for built media
 #
 
 set -euo pipefail
@@ -35,12 +35,12 @@ BetterCP/M control utility.
 
 Commands:
   build               Build z80pack and trs80gp distribution images
-  z                   Mount the z80pack distribution as drive A and launch cpmsim
+  z [/usecurrent]     Launch cpmsim; /usecurrent preserves mounted A-D media
   t                   Launch trs80gp with the TRS-80 distribution disk
   cp                  Copy files to a CP/M disk image
   dir                 List files in a CP/M disk image
   mkdisk              Create a blank CP/M disk image
-  mount               Attach a disk image to drive B, C, or D (z80pack cpmsim only)
+  mount               Attach a disk image to drive A, B, C, or D (cpmsim only)
   convert             Convert 332K/800K raw disk images to/from DMK
 
 Use "$prog COMMAND -h" for help with a command.
@@ -116,13 +116,16 @@ EOF2
 mount_usage()
 {
     cat <<EOF2
-Usage: $prog mount {b|c|d} disk.img
+Usage: $prog mount {a|b|c|d} disk.img
        $prog mount -h
 
 Attach a raw disk image to a BetterCP/M z80pack drive.
 
 Drives:
-  b, c, d
+  a, b, c, d (either case; an optional colon is accepted, e.g. A:)
+
+Use "$prog z /usecurrent" to launch with these assignments unchanged.
+Plain "$prog z" automatically selects the built A:, B: and C: images.
 
 Options:
   -h      Display this help
@@ -171,11 +174,23 @@ EOF2
 z_usage()
 {
     cat <<EOF2
-Usage: $prog z
+Usage: $prog z [/usecurrent]
        $prog z -h
 
-Attach the z80pack distribution system image to drive A and launch cpmsim.
-Run "$prog build" first to generate fresh distribution images.
+Launch cpmsim.
+
+By default, mount the built System image as A:, primary Utilities as B:,
+and companion Utilities as C:. D: keeps its current assignment.
+Run "$prog build" first to generate those images.
+
+Options:
+  /usecurrent   Use the current A:-D: assignments without changing any mounts.
+                Built distribution images are not required in this mode.
+  -h            Display this help
+
+Example:
+  $prog mount a /path/to/system.dsk
+  $prog z /usecurrent
 EOF2
 }
 
@@ -312,15 +327,18 @@ cmd_build()
 
 cmd_z()
 {
+    local usecurrent=0
     if [ "$#" -eq 1 ] && [ "$1" = "-h" ]; then
         z_usage
         return 0
     fi
-    if [ "$#" -ne 0 ]; then
+    if [ "$#" -eq 1 ] && [ "$1" = "/usecurrent" ]; then
+        usecurrent=1
+    elif [ "$#" -ne 0 ]; then
         z_usage >&2
         exit 2
     fi
-    if [ ! -f "$cpmsim_distribution" ]; then
+    if [ "$usecurrent" -eq 0 ] && [ ! -f "$cpmsim_distribution" ]; then
         echo "$prog z: distribution image not found: $cpmsim_distribution" >&2
         echo "$prog z: run '$prog build' first" >&2
         exit 1
@@ -330,14 +348,29 @@ cmd_z()
         exit 1
     fi
     local drivea="$disksloc/drivea.dsk"
-    if [ -e "$drivea" ] && [ ! -L "$drivea" ]; then
-        echo "$prog z: refusing to replace non-symlink drive A: $drivea" >&2
-        exit 1
+    if [ "$usecurrent" -eq 1 ]; then
+        if [ ! -f "$drivea" ]; then
+            echo "$prog z: current drive A image not found: $drivea" >&2
+            exit 1
+        fi
+        local letter current
+        for letter in a b c d; do
+            current="$disksloc/drive$letter.dsk"
+            if { [ -e "$current" ] || [ -L "$current" ]; } && [ ! -f "$current" ]; then
+                echo "$prog z: current drive $letter is not a valid image: $current" >&2
+                exit 1
+            fi
+        done
+    else
+        if [ -e "$drivea" ] && [ ! -L "$drivea" ]; then
+            echo "$prog z: refusing to replace non-symlink drive A: $drivea" >&2
+            exit 1
+        fi
+        mount_utilities_b
+        mount_utilities_c
+        ln -sfn "$cpmsim_distribution" "$drivea"
+        printf 'drivea.dsk -> %s\n' "$cpmsim_distribution"
     fi
-    mount_utilities_b
-    mount_utilities_c
-    ln -sfn "$cpmsim_distribution" "$drivea"
-    printf 'drivea.dsk -> %s\n' "$cpmsim_distribution"
     cd "$z80packloc"
     ./launch-z80pack.command
 }
@@ -666,11 +699,12 @@ cmd_mount()
 
     local drive
     case "$1" in
-        b|c|d)
-            drive="drive$1.dsk"
-            ;;
+        a|A|a:|A:) drive="drivea.dsk" ;;
+        b|B|b:|B:) drive="driveb.dsk" ;;
+        c|C|c:|C:) drive="drivec.dsk" ;;
+        d|D|d:|D:) drive="drived.dsk" ;;
         *)
-            echo "$prog mount: drive must be b, c, or d" >&2
+            echo "$prog mount: drive must be a, b, c, or d (optional colon)" >&2
             echo >&2
             mount_usage >&2
             exit 1
@@ -686,7 +720,11 @@ cmd_mount()
 
     local image
     image="$(realpath "$2")"
-
+    mkdir -p "$disksloc"
+    if [ -e "$disksloc/$drive" ] && [ ! -L "$disksloc/$drive" ]; then
+        echo "$prog mount: refusing to replace non-symlink disk image: $disksloc/$drive" >&2
+        exit 1
+    fi
     ln -sfn "$image" "$disksloc/$drive"
     printf '%s -> %s\n' "$drive" "$image"
 }
