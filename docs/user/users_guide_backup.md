@@ -692,12 +692,11 @@ that DU. Column selection and sorting apply separately to each selected DU.
 Use `/C=1 /P` when you want a paged, one-file-per-line listing. The next command
 returns to automatic columns unless `/C=` is supplied again.
 
-After listing the selected DUs, DIR prints a separate free-space footer for
-each selected drive, for example `B: 94K FREE`. Free space belongs to the drive,
-so selecting B3 and B4 produces only one B: footer. This also applies when no
-files match. Free space always uses KiB, even with `/Z=S` or `/Z=E`; file counts and
-selected-file totals remain separate for each DU. DIR restores your original
-drive and user when finished.
+Each DU retains its heading and ends with a combined summary such as
+`---- 30 FILES, 184K TOTAL, 146K FREE ----`. File sizes are right-aligned;
+column separators remain ` : `. Empty listings report `NO FILE`, then free
+space. Free space repeats for each selected DU and always uses KiB, even
+with `/Z=S` or `/Z=E`. DIR restores your original drive and user when finished.
 
 It will not display or
 filter dates, timestamps or wheel-protection attributes in 1.0.
@@ -815,27 +814,23 @@ the next page; Ctrl-C aborts the listing and restores the caller's DU/context.
 DIR never changes file attributes or directory entries.
 
 Each summary counts only selected files. Per-file size and selected-file TOTAL
-use the same `/Z=` unit. A single-DU summary also reports the drive's free space;
-`1 FILE` uses singular wording. No matches reports `NO FILE`.
+use the same `/Z=` unit; free space always uses KiB. `1 FILE` uses singular
+wording. No matches reports `NO FILE` followed by free space.
 
 For multi-DU selectors, DIR lists and sorts each DU separately, with a heading:
 
 ```text
 B3:
-B: BAR      COM   8K : FOO      COM   6K
-2 FILES, 14K TOTAL
+BAR      COM   8K : FOO      COM   6K
+---- 2 FILES, 14K TOTAL, 94K FREE ----
 
 B4:
-B: TEST     COM   4K : UTIL     COM   7K
-2 FILES, 11K TOTAL
-
-B: 25K SELECTED, 94K FREE
+TEST     COM   4K : UTIL     COM   7K
+---- 2 FILES, 11K TOTAL, 94K FREE ----
 ```
 
-The example uses illustrative values. Free space belongs to the drive, not to
-an individual user area, so it is reported once per selected drive rather than
-repeated after every DU. An empty DU does not stop later selected DUs. DIR does
-not merge all DUs into one listing or sort across them.
+The example uses illustrative values. An empty DU does not stop later selected
+DUs. DIR does not merge all DUs into one listing or sort across them.
 
 The default transient presentation is name-sorted, with K sizes, attributes
 hidden, paging off, automatic columns and summaries on. Precise record/extent

@@ -24,12 +24,12 @@ START:
         LD (HL),0
         LDIR
         CALL TOKENIZE
-        LD HL,OPVER
-        CALL QUERY
-        JP Z,VERSION
         LD HL,OPHELP
         CALL QUERY
         JP Z,HELP
+        LD HL,OPVER
+        CALL QUERY
+        JP Z,VERSION
         LD C,25
         CALL SERVICE
         LD (ODRIVE),A

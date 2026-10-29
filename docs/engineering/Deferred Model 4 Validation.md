@@ -29,3 +29,9 @@ above revisions with the latest packaged-inventory evidence and supplies the
 manual campaign and result-record requirements. All rows remain PENDING until
 actual execution is recorded. Its inventory hashes are reference identities,
 not new Model 4 test results or acceptance of an uninspected package.
+
+## Manual execution begun 2026-10-29
+
+[Partial manual results](Model4-Manual-2026-10-29.md) record observed query
+passes and the COMPARE 002 HELP-precedence failure. Remaining assertions stay
+pending; historical deferrals above are unchanged.

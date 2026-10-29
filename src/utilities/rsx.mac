@@ -80,7 +80,7 @@ RS_PARSE:                               ; parse manager operation
         LD      C,7
         CALL    RS_PREFIX
         JR      Z,RS_UNLOAD
-        JR      RS_USAGE
+        JP      RS_USAGE
 
 ; ================================================================================
 ; =                             RSX Profile Listing                              =
@@ -143,6 +143,8 @@ RS_LDONE:                               ; finish RSX listing
         CALL    RS_PRINT
 
 RS_LTPA:                                ; report TPA after listing
+        LD      DE,RS_NL
+        CALL    RS_PRINT
         CALL    RS_TPA
         JR      RS_DONE
 

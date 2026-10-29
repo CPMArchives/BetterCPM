@@ -126,8 +126,14 @@ def main():
 
     def check_free(output,index,expected):
         import re
-        values=re.findall(r'^([A-P]): (\d+)K FREE\r?$',output,re.M)
-        drives=['A','B'] if index==2 else ['A']
+        values=[]
+        drive=None
+        for line in output.splitlines():
+            heading=re.fullmatch(r'([A-P])[0-9]+:',line)
+            if heading:drive=heading[1]
+            free=re.search(r'(\d+)K FREE',line)
+            if free:values.append((drive,free[1]))
+        drives=[['A'],['A','A'],['A','A','B','B'],['A','A']][index]
         assert values==[(drive,str(expected[drive])) for drive in drives],(index,values,expected,output)
 
     def check_order(output,index):
@@ -186,7 +192,9 @@ def main():
                 report/f'case-{i}.txt').decode(errors='replace')
             # Check only output after the completed command echo.
             output=text.rsplit(command+' ',1)[-1]
-            for value in required:assert value in output,(command,value,output)
+            # Right-aligned numeric padding varies with the widest selected file.
+            import re
+            for value in required:assert re.sub(' +',' ',value) in re.sub(' +',' ',output),(command,value,output)
             for value in excluded:assert value not in output,(command,value,output)
             if i==6 and not a.columns_only and not a.free_only and not a.edges_only and not a.extents_only:assert output.count('SIZMULT  DAT')==1,(command,output)
             if i==7 and not a.columns_only and not a.free_only and not a.edges_only and not a.extents_only:assert output.count('SIZMULT  DAT')==2,(command,output)

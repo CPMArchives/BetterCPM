@@ -53,10 +53,13 @@ HEADEROU:
         CALL PUT
         LD A,(NARROW)
         OR A
-        JR NZ,HEADERSA
+        JR NZ,HEADER40
         LD HL,LINE
         CALL TEXT
         CALL NL
+        JR HEADERSA
+HEADER40:
+        CALL TABLE40
 HEADERSA:
         LD A,(LEGACY)
         OR A
@@ -84,7 +87,7 @@ RESULTRO:
         CALL NL
         JR ROWSAVE
 ROWSTACK:
-        CALL STACKED
+        CALL TABLE40
 ROWSAVE:
         JP WLINE
 LEGACYRO:
@@ -187,58 +190,77 @@ REPEATPU:
         CALL PUT
         DJNZ REPEATPU
         RET
-STACKED:
-        ; Preserve the native row while rendering narrow console-only lines.
+ ; Render console slices of the native table; LINE remains unchanged for WLINE.
+TABLE40:
         LD HL,LINE
-        LD DE,ROWCOPY
-        LD BC,256
-        LDIR
-        CALL NEWLINE
-        CALL PUTNAME
-        CALL ENDLINE
-        CALL NEWLINE
-        LD HL,STACKREC
-        CALL PUTS
-        LD HL,RECS
-        XOR A
-        CALL PUTDEC
-        CALL ENDLINE
+        LD A,(HL)
+        CP ';'
+        JP Z,TABLETEXT
+        LD A,(RECSWIDT)
+        ADD A,14
+        LD (TABLEBASE),A
+        LD B,A
+        CALL TABLECHARS
+        LD A,(TABLEBASE)
+        LD (TABLECOL),A
         LD IX,FIELDTAB
-STACKNEX:
+TABLENEXT:
         LD A,(IX+0)
         OR (IX+1)
-        JR Z,STACKEND
-        LD A,(IX+5)
-        LD (FIELDBIT),A
+        JP Z,NL
         LD A,(ALGSEL)
+        AND (IX+5)
+        JR Z,TABLESKIP
+        LD A,(IX+2)
+        ADD A,2
+        LD (TABLEWIDTH),A
         LD B,A
-        LD A,(FIELDBIT)
-        AND B
-        JR Z,STACKSKI
-        CALL NEWLINE
-        CALL SPACE2
-        LD L,(IX+0)
-        LD H,(IX+1)
-        CALL PUTS
+        LD A,(TABLECOL)
+        ADD A,B
+        CP 41
+        JR C,TABLEFIT
+        PUSH HL
+        CALL NL
+        LD A,(TABLEBASE)
+        LD B,A
+TABLEPAD:
+        PUSH BC
         LD A,' '
-        CALL PUT
-        LD HL,CVALUES
-        LD E,(IX+3)
-        LD D,0
-        ADD HL,DE
-        LD B,(IX+4)
-        CALL FIELDHEX
-        CALL ENDLINE
-STACKSKI:
+        CALL CHAR
+        POP BC
+        DJNZ TABLEPAD
+        POP HL
+        LD A,(TABLEBASE)
+        LD (TABLECOL),A
+TABLEFIT:
+        LD A,(TABLEWIDTH)
+        LD B,A
+        CALL TABLECHARS
+        LD A,(TABLEWIDTH)
+        LD B,A
+        LD A,(TABLECOL)
+        ADD A,B
+        LD (TABLECOL),A
+TABLESKIP:
         LD DE,6
         ADD IX,DE
-        JR STACKNEX
-STACKEND:
-        LD HL,ROWCOPY
-        LD DE,LINE
-        LD BC,256
-        LDIR
+        JR TABLENEXT
+TABLECHARS:
+        LD A,(HL)
+        PUSH HL
+        PUSH BC
+        CALL CHAR
+        POP BC
+        POP HL
+        INC HL
+        DJNZ TABLECHARS
         RET
+TABLETEXT:
+        CALL TEXT
+        JP NL
+TABLEBASE: DB 0
+TABLECOL: DB 0
+TABLEWIDTH: DB 0
 TITLELIN: DB '; BetterCP/M CRC list',0
 NAMEHEAD: DB 'NAME     EXT',0
 NAMEDASH: DB '-------- ---',0

@@ -235,6 +235,8 @@ DT_TOTAL: DS 12
     decimal = (ROOT / 'src/cpx/copy-report.inc').read_text(encoding='ascii')
     decimal = decimal[decimal.index('CTR_DEC:\n'):decimal.index('CTR_RUN:')]
     decimal = decimal.replace('CTR_', 'DTD_')
+    decimal = decimal.replace('        LD HL,(DTD_PTR)\nDTD_DIGIT:',
+                              '        CALL DT_NUMPAD\n        LD HL,(DTD_PTR)\nDTD_DIGIT:')
     decimal += 'DTD_NUM: DS 4\nDTD_DIG: DS 10\nDTD_PTR: DW 0\nDT_BUFFER:\n'
     return text.replace('        END\n', hook + options + metrics + paging + columns + free + whereis + decimal + '\n        END\n', 1)
 
