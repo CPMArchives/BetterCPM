@@ -47,7 +47,7 @@
       "builders": [
         "tools/build_rcp_transients.py"
       ],
-      "revision": 9,
+      "revision": 10,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -183,7 +183,7 @@
       "builders": [
         "tools/build_rsx_utilities.py"
       ],
-      "revision": 5,
+      "revision": 6,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -967,7 +967,7 @@
       "builders": [
         "tools/build_compare.py"
       ],
-      "revision": 2,
+      "revision": 3,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "explicit selected dependency closure",
@@ -1014,7 +1014,7 @@
       "builders": [
         "tools/build_crc.py"
       ],
-      "revision": 6,
+      "revision": 7,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "tracked-conservative; shared DU/filespec/attribute parser and FCB builder",
