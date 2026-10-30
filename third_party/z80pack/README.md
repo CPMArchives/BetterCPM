@@ -61,3 +61,34 @@ do not claim an untested binary inherits the installed emulator's acceptance.
 
 Upstream's MIT-style license is retained in `LICENSE`. This directory ships
 provenance and patches, not an upstream source or executable distribution.
+
+## Live media changes
+
+`0004-live-media.patch` opens the currently assigned raw image for each
+synchronous disk command and closes it after the transfer. This applies to
+runtime and qualification builds. Geometry interface version 2 is unchanged.
+Images may be absent at startup and inserted later. Missing, inaccessible or
+non-regular files return disk errors; read commands use read-only access and
+writes require read/write access. There is no full-size image requirement.
+
+Replace a drive link (for example with `bcpm mount d /path/to/image`) while
+at the guest command prompt, then press Ctrl-C to reset/re-log guest disk state.
+Finish application writes before swapping media. Changing format also requires
+selecting the matching guest format. A warm boot which reads A: requires a
+compatible bootable system disk to remain in A:.
+
+The emulator holds one descriptor for a whole command, so a link replacement
+cannot redirect a partially completed command. There is no deferred write queue
+in this controller; guest-side buffered writes still require normal CP/M care.
+Each transfer now incurs an open/close pair; no performance equivalence claim
+is made. The original unmodified upstream remains available separately.
+
+Run the focused media regression against either built profile:
+
+```sh
+python3 tools/test_cpmsim_live_media.py --simulator /path/to/cpmsim
+```
+
+It tests initially empty drives, atomic link replacement, ejection, reinsertion,
+read-only reads and write rejection, writable transfers and shortened media,
+all within one emulator process using disposable images.
