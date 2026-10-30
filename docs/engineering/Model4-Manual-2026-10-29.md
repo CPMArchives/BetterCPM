@@ -402,3 +402,378 @@ and COMPARE 003; regenerate/check all projections and rebuild. Add executed
 The corrected banners pass their compiled-code query paths. Previous image
 identity is superseded for further manual validation once a corrected candidate
 is provided; all affected Model 4 revalidation remains pending.
+
+## 30 October: corrected candidate loaded; empty DIR presentation update
+
+Screenshots 8.14.07 AM (libfile_1317af565f548191be2d6446df070b03) and
+8.14.28 AM (libfile_fbb5bf4884148191b60ab71b50e9b626) confirm DIR 010-dev,
+RSX 006-dev, CRCKSUM 007-dev and COMPARE 003-dev after the maintainer replaced
+the extracted packages and restarted/remounted in trs80gp. These are the
+expected identities for replacement candidate bfe45564609ae41d30d5abad696114442e0a2d22.
+This confirms version queries only, not full runtime qualification.
+
+Pending DIR.COM stabilization update (maintainer-approved): an empty DU must
+place NO FILE on the DU heading line and frame its free-space footer:
+
+```text
+D0: NO FILE
+---- 796K FREE ----
+```
+
+The maintainer reports the current output as `D0:`, a blank line, `NO FILE`,
+then `796K FREE`. The approved layout saves **two screen rows**. Free-space
+values remain dynamic. Implementation and affected regression/Model 4
+presentation revalidation remain pending; do not mark this revised format passed.
+
+### Corrected-candidate presentation retests
+
+- DIR 010-dev: maintainer confirms right-justified file sizes and free space
+  in the populated-DU combined footer. PASS for these presentation checks only.
+  The approved empty-DU layout above remains pending.
+- RSX 006-dev: maintainer confirms `A:RSX LIST` puts TPA available on its own
+  line below the loaded RSXs. PASS for the line-break check, by maintainer
+  report. Screenshot 9.50.57 AM (libfile_b5e01a677ff48191bac9e5aafa26a549)
+  also records RSX LIST; this is not COMPARE help evidence.
+- COMPARE 003-dev: mixed `/VER /HELP /BOGUS` help-precedence retest requested;
+  result not yet established.
+
+PASS (COMPARE 003-dev help precedence): screenshot 9.52.21 AM,
+libfile_8fc6edddb66481918b1f4f5c3f79a320, shows the exact command
+`C:COMPARE /VER /HELP /BOGUS` displaying the COMPARE help screen, including
+usage and options. This supersedes the pending status above for this specific
+retest. The previous assistant response inspected the older RSX screenshot;
+that was an evidence-selection error, not a missing maintainer test.
+
+PASS (CRCKSUM 007-dev /40 wrapped table, one fixture): screenshot 9.56.41 AM,
+libfile_5a3715b83ee48191b208b9d7a2602976, shows
+`B:CRCKSUM A:STARTUP.SUB /40`. Headings, separator groups and values wrap
+under the first checksum column; filename and record count appear once.
+One record, one file calculated. Visible values match the historical fixture:
+CRCK 73B2, CRCK5 E958, CHEK 143C, CRC32 2A5741FF, SUM8 3B,
+SUM16 0C3B, KERM6 3B, KERM12 C3B. This passes the specific narrow-table
+presentation retest, not the remaining list/error cases.
+
+CORRECTION — CRCKSUM 007-dev /40 presentation FAIL: the preceding PASS was
+incorrect. Preserve it as historical assessment, superseded by this correction.
+The maintainer identifies two defects: wrapped groups use different column
+positions/widths, and output emits all headings, then all separators, then all
+values. Required presentation is complete heading/separator/value blocks for
+each group, with shared column positions across blocks and every line within
+40 columns. Filename/record fields appear in the first block; subsequent
+blocks align checksum columns beneath those of the first. The maintainer's
+illustration expresses grouping intent but is explicitly too wide, not a
+literal accepted 40-column layout. Implementation and runtime retest pending.
+The newly pasted STARTUP.SUB values differ from the earlier screenshot;
+do not apply the earlier fixture oracle to this paste without checking bytes.
+
+LOCKED /40 presentation (maintainer approval): two checksum columns per block,
+each eight characters wide, separated by two spaces, beginning at column 20
+and column 30 (one-based). This gives a maximum line width of 37 characters.
+Each block emits its own headings, separators and values; retain a blank line
+between blocks. Filename, extension and record count appear in the first block
+only. Later blocks indent to the same checksum column positions. Eight dashes
+mark each checksum column. Preserve command-line algorithm selection and order:
+group the selected algorithms in that order, two per block, rather than forcing
+the example's default order. An odd final group contains one checksum column.
+This specification is approved; implementation and qualification remain pending.
+
+PASS (CRCKSUM 007-dev eight-checksum MATCH wording): screenshot 10.25.19 AM,
+libfile_67e8a47cbf6881918194556ab2bc4a32, records PIP copying STARTUP.SUB
+from A: to D:, `/LOCAL=CRC.LST` reporting one file calculated and one list
+written, then `/CHECK=CRC.LST` resolving D0:CRC.LST and reporting
+`STARTUP.SUB: MATCH (all 8 checksums)` and `1 verified.` The count for a
+selected subset remains to be retested on this revision.
+
+PASS (CRCKSUM 007-dev selected-list checksum count): screenshot 10.29.31 AM,
+libfile_6ee8a008f5bc8191bb29beb83ae1a019, shows D:STARTUP.SUB with
+`/CRCK /SUM16 /KERM6 /LOCAL=THREE.LST`, one file calculated and one list
+written. `/CHECK=THREE.LST` resolves D0:THREE.LST and reports
+`STARTUP.SUB: MATCH (all 3 checksums)` and `1 verified.` Together with the
+preceding eight-checksum case, this passes the tested dynamic-count wording.
+
+PASS (CRCKSUM 007-dev missing explicit reference list): screenshot 10.33.17 AM,
+libfile_41bd341bae088191be532b7c3cd19e0b, shows the corrected command
+`B:CRCKSUM D:STARTUP.SUB /CHECK=ABSENT.LST`, reference D0:ABSENT.LST,
+`Cannot open reference list`, and
+`No files verified; 1 DU/reference error; incomplete.` No bogus line number
+or cascading FILE NOT LISTED diagnostic appears. An earlier mistyped command
+is rejected as invalid and is not the reference-open test result.
+
+PASS (NOAH 019-dev, candidate bfe4556, single-member LBR smoke checks):
+- 10.37.25 AM, libfile_0144dfcfa3d0819197871b9e22308ebf:
+  from C0:, `/ADD D:TEST.LBR D:STARTUP.SUB` creates the LBR, reports
+  verified/published, one completed source, zero failed, outcome success.
+- 10.38.03 AM, libfile_8ef8a6be0910819197685b2e2bec8d08:
+  `/LIST D:TEST.LBR` lists STARTUP.SUB as 00000080 hex bytes (128), one
+  member, outcome success; explicitly does not claim contents/CRCs tested.
+- 10.38.39 AM, libfile_e8fb7b4611d481919bc487161f7fb11c:
+  `/TEST D:TEST.LBR` reports STARTUP.SUB CRC verified, two known CRC regions
+  verified, zero unavailable/ambiguous, outcome success.
+All three screenshots visually inspected. Extraction and byte roundtrip,
+ARK/compression, remove/compact and failure-path coverage remain pending.
+
+### Pending NOAH presentation stabilization — approved first attempt
+
+The maintainer accepts the ADD/LIST/TEST functional results but rejects the
+cluttered normal output. Approved first revision: decimal user-facing counts
+and sizes, concise per-file results and one operation summary. Remove normal
+success-path internal bookkeeping (hex counters, accepted-source/candidate
+counts, repeated disposition/outcome totals and zero recovery-artifact counts).
+Proposed normal output, approved as a first attempt for review:
+
+```text
+Added STARTUP.SUB to D0:TEST.LBR
+1 file added.
+```
+
+```text
+Archive D0:TEST.LBR
+NAME         BYTES
+STARTUP.SUB     128
+1 file listed.
+```
+
+```text
+STARTUP.SUB: CRC OK
+1 file verified.
+```
+
+Retain explicit errors, incomplete verification/CRC coverage limitations,
+skipped/failed operations, and actionable nonzero recovery-artifact information.
+LIST must not imply integrity verification. Preserve the functional passes
+above. Implementation, output review and affected regression/runtime retests
+remain pending; no new option or diagnostic-mode feature is implied.
+
+PASS (NOAH 019-dev LBR extraction to another user area): screenshots
+10.45.38 AM (libfile_19e3ffcccef48191a52fa20c2c114477) and
+10.46.07 AM (libfile_a3684d7a147c819181fa6e3c64fd1a01) show
+D1:STARTUP.SUB extracted and verified, outcome success, followed by DIR D1:
+listing STARTUP.SUB. This establishes extraction and destination user-area
+placement. Independent CRCKSUM comparison against D0:CRC.LST is not shown
+and remains pending; do not infer it from NOAH's internal CRC verification.
+
+Validation instruction correction: screenshot 10.54.34 AM,
+libfile_81d6f75f1d7c8191b7c8bb44b76859a5, shows cpmsim and trs80gp rejecting
+`B:CRCKSUM D1:STARTUP.SUB /CHECK=D0:CRC.LST` as invalid. The assistant supplied
+unsupported syntax: /CHECK accepts a filename only, resolved in the target DU;
+a DU qualifier is explicitly rejected by the documented contract and regression
+suite. This is expected parser behavior, not evidence of a platform or NOAH
+extraction defect. Independent extraction verification remains pending: copy
+D0:CRC.LST to D1:CRC.LST, then check D1:STARTUP.SUB with /CHECK=CRC.LST.
+
+PASS (NOAH extraction independently checked with CRCKSUM 007-dev): screenshot
+11.08.03 AM, libfile_0183767a1058819192ed5714a2823f46, shows COPY moving
+D0:CRC.LST to D1:CRC.LST, then
+`B:CRCKSUM D1:STARTUP.SUB /CHECK=CRC.LST`, reference D1:CRC.LST,
+`STARTUP.SUB: MATCH (all 8 checksums)` and `1 verified.` This completes the
+single-member LBR ADD/LIST/TEST/EXTRACT checksum roundtrip on Model 4. The
+screenshot does not independently establish a successful cpmsim roundtrip.
+
+PASS (NOAH 019-dev single-member uncompressed ARK creation/integrity):
+screenshot 11.11.42 AM, libfile_25b96ed1b9008191a09075d05348ae9b,
+shows ARC update verified and published, one completed candidate and outcome
+success, followed by `/TEST D:TEST.ARK` listing STARTUP.SUB, CRC verified,
+and outcome success. ADD command itself is above the visible crop; command
+context is the requested `/ADD D:TEST.ARK D:STARTUP.SUB`. Compressed ARK
+and independent extraction roundtrip are not established by this result.
+
+PASS (NOAH 019-dev explicit /SQ ARK creation, one tiny fixture): screenshot
+11.15.38 AM, libfile_9a29917176288191a01e200541c54400, shows
+`NOAH /ADD /SQ D:SQUEEZE.ARK D:STARTUP.SUB`, warns explicit compression
+increased stored size, then reports ARC update verified/published and outcome
+success. The requested separate `/TEST D:SQUEEZE.ARK` is not visible;
+its result remains pending. Size increase alone is not a defect for this small
+fixture with explicitly requested compression.
+
+PASS (NOAH 019-dev squeezed ARK integrity): screenshot 11.16.42 AM,
+libfile_dc4c14e521a4819180f44d60e4e0d24c, shows
+`NOAH /TEST D:SQUEEZE.ARK`, STARTUP.SUB CRC verified, outcome success.
+Maintainer also confirms the test passed. Presentation remains rejected:
+apply the approved concise NOAH output revision to compressed ARK operations
+as well as LBR and uncompressed ARK. Retain actionable compression-size
+warnings, errors and integrity limitations. Functional success does not close
+the pending presentation fix or establish an extraction roundtrip for this ARK.
+
+PASS (NOAH 019-dev squeezed ARK extraction to D2:): screenshot 11.27.09 AM,
+libfile_8fda892a2f6881919a29135a4a8ed79a, shows
+`NOAH /EXTRACT D:SQUEEZE.ARK D2:`, D2:STARTUP.SUB extracted and verified,
+and outcome success. Independent CRCKSUM verification is not visible and
+remains pending; normal-output cleanup remains pending as already approved.
+
+PASS (NOAH 019-dev squeezed ARK extraction independently checked): screenshots
+11.29.57 AM (libfile_81c5bac6a2108191a55d96a5f672b3c5) and
+12.30.00 PM (libfile_31edfdfbf8e881918a8e9f2a40d1e01b) show the reference
+copied into D2:, followed by CRCKSUM 007-dev checking D2:STARTUP.SUB against
+D2:CRC.LST and reporting MATCH (all 8 checksums), 1 verified. The later image
+also shows COPY's existing-destination help/re-prompt and overwrite, and an
+initial mistyped checksum command rejected before the corrected command passes.
+This completes the tested single-member squeezed ARK roundtrip. Presentation
+cleanup and other NOAH operation/format coverage remain pending.
+
+Pending COPY.COM stabilization: maintainer clarifies the main `/HELP` screen
+needs updating, not merely overwrite-prompt `?` help. Reconcile it with the
+implemented options /O, /S, /B, /V, /BACKUP and /HELP, /VER query conventions,
+and the agreed Utilities help presentation. No new command-line options are
+requested. Source of supported operational flags: src/cpx/copy-options.inc;
+reference: users_guide.md COPY.COM Options.
+
+PASS (NOAH 019-dev crunched ARK creation/integrity smoke check): screenshot
+12.38.24 PM, libfile_3238f3ae833081918e2d034f7e185ba4, shows ARC update
+verified/published and outcome success, followed by `/TEST D:CRUNCH.ARK`,
+STARTUP.SUB CRC verified and outcome success. The ADD command line is cropped;
+context is the requested `/ADD /CR D:CRUNCH.ARK D:STARTUP.SUB`. Independent
+extraction/checksum roundtrip remains pending.
+
+COPY help evidence: screenshot 12.31.59 PM,
+libfile_6bd5888e0bbc819181b8c9d998ef59d2, shows `:COPY /HELP` printing only
+the terse COPY syntax with /O, /S, /B and /V. This supports the pending main
+help-screen consistency update, including documenting /BACKUP and query options.
+
+### NOAH option aliases proposed during manual validation
+
+The normal-output cleanup is already recorded above as an approved pending
+NOAH presentation stabilization fix; it is not implemented yet.
+Maintainer requests these additional NOAH synonyms, retaining existing names:
+/L for /LIST, /A for /ADD, /QUIET for /Q, /H for /HELP, and /V for /VER.
+Retain existing /T and /X aliases, all other option meanings and existing
+ambiguity/protection rules. Reconcile parser, help and manual; affected query
+precedence and alias checks plus changed-binary runtime validation are needed.
+Do not silently apply /V as version system-wide: COPY already uses /V for
+read-back verification. A universal alias policy is not yet resolved; /VER
+remains the unambiguous version spelling. No repository-wide alias rollout
+is authorized by this NOAH-specific proposal alone.
+
+Alias decision superseding the /V proposal above: maintainer rejects inconsistent
+/V-as-version behavior across utilities. Do not add NOAH /V as a /VER alias;
+retain /VER for version queries and existing /V operational meanings (including
+COPY verification). Reserve /H universally for help in BetterCP/M-owned command
+interfaces, as an alias for /HELP. Audit existing /H uses before implementation
+and surface any conflict rather than silently changing an established operation.
+This is a pending consistency update, not a claim that /H already works across
+the current candidate. Third-party commands retaining their historical syntax
+are outside an automatic rewrite. NOAH /L, /A and /QUIET aliases remain pending.
+
+Maintainer confirms pending task grouping:
+- NOAH updates: approved concise output cleanup plus /L = /LIST,
+  /A = /ADD, /QUIET = /Q and /H = /HELP. Retain /T and /X.
+  Do not add /V as a version alias; /VER remains unchanged.
+- Later utility-wide consistency task: add /H as /HELP alias to all
+  BetterCP/M-owned utilities, after auditing conflicts, and update help/manuals
+  with affected regression checks. Record for later execution; not an immediate
+  expansion of this manual validation step or a claim of current support.
+
+PASS (NOAH 019-dev crunched ARK extraction): screenshot 12.41.22 PM,
+libfile_55bc094117e081918b0eca0869063878, shows D3:STARTUP.SUB extracted
+and verified from D:CRUNCH.ARK, outcome success. Independent CRCKSUM result
+is not visible and remains pending.
+
+Maintainer directs: finish the NOAH manual checks, then push pending work,
+then implement the marked stabilization updates. Preserve qualification scope
+and repeat affected checks for changed binaries; do not merge on their behalf.
+
+PASS (NOAH 019-dev crunched ARK extraction independently checked): screenshot
+12.53.26 PM, libfile_9b40e8fc05e08191b99994ceb968506a, shows COPY of
+D0:CRC.LST to D3:CRC.LST and CRCKSUM 007-dev checking D3:STARTUP.SUB against
+D3:CRC.LST: MATCH (all 8 checksums), 1 verified. Completes the tested
+single-member crunched ARK roundtrip; no broader format/fixture claim implied.
+
+Screenshot 12.56.34 PM, libfile_e1cec01cdcd081919849b4a074f162b8, shows
+`NOAH /LIST D:TEST.LBR` still listing STARTUP.SUB, outcome success, following
+the requested declined-removal test. The removal prompt/decline itself is not
+visible, so this records member presence only; decline response awaits maintainer
+confirmation. Maintainer again flags verbose output: the approved NOAH cleanup
+includes REMOVE/decline summaries and subsequent LIST output, not only ADD/TEST.
+
+PASS (NOAH 019-dev declined LBR removal): maintainer explicitly confirms
+ declining the `/REMOVE D:TEST.LBR STARTUP.SUB` confirmation. Combined with
+12.56.34 PM screenshot showing STARTUP.SUB still listed, this closes the
+pending decline confirmation above. Evidence combines maintainer report of
+response with screenshot of subsequent member presence; no byte-identity claim.
+
+NOAH 019-dev compaction observations: 12.59.32 PM screenshot
+libfile_f52bfbc126908191bf051758425b8de4 shows `/COMPACT D:TEST.LBR`
+rebuilding and reporting verified/published, outcome success. 1.00.29 PM
+screenshot libfile_56137f5cfb448191aa22d8973a9088d1 shows subsequent LIST
+still containing STARTUP.SUB. Thus compaction completes with an active member;
+these images do not establish approved removal, empty-archive compaction or
+post-compaction TEST. Do not label removal failed without evidence that its
+confirmation was accepted. Request exact REMOVE command and Y response.
+
+Additional NOAH 019-dev evidence:
+- 1.01.59 PM, libfile_6cb4933723dc81918e2b177cde7628fc: post-compaction
+  TEST verifies STARTUP.SUB CRC and reports success. This establishes integrity
+  of the populated compacted LBR, not an empty archive.
+- 1.11.15 PM, libfile_59f6afe7cd248191b417f9c46521eb7a: exact
+  `/REMOVE D:TEST.LBR STARTUP.SUB`, listed member and explicit Y confirmation,
+  LBR update verified/published and outcome success. PASS for approved removal
+  execution; subsequent LIST must confirm member absence.
+
+PASS (NOAH 019-dev approved LBR removal, member absence): 1.15.16 PM
+screenshot libfile_69bbcc21c8e081919840836cec2b4bcd shows subsequent
+`/LIST D:TEST.LBR` with no member rows and zero listed members. Combined
+with the explicit Y/update evidence at 1.11.15 PM, removal is established.
+An empty LIST currently emits warning/no-work and a generic warnings/skips/CRC
+coverage message; include this misleading empty-list presentation in the
+approved NOAH cleanup. Do not treat it as evidence of archive corruption.
+Empty-archive COMPACT and TEST remain pending.
+
+PASS (NOAH 019-dev empty LBR COMPACT and structural TEST): 1.22.08 PM
+screenshot libfile_a2cd2d789050819193a8d0e7f0d7769a shows explicit Y to
+COMPACT, verified/published update and success. 1.24.14 PM screenshot
+libfile_07dbff3b60d88191b358a5c2832166da shows subsequent TEST checking
+structure/readability with zero member rows, a verified known CRC region and
+zero unavailable/ambiguous regions. Empty selection yields warning/no-work;
+retain this as observed status, with its misleading generic warning text in
+the pending presentation cleanup. No member payload was verified in this empty
+archive; this closes only the empty-archive structural/compaction smoke check.
+
+PASS (NOAH 019-dev repeated replacement help and N choice): screenshot
+1.26.55 PM, libfile_9aaae6daef9c81918716628c4c6d2933, shows
+`/EXTRACT D:TEST.ARK D1:`, two successive ? responses each displaying
+Y/N/A/C/? help and returning to the same D1:STARTUP.SUB replacement prompt,
+then N producing replacement declined/skipped, zero extracted and one skipped.
+Post-decline file checksums have not yet been rechecked. Verbose outcome/skip
+reporting remains within the approved presentation cleanup.
+
+PASS (post-prompt destination integrity): 1.28.48 PM screenshot
+libfile_4b16b24bd3108191bc99d34ca07cc6c8 shows CRCKSUM 007-dev checking
+D1:STARTUP.SUB against D1:CRC.LST: MATCH (all 8 checksums), 1 verified.
+This establishes retained file integrity after the observed repeated-help/N
+sequence. The requested C cancellation prompt/result is not visible; cancellation
+itself remains pending confirmation and must not be inferred from MATCH alone.
+
+PASS (NOAH 019-dev replacement C cancellation): 1.30.56 PM screenshot
+libfile_19316f6dcb7c81919bd972b9525565de shows `/EXTRACT D:TEST.ARK D1:`,
+? help returning to the same D1:STARTUP.SUB prompt, then C and
+`NOAH: Extraction cancelled.` with `Outcome: cancellation.` The earlier
+1.28.48 PM checksum preceded this cancellation and must not be claimed as
+post-cancellation integrity evidence. That final integrity check remains pending.
+
+PASS (post-C-cancellation destination integrity): 1.32.30 PM screenshot
+libfile_9fc3bd40e69c8191aab4b1d1b6e6acc2 shows CRCKSUM 007-dev checking
+D1:STARTUP.SUB against D1:CRC.LST after the observed C cancellation:
+MATCH (all 8 checksums), 1 verified. This closes the cancellation integrity
+check without reusing the earlier pre-cancellation result.
+
+## Reduced remaining manual acceptance scope — 2026-10-30
+
+The maintainer cannot spend days on manual validation and directs that only a
+few of the most important checks remain. The remaining manual campaign is:
+
+1. PATCH: apply a small valid patch and independently verify output bytes.
+2. PATCH: reject mismatched input and verify existing files are preserved.
+3. DSYM: convert a valid matching sample and inspect generated symbols.
+4. After stabilization fixes, boot the updated packaged images and inspect
+   DIR's empty listing, CRCKSUM /40, NOAH output and COPY help.
+
+No further NOAH checks are required on the current candidate for this reduced
+campaign. Existing results remain limited to the specific operations, fixtures
+and revisions recorded above. Unexecuted recovery, protection, large-file,
+boundary and other original checklist assertions remain untested; they are not
+converted to PASS. This scope decision supersedes the remaining manual workload,
+not historical evidence or final artifact identity and packaging requirements.
+
+Pending implementation remains DIR empty-DU presentation, CRCKSUM /40 grouped
+tables, NOAH output cleanup and aliases, and COPY help. Utility-wide /H remains
+a separately recorded later consistency task. These changes have not been
+implemented or validated by this documentation update.
