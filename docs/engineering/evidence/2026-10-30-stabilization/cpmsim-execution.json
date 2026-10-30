@@ -1,0 +1,43 @@
+{
+  "platform": "z80pack",
+  "automation_limits": {
+    "wall_seconds": 180,
+    "input_wait_frames": 60000
+  },
+  "system_sha256": "287b7613d98fc443d162c78c5d32622679b53b03a96e7dd12fd5320ff8ae6f13",
+  "utilities_sha256": "dffaf301d7068f4843399f79cf406977038d310b8a81ee9f38d8b023aa4bffd5",
+  "commands": [
+    ":DIR C2:",
+    ":COPY /HELP /VER /BOGUS",
+    "CRCKSUM INPUT.BIN /40",
+    "NOAH /H /VER /BOGUS",
+    "NOAH /A /Y TEST.LBR INPUT.BIN",
+    "NOAH /L TEST.LBR",
+    "NOAH /T TEST.LBR",
+    "NOAH /QUIET /X /Y TEST.LBR C1:"
+  ],
+  "utilities_members": {},
+  "input_hashes": {
+    "NOAH.COM": "2b410204b34f36e0e7ce869c61f7b6f7b357dc645c53029c889973ce2c290597",
+    "NOAH.OVL": "fc46866df0ba35945bfa46afec6f6e5196081010ff4916e2f5732eabdc086e81",
+    "DIR.COM": "8f22a37a5f2e6cd47a0cd80cc5e1089b78a7d2e3b4dea34c8d4fd0c7c5533de2",
+    "COPY.COM": "05893b59175fd07156c2fe65fb5e42b25ec9d53c6d9c16097c0b217f41f8d35d",
+    "CRCKSUM.COM": "a2808bc404d8b084acc0c2dc0fe60673e3564429360f4e3e8b69c171227a94be",
+    "INPUT.BIN": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+    "DM0.COM": "c9f2fdb023a655fc7d62122673ab4d37278f960da8675b4a2ca0d4862a72c7db",
+    "DM1.COM": "e75def31451a32b4ba31e3292b3d061a70e78396254b1327d6c2172c4a0baa41",
+    "DM2.COM": "8dcd39cb63f6f6f1c8c0cf5df47109cdcc919bfc8cc255bba634e5c43389283e",
+    "DM3.COM": "7874be7cafbd90896423aaf9decb57f26e4f0ea7033b5a62153cd9abb97c71df",
+    "DM4.COM": "7c07694c4668ea9ba1e3cf92211ef9176fc1bde7a852b7cb1efe17a6b531b4a9",
+    "DM5.COM": "64ca843920037ee23f316ab9777618df549d656b6945802fa12ae87e9233f19d",
+    "DM6.COM": "e51bb2c3cc907f965cec444f8c61fa0575f7b051cd450c72a78664c5d08afc45",
+    "DM7.COM": "252890d58c0f5dd154ae1ee8ec8d4d58b0ac24432251cb44da078957dc385dc1",
+    "QUALIFY.SUB": "8164e70f86ae26785e35671c0c055a795e9b65b0ca8a24217b6837c1d6b117b5"
+  },
+  "emulator_sha256": "b91a99964db2492b2ad99bde68952a616a12c3d28f342f03341199ba5462a6c4",
+  "outputs": {
+    "TEST.LBR": "59c2dc38674b5e1a96456ec916aae4be6e3bdef5ef13e4b49b50d99670952778"
+  },
+  "console_sha256": "54623aa1aaa99d2e2d0aa0dcc57dd2bcf7936129fce38406945032c6f58bdaf1",
+  "original_media_unchanged": true
+}

@@ -1,0 +1,16 @@
+{
+  "scope": "new transient utilities on cpmsim with recorded preexisting system image; not a packaged candidate or Model 4 pass",
+  "commands": [
+    ":DIR C2:",
+    ":COPY /HELP /VER /BOGUS",
+    "CRCKSUM INPUT.BIN /40",
+    "NOAH /H /VER /BOGUS",
+    "NOAH /A /Y TEST.LBR INPUT.BIN",
+    "NOAH /L TEST.LBR",
+    "NOAH /T TEST.LBR",
+    "NOAH /QUIET /X /Y TEST.LBR C1:"
+  ],
+  "input_sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+  "extracted_sha256": "471fb943aa23c511f6f72f8d1652d9c880cfa392ad80503120547703e56a2be5",
+  "status": "PASS"
+}

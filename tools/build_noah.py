@@ -24,10 +24,10 @@ def help_text():
         ' | Archive Utility\r\n |\r\n'
         ' |   Usage: NOAH [operation] operands [options]\r\n\r\n'
         '   Options:\r\n'
-        '     /LIST              List archive members.\r\n'
+        '     /LIST /L           List archive members.\r\n'
         '     /TEST /T           Test member data and integrity.\r\n'
         '     /EXTRACT /X        Extract selected members.\r\n'
-        '     /ADD               Add files to one archive.\r\n'
+        '     /ADD /A            Add files to one archive.\r\n'
         '     /REMOVE            Remove selected members.\r\n'
         '     /COMPACT           Rebuild without deleted data.\r\n'
         '     /SQ /CR /EXPAND    Compress or expand files.\r\n'
@@ -35,8 +35,8 @@ def help_text():
         '     /FORMAT=LBR|ARK    Set format for an unknown extension.\r\n'
         '     /Y                 Approve ordinary replacements.\r\n'
         '     /R /SYS            Enable protected-file questions.\r\n'
-        '     /Q                 Suppress routine progress.\r\n\r\n'
-        '     /HELP              Display this help.\r\n'
+        '     /Q /QUIET          Suppress routine progress.\r\n\r\n'
+        '     /H /HELP           Display this help.\r\n'
         '     /VER               Display utility identification.\r\n')
 
 

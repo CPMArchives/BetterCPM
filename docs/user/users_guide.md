@@ -5577,7 +5577,7 @@ Each DU keeps its heading above the files. File sizes are right-aligned within t
 ---- 30 FILES, 184K TOTAL, 146K FREE ----
 ```
 
-Free space is included for each selected user area. An empty listing reports `NO FILE`, followed by its free space. Free space always uses KiB, regardless of the selected file-size unit.
+Free space is included for each selected user area. An empty listing uses two rows: `D0: NO FILE`, then a footer such as `---- 796K FREE ----`. Free space always uses KiB, regardless of the selected file-size unit.
 
 ##### Examples
 
@@ -6435,6 +6435,8 @@ However, COPY.COM supports additional source-selection, destination-naming, and 
 | `/B` | Operate without file-collision prompts |
 | `/V` | Verify copied files by reading and comparing their contents |
 | `/BACKUP` | Clear the archive attribute after successful backup copying |
+| `/HELP` | Display the full quick reference without copying files |
+| `/VER` | Display utility identification without copying files |
 
 The `/O` and `/S` options are mutually exclusive.
 

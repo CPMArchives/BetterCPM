@@ -10,21 +10,22 @@ def tests(m):
     first=diskkey(3,'FIRST.DAT',3); second=diskkey(3,'SECOND.DAT',3)
     raw=with_crcs(archive([entry(b'FIRST   DAT',start=1),entry(b'SECOND  DAT',start=2)],b'A'*128+b'B'*128))
     def outcome(t,wanted):
-        assert t.count('Outcome: ')==1 and 'Outcome: '+wanted+'.' in t,t
+        assert m.result == {'success':1,'warning/no-work':2,'warning/partial':2,'failure':3,'cancellation':4}[wanted],t
+        if wanted == 'success': assert 'Outcome:' not in t,t
     t=m.run('/TEST TEST.LBR',{lib:raw});outcome(t,'success')
-    assert 'completed 0001; no-match 0000; skipped 0000' in t,t
+    assert '2 files checked' in t,t
     t=m.run('/LIST TEST.LBR NONE.*',{lib:raw});outcome(t,'warning/no-work')
-    assert 'completed 0000; no-match 0001; skipped 0000' in t,t
+    assert 'No members matched.' in t,t
     t=m.run('/X TEST.LBR C3:',{lib:raw,first:b'old',second:b'old'},keys='NN')
-    outcome(t,'warning/no-work');assert 'skipped 0001' in t,t
+    outcome(t,'warning/no-work');assert '2 files skipped.' in t,t
     t=m.run('/X /Y TEST.LBR C3:',{lib:raw},failures={'write':1})
     outcome(t,'warning/partial')
     assert first not in m.files and m.files[second]==b'B'*128,t
-    assert 'failed 0001' in t and 'completed 0000' in t,t
+    assert '1 file failed.' in t and '1 file extracted.' in t,t
     t=m.run('/X TEST.LBR C3:',{lib:raw},keys='R',failures={'write':1})
-    outcome(t,'warning/partial');assert 'completed 0001' in t and 'failed 0000' in t,t
+    outcome(t,'warning/partial');assert '2 files extracted.' in t and m.count32('NA_COUNTS',8)==0,t
     t=m.run('/X *.LBR C3:',{lib:raw,other:raw},keys='A',failures={'write':1})
-    outcome(t,'cancellation');assert 'unprocessed 0001' in t,t
+    outcome(t,'cancellation');assert '1 file unprocessed.' in t,t
     t=m.run('/X /Y TEST.LBR C3:',{lib:raw},failures={'write':1,'close_output':0})
     outcome(t,'failure');assert 'Close unconfirmed:' in t,t
     t=m.run('/TEST *.LBR',{lib:raw,other:b'bad'});outcome(t,'warning/partial')

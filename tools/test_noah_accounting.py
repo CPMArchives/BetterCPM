@@ -11,11 +11,15 @@ def tests(m):
     src=diskkey(2,'TEXT.DAT',7);lib=diskkey(1,'NEW.LBR')
     inputs={src:b'A'*128}
     def counts(t,kind,completed,skipped,failed,unprocessed,accepted=None):
-        assert f'{kind} (hex): completed {completed:08X}; skipped: {skipped:08X}; failed: {failed:08X}' in t,t
-        # This is the final (batch) line, after any per-archive lines.
-        tail=t[t.index(kind+' (hex):'):]
-        assert f'Unprocessed (hex): {unprocessed:08X}' in tail,t
-        if accepted is not None:assert f'Accepted candidates (hex): {accepted:04X}' in tail,t
+        action = 'added' if kind == 'ADD candidates' else 'extracted'
+        word = 'file' if completed == 1 else 'files'
+        assert f'{completed} {word} {action}.' in t,t
+        for count,action in ((skipped,'skipped'),(failed,'failed'),(unprocessed,'unprocessed')):
+            if count:
+                word = 'file' if count == 1 else 'files'
+                assert f'{count} {word} {action}.' in t,t
+        assert [m.count32('NA_COUNTS', offset) for offset in (0,4,8,12)] == [completed,skipped,failed,unprocessed],t
+        assert 'Accepted candidates' not in t and '(hex)' not in t,t
     add='ADD candidates';extract='Known members'
     t=m.run('/ADD NEW.LBR B7:TEXT.DAT',inputs);counts(t,add,1,0,0,0,1)
     t=m.run('/ADD NEW.LBR B7:TEXT.DAT',inputs,failures={'read':1},keys='R');counts(t,add,1,0,0,0,1)
@@ -46,7 +50,7 @@ def tests(m):
     t=m.run('/X /Q /Y *.LBR C3:',libs,failures={'write':1});counts(t,extract,2,0,1,0)
     t=m.run('/X *.LBR C3:',libs,failures={'write':1},keys='R');counts(t,extract,3,0,0,0)
     t=m.run('/X *.LBR C3:',libs,failures={'write':1},keys='A');counts(t,extract,0,0,1,1)
-    assert 'unprocessed 0001' in t and 'Outcome: cancellation.' in t,t
+    assert '1 file unprocessed.' in t and 'Outcome: cancellation.' in t,t
     print(f'PASS: {m.cases} member/candidate accounting transactions')
 
 if __name__=='__main__':tests(machine())

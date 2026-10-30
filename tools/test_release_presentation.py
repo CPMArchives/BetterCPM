@@ -59,7 +59,7 @@ def empty_bdos(port,value):
 c.port_write=empty_bdos;c.mem[a('RD_NEXT')]=0xc9
 c.mem[0x7002]=3;c.setword(0x7005,99)
 c.run(a('DT_REPORT'),limit=100000)
-assert 'NO FILE' in out.decode() and '100K FREE' in out.decode(),out
+assert out.decode() == '\r\nD0: NO FILE\r\n---- 100K FREE ----\r\n',out
 # RSX LIST: zero, one and two profile entries; TPA starts on its own line.
 for names in ((),('ADM3A',),('M4SCRN','ADM3A')):
     c,a=program('RSX.COM','rsx.lst');out=bytearray()
@@ -87,7 +87,7 @@ print('DIR populated/empty DU, units, alignment and RSX LIST presentation: PASS'
 from component_registry import utility_identities
 from test_utility_versions import runner, output
 from test_crc import execute
-expected_revisions={'DIR':10,'RSX':6,'CRCKSUM':7,'COMPARE':3}
+expected_revisions={'DIR':11,'RSX':6,'CRCKSUM':8,'COMPARE':3}
 for name,revision in expected_revisions.items():
     assert utility_identities()[name]==('1.0',revision)
     if name in ('DIR','RSX'):

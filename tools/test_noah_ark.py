@@ -24,18 +24,18 @@ def tests(m):
     for ceiling in (0xc501,0xca01):
         for op in ('/LIST','/TEST','/X /Y'):
             t=m.run(f'{op} STORED.ARC C3:*.*' if '/X' in op else f'{op} STORED.ARC',{lib:f['STORED.ARC']},tpa=ceiling)
-            assert 'Outcome: success.' in t,t
-            if '/LIST' in op:assert 'CRC verified.' not in t and not m.created,t
-            else:assert 'verified 00000002; unavailable/ambiguous: 00000000' in t,t
+            assert m.result==1,t
+            if '/LIST' in op:assert 'CRC OK' not in t and not m.created,t
+            else:assert m.count32('NA_CRC_CHECKED')==2 and m.count32('NA_CRC_UNCHECKED')==0,t
             if '/X' in op:assert m.files[out]==padded(b'\0'*129) and m.files[diskkey(3,'OLD.TXT',3)]==padded(b'old'),t
             assert m.files[lib]==f['STORED.ARC'] and not m.opened,t
     mixed=diskkey(1,'MIXED.ARK')
     for op in ('/LIST','/TEST','/X /Y'):
         t=m.run(op+' MIXED.ARK',{mixed:f['MIXED.ARK']})
-        assert 'unsupported' not in t and 'Outcome: success.' in t,t
+        assert 'unsupported' not in t and m.result==1,t
         if '/X' in op:
             assert m.files[diskkey(1,'LAST.TXT')]==padded(b'last') and m.files[diskkey(1,'PACKED.TXT')]==padded(b'packed data'),t
-        if '/LIST' not in op:assert 'verified 00000003; unavailable/ambiguous: 00000000' in t,t
+        if '/LIST' not in op:assert m.count32('NA_CRC_CHECKED')==3 and m.count32('NA_CRC_UNCHECKED')==0,t
     for name in ('BAD.ARC','DUP.ARC'):
         for op in ('/TEST','/X /Y'):
             t=m.run(op+' '+name,{diskkey(1,name):f[name]})

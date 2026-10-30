@@ -118,7 +118,7 @@ expect eof
                 command_base = native_copy.read_bytes()[:(BUILD / "copy-transient.bin").stat().st_size]
                 listing = BUILD / "copy-transient.lst"
             native = transient(command_base, symbol(listing, entry_name),
-                               symbol(listing, "UV_CHECK"), symbol(listing, "UV_T" + command))
+                               symbol(listing, "CT_CHECK" if command == "COPY" else "UV_CHECK"), symbol(listing, "UV_T" + command))
             cross = (BUILD / f"{command}.COM").read_bytes()
             if native != cross:
                 (BUILD / f"{command}-native-mismatch.COM").write_bytes(native)

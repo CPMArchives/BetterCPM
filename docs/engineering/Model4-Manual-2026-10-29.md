@@ -777,3 +777,13 @@ Pending implementation remains DIR empty-DU presentation, CRCKSUM /40 grouped
 tables, NOAH output cleanup and aliases, and COPY help. Utility-wide /H remains
 a separately recorded later consistency task. These changes have not been
 implemented or validated by this documentation update.
+
+## Stabilization implementation — 2026-10-30
+
+The five recorded correction groups are implemented in the source commit
+containing [the stabilization record](Release-Stabilization-2026-10-30.md):
+DIR 011, CRCKSUM 008, NOAH 020 (output and aliases), and COPY 009.
+That record identifies exact local binary hashes, automated checks and limits.
+Historical pending entries do not qualify these changed binaries on Model 4.
+New packages and the agreed reduced manual acceptance checks remain pending.
+Utility-wide /H remains deferred.

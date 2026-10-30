@@ -43,7 +43,7 @@ def tests(m):
     assert raw[int.from_bytes(raw[14:16],"little")*128:]==binary and members(raw)[0][1:12]==b'BINARY  DAT'
     assert m.files[src]==binary and not m.opened
     output=m.run('/TEST TEST.LBR',{lib:raw})
-    assert 'Integrity checks complete' in output,output
+    assert 'CRC OK' in output and '1 file checked' in output,output
     original=with_crcs(archive([entry(b'BINARY  DAT')],b'X'*128))
     output=m.run('/ADD /Y TEST.LBR B7:BINARY.DAT',{lib:original,src:binary})
     assert 'published' in output,output

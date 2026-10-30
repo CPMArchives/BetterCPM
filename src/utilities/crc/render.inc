@@ -59,7 +59,14 @@ HEADEROU:
         CALL NL
         JR HEADERSA
 HEADER40:
-        CALL TABLE40
+        ; Saved native headers are unchanged. Narrow console groups are emitted
+        ; together with each file's values, rather than in disconnected bands.
+        LD A,(LINE)
+        CP ';'
+        JR NZ,HEADERSA
+        LD HL,LINE
+        CALL TEXT
+        CALL NL
 HEADERSA:
         LD A,(LEGACY)
         OR A
@@ -87,7 +94,15 @@ RESULTRO:
         CALL NL
         JR ROWSAVE
 ROWSTACK:
-        CALL TABLE40
+        LD HL,LINE
+        LD DE,ROWCOPY
+        LD BC,256
+        LDIR
+        CALL GROUP40
+        LD HL,ROWCOPY
+        LD DE,LINE
+        LD BC,256
+        LDIR
 ROWSAVE:
         JP WLINE
 LEGACYRO:
@@ -190,77 +205,143 @@ REPEATPU:
         CALL PUT
         DJNZ REPEATPU
         RET
- ; Render console slices of the native table; LINE remains unchanged for WLINE.
-TABLE40:
-        LD HL,LINE
-        LD A,(HL)
-        CP ';'
-        JP Z,TABLETEXT
-        LD A,(RECSWIDT)
-        ADD A,14
-        LD (TABLEBASE),A
-        LD B,A
-        CALL TABLECHARS
-        LD A,(TABLEBASE)
-        LD (TABLECOL),A
+; Narrow console: complete heading/rule/value groups, two equal-width fields.
+; Native saved rows remain in ROWCOPY; selected descriptor order is untouched.
+GROUP40:
         LD IX,FIELDTAB
-TABLENEXT:
+        LD (G40NEXT),IX
+        XOR A
+        LD (G40ISMORE),A
+G40GROUP:
+        LD IX,(G40NEXT)
         LD A,(IX+0)
         OR (IX+1)
-        JP Z,NL
-        LD A,(ALGSEL)
-        AND (IX+5)
-        JR Z,TABLESKIP
-        LD A,(IX+2)
-        ADD A,2
-        LD (TABLEWIDTH),A
+        RET Z
+        XOR A
+        LD (G40MODE),A
+G40ROW:
+        CALL NEWLINE
+        LD A,(G40ISMORE)
+        OR A
+        JR NZ,G40INDENT
+        LD A,(G40MODE)
+        OR A
+        JR Z,G40NAME
+        DEC A
+        JR Z,G40DASH
+        LD HL,ROWCOPY
+        LD A,(RECSWIDT)
+        ADD A,14
         LD B,A
-        LD A,(TABLECOL)
-        ADD A,B
-        CP 41
-        JR C,TABLEFIT
-        PUSH HL
-        CALL NL
-        LD A,(TABLEBASE)
+G40COPY:
+        LD A,(HL)
+        CALL PUT
+        INC HL
+        DJNZ G40COPY
+        JR G40SPACE
+G40NAME:
+        LD HL,NAMEHEAD
+        CALL PUTS
+        CALL SPACE2
+        LD HL,RECSHEAD
+        CALL PUTS
+        LD A,(RECSWIDT)
+        SUB 4
+        CALL PAD
+        JR G40SPACE
+G40DASH:
+        LD HL,NAMEDASH
+        CALL PUTS
+        CALL SPACE2
+        LD A,(RECSWIDT)
         LD B,A
-TABLEPAD:
-        PUSH BC
-        LD A,' '
-        CALL CHAR
-        POP BC
-        DJNZ TABLEPAD
-        POP HL
-        LD A,(TABLEBASE)
-        LD (TABLECOL),A
-TABLEFIT:
-        LD A,(TABLEWIDTH)
-        LD B,A
-        CALL TABLECHARS
-        LD A,(TABLEWIDTH)
-        LD B,A
-        LD A,(TABLECOL)
-        ADD A,B
-        LD (TABLECOL),A
-TABLESKIP:
+        LD A,'-'
+        CALL REPEATPU
+        JR G40SPACE
+G40INDENT:
+        LD A,(RECSWIDT)
+        ADD A,14
+        CALL PAD
+G40SPACE:
+        LD A,1
+        CALL PAD
+        LD IX,(G40NEXT)
+        LD A,2
+        LD (G40LEFT),A
+G40FIELD:
+        LD A,(IX+0)
+        OR (IX+1)
+        JR Z,G40EMIT
+        LD HL,(LINEPTR)
+        LD (G40START),HL
+        LD A,(G40MODE)
+        OR A
+        JR Z,G40LABEL
+        DEC A
+        JR Z,G40RULE
+        LD HL,CVALUES
+        LD E,(IX+3)
+        LD D,0
+        ADD HL,DE
+        LD B,(IX+4)
+        CALL FIELDHEX
+        JR G40PAD
+G40LABEL:
+        LD L,(IX+0)
+        LD H,(IX+1)
+        CALL PUTS
+        JR G40PAD
+G40RULE:
+        LD B,8
+        LD A,'-'
+        CALL REPEATPU
+G40PAD:
+        LD HL,(LINEPTR)
+        LD DE,(G40START)
+        OR A
+        SBC HL,DE
+        LD B,L
+        LD A,8
+        SUB B
+        CALL PAD
         LD DE,6
         ADD IX,DE
-        JR TABLENEXT
-TABLECHARS:
-        LD A,(HL)
-        PUSH HL
-        PUSH BC
-        CALL CHAR
-        POP BC
-        POP HL
-        INC HL
-        DJNZ TABLECHARS
-        RET
-TABLETEXT:
+        LD A,(G40LEFT)
+        DEC A
+        LD (G40LEFT),A
+        JR Z,G40EMIT
+        LD A,(IX+0)
+        OR (IX+1)
+        JR Z,G40EMIT
+        CALL SPACE2
+        JR G40FIELD
+G40EMIT:
+        LD (G40AFTER),IX
+        XOR A
+        CALL PUT
+        LD HL,LINE
         CALL TEXT
-        JP NL
-TABLEBASE: DB 0
-TABLECOL: DB 0
-TABLEWIDTH: DB 0
+        CALL NL
+        LD A,(G40MODE)
+        INC A
+        LD (G40MODE),A
+        CP 3
+        JP C,G40ROW
+        LD IX,(G40AFTER)
+        LD (G40NEXT),IX
+        LD A,(IX+0)
+        OR (IX+1)
+        RET Z
+        CALL NL
+        LD A,1
+        LD (G40ISMORE),A
+        JP G40GROUP
+G40NEXT: DW 0
+G40AFTER: DW 0
+G40START: DW 0
+G40MODE: DB 0
+G40LEFT: DB 0
+G40ISMORE: DB 0
 TITLELIN: DB '; BetterCP/M CRC list',0
 NAMEHEAD: DB 'NAME     EXT',0
 NAMEDASH: DB '-------- ---',0
