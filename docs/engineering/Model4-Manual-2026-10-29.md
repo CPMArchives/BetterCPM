@@ -378,3 +378,27 @@ Affected verification:
 Before acceptance: package a new candidate tied to the implementation commit,
 then manually retest changed CRCKSUM/DIR/RSX/COMPARE binaries against their exact
 versions and image identities. No NOAH runtime result has yet been recorded.
+
+## 30 October: candidate identity correction
+
+Screenshots 7.25.41 AM (libfile_8846a20560cc8191837f4397286a1a69) and
+7.26.05 AM (libfile_a69d3aff4fb48191832111b1692b8f7f), repeated after explicit
+remount/reboot at 7.47.19 AM (libfile_024894ec0b9481918e63bda5b9c8d641) and
+7.47.40 AM (libfile_907a541b85408191920a281f85d31475), display DIR 009-dev,
+RSX 005-dev, CRCKSUM 006-dev and COMPARE 002-dev.
+
+Investigation established that candidate e01592c contains the stabilization
+code but stale identification banners. The fixes advanced the legacy TSV,
+while authoritative metadata/component-registry.json retained the earlier
+revisions. The previous implementation section's revision labels describe
+intended revisions, not the banners actually emitted by those recorded hashes.
+Those hashes and observations remain historical evidence. Do not infer older
+code, wrong user mount paths, or a runtime stabilization failure solely from
+these stale banners. Earlier advice attributing this to mounting was incorrect.
+
+Correct the authoritative utility revisions to DIR 010, RSX 006, CRCKSUM 007
+and COMPARE 003; regenerate/check all projections and rebuild. Add executed
+/VER checks for these four binaries to the focused presentation regression.
+The corrected banners pass their compiled-code query paths. Previous image
+identity is superseded for further manual validation once a corrected candidate
+is provided; all affected Model 4 revalidation remains pending.
