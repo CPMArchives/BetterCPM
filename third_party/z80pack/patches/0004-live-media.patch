@@ -1,0 +1,94 @@
+diff --git a/cpmsim/srcsim/simio.c b/cpmsim/srcsim/simio.c
+index 2ec57db2..98cdbfd1 100644
+--- a/cpmsim/srcsim/simio.c
++++ b/cpmsim/srcsim/simio.c
+@@ -527,25 +527,5 @@ void init_io(void)
+ 
+-	for (i = 0; i <= 15; i++) {
+-
+-		/* if option -d is used disks are there */
+-		if (diskdir != NULL) {
+-			strcpy(fn, diskd);
+-		} else {
+-			/* if not first try ./disks */
+-			if ((stat("./disks", &sbuf) == 0) &&
+-			    S_ISDIR(sbuf.st_mode)) {
+-				strcpy(fn, "./disks");
+-			} else {
+-				/* nope, then DISKSDIR as set in Makefile */
+-				strcpy(fn, DISKSDIR);
+-			}
+-		}
+-
+-		strcat(fn, "/");
+-		strcat(fn, disks[i].fn);
+-
+-		if ((*disks[i].fd = open(fn, O_RDWR)) == -1)
+-			if ((*disks[i].fd = open(fn, O_RDONLY)) == -1)
+-				disks[i].fd = NULL;
+-	}
++	/* Media is opened per command, including drives empty at startup. */
++	for (i = 0; i <= 15; i++)
++		*disks[i].fd = -1;
+ 
+@@ -707,3 +687,3 @@ void exit_io(void)
+ 	for (i = 0; i <= 15; i++)
+-		if (disks[i].fd != NULL)
++		if (disks[i].fd != NULL && *disks[i].fd >= 0)
+ 			close(*disks[i].fd);
+@@ -2004,3 +1984,3 @@ static BYTE fdco_in(void)
+  */
+-static void fdco_out(BYTE data)
++static void fdco_transfer(BYTE data)
+ {
+@@ -2138,2 +2118,50 @@ static void fdco_out(BYTE data)
+ 
++/* Resolve removable media once per synchronous command. A link change
++ * during a command cannot redirect that command to another image.
++ * Guest software must still reset/re-log the disk after a media change.
++ */
++static void fdco_out(BYTE data)
++{
++	char path[MAX_LFN];
++	const char *directory;
++	struct stat sbuf;
++	int fd, length;
++
++	if (drive >= 16 || disks[drive].fd == NULL) {
++		status = 1;
++		return;
++	}
++	if (data > 1) {
++		status = 7;
++		return;
++	}
++	if (diskdir != NULL)
++		directory = diskd;
++	else if (stat("./disks", &sbuf) == 0 && S_ISDIR(sbuf.st_mode))
++		directory = "./disks";
++	else
++		directory = DISKSDIR;
++	length = snprintf(path, sizeof(path), "%s/%s", directory, disks[drive].fn);
++	if (length < 0 || (size_t) length >= sizeof(path)) {
++		status = 1;
++		return;
++	}
++	fd = open(path, data == 0 ? O_RDONLY : O_RDWR);
++	if (fd < 0) {
++		status = data == 0 ? 5 : 6;
++		return;
++	}
++	if (fstat(fd, &sbuf) < 0 || !S_ISREG(sbuf.st_mode)) {
++		close(fd);
++		status = data == 0 ? 5 : 6;
++		return;
++	}
++	/* No full-image size requirement: historical images may omit unused tails. */
++	*disks[drive].fd = fd;
++	fdco_transfer(data);
++	if (close(fd) < 0 && status == 0)
++		status = data == 0 ? 5 : 6;
++	*disks[drive].fd = -1;
++}
++
+ /*
