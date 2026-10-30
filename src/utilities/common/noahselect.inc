@@ -133,53 +133,53 @@ NS_COUNT_ARCHIVE:
         LD (NS_CURRENT),HL
         JP NS_PROCESS
 NS_FINISH:
-        LD DE,NS_BATCH_TEXT
         LD A,(NH_MODE)
         CP 6
-        JR C,NS_SUMMARY_KIND
-        LD DE,NC_BATCH_TEXT
-NS_SUMMARY_KIND:
-        CALL NH_PRINT
-        LD HL,(NS_COUNT)
+        JR C,NS_FINISH_ERRORS
+        LD HL,(NS_COMPLETED)
+        PUSH HL
         CALL NS_PRINT_WORD
-        LD DE,NS_PROCESSED_TEXT
+        POP HL
+        DEC HL
+        LD A,H
+        OR L
+        LD DE,NS_CODEC_PLURAL
+        JR NZ,NS_CODEC_SUM
+        LD DE,NS_CODEC_SINGLE
+NS_CODEC_SUM:
         CALL NH_PRINT
-        LD HL,(NS_PROCESSED)
-        CALL NS_PRINT_WORD
-        LD DE,NS_FAILED_TEXT
+NS_FINISH_ERRORS:
+        LD HL,(NS_BAD_ARCHIVES)
+        LD A,H
+        OR L
+        JR Z,NS_FINISH_LEFT
+        LD DE,NS_FAILED_SUM
         CALL NH_PRINT
         LD HL,(NS_BAD_ARCHIVES)
         CALL NS_PRINT_WORD
-        LD DE,NS_UNPROCESSED_TEXT
+        LD DE,NH_NEWLINE
         CALL NH_PRINT
+NS_FINISH_LEFT:
         LD HL,(NS_COUNT)
         LD DE,(NS_PROCESSED)
         OR A
         SBC HL,DE
+        LD A,H
+        OR L
+        JR Z,NS_FINISH_RETURN
+        PUSH HL
+        LD DE,NS_LEFT_SUM
+        CALL NH_PRINT
+        POP HL
         CALL NS_PRINT_WORD
         LD DE,NH_NEWLINE
         CALL NH_PRINT
-        LD A,(NS_WARNINGS)
-        OR A
-        JR Z,NS_BATCH_RETURN
-        LD DE,NS_WARNING_TEXT
-        CALL NH_PRINT
-NS_BATCH_RETURN:
-        LD DE,NS_COMPLETE_TEXT
-        CALL NH_PRINT
-        LD HL,(NS_COMPLETED)
-        CALL NS_PRINT_WORD
-        LD DE,NS_NO_MATCH_TEXT
-        CALL NH_PRINT
-        LD HL,(NS_NO_MATCH)
-        CALL NS_PRINT_WORD
-        LD DE,NS_SKIPPED_TEXT
-        CALL NH_PRINT
-        LD HL,(NS_SKIPPED)
-        CALL NS_PRINT_WORD
-        LD DE,NH_NEWLINE
-        CALL NH_PRINT
+NS_FINISH_RETURN:
         JP NH_RETURN
+NS_CODEC_SINGLE: DB ' file processed.',13,10,'$'
+NS_CODEC_PLURAL: DB ' files processed.',13,10,'$'
+NS_FAILED_SUM: DB 'Failed operations: ','$'
+NS_LEFT_SUM: DB 'Unprocessed operations: ','$'
 ; Disposition 0=no matching work, 1=completed, 2=declined/unchanged.
 ; A failed object belongs only to failed; useful subwork remains visible.
 NS_RECORD_RESULT:
@@ -266,12 +266,14 @@ NS_OUTCOME_FAILURE:
         LD DE,NS_FAILURE_RESULT
 NS_OUTCOME_PRINT:
         LD (NS_RESULT),A
+        CP 1
+        RET Z
         JP NH_PRINT
 NS_PRINT_WORD:
-        LD A,H
-        CALL NH_HEX
-        LD A,L
-        JP NH_HEX
+        LD (NH_DNUM),HL
+        LD HL,0
+        LD (NH_DNUM+2),HL
+        JP NH_DDEC
 NS_RESTORE:
         LD A,(NS_CAPTURED)
         OR A
@@ -420,6 +422,13 @@ NS_FLAGS:
         JP C,NS_BAD
         OR A
         JP NZ,NS_TOKEN_LOOP
+        PUSH HL
+        PUSH BC
+        LD HL,NS_QUIET_WORD
+        CALL NW_TOKEN_IS
+        POP BC
+        POP HL
+        JR Z,NS_SET_QUIET
         LD A,(NS_TOKEN_LEN)
         CP 2
         JR NZ,NS_SYS_FLAG
@@ -882,7 +891,7 @@ NS_NO_MATCH_TEXT: DB '; no-match ','$'
 NS_SKIPPED_TEXT: DB '; skipped ','$'
 NS_SUCCESS_RESULT: DB 'Outcome: success.',13,10,'$'
 NS_PARTIAL_RESULT: DB 'Outcome: warning/partial.',13,10,'$'
-NS_EMPTY_RESULT: DB 'Outcome: warning/no-work.',13,10,'$'
+NS_EMPTY_RESULT: DB 'No work performed.',13,10,'$'
 NS_FAILURE_RESULT: DB 'Outcome: failure.',13,10,'$'
 NS_CANCEL_RESULT: DB 'Outcome: cancellation.',13,10,'$'
 NS_WARNING_TEXT: DB 'Warnings, skips or incomplete CRC coverage reported above.',13,10,'$'
@@ -911,6 +920,7 @@ NS_SYS: DB 0
 NS_ALL: DB 0
 NS_STOP: DB 0
 NS_WARNINGS: DB 0
+NS_QUIET_WORD: DB '/QUIET',0
 NS_QUIET: DB 0
 NS_ARC_FAILED: DB 0
 NS_MEMBER_ARG: DW 0

@@ -33,7 +33,7 @@ class Noah(Command):
             match = re.search(rf'^([0-9a-f]{{4}}).*\b{name}:\s', listing, re.M | re.I)
             assert match, name
             self.symbols[old] = int(match[1], 16)
-        for name in ('AC_OPEN', 'AC_CLOSE', 'LBR_NEXT', 'LBR_READ', 'NH_CONTEXT', 'NH_DUSER', 'NH_ARK', 'NX_TEMP', 'NX_VERIFY', 'NI_WAIT', 'NS_YES', 'NW_MEMORY_TEXT', 'NX_BUFFER', 'NR_FCB', 'NR_INPUT', 'NW_SOURCE', 'NW_SOURCE_USER', 'NW_ARC_READ_CB', 'NW_ARC_WRITE_CB', 'NW_ARC_PAD_RECORD', 'NW_ARC_FILL', 'NW_ARC_STAGE_SIZE', 'NW_ARC_PLANS', 'NR_LOAD', 'NR_CODEC', 'NR_WINDOW', 'NR_DRIVE', 'NR_USER', 'NR_CAPTURED', 'NR_SOURCE', 'NR_SOURCE_USER', 'NR_DESTUSER', 'NR_SINK', 'NR_OUTFCB', 'NR_NAME', 'NR_ARC_MODE', 'NR_STATUS', 'NR_CARRY', 'NR_OUTUSED', 'NR_TOTAL', 'NR_LIMIT'):
+        for name in ('NH_PRINT_COUNT', 'NS_RESULT', 'NA_COUNTS', 'NA_CRC_CHECKED', 'NA_CRC_UNCHECKED', 'NA_LISTED', 'NS_COMPLETED', 'NS_SKIPPED', 'NS_NO_MATCH', 'NS_COUNT', 'NS_PROCESSED', 'NS_BAD_ARCHIVES', 'AC_OPEN', 'AC_CLOSE', 'LBR_NEXT', 'LBR_READ', 'NH_CONTEXT', 'NH_DUSER', 'NH_ARK', 'NX_TEMP', 'NX_VERIFY', 'NI_WAIT', 'NS_YES', 'NW_MEMORY_TEXT', 'NX_BUFFER', 'NR_FCB', 'NR_INPUT', 'NW_SOURCE', 'NW_SOURCE_USER', 'NW_ARC_READ_CB', 'NW_ARC_WRITE_CB', 'NW_ARC_PAD_RECORD', 'NW_ARC_FILL', 'NW_ARC_STAGE_SIZE', 'NW_ARC_PLANS', 'NR_LOAD', 'NR_CODEC', 'NR_WINDOW', 'NR_DRIVE', 'NR_USER', 'NR_CAPTURED', 'NR_SOURCE', 'NR_SOURCE_USER', 'NR_DESTUSER', 'NR_SINK', 'NR_OUTFCB', 'NR_NAME', 'NR_ARC_MODE', 'NR_STATUS', 'NR_CARRY', 'NR_OUTUSED', 'NR_TOTAL', 'NR_LIMIT'):
             match = re.search(rf'\b{name}[ \t]+([0-9a-f]{{4}})\b', listing, re.I)
             assert match, name
             self.symbols[name] = int(match[1], 16)
@@ -68,7 +68,7 @@ class Noah(Command):
         self.make_creates_on_failure = kwargs.pop('make_creates_on_failure', False)
         self.delete_keeps_on_success = kwargs.pop('delete_keeps_on_success', False)
         kwargs.setdefault('tpa', 0xd501)
-        self.write_allowed = bool(args and any(t.upper() in ('/X', '/EXTRACT', '/ADD', '/REMOVE', '/COMPACT', '/SQ', '/CR', '/EXPAND') for t in args[0].split()))
+        self.write_allowed = bool(args and any(t.upper() in ('/X', '/EXTRACT', '/A', '/ADD', '/REMOVE', '/COMPACT', '/SQ', '/CR', '/EXPAND') for t in args[0].split()))
         injected=None
         if self.overlay is not None and supply:
             files = dict(args[1])
@@ -93,7 +93,12 @@ class Noah(Command):
         minimum = C.c_ushort.in_dll(self.lib, 'minimum_sp').value
         self.max_stack = max(self.max_stack, self.symbols['UC_STACK_TOP'] - minimum)
         assert self.max_stack < 384, 'stack overlaps version-tail scratch'
+        self.result = int(self.mem[self.symbols['NS_RESULT']])
         return result
+
+    def count32(self, label, offset=0):
+        address = self.symbols[label]+offset
+        return int.from_bytes(bytes(self.mem[address:address+4]), 'little')
 
     def callback(self, kind):
         # CP/M Get DPB returns HL, unlike the ordinary byte-returning services.
@@ -319,9 +324,9 @@ def tests(m):
     source = diskkey(2, 'TEXTS.LBR', 7)
     for tail in ('B:TEXTS.LBR', '/LIST B:TEXTS.LBR', '/list b:texts.lbr', '\t/list\tB:TEXTS.LBR\t'):
         output = m.run(tail, {source: raw}, user=7)
-        assert 'README   TXT 0000007D bytes' in output, output
-        assert 'EMPTY        00000000 bytes' in output, output
-        assert 'Listing complete' in output
+        assert 'README.TXT   125' in output, output
+        assert 'EMPTY        0' in output, output
+        assert 'listed. Contents not tested.' in output
         assert not m.opened
         assert m.drive == 1 and m.user == 7
         assert not m.created and not m.deleted and not m.renamed
@@ -347,7 +352,7 @@ def tests(m):
     assert m.library_call('AC_CLOSE') == 0 and not m.opened
     m.intact()
     # Filename extension is not used for LBR recognition.
-    assert 'Listing complete' in m.run('ODD.BIN', {diskkey(1, 'ODD.BIN'): raw})
+    assert 'listed. Contents not tested.' in m.run('ODD.BIN', {diskkey(1, 'ODD.BIN'): raw})
     for tail in ('/VER', ' /ver  ', '\t/VER\t', ' ' * 123 + '/VER', '/VER' + ' ' * 123):
         assert m.run(tail, {}) == version_text(), (tail, repr(m.console), repr(version_text()))
         assert [f for f, _ in m.events] == [9]
@@ -355,7 +360,7 @@ def tests(m):
         assert m.run(tail, {}) == version_text()
         assert [f for f, _ in m.events] == [9]
     help_output = m.run('/HELP', {})
-    assert 'LBR/ARK development build' in help_output
+    assert 'Archive Utility' in help_output
     for tail in ('/HELP', '/HELP X', 'X /help', '/HELP /HELP', '/VER /HELP',
                  '/HELP /VER', 'FILE\t/HeLp\t/UNKNOWN', ' ' * 122 + '/HELP'):
         assert m.run(tail, {}) == help_output, tail
@@ -373,15 +378,15 @@ def tests(m):
     for failure in ('open', 'size', 'read', 'close_input'):
         output = m.run('B:TEXTS.LBR', {source: raw}, user=7, failures={failure: 1})
         assert 'error' in output.lower() or 'failed' in output.lower(), (failure, output)
-        assert 'Listing complete' not in output
+        assert 'listed. Contents not tested.' not in output
         if failure != 'close_input':
             assert not m.opened
         m.intact()
     # Partial enumeration must not be called complete when a later entry fails.
     damaged = archive([entry(records=0), entry(start=100)], b'')
     output = m.run('BAD.LBR', {diskkey(1, 'BAD.LBR'): damaged})
-    assert 'FILE     BIN' in output and 'error' in output
-    assert 'Listing complete' not in output
+    assert 'FILE.BIN' in output and 'error' in output
+    assert 'listed. Contents not tested.' not in output
     m.intact()
 
 
@@ -483,8 +488,8 @@ def extraction_tests(m):
                             entry(b'BINARY  BIN', 2, 1)], payload))
     for tail in ('/TEST B:TEXTS.LBR', '/T B:TEXTS.LBR'):
         output = m.run(tail, {source: raw}, user=7)
-        assert 'Structure/selected readability checked' in output, output
-        assert 'verified (hex): 00000003; unavailable/ambiguous: 00000001' in output
+        assert '3 files checked' in output, output
+        assert m.count32('NA_CRC_CHECKED') == 3 and 'CRC coverage unavailable/ambiguous: 1' in output
         assert not m.created and not m.deleted and not m.renamed
         m.intact()
     for tail in ('/EXTRACT B:TEXTS.LBR C:', '/X B:TEXTS.LBR C:', '/x b:texts.lbr c:'):
@@ -492,8 +497,8 @@ def extraction_tests(m):
         assert m.files[diskkey(3, 'README.TXT', 7)] == payload[:125] + b'\x1a' * 3
         assert m.files[diskkey(3, 'EMPTY', 7)] == b''
         assert m.files[diskkey(3, 'BINARY.BIN', 7)] == b'Y' * 128
-        assert 'Extracted (hex): 00000003; skipped: 00000000; failed: 00000000' in output
-        assert 'Unprocessed (hex): 00000000' in output and not m.opened
+        assert '3 files extracted.' in output and m.count32('NA_COUNTS',8)==0
+        assert m.count32('NA_COUNTS',12)==0 and not m.opened
         assert all(not k[2].endswith(('.TMP', '.BAK')) for k in m.files)
         m.intact()
     # Default destination is logged drive, NOT the archive drive.
@@ -503,7 +508,7 @@ def extraction_tests(m):
     existing = diskkey(1, 'README.TXT', 7)
     output = m.run('/X B:TEXTS.LBR', {source: raw, existing: b'KEEP ORIGINAL'}, user=7)
     assert 'A7:README.TXT: replacement declined; skipped.' in output, output
-    assert 'skipped: 00000001' in output
+    assert '1 file skipped.' in output
     m.intact()
     same = with_crcs(archive([entry(b'TEXTS   LBR')], bytes(128)))
     output = m.run('/X B:TEXTS.LBR B:', {source: same}, user=7)
@@ -523,7 +528,7 @@ def extraction_tests(m):
         m.intact()
     full = {diskkey(1, f'README{i:02}.BAK', 7): b'KEEP' for i in range(100)}
     output = m.run('/X B:TEXTS.LBR', {source: single, **full}, user=7)
-    assert 'failed: 00000001' in output and not m.created
+    assert '1 file failed.' in output and not m.created
     m.intact()
     # Corrupt/unsafe archives must fail before any output MAKE.
     duplicate = with_crcs(archive([entry(records=0), entry(records=0)]))
@@ -538,13 +543,13 @@ def extraction_tests(m):
     # CP/M padding. A corrupt temporary must never be published.
     for tamper in (True, 'append', 'truncate'):
         output = m.run('/X B:TEXTS.LBR', {source: single}, user=7, tamper=tamper)
-        assert 'failed: 00000001' in output and not m.renamed
+        assert '1 file failed.' in output and not m.renamed
         assert set(m.files) == {source}
         m.intact()
     for failure, nth in (('make', 1), ('write', 1), ('close_output', 1),
                          ('open', 2), ('verify_read', 1)):
         output = m.run('/X B:TEXTS.LBR', {source: single}, user=7, failures={failure: nth})
-        assert 'failed: 00000001' in output and not m.renamed, (failure, output)
+        assert '1 file failed.' in output and not m.renamed, (failure, output)
         assert set(m.files) == {source} and not m.opened, (failure, m.files)
         m.intact()
     # Inject an archive read error specifically AFTER staging has begun.
@@ -552,7 +557,7 @@ def extraction_tests(m):
     make_index = next(i for i, (fn, _) in enumerate(m.events) if fn == 22)
     copy_read = sum(fn == 33 for fn, _ in m.events[:make_index]) + 1
     output = m.run('/X B:TEXTS.LBR', {source: single}, user=7, failures={'read': copy_read})
-    assert 'failed: 00000001' in output and set(m.files) == {source} and not m.opened
+    assert '1 file failed.' in output and set(m.files) == {source} and not m.opened
     m.intact()
     # A publication failure retains a VERIFIED temporary and names it.
     output = m.run('/X B:TEXTS.LBR', {source: single}, user=7, failures={'rename': 1})
@@ -581,7 +586,7 @@ def extraction_tests(m):
         assert 'cancelled' in output, (poll, output)
         assert set(m.files) == {source} and not m.opened and not m.renamed, (poll, m.files)
         if poll >= after_make:
-            assert 'failed: 00000000' in output and 'Unprocessed (hex): 00000001' in output
+            assert m.count32('NA_COUNTS',8)==0 and '1 file unprocessed.' in output
         m.intact()
     output = m.run('/TEST B:TEXTS.LBR', {source: single}, user=7, cancel_poll=1)
     assert 'cancelled' in output and 'Structure/selected readability checked' not in output
@@ -605,7 +610,7 @@ def selector_overwrite_tests(m):
     output = m.run('/LIST [C[1],B[1-2]]:*.LBR README.TXT', files, user=7)
     headings = [line for line in output.splitlines() if line.startswith('Archive ')]
     assert headings == ['Archive B1:B.LBR', 'Archive B2:A.LBR', 'Archive B2:Z.LBR', 'Archive C1:ZZ.LBR'], headings
-    assert 'selected 0004; processed 0004; failed 0000' in output
+    assert m.result==1
     assert m.user == 7 and m.drive == 1
     m.intact()
     output = m.run('/LIST B[1,1-2]:*.LBR README', files, user=7)
@@ -625,25 +630,25 @@ def selector_overwrite_tests(m):
     big = one + bytes(17000)
     output = m.run('/LIST B7:TEXTS.LBR[$RO]', {source: big}, user=7,
                    extent_attributes={source: {0: 0, 1: 1}})
-    assert output.count('Archive B7:TEXTS.LBR') == 1 and 'Listing complete' in output
+    assert output.count('Archive B7:TEXTS.LBR') == 1 and 'listed. Contents not tested.' in output
     # Cross-user reader ownership: destination has an unrelated same-name file.
     misleading = diskkey(2, 'TEXTS.LBR', 3)
     output = m.run('/X B7:TEXTS.LBR C3:README.*', {source: one, misleading: other}, user=5)
     assert m.files[diskkey(3, 'README.TXT', 3)] == b'R' * 128
-    assert m.user == 5 and m.drive == 1 and 'failed: 00000000' in output
+    assert m.user == 5 and m.drive == 1 and m.count32('NA_COUNTS',8)==0
     m.intact()
     # Nonselected corrupt payload does not become a selected-file checksum fail;
     # directory structure/overlaps still apply to the whole archive.
     filtered = bytearray(with_crcs(archive([entry(b'README  TXT'), entry(b'BAD     BIN', 2)], b'R'*128+b'B'*128)))
     filtered[-1] ^= 1
     output = m.run('/TEST B7:TEXTS.LBR README.TXT', {source: bytes(filtered)}, user=7)
-    assert 'Integrity checks complete' in output and 'error' not in output
+    assert 'checked; see CRC results above.' in output and 'error' not in output
     # Y/N/All/Cancel uses shared choice handling and N default.
     for keys in ('Y', 'y', 'zY'):
         output = m.run('/X B7:TEXTS.LBR', {source: one, target: b'OLD'}, user=7, keys=keys)
         assert m.files[target] == b'R' * 128 and m.files[source] == one
         assert not any(k[2].endswith(('.BAK', '.TMP')) for k in m.files)
-        assert not m.opened and 'failed: 00000000' in output
+        assert not m.opened and m.count32('NA_COUNTS',8)==0
         if keys.startswith('z'): assert output.count('Replace? Y/N/A/C/? [N]:') == 2
     for keys in ('N', '\r', '\x1b', 'C', '\x03'):
         output = m.run('/X B7:TEXTS.LBR', {source: one, target: b'OLD'}, user=7, keys=keys)
@@ -686,7 +691,7 @@ def selector_overwrite_tests(m):
                        keys='Y', attributes={target: 1}, failures={failure: nth}, partial_attributes=True)
         assert m.files[target] == b'OLD', (failure, nth, output, m.files)
         assert m.attrs[target] & 1 and m.files[source] == one
-        assert 'failed: 00000001' in output
+        assert '1 file failed.' in output
     # Backup cleanup failure keeps the verified new output, retains the original
     # BAK, restores its protection and reports a warning without rollback.
     output = m.run('/X /R B7:TEXTS.LBR', {source: one, target: b'OLD'}, user=7,
@@ -694,12 +699,12 @@ def selector_overwrite_tests(m):
     backup = diskkey(1, 'README00.BAK', 7)
     assert m.files[target] == b'R'*128 and m.files[backup] == b'OLD'
     assert m.attrs[target] & 1 and m.attrs[backup] & 1
-    assert 'backup cleanup failed' in output and 'Extracted (hex): 00000001' in output
+    assert 'backup cleanup failed' in output and '1 file extracted.' in output
     # Failed rename-back stops the batch and preserves verified TMP plus original
     # BAK, including its RO state. The next archive is never processed.
     output = m.run('/X /R B7:*.LBR', {source: one, two: other, target: b'OLD'},
                    user=7, keys='Y', attributes={target: 1}, failures={'rename': (2, 3)})
-    assert 'Recovery required; stop' in output and 'processed 0001' in output
+    assert 'Recovery required; stop' in output and (m.count32('NS_PROCESSED') & 65535)==1
     assert m.files[backup] == b'OLD' and m.attrs[backup] & 1
     assert m.files[diskkey(1, 'README00.TMP', 7)] == b'R'*128
     assert target not in m.files and m.files[source] == one and m.files[two] == other
@@ -709,7 +714,7 @@ def selector_overwrite_tests(m):
         output = m.run('/X /R B7:*.LBR', {source: one, two: other, target: b'OLD'},
                        user=7, keys='Y', attributes={target: 1}, failures={'rename': nth},
                        rename_moves_on_failure=True)
-        assert 'Recovery required; stop' in output and 'processed 0001' in output
+        assert 'Recovery required; stop' in output and (m.count32('NS_PROCESSED') & 65535)==1
         assert m.files[backup] == b'OLD' and m.files[source] == one and m.files[two] == other
         if nth == 1:
             assert m.files[diskkey(1, 'README00.TMP', 7)] == b'R'*128
@@ -719,7 +724,7 @@ def selector_overwrite_tests(m):
             assert 'Temporary retained:' not in output
     output = m.run('/X B7:*.LBR', {source: one, two: other}, user=7,
                    failures={'rename': 1}, rename_moves_on_failure=True)
-    assert 'Recovery required; stop' in output and 'processed 0001' in output
+    assert 'Recovery required; stop' in output and (m.count32('NS_PROCESSED') & 65535)==1
     assert m.files[target] == b'R'*128 and 'Temporary retained:' not in output
     assert 'Original protection may need restoration' not in output
     output = m.run('/X /R B7:TEXTS.LBR', {source: one, target: b'OLD'}, user=7,
@@ -739,8 +744,8 @@ def selector_overwrite_tests(m):
     assert m.user == 2 and m.drive == 1 and 'Archive B31:HIGH.LBR' in output
     mixed_files = {diskkey(1, 'BAD.LBR'): b'not an archive', diskkey(2, 'GOOD.LBR'): one}
     output = m.run('/TEST [A0,B0]:*.LBR', mixed_files, user=7)
-    assert 'Archive/read error' in output and 'Integrity checks complete' in output
-    assert 'selected 0002; processed 0002; failed 0001' in output
+    assert 'Archive/read error' in output and 'checked; see CRC results above.' in output
+    assert (m.count32('NS_COUNT') & 65535)==2 and (m.count32('NS_PROCESSED') & 65535)==2 and (m.count32('NS_BAD_ARCHIVES') & 65535)==1
     m.intact()
     # A bounded selection fails as a whole before any archive open or output.
     crowded = {diskkey(2, f'F{i:07d}.LBR', 0): one for i in range(513)}
@@ -912,7 +917,7 @@ def arc_write_tests(m):
     assert m.files[destination] == expected, (output, m.files.get(destination))
     assert m.mem[m.symbols['NW_ARC_PLANS']] == 1, m.mem[m.symbols['NW_ARC_PLANS']:m.symbols['NW_ARC_PLANS']+12]
     assert 'verified and published' in output, output
-    assert 'completed 00000001' in output, output
+    assert '1 file added.' in output, output
     assert not any(key[2].endswith(('.TMP', '.BAK')) for key in m.files)
     assert not m.opened and m.user == 0 and m.drive == 1
     m.intact()
@@ -982,7 +987,8 @@ def arc_write_tests(m):
     output = m.run('/REMOVE /COMPACT /Y UPDATE.ARK NONE.*', {key: opaque})
     assert 'No members matched' in output and m.files[key] == opaque and not m.created, output
 
-    many = {diskkey(3, ('F%07d' % n)+'.BIN'): b'' for n in range(300)}
+    m.instruction_budget = 150_000_000  # 400-name freeze/sort precedes workspace rejection.
+    many = {diskkey(3, ('F%07d' % n)+'.BIN'): b'' for n in range(400)}
     output = m.run('/ADD LIMIT.ARK C:*.BIN', many, tpa=0xc501)
     assert 'Insufficient transient memory' in output and 'Outcome: failure.' in output, output
     assert not m.created and not m.opened
@@ -1000,7 +1006,7 @@ def arc_write_tests(m):
             encoded = m.files[target]
             assert encoded[1] == method and encoded[2:15] == b'INPUT.BIN\0\0\0\0'
             result = m.run('/X /Y B:CODEC.ARK', {target: encoded}, tpa=0xca01)
-            assert 'Outcome: success.' in result, result
+            assert m.result==1, result
             assert m.files[diskkey(1, 'INPUT.BIN')] == payload
         target = diskkey(2, 'CODEC.ARK')
         payload = bytes(range(256))*2

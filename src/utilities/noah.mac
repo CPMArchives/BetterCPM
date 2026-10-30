@@ -94,20 +94,6 @@ NH_COVERAGE_SCAN:
         LD A,1
         LD (NS_WARNINGS),A
 NH_COVERAGE_KNOWN:
-        LD DE,NH_AUDIT_OK
-        CALL NH_PRINT
-        LD HL,NH_AUDIT+LA_CHECKED
-        CALL NH_PRINT_COUNT
-        LD DE,NH_UNCHECKED
-        CALL NH_PRINT
-        LD HL,NH_AUDIT+LA_UNCHECKED
-        CALL NH_PRINT_COUNT
-        LD DE,NH_NOT_SELECTED
-        CALL NH_PRINT
-        LD HL,NH_AUDIT+LA_NOT_SELECTED
-        CALL NH_PRINT_COUNT
-        LD DE,NH_NEWLINE
-        CALL NH_PRINT
         LD A,(NH_MODE)
         CP 2
         JP Z,NX_EXTRACT
@@ -115,8 +101,10 @@ NH_COVERAGE_KNOWN:
         JP C,NH_FAILED
         JP NH_LIST_START
 NH_LIST_START:
+        LD A,(NH_MODE)
+        OR A
         LD DE,NH_HEADING
-        CALL NH_PRINT
+        CALL Z,NH_PRINT
 NH_LIST_LOOP:
         CALL NH_NEXT
         JR C,NH_LIST_END
@@ -124,28 +112,26 @@ NH_LIST_LOOP:
         JP NZ,NH_LIST_LOOP
         LD HL,NS_MATCHED
         CALL NX_INC_COUNT
-        LD HL,NH_CONTEXT+AS_MEMBER
-        LD B,8
-        CALL NH_PRINT_FIELD
+        CALL NH_MEMBER_NAME
+        LD A,(NH_MODE)
+        OR A
+        JR NZ,NH_MEMBER_TEST
+        ; Pad the dotted 8.3 name to 13 columns, then decimal byte length.
+        LD A,(NH_NAME_LENGTH)
+        LD B,A
+        LD A,13
+        SUB B
+        LD B,A
+NH_MEMBER_PAD:
         LD E,' '
         LD C,2
         CALL AC_BDOS
-        LD HL,NH_CONTEXT+AS_MEMBER+8
-        LD B,3
-        CALL NH_PRINT_FIELD
-        LD E,' '
-        LD C,2
-        CALL AC_BDOS
-        ; Exact logical byte length, hexadecimal, eight digits.
-        LD HL,NH_CONTEXT+AS_MEMBER+AM_LENGTH+3
-        LD B,4
-NH_LENGTH_LOOP:
-        LD A,(HL)
-        CALL NH_HEX
-        DEC HL
-        DJNZ NH_LENGTH_LOOP
-        LD DE,NH_BYTES
+        DJNZ NH_MEMBER_PAD
+        LD HL,NH_CONTEXT+AS_MEMBER+AM_LENGTH
+        CALL NH_PRINT_COUNT
+        LD DE,NH_NEWLINE
         CALL NH_PRINT
+NH_MEMBER_TEST:
         LD A,(NH_ARK)
         OR A
         JP NZ,NW_OVERLAY+15
@@ -191,14 +177,7 @@ NH_MATCHES_REPORTED:
         LD A,1
         LD (NS_DISPOSITION),A
 NH_MATCH_DISPOSITION:
-        LD A,(NH_MODE)
-        CP 1
-        LD DE,NH_DONE
-        JR NZ,NH_LIST_FOOTER
-        LD DE,NH_TEST_DONE
-NH_LIST_FOOTER:
-        CALL NH_PRINT
-        JR NH_DMA
+        JP NH_DMA
 NH_FAILED:
         LD (NH_ERROR),A
         LD A,1
@@ -298,15 +277,113 @@ NH_READ_POLL:
         RET C
         JP AC_READ
 NH_PRINT_COUNT:
-        LD DE,3
-        ADD HL,DE
+        LD DE,NH_DNUM
+        LD BC,4
+        LDIR
+        JP NH_DDEC
+NH_DDEC:
+        LD HL,NH_DDIG
+        LD (NH_DPTR),HL
+NH_DDIV:
+        LD B,32
+        XOR A
+NH_DBIT:
+        LD HL,NH_DNUM
+        LD C,4
+        OR A
+NH_DDSH:
+        RL (HL)
+        INC HL
+        DEC C
+        JR NZ,NH_DDSH
+        RLA
+        CP 10
+        JR C,NH_DDNEXT
+        SUB 10
+        LD HL,NH_DNUM
+        INC (HL)
+NH_DDNEXT:
+        DJNZ NH_DBIT
+        ADD A,'0'
+        LD HL,(NH_DPTR)
+        LD (HL),A
+        INC HL
+        LD (NH_DPTR),HL
+        LD HL,NH_DNUM
         LD B,4
-NH_COUNT_LOOP:
-        LD A,(HL)
-        CALL NH_HEX
+        XOR A
+NH_DNONZERO:
+        OR (HL)
+        INC HL
+        DJNZ NH_DNONZERO
+        JR NZ,NH_DDIV
+        LD HL,(NH_DPTR)
+NH_DDIGIT:
         DEC HL
-        DJNZ NH_COUNT_LOOP
+        LD A,(HL)
+        PUSH HL
+        LD E,A
+        LD C,2
+        CALL AC_BDOS
+        POP HL
+        LD DE,NH_DDIG
+        OR A
+        SBC HL,DE
+        RET Z
+        ADD HL,DE
+        JR NH_DDIGIT
+NH_DNUM: DS 4
+NH_DDIG: DS 10
+NH_DPTR: DW 0
+NH_MEMBER_NAME:
+        XOR A
+        LD (NH_NAME_LENGTH),A
+        LD HL,NH_CONTEXT+AS_MEMBER
+        LD B,8
+        CALL NH_NAME_PART
+        LD A,(HL)
+        CP ' '
+        RET Z
+        LD E,'.'
+        CALL NH_EMIT_NAME_CHAR
+        LD B,3
+NH_NAME_PART:
+        LD A,(HL)
+        CP ' '
+        JR Z,NH_NAME_NEXT
+        LD E,A
+        CALL NH_EMIT_NAME_CHAR
+NH_NAME_NEXT:
+        INC HL
+        DJNZ NH_NAME_PART
         RET
+NH_EMIT_NAME_CHAR:
+        LD C,2
+        CALL AC_BDOS
+        LD A,(NH_NAME_LENGTH)
+        INC A
+        LD (NH_NAME_LENGTH),A
+        RET
+NH_FILE_COUNT:
+        PUSH HL
+        CALL NH_PRINT_COUNT
+        POP HL
+        LD A,(HL)
+        DEC A
+        INC HL
+        OR (HL)
+        INC HL
+        OR (HL)
+        INC HL
+        OR (HL)
+        LD DE,NH_FILES_TEXT
+        JR NZ,NH_FILE_WORD
+        LD DE,NH_FILE_TEXT
+NH_FILE_WORD:
+        JP NH_PRINT
+NH_NAME_LENGTH: DB 0
+NH_FILE_TEXT: DB ' file','$'
+NH_FILES_TEXT: DB ' files','$'
 NH_PRINT_FIELD:
         LD E,(HL)
         LD C,2
@@ -401,6 +478,12 @@ NH_IS_HELP:
         LD HL,NH_HELP_WORD
         JR NH_MATCH
 NH_IS_LIST:
+        CP 2
+        JR NZ,NH_LIST_LONG
+        PUSH HL
+        LD HL,NH_L_WORD
+        JP NH_MATCH
+NH_LIST_LONG:
         CP 5
         RET NZ
         PUSH HL
@@ -555,21 +638,22 @@ NH_CHAR_BAD:
         RET
 NH_BAD_CHARS: DB '<>.,;:=?*[]/\|"'
 NH_HELP_WORD: DB '/HELP',0
+NH_L_WORD: DB '/L',0
 NH_LIST_WORD: DB '/LIST',0
 NH_TEST_WORD: DB '/TEST',0
 NH_T_WORD: DB '/T',0
 NH_EXTRACT_WORD: DB '/EXTRACT',0
 NH_X_WORD: DB '/X',0
 NH_AUDIT_OK: DB 'Structure/selected readability checked.',13,10
-        DB 'CRCs verified (hex): ', '$'
+        DB 'CRCs verified : ', '$'
 NH_UNCHECKED: DB '; unavailable/ambiguous: ', '$'
-NH_NOT_SELECTED: DB 13,10,'Members not selected (hex): ', '$'
+NH_NOT_SELECTED: DB 13,10,'Members not selected : ', '$'
 NH_TEST_DONE: DB 'Integrity checks complete; see CRC coverage above.',13,10,'$'
-NH_CRC_MISSING: DB '  CRC unavailable/ambiguous.',13,10,'$'
-NH_CRC_VERIFIED: DB '  CRC verified.',13,10,'$'
+NH_CRC_MISSING: DB ': CRC unavailable/ambiguous.',13,10,'$'
+NH_CRC_VERIFIED: DB ': CRC OK',13,10,'$'
 ; @noah-text@
 ; @noah-version-query@
-NH_HEADING: DB 'Member       Bytes (hex)',13,10,'$'
+NH_HEADING: DB 'Member       Bytes',13,10,'$'
 NH_BYTES: DB ' bytes',13,10,'$'
 NH_DONE: DB 'Listing complete. Contents and CRCs not tested.',13,10,'$'
 NH_BAD_ARCHIVE: DB 'NOAH: Archive/read error ', '$'

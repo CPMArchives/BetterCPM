@@ -1,0 +1,36 @@
+{
+  "source_identity": "commit containing this record; based on f59c840",
+  "status": "local regression-tested binaries; not newly packaged or Model 4 validated",
+  "artifacts": [
+    {
+      "artifact": "DIR.COM",
+      "bytes": 9816,
+      "sha256": "8f22a37a5f2e6cd47a0cd80cc5e1089b78a7d2e3b4dea34c8d4fd0c7c5533de2"
+    },
+    {
+      "artifact": "COPY.COM",
+      "bytes": 12662,
+      "sha256": "05893b59175fd07156c2fe65fb5e42b25ec9d53c6d9c16097c0b217f41f8d35d"
+    },
+    {
+      "artifact": "CRCKSUM.COM",
+      "bytes": 22475,
+      "sha256": "a2808bc404d8b084acc0c2dc0fe60673e3564429360f4e3e8b69c171227a94be"
+    },
+    {
+      "artifact": "NOAH.COM",
+      "bytes": 18619,
+      "sha256": "2b410204b34f36e0e7ce869c61f7b6f7b357dc645c53029c889973ce2c290597"
+    },
+    {
+      "artifact": "NOAH.OVL",
+      "bytes": 36736,
+      "sha256": "fc46866df0ba35945bfa46afec6f6e5196081010ff4916e2f5732eabdc086e81"
+    },
+    {
+      "artifact": "MD5SUM.COM",
+      "bytes": 18316,
+      "sha256": "692a83f1e21911987cdabba8747463a306ac5b46e6d91b7c8bc47d00a5576022"
+    }
+  ]
+}

@@ -26,18 +26,18 @@ def tests(m):
         assert outcome==(dict(m.files),dict(m.attrs),list(m.created),list(m.renamed),list(m.deleted)),(command,quiet)
         if progress:assert progress in normal and progress not in quiet,(command,normal,quiet)
         else:assert quiet==normal,(command,normal,quiet)
-        assert ('selected ' in quiet or 'Accepted source versions' in quiet),quiet
-        if command.startswith('/REMOVE'):assert 'TEXT    .DAT' in quiet,quiet
+        assert 'Outcome: failure.' not in quiet and '(hex)' not in quiet,quiet
+        if command.startswith('/REMOVE'):assert 'TEXT.DAT' in quiet,quiet
     # Quiet does not imply Yes, suppress authorization, or consume different keys.
     for answer in ('Y','N'):
         text=m.run('/X /Q TEST.LBR C3:',{lib:raw,target:b'OLD'},keys=answer)
         assert 'Replace? Y/N/A/C/? [N]:' in text,text
         assert m.files[target]==(padded(data) if answer=='Y' else b'OLD'),text
-        if answer=='N':assert 'declined' in text and 'skipped: 00000001' in text,text
+        if answer=='N':assert 'declined' in text and '1 file skipped.' in text,text
     text=m.run('/X /Q /Y /R TEST.LBR C3:',{lib:raw,target:b'OLD'},attributes={target:1})
     assert 'protected; skipped' in text and not m.answers and m.files[target]==b'OLD',text
     text=m.run('/SQ /Q /Y B7:TEXT.DAT C3:',{source:data},failures={'write':1})
-    assert 'B7:TEXT.DAT' in text and 'codec operation failed' in text and 'failed 0001' in text,text
+    assert 'B7:TEXT.DAT' in text and 'codec operation failed' in text and m.result == 3,text
     # A rollback failure retains exact recovery names even with quiet enabled.
     text=m.run('/X /Q TEST.LBR C3:',{lib:raw,target:b'OLD'},keys='Y',failures={'rename':(2,3)})
     assert 'BAK' in text and 'TMP' in text and 'retained' in text.lower(),text
@@ -47,7 +47,7 @@ def tests(m):
     row=bytearray(entry(b'TEXT    DAT'));row[18]=1
     stamped=with_crcs(archive([bytes(row)],padded(data)))
     text=m.run('/X /Q TEST.LBR C3:',{lib:stamped})
-    assert 'Timestamp not restored' in text and 'Warnings' in text,text
+    assert 'Timestamp not restored' in text and m.result == 2,text
     # Failed source identities must remain visible; preserve the existing outcome.
     m.run('/ADD NEW.LBR B7:TEXT.DAT',{source:data},failures={'read':1})
     normal_files=dict(m.files)

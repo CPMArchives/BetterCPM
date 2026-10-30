@@ -1,0 +1,58 @@
+{
+  "platform": "z80pack",
+  "scope": "native assembly byte parity only; no Model 4 execution",
+  "system": {
+    "z80pack": {
+      "source_revision": "bfe45564609ae41d30d5abad696114442e0a2d22",
+      "core_sha256": "b4e86ad457172613e64d93c558e8c91e7e76b6b285a9e22c20ac91a8a09f9bdc",
+      "image_sha256": "287b7613d98fc443d162c78c5d32622679b53b03a96e7dd12fd5320ff8ae6f13"
+    }
+  },
+  "modules": [
+    {
+      "module": "NOAH",
+      "bytes": 18619,
+      "sha256": "2b410204b34f36e0e7ce869c61f7b6f7b357dc645c53029c889973ce2c290597"
+    },
+    {
+      "module": "NHCLI",
+      "bytes": 21924,
+      "sha256": "4d259a1f53dcfbdfafc64ac2b4ee38550a9e3c69863919ca5d9017219964c6b3"
+    },
+    {
+      "module": "NCSQ",
+      "bytes": 1435,
+      "sha256": "2d3339badee9e4a83ada8626c53822635a8cbb8d5949f4e7e3e1b93e30926131"
+    },
+    {
+      "module": "NCUSQ",
+      "bytes": 940,
+      "sha256": "5276aed6898b6ba494b4c325314c61242899e4813989dae8f072b48387c4cc6e"
+    },
+    {
+      "module": "NCCR",
+      "bytes": 1205,
+      "sha256": "400e69c4f012e51706deb07c739c9f7334b956dfb8ab6eb59e9c8cfa5be90003"
+    },
+    {
+      "module": "NCUNCR",
+      "bytes": 1460,
+      "sha256": "7651dbe02d024677ee8c4802bf8c91c4144b9e6d899985cd3ee54f430ce97434"
+    },
+    {
+      "module": "NHARK",
+      "bytes": 5712,
+      "sha256": "b2bc7076c0d98f921a0b1f322ad3a49a6149e7558174355659fba9a17b771398"
+    },
+    {
+      "module": "NCLZW",
+      "bytes": 1705,
+      "sha256": "388a762fcef7324e61340018d6f681499855662e7421e21702058e678cdfb75b"
+    },
+    {
+      "module": "NCAR8",
+      "bytes": 1650,
+      "sha256": "9229520c18cde88feb11dc5f99e784ad5841f2973757114a5b41e7e2bd6d8a10"
+    }
+  ]
+}

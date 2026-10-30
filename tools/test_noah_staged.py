@@ -22,17 +22,17 @@ def tests(m):
     raw=with_crcs(archive([entry(b'FIRST   DAT',start=1),entry(b'SECOND  DAT',start=2)],b'A'*128+b'B'*128))
     text=m.run('/X TEST.LBR C3:',{lib:raw},keys='R',failures={'write':1})
     assert m.files[first]==b'A'*128 and m.files[second]==b'B'*128,text
-    assert 'Extracted (hex): 00000002' in text and 'failed: 00000000' in text and not m.opened,text
+    assert '2 files extracted.' in text and m.count32('NA_COUNTS',8)==0 and not m.opened,text
     assert len(m.created)==3 and len(m.renamed)==2,text
     for options,answer in (('','S'),('/Q','\r'),('/Y','')):
         text=m.run(f'/X {options} TEST.LBR C3:',{lib:raw},keys=answer,failures={'write':1})
         assert first not in m.files and m.files[second]==b'B'*128 and not m.opened,text
-        assert 'failed: 00000001' in text and 'skipped: 00000000' in text and 'Unprocessed (hex): 00000000' in text,text
+        assert '1 file failed.' in text and m.count32('NA_COUNTS',4)==0 and m.count32('NA_COUNTS',12)==0,text
         assert 'Skipped after failure.' in text,text
         if options=='/Y':assert not m.answers,text
     text=m.run('/X TEST.LBR C3:',{lib:raw},keys='A',failures={'write':1})
     assert first not in m.files and second not in m.files and 'cancelled' in text.lower(),text
-    assert 'failed: 00000001' in text and 'Unprocessed (hex): 00000001' in text,text
+    assert '1 file failed.' in text and '1 file unprocessed.' in text,text
 
     # Whole archive reconstruction must regenerate the same intended bytes.
     text=m.run('/ADD TEST.LBR B7:TEXT.DAT',{source:data})
@@ -50,7 +50,7 @@ def tests(m):
     read=sum(fn==33 for fn,_ in m.events[:make])+1
     text=m.run('/X TEST.LBR C3:',{lib:raw},keys='R',failures={'read':read})
     assert not m.answers and first not in m.files and second not in m.files,text
-    assert 'Unprocessed (hex): 00000001' in text,text
+    assert '1 file unprocessed.' in text,text
     # Retained or unconfirmed names/handles prevent restart and continuation.
     for failures,options in (({'write':1,'delete':1},{}),
                              ({'write':1},{'delete_keeps_on_success':True}),
@@ -63,7 +63,7 @@ def tests(m):
         assert m.files[lib]==raw,text
     text=m.run('/X *.LBR C3:',{lib:raw,diskkey(1,'TWO.LBR'):raw},keys='R',
                failures={'write':1,'close_output':0})
-    assert 'Close unconfirmed: C3:FIRST00.TMP' in text and 'unprocessed 0001' in text and not m.answers,text
+    assert 'Close unconfirmed: C3:FIRST00.TMP' in text and 'Unprocessed operations: 1' in text and not m.answers,text
     # The publication boundary is never crossed again, even after rollback.
     text=m.run('/X TEST.LBR C3:',{lib:raw,first:b'OLD'},keys='YR',failures={'rename':2})
     assert m.files[first]==b'OLD' and m.answers==[ord('Y')] and second not in m.files,text
@@ -71,7 +71,7 @@ def tests(m):
     # Do not advance a frozen batch over an archive input that failed to close.
     another=diskkey(1,'TWO.LBR')
     text=m.run('/TEST *.LBR',{lib:raw,another:raw},failures={'close_input':1})
-    assert 'unprocessed 0001' in text and not m.created,text
+    assert 'Unprocessed operations: 1' in text and not m.created,text
     print(f'PASS: {m.cases} staged failure/recovery transactions')
 
 

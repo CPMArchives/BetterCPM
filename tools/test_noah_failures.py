@@ -67,7 +67,7 @@ def tests(m):
     # An input that cannot be confirmed closed must not be reset/reopened over.
     text=m.run('/SQ B7:*.DAT C3:',{**inputs,second:b'NEXT'},failures={'source_close':0},keys='R')
     assert not m.answers and 'source close uncertain; batch stopped' in text,text
-    assert 'unprocessed 0001' in text and not m.created,text
+    assert m.result == 3 and not m.created,text
     print(f'PASS: {m.cases} safe source-failure transactions')
 
 

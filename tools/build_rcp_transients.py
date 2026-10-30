@@ -59,6 +59,40 @@ def transient(image: bytes, entry: int, check: int, banner: int) -> bytes:
 
 def copy_source(text: str) -> str:
     """Replace only the transient COPY wildcard driver; keep CPX untouched."""
+    from component_registry import load
+    from component_identity import title
+    from utility_versions import display_development
+    row = load()['components']['utility:COPY']
+    help_lines = [title('COPY', row['version'], row['revision'], development=display_development('utility:COPY')),
+                  '  - - -', ' | BetterCP/M Utilities', ' | File Copying', ' |',
+                  ' |   Usage: COPY source destination [options]',
+                  ' |          COPY destination=source [options]', '',
+                  '   Options:',
+                  '     /O       Overwrite writable destination files.',
+                  '     /S       Skip existing writable files (excludes /O).',
+                  '     /B       Batch mode; collisions need /O or /S.',
+                  '     /V       Verify copied data by reading it back.',
+                  '     /BACKUP  Clear source archive flag after backup.', '',
+                  '     /HELP    Display this help.',
+                  '     /VER     Display utility identification.']
+    usage = "CT_USAGE: DB 13,10\n" + ''.join(
+        ("        DB '" + line.replace("'", "''") + "',13,10\n") if line else "        DB 13,10\n" for line in help_lines)
+    usage += "        DB '$'"
+    query = (ROOT/'src/utilities/common/version.inc').read_text()
+    query = query[query.index('\nUV_QUERY:')+1:]
+    query = query.replace('UV_', 'CH_').replace('LD C,4', 'LD C,5').replace("'/ver'", "'/help'")
+    help_check = """CT_CHECK:
+        PUSH DE
+        LD HL,0081H
+        LD A,(0080H)
+        LD B,A
+        LD DE,CT_USAGE
+        CALL CH_QUERY
+        POP DE
+        JP C,0
+        JP UV_CHECK
+"""
+
     start = text.index("BC_WSTART:")
     end = text.index("BC_WCMP:", start)
     batch = (SOURCE.parent / "copy-batch.inc").read_text(encoding="ascii")
@@ -165,7 +199,7 @@ CT_MAPMSG: DB 13,10,'COPY DESTINATION CONFLICT',13,10,'$'
 CT_NAMEMSG: DB 13,10,'INVALID DESTINATION NAME',13,10,'$'
 """
     marker = "        .DEPHASE" if "        .DEPHASE" in text else "        END\n"
-    return text.replace(marker, scope + state + marker, 1)
+    return text.replace(marker, scope + state + usage + "\n" + help_check + query + marker, 1)
 
 
 def dir_source() -> str:
@@ -304,7 +338,7 @@ def main() -> None:
             command_base = assemble(args.assembler, copy_text,
                                     BUILD / "copy-transient.bin", command_listing, ORIGIN)
         data = transient(command_base, symbol(command_listing, entry_name),
-                         symbol(command_listing, "UV_CHECK"), symbol(command_listing, "UV_T" + command))
+                         symbol(command_listing, "CT_CHECK" if command == "COPY" else "UV_CHECK"), symbol(command_listing, "UV_T" + command))
         output = BUILD / f"{command}.COM"
         output.write_bytes(data)
         print(f"{hashlib.sha256(data).hexdigest()}  {output.relative_to(ROOT)}")

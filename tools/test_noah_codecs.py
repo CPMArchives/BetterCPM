@@ -78,7 +78,7 @@ def tests(m):
     raw=with_crcs(archive([bytes(stamped)],wire+bytes([26])*tail))
     text=m.run('/X /EXPAND B7:STAMP.LBR C3:',{diskkey(2,'STAMP.LBR',7):raw},user=7)
     assert m.files[diskkey(3,'STAMPED.TXT',3)]==padded(b'preserve stamped bytes'),text
-    assert 'timestamp' in text.lower() and 'Warnings' in text,text
+    assert 'timestamp' in text.lower() and m.result==2,text
     # Every load validates the entire companion before executing its code.
     ovl=m.overlay;key=diskkey(1,'NOAH.OVL')
     for bad in (ovl[:-128],ovl+bytes(128),bytes([0])+ovl[1:],ovl[:-1]+bytes([ovl[-1]^1])):

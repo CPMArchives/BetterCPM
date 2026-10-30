@@ -393,7 +393,7 @@ CRCKSUM [options] [filespec ...] [options]
 | `/LEGACY` | Write historical CRCKLIST records and force historical CRCK alone. |
 | `/CHECK` | Verify against a reference discovered in each selected DU. |
 | `/CHECK=filename` | Verify against this exact list name in each selected DU. Supply a filename only. |
-| `/40` | Wrap table columns for a 40-column display. Saved lists are unchanged. |
+| `/40` | Display complete groups of two checksum columns within 40 columns. Saved lists are unchanged. |
 | `/HELP` | Display help without accessing files. |
 | `/VER` | Display the utility's version and revision without accessing files. |
 
@@ -450,7 +450,7 @@ The name and extension occupy separate fixed fields with no dot. An extensionles
 
 The column header identifies the calculations; the dash runs establish their positions. CRC reads data by columns, so an empty extension cannot be confused with a record count. Keep the header, separator and rows aligned if editing a list. The reader accepts algorithm columns in any order, blank lines, comments beginning with `;`, and repeated section headers. Unknown or duplicate columns, missing values and malformed records are reported rather than guessed.
 
-`/40` retains the table: filename and record count appear on the first row, and excess checksum columns wrap onto continuation rows aligned beneath the first checksum column. Headings and values use the same grouping. It changes screen presentation only. Saved lists retain the standard table, and `/LEGACY` retains its historical file layout.
+`/40` displays groups of two equal-width checksum columns. Each group contains its headings, eight-dash separators and values, with a blank line between groups. The filename and record count appear only in the first group; later groups align beneath the checksum columns. Algorithm selection and command-line order determine the groups. It changes screen presentation only. Saved lists retain the standard table, and `/LEGACY` retains its historical file layout.
 
 ### Saving master and local lists
 
@@ -1691,22 +1691,23 @@ The host Utilities package includes the complete ZSM4 source companion.
 ## NOAH archive utility
 
 NOAH manages CP/M LBR libraries and ARC-compatible `.ARK`/`.ARC` archives.
-It is supplied on a separate NOAH Utilities disk for each platform. Mount that
-disk in B: in place of the primary Utilities disk when using NOAH.
+It is supplied on the Companion Utilities disk for each platform, retaining
+the historical BetterCPM-NOAH image name. Mount it in C: alongside the primary
+Utilities disk in B:.
 Keep `NOAH.COM` and its matching `NOAH.OVL` together. Change to their disk/user
 before starting NOAH, then qualify the archive and source operands with their
 writable work disks. Overlay lookup uses that invocation DU, then A0:.
 
 ```text
-B:
-NOAH /LIST C:FILES.ARK
-NOAH /TEST C:FILES.ARK
-NOAH /EXTRACT C:FILES.ARK D:
-NOAH /ADD C:FILES.ARK D:*.TXT
-NOAH /ADD /SQ C:TEXTS.ARK D:*.TXT
-NOAH /ADD /CR C:BINARY.ARK D:*.BIN
-NOAH /REMOVE C:FILES.ARK *.BAK
-NOAH /COMPACT C:FILES.ARK
+C:
+NOAH /LIST D:FILES.ARK
+NOAH /TEST D:FILES.ARK
+NOAH /EXTRACT D:FILES.ARK D:
+NOAH /ADD D:FILES.ARK D:*.TXT
+NOAH /ADD /SQ D:TEXTS.ARK D:*.TXT
+NOAH /ADD /CR D:BINARY.ARK D:*.BIN
+NOAH /REMOVE D:FILES.ARK *.BAK
+NOAH /COMPACT D:FILES.ARK
 ```
 
 The same operations work with LBR. ADD requires one exact archive target;
@@ -1725,8 +1726,12 @@ length is available; 00h, 1Ah and high-bit bytes are ordinary input data.
 
 `/Y` approves ordinary replacement/removal and explicit COMPACT. It never
 overrides read-only/system protection; `/R` and `/SYS` enable separate protected
-questions. `/Q` suppresses routine progress, retaining choices, warnings, errors
-and the final outcome. Escape or Ctrl-C cancels at safe boundaries.
+questions. `/Q` (or `/QUIET`) suppresses routine progress, retaining choices,
+warnings, errors and the operation summary. Successful commands omit redundant
+internal accounting. File sizes and counts are decimal. LIST does not test
+contents; TEST reports CRC results and incomplete coverage explicitly.
+`/L` aliases `/LIST`, `/A` aliases `/ADD`, and `/H` aliases `/HELP`.
+`/VER` displays identification; `/V` is not a version alias. Escape or Ctrl-C cancels at safe boundaries.
 
 NOAH's ordinary replacement prompt offers `Y/N/A/C/?`, default No. Type `?`
 for `Y Yes, N No, A All, C Cancel, ? Help`. Safe failure recovery offers

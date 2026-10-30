@@ -83,7 +83,7 @@ def tests(m):
     for method in range(5,10):
         n=f'LZW{method}.ARC';src=diskkey(1,n)
         t=m.run('/TEST '+n,{src:f[n]},tpa=0xc501)
-        assert 'Outcome: success.' in t and 'verified 00000001; unavailable/ambiguous: 00000000' in t,t
+        assert m.result==1 and m.count32('NA_CRC_CHECKED')==1 and m.count32('NA_CRC_UNCHECKED')==0,t
         t=m.run('/X /Y '+n+' C3:',{src:f[n]},tpa=0xca01)
         assert m.files[diskkey(3,f'M{method}.BIN',3)]==padded(raw),t
         assert m.files[src]==f[n] and not m.opened,t

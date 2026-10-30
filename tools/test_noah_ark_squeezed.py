@@ -38,13 +38,13 @@ def tests(m):
     for ceiling in (0xc501,0xca01):
         for op in ('/TEST','/X /Y'):
             t=m.run(op+' SQUEEZED.ARC'+(' C3:' if '/X' in op else ''),{src:f['SQUEEZED.ARC']},tpa=ceiling)
-            assert 'Outcome: success.' in t and 'verified 00000001; unavailable/ambiguous: 00000000' in t,t
+            assert m.result==1 and m.count32('NA_CRC_CHECKED')==1 and m.count32('NA_CRC_UNCHECKED')==0,t
             if '/X' in op:assert m.files[out]==padded(raw),t
             assert m.files[src]==f['SQUEEZED.ARC'] and not m.opened,t
     for n,b in f.items():
         if n=='SQUEEZED.ARC':continue
         t=m.run('/X /Y '+n,{diskkey(1,n):b})
-        if n=='EMPTY.ARC':assert m.files[diskkey(1,'EMPTY.BIN')]==b'' and 'Outcome: success.' in t,t
+        if n=='EMPTY.ARC':assert m.files[diskkey(1,'EMPTY.BIN')]==b'' and m.result==1,t
         else:assert 'Outcome: failure.' in t and not m.created,t
     malformed=[b'\x01\x01',b'\xff\xff',tree([(1,1),(-66,-257)],b'\0'),
         tree([(-66,-257),(-67,-257)],b'\x02'),tree([(-66,-257)]),b'\0\0extra']
@@ -58,12 +58,12 @@ def tests(m):
     # Maximum 256-node tree/depth, arbitrary numbering and zero-valued CRC.
     nodes=[(-1,i+1) for i in range(255)]+[(-1,-257)]
     t=m.run('/TEST DEEP.ARC',{diskkey(1,'DEEP.ARC'):encoded(tree(nodes,b'\xff'*32))})
-    assert 'Outcome: success.' in t,t
+    assert m.result==1,t
     t=m.run('/X /Y ZERO.ARC',{diskkey(1,'ZERO.ARC'):squeezed(bytes(255))+b'\x1a\0'})
     assert m.files[diskkey(1,'SQUEEZED.BIN')]==padded(bytes(255)),t
     mix=f['CYCLE.ARC'][:-2]+squeezed(b'good',b'GOOD.BIN')+b'\x1a\0'
     t=m.run('/X /Y MIX.ARC GOOD.BIN',{diskkey(1,'MIX.ARC'):mix})
-    assert m.files[diskkey(1,'GOOD.BIN')]==padded(b'good') and 'Outcome: success.' in t,t
+    assert m.files[diskkey(1,'GOOD.BIN')]==padded(b'good') and m.result==1,t
     for keys in ('R','S'):
         t=m.run('/X SQUEEZED.ARC C3:',{src:f['SQUEEZED.ARC']},failures={'write':1},keys=keys)
         if keys=='R':assert m.files[out]==padded(raw),t

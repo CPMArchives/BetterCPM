@@ -174,19 +174,21 @@ DT_REPORT:
         ADD A,'A'
         CALL BC_PCHAR
         CALL RD_PRINTUSER
-        LD DE,DT_HEADING
-        CALL BC_PRINT
         LD HL,(DT_FILES)
         LD A,H
         OR L
         JR NZ,DT_ROWS
-        LD DE,BC_NOFILE
+        LD DE,DT_EMPTY
+        CALL BC_PRINT
+        LD DE,DT_RULE
         CALL BC_PRINT
         CALL DX_CURRENT
-        LD DE,BC_NL
+        LD DE,DT_ENDRULE
         CALL BC_PRINT
         JP RD_NEXT
 DT_ROWS:
+        LD DE,DT_HEADING
+        CALL BC_PRINT
         CALL DN_SORT
         LD HL,DT_BUFFER
         LD (DT_SCAN),HL
@@ -331,6 +333,7 @@ DT_END: DW 0
 DT_FILES: DW 0
 DT_SCAN: DW 0
 DT_LEFT: DW 0
+DT_EMPTY: DB ': NO FILE',13,10,'$'
 DT_HEADING: DB ':',13,10,'$'
 DT_SPACE: DB '  $'
 DT_FILEMSG: DB ' FILES, $'
