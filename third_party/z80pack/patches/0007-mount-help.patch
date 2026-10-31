@@ -1,0 +1,109 @@
+--- a/cpmtools/mount.asm
++++ b/cpmtools/mount.asm
+@@ -3,6 +3,7 @@
+         dad sp
+         shld savedsp
+         lxi sp,stacktop
++        call query
+         mvi a,255
+         sta 1fffh
+         xra a
+@@ -52,6 +53,98 @@
+ message:mvi c,9
+         call 5
+         jmp finish
++query: lxi d,qver
++ call qmatch
++ jz qversion
++ lxi d,qhelp
++ call qmatch
++ jz qshowhelp
++ lxi d,qh
++ call qmatch
++ jz qshowhelp
++ ret
++qversion: lxi d,versiontext
++ jmp message
++qshowhelp: lxi d,helptext
++ jmp message
++qmatch: lxi h,81h
++ lda 80h
++ mov b,a
++qskip: mov a,b
++ ora a
++ jz qnomatch
++ mov a,m
++ cpi ' '
++ jz qadvance
++ cpi 9
++ jnz qcompare
++qadvance: inx h
++ dcr b
++ jmp qskip
++qcompare: ldax d
++ ora a
++ jz qend
++ mov c,a
++ mov a,b
++ ora a
++ jz qnomatch
++ mov a,c
++ cpi '/'
++ mov a,m
++ jz qliteral
++ ani 0dfh
++qliteral: cmp c
++ jnz qnomatch
++ inx h
++ inx d
++ dcr b
++ jmp qcompare
++qend: mov a,b
++ ora a
++ rz
++ mov a,m
++ cpi ' '
++ jz qendadvance
++ cpi 9
++ jnz qnomatch
++qendadvance: inx h
++ dcr b
++ jmp qend
++qnomatch: mvi a,1
++ ora a
++ ret
++qver: db '/VER',0
++qhelp: db '/HELP',0
++qh: db '/H',0
++versiontext:
++        db 13,10
++        db 'MOUNT 1.0 (002-dev)',13,10
++        db '  - - -',13,10
++        db ' | BetterCP/M Utilities',13,10
++        db ' | Disk Image Mounting',13,10
++        db '$'
++helptext:
++        db 13,10
++        db 'MOUNT 1.0 (002-dev)',13,10
++        db '  - - -',13,10
++        db ' | Disk Image Mounting',13,10
++        db ' |',13,10
++        db ' |   Usage: MOUNT X: "host image path"',13,10
++        db ' |          MOUNT [options] [drive selector]',13,10
++        db 13,10
++        db '   Options:',13,10
++        db '     /U /UNMOUNT   Unmount the selected drives.',13,10
++        db '     /L /LIST      List selected drives; default is all.',13,10
++        db '     /H /HELP      Display this help.',13,10
++        db '     /VER          Display utility identification.',13,10
++        db 13,10
++        db '   A selector is X: or a list such as [B,C,D]:.',13,10
++        db '   Unmounting requires an explicit selector.',13,10
++        db '   Bare MOUNT lists all supported drives.',13,10
++        db '   Paths preserve case; quote paths containing spaces.',13,10
++        db '   Relative paths use the emulator working directory.',13,10
++        db '   Changing A: requires confirmation; no reboot is performed.',13,10
++        db '$'
+ warning:db '** WARNING: Changing A: while the system is running may cause',13,10
+         db 'disk errors or loss of unsaved data. Continue? [y/N] $'
+ cancel: db 13,10,'Operation cancelled. No changes made.',13,10,'$'

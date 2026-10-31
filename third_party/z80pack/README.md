@@ -175,3 +175,14 @@ The System disk builder takes MOUNT.COM from the cpmtools directory beside
 the selected emulator source/build tree. No CCP, BDOS, or BIOS changes are
 required. Run `tools/test_cpmsim_mount.py --source <patched-z80pack-tree>`
 to check parsing, real file identity, confirmation gating and mount state.
+
+Both profiles also apply `0007-mount-help.patch`, retaining the maintainer-tested
+MOUNT 1.0 (002-dev) correction. Exact `/VER`, `/H`, and `/HELP` queries are
+case-insensitive and handled locally before invoking the host mount service.
+The service protocol and media-changing code are unchanged. The assembled
+1341-byte MOUNT.COM has SHA-256
+`b7051dccd6bb13ade13f66f0612c64c925afef324faa1a642716da103ddb7262`.
+Reconstruct the selected runtime before preparing cpmsim System images: using
+an older runtime tree also selects its older guest tools. Run
+`tools/test_cpmsim_mount_guest.py --source <patched-z80pack-tree>` and
+`tools/test_cpmsim_mount_system.py` against the newly prepared System disk.
