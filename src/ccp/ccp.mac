@@ -1700,7 +1700,13 @@ CCP_MTZERO:                             ; clear default FCB area
         LD      (0080H),A
         LD      C,A
         LD      B,0
+        ; APTR addresses the folded command; copy the original spelling.
         LD      HL,(CCP_APTR)
+        LD      DE,CCP_DATA
+        OR      A
+        SBC     HL,DE
+        LD      DE,CCP_RAW
+        ADD     HL,DE
         LD      DE,0081H
         LD      A,C
         OR      A
@@ -2840,7 +2846,15 @@ CPX_RETURN:                             ; return from CPX handler
   ; a SPACE-only command reached the loader and printed a question mark.
   ; Sharing this walk also avoids another pointer in the relocation table.
 
-CCP_UPPER:                              ; uppercase command line
+CCP_UPPER:                              ; retain spelling, fold dispatch copy
+        LD      A,(CCP_COUNT)
+        OR      A
+        RET     Z
+        LD      C,A
+        LD      B,0
+        LD      HL,CCP_DATA
+        LD      DE,CCP_RAW
+        LDIR
         LD      C,0
         LD      HL,CCP_DATA
         LD      A,(CCP_COUNT)
@@ -3015,7 +3029,7 @@ CCP_ZPAGE:                              ; clear transient base page
         LD      A,(CCP_CMDLEN)
         LD      E,A
         LD      D,0
-        LD      HL,CCP_DATA
+        LD      HL,CCP_RAW
         ADD     HL,DE
         LD      DE,0081H
         LD      A,B
@@ -3436,6 +3450,11 @@ CCP_BUFFER:                             ; command buffer base
 CCP_COUNT:                              ; command-line length
         DB      0
 CCP_DATA:                               ; command-line text
+        REPT    127
+        DB      0
+        ENDM
+; Original spelling for transient tails; dispatch and default FCBs use DATA.
+CCP_RAW:
         REPT    127
         DB      0
         ENDM

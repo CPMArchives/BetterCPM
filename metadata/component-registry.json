@@ -691,7 +691,7 @@
         "tools/build_ccpreload.py",
         "tools/build_checked_command_loader.py"
       ],
-      "revision": 1,
+      "revision": 2,
       "api_version": "2.0",
       "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending"
