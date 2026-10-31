@@ -2847,21 +2847,16 @@ CPX_RETURN:                             ; return from CPX handler
   ; Sharing this walk also avoids another pointer in the relocation table.
 
 CCP_UPPER:                              ; retain spelling, fold dispatch copy
-        LD      A,(CCP_COUNT)
-        OR      A
-        RET     Z
-        LD      C,A
-        LD      B,0
-        LD      HL,CCP_DATA
-        LD      DE,CCP_RAW
-        LDIR
         LD      C,0
         LD      HL,CCP_DATA
+        LD      DE,CCP_RAW
         LD      A,(CCP_COUNT)
         LD      B,A
 
-CCP_UPLOOP:                             ; uppercase next command character
+CCP_UPLOOP:                             ; retain and uppercase next character
         LD      A,(HL)
+        LD      (DE),A
+        INC     DE
         CP      ' '
         JR      Z,CCP_UPNEXT
         INC     C

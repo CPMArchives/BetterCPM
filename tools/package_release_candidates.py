@@ -219,6 +219,14 @@ def assemble(args):
             evidence={'system':report}
             if platform=='cpmsim':
                 files.update({'host/BetterCPM/'+n:d for n,d in host.items()})
+                runtime_source=args.runtime_manifest.resolve().parent/'z80pack'
+                for name in ('r','w','mount'):
+                    relative='cpmtools/'+name+'.com'
+                    payload=(runtime_source/relative).read_bytes()
+                    if sha(payload)!=runtime['guest_utilities'][relative]:
+                        raise ValueError('guest utility differs from runtime receipt: '+name)
+                    files['host/guest-tools/'+name.upper()+'.COM']=payload
+
                 evidence['emulator']=runtime
         elif id in ('utilities-cpmsim','utilities-model4'):
             selected,evidence=utilities_members(asset['platforms'][0],sums,images,

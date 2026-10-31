@@ -72,11 +72,11 @@ def build(repository, output, profile):
     for args,folder in zip(builds,('srcsim','srctools')):
         with (output/(folder+'-build.log')).open('wb') as log:
             subprocess.run(args,cwd=source/'cpmsim'/folder,env=env,stdout=log,stderr=subprocess.STDOUT,check=True)
-    guest_build=[make,'CC='+compiler,'r.com','w.com']
+    guest_build=[make,'CC='+compiler,'r.com','w.com','mount.com']
     with (output/'cpmtools-build.log').open('wb') as log:
         subprocess.run(guest_build,cwd=source/'cpmtools',env=env,stdout=log,stderr=subprocess.STDOUT,check=True)
     builds.append(guest_build)
-    guest_binaries=[source/'cpmtools'/n for n in ('r.com','w.com')]
+    guest_binaries=[source/'cpmtools'/n for n in ('r.com','w.com','mount.com')]
     binaries=[source/'cpmsim/cpmsim',*(source/'cpmsim/srctools'/n for n in ('cpmrecv','cpmsend','mkdskimg','bin2hex','ptp2bin'))]
     if platform.system()=='Darwin':
         for path in binaries:command(['codesign','--force','--sign','-',path])

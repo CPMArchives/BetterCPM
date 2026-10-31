@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import sys
 from checked_carriers import selected_contract
-from build_distribution import (digest,selected_files,geometry,capacity,construct,
+from build_distribution import (digest,selected_files,stage_cpmsim_guest,geometry,capacity,construct,
     validate_config_fingerprint,validate_config_cold_patch,validate_files,boot)
 from build_z80pack_image import DEFAULT_FORMAT,disk_definition
 from fdf_format import select_fdf
@@ -59,6 +59,7 @@ def main():
     p.add_argument('--reuse',action='store_true')
     a=p.parse_args();contract=components(a.reuse);out=a.output.resolve();out.mkdir(parents=True)
     manifest=json.loads((ROOT/'metadata/distribution.json').read_text())
+    stage_cpmsim_guest(a.simulator, ROOT)
     files,omitted=selected_files(manifest,'z80pack',ROOT)
     if {'HELLO.RSX','HELLO.CPX','STATEFUL.RSX'} & {c['name'] for c,_ in files}:
         raise ValueError('development fixture in distribution')
