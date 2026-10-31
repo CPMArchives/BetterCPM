@@ -92,3 +92,46 @@ python3 tools/test_cpmsim_live_media.py --simulator /path/to/cpmsim
 It tests initially empty drives, atomic link replacement, ejection, reinsertion,
 read-only reads and write rejection, writable transfers and shortened media,
 all within one emulator process using disposable images.
+
+## Host file transfer
+
+Both profiles include `0005-host-transfer.patch`. The builder also assembles
+`z80pack/cpmtools/r.com` and `w.com` and records their hashes under
+`guest_utilities` in environment.json. Install R together with the matching
+emulator: host read status 1 now denotes EOF, while FF denotes an error.
+Old R works with the new emulator; new R reports EOF as an error on old ones.
+
+The commands accept source followed by optional destination:
+
+```text
+R FILE.TXT
+W FILE.TXT
+R TEST.TXT B3:
+R TEST.TXT B3:TEST2.TXT
+W B3:TEST.TXT TEST2.TXT
+```
+
+Host names are flat 8.3 names converted to lowercase, relative to the emulator's
+working directory. CP/M operands accept drive A-P and optional user 0-15;
+unspecified locations use the current drive/user. User selection is restored
+on ordinary success and error exits. Destinations default to the source name.
+`/VER`, `/H`, and `/HELP` are exact, case-insensitive queries handled before
+file operations. R/W currently identify as 1.0 (002-dev).
+
+The patch corrects text EOF across records, read/close error reporting, stale
+handles, and the optional SIMBDOS_NO_OVERWRITE implementation. Default
+overwrites remain destructive; partial destinations may remain on failure.
+Text export still follows the extension table; explicit text/binary modes and
+safer replacement are future work. H: mapping, host listing, and MOUNT are not
+implemented by this patch.
+
+Focused checks in the reconstructed tree:
+
+```sh
+python3 tests/test_host_transfer.py
+python3 tests/test_rw_queries.py
+python3 tests/test_rw_transfers.py
+```
+
+The transfer test uses the actual Z80 core and host service with a BDOS fixture;
+full guest-OS integration remains unqualified.

@@ -44,7 +44,7 @@ def build(repository, output, profile):
     if commit!=pin['commit']:raise ValueError('pinned commit unavailable')
     archive=output/'source.tar'
     with archive.open('wb') as stream:
-        subprocess.run(['git','-C',str(repository),'archive',commit,'cpmsim','z80core','iodevices','LICENSE'],stdout=stream,check=True)
+        subprocess.run(['git','-C',str(repository),'archive',commit,'cpmsim','z80core','iodevices','cpmtools','z80asm','z80sim/srcsim/simmem.h','z80sim/srcsim/simport.h','LICENSE'],stdout=stream,check=True)
     archive_hash=sha(archive)
     command(['tar','-xf',archive,'-C',source]);archive.unlink()
     # git apply otherwise discovers a surrounding BetterCP/M checkout when
@@ -72,6 +72,11 @@ def build(repository, output, profile):
     for args,folder in zip(builds,('srcsim','srctools')):
         with (output/(folder+'-build.log')).open('wb') as log:
             subprocess.run(args,cwd=source/'cpmsim'/folder,env=env,stdout=log,stderr=subprocess.STDOUT,check=True)
+    guest_build=[make,'CC='+compiler,'r.com','w.com']
+    with (output/'cpmtools-build.log').open('wb') as log:
+        subprocess.run(guest_build,cwd=source/'cpmtools',env=env,stdout=log,stderr=subprocess.STDOUT,check=True)
+    builds.append(guest_build)
+    guest_binaries=[source/'cpmtools'/n for n in ('r.com','w.com')]
     binaries=[source/'cpmsim/cpmsim',*(source/'cpmsim/srctools'/n for n in ('cpmrecv','cpmsend','mkdskimg','bin2hex','ptp2bin'))]
     if platform.system()=='Darwin':
         for path in binaries:command(['codesign','--force','--sign','-',path])
@@ -82,6 +87,7 @@ def build(repository, output, profile):
               'compiler':command([compiler,'--version']).decode(),'make':command([make,'--version']).decode(),
               'build_commands':builds,'patched_input_sha256':source_hashes,
               'executables':{str(p.relative_to(source)):sha(p) for p in binaries},
+              'guest_utilities':{str(p.relative_to(source)):sha(p) for p in guest_binaries},
               'build_log_sha256':{p.name:sha(p) for p in output.glob('*-build.log')}}
     (output/'environment.json').write_text(json.dumps(manifest,indent=2)+'\n')
     print(source/'cpmsim/cpmsim')
