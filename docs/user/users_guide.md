@@ -7884,6 +7884,8 @@ CONFIG /DEFAULT
 CONFIG /STARTUP="command"
 CONFIG /STARTUP=""
 CONFIG /IOBYTE=value
+CONFIG /H
+CONFIG /HELP
 CONFIG /VER
 ```
 
@@ -7898,6 +7900,11 @@ CONFIG /EDIT=B /SLOT=n /ID=id /CODE=code
 ```
 
 Use the slash-prefixed field names in the tables below. `B` and `C` are example logical drives; these operations accept B through D. Physical-profile selection accepts 0 through 3. The operation selector must come first. Names are case-insensitive and numeric values are unsigned decimal. Separate fields with whitespace. Do not combine these forms with `/SHOW`, startup/IOBYTE options, `/DEFAULT`, or `/VER`. Duplicate or unknown fields, extra operands and numeric overflow are rejected before changes begin.
+
+`/H` and `/HELP` display the Utilities quick reference without reading disk
+configuration or changing settings. An exact unquoted help token takes
+precedence over `/VER` and other arguments. Query-looking text inside quoted
+startup commands or format names remains data. Bare `CONFIG` opens the menus.
 
 ##### Interactive Configuration
 

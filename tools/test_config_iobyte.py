@@ -2,11 +2,17 @@
 """Saved IOBYTE: strict parser, build-owned record, capability gate and rollback."""
 from pathlib import Path
 from test_bios import Z80
-from utility_versions import banner
+from utility_versions import identities, display_development
+from component_identity import identification
+from component_registry import load
 from test_utility_versions import address
 ROOT=Path(__file__).resolve().parents[1]
 
 def main():
+    version,revision=identities()['CONFIG']
+    identity=identification('CONFIG',version,revision,
+        load()['components']['utility:CONFIG']['description'],
+        development=display_development('utility:CONFIG'))
     image=(ROOT/'build/utilities/CONFIG.COM').read_bytes()
     listing=(ROOT/'build/utilities/config.lst').read_text();a=lambda n:address(listing,n)
     def cpu(tail):
@@ -25,11 +31,11 @@ def main():
             assert c.c==2,('invalid IOBYTE did I/O',c.c)
             out.append(c.e);return 0
         c.port_read=invalid_io;c.run(256,limit=200000)
-        assert bytes(out)==((banner('CONFIG')+'\r\n').encode() if '/VER' in tail.split() else b'Invalid CONFIG usage.\r\n'),(tail,bytes(out))
+        assert bytes(out)==(identity.encode() if '/VER' in tail.split() else b'Invalid CONFIG usage.\r\n'),(tail,bytes(out))
     for boundary,allowed in [(0xabff,False),(0xac00,True)]:
         c=cpu('/IOBYTE=85');c.mem[5:8]=bytes((0xc3,boundary&255,boundary>>8))
         c.mem[boundary:boundary+3]=bytes((0xdb,254,0xc9))
-        c.mem[a('INIT')]=0xc9;c.mem[a('IO_APPLY'):a('IO_APPLY')+3]=bytes((0xdb,244,0xc9))
+        c.mem[a('INIT')]=0xc9;c.mem[a('IO_APPLY'):a('IO_APPLY')+5]=bytes((0xdb,244,0xc3,0,0))
         entered=[];out=[]
         def guarded_io(port):
             if port&255==244:entered.append(True);return 0
