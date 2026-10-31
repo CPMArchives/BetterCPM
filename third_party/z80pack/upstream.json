@@ -19,19 +19,25 @@
     {
       "file": "0004-live-media.patch",
       "sha256": "157d86d7b226c349ea6883ead09a801fd5045fa038a4581220bfed59b24ff4f4"
+    },
+    {
+      "file": "0005-host-transfer.patch",
+      "sha256": "855f14d88292d607cbbc3b87aa6b2d8ad50157e5c8cdb1ec48a7af04d8b9ab31"
     }
   ],
   "profiles": {
     "runtime": [
       "0001-disk-geometry.patch",
       "0002-raw-fdf-backend.patch",
-      "0004-live-media.patch"
+      "0004-live-media.patch",
+      "0005-host-transfer.patch"
     ],
     "qualification": [
       "0001-disk-geometry.patch",
       "0002-raw-fdf-backend.patch",
       "0003-rom-qualification.patch",
-      "0004-live-media.patch"
+      "0004-live-media.patch",
+      "0005-host-transfer.patch"
     ]
   }
 }
