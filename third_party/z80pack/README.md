@@ -111,12 +111,12 @@ R TEST.TXT B3:TEST2.TXT
 W B3:TEST.TXT TEST2.TXT
 ```
 
-Host names are flat 8.3 names with case preserved, relative to the emulator's
+Host names are flat names with case preserved, relative to the emulator's
 working directory. CP/M operands accept drive A-P and optional user 0-15;
 unspecified locations use the current drive/user. User selection is restored
 on ordinary success and error exits. Destinations default to the source name.
 `/VER`, `/H`, and `/HELP` are exact, case-insensitive queries handled before
-file operations. R/W currently identify as 1.0 (003-dev).
+file operations. R/W currently identify as 1.0 (004-dev).
 
 The patch corrects text EOF across records, read/close error reporting, stale
 handles, and the optional SIMBDOS_NO_OVERWRITE implementation. Default
@@ -149,3 +149,22 @@ and GO/JUMP. The resident allocation grows by 256 bytes. Older CCPs still fold
 typed host names; install the updated CCP to use mixed-case host operands.
 This also means transient programs receive mixed-case arguments; programs
 that parse the tail themselves must fold their own case-insensitive keywords.
+
+### Long host filenames
+
+```text
+R "My assembly source.asm" B3:SOURCE.ASM
+W B3:SOURCE.ASM "My updated assembly source.asm"
+```
+
+Double quotes group host operands containing spaces. Long host source names
+require an explicit CP/M 8.3 destination filename, including when selecting
+a destination DU. No truncation or generated aliases occur. Host names retain
+typed case and are limited to printable ASCII and the existing 127-byte whole
+command tail. Paths and wildcards remain unsupported. Quotes cannot be embedded
+or escaped; empty quoted operands fail.
+
+Port 161 host-service functions 128/129 open/create a host file from a bounded
+NUL-terminated string at DE. Record reads/writes, DMA and close are unchanged,
+and legacy FCB-based host functions remain available. Rebuild and install the
+matching R/W and emulator; the older interface cannot open long names.

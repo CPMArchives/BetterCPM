@@ -1,5 +1,5 @@
 diff --git a/cpmtools/r.asm b/cpmtools/r.asm
-index 50ec8b0a..61f4c0ef 100644
+index 50ec8b0a..3247c00e 100644
 --- a/cpmtools/r.asm
 +++ b/cpmtools/r.asm
 @@ -21,12 +21,8 @@ WRITEF	equ	21		;BDOS write file
@@ -16,7 +16,7 @@ index 50ec8b0a..61f4c0ef 100644
  DEFDMA	equ	80h		;CP/M default DMA address
  
  ; Misc equates
-@@ -39,69 +35,275 @@ LF	equ	10		;ascii for line feed
+@@ -39,69 +35,374 @@ LF	equ	10		;ascii for line feed
  ;-----------------------------------------------------------------------------
  ; Main program
  ;-----------------------------------------------------------------------------
@@ -114,28 +114,22 @@ index 50ec8b0a..61f4c0ef 100644
 +        sta oldUser
 +        sta targetUser
 +        lxi h,token1
-+        lxi d,inFcb
-+        xra a
-+        call spec
++        call hostSpec
 +        lxi h,token2
 +        lxi d,guestFcb
 +        mvi a,1
 +        call spec
-+
-+        ; An empty destination name inherits the source's name and extension.
 +        lda guestFcb+1
 +        cpi ' '
 +        jnz parsed
-+        lxi h,inFcb+1
-+        lxi d,guestFcb+1
-+        mvi b,11
-+inherit mov a,m
-+        call upper
-+        stax d
-+        inx h
-+        inx d
-+        dcr b
-+        jnz inherit
++        mvi a,1
++        sta defaultName
++        lxi h,token1
++        lxi d,guestFcb
++        mvi a,1
++        call spec
++        xra a
++        sta defaultName
 +parsed  mvi a,1
 +        sta restoreUser
 +        lda targetUser
@@ -144,7 +138,7 @@ index 50ec8b0a..61f4c0ef 100644
 +        call BDOS
 +        ret
 +
-+; HL/B input span; DE output ASCIIZ token. Preserve remaining input span.
++; Tokenize a counted tail. Double quotes delimit one operand; no escapes.
 +getToken mov a,b
 +        ora a
 +        jz tokenEnd
@@ -152,7 +146,10 @@ index 50ec8b0a..61f4c0ef 100644
 +        cpi ' '
 +        jz tokenSpace
 +        cpi 9
-+        jnz tokenCopy
++        jz tokenSpace
++        cpi '"'
++        jz quoteStart
++        jmp tokenCopy
 +tokenSpace inx h
 +        dcr b
 +        jmp getToken
@@ -164,14 +161,111 @@ index 50ec8b0a..61f4c0ef 100644
 +        jz tokenEnd
 +        cpi 9
 +        jz tokenEnd
++        cpi '"'
++        jz syntaxErr
 +        stax d
 +        inx d
 +        inx h
 +        dcr b
 +        jmp tokenCopy
++quoteStart mvi c,0
++tokenQuoted inx h
++        dcr b
++        mov a,b
++        ora a
++        jz syntaxErr
++        mov a,m
++        cpi '"'
++        jz quoteEnd
++        stax d
++        inx d
++        inr c
++        jmp tokenQuoted
++quoteEnd mov a,c
++        ora a
++        jz syntaxErr
++        inx h
++        dcr b
++        mov a,b
++        ora a
++        jz tokenEnd
++        mov a,m
++        cpi ' '
++        jz tokenEnd
++        cpi 9
++        jnz syntaxErr
 +tokenEnd xra a
 +        stax d
 +        ret
++
++; Copy a flat printable host name, preserving spelling. Reject paths/wildcards.
++hostSpec lxi d,hostName
++        mov a,m
++        ora a
++        jz syntaxErr
++hostLoop mov a,m
++        ora a
++        jz hostDone
++        cpi 32
++        jc syntaxErr
++        cpi 127
++        jnc syntaxErr
++        cpi '/'
++        jz syntaxErr
++        cpi 92
++        jz syntaxErr
++        cpi ':'
++        jz syntaxErr
++        cpi '*'
++        jz syntaxErr
++        cpi '?'
++        jz syntaxErr
++        stax d
++        inx d
++        inx h
++        jmp hostLoop
++hostDone stax d
++        lda hostName
++        cpi '.'
++        rnz
++        lda hostName+1
++        ora a
++        jz syntaxErr
++        cpi '.'
++        rnz
++        lda hostName+2
++        ora a
++        jz syntaxErr
++        ret
++
++; Serialize the normalized guest filename as the default host destination.
++makeHost lxi h,guestFcb+1
++        lxi d,hostName
++        mvi b,8
++        call hostField
++        lda guestFcb+9
++        cpi ' '
++        jz hostTerm
++        mvi a,'.'
++        stax d
++        inx d
++        lxi h,guestFcb+9
++        mvi b,3
++        call hostField
++hostTerm xra a
++        stax d
++        ret
++hostField mov a,m
++        cpi ' '
++        rz
++        stax d
++        inx h
++        inx d
++        dcr b
++        jnz hostField
++        ret
++hostName ds 128
++defaultName db 0
 +
 +; Initialize a complete, private guestFcb.
 +initFcb push h
@@ -333,7 +427,12 @@ index 50ec8b0a..61f4c0ef 100644
 +        rnc
 +        sui 32
 +        ret
-+syntaxErr lxi d,mSyntax
++syntaxErr lda defaultName
++        ora a
++        lxi d,mSyntax
++        jz syntaxMsg
++        lxi d,mDestRequired
++syntaxMsg
 +        jmp exitMsg
 +allowed db '!#$%&()+-@^_`{}~',39,0
 +parseFcb dw 0
@@ -347,7 +446,18 @@ index 50ec8b0a..61f4c0ef 100644
  
  opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
  	mvi	c,SETDMA
-@@ -124,13 +326,13 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
+@@ -113,8 +414,8 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
+ 	
+ ; Open the input file on the PC
+ 
+-	lxi	d,inFcb		;DE->FCB for input file on PC
+-	mvi	c,OPENF		;C=open file command
++	lxi	d,hostName		;DE->FCB for input file on PC
++	mvi	c,128		;host string-name open
+ 	call	pcBdos
+ 
+ 	lxi	d,mNoFile	;DE->file not found message
+@@ -124,13 +425,13 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
  ; Delete and then open the output file on the CP/M file system
  
  	xra	a		;zero current record the FCB
@@ -364,17 +474,23 @@ index 50ec8b0a..61f4c0ef 100644
  	mvi	c,MAKEF		;C=make file command
  	call	BDOS		;create the destination file
  	
-@@ -138,7 +340,7 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
+@@ -138,8 +439,8 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
  	inr	a		;test for FF (make file fail)
  	jz	exitM1F		;create failed, close one file & exit
  
 -	lxi	d,FCB		;DE->destination FCB
+-	mvi	c,OPENF		;C=open file command
 +	lxi	d,guestFcb		;DE->destination guestFcb
- 	mvi	c,OPENF		;C=open file command
++	mvi	c,OPENF		;open CP/M destination
  	call	BDOS		;open the destination file
  	
-@@ -154,10 +356,15 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
- cpyFile	lxi	d,inFcb		;DE->input file FCB
+ 	lxi	d,mNoFile	;DE->file not found message
+@@ -151,13 +452,18 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
+ ;-----------------------------------------------------------------------------	
+ ; cpyFile - Copy the input file from the PC to the output file in CP/M
+ ;-----------------------------------------------------------------------------
+-cpyFile	lxi	d,inFcb		;DE->input file FCB
++cpyFile	lxi	d,hostName		;DE->input file FCB
  	mvi	c,READF		;C=read file sequential
  	call	pcBdos
 -	ora	a		;end of file?
@@ -393,7 +509,7 @@ index 50ec8b0a..61f4c0ef 100644
  	mvi	c,WRITEF	;C=write file sequential
  	call	BDOS
  	ora	a		;test for write error
-@@ -172,20 +379,35 @@ cpyFile	lxi	d,inFcb		;DE->input file FCB
+@@ -172,20 +478,35 @@ cpyFile	lxi	d,inFcb		;DE->input file FCB
  ; exitM2F - also closes the input and output files
  ;-----------------------------------------------------------------------------
  exitM2F	push	d		;save message pointer
@@ -408,7 +524,8 @@ index 50ec8b0a..61f4c0ef 100644
 +closeOKC
  
  exitM1F	push	d		;save message pointer
- 	lxi	d,inFcb		;DE->source file FCB
+-	lxi	d,inFcb		;DE->source file FCB
++	lxi	d,hostName		;DE->source file FCB
  	mvi	c,CLOSEF	;C=close file command
  	call	pcBdos		;close source file
  	pop	d		;DE->exit message
@@ -431,7 +548,7 @@ index 50ec8b0a..61f4c0ef 100644
  
  ;-----------------------------------------------------------------------------
  ; pcBdos - Call the PC "BDOS" by putting the complement of the command
-@@ -197,52 +419,141 @@ pcBdos	mov	a,c		;set A = not C
+@@ -197,52 +518,157 @@ pcBdos	mov	a,c		;set A = not C
  	out	PCPORT		;call the PC "BDOS"
  	ret
  
@@ -467,7 +584,7 @@ index 50ec8b0a..61f4c0ef 100644
 -	db	LF
 - 	db	'Usage: R <filename>',CR,LF,'$'
 +mHelp db CR,LF
-+        db 'R 1.0 (003-dev)',CR,LF
++        db 'R 1.0 (004-dev)',CR,LF
 +        db '  - - -',CR,LF
 +        db ' | Host File Import',CR,LF
 +        db ' |',CR,LF
@@ -477,7 +594,9 @@ index 50ec8b0a..61f4c0ef 100644
 +        db '     /H /HELP   Display this help.',CR,LF
 +        db '     /VER       Display utility identification.',CR,LF
 +        db CR,LF
-+        db '   Host names preserve case in the emulator working directory.',CR,LF
++        db '   Host names preserve case; quote names containing spaces.',CR,LF
++        db '   Host access is limited to the emulator working directory.',CR,LF
++        db '   Long imports require an explicit CP/M 8.3 filename.',CR,LF
 +        db '   One file per command; wildcards are not supported.',CR,LF
 +        db '   DU: means drive A-P and optional user 0-15 (e.g. B3:).',CR,LF
 +        db '   Omitted destination name retains the source name.',CR,LF
@@ -486,7 +605,7 @@ index 50ec8b0a..61f4c0ef 100644
 +        db '$'
 +
 +mVersion db CR,LF
-+        db 'R 1.0 (003-dev)',CR,LF
++        db 'R 1.0 (004-dev)',CR,LF
 +        db '  - - -',CR,LF
 +        db ' | BetterCP/M Utilities',CR,LF
 +        db ' | Host File Import',CR,LF
@@ -496,6 +615,7 @@ index 50ec8b0a..61f4c0ef 100644
  
 -mFile	db	CR,LF,'File '
 -mFName	ds	16
++mDestRequired db CR,LF,'Host name needs an explicit CP/M 8.3 destination',CR,LF,'$'
 +mSyntax db CR,LF,'Invalid syntax; use /HELP',CR,LF,'$'
  
  mNoFile	db	' not found',CR,LF,'$'
@@ -544,6 +664,8 @@ index 50ec8b0a..61f4c0ef 100644
 +        jz qSpace
 +        cpi 9
 +        jz qSpace
++        cpi '"'
++        jz qQuoted
 +        push h
 +        push b
 +        xchg
@@ -588,6 +710,17 @@ index 50ec8b0a..61f4c0ef 100644
 +        inx h
 +        dcr b
 +        jmp qSkip
++qQuoted inx h
++        dcr b
++        mov a,b
++        ora a
++        jz qAbsent
++        mov a,m
++        cpi '"'
++        jnz qQuoted
++        inx h
++        dcr b
++        jmp qSkip
 +qSpace  inx h
 +        dcr b
 +        jmp qNext
@@ -607,7 +740,7 @@ index 50ec8b0a..61f4c0ef 100644
 +stackTop
  	end
 diff --git a/cpmtools/w.asm b/cpmtools/w.asm
-index 8c677f04..9e979055 100644
+index 8c677f04..b8b40395 100644
 --- a/cpmtools/w.asm
 +++ b/cpmtools/w.asm
 @@ -21,12 +21,8 @@ WRITEF	equ	21		;BDOS write file
@@ -624,7 +757,7 @@ index 8c677f04..9e979055 100644
  DEFDMA	equ	80h		;CP/M default DMA address
  
  ; Misc equates
-@@ -39,69 +35,277 @@ LF	equ	10		;ASCII for line feed
+@@ -39,69 +35,371 @@ LF	equ	10		;ASCII for line feed
  ;-----------------------------------------------------------------------------
  ; Main program
  ;-----------------------------------------------------------------------------
@@ -728,24 +861,13 @@ index 8c677f04..9e979055 100644
 +        lda guestFcb+1
 +        cpi ' '
 +        jz syntaxErr
++        lda token2
++        ora a
++        jz defaultHost
 +        lxi h,token2
-+        lxi d,outFcb
-+        xra a
-+        call spec
-+
-+        ; An empty destination name inherits the source's name and extension.
-+        lda outFcb+1
-+        cpi ' '
-+        jnz parsed
-+        lxi h,guestFcb+1
-+        lxi d,outFcb+1
-+        mvi b,11
-+inherit mov a,m
-+        stax d
-+        inx h
-+        inx d
-+        dcr b
-+        jnz inherit
++        call hostSpec
++        jmp parsed
++defaultHost call makeHost
 +parsed  mvi a,1
 +        sta restoreUser
 +        lda targetUser
@@ -754,7 +876,7 @@ index 8c677f04..9e979055 100644
 +        call BDOS
 +        ret
 +
-+; HL/B input span; DE output ASCIIZ token. Preserve remaining input span.
++; Tokenize a counted tail. Double quotes delimit one operand; no escapes.
 +getToken mov a,b
 +        ora a
 +        jz tokenEnd
@@ -762,7 +884,10 @@ index 8c677f04..9e979055 100644
 +        cpi ' '
 +        jz tokenSpace
 +        cpi 9
-+        jnz tokenCopy
++        jz tokenSpace
++        cpi '"'
++        jz quoteStart
++        jmp tokenCopy
 +tokenSpace inx h
 +        dcr b
 +        jmp getToken
@@ -774,14 +899,111 @@ index 8c677f04..9e979055 100644
 +        jz tokenEnd
 +        cpi 9
 +        jz tokenEnd
++        cpi '"'
++        jz syntaxErr
 +        stax d
 +        inx d
 +        inx h
 +        dcr b
 +        jmp tokenCopy
++quoteStart mvi c,0
++tokenQuoted inx h
++        dcr b
++        mov a,b
++        ora a
++        jz syntaxErr
++        mov a,m
++        cpi '"'
++        jz quoteEnd
++        stax d
++        inx d
++        inr c
++        jmp tokenQuoted
++quoteEnd mov a,c
++        ora a
++        jz syntaxErr
++        inx h
++        dcr b
++        mov a,b
++        ora a
++        jz tokenEnd
++        mov a,m
++        cpi ' '
++        jz tokenEnd
++        cpi 9
++        jnz syntaxErr
 +tokenEnd xra a
 +        stax d
 +        ret
++
++; Copy a flat printable host name, preserving spelling. Reject paths/wildcards.
++hostSpec lxi d,hostName
++        mov a,m
++        ora a
++        jz syntaxErr
++hostLoop mov a,m
++        ora a
++        jz hostDone
++        cpi 32
++        jc syntaxErr
++        cpi 127
++        jnc syntaxErr
++        cpi '/'
++        jz syntaxErr
++        cpi 92
++        jz syntaxErr
++        cpi ':'
++        jz syntaxErr
++        cpi '*'
++        jz syntaxErr
++        cpi '?'
++        jz syntaxErr
++        stax d
++        inx d
++        inx h
++        jmp hostLoop
++hostDone stax d
++        lda hostName
++        cpi '.'
++        rnz
++        lda hostName+1
++        ora a
++        jz syntaxErr
++        cpi '.'
++        rnz
++        lda hostName+2
++        ora a
++        jz syntaxErr
++        ret
++
++; Serialize the normalized guest filename as the default host destination.
++makeHost lxi h,guestFcb+1
++        lxi d,hostName
++        mvi b,8
++        call hostField
++        lda guestFcb+9
++        cpi ' '
++        jz hostTerm
++        mvi a,'.'
++        stax d
++        inx d
++        lxi h,guestFcb+9
++        mvi b,3
++        call hostField
++hostTerm xra a
++        stax d
++        ret
++hostField mov a,m
++        cpi ' '
++        rz
++        stax d
++        inx h
++        inx d
++        dcr b
++        jnz hostField
++        ret
++hostName ds 128
++defaultName db 0
 +
 +; Initialize a complete, private guestFcb.
 +initFcb push h
@@ -943,7 +1165,12 @@ index 8c677f04..9e979055 100644
 +        rnc
 +        sui 32
 +        ret
-+syntaxErr lxi d,mSyntax
++syntaxErr lda defaultName
++        ora a
++        lxi d,mSyntax
++        jz syntaxMsg
++        lxi d,mDestRequired
++syntaxMsg
 +        jmp exitMsg
 +allowed db '!#$%&()+-@^_`{}~',39,0
 +parseFcb dw 0
@@ -957,7 +1184,7 @@ index 8c677f04..9e979055 100644
  
  opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
  	mvi	c,SETDMA
-@@ -114,9 +318,9 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
+@@ -114,9 +412,9 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
  ; Open the input file on the CP/M machine
  
  	xra	a		;zero current record the FCB
@@ -969,16 +1196,18 @@ index 8c677f04..9e979055 100644
  	mvi	c,OPENF		;C=open file command
  	call	BDOS		;open input file
  
-@@ -127,7 +331,7 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
+@@ -127,8 +425,8 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
  ; Open the output file on the PC. Unlike CP/M, the MAKEF command
  ;    also opens the file for write on the PC.
  
 -	lxi	d,outFcb	;DE->destination FCB for PC
-+	lxi	d,outFcb	;DE->destination guestFcb for PC
- 	mvi	c,MAKEF		;C=make file command
+-	mvi	c,MAKEF		;C=make file command
++	lxi	d,hostName	;DE->destination guestFcb for PC
++	mvi	c,129		;C=make file command
  	call	pcBdos		;open destination file
  	
-@@ -140,11 +344,16 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
+ 	lxi	d,mMakErr	;DE->can't create file message
+@@ -140,13 +438,18 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
  ;-----------------------------------------------------------------------------	
  ; cpyFile - Copy the input file from CP/M to the output file on the PC
  ;-----------------------------------------------------------------------------
@@ -988,6 +1217,8 @@ index 8c677f04..9e979055 100644
  	call	BDOS
 -	ora	a		;end of file?
 -	rnz			;yes, file copy is done
+-
+-	lxi	d,outFcb	;DE->output file FCB
 +	ora	a		;record read successfully?
 +	jz	readOK
 +	cpi	1		;only status 1 is normal EOF
@@ -995,10 +1226,17 @@ index 8c677f04..9e979055 100644
 +	lxi	d,mReadErr
 +	jmp	exitM2F
 +readOK
- 
- 	lxi	d,outFcb	;DE->output file FCB
++
++	lxi	d,hostName	;DE->output file FCB
  	mvi	c,WRITEF	;C=write file sequential
-@@ -165,16 +374,31 @@ exitM2F	push	d		;save message pointer
+ 	call	pcBdos		;write destination file
+ 	ora	a		;test for write error
+@@ -161,20 +464,35 @@ cpyFile	lxi	d,FCB		;DE->input file FCB
+ ; exitM2F - also closes the input and output files
+ ;-----------------------------------------------------------------------------
+ exitM2F	push	d		;save message pointer
+-	lxi	d,outFcb	;DE->destination file FCB
++	lxi	d,hostName	;DE->destination file FCB
  	mvi	c,CLOSEF	;C=close file command
  	call	pcBdos
  	pop	d		;DE->exit message
@@ -1032,7 +1270,7 @@ index 8c677f04..9e979055 100644
  
  ;-----------------------------------------------------------------------------
  ; pcBdos - Call the PC "BDOS" by putting the complement of the command
-@@ -186,52 +410,141 @@ pcBdos	mov	a,c		;set A = not C
+@@ -186,52 +504,157 @@ pcBdos	mov	a,c		;set A = not C
  	out	PCPORT		;call the PC "BDOS"
  	ret
  
@@ -1068,7 +1306,7 @@ index 8c677f04..9e979055 100644
 -	db	LF
 - 	db	'Usage: W <filename>',CR,LF,'$'
 +mHelp db CR,LF
-+        db 'W 1.0 (003-dev)',CR,LF
++        db 'W 1.0 (004-dev)',CR,LF
 +        db '  - - -',CR,LF
 +        db ' | Host File Export',CR,LF
 +        db ' |',CR,LF
@@ -1078,7 +1316,9 @@ index 8c677f04..9e979055 100644
 +        db '     /H /HELP   Display this help.',CR,LF
 +        db '     /VER       Display utility identification.',CR,LF
 +        db CR,LF
-+        db '   Host names preserve case in the emulator working directory.',CR,LF
++        db '   Host names preserve case; quote names containing spaces.',CR,LF
++        db '   Host access is limited to the emulator working directory.',CR,LF
++        db '   Long imports require an explicit CP/M 8.3 filename.',CR,LF
 +        db '   One file per command; wildcards are not supported.',CR,LF
 +        db '   DU: means drive A-P and optional user 0-15 (e.g. B3:).',CR,LF
 +        db '   Omitted destination name retains the source name.',CR,LF
@@ -1087,7 +1327,7 @@ index 8c677f04..9e979055 100644
 +        db '$'
 +
 +mVersion db CR,LF
-+        db 'W 1.0 (003-dev)',CR,LF
++        db 'W 1.0 (004-dev)',CR,LF
 +        db '  - - -',CR,LF
 +        db ' | BetterCP/M Utilities',CR,LF
 +        db ' | Host File Export',CR,LF
@@ -1097,6 +1337,7 @@ index 8c677f04..9e979055 100644
  
 -mFile	db	CR,LF,'File '
 -mFName	ds	16
++mDestRequired db CR,LF,'Host name needs an explicit CP/M 8.3 destination',CR,LF,'$'
 +mSyntax db CR,LF,'Invalid syntax; use /HELP',CR,LF,'$'
  
  mNoFile	db	' not found',CR,LF,'$'
@@ -1145,6 +1386,8 @@ index 8c677f04..9e979055 100644
 +        jz qSpace
 +        cpi 9
 +        jz qSpace
++        cpi '"'
++        jz qQuoted
 +        push h
 +        push b
 +        xchg
@@ -1189,6 +1432,17 @@ index 8c677f04..9e979055 100644
 +        inx h
 +        dcr b
 +        jmp qSkip
++qQuoted inx h
++        dcr b
++        mov a,b
++        ora a
++        jz qAbsent
++        mov a,m
++        cpi '"'
++        jnz qQuoted
++        inx h
++        dcr b
++        jmp qSkip
 +qSpace  inx h
 +        dcr b
 +        jmp qNext
@@ -1208,7 +1462,7 @@ index 8c677f04..9e979055 100644
 +stackTop
  	end
 diff --git a/iodevices/simbdos.c b/iodevices/simbdos.c
-index 746b317d..108d839e 100644
+index 746b317d..46d3fc9a 100644
 --- a/iodevices/simbdos.c
 +++ b/iodevices/simbdos.c
 @@ -23,8 +23,7 @@
@@ -1232,7 +1486,17 @@ index 746b317d..108d839e 100644
  
  #include "sim.h"
  #include "simdefs.h"
-@@ -66,6 +68,7 @@ static const char *textExts[] = {
+@@ -51,6 +53,9 @@
+ #define MAKEF	22		/* make file */
+ #define SETDMA	26		/* set DMA address */
+ 
++#define OPENNAME 128 /* DE -> NUL-terminated flat host name, at most 127 bytes */
++#define MAKENAME 129
++
+ #define	SECLEN	128		/* logical sector length */
+ #define	CTRL_Z	0x1A		/* CP/M EOF character */
+ 
+@@ -66,6 +71,7 @@ static const char *textExts[] = {
  
  static FILE *fp = NULL;		/* file pointer */
  static WORD dmaAddr = 0x80;	/* buffer address in emulated space */
@@ -1240,34 +1504,82 @@ index 746b317d..108d839e 100644
  static bool textFile = false;	/* text file flag */
  
  /*
-@@ -96,15 +99,23 @@ void host_bdos_out(BYTE outByte)
+@@ -79,8 +85,8 @@ static bool textFile = false;	/* text file flag */
+ void host_bdos_out(BYTE outByte)
+ {
+ 	WORD fcbAddr;		/* address of FCB in simulator memory */
+-	char fname[16];
+-	char extension[8];
++	char fname[128];
++	char extension[128];
+ 	BYTE buf[128];
+ 	char openFlags[4];	/* flags for fopen call */
+ 	int xferLen;
+@@ -95,55 +101,88 @@ void host_bdos_out(BYTE outByte)
+ 	A = 0xff;		/* assume error status */
  	fcbAddr = (D << 8) + E;	/* FCB address in simulator memory */
  
- 	if ((C == OPENF) || (C == MAKEF)) {
+-	if ((C == OPENF) || (C == MAKEF)) {
+-		for (i = 0; i < 8; i++) {	/* copy file name */
+-			fname[i] = tolower(dma_read(fcbAddr + 1 + i));
+-			if (fname[i] == ' ')
+-				break;
++	if ((C == OPENF) || (C == MAKEF) || C == OPENNAME || C == MAKENAME) {
 +		/* One host stream at a time; never lose an outstanding handle. */
 +		if (fp != NULL) {
 +			int status = fclose(fp);
 +			fp = NULL;
 +			if (status != 0)
 +				return;
-+		}
+ 		}
+-		fname[i] = 0;
 +		textEof = false;
- 		for (i = 0; i < 8; i++) {	/* copy file name */
--			fname[i] = tolower(dma_read(fcbAddr + 1 + i));
-+			fname[i] = dma_read(fcbAddr + 1 + i);
- 			if (fname[i] == ' ')
- 				break;
- 		}
- 		fname[i] = 0;
++		if (C == OPENNAME || C == MAKENAME) {
++			const char *dot;
++			for (i = 0; i < 128; i++) {
++				BYTE ch = dma_read((WORD)(fcbAddr + i));
++				fname[i] = ch;
++				if (ch == 0)
++					break;
++				if (ch < 32 || ch > 126 || strchr("/\\:*?", ch))
++					return;
++			}
++			if (i == 0 || i == 128 || !strcmp(fname, ".") || !strcmp(fname, ".."))
++				return;
++			dot = strrchr(fname, '.');
++			strcpy(extension, dot ? dot + 1 : "");
++		} else {
++			for (i = 0; i < 8; i++) {	/* copy file name */
++				fname[i] = dma_read(fcbAddr + 1 + i);
++				if (fname[i] == ' ')
++					break;
++			}
++			fname[i] = 0;
  
- 		for (i = 0; i < 3; i++) {	/* copy extension */
+-		for (i = 0; i < 3; i++) {	/* copy extension */
 -			extension[i] = tolower(dma_read(fcbAddr + 9 + i));
-+			extension[i] = dma_read(fcbAddr + 9 + i);
- 			if (extension[i] == ' ')
- 				break;
+-			if (extension[i] == ' ')
+-				break;
+-		}
+-		extension[i] = 0;
++			for (i = 0; i < 3; i++) {	/* copy extension */
++				extension[i] = dma_read(fcbAddr + 9 + i);
++				if (extension[i] == ' ')
++					break;
++			}
++			extension[i] = 0;
+ 
+-		if (extension[0] != 0) {	/* form full file name */
+-			strcat(fname, ".");
+-			strcat(fname, extension);
++			if (extension[0] != 0) {	/* form full file name */
++				strcat(fname, ".");
++				strcat(fname, extension);
++			}
  		}
-@@ -118,32 +129,41 @@ void host_bdos_out(BYTE outByte)
- 		if (C == MAKEF) {
+ 
+-		if (C == MAKEF) {
++		if (C == MAKEF || C == MAKENAME) {
  			strcpy(openFlags, "wb"); /* MAKEF opens for writing */
  
 -#ifdef SIMBDOS_NO_OVERWRITE
@@ -1290,7 +1602,7 @@ index 746b317d..108d839e 100644
 -			if ((fp = fopen(fname, openFlags)) != NULL)
 -				A = 0;		/* success */
 +#ifdef SIMBDOS_NO_OVERWRITE
-+		if (C == MAKEF) {
++		if (C == MAKEF || C == MAKENAME) {
 +			int fd = open(fname, O_WRONLY | O_CREAT | O_EXCL, 0666);
 +			if (fd >= 0) {
 +				fp = fdopen(fd, "wb");
@@ -1321,7 +1633,7 @@ index 746b317d..108d839e 100644
  	}
  
  	/* READ file */
-@@ -151,6 +171,12 @@ void host_bdos_out(BYTE outByte)
+@@ -151,6 +190,12 @@ void host_bdos_out(BYTE outByte)
  	else if (C == READF) {
  		if (fp != NULL) {
  			xferLen = fread(buf, 1, SECLEN, fp);
@@ -1334,7 +1646,7 @@ index 746b317d..108d839e 100644
  			if (xferLen != 0) {
  				for (i = 0; i < xferLen; i++)
  					dma_write(dmaAddr + i, buf[i]);
-@@ -165,10 +191,16 @@ void host_bdos_out(BYTE outByte)
+@@ -165,10 +210,16 @@ void host_bdos_out(BYTE outByte)
  
  	else if (C == WRITEF) {
  		if (fp != NULL) {
@@ -1354,10 +1666,10 @@ index 746b317d..108d839e 100644
  				A = 0;
 diff --git a/tests/host-transfer-notes.md b/tests/host-transfer-notes.md
 new file mode 100644
-index 00000000..ab7eb083
+index 00000000..5ae3049f
 --- /dev/null
 +++ b/tests/host-transfer-notes.md
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,62 @@
 +# Host transfer corrections
 +
 +R/W retain the port 161 host service and use source -> destination syntax.
@@ -1370,13 +1682,13 @@ index 00000000..ab7eb083
 +    R TEST.TXT B3:
 +    W B3:TEST.TXT TEST2.TXT
 +
-+Host operands are flat 8.3 filenames. Guest operands accept a drive A-P and
++Host operands are flat host filenames; double quotes allow spaces. Guest operands accept a drive A-P and
 +optional user 0-15. Omitted locations use the current drive/user; omitted
 +destination names retain the source name. Explicit user selection is restored
 +on all ordinary return paths. H: mapping and host listing are deferred.
 +
 +/VER, /H and /HELP are exact case-insensitive queries, recognized before any
-+file operations. The commands currently identify as 1.0 (003-dev).
++file operations. The commands currently identify as 1.0 (004-dev).
 +
 + Host reads now
 +return 0 for a record, 1 for normal EOF, and FF for error. Install the rebuilt R
@@ -1412,12 +1724,20 @@ index 00000000..ab7eb083
 +W destination inherits the normalized uppercase CP/M name. Mixed-case use
 +requires a CCP that preserves command tails; older CCPs cannot recover typed
 +spelling. Case-distinct import probes skip on case-insensitive volumes.
++
++Long host filenames use host-service calls 128 (open for read) and 129 (create
++for write), with DE pointing to a NUL-terminated name, at most 127 bytes.
++The complete command tail is still limited to 127 bytes. Names are printable
++ASCII, with no path separators, colon or wildcards. Old FCB calls remain
++available. Quotes group operands; embedded quotes and empty operands fail.
++R requires an explicit destination filename if the host source cannot be
++represented as a CP/M 8.3 name; there is no automatic truncation.
 diff --git a/tests/test_host_transfer.py b/tests/test_host_transfer.py
 new file mode 100644
-index 00000000..3a1ba98d
+index 00000000..a1c0226b
 --- /dev/null
 +++ b/tests/test_host_transfer.py
-@@ -0,0 +1,70 @@
+@@ -0,0 +1,85 @@
 +"""Focused host-service regression checks; no guest disks are modified."""
 +from pathlib import Path
 +import subprocess
@@ -1479,6 +1799,21 @@ index 00000000..3a1ba98d
 + fail_close=1; command(CLOSEF); assert(A==255 && fp==NULL); fail_close=0;
 + name("MISSING BIN"); command(OPENF); assert(A==255 && fp==NULL);
 + command(READF); assert(A==255);
++ strcpy((char *)mem+0x200,"Long host filename.TxT");
++ command(MAKENAME); assert(A==0);
++ memset(mem+0x80,26,128); memcpy(mem+0x80,"long",4);
++ command(WRITEF); assert(A==0); command(CLOSEF); assert(A==0);
++ f=fopen("Long host filename.TxT","rb"); assert(f && fread(b,1,256,f)==4); fclose(f);
++ command(OPENNAME); assert(A==0); command(READF); assert(A==0 && mem[0x80]=='l');
++ command(CLOSEF); assert(A==0);
++ command(MAKENAME);
++#ifdef SIMBDOS_NO_OVERWRITE
++ assert(A==255);
++#else
++ assert(A==0); command(CLOSEF);
++#endif
++ strcpy((char *)mem+0x200,"../outside"); command(MAKENAME); assert(A==255);
++ memset(mem+0x200,'x',128); command(MAKENAME); assert(A==255);
 + puts("host transfer checks passed");
 +}
 +'''
@@ -1490,7 +1825,7 @@ index 00000000..3a1ba98d
 +        subprocess.run([str(p/'test')],cwd=tmp,check=True)
 diff --git a/tests/test_rw_queries.py b/tests/test_rw_queries.py
 new file mode 100644
-index 00000000..e93d1c9d
+index 00000000..d70764fa
 --- /dev/null
 +++ b/tests/test_rw_queries.py
 @@ -0,0 +1,32 @@
@@ -1516,22 +1851,22 @@ index 00000000..e93d1c9d
 + count=0
 + for name in ('r','w'):
 +  image=(root/'cpmtools'/f'{name}.com').read_bytes()
-+  for tail,kind in [('/VER','ver'),('/vEr','ver'),(' X.BIN /VER ignored','ver'),('/HELP /VER','ver'),('/H','help'),('/help','help'),('\t/h\t','help'),(' FILE.BIN /HELP','help'),('/VERSION','other'),('/HELPER','other'),('X/VER','other')]:
++  for tail,kind in [(' "long file.bin" /VER','ver'),('"long /VER name.bin"','other'),('/VER','ver'),('/vEr','ver'),(' X.BIN /VER ignored','ver'),('/HELP /VER','ver'),('/H','help'),('/help','help'),('\t/h\t','help'),(' FILE.BIN /HELP','help'),('/VERSION','other'),('/HELPER','other'),('X/VER','other')]:
 +   C.memset(mem,0,65536);mem[256:256+len(image)]=image;mem[5]=201;mem[128]=len(tail);mem[129:129+len(tail)]=tail.encode();mem[0x5d:0x65]=b'FILE    ';mem[0x65:0x68]=b'BIN';sp.value=0xf000;writes.value=0;state.update(out='',calls=[])
 +   result=lib.test_run(256,10000);assert result>=0,(tail,result)
 +   if kind!='other':
 +    assert state['calls']==[9] and writes.value==0,(tail,state,writes.value)
-+    assert name.upper()+' 1.0 (003-dev)' in state['out']
++    assert name.upper()+' 1.0 (004-dev)' in state['out']
 +    assert ('Usage:' in state['out'])==(kind=='help')
 +   else: assert writes.value==0 and 'Invalid syntax' in state['out'],(tail,state)
 +   count+=1
 + print(count,'R/W query checks passed on Z80 core')
 diff --git a/tests/test_rw_transfers.py b/tests/test_rw_transfers.py
 new file mode 100644
-index 00000000..ace22379
+index 00000000..90a603a9
 --- /dev/null
 +++ b/tests/test_rw_transfers.py
-@@ -0,0 +1,139 @@
+@@ -0,0 +1,157 @@
 +"""Run R/W on the Z80 core with the real host service and a BDOS file fixture."""
 +import ast
 +import ctypes as C
@@ -1627,7 +1962,7 @@ index 00000000..ace22379
 +        assert state['user']==7,(tail,state)
 +        if not valid:
 +            assert writes.value==0 and not set(state['calls'])&{15,16,19,20,21,22},(tail,state)
-+            assert 'Invalid syntax' in state['out'],(tail,state)
++            assert ('Invalid syntax' in state['out'] or 'explicit CP/M 8.3' in state['out']),(tail,state)
 +        count+=1
 +        return state
 +    try:
@@ -1659,7 +1994,25 @@ index 00000000..ace22379
 +                assert s['files'][(2,3,'OUT.BIN')].startswith(data)
 +        else:
 +            print('case-distinct host read check skipped: case-insensitive volume')
-+        for command,tails in [('r',['B:FILE.BIN','FILE.BIN B16:','FILE.BIN Q:','FILE.BIN B-1:','FILE.BIN B3:X.Y.Z','FILE.BIN TOOLONGNM.BIN','FILE.BIN B3:X.LONG','FILE.BIN B3: X','*.BIN','FILE.BIN /BOGUS']),('w',['B3:','FILE.BIN B3:NEW.BIN','FILE.BIN ONE TWO','A16:FILE.BIN','FILE.BIN ../X','FILE.BIN *.*'])]:
++        Path('My assembly source.asm').write_bytes(b'long name')
++        s=run('r','"My assembly source.asm" B3:SOURCE.ASM')
++        assert s['files'][(2,3,'SOURCE.ASM')].startswith(b'long name')
++        run('w','B3:SOURCE.ASM "My updated assembly source.asm"',
++            {(2,3,'SOURCE.ASM'):b'long name'+b'\x1a'*119})
++        assert Path('My updated assembly source.asm').read_bytes()==b'long name'
++        Path('VeryLongFilename.bin').write_bytes(b'long binary')
++        s=run('r','VeryLongFilename.bin NEW.BIN')
++        assert s['files'][(1,7,'NEW.BIN')].startswith(b'long binary')
++        # No truncation, including when a drive/user-only destination is given.
++        for tail in ['VeryLongFilename.bin','VeryLongFilename.bin B3:',
++                     '"My assembly source.asm"','"My assembly source.asm" B3:']:
++            run('r',tail,valid=False)
++        for command,tail in [('r','"unterminated'),('r','"FILE.BIN"suffix'),
++                             ('r','""'),('w','FILE.BIN ""'),
++                             ('w','FILE.BIN "../outside.txt"'),
++                             ('r','"dir/file.bin" OUT.BIN')]:
++            run(command,tail,valid=False)
++        for command,tails in [('r',['B:FILE.BIN','FILE.BIN B16:','FILE.BIN Q:','FILE.BIN B-1:','FILE.BIN B3:X.Y.Z','FILE.BIN B3:X.LONG','FILE.BIN B3: X','*.BIN','FILE.BIN /BOGUS']),('w',['B3:','FILE.BIN B3:NEW.BIN','FILE.BIN ONE TWO','A16:FILE.BIN','FILE.BIN ../X','FILE.BIN *.*'])]:
 +            for tail in tails: run(command,tail,valid=False)
 +        for fail in ('make','write','close'):
 +            s=run('r','FILE.BIN B3:OUT.BIN',fail=fail)
