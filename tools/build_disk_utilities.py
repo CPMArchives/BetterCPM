@@ -103,7 +103,10 @@ def main():
             text=expanded_source()
         if checked:text=assembly_constants(checked)+text
         data=assemble(args.assembler,text,out/(stem.upper()+'.COM'),out/(stem+'.lst'),0x100)
-        if len(data)>0x3D00:
+        if stem=='config':
+            from build_config import validate_layout
+            validate_layout(data,(out/'config.lst').read_text())
+        elif len(data)>0x3D00:
             raise SystemExit(f'{stem}: program overlaps private stack')
         print(f'{stem.upper()}.COM: {len(data)} bytes')
 if __name__=='__main__': main()

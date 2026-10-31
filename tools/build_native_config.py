@@ -66,6 +66,7 @@ def main() -> None:
                 str(args.tools / tool), f"0:{tool}")
         commands = f'''set timeout 60
 spawn {args.cpmsim} -z -d {disks}
+expect_before timeout {{exit 2}}
 expect "A>"
 send -- "B:\r"
 expect "B>"
@@ -75,6 +76,15 @@ expect "B>"
 send -- "D:LINK CONFIG\\[A\\]\r"
 expect "CODE SIZE"
 expect "B>"
+send -- "CONFIG /HELP /VER\r"
+expect "Usage: CONFIG"
+expect "/H /HELP"
+expect "Display utility identification."
+expect "B>"
+send -- "CONFIG /H\r"
+expect "Usage: CONFIG"
+expect "Display utility identification."
+expect "B>"
 send "\034"
 expect eof
 '''
@@ -82,7 +92,8 @@ expect eof
         transcript = result.stdout + result.stderr
         (BUILD / "NATIVE-CONFIG-BUILD.LOG").write_text(transcript,
                                                       encoding="utf-8")
-        if result.returncode or "Errors: 0" not in transcript or "CODE SIZE" not in transcript:
+        if (result.returncode or "Errors: 0" not in transcript or "CODE SIZE" not in transcript
+                or transcript.count("Usage: CONFIG") < 2 or "/H /HELP" not in transcript):
             raise SystemExit(f"native CONFIG build failed\n{transcript}")
         native_com = work / "CONFIG.COM"
         run("cpmcp", "-f", "ibm-3740", str(disks / "driveb.dsk"),

@@ -14,6 +14,7 @@ FDBMODE EQU 1
 ; CONFIG-private scratch A800h-ABFFh is disjoint from catalogue, track stream,
 ; save/rollback buffers and the 3E00h-3FFFh stack. Every buffer is initialized
 ; before use. The entry guard requires AC00h below the current BDOS boundary.
+        CALL CF_QUERY                  ; pure help queries before validation or I/O
         CALL CF_PARSE                  ; valid quoted command text is not options
         JR C,CF_VGATE
         LD A,(CF_MODE)
@@ -3151,4 +3152,5 @@ UI_COLUMNS EQU 79
 P12CONFIG EQU 1
         INCLUDE private-utility.inc
         ENDIF
+; @config-help@
         END

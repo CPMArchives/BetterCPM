@@ -13,4 +13,44 @@ def expanded_source():
  from system_layout import CONTEXT
  if CONTEXT:
   text=text.replace('Requires BetterCP/M disk BIOS ABI 5 (four drives).', 'Requires matching BetterCP/M private build.')
+ from component_registry import utility_identities
+ from component_identity import title
+ from utility_versions import display_development
+ version,revision=utility_identities()['CONFIG']
+ lines=[title('CONFIG',version,revision,development=display_development('utility:CONFIG')),
+        '  - - -',' | BetterCP/M Utilities',' | System Configuration',' |',
+        ' |   Usage: CONFIG [options]','', '   Options:',
+        '     /SHOW                 Show active and startup settings.',
+        '     /STARTUP="text"       Set pending cold-boot command.',
+        '     /DEFAULT              Reset pending startup command.',
+        '     /IOBYTE=n             Save boot routes; live unchanged.',
+        '     /PHYSICAL=n fields    Set physical profile (0-3).',
+        '     /LOGICAL=d /PHYSICAL=n /FORMAT="name"   Bind drive B-D.',
+        '     /LOGICAL=d /UNBIND     Remove binding (B-D).',
+        '     /EDIT=d fields        Edit disk definition (B-D).',
+        '     Physical: /TYPE /TRACKS /SIDES /STEP /SPINUP /SETTLE',
+        '     Edit: /PHYSICAL /SPT /BSH /BLM /EXM /DSM /DRM /AL0 /AL1',
+        '           /CKS /OFF /CYLINDERS /SECTORS /SIZE /FLAGS /SIZEMAP',
+        '           /SLOT /ID /CODE   (all fields use =value)', '',
+        '     /H /HELP              Display this help.',
+        '     /VER                  Display utility identification.']
+ help_data='CQ_TEXT:\n'+''.join(
+     ("        DB '"+line.replace("'","''")+"',13,10\n") if line else
+     '        DB 13,10\n' for line in lines)+"        DB '$'\n"
+ appendix=(ROOT/'src/utilities/common/confighelp.inc').read_text().replace(
+     '; @config-help-text@',help_data)
+ text=text.replace('; @config-help@',appendix)
  return expand_config_ui(text)
+
+
+def validate_layout(image, listing):
+ """Help is disposable above the private stack; ordinary code must stay below."""
+ import re
+ def symbol(name):
+  match=re.search(r'^([0-9a-f]{4})\s+.*?\b'+name+':',listing,re.M|re.I)
+  if not match:raise ValueError('CONFIG listing lacks '+name)
+  return int(match[1],16)
+ if symbol('CF_MAIN_END')>0x3e00 or symbol('CF_QUERY')!=0x4000:
+  raise ValueError('CONFIG code/help overlaps its private stack')
+ if 0x100+len(image)>0xac00:
+  raise ValueError('CONFIG help exceeds existing minimum transient memory')

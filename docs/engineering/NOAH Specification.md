@@ -728,3 +728,38 @@ unchanged with notice; from-scratch LBR rebuilds copy active members only.
 Current implementation and qualification evidence is recorded in the
 [ARC integration record](NOAH%20ARC%20Write%20Integration.md). Browser and future
 container selectors remain outside the completed command-line increment.
+
+## 18. Post-1.0 expansion: CP/M CrLZH integration
+
+Recorded 2026-10-30 at the maintainer's request. This is future work, outside
+BetterCP/M 1.0; recording it does not authorize implementation or change the
+current release candidate.
+
+Reuse the existing independent LZH/UNLZH codec engines to add the reserved /LZ
+selector, standalone CrLZH compression/expansion and compressed LBR member
+creation/one-layer expansion. CP/M CrLZH files are distinct from general
+LHA/.LZH archives. An ARK-native CrLZH compression method is a separate scope
+decision, not implied by this extension.
+
+Initial measurements against the current source:
+
+| Item | Measured size |
+| --- | ---: |
+| Encoder with common codec code and minimal dispatch | 2,227 bytes; 2,304 with record padding |
+| Decoder with common codec code and minimal dispatch | 2,391 bytes; 2,432 with record padding |
+| Encoder context | 11,943 bytes |
+| Decoder context | 6,646 bytes |
+
+The two minimal modules total 4,736 padded bytes. This is a planning estimate,
+not the complete future overlay-size delta: loader/controller changes and
+alignment have not been implemented. Both modules exceed the existing 2,048-byte
+codec code allowance. The current one-record overlay header also lacks space
+for two further descriptors; revise the descriptor layout or dispatch scheme
+and matching loader/build checks before integration.
+
+Remaining work includes option/conflict handling, CrLZH recognition and supported
+variants, compressed filename conventions, staged-output verification, matching
+COM/OVL identity, help/manual updates and affected regression qualification.
+Measure the resulting active workspace and stack on both platforms rather than
+inferring a Model 4 memory pass from the smaller codec contexts. Preserve the
+existing replacement/protection, cancellation, retry and recovery behavior.
