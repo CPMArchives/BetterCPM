@@ -338,6 +338,15 @@
       ],
       "user": 0,
       "role": "ANSI-host screen backend for portable monitor personalities"
+    },
+    {
+      "name": "MOUNT.COM",
+      "artifact": "staged-host-tools/MOUNT.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack"
+      ],
+      "user": 0
     }
   ],
   "cold_start_command": "SUBMIT STARTUP"

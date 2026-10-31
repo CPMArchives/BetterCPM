@@ -1,0 +1,279 @@
+diff --git a/cpmsim/srcsim/mount.inc b/cpmsim/srcsim/mount.inc
+new file mode 100644
+index 00000000..1ff0d369
+--- /dev/null
++++ b/cpmsim/srcsim/mount.inc
+@@ -0,0 +1,152 @@
++/* cpmsim-only MOUNT service. No guest OS changes or open-file tracking.
++ * OUT 162: 0=request, 1=confirmed request. Tail at 80h; result at 1fffh
++ * (0=done, 1=error, 2=confirm A:). NUL output at 2000h; reset mask at 1ffdh.
++ * Media overrides last for this emulator session, preserving launcher links.
++ */
++#include <stdio.h>
++#include <stdarg.h>
++#include <ctype.h>
++static char mount_path[16][4096];
++static unsigned char mount_override[16];
++static char mount_output[8192];
++static size_t mount_used;
++static void mount_say(const char *fmt, ...)
++{
++    va_list ap;
++    va_start(ap, fmt);
++    if (mount_used < sizeof mount_output - 1) {
++        int n = vsnprintf(mount_output + mount_used,
++                          sizeof mount_output - mount_used, fmt, ap);
++        if (n > 0) mount_used += (size_t)n < sizeof mount_output - mount_used ?
++            (size_t)n : sizeof mount_output - mount_used - 1;
++    }
++    va_end(ap);
++}
++static int mount_current(int d, char *path, size_t size)
++{
++    struct stat st;
++    const char *dir = diskdir != NULL ? diskd :
++        (stat("./disks", &st) == 0 && S_ISDIR(st.st_mode) ? "./disks" : DISKSDIR);
++    if (mount_override[d]) {
++        snprintf(path, size, "%s", mount_path[d]);
++        return path[0] != 0;
++    }
++    return snprintf(path, size, "%s/%s", dir, disks[d].fn) < (int)size;
++}
++static int mount_supported(int d)
++{
++    return d >= 0 && d < 16 && disks[d].fd && disks[d].tracks && disks[d].sectors;
++}
++static void mount_command(BYTE confirmed)
++{
++    char tail[128], *tokens[5], *p, *selector = NULL, *image = NULL;
++    char resolved[4096], other[4096];
++    unsigned mask = 0, changed = 0;
++    int count = 0, operation = 0, result = 1, i, d, fd;
++    struct stat st, old;
++    mount_used = 0; mount_output[0] = 0;
++    if (dma_read(0x80) > 127) goto syntax;
++    for (i = 0; i < dma_read(0x80); ++i) tail[i] = dma_read(0x81+i);
++    tail[i] = 0; p = tail;
++    while (*p) {
++        while (*p == ' ' || *p == '\t') ++p;
++        if (!*p) break;
++        if (count == 5) goto syntax;
++        if (*p == '"') {
++            tokens[count++] = ++p;
++            while (*p && *p != '"') ++p;
++            if (!*p) goto syntax;
++            *p++ = 0;
++            if (*p && *p != ' ' && *p != '\t') goto syntax;
++        } else {
++            tokens[count++] = p;
++            while (*p && *p != ' ' && *p != '\t') ++p;
++            if (*p) *p++ = 0;
++        }
++    }
++    for (i = 0; i < count; ++i) {
++        p = tokens[i];
++        int op = !strcasecmp(p,"/U") || !strcasecmp(p,"/UNMOUNT") ? 2 :
++                 !strcasecmp(p,"/L") || !strcasecmp(p,"/LIST") ? 1 :
++                 !strcasecmp(p,"/VER") ? 3 :
++                 !strcasecmp(p,"/H") || !strcasecmp(p,"/HELP") ? 4 : 0;
++        if (op) { if (operation) goto syntax; operation = op; }
++        else if (!selector) selector = p;
++        else if (!image) image = p;
++        else goto syntax;
++    }
++    if (operation >= 3) {
++        if (selector || image) goto syntax;
++        mount_say("MOUNT 1.0 (001-dev)\r\n");
++        if (operation == 4) mount_say("MOUNT X: \"host image path\"\r\nMOUNT /U|/UNMOUNT X:|[B,C,D]:\r\nMOUNT /L|/LIST [X:|[B,C,D]:]\r\nMOUNT /VER  /H  /HELP\r\nBare MOUNT lists all supported drives. Paths resolve from emulator working directory.\r\nChanging A: requires confirmation; it does not boot the replacement OS.\r\n");
++        result = 0; goto done;
++    }
++    if (selector) {
++        p = selector;
++        if (*p == '[') {
++            ++p;
++            for (;;) {
++                d = toupper((unsigned char)*p++) - 'A';
++                if (!mount_supported(d) || (mask & (1u << d))) goto syntax;
++                mask |= 1u << d;
++                if (*p != ',') break;
++                ++p;
++            }
++            if (*p++ != ']') goto syntax;
++        } else {
++            d = toupper((unsigned char)*p++) - 'A';
++            if (!mount_supported(d)) goto syntax;
++            mask = 1u << d;
++        }
++        if (*p++ != ':' || *p) goto syntax;
++    }
++    if (!operation) operation = image ? 5 : 1;
++    if (operation == 1) {
++        if (image) goto syntax;
++        for (d = 0; d < 16; ++d) if (mount_supported(d) && (!mask || (mask & (1u<<d)))) {
++            if (!mount_current(d, other, sizeof other) || !realpath(other, resolved) || stat(resolved,&st))
++                mount_say("%c: empty\r\n", 'A'+d);
++            else {
++                fd = open(resolved,O_RDWR);
++                mount_say("%c: %s  raw %u x %u x %u  %s\r\n", 'A'+d,resolved,
++                          disks[d].tracks,disks[d].sectors,disks[d].sector_size,fd < 0 ? "RO" : "RW");
++                if (fd >= 0) close(fd);
++            }
++        }
++        result = 0; goto done;
++    }
++    if (!mask || (operation == 2 && image)) goto syntax;
++    if (operation == 5) {
++        if ((mask & (mask-1)) || selector[0] == '[' || !image || !*image) goto syntax;
++        if (!realpath(image,resolved)) goto badimage;
++        fd = open(resolved,O_RDONLY);
++        if (fd < 0) goto badimage;
++        i = fstat(fd,&st); close(fd);
++        if (i || !S_ISREG(st.st_mode) || st.st_size <= 0) goto badimage;
++        for (d = 0; d < 16; ++d) if (mount_supported(d)) {
++            if (mask & (1u<<d)) {
++                if ((unsigned long long)st.st_size > (unsigned long long)disks[d].tracks * disks[d].sectors * disks[d].sector_size)
++                    goto badimage;
++            } else if (mount_current(d,other,sizeof other) && !stat(other,&old) &&
++                       st.st_dev == old.st_dev && st.st_ino == old.st_ino) {
++                mount_say("Image already mounted at %c:.\r\n",'A'+d); goto done;
++            }
++        }
++    }
++    if ((mask & 1) && confirmed != 1) { result = 2; goto done; }
++    for (d = 0; d < 16; ++d) if (mask & (1u<<d)) {
++        mount_override[d] = 1;
++        snprintf(mount_path[d],sizeof mount_path[d],"%s",operation == 2 ? "" : resolved);
++        changed |= 1u<<d;
++        mount_say("%c: %s\r\n",'A'+d,operation == 2 ? "unmounted" : resolved);
++    }
++    result = 0; goto done;
++syntax:
++    mount_say("MOUNT: Invalid syntax or unsupported drive. Use /HELP.\r\n"); goto done;
++badimage:
++    mount_say("MOUNT: Cannot open image or image does not fit drive geometry. No changes made.\r\n");
++done:
++    dma_write(0x1fff,result);
++    dma_write(0x1ffd,changed & 255); dma_write(0x1ffe,changed >> 8);
++    for (i = 0; i <= (int)mount_used; ++i) dma_write(0x2000+i,mount_output[i]);
++}
+diff --git a/cpmsim/srcsim/simio.c b/cpmsim/srcsim/simio.c
+index 98cdbfd1..53b0924b 100644
+--- a/cpmsim/srcsim/simio.c
++++ b/cpmsim/srcsim/simio.c
+@@ -271,6 +271,8 @@ static int sdirection = -1; /* protocol direction, 0 = send 1 = receive */
+ 	{ "drivep.dsk", &drivep, 256, 16384 }
+ };*/
+ 
++#include "mount.inc"
++
+ /* REPLACEMENT TABLE FOR BETTERCP/M */
+ dskdef_t disks[16] = {
+ 	{ "drivea.dsk", &drivea,  77,    26, 128 },
+@@ -461,6 +463,7 @@ out_func_t *const port_out[256] = {
+ 	[ 50] = nets1_out,
+ 	[ 51] = netd1_out,
+ 	[160] = hwctl_out,	/* virtual hardware control */
++	[162] = mount_command,
+ 	[161] = host_bdos_out	/* host file I/O hook */
+ };
+ 
+@@ -2146,6 +2149,10 @@ static void fdco_out(BYTE data)
+ 		status = 1;
+ 		return;
+ 	}
++	if (!mount_current(drive, path, sizeof(path))) {
++        status = data == 0 ? 5 : 6;
++        return;
++    }
+ 	fd = open(path, data == 0 ? O_RDONLY : O_RDWR);
+ 	if (fd < 0) {
+ 		status = data == 0 ? 5 : 6;
+diff --git a/cpmtools/Makefile b/cpmtools/Makefile
+index 8cd6d4f0..ee5f6267 100644
+--- a/cpmtools/Makefile
++++ b/cpmtools/Makefile
+@@ -1,5 +1,5 @@
+ # CP/M tools
+-TOOLS = r.com w.com bye.com reset.com sw8080.com swz80.com cpu.com memmap.com \
++TOOLS = mount.com r.com w.com bye.com reset.com sw8080.com swz80.com cpu.com memmap.com \
+ 	survey.com
+ 
+ # CPU tests by various authors, modified for using the CPU switch feature
+@@ -11,6 +11,9 @@ Z80ASMFLAGS = -l -T -sn -p0
+ 
+ all: $(TOOLS) $(CPUTESTS)
+ 
++mount.com: mount.asm $(Z80ASM)
++	$(Z80ASM) $(Z80ASMFLAGS) -8 -fb -o$@ $<
++
+ r.com: r.asm $(Z80ASM)
+ 	$(Z80ASM) $(Z80ASMFLAGS) -8 -fb -o$@ $<
+ 
+diff --git a/cpmtools/mount.asm b/cpmtools/mount.asm
+new file mode 100644
+index 00000000..9f0ebf36
+--- /dev/null
++++ b/cpmtools/mount.asm
+@@ -0,0 +1,62 @@
++        org 100h
++        lxi h,0
++        dad sp
++        shld savedsp
++        lxi sp,stacktop
++        mvi a,255
++        sta 1fffh
++        xra a
++        out 162
++        lda 1fffh
++        cpi 255
++        jz unsupported
++        cpi 2
++        jnz output
++        lxi d,warning
++        mvi c,9
++        call 5
++        mvi c,1
++        call 5
++        ani 0dfh
++        cpi 'Y'
++        jnz cancelled
++        mvi a,1
++        out 162
++output: lxi h,2000h
++next:   mov a,m
++        ora a
++        jz refresh
++        push h
++        mov e,a
++        mvi c,2
++        call 5
++        pop h
++        inx h
++        jmp next
++refresh:
++        lhld 1ffdh
++        mov a,h
++        ora l
++        jz finish
++        xchg
++        mvi c,37
++        call 5
++finish: lhld savedsp
++        sphl
++        ret
++cancelled:
++        lxi d,cancel
++        jmp message
++unsupported:
++        lxi d,missing
++message:mvi c,9
++        call 5
++        jmp finish
++warning:db '** WARNING: Changing A: while the system is running may cause',13,10
++        db 'disk errors or loss of unsaved data. Continue? [y/N] $'
++cancel: db 13,10,'Operation cancelled. No changes made.',13,10,'$'
++missing:db 'MOUNT requires a compatible cpmsim emulator.',13,10,'$'
++savedsp:dw 0
++        ds 128
++stacktop:
++        end

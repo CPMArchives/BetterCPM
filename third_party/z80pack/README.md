@@ -168,3 +168,10 @@ Port 161 host-service functions 128/129 open/create a host file from a bounded
 NUL-terminated string at DE. Record reads/writes, DMA and close are unchanged,
 and legacy FCB-based host functions remain available. Rebuild and install the
 matching R/W and emulator; the older interface cannot open long names.
+
+Both profiles also apply `0006-guest-mount.patch`, providing the cpmsim-only
+MOUNT host service on output port 162 and assembling `cpmtools/mount.com`.
+The System disk builder takes MOUNT.COM from the cpmtools directory beside
+the selected emulator source/build tree. No CCP, BDOS, or BIOS changes are
+required. Run `tools/test_cpmsim_mount.py --source <patched-z80pack-tree>`
+to check parsing, real file identity, confirmation gating and mount state.

@@ -23,6 +23,10 @@
     {
       "file": "0005-host-transfer.patch",
       "sha256": "12469dfea529e6670a29b3562c3539dc3a6bc79d155aa0d5bcd3e3efed90a6c8"
+    },
+    {
+      "file": "0006-guest-mount.patch",
+      "sha256": "284b214c403fe24579bf111c2291f6afa70176d520a94f683996a586a4c916d8"
     }
   ],
   "profiles": {
@@ -30,14 +34,16 @@
       "0001-disk-geometry.patch",
       "0002-raw-fdf-backend.patch",
       "0004-live-media.patch",
-      "0005-host-transfer.patch"
+      "0005-host-transfer.patch",
+      "0006-guest-mount.patch"
     ],
     "qualification": [
       "0001-disk-geometry.patch",
       "0002-raw-fdf-backend.patch",
       "0003-rom-qualification.patch",
       "0004-live-media.patch",
-      "0005-host-transfer.patch"
+      "0005-host-transfer.patch",
+      "0006-guest-mount.patch"
     ]
   }
 }

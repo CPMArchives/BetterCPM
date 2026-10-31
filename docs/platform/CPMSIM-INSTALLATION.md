@@ -137,3 +137,55 @@ provide the matching upstream source with the applied patches. Preserve the
 separate BetterCP/M and utility licensing, attribution and corresponding-source
 material. The release checklist must bind the tested emulator and disk images
 to the files actually published.
+
+## Live disk changes with MOUNT
+
+`MOUNT.COM` is supplied on the cpmsim System disk in user 0. It requires
+an emulator built with the guest MOUNT interface; it is not a Model 4 tool.
+
+```text
+MOUNT B: IMAGE.DSK
+MOUNT B: "/path/with spaces/Disk Image.dsk"
+MOUNT /U B:
+MOUNT /UNMOUNT [B,C,D]:
+MOUNT /L
+MOUNT /LIST [A,C,D]:
+MOUNT /VER
+MOUNT /HELP
+MOUNT /H
+```
+
+Bare `MOUNT` lists all supported drives, as does `/L` without a selector.
+Unmounting always requires an explicit drive or list. Options can precede
+or follow the selector. Mounting accepts one drive and one image only.
+Host path case is preserved; relative paths resolve from the emulator's
+working directory. The image must match the drive's configured raw geometry;
+MOUNT does not convert formats or infer filesystem compatibility. Listings
+show the full path, configured raw geometry, and host read/write availability.
+
+A replacement is checked before the current attachment changes. An image
+already attached to another drive is rejected, including hard-link and
+symlink aliases. Attachments last for this emulator session and do not change
+the launcher's disk links. Restarting the emulator restores its launch media.
+The command resets the affected BDOS drive state through existing function 37.
+
+Changing or ejecting A: prompts:
+
+```text
+** WARNING: Changing A: while the system is running may cause
+disk errors or loss of unsaved data. Continue? [y/N]
+```
+
+Only Y/y proceeds. Any other response cancels the entire command, including
+all drives in a multi-drive unmount, with:
+
+```text
+Operation cancelled. No changes made.
+```
+
+There is no open-file tracking or additional safety interlock. You are
+responsible for completing writes and choosing suitable media. Replacing A:
+does not boot a new OS; Ctrl-C is a warm boot, not a machine reset. Normal
+command return may also invoke a warm boot. System disk dependencies can
+therefore cause errors immediately after changing A:. Use an emulator reset
+and its boot sequence when you intend to boot the replacement disk.

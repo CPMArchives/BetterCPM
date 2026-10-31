@@ -151,6 +151,17 @@ def geometry(target, build_root):
             'definition': 'bettercpm-default'}
 
 
+def stage_cpmsim_guest(simulator, root):
+    """Stage the tool built alongside the selected emulator, outside OS caches."""
+    source = Path(simulator).resolve().parent.parent/'cpmtools/mount.com'
+    data = source.read_bytes()
+    if not data:
+        raise ValueError('empty cpmsim MOUNT.COM')
+    destination = Path(root)/'staged-host-tools/MOUNT.COM'
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(data)
+
+
 def selected_files(manifest, target, root):
     selected, omitted = [], []
     for component in manifest['system_disk']:
@@ -512,6 +523,8 @@ def main():
             root = current_build(work, target, identity, a.reuse_work)
             out = publication/target
             out.mkdir()
+            if target == 'z80pack':
+                stage_cpmsim_guest(a.simulator, root)
             files, omitted = selected_files(manifest, target, root)
             g = geometry(target, root)
             totals = capacity(files, g)
