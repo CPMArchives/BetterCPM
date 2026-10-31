@@ -2,7 +2,7 @@
 """Execute the assembled CCP with declared BDOS EOF/error result providers."""
 from pathlib import Path
 from build_ccp import assemble
-from test_ccp import cpu,symbol,BASE
+from test_ccp import cpu,symbol,BASE,call
 from system_layout import LAYOUT
 R=Path(__file__).resolve().parents[1];W=R/'build/compatibility/loader-results';W.mkdir(parents=True,exist_ok=True)
 source='''        ORG %d
@@ -87,7 +87,8 @@ for fallback in (0,1):
   callback=bytes((0x3A,0x0A,0xF1,0xFE,7,0x28,5,0x3E,1,0x32,0x0C,0xF1,0x21,7,0xF1,0x34,0xC9))
   m.mem[shutdown:shutdown+len(callback)]=callback
   m.setword(LAYOUT['SYSTEM']+0x86,head)
-  command=b'PROBE ONE.TXT TWO.DAT';m.mem[symbol('CCP_COUNT')]=len(command);start=symbol('CCP_DATA');m.mem[start:start+len(command)]=command
+  command=b'probe One.txt tWo.Dat';m.mem[symbol('CCP_COUNT')]=len(command);start=symbol('CCP_DATA');m.mem[start:start+len(command)]=command
+  call(m,symbol('CCP_UPPER'))
   m.mem[0x5c:0x80]=bytes([0xa5])*36;m.mem[0xF103]=result
   address=symbol('CCP_LOAD');m.mem[0xF200:0xF204]=bytes([0xCD,address&255,address>>8,0xC9])
   try:
@@ -104,7 +105,7 @@ for fallback in (0,1):
    assert m.mem[0x48]==0, 'successful loader left abort recovery armed'
    assert m.mem[0xF104]==1,'EOF did not execute the complete image'
    assert m.mem[0x5d:0x65]==b'ONE     ' and m.mem[0x6d:0x75]==b'TWO     '
-   assert m.mem[0x81:0x91]==b' ONE.TXT TWO.DAT'
+   assert m.mem[0x81:0x91]==b' One.txt tWo.Dat'
   else:
    assert m.mem[0xF104]==0,f'failed load executed at status {result:02X}'
    assert m.pc==0xffff,'failed load did not enter warm boot'

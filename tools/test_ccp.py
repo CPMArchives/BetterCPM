@@ -62,6 +62,27 @@ def install_bdos(machine: Z80, code: bytes) -> None:
 
 
 def main() -> None:
+    # Dispatch folds its working copy while transient tails retain spelling.
+    command = b'go Test.txt tEsT.TxT'
+    machine = cpu()
+    install_bdos(machine, bytes((0xAF, 0xC9)))
+    data = symbol("CCP_DATA")
+    machine.mem[data:data+len(command)] = command
+    machine.mem[symbol("CCP_COUNT")] = len(command)
+    call(machine, symbol("CCP_UPPER"))
+    require(bytes(machine.mem[data:data+len(command)]) == command.upper(),
+            "dispatch buffer did not fold case")
+    require(bytes(machine.mem[symbol("CCP_RAW"):symbol("CCP_RAW")+len(command)]) == command,
+            "original command spelling was lost")
+    machine.hl, machine.b = data+3, len(command)-3
+    call(machine, symbol("CCP_MKTAIL"))
+    require(bytes(machine.mem[0x81:0x81+len(command)-3]) == command[3:],
+            "GO/JUMP command tail lost original spelling")
+    require(bytes(machine.mem[0x5d:0x68]) == b'TEST    TXT',
+            "first default FCB was not uppercase")
+    require(bytes(machine.mem[0x6d:0x78]) == b'TEST    TXT',
+            "second default FCB was not uppercase")
+
     # A CCP-prompt Ctrl-C visibly acknowledges the key before invoking the
     # non-returning warm-boot service. Four direct-output calls avoid adding a
     # pointer to the CCP's already-full one-sector relocation directory.

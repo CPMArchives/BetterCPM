@@ -111,12 +111,12 @@ R TEST.TXT B3:TEST2.TXT
 W B3:TEST.TXT TEST2.TXT
 ```
 
-Host names are flat 8.3 names converted to lowercase, relative to the emulator's
+Host names are flat 8.3 names with case preserved, relative to the emulator's
 working directory. CP/M operands accept drive A-P and optional user 0-15;
 unspecified locations use the current drive/user. User selection is restored
 on ordinary success and error exits. Destinations default to the source name.
 `/VER`, `/H`, and `/HELP` are exact, case-insensitive queries handled before
-file operations. R/W currently identify as 1.0 (002-dev).
+file operations. R/W currently identify as 1.0 (003-dev).
 
 The patch corrects text EOF across records, read/close error reporting, stale
 handles, and the optional SIMBDOS_NO_OVERWRITE implementation. Default
@@ -135,3 +135,17 @@ python3 tests/test_rw_transfers.py
 
 The transfer test uses the actual Z80 core and host service with a BDOS fixture;
 full guest-OS integration remains unqualified.
+
+Host operand spelling is now significant. For example,
+`W TEST.TXT tEsT.TxT` creates the host destination with that exact spelling.
+`R Test.txt` and `R TEST.TXT` select different files on case-sensitive hosts.
+An omitted W destination inherits the uppercase CP/M filename; an omitted R
+destination uppercases the host name for CP/M. Existing overwrite policy still
+applies when different host spellings normalize to the same CP/M name.
+
+The updated CCP preserves the original command tail while retaining uppercase
+command dispatch and default FCB construction. This applies to loaded commands
+and GO/JUMP. The resident allocation grows by 256 bytes. Older CCPs still fold
+typed host names; install the updated CCP to use mixed-case host operands.
+This also means transient programs receive mixed-case arguments; programs
+that parse the tail themselves must fold their own case-insensitive keywords.
