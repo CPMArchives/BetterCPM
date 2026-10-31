@@ -7,7 +7,7 @@ import shutil
 import subprocess
 import tempfile
 from build_distribution import (ROOT, MANIFEST, source_identity, current_build,
-    selected_files, geometry, capacity, construct, validate_config_fingerprint,
+    selected_files, stage_cpmsim_guest, geometry, capacity, construct, validate_config_fingerprint,
     validate_config_cold_patch, validate_files, digest, boot)
 from fdf_format import select_fdf
 from build_z80pack_image import DEFAULT_FORMAT, disk_definition
@@ -26,6 +26,7 @@ def prepare(output, simulator):
         # build snapshots separate; the cpmsim build rewrites shared paths.
         root=current_build(output/'work',target,identity,False)
         out=output/target;out.mkdir()
+        if target=='z80pack':stage_cpmsim_guest(simulator,root)
         files,omitted=selected_files(manifest,target,root)
         g=geometry(target,root);totals=capacity(files,g)
         raw=construct(target,root,out,files,g,manifest.get('cold_start_command',''))
