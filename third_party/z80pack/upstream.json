@@ -22,7 +22,7 @@
     },
     {
       "file": "0005-host-transfer.patch",
-      "sha256": "855f14d88292d607cbbc3b87aa6b2d8ad50157e5c8cdb1ec48a7af04d8b9ab31"
+      "sha256": "cc0f153e5626c8fd4acb0d6f12a14c3f54e4f3c3f82820b9bb309fc254d89ee8"
     }
   ],
   "profiles": {

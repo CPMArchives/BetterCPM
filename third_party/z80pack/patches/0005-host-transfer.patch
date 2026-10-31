@@ -1,5 +1,5 @@
 diff --git a/cpmtools/r.asm b/cpmtools/r.asm
-index 50ec8b0a..49b2899d 100644
+index 50ec8b0a..61f4c0ef 100644
 --- a/cpmtools/r.asm
 +++ b/cpmtools/r.asm
 @@ -21,12 +21,8 @@ WRITEF	equ	21		;BDOS write file
@@ -16,7 +16,7 @@ index 50ec8b0a..49b2899d 100644
  DEFDMA	equ	80h		;CP/M default DMA address
  
  ; Misc equates
-@@ -39,69 +35,263 @@ LF	equ	10		;ascii for line feed
+@@ -39,69 +35,275 @@ LF	equ	10		;ascii for line feed
  ;-----------------------------------------------------------------------------
  ; Main program
  ;-----------------------------------------------------------------------------
@@ -130,6 +130,7 @@ index 50ec8b0a..49b2899d 100644
 +        lxi d,guestFcb+1
 +        mvi b,11
 +inherit mov a,m
++        call upper
 +        stax d
 +        inx h
 +        inx d
@@ -283,8 +284,18 @@ index 50ec8b0a..49b2899d 100644
 +        rnz
 +        ; Only a destination may omit its filename; checked by the caller.
 +        ret
-+putChar call upper
++putChar push psw
++        lda guestFlag
++        ora a
++        jz hostChar
++        pop psw
++        call upper
++        jmp validateChar
++hostChar pop psw
++validateChar
 +        ; Conservative CP/M filename characters; no paths, wildcards or options.
++        push psw
++        call upper
 +        cpi 'A'
 +        jc charDigit
 +        cpi 'Z'+1
@@ -305,7 +316,8 @@ index 50ec8b0a..49b2899d 100644
 +        jmp symbolLoop
 +symbolOK mov a,b
 +        pop h
-+charOK  push psw
++charOK  pop psw
++        push psw
 +        mov a,c
 +        ora a
 +        jz syntaxErr
@@ -335,7 +347,7 @@ index 50ec8b0a..49b2899d 100644
  
  opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
  	mvi	c,SETDMA
-@@ -124,13 +314,13 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
+@@ -124,13 +326,13 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
  ; Delete and then open the output file on the CP/M file system
  
  	xra	a		;zero current record the FCB
@@ -352,7 +364,7 @@ index 50ec8b0a..49b2899d 100644
  	mvi	c,MAKEF		;C=make file command
  	call	BDOS		;create the destination file
  	
-@@ -138,7 +328,7 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
+@@ -138,7 +340,7 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
  	inr	a		;test for FF (make file fail)
  	jz	exitM1F		;create failed, close one file & exit
  
@@ -361,7 +373,7 @@ index 50ec8b0a..49b2899d 100644
  	mvi	c,OPENF		;C=open file command
  	call	BDOS		;open the destination file
  	
-@@ -154,10 +344,15 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
+@@ -154,10 +356,15 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
  cpyFile	lxi	d,inFcb		;DE->input file FCB
  	mvi	c,READF		;C=read file sequential
  	call	pcBdos
@@ -381,7 +393,7 @@ index 50ec8b0a..49b2899d 100644
  	mvi	c,WRITEF	;C=write file sequential
  	call	BDOS
  	ora	a		;test for write error
-@@ -172,20 +367,35 @@ cpyFile	lxi	d,inFcb		;DE->input file FCB
+@@ -172,20 +379,35 @@ cpyFile	lxi	d,inFcb		;DE->input file FCB
  ; exitM2F - also closes the input and output files
  ;-----------------------------------------------------------------------------
  exitM2F	push	d		;save message pointer
@@ -419,7 +431,7 @@ index 50ec8b0a..49b2899d 100644
  
  ;-----------------------------------------------------------------------------
  ; pcBdos - Call the PC "BDOS" by putting the complement of the command
-@@ -197,52 +407,141 @@ pcBdos	mov	a,c		;set A = not C
+@@ -197,52 +419,141 @@ pcBdos	mov	a,c		;set A = not C
  	out	PCPORT		;call the PC "BDOS"
  	ret
  
@@ -455,7 +467,7 @@ index 50ec8b0a..49b2899d 100644
 -	db	LF
 - 	db	'Usage: R <filename>',CR,LF,'$'
 +mHelp db CR,LF
-+        db 'R 1.0 (002-dev)',CR,LF
++        db 'R 1.0 (003-dev)',CR,LF
 +        db '  - - -',CR,LF
 +        db ' | Host File Import',CR,LF
 +        db ' |',CR,LF
@@ -465,7 +477,7 @@ index 50ec8b0a..49b2899d 100644
 +        db '     /H /HELP   Display this help.',CR,LF
 +        db '     /VER       Display utility identification.',CR,LF
 +        db CR,LF
-+        db '   Host files use lowercase names in the emulator working directory.',CR,LF
++        db '   Host names preserve case in the emulator working directory.',CR,LF
 +        db '   One file per command; wildcards are not supported.',CR,LF
 +        db '   DU: means drive A-P and optional user 0-15 (e.g. B3:).',CR,LF
 +        db '   Omitted destination name retains the source name.',CR,LF
@@ -474,7 +486,7 @@ index 50ec8b0a..49b2899d 100644
 +        db '$'
 +
 +mVersion db CR,LF
-+        db 'R 1.0 (002-dev)',CR,LF
++        db 'R 1.0 (003-dev)',CR,LF
 +        db '  - - -',CR,LF
 +        db ' | BetterCP/M Utilities',CR,LF
 +        db ' | Host File Import',CR,LF
@@ -595,7 +607,7 @@ index 50ec8b0a..49b2899d 100644
 +stackTop
  	end
 diff --git a/cpmtools/w.asm b/cpmtools/w.asm
-index 8c677f04..c3c8db86 100644
+index 8c677f04..9e979055 100644
 --- a/cpmtools/w.asm
 +++ b/cpmtools/w.asm
 @@ -21,12 +21,8 @@ WRITEF	equ	21		;BDOS write file
@@ -612,7 +624,7 @@ index 8c677f04..c3c8db86 100644
  DEFDMA	equ	80h		;CP/M default DMA address
  
  ; Misc equates
-@@ -39,69 +35,266 @@ LF	equ	10		;ASCII for line feed
+@@ -39,69 +35,277 @@ LF	equ	10		;ASCII for line feed
  ;-----------------------------------------------------------------------------
  ; Main program
  ;-----------------------------------------------------------------------------
@@ -882,8 +894,18 @@ index 8c677f04..c3c8db86 100644
 +        rnz
 +        ; Only a destination may omit its filename; checked by the caller.
 +        ret
-+putChar call upper
++putChar push psw
++        lda guestFlag
++        ora a
++        jz hostChar
++        pop psw
++        call upper
++        jmp validateChar
++hostChar pop psw
++validateChar
 +        ; Conservative CP/M filename characters; no paths, wildcards or options.
++        push psw
++        call upper
 +        cpi 'A'
 +        jc charDigit
 +        cpi 'Z'+1
@@ -904,7 +926,8 @@ index 8c677f04..c3c8db86 100644
 +        jmp symbolLoop
 +symbolOK mov a,b
 +        pop h
-+charOK  push psw
++charOK  pop psw
++        push psw
 +        mov a,c
 +        ora a
 +        jz syntaxErr
@@ -934,7 +957,7 @@ index 8c677f04..c3c8db86 100644
  
  opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
  	mvi	c,SETDMA
-@@ -114,9 +307,9 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
+@@ -114,9 +318,9 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
  ; Open the input file on the CP/M machine
  
  	xra	a		;zero current record the FCB
@@ -946,7 +969,7 @@ index 8c677f04..c3c8db86 100644
  	mvi	c,OPENF		;C=open file command
  	call	BDOS		;open input file
  
-@@ -127,7 +320,7 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
+@@ -127,7 +331,7 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
  ; Open the output file on the PC. Unlike CP/M, the MAKEF command
  ;    also opens the file for write on the PC.
  
@@ -955,7 +978,7 @@ index 8c677f04..c3c8db86 100644
  	mvi	c,MAKEF		;C=make file command
  	call	pcBdos		;open destination file
  	
-@@ -140,11 +333,16 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
+@@ -140,11 +344,16 @@ opnFile	lxi	d,DEFDMA	;use the CP/M default buffer
  ;-----------------------------------------------------------------------------	
  ; cpyFile - Copy the input file from CP/M to the output file on the PC
  ;-----------------------------------------------------------------------------
@@ -975,7 +998,7 @@ index 8c677f04..c3c8db86 100644
  
  	lxi	d,outFcb	;DE->output file FCB
  	mvi	c,WRITEF	;C=write file sequential
-@@ -165,16 +363,31 @@ exitM2F	push	d		;save message pointer
+@@ -165,16 +374,31 @@ exitM2F	push	d		;save message pointer
  	mvi	c,CLOSEF	;C=close file command
  	call	pcBdos
  	pop	d		;DE->exit message
@@ -1009,7 +1032,7 @@ index 8c677f04..c3c8db86 100644
  
  ;-----------------------------------------------------------------------------
  ; pcBdos - Call the PC "BDOS" by putting the complement of the command
-@@ -186,52 +399,141 @@ pcBdos	mov	a,c		;set A = not C
+@@ -186,52 +410,141 @@ pcBdos	mov	a,c		;set A = not C
  	out	PCPORT		;call the PC "BDOS"
  	ret
  
@@ -1045,7 +1068,7 @@ index 8c677f04..c3c8db86 100644
 -	db	LF
 - 	db	'Usage: W <filename>',CR,LF,'$'
 +mHelp db CR,LF
-+        db 'W 1.0 (002-dev)',CR,LF
++        db 'W 1.0 (003-dev)',CR,LF
 +        db '  - - -',CR,LF
 +        db ' | Host File Export',CR,LF
 +        db ' |',CR,LF
@@ -1055,7 +1078,7 @@ index 8c677f04..c3c8db86 100644
 +        db '     /H /HELP   Display this help.',CR,LF
 +        db '     /VER       Display utility identification.',CR,LF
 +        db CR,LF
-+        db '   Host files use lowercase names in the emulator working directory.',CR,LF
++        db '   Host names preserve case in the emulator working directory.',CR,LF
 +        db '   One file per command; wildcards are not supported.',CR,LF
 +        db '   DU: means drive A-P and optional user 0-15 (e.g. B3:).',CR,LF
 +        db '   Omitted destination name retains the source name.',CR,LF
@@ -1064,7 +1087,7 @@ index 8c677f04..c3c8db86 100644
 +        db '$'
 +
 +mVersion db CR,LF
-+        db 'W 1.0 (002-dev)',CR,LF
++        db 'W 1.0 (003-dev)',CR,LF
 +        db '  - - -',CR,LF
 +        db ' | BetterCP/M Utilities',CR,LF
 +        db ' | Host File Export',CR,LF
@@ -1185,7 +1208,7 @@ index 8c677f04..c3c8db86 100644
 +stackTop
  	end
 diff --git a/iodevices/simbdos.c b/iodevices/simbdos.c
-index 746b317d..19b29894 100644
+index 746b317d..108d839e 100644
 --- a/iodevices/simbdos.c
 +++ b/iodevices/simbdos.c
 @@ -23,8 +23,7 @@
@@ -1194,20 +1217,22 @@ index 746b317d..19b29894 100644
   * files between the host and CP/M file systems. Note that on a
 - * case-sensitive operating system, file names must be in all caps
 - * as used in CP/M.
-+ * case-sensitive operating system, host file names are converted to lowercase.
++ * case-sensitive operating system, host file names preserve the spelling supplied by the guest.
   *
   * History:
   * 03-OCT-2019 (Mike Douglas) Original
-@@ -34,6 +33,8 @@
+@@ -33,7 +32,10 @@
+ 
  #include <stdio.h>
  #include <string.h>
++#include <strings.h>
  #include <ctype.h>
 +#include <fcntl.h>
 +#include <unistd.h>
  
  #include "sim.h"
  #include "simdefs.h"
-@@ -66,6 +67,7 @@ static const char *textExts[] = {
+@@ -66,6 +68,7 @@ static const char *textExts[] = {
  
  static FILE *fp = NULL;		/* file pointer */
  static WORD dmaAddr = 0x80;	/* buffer address in emulated space */
@@ -1215,7 +1240,7 @@ index 746b317d..19b29894 100644
  static bool textFile = false;	/* text file flag */
  
  /*
-@@ -96,6 +98,14 @@ void host_bdos_out(BYTE outByte)
+@@ -96,15 +99,23 @@ void host_bdos_out(BYTE outByte)
  	fcbAddr = (D << 8) + E;	/* FCB address in simulator memory */
  
  	if ((C == OPENF) || (C == MAKEF)) {
@@ -1228,9 +1253,20 @@ index 746b317d..19b29894 100644
 +		}
 +		textEof = false;
  		for (i = 0; i < 8; i++) {	/* copy file name */
- 			fname[i] = tolower(dma_read(fcbAddr + 1 + i));
+-			fname[i] = tolower(dma_read(fcbAddr + 1 + i));
++			fname[i] = dma_read(fcbAddr + 1 + i);
  			if (fname[i] == ' ')
-@@ -118,12 +128,6 @@ void host_bdos_out(BYTE outByte)
+ 				break;
+ 		}
+ 		fname[i] = 0;
+ 
+ 		for (i = 0; i < 3; i++) {	/* copy extension */
+-			extension[i] = tolower(dma_read(fcbAddr + 9 + i));
++			extension[i] = dma_read(fcbAddr + 9 + i);
+ 			if (extension[i] == ' ')
+ 				break;
+ 		}
+@@ -118,32 +129,41 @@ void host_bdos_out(BYTE outByte)
  		if (C == MAKEF) {
  			strcpy(openFlags, "wb"); /* MAKEF opens for writing */
  
@@ -1242,8 +1278,11 @@ index 746b317d..19b29894 100644
 -#endif
  			textFile = false;	/* binary file is assumed */
  			for (i = 0; textExts[i] != NULL; i++)
- 				if (strcmp(extension, textExts[i]) == 0) {
-@@ -133,17 +137,32 @@ void host_bdos_out(BYTE outByte)
+-				if (strcmp(extension, textExts[i]) == 0) {
++				if (strcasecmp(extension, textExts[i]) == 0) {
+ 					textFile = true; /* it's a text file */
+ 					break;
+ 				}
  		} else
  			strcpy(openFlags, "rb"); /* OPENF for reading */
  
@@ -1282,7 +1321,7 @@ index 746b317d..19b29894 100644
  	}
  
  	/* READ file */
-@@ -151,6 +170,12 @@ void host_bdos_out(BYTE outByte)
+@@ -151,6 +171,12 @@ void host_bdos_out(BYTE outByte)
  	else if (C == READF) {
  		if (fp != NULL) {
  			xferLen = fread(buf, 1, SECLEN, fp);
@@ -1295,7 +1334,7 @@ index 746b317d..19b29894 100644
  			if (xferLen != 0) {
  				for (i = 0; i < xferLen; i++)
  					dma_write(dmaAddr + i, buf[i]);
-@@ -165,10 +190,16 @@ void host_bdos_out(BYTE outByte)
+@@ -165,10 +191,16 @@ void host_bdos_out(BYTE outByte)
  
  	else if (C == WRITEF) {
  		if (fp != NULL) {
@@ -1315,10 +1354,10 @@ index 746b317d..19b29894 100644
  				A = 0;
 diff --git a/tests/host-transfer-notes.md b/tests/host-transfer-notes.md
 new file mode 100644
-index 00000000..2dd12281
+index 00000000..ab7eb083
 --- /dev/null
 +++ b/tests/host-transfer-notes.md
-@@ -0,0 +1,48 @@
+@@ -0,0 +1,54 @@
 +# Host transfer corrections
 +
 +R/W retain the port 161 host service and use source -> destination syntax.
@@ -1337,7 +1376,7 @@ index 00000000..2dd12281
 +on all ordinary return paths. H: mapping and host listing are deferred.
 +
 +/VER, /H and /HELP are exact case-insensitive queries, recognized before any
-+file operations. The commands currently identify as 1.0 (002-dev).
++file operations. The commands currently identify as 1.0 (003-dev).
 +
 + Host reads now
 +return 0 for a record, 1 for normal EOF, and FF for error. Install the rebuilt R
@@ -1367,9 +1406,15 @@ index 00000000..2dd12281
 +core with the real host service and a BDOS fixture, covering renamed imports
 +and exports, defaults, DU selection, invalid syntax, data and user restoration
 +on success and injected failure. Full guest OS integration remains untested.
++
++Host operands retain their typed case; guest operands and inherited import
++names are uppercase. Text-extension recognition is case-insensitive. An omitted
++W destination inherits the normalized uppercase CP/M name. Mixed-case use
++requires a CCP that preserves command tails; older CCPs cannot recover typed
++spelling. Case-distinct import probes skip on case-insensitive volumes.
 diff --git a/tests/test_host_transfer.py b/tests/test_host_transfer.py
 new file mode 100644
-index 00000000..39607fa2
+index 00000000..3a1ba98d
 --- /dev/null
 +++ b/tests/test_host_transfer.py
 @@ -0,0 +1,70 @@
@@ -1414,7 +1459,7 @@ index 00000000..39607fa2
 + command(CLOSEF); assert(A==0 && fp==NULL);
 + command(CLOSEF); assert(A==0);
 + command(WRITEF); assert(A==255);
-+ f=fopen("test.txt","rb"); n=fread(b,1,256,f); fclose(f);
++ f=fopen("TEST.TXT","rb"); n=fread(b,1,256,f); fclose(f);
 + assert(n==3 && memcmp(b,"aaa",3)==0);
 + command(MAKEF);
 +#ifdef SIMBDOS_NO_OVERWRITE
@@ -1425,8 +1470,8 @@ index 00000000..39607fa2
 + name("DATA    BIN"); command(MAKEF); assert(A==0);
 + memset(mem+0x80,26,128); command(WRITEF); assert(A==0);
 + command(CLOSEF); assert(A==0);
-+ f=fopen("data.bin","rb"); assert(fread(b,1,256,f)==128); fclose(f);
-+ f=fopen("short.bin","wb"); fputs("abc",f); fclose(f);
++ f=fopen("DATA.BIN","rb"); assert(fread(b,1,256,f)==128); fclose(f);
++ f=fopen("SHORT.BIN","wb"); fputs("abc",f); fclose(f);
 + name("SHORT   BIN"); command(OPENF); assert(A==0);
 + command(READF); assert(A==0 && mem[0x80]=='a' && mem[0x83]==26);
 + command(READF); assert(A==1);
@@ -1445,7 +1490,7 @@ index 00000000..39607fa2
 +        subprocess.run([str(p/'test')],cwd=tmp,check=True)
 diff --git a/tests/test_rw_queries.py b/tests/test_rw_queries.py
 new file mode 100644
-index 00000000..f6efcedb
+index 00000000..e93d1c9d
 --- /dev/null
 +++ b/tests/test_rw_queries.py
 @@ -0,0 +1,32 @@
@@ -1476,17 +1521,17 @@ index 00000000..f6efcedb
 +   result=lib.test_run(256,10000);assert result>=0,(tail,result)
 +   if kind!='other':
 +    assert state['calls']==[9] and writes.value==0,(tail,state,writes.value)
-+    assert name.upper()+' 1.0 (002-dev)' in state['out']
++    assert name.upper()+' 1.0 (003-dev)' in state['out']
 +    assert ('Usage:' in state['out'])==(kind=='help')
 +   else: assert writes.value==0 and 'Invalid syntax' in state['out'],(tail,state)
 +   count+=1
 + print(count,'R/W query checks passed on Z80 core')
 diff --git a/tests/test_rw_transfers.py b/tests/test_rw_transfers.py
 new file mode 100644
-index 00000000..21c032a5
+index 00000000..ace22379
 --- /dev/null
 +++ b/tests/test_rw_transfers.py
-@@ -0,0 +1,121 @@
+@@ -0,0 +1,139 @@
 +"""Run R/W on the Z80 core with the real host service and a BDOS file fixture."""
 +import ast
 +import ctypes as C
@@ -1587,15 +1632,33 @@ index 00000000..21c032a5
 +        return state
 +    try:
 +        payload=bytes(range(128))*2+b'last'
++        Path('FILE.BIN').write_bytes(payload)
 +        Path('file.bin').write_bytes(payload)
 +        expected=payload.ljust(384,b'\x1a')
 +        for tail,dest in [('FILE.BIN',(1,7,'FILE.BIN')),('FILE.BIN B3:',(2,3,'FILE.BIN')),('FILE.BIN B3:NEW.BIN',(2,3,'NEW.BIN')),('file.bin new.bin',(1,7,'NEW.BIN')),('FILE.BIN B:NEW.BIN',(2,7,'NEW.BIN')),('FILE.BIN P15:X.BIN',(16,15,'X.BIN'))]:
 +            s=run('r',tail);assert s['files']=={dest:expected},(tail,s)
-+        for tail,src,host in [('FILE.BIN',(1,7,'FILE.BIN'),'file.bin'),('B3:FILE.BIN NEW.BIN',(2,3,'FILE.BIN'),'new.bin'),('B3:FILE.BIN',(2,3,'FILE.BIN'),'file.bin')]:
++        for tail,src,host in [('FILE.BIN',(1,7,'FILE.BIN'),'FILE.BIN'),('B3:FILE.BIN NEW.BIN',(2,3,'FILE.BIN'),'NEW.BIN'),('B3:FILE.BIN',(2,3,'FILE.BIN'),'FILE.BIN')]:
 +            s=run('w',tail,{src:expected});assert Path(host).read_bytes()==expected,(tail,s)
-+        Path('file.txt').write_bytes(b'hello')
++        Path('FILE.TXT').write_bytes(b'hello')
 +        s=run('r','FILE.TXT B3:TEST2.TXT');assert s['files'][(2,3,'TEST2.TXT')]==b'hello'+b'\x1a'*123
-+        s=run('w','B3:TEST.TXT TEST2.TXT',{(2,3,'TEST.TXT'):b'hello'+b'\x1a'*123});assert Path('test2.txt').read_bytes()==b'hello'
++        s=run('w','B3:TEST.TXT TEST2.TXT',{(2,3,'TEST.TXT'):b'hello'+b'\x1a'*123});assert Path('TEST2.TXT').read_bytes()==b'hello'
++        # Explicit host destination spelling must survive, even on a
++        # case-insensitive host filesystem. Inspect directory entry spelling.
++        run('w','TEST.TXT tEsT.TxT',{(1,7,'TEST.TXT'):b'mixed'+b'\x1a'*123})
++        assert 'tEsT.TxT' in {p.name for p in Path('.').iterdir()}
++        assert Path('tEsT.TxT').read_bytes()==b'mixed'
++        Path('Mixed.Bin').write_bytes(b'case')
++        s=run('r','Mixed.Bin B3:')
++        assert s['files'][(2,3,'MIXED.BIN')].startswith(b'case')
++        # Case-distinct files can only be exercised on a case-sensitive volume.
++        Path('Case.Bin').write_bytes(b'first')
++        if not Path('CASE.BIN').exists():
++            Path('CASE.BIN').write_bytes(b'second')
++            for host,data in [('Case.Bin',b'first'),('CASE.BIN',b'second')]:
++                s=run('r',host+' B3:OUT.BIN')
++                assert s['files'][(2,3,'OUT.BIN')].startswith(data)
++        else:
++            print('case-distinct host read check skipped: case-insensitive volume')
 +        for command,tails in [('r',['B:FILE.BIN','FILE.BIN B16:','FILE.BIN Q:','FILE.BIN B-1:','FILE.BIN B3:X.Y.Z','FILE.BIN TOOLONGNM.BIN','FILE.BIN B3:X.LONG','FILE.BIN B3: X','*.BIN','FILE.BIN /BOGUS']),('w',['B3:','FILE.BIN B3:NEW.BIN','FILE.BIN ONE TWO','A16:FILE.BIN','FILE.BIN ../X','FILE.BIN *.*'])]:
 +            for tail in tails: run(command,tail,valid=False)
 +        for fail in ('make','write','close'):
