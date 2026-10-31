@@ -27,6 +27,10 @@
     {
       "file": "0006-guest-mount.patch",
       "sha256": "3ef3a643041b9664709e8fb511a081e7c30af2335f137785f2338359e16ec87a"
+    },
+    {
+      "file": "0007-mount-help.patch",
+      "sha256": "128f278e4d32c149a965d9f2084caee3e82b13db613bb5de7063ca9eff556d72"
     }
   ],
   "profiles": {
@@ -35,7 +39,8 @@
       "0002-raw-fdf-backend.patch",
       "0004-live-media.patch",
       "0005-host-transfer.patch",
-      "0006-guest-mount.patch"
+      "0006-guest-mount.patch",
+      "0007-mount-help.patch"
     ],
     "qualification": [
       "0001-disk-geometry.patch",
@@ -43,7 +48,8 @@
       "0003-rom-qualification.patch",
       "0004-live-media.patch",
       "0005-host-transfer.patch",
-      "0006-guest-mount.patch"
+      "0006-guest-mount.patch",
+      "0007-mount-help.patch"
     ]
   }
 }

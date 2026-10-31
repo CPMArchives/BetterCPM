@@ -9,11 +9,14 @@ with tempfile.TemporaryDirectory() as tmp:
     w=Path(tmp);(w/'disks').mkdir();(w/'Image.dsk').write_bytes(b'A'*128)
     (w/'stub.asm').write_text(stub)
     subprocess.run([str(source/'z80asm/z80asm'),'-8','-fb','-o'+str(w/'stub.bin'),str(w/'stub.asm')],check=True,capture_output=True)
-    for tail,answer,expected in [('/VER',None,b'001-dev'),('/U',None,b'Invalid syntax'),
+    for tail,answer,expected in [('/VER',None,b'MOUNT 1.0 (002-dev)'),('/U',None,b'Invalid syntax'),
                                 ('/U [A,B,C]:',b'n',b'Operation cancelled. No changes made.'),
                                 ('/U [A,B,C]:',b'Y',b'C: unmounted'),
                                 ('B: Image.dsk',None,b'Image.dsk'),
-                                ('/HELP',None,b'working directory')]:
+                                ('/HELP',None,b'Usage: MOUNT'),
+                                ('/H',None,b'Usage: MOUNT'),
+                                (' \t/h \t',None,b'Usage: MOUNT'),
+                                ('/ver',None,b'MOUNT 1.0 (002-dev)')]:
         mem=bytearray(0x6100);mem[5:8]=bytes.fromhex('c30060')
         guest=(source/'cpmtools/mount.com').read_bytes();mem[0x100:0x100+len(guest)]=guest
         code=(w/'stub.bin').read_bytes();mem[0x5000:0x5000+len(code)]=code

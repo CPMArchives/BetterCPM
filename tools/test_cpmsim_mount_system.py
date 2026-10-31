@@ -17,11 +17,13 @@ for letter in 'bcd':shutil.copy2(a/'work-image',d/('drive'+letter+'.dsk'))
 shutil.copy2(a/'work-image',w/'New Image.dsk');(w/'Input.txt').write_bytes(b'Host transfer with MOUNT\r\n')
 commands=[]
 def cmd(s,expected=b'A0>_ '):commands.append((s.encode()+b'\r',expected,30))
-for s in ['MOUNT /VER','R /VER','W /VER','MOUNT /U','MOUNT /L [A,B]:','MOUNT B: "New Image.dsk"','DIR B:','R Input.txt B:PROBE.TXT','W B:PROBE.TXT Output.txt'] :cmd(s)
+for s in ['MOUNT /VER','MOUNT /HELP','MOUNT /H','R /VER','W /VER','MOUNT /U','MOUNT /L [A,B]:','MOUNT B: "New Image.dsk"','DIR B:','R Input.txt B:PROBE.TXT','W B:PROBE.TXT Output.txt'] :cmd(s)
 cmd('MOUNT /U [A,B]:',b'[y/N] ');commands.append((b'n',b'A0>_ ',30))
 for s in ['MOUNT /L B:','DIR B:','MOUNT /U B:','MOUNT /L B:','MOUNT B: "New Image.dsk"','TYPE B:PROBE.TXT']:cmd(s)
 cmd('BYE /Y',b'System halted')
 text=session(args.simulator.resolve(),d,commands,w/'transcript.txt')
+assert b'MOUNT 1.0 (002-dev)' in text
+assert text.count(b'Usage: MOUNT X:') == 2
 assert b'Operation cancelled. No changes made.' in text
 assert b'B: empty' in text
 assert b'R 1.0 (005-dev)' in text and b'W 1.0 (005-dev)' in text
