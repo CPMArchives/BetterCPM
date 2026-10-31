@@ -159,9 +159,11 @@ Bare `MOUNT` lists all supported drives, as does `/L` without a selector.
 Unmounting always requires an explicit drive or list. Options can precede
 or follow the selector. Mounting accepts one drive and one image only.
 Host path case is preserved; relative paths resolve from the emulator's
-working directory. The image must match the drive's configured raw geometry;
-MOUNT does not convert formats or infer filesystem compatibility. Listings
-show the full path, configured raw geometry, and host read/write availability.
+working directory. The image must be a readable, nonempty regular raw file.
+MOUNT does not convert formats or infer filesystem compatibility: the BIOS
+selects the raw layout when accessing the disk. The legacy host geometry table
+is not used as a size limit for FDF media. Listings show the full path, raw
+format, and host read/write availability.
 
 A replacement is checked before the current attachment changes. An image
 already attached to another drive is rejected, including hard-link and

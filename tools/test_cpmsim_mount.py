@@ -67,7 +67,11 @@ int main(void) {
     assert(request("/HELP",0)==0 && strstr(mount_output,"working directory"));
     assert(request("B: \"unterminated",0)==1);
     fd=open("Huge.dsk",O_CREAT|O_WRONLY,0600);ftruncate(fd,999999);close(fd);
-    assert(request("B: Huge.dsk",0)==1 && !*mount_path[1]);
+    /* Legacy 256K geometry must not reject larger FDF raw images. */
+    assert(request("B: Huge.dsk",0)==0 && *mount_path[1]);
+    assert(request("/U B:",0)==0 && !*mount_path[1]);
+    fd=open("Empty.dsk",O_CREAT|O_WRONLY,0600);close(fd);
+    assert(request("B: Empty.dsk",0)==1 && !*mount_path[1]);
     assert(request("B: .",0)==1);
     assert(request("/L",0)==0 && !memory[0x1ffd]);
     return 0;

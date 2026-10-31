@@ -1,6 +1,6 @@
 diff --git a/cpmsim/srcsim/mount.inc b/cpmsim/srcsim/mount.inc
 new file mode 100644
-index 00000000..1ff0d369
+index 00000000..45ebc086
 --- /dev/null
 +++ b/cpmsim/srcsim/mount.inc
 @@ -0,0 +1,152 @@
@@ -41,7 +41,7 @@ index 00000000..1ff0d369
 +}
 +static int mount_supported(int d)
 +{
-+    return d >= 0 && d < 16 && disks[d].fd && disks[d].tracks && disks[d].sectors;
++    return d >= 0 && d < 16 && disks[d].fd;
 +}
 +static void mount_command(BYTE confirmed)
 +{
@@ -114,8 +114,7 @@ index 00000000..1ff0d369
 +                mount_say("%c: empty\r\n", 'A'+d);
 +            else {
 +                fd = open(resolved,O_RDWR);
-+                mount_say("%c: %s  raw %u x %u x %u  %s\r\n", 'A'+d,resolved,
-+                          disks[d].tracks,disks[d].sectors,disks[d].sector_size,fd < 0 ? "RO" : "RW");
++                mount_say("%c: %s  raw  %s\r\n", 'A'+d,resolved,fd < 0 ? "RO" : "RW");
 +                if (fd >= 0) close(fd);
 +            }
 +        }
@@ -130,10 +129,11 @@ index 00000000..1ff0d369
 +        i = fstat(fd,&st); close(fd);
 +        if (i || !S_ISREG(st.st_mode) || st.st_size <= 0) goto badimage;
 +        for (d = 0; d < 16; ++d) if (mount_supported(d)) {
-+            if (mask & (1u<<d)) {
-+                if ((unsigned long long)st.st_size > (unsigned long long)disks[d].tracks * disks[d].sectors * disks[d].sector_size)
-+                    goto badimage;
-+            } else if (mount_current(d,other,sizeof other) && !stat(other,&old) &&
++            /* BetterCP/M selects raw track layout through the BIOS on access.
++             * The legacy table is not a file-size limit (nor a format oracle).
++             * In particular a 360K FDF image is valid on a legacy 256K slot.
++             */
++            if (!(mask & (1u<<d)) && mount_current(d,other,sizeof other) && !stat(other,&old) &&
 +                       st.st_dev == old.st_dev && st.st_ino == old.st_ino) {
 +                mount_say("Image already mounted at %c:.\r\n",'A'+d); goto done;
 +            }
@@ -150,7 +150,7 @@ index 00000000..1ff0d369
 +syntax:
 +    mount_say("MOUNT: Invalid syntax or unsupported drive. Use /HELP.\r\n"); goto done;
 +badimage:
-+    mount_say("MOUNT: Cannot open image or image does not fit drive geometry. No changes made.\r\n");
++    mount_say("MOUNT: Cannot open a nonempty regular image. No changes made.\r\n");
 +done:
 +    dma_write(0x1fff,result);
 +    dma_write(0x1ffd,changed & 255); dma_write(0x1ffe,changed >> 8);

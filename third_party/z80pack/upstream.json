@@ -26,7 +26,7 @@
     },
     {
       "file": "0006-guest-mount.patch",
-      "sha256": "284b214c403fe24579bf111c2291f6afa70176d520a94f683996a586a4c916d8"
+      "sha256": "3ef3a643041b9664709e8fb511a081e7c30af2335f137785f2338359e16ec87a"
     }
   ],
   "profiles": {
