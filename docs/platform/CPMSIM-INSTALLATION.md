@@ -189,3 +189,19 @@ does not boot a new OS; Ctrl-C is a warm boot, not a machine reset. Normal
 command return may also invoke a warm boot. System disk dependencies can
 therefore cause errors immediately after changing A:. Use an emulator reset
 and its boot sequence when you intend to boot the replacement disk.
+
+## Host file transfers
+
+The cpmsim System disk also includes R.COM and W.COM in user 0.
+`R` reads a host file into CP/M; `W` writes a CP/M file to the host.
+Both report version `1.0 (005-dev)` and support `/VER`, `/H`, and `/HELP`.
+
+```text
+R "My assembly source.asm" B3:SOURCE.ASM
+W B3:SOURCE.ASM "My updated assembly source.asm"
+```
+
+Host filenames preserve case and refer to files in the emulator working
+directory; R/W do not accept host paths or wildcards. Quote names containing
+spaces. A long host source name requires an explicit CP/M 8.3 destination.
+MOUNT, R and W are omitted from Model 4 media and general utility manuals.

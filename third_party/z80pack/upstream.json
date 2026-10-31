@@ -22,7 +22,7 @@
     },
     {
       "file": "0005-host-transfer.patch",
-      "sha256": "12469dfea529e6670a29b3562c3539dc3a6bc79d155aa0d5bcd3e3efed90a6c8"
+      "sha256": "6aeb1f9a25b8cab3a8de820c47aa91601679077a017da783ad1b60c1a71fae5e"
     },
     {
       "file": "0006-guest-mount.patch",

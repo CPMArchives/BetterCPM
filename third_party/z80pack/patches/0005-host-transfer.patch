@@ -584,9 +584,9 @@ index 50ec8b0a..3247c00e 100644
 -	db	LF
 - 	db	'Usage: R <filename>',CR,LF,'$'
 +mHelp db CR,LF
-+        db 'R 1.0 (004-dev)',CR,LF
++        db 'R 1.0 (005-dev)',CR,LF
 +        db '  - - -',CR,LF
-+        db ' | Host File Import',CR,LF
++        db ' | Read a host file into CP/M',CR,LF
 +        db ' |',CR,LF
 +        db ' |   Usage: R hostfile [[DU:]destfile | DU:] [options]',CR,LF
 +        db CR,LF
@@ -605,10 +605,10 @@ index 50ec8b0a..3247c00e 100644
 +        db '$'
 +
 +mVersion db CR,LF
-+        db 'R 1.0 (004-dev)',CR,LF
++        db 'R 1.0 (005-dev)',CR,LF
 +        db '  - - -',CR,LF
 +        db ' | BetterCP/M Utilities',CR,LF
-+        db ' | Host File Import',CR,LF
++        db ' | Read a host file into CP/M',CR,LF
 +        db '$'
  
  mNoWild	db	CR,LF,'Wildcards not supported',CR,LF,'$'
@@ -1306,9 +1306,9 @@ index 8c677f04..b8b40395 100644
 -	db	LF
 - 	db	'Usage: W <filename>',CR,LF,'$'
 +mHelp db CR,LF
-+        db 'W 1.0 (004-dev)',CR,LF
++        db 'W 1.0 (005-dev)',CR,LF
 +        db '  - - -',CR,LF
-+        db ' | Host File Export',CR,LF
++        db ' | Write a CP/M file to the host',CR,LF
 +        db ' |',CR,LF
 +        db ' |   Usage: W [DU:]file [hostfile] [options]',CR,LF
 +        db CR,LF
@@ -1327,10 +1327,10 @@ index 8c677f04..b8b40395 100644
 +        db '$'
 +
 +mVersion db CR,LF
-+        db 'W 1.0 (004-dev)',CR,LF
++        db 'W 1.0 (005-dev)',CR,LF
 +        db '  - - -',CR,LF
 +        db ' | BetterCP/M Utilities',CR,LF
-+        db ' | Host File Export',CR,LF
++        db ' | Write a CP/M file to the host',CR,LF
 +        db '$'
  
  mNoWild	db	CR,LF,'Wildcards not supported',CR,LF,'$'
@@ -1688,7 +1688,7 @@ index 00000000..5ae3049f
 +on all ordinary return paths. H: mapping and host listing are deferred.
 +
 +/VER, /H and /HELP are exact case-insensitive queries, recognized before any
-+file operations. The commands currently identify as 1.0 (004-dev).
++file operations. The commands currently identify as 1.0 (005-dev).
 +
 + Host reads now
 +return 0 for a record, 1 for normal EOF, and FF for error. Install the rebuilt R
@@ -1856,7 +1856,7 @@ index 00000000..d70764fa
 +   result=lib.test_run(256,10000);assert result>=0,(tail,result)
 +   if kind!='other':
 +    assert state['calls']==[9] and writes.value==0,(tail,state,writes.value)
-+    assert name.upper()+' 1.0 (004-dev)' in state['out']
++    assert name.upper()+' 1.0 (005-dev)' in state['out']
 +    assert ('Usage:' in state['out'])==(kind=='help')
 +   else: assert writes.value==0 and 'Invalid syntax' in state['out'],(tail,state)
 +   count+=1

@@ -153,13 +153,14 @@ def geometry(target, build_root):
 
 def stage_cpmsim_guest(simulator, root):
     """Stage the tool built alongside the selected emulator, outside OS caches."""
-    source = Path(simulator).resolve().parent.parent/'cpmtools/mount.com'
-    data = source.read_bytes()
-    if not data:
-        raise ValueError('empty cpmsim MOUNT.COM')
-    destination = Path(root)/'staged-host-tools/MOUNT.COM'
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_bytes(data)
+    source = Path(simulator).resolve().parent.parent/'cpmtools'
+    destination = Path(root)/'staged-host-tools'
+    destination.mkdir(parents=True, exist_ok=True)
+    for name in ('mount', 'r', 'w'):
+        data = (source/(name+'.com')).read_bytes()
+        if not data:
+            raise ValueError('empty cpmsim guest tool: '+name)
+        (destination/(name.upper()+'.COM')).write_bytes(data)
 
 
 def selected_files(manifest, target, root):

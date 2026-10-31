@@ -347,6 +347,24 @@
         "z80pack"
       ],
       "user": 0
+    },
+    {
+      "name": "R.COM",
+      "artifact": "staged-host-tools/R.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack"
+      ],
+      "user": 0
+    },
+    {
+      "name": "W.COM",
+      "artifact": "staged-host-tools/W.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack"
+      ],
+      "user": 0
     }
   ],
   "cold_start_command": "SUBMIT STARTUP"

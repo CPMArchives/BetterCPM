@@ -116,7 +116,7 @@ working directory. CP/M operands accept drive A-P and optional user 0-15;
 unspecified locations use the current drive/user. User selection is restored
 on ordinary success and error exits. Destinations default to the source name.
 `/VER`, `/H`, and `/HELP` are exact, case-insensitive queries handled before
-file operations. R/W currently identify as 1.0 (004-dev).
+file operations. R/W currently identify as 1.0 (005-dev).
 
 The patch corrects text EOF across records, read/close error reporting, stale
 handles, and the optional SIMBDOS_NO_OVERWRITE implementation. Default
