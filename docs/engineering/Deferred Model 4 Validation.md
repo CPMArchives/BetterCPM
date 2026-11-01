@@ -35,3 +35,37 @@ not new Model 4 test results or acceptance of an uninspected package.
 [Partial manual results](Model4-Manual-2026-10-29.md) record observed query
 passes and the COMPARE 002 HELP-precedence failure. Remaining assertions stay
 pending; historical deferrals above are unchanged.
+
+## Automated smoke execution, 2026-11-01
+
+[Terminal-launched automated results](Model4-Automated-Smoke-2026-11-01.md)
+record PATCH small valid-patch and mismatch-preservation passes, and DSYM valid
+LINK-report conversion with independently inspected output bytes. This closes
+those bounded smoke checks only, not the broader native/parity, boundary,
+fault/recovery and other assertions in the historical ledger above.
+
+## Reduced acceptance reconciliation — 2026-11-01
+
+The maintainer's reduced scope in [the manual record](Model4-Manual-2026-10-29.md#reduced-remaining-manual-acceptance-scope--2026-10-30)
+supersedes the original exhaustive manual workload. Historical unexecuted
+assertions remain untested, rather than becoming additional mandatory manual
+steps or being relabeled PASS.
+
+| Reduced check | Current evidence | Status |
+| --- | --- | --- |
+| PATCH small valid output | Independent full-byte export comparison, automated smoke record | PASS |
+| PATCH mismatch preservation | Existing destination and fixtures independently compared | PASS |
+| DSYM valid conversion | Two canonical symbols independently exported | PASS |
+| Updated DIR empty display | DIR 011 automated text and screenshot review | PASS |
+| Updated CRCKSUM /40 | CRCKSUM 008 grouped columns reviewed | PASS |
+| Updated COPY help | COPY 009 text and raster reviewed | PASS |
+| Updated NOAH normal output | NOAH 020 single-file ADD text and raster reviewed, 2026-11-01 22:07 run | PASS (bounded smoke) |
+
+COMPARE 003 help precedence and visual output also passed the latest smoke
+checks. NOAH 020's concise normal-operation output subsequently passed the single-file
+ADD smoke check; see the linked automated record. The reduced runtime smoke
+checks are now executed, without promoting historical untested assertions. Fresh-package
+installation, final conformance and exact published artifact identity remain
+separate release acceptance work. Current receipts bind actual mounted image
+hashes; they do not claim pristine ZIP identity. See
+[automated smoke results](Model4-Automated-Smoke-2026-11-01.md).

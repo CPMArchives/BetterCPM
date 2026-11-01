@@ -672,6 +672,17 @@ between CONFIG and DUP remain design considerations for the formatting work.
 
 ## Build, distribution, and release readiness
 
+- [ ] Extend the User's Guide troubleshooting material into a source-verified
+  BDOS/BIOS error-message reference, inspired by the P&T CP/M manual. For each
+  emitted diagnostic, record its exact text, reporting component, meaning,
+  likely causes, available responses (only where actually supported), and
+  practical recovery steps. Include media/drive/format problems, write
+  protection, allocation/directory exhaustion and platform differences. Separate
+  displayed messages from error/status codes returned to programs. Supplement
+  Appendix F.10's symptom overview rather than duplicate it; verify against the
+  release candidate and do not invent or change runtime diagnostics. This is
+  documentation work within release stabilization, not a core change.
+
 - [ ] Preserve native CP/M assembly/link builds for all system code and
   require byte-identical cross builds where practical.
 - [ ] Produce reproducible source, binary, system, data, test, and recovery
@@ -707,6 +718,39 @@ the final scope freeze, Stages 4 through 7, and the Stage 8 architecture
 reconciliation gate precede the corresponding implementation program.
 
 ## Post-1.0 considerations
+
+- [ ] Explore hard-drive support after 1.0: platform/controller backends,
+  physical geometry and logical-drive allocation, CP/M filesystem limits,
+  directory/allocation sizing, boot/install support, configuration persistence,
+  access modes and media-error handling. Audit existing interfaces and supported
+  behavior before deciding what needs extending. Use P&T's Radio Shack Hard
+  Disk Addendum as a reference for workflows, not an adopted design. Revisit
+  ACCESS, HDCONFIG, HFORMAT, HLOADER, CLEARDIR and HDCHECK in that context.
+  Defer consideration of BFBACKUP/BFRESTOR (large-file spanning/restoration)
+  and FILEBACK/BKMOUNT (multi-disk backup workflows) until hard-drive use
+  establishes a need; these are not priorities for the present floppy-based
+  release. Exploration only; no implementation or 1.0 scope change.
+
+- [ ] Explore keyboard-support modules inspired by Pickles & Trout AUTOKEY
+  and KEYXLATE: programmable key-to-string macros and individual key/character
+  remapping, potentially with selectable keyboard or application profiles.
+  Study the [P&T CP/M 2 User's Manual, chapter 7](https://raw.githubusercontent.com/pski/model2archive/master/Software/CPM/Pickles%20and%20Trout%20CPM%202.2mH/PT_CPM_2_TRS-80_II_12_and_16_Users_Manual_1983.pdf)
+  as behavioral reference. Assess candidate CCX/console-extension integration
+  against the existing module architecture; distinguish command-prompt-only
+  behavior from input services available to transient applications, potentially
+  through an RSX provider with a command/configuration front end. Examine input
+  hooks, console status/read consistency, macro buffering, remapping order,
+  terminal-personality interactions, bypass/recovery, module lifecycle and TPA
+  cost. This is exploration only: no module type, ABI, limits, command syntax,
+  implementation or 1.0 change is approved.
+  P&T reference details supplied from the manual: AUTOKEY works within programs,
+  expands strings including control characters, and permits interactive or
+  programmatic configuration through console escape sequences. KEYXLATE maps
+  individual keys to characters (e.g. editor cursor-control codes), starts with
+  no translations, and can be configured through KXEDIT or console sequences.
+  Distinguish loading modules at the next boot via MODSEL from changing their
+  settings at runtime. Consider both user and application configuration paths
+  without adopting P&T's limits or escape sequences as a BetterCP/M contract.
 
 - [ ] Explore read-only LBR mounting through an unloadable RSX, using NOAH's
   reusable LBR format library. Study historical LBRDSK as a reference:
