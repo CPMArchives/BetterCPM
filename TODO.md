@@ -682,6 +682,19 @@ between CONFIG and DUP remain design considerations for the formatting work.
   disk handling, extensions, recovery, and upgrades.
 - [ ] Finish programmer documentation for the BIOS, BDOS, system gateway,
   PDS, CPX ABI, and RSX ABI.
+- [ ] Produce a source-verified BetterCP/M 1.0 BIOS/BDOS diagnostics
+  reference from the frozen release source. Inventory exact message text and
+  error return codes, citing the release commit, source paths and emitting or
+  returning routines. Distinguish BIOS hardware status, BDOS printed fatal
+  diagnostics, BDOS error codes returned to applications, and utility errors;
+  trace translations between layers rather than treating them as equivalent.
+  Document each diagnostic's meaning, likely causes, data-integrity risk,
+  recovery steps, and platform-specific behavior on Model 4/trs80gp and
+  z80pack/cpmsim. Compare with source/manual-verified DRI CP/M 2.2 and
+  Pickles & Trout ERROR diagnostics, recording provenance and differences
+  without implying BetterCP/M implements historical messages or behavior.
+  This 1.0 task documents the frozen behavior only; record expanded runtime
+  diagnostics solely as post-1.0 proposals, with no new 1.0 runtime requirement.
 - [ ] Define release versioning, compatibility promises, upgrade rules, and
   automated release acceptance tests.
 
