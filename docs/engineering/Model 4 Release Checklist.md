@@ -1,6 +1,12 @@
 # Model 4 release-candidate validation
 
-Status: **PENDING manual execution**. Reconciled on 2026-10-28 against
+Status: **Historical full campaign; partially executed.** The maintainer
+subsequently reduced the remaining manual scope; see the
+[2026-11-01 reconciliation](Deferred%20Model%204%20Validation.md#reduced-acceptance-reconciliation--2026-11-01).
+The original rows below retain their historical status and are not a new
+request to execute the entire campaign manually.
+
+Original baseline: **PENDING manual execution**. Reconciled on 2026-10-28 against
 `c5f53ef2a806439eda21ceab5dcc3897bf88a7aa` and the
 [deferred ledger](Deferred%20Model%204%20Validation.md). This adds a procedure;
 it does not change historical blocked/deferred results into passes.

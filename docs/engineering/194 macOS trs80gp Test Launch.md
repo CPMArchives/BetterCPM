@@ -97,3 +97,27 @@ an otherwise blocked launch through AppleScript, launchd or an unreviewed host
 helper to evade the session's permission boundary. Once a supported approval is
 available, verify a real guest capture and disk result before declaring the
 launch correction effective for qualification.
+
+## Terminal comparison, 2026-11-01
+
+The same-user comparison now reproduces the boundary directly. The restricted
+session returned 1100 for both com.apple.coreservices.launchservicesd and
+com.apple.windowserver.active. The maintainer ran
+`tools/diagnose_trs80gp_context.py` from ordinary Terminal; both returned 0.
+The wrapper then launched trs80gp, booted a private copy of the stable Model 4
+images, injected B:CRCKSUM /VER, captured CRCKSUM 1.0 (008-dev), and exited.
+The initial Downloads access prompt was shown to the maintainer.
+
+Evidence is retained in build/trs80-context-terminal-20261101, including the
+original result.json, two raw/text captures and interpretation.json. The
+original runner printed PASS but its prompt assertion matched a pre-command
+prompt. Command return is therefore not established by that result. The runner
+now waits longer after the banner and requires a prompt after the version text.
+Boot and injected-command output are independently confirmed by the captures.
+
+This demonstrates an automated Terminal execution path, not repaired sandbox
+service access. It does not establish which earlier host/app policy change
+introduced the restriction. Preserve the historical blocked evidence. Tests
+can be prepared in the workspace and explicitly invoked by the maintainer from
+Terminal without manual guest interaction; no unattended host execution broker
+or permission changes have been installed.
