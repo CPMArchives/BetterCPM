@@ -69,6 +69,8 @@ HAVELEN:                                ; dispatch parsed command
 USAGE:                                  ; print CPX usage
         LD      DE,USEMSG
         CALL    PRINT
+        LD      DE,UH_TEXT
+        CALL    PRINT
         JP      DONE
 
 ; -------------------------------------------------------------------------------
@@ -364,7 +366,7 @@ KEXT:           DB      'CPX'           ; accepted explicit extension
 CPXEND:         DB      '.CPX',13,10,'$' ; displayed profile suffix
 LISTEMPTY:      DB      13,10,'No CPXs loaded',13,10,'$' ; empty-profile text
 LISTERROR:      DB      13,10,'CPX profile error',13,10,'$' ; list-error message
-USEMSG:         DB      13,10,'CPX LIST | LOAD/UNLOAD name[.CPX]',13,10,'$' ; usage message
+USEMSG:         DB      13,10,'CPX: Invalid usage.',13,10,'$' ; usage message
 TPAMSG:         DB      'TPA available: $' ; TPA prefix
 TPAEND:         DB      'K',13,10,'$'   ; TPA suffix
 

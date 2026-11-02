@@ -182,6 +182,8 @@ RS_CHANGE:                              ; perform RSX profile change
 
 RS_USAGE:                               ; print manager usage
         LD      DE,RS_UMSG
+        CALL    RS_PRINT
+        LD      DE,UH_TEXT
 
 RS_PDONE:                               ; finish parsed operation
         CALL    RS_PRINT
@@ -464,7 +466,7 @@ RS_NL:         DB      13,10,'$'        ; newline string
 RS_SERVICE:    DB      ' : BDOS $'      ; service-number label
 RS_NONE:       DB      13,10,'No RSXs loaded',13,10,'$' ; empty-profile message
 RS_ERROR:      DB      13,10,'RSX module or profile error',13,10,'$' ; manager error message
-RS_UMSG:       DB      13,10,'RSX LIST | LOAD/UNLOAD name[.RSX]',13,10,'$' ; usage message
+RS_UMSG:       DB      13,10,'RSX: Invalid usage.',13,10,'$' ; usage message
 RS_TPAM:       DB      'TPA available: $' ; TPA prefix
 RS_TPAE:       DB      'K',13,10,'$'    ; TPA suffix
 RS_ARG:        DW      0                ; command argument pointer

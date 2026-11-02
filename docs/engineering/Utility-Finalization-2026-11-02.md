@@ -173,3 +173,26 @@ remains historical evidence; it is not relabeled PASS.
 [Retest receipt and captures](evidence/2026-11-02-utility-finalization/model4-crc-help-height-pass.tar.gz)
 are preserved with checksums. This closes the affected smoke scope only, not
 full per-utility operational qualification or final packaged release acceptance.
+
+## Invalid-command help follow-up
+
+The maintainer observed CPX 006-dev `/BOGUS` printing the obsolete one-line
+usage string. RSX had the same fallback. CPX 007-dev and RSX 008-dev now
+print `Invalid usage.` followed by their full current help on malformed or
+missing commands. Explicit `/H` and `/HELP` retain their existing precedence.
+
+Cross-builds passed. The compiled-COM regression suite passed 37 help screens
+and 324 alias, precedence and manager parser checks, including `/BOGUS`,
+`LISTX`, `LIST BAD`, missing LOAD/UNLOAD operands and an empty command tail.
+These rejection paths issue no manager control requests and preserve the
+command tail. The Function 177 v2 workspace contract and registry checks passed.
+
+Exact new binaries:
+
+- CPX.COM: `09132ee1178ab46a68ee5159697d489ca280f589ac835c9784d018234b40c24f`
+- RSX.COM: `2dd217cc3c07a4d281713e322603c730413da551e51cfbcff749b4c070acdf87`
+
+These are host Z80 execution results. The previous Model 4 results apply to
+the earlier revisions; Model 4 validation of these changed error paths and
+incorporation into a new release candidate remain pending. Existing candidate
+packages and the image collection have not been replaced by this follow-up.
