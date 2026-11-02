@@ -2,20 +2,9 @@
 
 This manual explains how to use the programs supplied on the BetterCP/M Utilities Disk. For the command prompt, drive and user areas, file management, configuration, and the System Disk commands, see the [BetterCP/M User’s Guide](users_guide.md).
 
-The Utilities Disk is being assembled separately from the System Disk. This manual covers DUMP, the initial DDT debugger adaptation, the six standalone compression utilities SQ, USQ, CR, UNCR, LZH and UNLZH, TED, DASM with its DSYM/DLINK companions, and the original ZSM4/LINK development tools. Chapters for other utilities will be added as those programs are completed and selected for distribution.
+The Utilities Disk is distributed separately from the System Disk, with platform-specific primary and companion images in the current six-package release-candidate layout. This manual covers the selected utilities, including NOAH, SEARCH, COMPARE, CRCKSUM, MD5SUM, PATCH, DUMP, DDT, TED, DASM/DSYM/DLINK, compression tools and ZSM4/LINK. Candidate membership is specified by the [distribution manifest](../releases/DISTRIBUTION-MANIFEST.md); no 1.0 release has yet been accepted or published.
 
-CRCKSUM has a development implementation; CRCKSUM is included in newly built candidate Utilities images; the maintainer waived the remaining Model 4 validation for PR finalization; full Model 4 qualification and release acceptance are not asserted.
-
-The COMPARE chapter describes a development utility. COMPARE is included on the candidate NOAH companion disk. Remaining Model 4
-validation is deferred by the maintainer for a later manual campaign. SEARCH 1.0 is included in newly
-generated Utilities candidates and has passed paired-image acceptance on both BetterCP/M targets. Public release publication
-remains separate.
-
-MD5SUM has a development implementation in newly built Utilities candidates;
-The maintainer has waived and deferred the remaining Model 4 validation; full Model 4 qualification and paired release acceptance are not asserted.
-
-PATCH is included in newly built candidate NOAH companion disks. Its native/cross
-and cpmsim checks pass; Model 4 qualification and release acceptance remain pending.
+Component-level historical qualification statements within individual chapters describe the evidence available at the time of those reviews. For current candidate-wide results and limitations, consult the [2026-11-02 conformance record](../engineering/Release-Conformance-2026-11-02.md) and [Model 4 validation record](../engineering/Deferred%20Model%204%20Validation.md). These results do not establish exhaustive qualification of every utility on both platforms.
 
 ## Contents
 
