@@ -1,10 +1,10 @@
 # BetterCP/M
 
-BetterCP/M is a compact, maintainable CP/M-compatible operating system for Z80-class computers. The core OS version is **BetterCP/M 1.0**. The **1.0 release package remains in progress**, with documentation and Utilities Disk completion tracked separately.
+BetterCP/M is a compact, maintainable CP/M-compatible operating system for Z80-class computers. The core OS version is **BetterCP/M 1.0**. The **1.0 release package remains in progress**. Core and utility feature implementation is complete; documentation reconciliation, fresh-package installation, licensing/source audits, and final release acceptance remain open.
 
 The project begins with CP/M 2.2 as its compatibility baseline while redesigning the operating system around explicit interfaces, documented state, reproducible builds, portable hardware boundaries, and independently testable subsystems. The objective is not simply to reproduce Digital Research CP/M source code, but to provide a clean and well-specified CP/M environment that remains practical on small 8-bit systems.
 
-BetterCP/M has reached the **1.0 OS implementation milestone**: architecture Stages 1 through 8 and retained OS implementation Items 1 through 6 are complete. Utility selection and completion, release assembly, reproducible qualification tooling, and final release-candidate verification remain. This is a development milestone, not the declaration of a qualified 1.0 release.
+BetterCP/M has reached the **1.0 OS implementation milestone**: architecture Stages 1 through 8 and retained OS implementation Items 1 through 6 are complete. Utility feature work is complete and six candidate downloads have been assembled. Documentation, fresh-package installation, licensing/source completeness and final publication acceptance remain. This is a development milestone, not the declaration of a qualified 1.0 release.
 
 The finalized visual design is defined in the [BetterCP/M Visual Identity standard](specifications/VISUAL-IDENTITY.md).
 
@@ -58,14 +58,14 @@ Utility `/VER` output and independent build counters are defined in [`specificat
 
 ## BetterCP/M 1.0
 
-The architecture for BetterCP/M 1.0 is frozen, and the retained OS feature implementation is complete. The remaining roadmap covers utilities, release assembly, and final qualification against the accepted contracts. Testing may identify corrections; it does not imply another planned OS feature implementation stage.
+The architecture for BetterCP/M 1.0 is frozen, and the retained OS feature implementation is complete. The remaining release work covers documentation, package reconstruction and installation checks, rights/source audits, and final acceptance against the established contracts. Testing may identify corrections; it does not imply another planned OS feature implementation stage.
 
 The two required 1.0 platforms are:
 
 - TRS-80 Model 4 / `trs80gp`;
 - z80pack / `cpmsim`.
 
-Both platforms already boot BetterCP/M. Remaining platform work includes reproducible qualification tooling and testing of the frozen release artifacts.
+Both platforms already boot BetterCP/M. The current candidate has recorded bounded cpmsim and Model 4 validation; fresh-package installation and final release acceptance remain open.
 
 The 1.0 system includes the normalized disk-state and FDF/FDB architecture, CONFIG/DUP/SYSGEN installation path, bounded persistent command history, CPX and RSX extension facilities, ordinary CP/M read-only/system/archive file attributes, and the native BetterCP/M clock-service architecture.
 
@@ -74,7 +74,7 @@ The production BetterCP/M private BDOS namespace occupies Functions 176–196, w
 Several larger extensions are deliberately outside the 1.0 boundary. These include named directories and PATH, a generalized dynamic PDS, filesystem timestamps, terminal-capability redesign, general bank-aware operation, and additional qualified platforms. They remain possible post-1.0 work rather than hidden prerequisites for the first release.
 
 A bounded [terminal-monitor RSX](docs/architecture/31%20Terminal%20Monitor%20RSX.md)
-was accepted for 1.0 on 2026-10-12; implementation is pending. It supplies a
+was accepted for 1.0 on 2026-10-12 and implemented. It supplies a
 loadable console personality through BIOS hooks and the existing startup-script
 mechanism. The broader terminal-capability redesign remains post-1.0 work.
 
@@ -162,7 +162,7 @@ BetterCP/M compatibility is defined by documented behavioral requirements rather
 
 The system is tested with the separately maintained [**CP/M 2.2 Compatibility Suite**](https://github.com/CPMArchives/cpm-2.2-compatibility-suite), together with subsystem regression tests, platform tests, native/cross-build comparisons, and physical-system qualification procedures.
 
-Historical milestone results in the engineering record document what a particular build demonstrated at that point in development. Final BetterCP/M 1.0 qualification will be performed against frozen release-candidate images on both required platforms.
+Historical milestone results in the engineering record document what a particular build demonstrated at that point in development. The [2026-11-02 release conformance record](docs/engineering/Release-Conformance-2026-11-02.md) accounts for 627 cpmsim cards with explicit exclusions and three compatibility-profile differences (0020, 0493, 0494); it does not report 627 passes. The reviewed Model 4 batch reported 269 passes with zero failures/errors, not universal two-platform qualification. The tested candidate is `6d6c103507ce8558700b3b8e412ac500de361226`; merged PR #565 added evidence and harness changes without changing production binaries. Final package acceptance and fresh-package installation remain open.
 
 ## Related projects
 
