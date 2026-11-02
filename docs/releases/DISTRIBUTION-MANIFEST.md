@@ -9,19 +9,20 @@ remain members even when no implementation is available. Do not silently omit
 an implemented component whose current build fails, substitute an older binary,
 or change membership to meet disk capacity.
 
-The immediate packaging target is the System Disk for both z80pack/cpmsim and
-trs80gp/Model 4. Utilities and CP/M Tools disk assembly can follow separately.
+The System and Utilities candidate media for both z80pack/cpmsim and
+trs80gp/Model 4 have been assembled. Final acceptance, documentation and
+fresh-package installation remain open. CP/M Tools is a separate project.
 The two System Disks require their own platform boot and BIOS implementations.
 All membership or layout changes require discussion with the maintainer.
 
-The five host downloads and their archive structure are specified in
+The six host downloads and their archive structure are specified in
 [BetterCP/M 1.0 release packages](1.0-RELEASE-PACKAGES.md). That layout does not
 change the disk membership below.
 
 ## System Disk
 
 - README.TXT: introductory ASCII text in user 0, from `src/distribution/README.TXT`.
-- STARTUP.SUB: editable user-0 startup script; runs `:VER /BANNER`, then loads ADM3A on Model 4.
+- STARTUP.SUB: editable user-0 startup script; on Model 4 loads M4SCRN and then ADM3A before displaying the banner with `:VER /BANNER`; on cpmsim runs `:VER /BANNER` without loading a terminal personality.
 
 - DIR.COM: includes the `/WHEREIS` file-location mode.
 - ERA.COM
@@ -49,7 +50,7 @@ change the disk membership below.
 
 ## Utilities Disk
 
-- CRCKSUM.COM: CRCKSUM 1.0 revision 006 development candidate, supporting historical
+- CRCKSUM.COM: CRCKSUM 1.0 revision 009 development candidate, supporting historical
   CRCK, corrected CRCK5, CHEK, CRC-32, SUM8, SUM16, KERM6 and KERM12, native and legacy saved lists, and
   local verification against native lists and original SIG/M catalogs.
   Newly generated candidate images include CRCKSUM with its prepared native source

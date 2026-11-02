@@ -110,7 +110,7 @@ emulator before changing its mounts.
 At the guest prompt:
 
 ```text
-VER /BANNER
+:VER /BANNER
 DIR A:
 DIR B:
 DIR C:

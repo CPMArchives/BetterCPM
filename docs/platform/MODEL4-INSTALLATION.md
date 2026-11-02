@@ -29,7 +29,7 @@ Use NOAH.COM and NOAH.OVL from the same package. CRCKSUM and MD5SUM are on B:.
 
 ## Start trs80gp manually
 
-Use the maintainer's working manual trs80gp launch procedure. Select Model 4
+In trs80gp, select Model 4
 and attach the writable copies to physical drives 0 through 3 as above, with
 80-track double-sided drive support. For a local command-line installation:
 
@@ -51,7 +51,7 @@ shows the banner. A clock provider is not loaded automatically. Wait for the
 A0 prompt, inspect the System Disk and confirm its identity:
 
 ```text
-VER /BANNER
+:VER /BANNER
 DIR A:
 RSX LIST
 ```
@@ -60,7 +60,7 @@ When Utilities are installed, inspect DIR B: and DIR C:, then run B0:DUMP /VER,
 B0:CRCKSUM /VER, B0:MD5SUM /VER, C0:NOAH /VER, C0:PATCH /VER and
 C0:COMPARE /VER. Compare the actual banners and files with RELEASE.json.
 Confirm return to the original drive/user after each query. These smoke checks
-do not replace the full manual validation checklist.
+do not replace the bounded recorded validation campaign or fresh-package acceptance checks.
 
 ## Work disks, installation and validation
 
