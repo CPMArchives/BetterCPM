@@ -48,8 +48,8 @@ def main():
         canonical,req=execute(name,'LIST',False);assert req and 'TPA available:' in canonical
         for tail in ('list','List ',' LIST  ','\tlist\t'):
             actual,requests=execute(name,tail,False);assert actual==canonical and requests==req,(name,tail);count+=1
-        for tail in ('LISTX','LIST BAD'):
-            actual,requests=execute(name,tail,False);assert not requests and 'LOAD/UNLOAD' in actual;count+=1
+        for tail in ('/BOGUS','LISTX','LIST BAD','LOAD','UNLOAD',''):
+            actual,requests=execute(name,tail,False);assert not requests and 'Invalid usage.' in actual and execute(name,'/HELP')[0] in actual;count+=1
         for operation in ('LOAD','UNLOAD'):
             _,expected=execute(name,operation+' HELLO',False)
             assert expected,(name,operation)
