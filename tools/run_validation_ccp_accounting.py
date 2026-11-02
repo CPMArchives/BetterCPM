@@ -100,6 +100,8 @@ IOVAL: DB 0
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     for n in ('baseline','output'):p.add_argument('--'+n,type=Path,required=True)
+    p.add_argument('--case-preserving-tail-profile',action='store_true',help='Record card 0020 as a profile difference, never an uppercase-tail pass')
+    p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim')
     a=p.parse_args();w=a.output.resolve();w.mkdir(parents=True,exist_ok=False);disks=w/'disks';disks.mkdir();report=json.loads((a.baseline/'report.json').read_text());image=a.baseline/report['image'];assert report['target']=='z80pack' and sha(image)==report['sha256'];shutil.copy2(a.baseline/'diskdefs',w/'diskdefs');shutil.copy2(__file__,w/'executed-runner.py')
     for d in 'ab':shutil.copy2(image,disks/f'drive{d}.dsk')
     def cpm(tool,d,*args):return subprocess.run([tool,'-T','raw','-f','bettercpm-default',str(disks/f'drive{d}.dsk'),*map(str,args)],cwd=w,check=True,capture_output=True)
@@ -161,7 +163,9 @@ HEX:""",1)
         yield(b'',None,0.25)
         assert b'MARK A0' not in trace.read_bytes(), 'dispatch occurred before Enter'
         yield(b'\r',prompt,30)
-        text=trace.read_bytes();assert b'MARK A0 DU A/00 TAIL[ MIXED.TXT]' in text and b'FCB1 004D49584544202020545854' in text;checks.append('Edited mixed-case command waits for CR; tail and padded FCB uppercase')
+        text=trace.read_bytes();expected_tail=b' mIxEd.TxT' if a.case_preserving_tail_profile else b' MIXED.TXT'
+        assert b'MARK A0 DU A/00 TAIL['+expected_tail+b']' in text and b'FCB1 004D49584544202020545854' in text
+        checks.append('Edited command waits for CR; exact tail profile and uppercase padded FCB checked')
         for command in ('',' ','   '):yield from do(command,forbidden=(b'?',b'MARK '))
         yield from do('NAME\tMIXED',forbidden=(b'MARK ',));yield from do('NAME MIXED',required=(b'MARK A0',b'TAIL[ MIXED]'))
         yield from do('NAME.COM',forbidden=(b'MARK ',));yield from do('NAME.TXT',forbidden=(b'MARK ',));checks.append('Empty/SPACE commands, TAB distinction and primary-name COM syntax')
@@ -207,7 +211,7 @@ HEX:""",1)
         assert b'OR-0420 PASS:' in trace.read_bytes() and b'OR-0420 FAIL' not in trace.read_bytes() and b'OR-0519 FAIL' not in trace.read_bytes()
         checks.append('Actual buffered-input/DMA guard and A/B/A BIOS-DPH versus BDOS resource pointers')
         yield(b'BYE /Y\r',b'System halted',10)
-    simulator=Path.home()/'projects/git/z80pack/cpmsim/cpmsim'
+    simulator=a.simulator.resolve()
     try:session(simulator,disks,commands(),trace)
     except Exception as e:(w/'incomplete.json').write_text(json.dumps({'error':str(e),'checks':checks,'observations':observations},indent=2)+'\n');raise
     raw_directory=directory(disks/'driveb.dsk',w/'diskdefs')
@@ -219,7 +223,9 @@ HEX:""",1)
     fs=subprocess.run(['fsck.cpm','-T','raw','-f','bettercpm-default','-n',str(disks/'driveb.dsk')],cwd=w,check=True,capture_output=True)
     (w/'b-filesystem.txt').write_bytes(fs.stdout+fs.stderr)
     shipped=audit(a.baseline,report,w,disks/'drivea.dsk');assert sha(image)==report['sha256']
-    result={'status':'PASS','baseline_sha256':report['sha256'],'simulator_sha256':sha(simulator),'checks':checks,'observations':observations,'unchanged_shipped_files':shipped,'cards':['0015','0020','0027','0464','0465','0466','0475','0477','0479','0480','0481','0482','0483','0484','0485','0486','0487','0488','0489','0493','0494','0495','0567','0570','0572','0574','0578','0509','0590','0593','0595','0612','0420','0519'],'lookup_profile':'BetterCP/M fixed A0 fallback: 0493/0494 are explicitly an extension of generic single-DU lookup, not generic suite PASS rows.'};(w/'result.json').write_text(json.dumps(result,indent=2)+'\n');print('PASS live CCP accounting and boot/gateway oracles',w)
+    result={'status':'PASS','baseline_sha256':report['sha256'],'simulator_sha256':sha(simulator),'checks':checks,'observations':observations,'unchanged_shipped_files':shipped,'tail_profile':'case-preserving; card 0020 PROFILE_DIFFERENCE' if a.case_preserving_tail_profile else 'uppercase', 'cards':['0015','0027','0464','0465','0466','0475','0477','0479','0480','0481','0482','0483','0484','0485','0486','0487','0488','0489','0493','0494','0495','0567','0570','0572','0574','0578','0509','0590','0593','0595','0612','0420','0519'],'lookup_profile':'BetterCP/M fixed A0 fallback: 0493/0494 are explicitly an extension of generic single-DU lookup, not generic suite PASS rows.'};
+    if not a.case_preserving_tail_profile:result['cards'].append('0020')
+    (w/'result.json').write_text(json.dumps(result,indent=2)+'\n');print('PASS live CCP accounting and boot/gateway oracles',w)
 
 
 if __name__=='__main__':main()

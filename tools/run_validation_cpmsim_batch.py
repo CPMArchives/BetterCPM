@@ -13,8 +13,9 @@ from test_z80pack_submit_xsub import input_probe
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ('baseline','build-root','output'):p.add_argument('--'+name,type=Path,required=True)
+    p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim')
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False);base=a.baseline.resolve();report=json.loads((base/'report.json').read_text())
-    sim=Path.home()/'projects/git/z80pack/cpmsim/cpmsim';results=[]
+    sim=a.simulator.resolve();results=[]
     for xsub in (False,True):
         w=a.output.resolve()/('xsub' if xsub else 'ordinary');(w/'disks').mkdir(parents=True)
         for letter in 'ab':shutil.copy2(base/report['image'],w/'disks'/f'drive{letter}.dsk')

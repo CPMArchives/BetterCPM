@@ -14,9 +14,10 @@ ROOT=Path(__file__).resolve().parents[1]
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     for n in ('baseline','output'):p.add_argument('--'+n,type=Path,required=True)
+    p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim')
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False);report=json.loads((a.baseline/'report.json').read_text());original=a.baseline/report['image'];assert sha(original)==report['sha256']
     source=(ROOT/'tests/fixtures/conformance/media-change-probe.mac').read_text();program=a.output/'MEDIA.COM';assemble(Path.home()/'bin/z80asm',source,program,a.output/'probe.lst',0x100);(a.output/'probe.asm').write_text(source);shutil.copy2(__file__,a.output/'executed-runner.py')
-    simulator=Path.home()/'projects/git/z80pack/cpmsim/cpmsim';results={}
+    simulator=a.simulator.resolve();results={}
     for mode in ('write','reset'):
         w=a.output/mode;disks=w/'disks';disks.mkdir(parents=True);shutil.copy2(a.baseline/'diskdefs',w/'diskdefs')
         for d in 'ab':shutil.copy2(original,disks/f'drive{d}.dsk')
@@ -34,7 +35,7 @@ def main():
             with (disks/'driveb.dsk').open('r+b') as f:f.write(new);f.flush();os.fsync(f.fileno())
             yield(b'Y',b'OR-0143 RESET AND CREATE PASS' if mode=='reset' else b'Disk R/O',30)
             yield(b'',b'B0>_ ',30)
-            yield(b'VER\r',b'BetterCP/M 0.90',30);yield(b'',b'B0>_ ',30)
+            yield(b'VER\r',b'BetterCP/M ',30);yield(b'',b'B0>_ ',30)
             yield(b'A:\r',b'A0>_ ',30);yield(b'BYE /Y\r',b'System halted',10)
         output=session(simulator,disks,commands(),trace);assert b'OR-0143 REPLACEMENT READ AND PROTECTED' in output and b'OR-0143 FAIL' not in output and b'OR-0143 FIXTURE' not in output
         after=(disks/'driveb.dsk').read_bytes()

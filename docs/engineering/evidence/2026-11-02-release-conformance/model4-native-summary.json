@@ -1,0 +1,19 @@
+{
+  "status": "PASS_SELECTED_GROUPS",
+  "candidate_commit": "6d6c103507ce8558700b3b8e412ac500de361226",
+  "baseline_sha256": "4105ff45e411e25c0f3cd6024b970ddc231e6287086a553933e1fb577aaf2467",
+  "source_run": "/Users/nathanael/Downloads/model4-conformance-20261102-150614",
+  "summaries": [
+    "BDOSTEST /GROUP:REQUIRED: Summary: 56 pass, 0 fail, 0 error",
+    "BIOSTEST /SAFE: Summary: 5 pass, 0 fail, 0 error",
+    "ERRTEST /SAFE: Summary: 5 pass, 0 fail, 0 error",
+    "CCPTEST /GROUP:REQUIRED: Summary: 12 pass, 0 fail, 0 error",
+    "ENTRYTST /GROUP:REQUIRED: Summary: 25 pass, 0 fail, 0 error",
+    "DIRTEST /SAFE: Summary: 49 pass, 0 fail, 0 error",
+    "FILETEST /GROUP:REQUIRED: Summary: 68 pass, 0 fail, 0 error",
+    "RANDTEST /SAFE: Summary: 39 pass, 0 fail, 0 error",
+    "CPUTEST /ALL: Summary: 2 pass, 0 fail, 0 error",
+    "ECOTEST /GROUP:REQUIRED: Summary: 1 pass, 0 fail, 0 error",
+    "DISKTEST /SAFE: Summary: 7 pass, 0 fail, 0 error"
+  ]
+}
