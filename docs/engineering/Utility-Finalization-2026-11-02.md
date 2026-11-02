@@ -196,3 +196,25 @@ These are host Z80 execution results. The previous Model 4 results apply to
 the earlier revisions; Model 4 validation of these changed error paths and
 incorporation into a new release candidate remain pending. Existing candidate
 packages and the image collection have not been replaced by this follow-up.
+
+## STAT unknown-option follow-up
+
+The maintainer observed STAT 005-dev `/BOGUS` reaching file lookup and
+reporting `File Not Found`. STAT 006-dev now rejects token-leading unknown
+slash options before disk/user operations, reports `STAT: Invalid option.`,
+and prints the current help screen. Existing help/version precedence remains
+unchanged. Embedded slashes in CP/M attributes such as R/O and R/W remain
+ordinary operands.
+
+Validation: compiled-COM tests passed five invalid-option tails (including
+leading spaces/tabs and a switch after a filename), a genuine missing filename
+that still reports `File Not Found`, and help precedence. Rejected options
+preserve the command tail and invoke only BDOS string output. STAT parser and
+device tests passed, as did the 37-screen / 324-case utility finalization suite
+and component-registry checks.
+
+New STAT.COM SHA-256: `d0aed286dc9ec92f503594732acbd0918f62e70494b6fb2248228384ea5b562b`.
+
+This is host Z80 regression evidence. Model 4 runtime checks and a new candidate
+build remain pending; prior STAT runtime results cover the older binary.
+Existing release packages and image collection are unchanged.
