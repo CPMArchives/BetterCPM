@@ -151,9 +151,13 @@ PLOOK:
         LD A,C
         OR A
         JR NZ,PLOOK
+        LD DE,POH
+        CALL PEQUAL
+        JR Z,PHELPFOUND
         LD DE,POHELP
         CALL PEQUAL
         JR NZ,PLOOKVER
+PHELPFOUND:
         LD A,1
         LD (PQUERY),A
         JR PLOOK
@@ -349,6 +353,7 @@ PEQDONE:
         POP DE
         POP HL
         RET
+POH: DB '/H',0
 POHELP: DB '/HELP',0
 POVER: DB '/VER',0
 PONOH: DB '/NOHEX',0

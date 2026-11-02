@@ -30,7 +30,7 @@ def help_text(development=None):
             ' |   Usage: BYE [options]\r\n\r\n'
             '   Options:\r\n'
             '     /Y          Exit without confirmation.\r\n\r\n'
-            '     /HELP       Display this help.\r\n'
+            '     /H /HELP    Display this help.\r\n'
             '     /VER        Display utility identification.\r\n')
 
 
@@ -57,8 +57,8 @@ def build(assembler=Path.home() / 'bin/z80asm', output=None, *, baseline=None, i
         text.append("        DB '$'")
     query = (ROOT / 'src/utilities/common/version.inc').read_text()
     query = query[query.index('\nUV_QUERY:') + 1:]
-    help_query = query.replace('UV_', 'UH_').replace('LD C,4', 'LD C,5')
-    help_query = help_query.replace("'/ver'", "'/help'")
+    from utility_help import query_source
+    help_query = query_source(ROOT)
     source = source.replace('; @bye-text@', '\n'.join(text))
     source = source.replace('; @bye-queries@', help_query + '\n' + query)
     image = assemble(assembler, source, output / 'BYE.COM', output / 'bye.lst', 0x100)

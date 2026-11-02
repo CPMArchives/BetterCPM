@@ -69,3 +69,17 @@ installation, final conformance and exact published artifact identity remain
 separate release acceptance work. Current receipts bind actual mounted image
 hashes; they do not claim pristine ZIP identity. See
 [automated smoke results](Model4-Automated-Smoke-2026-11-01.md).
+
+## Utility finalization changes — 2026-11-02
+
+[Utility finalization record](Utility-Finalization-2026-11-02.md) identifies new
+transient revisions for help aliases, new quick references and CPX/RSX parsing.
+Host regressions and cpmsim execution pass; changed-binary Model 4 execution
+is pending the prepared Terminal-launched smoke runner. The completed reduced
+campaign above remains evidence for its tested binaries and is not silently
+transferred to these replacements. Candidate packages have not been refreshed.
+
+The 2026-11-02 utility-finalization batch subsequently passed 44 of 45 bounded
+checks. CRCKSUM's help-height defect was fixed and its isolated Model 4 retest
+passed at 11:51. The finalization record binds all 45 completed checks to their
+actual executable hashes. Release packages remain unchanged and unaccepted.

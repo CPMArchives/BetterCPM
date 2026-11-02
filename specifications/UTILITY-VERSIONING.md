@@ -10,8 +10,12 @@ the implementation described below still uses `Build NNN` until migrated.
 The common query contract recognizes an exact, case-insensitive `/VER` token
 anywhere in the bounded command tail, with space/TAB separators. It prints the
 identity and ignores other arguments, returning before file/provider access or
-changes to the caller's DU. An exact `/HELP` token takes precedence and displays
-help instead. Longer tokens such as `/VERIFY` are ordinary parser input.
+changes to the caller's DU. An exact `/HELP` or `/H` token takes precedence and displays
+help instead. Both spellings are case-insensitive aliases in BetterCP/M-owned
+transient utilities; they do not redefine historical interactive command letters
+or bracketed/quoted literal data. Adopted unmodified third-party tools retain
+their original interfaces. Resident command interfaces remain distinct; use the
+leading colon to select the corresponding transient utility for its help screen. Longer tokens such as `/VERIFY` are ordinary parser input.
 
 All utilities using the common `version.inc` recognizer adopt this contract,
 including RCP resident dispatch, transient wrappers, PIP, DUMP and the owned

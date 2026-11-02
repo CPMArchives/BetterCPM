@@ -116,7 +116,7 @@ def expanded_source():
         '     /LOCAL=name Write a list in each target DU.\n'
         '     /CHECK[=name] Verify a list in each target DU.\n'
         '     /40         Narrow screen display.\n\n'
-        '     /HELP       Display this help.\n'
+        '     /H /HELP    Display this help.\n'
         '     /VER        Display utility identification.\n')
     def string(label,value):
         return label+':\n'+''.join("        DB '"+line.replace("'","''")+"',13,10\n" if line else '        DB 13,10\n'

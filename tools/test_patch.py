@@ -189,7 +189,7 @@ def main():
     p='INPUT IN.DAT\r\nOUTPUT OUT.DAT\r\n00: 00 01 02 -> FF FE\r\n02: 02 03 -> FD\r\n'
     expected=bytes([255,254,253])+bytes(range(3,128))
     f=fixture(p)
-    for tail in ('/HELP /VER BAD','/VER /HELP /BOGUS','/help\t/WHAT','/VER'):
+    for tail in ('/h /VER /BOGUS','/HELP /VER BAD','/VER /HELP /BOGUS','/help\t/WHAT','/VER'):
         r=run(f,tail);assert not set(r['services'])&{14,15,17,25,26,32,35};unchanged(r,f)
     for tail in ('','/BOGUS','FIX.PAT EXTRA.PAT','FIX.PAT /INPUT=',
                  'FIX.PAT /OUTPUT=*.*','B[1-3]:FIX.PAT','FIX.PAT /INPUT=Q:FOO',

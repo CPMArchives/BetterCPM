@@ -8,6 +8,18 @@ ROOT=Path(__file__).resolve().parents[1]
 BUILD=ROOT/'build/pip-development'
 def expanded_source():
  text=(ROOT/'src/utilities/pip.mac').read_text()
+ from utility_help import query_source, source
+ scan=text[text.index('P_VCHECK:'):text.index('P_PROMPT:')]
+ helpers=''
+ for prefix,word,length in [('QH','/help',5),('QS','/h',2)]:
+  part=scan.replace('P_VCHECK:',prefix+'_CHECK:').replace('PV_',prefix+'_')
+  part=part.replace('UV_WORD',prefix+'_WORD').replace('LD C,4','LD C,'+str(length))
+  part=part.replace('LD DE,UV_TEXT','LD DE,PH_TEXT').replace('JP UV_QUERY','JP UH_QUERY')
+  helpers+=part+prefix+"_WORD: DB '"+word+"'\n"
+ helpers+=query_source(ROOT)+source('PIP','PH_TEXT')
+ text=text.replace('        CALL P_VCHECK','        CALL QH_CHECK\n        JP C,00000H\n        CALL QS_CHECK\n        JP C,00000H\n        CALL P_VCHECK',1)
+ text=text.replace('; @utility-version PIP@',helpers+'\n; @utility-version PIP@')
+
  text=text.replace('; @pip-parser@','\n'.join((ROOT/'src/utilities/common'/n).read_text() for n in ['pipparse.inc','pipoperand.inc','piptransfer.inc','pipconcat.inc','pipwild.inc','pipdevice.inc','pipphysical.inc','pipextract.inc','pipformat.inc','piphex.inc','piphex-transfer.inc','pipbreak.inc']))
  from shared_ui import expand_pip_ui
  return expand_versions(expand_pip_ui(text))

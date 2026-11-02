@@ -236,7 +236,7 @@ def main():
         count += 1
     data = records(b'123456789');v=values(data)
     f={(2,7,'TEST.DAT'):data,(2,7,'NOEXT'):b''}
-    for tail in ('/VER', '/HELP /VER BAD', '/VER /HELP /BOGUS', '/help\t/WHAT'):
+    for tail in ('/h /VER /BOGUS','/VER', '/HELP /VER BAD', '/VER /HELP /BOGUS', '/help\t/WHAT'):
         r=run(f,tail);assert not set(r['services']) & {14,15,17,25,26,32,35},r['text']
     bad=('/UNKNOWN','/HELPER','/VERIFY','/CHECK=B:CRC.LST','/LOCAL=C3:CRC.LST',
          '/FILE=*.*','/FILE=','/LOCAL=','/CHECK=','/FILE=B[1-2]:LST',

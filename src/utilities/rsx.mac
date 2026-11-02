@@ -25,9 +25,7 @@ RSXFUNC         EQU     177
 
 START:                                  ; enter BRSX manager utility
         CALL    UV_CHECK                ; standalone utility identity
-        LD      A,(0080H)
-        LD      B,A
-        LD      HL,0081H
+        CALL    UT_NORMALIZE
 
 RS_SKIP:                                ; skip leading command-tail spaces
         LD      A,B
@@ -481,6 +479,52 @@ RS_REQ:        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ; Function-177 reques
 
         INCLUDE rsxvers.inc
 RS_END:                                ; first free byte after transient image
+
+; Normalize a private command-tail copy; preserve the caller's page zero.
+UT_NORMALIZE:
+        LD A,(0080H)
+        CP 128
+        JR C,UT_VALID
+        XOR A
+UT_VALID:
+        LD B,A
+        LD HL,0081H
+        LD DE,UT_TAIL
+        OR A
+        JR Z,UT_FINISH
+UT_COPY:
+        LD A,(HL)
+        CP 9
+        JR NZ,UT_CASE
+        LD A,' '
+UT_CASE:
+        CP 'a'
+        JR C,UT_STORE
+        CP 'z'+1
+        JR NC,UT_STORE
+        SUB 32
+UT_STORE:
+        LD (DE),A
+        INC HL
+        INC DE
+        DJNZ UT_COPY
+        LD A,(0080H)
+        LD B,A
+UT_TRIM:
+        DEC DE
+        LD A,(DE)
+        CP ' '
+        JR NZ,UT_FINISH
+        DEC B
+        JR NZ,UT_TRIM
+UT_FINISH:
+        LD HL,UT_TAIL
+        RET
+UT_TAIL:
+        REPT 128
+        DB 0
+        ENDM
+
 ; @utility-version RSX@
 
         .DEPHASE

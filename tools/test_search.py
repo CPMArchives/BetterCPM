@@ -28,12 +28,12 @@ def main():
     assert 'A0:ONE.TXT [HEX] offset 00000005' in r['output']
     for label, count in [('Files searched',2), ('Files matched',2), ('Text matches',3), ('Hex matches',1), ('Total matches',4)]:
         assert f'{label}: {count}\r\n' in r['output'], r['output']
-    for tail in ['/HELP /VER garbage', '"/VER" A0:*.TXT /HELP', '/VER /BOGUS']:
+    for tail in ['/h /VER garbage', '/HELP /VER garbage', '"/VER" A0:*.TXT /HELP', '/VER /BOGUS']:
         q = run(tail)
         assert set(q['services']) == {6}, q
         assert not q['opens'] and not q['reads']
-        from utility_versions import display_development
-        expected = 'SEARCH 1.0 (001-dev)' if display_development('utility:SEARCH') else 'SEARCH 1.0 (001)'
+        from utility_versions import banner
+        expected = banner('SEARCH')
         assert expected in q['output']
         if '/HELP' in tail:
             assert 'Usage:' in q['output']

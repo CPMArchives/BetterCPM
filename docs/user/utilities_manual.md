@@ -59,6 +59,12 @@ and cpmsim checks pass; Model 4 qualification and release acceptance remain pend
 
 ## Using the Utilities Disk
 
+BetterCP/M-owned utilities accept `/H` and `/HELP` as equivalent help queries,
+with help taking precedence over `/VER` and ordinary operation arguments.
+ZSM4 and LINK retain their historical command syntax. PIP bracketed string data
+and SEARCH quoted patterns remain literal data, including apparent help tokens.
+
+
 The daily emulator launch configuration mounts the Utilities Disk as drive B:. The examples below assume its programs are in user area zero. If your disk is mounted elsewhere, substitute its actual drive.
 
 You can run a utility without changing your current drive or user area. For example:

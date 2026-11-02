@@ -73,14 +73,13 @@ def copy_source(text: str) -> str:
                   '     /B       Batch mode; collisions need /O or /S.',
                   '     /V       Verify copied data by reading it back.',
                   '     /BACKUP  Clear source archive flag after backup.', '',
-                  '     /HELP    Display this help.',
+                  '     /H /HELP Display this help.',
                   '     /VER     Display utility identification.']
     usage = "CT_USAGE: DB 13,10\n" + ''.join(
         ("        DB '" + line.replace("'", "''") + "',13,10\n") if line else "        DB 13,10\n" for line in help_lines)
     usage += "        DB '$'"
-    query = (ROOT/'src/utilities/common/version.inc').read_text()
-    query = query[query.index('\nUV_QUERY:')+1:]
-    query = query.replace('UV_', 'CH_').replace('LD C,4', 'LD C,5').replace("'/ver'", "'/help'")
+    from utility_help import query_source
+    query = query_source(ROOT).replace('UH', 'CH')
     help_check = """CT_CHECK:
         PUSH DE
         LD HL,0081H

@@ -91,7 +91,7 @@ def help_text(command):
             f' | {HELP_PURPOSES[command]}\r\n |\r\n'
             f' |   Usage: {command} [drive:]file [destination-drive:]\r\n\r\n'
             '   Options:\r\n'
-            '     /HELP       Display this help.\r\n'
+            '     /H /HELP    Display this help.\r\n'
             '     /VER        Display utility identification.\r\n')
 
 
@@ -112,7 +112,7 @@ def prepare_version(command, work):
     source = source.replace('; @codec-version-text@', '\n'.join(lines))
     # Exact query tokens anywhere in the tail ignore all other arguments.
     # Help is dispatched first when both /HELP and /VER are present.
-    help_query = query.replace('UV_', 'UH_').replace('LD C,4', 'LD C,5')
-    help_query = help_query.replace("'/ver'", "'/help'")
+    from utility_help import query_source
+    help_query = query_source(ROOT)
     source = source.replace('; @codec-version-query@', query + '\n' + help_query)
     (work / 'codecver.inc').write_text(source)
