@@ -60,27 +60,27 @@ change the disk membership below.
   are not asserted.
   See [CRC implementation notes](../engineering/CRC-Implementation.md).
 
-- MD5SUM.COM: MD5SUM 1.0 revision 002 development candidate. Conventional
+- MD5SUM.COM: MD5SUM 1.0 revision 003 development candidate. Conventional
   md5sum lists, stored-record byte coverage, master/local output and local
   verification. Native/cross parity and focused packaged cpmsim checks pass;
   The maintainer waived/deferred remaining Model 4 validation; paired release
   acceptance is not asserted. Prepared native
   source and build provenance accompany the shared corresponding-source archive.
   See [implementation notes](../engineering/MD5SUM-Implementation.md).
-- PATCH.COM: PATCH 1.0 revision 001 development candidate, supplied with
+- PATCH.COM: PATCH 1.0 revision 002 development candidate, supplied with
   PATCH.TXT on the NOAH companion Utilities volume. The primary 332K Utilities
   disk remains unchanged at 2K free. Native/cross parity and cpmsim checks pass;
   Model 4 qualification and paired release acceptance remain pending. Prepared
   native source and build provenance travel in the Utilities host package.
   See [implementation notes](../engineering/PATCH-Implementation.md).
 
-- SEARCH.COM: SEARCH 1.0 revision 001, read-only TEXT/HEX content search with
+- SEARCH.COM: SEARCH 1.0 revision 002, read-only TEXT/HEX content search with
   shared DU selectors, bounded excerpts, forward paging and complete accounting.
   Included in newly generated candidate images; [paired Utilities acceptance](../engineering/SEARCH%20Utilities%20Acceptance.md)
   binds native/cross parity and both-platform execution to exact program and media
   hashes. Whole Utilities release publication remains separate.
 
-- COMPARE.COM: development binary file comparison, reporting differing
+- COMPARE.COM: COMPARE 1.0 revision 004 development binary file comparison, reporting differing
   byte values and absolute offsets, with selected ranges, side-by-side hexadecimal
   display, summary-only reporting and forward-only pagination; [engineering
   specification](../engineering/COMPARE%20Specification.md). Development implementation
