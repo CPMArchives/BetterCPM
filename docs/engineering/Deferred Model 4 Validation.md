@@ -83,3 +83,58 @@ The 2026-11-02 utility-finalization batch subsequently passed 44 of 45 bounded
 checks. CRCKSUM's help-height defect was fixed and its isolated Model 4 retest
 passed at 11:51. The finalization record binds all 45 completed checks to their
 actual executable hashes. Release packages remain unchanged and unaccepted.
+
+## Candidate reconciliation — 2026-11-02, PR #564
+
+[Fresh conformance accounting](Release-Conformance-2026-11-02.md) records the
+current candidate `6d6c103507ce8558700b3b8e412ac500de361226`. Earlier statements
+that packages were not refreshed are historical; six packages now exist.
+Actual member hashes match 33 earlier tested shipped COM bodies; STAT 006,
+CPX 007 and RSX 008 require native retests. Seven earlier test tools are not
+shipped here. Identical bytes retain only their bounded prior checks, not a
+new package boot verdict. STAT's operator transcript has unspecified platform.
+
+cpmsim card accounting is reconciled with three explicit profile differences,
+including the preserved-case command tail. Fresh Model 4 execution remains
+pending: after reconnection LaunchServices lookup returned 1100 and the runner
+stopped before emulator startup. Use the prepared Terminal batch on private
+candidate copies. Historical deferrals and the reduced manual scope remain
+unchanged; no unexecuted check has been relabelled PASS.
+
+## Fresh native execution — 2026-11-02 15:06 run
+
+The maintainer's Terminal batch at `~/Downloads/model4-conformance-20261102-150614`
+passed all seven jobs covering eleven reviewed suite programs. The saved
+receipts and screen summaries were inspected and bind candidate
+`6d6c103507ce8558700b3b8e412ac500de361226` to baseline image SHA-256
+`4105ff45e411e25c0f3cd6024b970ddc231e6287086a553933e1fb577aaf2467`.
+Native directory/BDOS/file/random fixture, filesystem and System-member audits
+passed. Aggregate summaries are not fabricated per-card native transcripts.
+Evidence is retained in `evidence/2026-11-02-release-conformance/` as
+`model4-native-pass.tar.gz` and `model4-native-summary.json` (relative to the
+engineering documentation directory). Earlier blocked launches remain historical.
+
+This closes the prepared native returning-group batch only. STAT 006, CPX 007
+and RSX 008 invalid-option/error paths still need their targeted native check;
+the suite programs do not exercise those utilities. External/device assertions,
+profile differences and fresh-package installation remain separate acceptance
+items. Historical reduced-scope agreements remain unchanged.
+
+## Targeted Model 4 invalid-option screenshots — 2026-11-02
+
+Following the explicit Model 4 test request, the maintainer supplied three
+screenshots. Visual inspection confirms:
+
+| Command | Observed revision | Result |
+| --- | --- | --- |
+| STAT /BOGUS | 1.0 (006-dev) | PASS: Invalid option, current usage and option help. |
+| CPX /BOGUS | 1.0 (007-dev) | PASS: Invalid usage, current usage and help options. |
+| RSX /BOGUS | 1.0 (008-dev) | PASS: Invalid usage, current usage and help options. |
+
+These close the outstanding targeted native error/help presentation checks.
+The image crops do not show returned CCP prompts, so prompt return is not
+independently certified by these screenshots. Displayed revisions match the
+current candidate; the screenshots alone do not independently prove mounted
+image hashes. Broader conformance, fresh-package installation and final release
+acceptance retain their separately documented scope. Earlier pending and
+blocked entries above remain historical evidence.

@@ -1,0 +1,260 @@
+[
+  {
+    "component": "STAT",
+    "tested_sha256": "a549e4ac427708a3913bd1299c982c5ebb8963fe26042bba2aab0ca43ebbb027",
+    "candidate_sha256": "d0aed286dc9ec92f503594732acbd0918f62e70494b6fb2248228384ea5b562b",
+    "applicability": "CHANGED_BINARY_RETEST_PENDING"
+  },
+  {
+    "component": "CPX",
+    "tested_sha256": "711863bfda5725d49884ff531cd5cba3fec66fe1ee208f2962eebdddc4224837",
+    "candidate_sha256": "09132ee1178ab46a68ee5159697d489ca280f589ac835c9784d018234b40c24f",
+    "applicability": "CHANGED_BINARY_RETEST_PENDING"
+  },
+  {
+    "component": "RSX",
+    "tested_sha256": "3b64520d750d864fd97ab28957081e9828b9df3f2b97abd20160d51db233184e",
+    "candidate_sha256": "2dd217cc3c07a4d281713e322603c730413da551e51cfbcff749b4c070acdf87",
+    "applicability": "CHANGED_BINARY_RETEST_PENDING"
+  },
+  {
+    "component": "DIR",
+    "tested_sha256": "320c9332ffac29e3dc7b1e99fc623c44b0b1888a4f493a2c361329821bfdd9c3",
+    "candidate_sha256": "320c9332ffac29e3dc7b1e99fc623c44b0b1888a4f493a2c361329821bfdd9c3",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "USER",
+    "tested_sha256": "f5594af7cb0c2cc80800d07fccbde745a16743aa506e4ea30d2322a5a6a89735",
+    "candidate_sha256": null,
+    "applicability": "NOT_SHIPPED_ON_THESE_DISKS"
+  },
+  {
+    "component": "CLS",
+    "tested_sha256": "35767c72418f23a759b177ee8a30b15e93c997209bba6bfedea1fe4b76592e75",
+    "candidate_sha256": null,
+    "applicability": "NOT_SHIPPED_ON_THESE_DISKS"
+  },
+  {
+    "component": "VER",
+    "tested_sha256": "3ff699507701f1dd64609f579fb85470d9476750d63af7d863ea01534a3b2a63",
+    "candidate_sha256": "3ff699507701f1dd64609f579fb85470d9476750d63af7d863ea01534a3b2a63",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "COPY",
+    "tested_sha256": "3eb0e22353a6fdf5fb2545faaeda0cdd9051a1a8e6a24b1906172d8809e4e177",
+    "candidate_sha256": "3eb0e22353a6fdf5fb2545faaeda0cdd9051a1a8e6a24b1906172d8809e4e177",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "MOVE",
+    "tested_sha256": "b3d09b05f794685df2df7b28538385b8fe123a094510912400e2b066f90c6912",
+    "candidate_sha256": null,
+    "applicability": "NOT_SHIPPED_ON_THESE_DISKS"
+  },
+  {
+    "component": "ERA",
+    "tested_sha256": "6383bb226e92a835ac40d90066ac5a17063bb173c8c34a6e65063063fc0f7627",
+    "candidate_sha256": "6383bb226e92a835ac40d90066ac5a17063bb173c8c34a6e65063063fc0f7627",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "REN",
+    "tested_sha256": "71a3f3095ed5401068c8831244d3e852fa9ad0b499a52cb39895838c4acd0b89",
+    "candidate_sha256": "71a3f3095ed5401068c8831244d3e852fa9ad0b499a52cb39895838c4acd0b89",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "TYPE",
+    "tested_sha256": "b7bebb4956b28a4aca9b38c53e75d5320e719c286f2ce4af95e3e47973ad4dd4",
+    "candidate_sha256": "b7bebb4956b28a4aca9b38c53e75d5320e719c286f2ce4af95e3e47973ad4dd4",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "TIME",
+    "tested_sha256": "3f0ceb6389ff5f76569bfb4f02736520419a26ddf2cdea53ba7315d4501f7124",
+    "candidate_sha256": "3f0ceb6389ff5f76569bfb4f02736520419a26ddf2cdea53ba7315d4501f7124",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "DUP",
+    "tested_sha256": "361a7caf3741face4a311115f6479dd4542a23ce92ccdff2c7574b6c99f494c4",
+    "candidate_sha256": "361a7caf3741face4a311115f6479dd4542a23ce92ccdff2c7574b6c99f494c4",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "SYSGEN",
+    "tested_sha256": "a04998fd2b4928d7b2a40b8fa21b8e7d202048a7a35ced43ede753a30af6c0bd",
+    "candidate_sha256": "a04998fd2b4928d7b2a40b8fa21b8e7d202048a7a35ced43ede753a30af6c0bd",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "ED",
+    "tested_sha256": "5ce608f179ca87a17f887beb73a755e96ab4f0a36c5410bc640bcd49e30f6c1f",
+    "candidate_sha256": "5ce608f179ca87a17f887beb73a755e96ab4f0a36c5410bc640bcd49e30f6c1f",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "SUBMIT",
+    "tested_sha256": "32132d15f194a1776aae882a160eddd0421a70e738146098ef46a201926dd80a",
+    "candidate_sha256": "32132d15f194a1776aae882a160eddd0421a70e738146098ef46a201926dd80a",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "XSUB",
+    "tested_sha256": "a0eeb53a9850f80b848f0298ab1a621ee6604a44e0b0eda2d337ae0300af1ec1",
+    "candidate_sha256": "a0eeb53a9850f80b848f0298ab1a621ee6604a44e0b0eda2d337ae0300af1ec1",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "PIP",
+    "tested_sha256": "08f82abccb5821134ea4489eb4186e9eb388bdb7da59284b7a1f7ced059b10ff",
+    "candidate_sha256": "08f82abccb5821134ea4489eb4186e9eb388bdb7da59284b7a1f7ced059b10ff",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "DLINK",
+    "tested_sha256": "babd0ab2c8f38015c9faf1ba1a73c9ff350350433df9b0441a47190dae1b4933",
+    "candidate_sha256": "babd0ab2c8f38015c9faf1ba1a73c9ff350350433df9b0441a47190dae1b4933",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "DUMP",
+    "tested_sha256": "6f3bb91680d17aa29eaf1fa0190fd2ae4ab815a457be3426deeaff21c9ff363a",
+    "candidate_sha256": "6f3bb91680d17aa29eaf1fa0190fd2ae4ab815a457be3426deeaff21c9ff363a",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "DASM",
+    "tested_sha256": "dd9590b46db5b1622b5521f6127f572bd3f41a27c07206cb2aba063d54904ced",
+    "candidate_sha256": "dd9590b46db5b1622b5521f6127f572bd3f41a27c07206cb2aba063d54904ced",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "DSYM",
+    "tested_sha256": "81f5d4867ad35451224178eb14330860e2b3b922c1307ab46b18b8859a869852",
+    "candidate_sha256": "81f5d4867ad35451224178eb14330860e2b3b922c1307ab46b18b8859a869852",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "TED",
+    "tested_sha256": "46129d768ebce249769d2adb2e5eb4f0eca4f32f8e2b377848c3b52e2ff9af54",
+    "candidate_sha256": "46129d768ebce249769d2adb2e5eb4f0eca4f32f8e2b377848c3b52e2ff9af54",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "ADMTST",
+    "tested_sha256": "206ddb44c30f926e9facb89d9e9d6bd5709111cf3b8f8f72606156a9c6fe4b8e",
+    "candidate_sha256": "206ddb44c30f926e9facb89d9e9d6bd5709111cf3b8f8f72606156a9c6fe4b8e",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "VT52TST",
+    "tested_sha256": "5595372338896e7b7ababb9d6a1297e6cdea49ca1fd647758e89fdae1f6204ac",
+    "candidate_sha256": "5595372338896e7b7ababb9d6a1297e6cdea49ca1fd647758e89fdae1f6204ac",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "ANSITST",
+    "tested_sha256": "8e3379a5d6ff2f04441c8edc7628451f40b8408ba380ec54ddfadd6eebe176e0",
+    "candidate_sha256": "8e3379a5d6ff2f04441c8edc7628451f40b8408ba380ec54ddfadd6eebe176e0",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "SYSBUILD",
+    "tested_sha256": "e6a346e59fd046c74705e874016ce986de1b33e5caa07d47e6c87bd98246d62a",
+    "candidate_sha256": null,
+    "applicability": "NOT_SHIPPED_ON_THESE_DISKS"
+  },
+  {
+    "component": "RESPACK",
+    "tested_sha256": "6bdf7970defd49f39894625875869e42d6b2192fc76b89d82e4443af64afc3e3",
+    "candidate_sha256": null,
+    "applicability": "NOT_SHIPPED_ON_THESE_DISKS"
+  },
+  {
+    "component": "RLMBUILD",
+    "tested_sha256": "df314977bce2f8d3f2dc661a39b3f87a171b04a48d3f96037ccd5bf442e59d37",
+    "candidate_sha256": null,
+    "applicability": "NOT_SHIPPED_ON_THESE_DISKS"
+  },
+  {
+    "component": "WARM",
+    "tested_sha256": "6f8dae1376797c5f61fcce59ba6736dfb2ead8843ff7b094f5c65c9d2b172e8a",
+    "candidate_sha256": null,
+    "applicability": "NOT_SHIPPED_ON_THESE_DISKS"
+  },
+  {
+    "component": "DDT",
+    "tested_sha256": "b1579015fbaee973c0fac9dbd63a7c5d797f947e2500035deefa7607cc8443d7",
+    "candidate_sha256": "b1579015fbaee973c0fac9dbd63a7c5d797f947e2500035deefa7607cc8443d7",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "COMPARE",
+    "tested_sha256": "bf420a989c5a6f60c3c37e22e518a553192263dc2de0cb194739de994e491601",
+    "candidate_sha256": "bf420a989c5a6f60c3c37e22e518a553192263dc2de0cb194739de994e491601",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "CRCKSUM",
+    "tested_sha256": "fdad82f035da2d8611279adb1161bd81afd4c527ad58d6d01d9bd91dba61d3c0",
+    "candidate_sha256": "fdad82f035da2d8611279adb1161bd81afd4c527ad58d6d01d9bd91dba61d3c0",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "MD5SUM",
+    "tested_sha256": "742e672e1538d9af158f10b851b0f0112e27d44ea9b64f1fc97e98403f20cc78",
+    "candidate_sha256": "742e672e1538d9af158f10b851b0f0112e27d44ea9b64f1fc97e98403f20cc78",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "PATCH",
+    "tested_sha256": "3f934f88d4df966f941c7930fa91ac044f47118a5a46ecf6af08cd67f048c320",
+    "candidate_sha256": "3f934f88d4df966f941c7930fa91ac044f47118a5a46ecf6af08cd67f048c320",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "SEARCH",
+    "tested_sha256": "39cdf4b2d0a0abe9e8448a63da1d366da0800542da117779fabf1e57aa992b7e",
+    "candidate_sha256": "39cdf4b2d0a0abe9e8448a63da1d366da0800542da117779fabf1e57aa992b7e",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "SQ",
+    "tested_sha256": "e459d328575a3b1a86150058c98a95101cf658fa03a01ed28393b04f7254e537",
+    "candidate_sha256": "e459d328575a3b1a86150058c98a95101cf658fa03a01ed28393b04f7254e537",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "USQ",
+    "tested_sha256": "4f92829027e4137fb809db66260347cdb03d9fea9bba143962d898ca0225fa46",
+    "candidate_sha256": "4f92829027e4137fb809db66260347cdb03d9fea9bba143962d898ca0225fa46",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "CR",
+    "tested_sha256": "5d4477b21ebd5133540324ea4061909e239073738bf270b50937b5afcec91f6c",
+    "candidate_sha256": "5d4477b21ebd5133540324ea4061909e239073738bf270b50937b5afcec91f6c",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "UNCR",
+    "tested_sha256": "63cd212374f0e10ebdb010f943b0080f9a2144ad81103de584601fe11ef49180",
+    "candidate_sha256": "63cd212374f0e10ebdb010f943b0080f9a2144ad81103de584601fe11ef49180",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "LZH",
+    "tested_sha256": "cb57e7c73c3cea28dc10a1c8f4612eb6ebf93318a60a903a0b3e28471b6b1647",
+    "candidate_sha256": "cb57e7c73c3cea28dc10a1c8f4612eb6ebf93318a60a903a0b3e28471b6b1647",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  },
+  {
+    "component": "UNLZH",
+    "tested_sha256": "f2db4b48031a213ce0d87f52029df8463c3d15e3aa3c6b493b9fa57b6353ecca",
+    "candidate_sha256": "f2db4b48031a213ce0d87f52029df8463c3d15e3aa3c6b493b9fa57b6353ecca",
+    "applicability": "IDENTICAL_BYTES_BOUNDED_PRIOR_RESULT"
+  }
+]

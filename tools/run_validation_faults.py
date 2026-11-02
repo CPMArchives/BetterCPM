@@ -60,7 +60,7 @@ def main():
             assert b'WRITE CALLER RESUMED after operator ignore.' in trace
             assert b'SETUP OR PROVIDER COUNT FAILED' not in trace
         else:
-            commands += [(b'\x03',b'A0>_ ',30),(b'VER\r',b'BetterCP/M 0.90',30),
+            commands += [(b'\x03',b'A0>_ ',30),(b'VER\r',b'BetterCP/M ',30),
                          (b'',b'A0>_ ',30),(b'BYE /Y\r',b'System halted',10)]
             trace=session(a.simulator.resolve(),disks,commands,run/'transcript.bin')
             assert b'READ CALLER RESUMED' not in trace

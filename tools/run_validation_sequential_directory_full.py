@@ -105,13 +105,14 @@ def main():
     for name in ('baseline', 'output'):
         p.add_argument('--' + name, type=Path, required=True)
     p.add_argument('--reference-system', type=Path, default=Path.home()/'projects/git/z80pack/cpmsim/disks/library/cpm22-62khd.dsk')
+    p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim')
     a = p.parse_args()
     a.output.mkdir(parents=True, exist_ok=False)
     shutil.copy2(__file__, a.output/'executed-runner.py')
     report = json.loads((a.baseline/'report.json').read_text())
     baseline = a.baseline/report['image']
     assert report['target'] == 'z80pack' and sha(baseline) == report['sha256']
-    simulator = Path.home()/'projects/git/z80pack/cpmsim/cpmsim'
+    simulator = a.simulator.resolve()
     results = {}
     for label, function in ((name,fn) for fn in (21,34) for name in ('DRI','BetterCPM')):
         key = f'{label}-{function}'

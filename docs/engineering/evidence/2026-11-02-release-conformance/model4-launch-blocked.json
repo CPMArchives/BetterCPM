@@ -1,0 +1,9 @@
+{
+  "status": "BLOCKED_OR_INCOMPLETE",
+  "candidate_commit": "6d6c103507ce8558700b3b8e412ac500de361226",
+  "baseline_sha256": "4105ff45e411e25c0f3cd6024b970ddc231e6287086a553933e1fb577aaf2467",
+  "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+  "runs": [],
+  "scope": "Reviewed native returning groups only. Not all 627 cards; exclusions, devices and other external procedures remain separate.",
+  "error": "macOS LaunchServices permission denied (BOOTSTRAP_NOT_PRIVILEGED), code 1100. trs80gp was not started: AppKit application registration cannot complete in this execution context. Permit this launch through the host approval mechanism or run the same test from a normal Terminal. This is a host launch failure, not a Model 4 test result."
+}

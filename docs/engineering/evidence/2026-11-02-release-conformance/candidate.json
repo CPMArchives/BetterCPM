@@ -1,0 +1,47 @@
+{
+  "accepted_commit": null,
+  "assets": [
+    {
+      "filename": "BetterCPM-1.0-System-cpmsim-candidate.zip",
+      "sha256": "24ba806be602d0cba38623d58bc4116bcfcd63b87aeff76a7739c4c89cf2c654",
+      "size_bytes": 76840812
+    },
+    {
+      "filename": "BetterCPM-1.0-System-Model4-candidate.zip",
+      "sha256": "766505c312ed79f2f7dd70ca9e633bc02c6221657b36763c5cf2eeb73fb6ec28",
+      "size_bytes": 3834774
+    },
+    {
+      "filename": "BetterCPM-Utilities-1.0-cpmsim-candidate.zip",
+      "sha256": "f57e5381ad220c4f8df3aa9df3fda6b940f2fd0baa11e3e172d4449e91b2509d",
+      "size_bytes": 203703513
+    },
+    {
+      "filename": "BetterCPM-Utilities-1.0-Model4-candidate.zip",
+      "sha256": "b728f1aaef7fe630feb5b94041fd81ef4137d7c8fa26bfda3e2e3b4880300e97",
+      "size_bytes": 203735915
+    },
+    {
+      "filename": "BetterCPM-1.0-Source-candidate.zip",
+      "sha256": "8b8403d1ac96e69c2d44c5b6c2aa8d085b707e56439e5400ae68b73adf043cee",
+      "size_bytes": 379550916
+    },
+    {
+      "filename": "BetterCPM-1.0-Documentation-candidate.zip",
+      "sha256": "a7f3dc8ee2c01be5814575436a299c65e3ddfbd59b002e3b63b2ca246d97394f",
+      "size_bytes": 3296083
+    }
+  ],
+  "pending": [
+    "Manual Model 4 runtime campaign",
+    "Fresh-package installation on both platforms",
+    "Final conformance applicability/accounting",
+    "Manual/generated-edition reconciliation",
+    "License/attribution/source-completeness audit",
+    "Maintainer release acceptance"
+  ],
+  "schema": 1,
+  "source_commit": "6d6c103507ce8558700b3b8e412ac500de361226",
+  "status": "CANDIDATE; NOT ACCEPTED",
+  "tag": null
+}

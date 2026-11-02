@@ -11,7 +11,7 @@ from test_bios import Z80
 from system_layout import LAYOUT
 ROOT=Path(__file__).resolve().parents[1]
 def main():
-    listing=(ROOT/'build/system/disk.lst').read_text()
+    listing=(ROOT/'build/system/disk.lst').read_text(encoding='latin-1')
     syms={n:int(a,16) for a,n in re.findall(r'^([0-9a-fA-F]{4})\s+.*?\b(DC_\w+):',listing,re.M)}
     def word(v): return bytes((v&255,v>>8))
     cases=0
