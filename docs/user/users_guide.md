@@ -5176,6 +5176,13 @@ Unless otherwise stated, examples apply to the form identified in the surroundin
 
 #### 13.4 Getting Help and Version Information
 
+BetterCP/M-owned transient utilities accept `/H` as an alias for `/HELP`.
+Both requests take precedence over `/VER` and ordinary operation arguments.
+Use a leading colon when a resident command has the same name, for example
+`:DIR /H` or `:COPY /HELP`. Unmodified third-party utilities retain their
+historical syntax; an interactive editor command named H is a separate interface.
+
+
 BetterCP/M provides several facilities for identifying commands, obtaining assistance during interactive operations, and examining software versions.
 
 Not every command supports the same help facilities, so the individual reference entries identify the available options.

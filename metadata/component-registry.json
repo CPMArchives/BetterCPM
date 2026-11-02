@@ -13,7 +13,7 @@
       "builders": [
         "tools/build_stat.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -30,7 +30,7 @@
       "builders": [
         "tools/build_rcp_transients.py"
       ],
-      "revision": 9,
+      "revision": 10,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -47,7 +47,7 @@
       "builders": [
         "tools/build_rcp_transients.py"
       ],
-      "revision": 11,
+      "revision": 12,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -81,7 +81,7 @@
       "builders": [
         "tools/build_dup.py"
       ],
-      "revision": 8,
+      "revision": 9,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -98,7 +98,7 @@
       "builders": [
         "tools/build_time.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -115,7 +115,7 @@
       "builders": [
         "tools/build_disk_utilities.py"
       ],
-      "revision": 9,
+      "revision": 10,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -132,7 +132,7 @@
       "builders": [
         "tools/build_batch.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -149,7 +149,7 @@
       "builders": [
         "tools/build_batch.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -166,7 +166,7 @@
       "builders": [
         "tools/build_cpx_utility.py"
       ],
-      "revision": 5,
+      "revision": 6,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -183,7 +183,7 @@
       "builders": [
         "tools/build_rsx_utilities.py"
       ],
-      "revision": 6,
+      "revision": 7,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -200,7 +200,7 @@
       "builders": [
         "tools/build_rcp_transients.py"
       ],
-      "revision": 7,
+      "revision": 8,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -217,7 +217,7 @@
       "builders": [
         "tools/build_rcp_transients.py"
       ],
-      "revision": 8,
+      "revision": 9,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -234,7 +234,7 @@
       "builders": [
         "tools/build_rcp_transients.py"
       ],
-      "revision": 9,
+      "revision": 10,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -268,7 +268,7 @@
       "builders": [
         "tools/build_disk_utilities.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -285,7 +285,7 @@
       "builders": [
         "tools/build_disk_utilities.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -302,7 +302,7 @@
       "builders": [
         "tools/build_disk_utilities.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -319,7 +319,7 @@
       "builders": [
         "tools/build_era.py"
       ],
-      "revision": 6,
+      "revision": 7,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -336,7 +336,7 @@
       "builders": [
         "tools/build_ren.py"
       ],
-      "revision": 10,
+      "revision": 11,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -353,7 +353,7 @@
       "builders": [
         "tools/build_type.py"
       ],
-      "revision": 8,
+      "revision": 9,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -370,7 +370,7 @@
       "builders": [
         "tools/build_pip.py"
       ],
-      "revision": 30,
+      "revision": 31,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -387,7 +387,7 @@
       "builders": [
         "tools/build_adm3a.py"
       ],
-      "revision": 5,
+      "revision": 6,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -404,7 +404,7 @@
       "builders": [
         "tools/build_vt52.py"
       ],
-      "revision": 5,
+      "revision": 6,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -421,7 +421,7 @@
       "builders": [
         "tools/build_ansi.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -438,7 +438,7 @@
       "builders": [
         "tools/build_ed.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -455,7 +455,7 @@
       "builders": [
         "tools/build_dump.py"
       ],
-      "revision": 7,
+      "revision": 8,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -472,7 +472,7 @@
       "builders": [
         "tools/build_ddt.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -487,7 +487,7 @@
       "builders": [
         "tools/build_sq.py"
       ],
-      "revision": 5,
+      "revision": 6,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -502,7 +502,7 @@
       "builders": [
         "tools/build_usq.py"
       ],
-      "revision": 5,
+      "revision": 6,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -517,7 +517,7 @@
       "builders": [
         "tools/build_cr.py"
       ],
-      "revision": 5,
+      "revision": 6,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -532,7 +532,7 @@
       "builders": [
         "tools/build_uncr.py"
       ],
-      "revision": 5,
+      "revision": 6,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -547,7 +547,7 @@
       "builders": [
         "tools/build_lzh.py"
       ],
-      "revision": 5,
+      "revision": 6,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -562,7 +562,7 @@
       "builders": [
         "tools/build_unlzh.py"
       ],
-      "revision": 5,
+      "revision": 6,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -594,7 +594,7 @@
       "builders": [
         "tools/build_z80pack_bye.py"
       ],
-      "revision": 2,
+      "revision": 3,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -609,7 +609,7 @@
       "builders": [
         "tools/build_rcp_transients.py"
       ],
-      "revision": 1,
+      "revision": 2,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -627,7 +627,7 @@
         "tools/build_warm.py",
         "tools/build_native_warm.py"
       ],
-      "revision": 1,
+      "revision": 2,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -881,7 +881,7 @@
       "builders": [
         "tools/build_dasm.py"
       ],
-      "revision": 2,
+      "revision": 3,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "tracked-conservative",
@@ -898,7 +898,7 @@
       "builders": [
         "tools/build_dsym.py"
       ],
-      "revision": 2,
+      "revision": 3,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "tracked-conservative",
@@ -915,7 +915,7 @@
       "builders": [
         "tools/build_dlink.py"
       ],
-      "revision": 1,
+      "revision": 2,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "tracked-conservative",
@@ -947,7 +947,7 @@
       "builders": [
         "tools/build_ted.py"
       ],
-      "revision": 2,
+      "revision": 3,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "tracked-conservative",
@@ -967,7 +967,7 @@
       "builders": [
         "tools/build_compare.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "explicit selected dependency closure",
@@ -989,7 +989,7 @@
       "builders": [
         "tools/build_search.py"
       ],
-      "revision": 1,
+      "revision": 2,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "tracked-conservative; shared FCB builder extracted from RCP",
@@ -1014,7 +1014,7 @@
       "builders": [
         "tools/build_crc.py"
       ],
-      "revision": 8,
+      "revision": 9,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "tracked-conservative; shared DU/filespec/attribute parser and FCB builder",
@@ -1037,7 +1037,7 @@
       "builders": [
         "tools/build_md5sum.py"
       ],
-      "revision": 2,
+      "revision": 3,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "tracked-conservative; shared CRCKSUM file engine and DU parser",
@@ -1047,7 +1047,7 @@
     "utility:PATCH": {
       "version": "1.0",
       "api_version": null,
-      "revision": 1,
+      "revision": 2,
       "tracking": "initial",
       "roots": [
         "src/utilities/patch.mac",

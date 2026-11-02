@@ -43,7 +43,7 @@ def expanded_source():
         '     /INPUT=file  Override original input.\n'
         '     /OUTPUT=file Override separate output.\n'
         '     /VERBOSE     Show instruction validation details.\n\n'
-        '     /HELP        Display this help.\n'
+        '     /H /HELP     Display this help.\n'
         '     /VER         Display utility identification.\n')
     def string(label,value):
         return label+':\n'+''.join("        DB '"+line.replace("'","''")+"',13,10\n" if line else '        DB 13,10\n' for line in value.splitlines())+'        DB 0\n'

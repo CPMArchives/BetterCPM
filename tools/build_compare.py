@@ -42,7 +42,7 @@ def expanded_source():
         '     /LEN=hex[H]   Limit comparison positions.\n'
         '     /P            Pause detailed output.\n'
         '     /40           Narrow /SIDE display.\n\n'
-        '     /HELP         Display this help.\n'
+        '     /H /HELP      Display this help.\n'
         '     /VER          Display utility identification.\n')
     help_source='HELPTEXT:\n'+''.join("        DB '"+line+"',13,10\n" if line else '        DB 13,10\n' for line in help_text.splitlines())+'        DB 0\n'
     return text.replace('; @compare-version@', version).replace('; @compare-help@',help_source)

@@ -24,6 +24,9 @@ START:
         LD (HL),0
         LDIR
         CALL TOKENIZE
+        LD HL,OPH
+        CALL QUERY
+        JP Z,HELP
         LD HL,OPHELP
         CALL QUERY
         JP Z,HELP
@@ -286,6 +289,7 @@ ZERO:
 ; @shared@
 ; @fingerprint@
 ; @identity@
+OPH: DB '/H',0
 OPHELP: DB '/HELP',0
 OPVER: DB '/VER',0
 OPVERBOSE: DB '/VERBOSE',0

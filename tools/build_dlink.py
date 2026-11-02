@@ -13,7 +13,9 @@ def source():
     text=(ROOT/'src/utilities/dlink.mac').read_text()
     for name in ('duselect.inc','filespec.inc','dasmcrc.inc','printnum.inc','version.inc'):
         text=text.replace('INCLUDE '+name,(ROOT/'src/utilities/common'/name).read_text())
-    text=text.replace('; @dlink-version@',strings('DLINK',label='DL_VERSION_TEXT'))
+    from utility_help import source as help_source, query_source
+    text=text.replace(' LD DE,DL_VERSION_TEXT\n CALL UV_QUERY', ' LD DE,DL_HELP\n CALL UH_QUERY\n RET C\n LD DE,DL_VERSION_TEXT\n CALL UV_QUERY',1)
+    text=text.replace('; @dlink-version@',strings('DLINK',label='DL_VERSION_TEXT')+query_source(ROOT)+help_source('DLINK','DL_HELP'))
     definitions=[]
     def move(match):definitions.append(match[0]);return ''
     text=re.sub(r'(?m)^DU_\w+\s+EQU[^\n]*\n',move,text)

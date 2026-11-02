@@ -719,6 +719,66 @@ reconciliation gate precede the corresponding implementation program.
 
 ## Post-1.0 considerations
 
+- [ ] Prioritize Kaypro among the first post-1.0 platform ports. The maintainer
+  has VirtualKaypro installed; first assess its suitability for bring-up and
+  qualification rather than assuming it is sufficient. Identify the exact Kaypro
+  model/configuration and emulator version, supported hardware and disk-image
+  formats, ROM requirements, debugging/automation facilities and evidence capture.
+  Determine which behavior can be validated in that emulator and what needs
+  another emulator or physical hardware. Use the port as additional evidence for
+  the portability assessment and porting guide, preserving the shared codebase.
+  Early post-1.0 target only; no immediate implementation or 1.0 scope expansion.
+
+- [ ] Validate the portability assessment with prospective BetterCP/M ports to
+  the IMSAI and Altair emulators under z80pack. Before each port, document the
+  expected platform adaptations, effort and qualification steps; compare actual
+  results with those predictions. Track changes to shared versus platform code,
+  hardware/emulator assumptions, documentation gaps, build/release integration,
+  and bring-up/acceptance effort. Assess how much shared z80pack infrastructure
+  helps without assuming these machines have cpmsim's hardware interfaces or
+  BetterCP/M runtime patches. Feed concrete findings back into the porting guide
+  and prioritized portability recommendations. Post-1.0 follow-up only; these
+  ports are not 1.0 requirements or authorized for immediate implementation.
+
+- [ ] Conduct an evidence-based engineering assessment: "How easy is BetterCP/M
+  to port?" Evaluate what a competent developer must understand, implement,
+  change and verify to bring up a new platform. Audit shared/platform code
+  boundaries and hidden assumptions about memory, ROM/RAM, interrupts, console,
+  disk geometry and emulator services; assess hardware-contract completeness,
+  build/release integration, documentation sufficiency and staged qualification
+  tooling. Use a-griff's Model II port as a case study of actual changes and
+  friction, distinguishing necessary platform adaptations from gaps in the common
+  architecture. Produce prioritized recommendations supported by concrete evidence;
+  do not presume a redesign is required. Preserve the goal that platform releases
+  derive from one shared codebase. Assessment only; implementation changes require
+  separate scope and authorization, and this is not a 1.0 acceptance prerequisite.
+
+- [ ] Explore memory-mapped video access on the TRS-80 Model 4 and Model II.
+  Establish each platform's actual video-memory mapping, banking/access rules,
+  and interaction with OS/application memory before selecting an approach.
+  Assess direct screen reads/writes, scrolling, redraw and screen capture against
+  the existing BIOS console hooks, terminal personalities and screen-provider
+  interfaces. Determine what belongs in platform-specific backends and what can
+  remain shared, preserving application compatibility and memory ownership.
+  Record limitations and possible performance benefits with measured evidence.
+  Post-1.0 investigation only; no implementation, ABI or 1.0 scope change is
+  authorized by this entry.
+
+- [ ] Explore P&T-inspired video services after 1.0 for Model 4/Model II and
+  appropriate portable screen providers (P&T manual chapters 10 and 16): cursor
+  position and screen-character readback; cursor visibility, shape and blink;
+  controlled screen-memory access; a fixed header with a scrolling lower region;
+  terminal-personality query/control; and temporary notifications with screen
+  save/restore. Assess character-graphics support and actual platform glyph sets.
+  Audit existing SCRN/provider capabilities first; identify what already exists,
+  portability/fallback behavior, screen-state ownership, cleanup after errors and
+  extension unload, banking/interrupt restrictions, and memory cost. Assess other
+  P&T special-function ideas (serial status/configuration, printer status/options,
+  time services, cancellation policy and disk status) against existing BetterCP/M
+  contracts and hardware support. Inspiration only: do not adopt P&T addresses,
+  function numbers, ABI, or unsupported feature promises. No 1.0 implementation
+  or new public service is authorized by this exploration entry.
+
 - [ ] Explore hard-drive support after 1.0: platform/controller backends,
   physical geometry and logical-drive allocation, CP/M filesystem limits,
   directory/allocation sizing, boot/install support, configuration persistence,

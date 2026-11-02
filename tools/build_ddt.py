@@ -60,7 +60,7 @@ def payload_source(base=0,adapt=True):
 
 def startup_source(length, development=None):
     text=original('DDT0MOV.ASM')
-    text=text.replace('STACK\tEQU\t200H','STACK\tEQU\t400H').replace('MODULE\tEQU\t200H','MODULE\tEQU\t400H')
+    text=text.replace('STACK\tEQU\t200H','STACK\tEQU\t600H').replace('MODULE\tEQU\t200H','MODULE\tEQU\t600H')
     text=text.replace('\tdb\t01h\t;lxi instruction\n\tds\t2\t;space for address',f'\tLXI\tB,{length:05X}H')
     text=text.replace('\tJMP\tSTART','\tJMP\tUV_INIT',1)
     start=text.index('SIGNON:');end=text.index('START:',start)
@@ -69,17 +69,21 @@ def startup_source(length, development=None):
     text=re.sub(r'(?m)^\s*END\s*$','',text)
     query=(ROOT/'src/utilities/common/version.inc').read_text();query=query[query.index('\nUV_QUERY:')+1:]
     text=translate(text)+'''\nUV_INIT:
-        LD SP,0400H
+        LD SP,0600H
         PUSH BC
         LD HL,0081H
         LD A,(0080H)
         LD B,A
+        LD DE,DH_TEXT
+        CALL UH_QUERY
+        JR C,DH_DONE
         LD DE,SIGNON
         CALL UV_QUERY
+DH_DONE:
         POP BC
         JP C,0000H
         JP START
-'''+query+'\nST_END:\n        END\n'
+'''+query+__import__('utility_help').query_source(ROOT)+__import__('utility_help').source('DDT','DH_TEXT',version_text(development).splitlines()[0])+'\nST_END:\n        END\n'
     return text
 
 
@@ -114,8 +118,8 @@ def main():
     for i in marks:bitmap[i//8]|=0x80>>(i%8)
     (out/'relocation.bitmap').write_bytes(bitmap)
     stub=assemble(startup_source(length,display['development']),out/'startup.bin',0x100)
-    assert len(stub)<=0x200,('bootstrap stack headroom',len(stub))
-    result=stub+bytes(0x300-len(stub))+images[0]+bitmap
+    assert len(stub)<=0x400,('bootstrap stack headroom',len(stub))
+    result=stub+bytes(0x500-len(stub))+images[0]+bitmap
     result+=bytes((-len(result))%128)
     (out/'DDT.COM').write_bytes(result)
     report={'status':'PASS','version':version_text(display['development']),'file_size':len(result),'payload_size':length,'resident_pages':(length>>8)+1,'bitmap_bytes':len(bitmap),'relocation_marks':len(marks),'startup_bytes':len(stub),'sha256':hashlib.sha256(result).hexdigest(),'translated_core_parity':parity,'historical_reference_sha256':hashlib.sha256((ROOT/'third_party/dri-ddt/DDT.COM').read_bytes()).hexdigest()}

@@ -45,7 +45,15 @@ def expand_versions(text):
     match = re.search(r'; @utility-version ([A-Z][A-Z0-9]*)@', text)
     if match:
         name = match[1]
-        text = text.replace(match[0], strings(name) + query.replace('; @version-banner@', '        LD DE,UV_TEXT'))
+        prepared = query.replace('; @version-banner@', '        LD DE,UV_TEXT')
+        extra = ''
+        if name in ('STAT','CPX','RSX','DUP','SYSGEN','TIME','ERA','REN','TYPE','ED','SUBMIT','XSUB','ADMTST','VT52TST','ANSITST','SYSBUILD','RESPACK','RLMBUILD','WARM'):
+            from utility_help import query_source, source
+            prepared = prepared.replace('        CALL UV_QUERY',
+                '        LD DE,UH_TEXT\n        CALL UH_QUERY\n        JR C,UV_EXIT\n'
+                '        LD DE,UV_TEXT\n        CALL UV_QUERY', 1)
+            extra = query_source(ROOT) + source(name,'UH_TEXT')
+        text = text.replace(match[0], strings(name) + prepared + extra)
     if '; @rcp-version@' in text:
         commands = ['DIR','ERA','TYPE','REN','CLS','USER','VER','COPY','MOVE']
         data = ''.join(strings(n, True, 'UV_R'+n) for n in commands)
@@ -61,5 +69,17 @@ def expand_versions(text):
                           r'LD      DE,\1-BC_COMMAND', text)
             text = text.replace('CALL    UV_QUERY', 'CALL    RH_VERSION')
             data += (ROOT / 'src/cpx/feature-hint.inc').read_text()
-        text = text.replace('; @rcp-version@', data + query.replace('; @version-banner@', ''))
+        prepared = query.replace('; @version-banner@', '')
+        if not resident:
+            from utility_help import query_source, source
+            dispatch = ''
+            for n in ('DIR','USER','CLS','VER','COPY','MOVE'):
+                dispatch += ('        LD HL,UV_T'+n+'\n        OR A\n        SBC HL,DE\n'
+                             '        JR NZ,UCN_'+n+'\n        LD DE,UHP_'+n+'\n'
+                             '        JP UHC_CALL\nUCN_'+n+':\n')
+                data += source(n,'UHP_'+n)
+            dispatch += 'UHC_CALL:\n        LD HL,0081H\n        LD A,(0080H)\n        LD B,A\n        CALL UH_QUERY\n'
+            prepared = prepared.replace('        LD HL,0081H', dispatch+'        JR C,UV_EXIT\n        POP HL\n        POP DE\n        PUSH DE\n        PUSH HL\n        LD HL,0081H',1)
+            data += query_source(ROOT)
+        text = text.replace('; @rcp-version@', data + prepared)
     return text

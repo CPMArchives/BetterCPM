@@ -30,17 +30,16 @@ def expanded_source():
                  '     /CRCK5      Corrected CRCK.\n'
                  '     /CHEK       CHEK (CRC-16/XMODEM).\n'
                  '     /CRC32      CRC-32/ISO-HDLC.\n'
-                 '     /SUM8       Sum bytes modulo 256.\n'
-                 '     /SUM16      Sum bytes modulo 65536.\n'
-                 '     /KERM6      Kermit 6-bit checksum.\n'
-                 '     /KERM12     Kermit 12-bit checksum.\n'
+                 '     /SUM8 /SUM16  8-bit / 16-bit byte sums.\n'
+                 '     /KERM6 /KERM12  Kermit 6-bit / 12-bit checksums.\n'
                  '     /FILE=name  Write a master list.\n'
                  '     /LOCAL=name Write a list in each target DU.\n'
                  '     /LEGACY     Use historical CRCKLIST format; force CRCK.\n'
                  '     /CHECK[=name] Verify against a list in each target DU.\n'
                  '     /40         Grouped table display.\n\n'
-                 '     /HELP       Display this help.\n'
+                 '     /H /HELP    Display this help.\n'
                  '     /VER        Display utility identification.\n')
+    assert len(help_text.splitlines())<=21 and max(map(len,help_text.splitlines()))<=79
     def assembly_string(label, value):
         return label+':\n'+''.join(("        DB '"+line.replace("'", "''")+"',13,10\n")
                                     if line else '        DB 13,10\n'

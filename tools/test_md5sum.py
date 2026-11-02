@@ -43,7 +43,7 @@ def main():
     c.a=0;c.run(sym['CUPDATE'],limit=10000)
     assert int.from_bytes(c.mem[sym['MDLENGTH']:sym['MDLENGTH']+8],'little')==0x100000000
     data=records(b'123456789');f={(2,7,'TEST.DAT'):data,(2,7,'NOEXT'):b''}
-    for tail in ('/VER','/HELP /VER BAD','/VER /HELP /MD5','/help\t/WHAT'):
+    for tail in ('/h /VER /BOGUS','/VER','/HELP /VER BAD','/VER /HELP /MD5','/help\t/WHAT'):
         r=run(f,tail);assert not set(r['services']) & {14,15,17,25,26,32,35},r['text']
     for tail in ('/MD5','/CRCK','/LEGACY','/UNKNOWN','/HELPER','/VERIFY',
                  '/CHECK=B:MD5SUM.LST','/LOCAL=C3:MD5SUM.LST','/FILE=*.*','/FILE=',

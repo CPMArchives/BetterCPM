@@ -1,0 +1,4 @@
+df04daeed62243a244c4a4bcc2f3801a0980c6a53aa2ac07efca7793f957ed95  receipts-and-logs.tar.gz
+f1079b08ecd073a6c8b0377482b01e2cc02480e17a24cc6f264aa03502c3c4aa  model4-initial-receipts-and-captures.tar.gz
+6ec2b51c1ddc01265d119bfddbe35395e20c0ac053d0c3b4f4026fc1d6394ab7  crc-help-height-followup.tar.gz
+4acca8201e9a76787f2cd24c7e8be4f7f8d2d42cfcde54e3efaf5a91a706ecf4  model4-crc-help-height-pass.tar.gz

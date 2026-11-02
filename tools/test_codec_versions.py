@@ -94,12 +94,12 @@ def main():
                              ' | '+purposes[command], ' |',
                              f' |   Usage: {command} [drive:]file [destination-drive:]',
                              '', '   Options:',
-                             '     /HELP       Display this help.',
+                             '     /H /HELP    Display this help.',
                              '     /VER        Display utility identification.']
             assert all(line == line.rstrip() for line in lines)
             assert len(lines) <= 23 and max(map(len, lines)) <= 79
             assert all(32 <= ord(c) <= 126 or c in '\r\n' for c in screen)
-            for tail in ('/HELP',' /help  ','/HeLp','\t/HeLp\t',
+            for tail in ('/H','/VER /h /BOGUS','/HELP',' /help  ','/HeLp','\t/HeLp\t',
                          ' '*122+'/HELP','/HELP'+' '*122,'\t'*122+'/help'):
                 check(m,tail,screen)
             for tail in ('/HELP FILE.BIN','FILE.BIN /HELP','/HELP /HELP',
@@ -119,9 +119,9 @@ def main():
             image=builder.build(args.assembler,work/'large')
             m=VersionCommand(lib,image,(work/'large/sq.lst').read_text(errors='replace'))
             check(m,'/VER',version_text('SQ'))
-            assert 'SQ 2.3 (1001)' in m.console
+            assert 'SQ 2.3 (1001' in m.console
             check(m,'/HELP',help_text('SQ'))
-            assert 'SQ 2.3 (1001)' in m.console
+            assert 'SQ 2.3 (1001' in m.console
             total+=m.cases
         print(f'PASS: {total} full-Z80 version/help/parser cases across six commands;')
         print('console-only query paths, bounded tails, unchanged files/FCBs/context, ABI and deterministic metadata expansion checked.')

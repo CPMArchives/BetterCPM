@@ -454,6 +454,7 @@ OPTIONS:
         DB 7,8,'/CHECK='
         DB 6,9,'/CHECK'
         DB 3,10,'/40'
+        DB 2,11,'/H'
         DB 5,11,'/HELP'
         DB 4,12,'/VER'
         DB 5,13,'/SUM8'

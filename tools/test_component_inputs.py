@@ -79,7 +79,8 @@ class InputTests(unittest.TestCase):
 
     def test_revision_does_not_hash_itself(self):
         self.change_json('metadata/component-registry.json',
-            lambda d: d['components']['utility:BYE'].update(revision=3))
+            lambda d: d['components']['utility:BYE'].update(
+                revision=d['components']['utility:BYE']['revision']+1))
         candidate = self.capture()
         self.assertEqual(candidate['fingerprint'], self.baseline['fingerprint'])
         self.assertEqual(classify(candidate, self.baseline)['state'], 'unknown')

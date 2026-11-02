@@ -31,7 +31,7 @@ def expanded_source():
                  '     /NOTEXT    Disable TEXT; require valid HEX.\n'
                  '     /NOCASE    Ignore ASCII letter case in TEXT.\n'
                  '     /P         Page results forward.\n\n'
-                 '     /HELP      Display this help.\n'
+                 '     /H /HELP   Display this help.\n'
                  '     /VER       Display utility identification.\n')
     text = (ROOT/'src/utilities/search.mac').read_text()
     text = text.replace('; @search-modules@', development_source())

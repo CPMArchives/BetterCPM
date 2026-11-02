@@ -43,7 +43,8 @@
         "tools/component_registry.py",
         "tools/rsx_container.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "modes": [
         "cross",
@@ -108,7 +109,8 @@
         "tools/component_registry.py",
         "tools/ddt_source.py",
         "tools/shared_ui.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "modes": [
         "cross",
@@ -163,7 +165,8 @@
         "tools/component_identity.py",
         "tools/component_inputs.py",
         "tools/component_registry.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "modes": [
         "cross",
@@ -204,7 +207,8 @@
         "tools/component_identity.py",
         "tools/component_inputs.py",
         "tools/component_registry.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "modes": [
         "cross",
@@ -245,7 +249,8 @@
         "tools/component_identity.py",
         "tools/component_inputs.py",
         "tools/component_registry.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "modes": [
         "cross",
@@ -286,7 +291,8 @@
         "tools/component_identity.py",
         "tools/component_inputs.py",
         "tools/component_registry.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "modes": [
         "cross",
@@ -327,7 +333,8 @@
         "tools/component_identity.py",
         "tools/component_inputs.py",
         "tools/component_registry.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "modes": [
         "cross",
@@ -368,7 +375,8 @@
         "tools/component_identity.py",
         "tools/component_inputs.py",
         "tools/component_registry.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "modes": [
         "cross",
@@ -426,7 +434,8 @@
         "tools/component_registry.py",
         "tools/rsx_container.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "modes": [
         "cross",
@@ -484,7 +493,8 @@
         "tools/component_registry.py",
         "tools/rsx_container.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "modes": [
         "cross",
@@ -582,7 +592,8 @@
         "tools/shared_ui.py",
         "tools/system_layout.py",
         "tools/utility_versions.py",
-        "tools/version_metadata.py"
+        "tools/version_metadata.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -703,7 +714,8 @@
         "tools/shared_ui.py",
         "tools/system_layout.py",
         "tools/utility_versions.py",
-        "tools/version_metadata.py"
+        "tools/version_metadata.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -1068,7 +1080,8 @@
         "tools/startup_record.py",
         "tools/sysgen_image.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -1290,7 +1303,8 @@
         "tools/startup_record.py",
         "tools/sysgen_image.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -1349,7 +1363,8 @@
         "tools/component_registry.py",
         "tools/rsx_container.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -1408,7 +1423,8 @@
         "tools/component_registry.py",
         "tools/rsx_container.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -1465,7 +1481,8 @@
         "tools/component_registry.py",
         "tools/rsx_container.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -1537,7 +1554,8 @@
         "tools/component_registry.py",
         "tools/rsx_container.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -1640,7 +1658,8 @@
         "tools/shared_ui.py",
         "tools/system_layout.py",
         "tools/utility_versions.py",
-        "tools/version_metadata.py"
+        "tools/version_metadata.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -1761,7 +1780,8 @@
         "tools/shared_ui.py",
         "tools/system_layout.py",
         "tools/utility_versions.py",
-        "tools/version_metadata.py"
+        "tools/version_metadata.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -1882,7 +1902,8 @@
         "tools/shared_ui.py",
         "tools/system_layout.py",
         "tools/utility_versions.py",
-        "tools/version_metadata.py"
+        "tools/version_metadata.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -2172,7 +2193,8 @@
         "tools/startup_record.py",
         "tools/sysgen_image.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -2350,7 +2372,8 @@
         "tools/startup_record.py",
         "tools/sysgen_image.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -2528,7 +2551,8 @@
         "tools/startup_record.py",
         "tools/sysgen_image.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -2610,7 +2634,8 @@
         "tools/rsx_container.py",
         "tools/shared_ui.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -2709,7 +2734,8 @@
         "tools/rsx_container.py",
         "tools/shared_ui.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -2787,7 +2813,8 @@
         "tools/component_registry.py",
         "tools/rsx_container.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -2898,7 +2925,8 @@
         "tools/rsx_container.py",
         "tools/shared_ui.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -2977,7 +3005,8 @@
         "tools/component_registry.py",
         "tools/rsx_container.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -3036,7 +3065,8 @@
         "tools/component_registry.py",
         "tools/rsx_container.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -3097,7 +3127,8 @@
         "tools/component_registry.py",
         "tools/rsx_container.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -3179,7 +3210,8 @@
         "tools/component_registry.py",
         "tools/rsx_container.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -3526,7 +3558,8 @@
         "tools/shared_ui.py",
         "tools/system_layout.py",
         "tools/utility_versions.py",
-        "tools/version_metadata.py"
+        "tools/version_metadata.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -3607,7 +3640,8 @@
         "tools/component_registry.py",
         "tools/rsx_container.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -4896,7 +4930,8 @@
         "tools/component_identity.py",
         "tools/component_inputs.py",
         "tools/component_registry.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "tools/utility_help.py"
       ],
       "modes": [
         "cross",

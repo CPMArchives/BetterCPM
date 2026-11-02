@@ -63,7 +63,8 @@ def source(reference=False, legacy=False):
             from shared_ui import input_source, controller_source
             query = (ROOT/'src/utilities/common/version.inc').read_text()
             query = query[query.index('\nUV_QUERY:')+1:]
-            help_query = query.replace('UV_', 'UH_').replace('LD C,4', 'LD C,5').replace("'/ver'", "'/help'")
+            from utility_help import query_source
+            help_query = query_source(ROOT)
             text = text.replace('; @te-query@', query+'\n'+help_query)
             text = text.replace('; @te-input@', input_source(standard=True, words=True))
             text = text.replace('; @te-controller@', controller_source(text=True)+'\n'+(ROOT/'src/utilities/common/ui/screen.inc').read_text())

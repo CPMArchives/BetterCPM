@@ -24,6 +24,9 @@ START:
         LD (HL),0
         LDIR
         CALL TOKENIZE
+        LD HL,OPH
+        CALL QUERY
+        JP Z,HELP
         LD HL,OPHELP
         CALL QUERY
         JP Z,HELP
@@ -623,6 +626,7 @@ STAT:
 ; @compare-display@
 ; @compare-version@
 OPVER: DB '/VER',0
+OPH: DB '/H',0
 OPHELP: DB '/HELP',0
 OPLIST: DB '/LIST',0
 OPSIDE: DB '/SIDE',0
