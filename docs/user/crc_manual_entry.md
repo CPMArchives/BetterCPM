@@ -1,6 +1,6 @@
 ## CRCKSUM file checksums and verification lists
 
-**CRCKSUM 1.0 development candidate.** The implementation and focused cpmsim checks are available; CRCKSUM is included in newly built candidate Utilities images; the maintainer waived the remaining Model 4 validation for PR finalization; full Model 4 qualification and release acceptance are not asserted. This chapter does not claim that CRCKSUM.COM is present on released Utilities Disk images. The [engineering specification](../engineering/CRC-Specification.md) is the controlling design.
+**CRCKSUM 1.0 (009-dev), release candidate.** CRCKSUM.COM is included in the candidate Utilities images; the BetterCP/M 1.0 release has not yet been accepted or published. The current revision is recorded in [utility version metadata](../../metadata/utility-versions.tsv). The [engineering specification](../engineering/CRC-Specification.md) defines the interface; the [implementation record](../engineering/CRC-Implementation.md) preserves earlier revision-specific results. The [November 2 release conformance record](../engineering/Release-Conformance-2026-11-02.md) documents bounded candidate testing, not exhaustive qualification of every utility on both platforms.
 
 CRCKSUM answers two related questions: what check values identify these files, and do the files still agree with an earlier list? It calculates eight values: the original CP/M CRCK calculation, corrected CRCK, CHEK, CRC-32, SUM8, SUM16, KERM6 and KERM12. You can display them, save a list, or check a directory against a saved reference. No input file is altered.
 
@@ -40,7 +40,7 @@ CRCKSUM [options] [filespec ...] [options]
 | `/LEGACY` | Write historical CRCKLIST records and force historical CRCK alone. |
 | `/CHECK` | Verify against a reference discovered in each selected DU. |
 | `/CHECK=filename` | Verify against this exact list name in each selected DU. Supply a filename only. |
-| `/40` | Wrap table columns for a 40-column display. Saved lists are unchanged. |
+| `/40` | Display complete groups of two checksum columns within 40 columns. Saved lists are unchanged. |
 | `/HELP` | Display help without accessing files. |
 | `/VER` | Display the utility's version and revision without accessing files. |
 
@@ -97,7 +97,7 @@ The name and extension occupy separate fixed fields with no dot. An extensionles
 
 The column header identifies the calculations; the dash runs establish their positions. CRC reads data by columns, so an empty extension cannot be confused with a record count. Keep the header, separator and rows aligned if editing a list. The reader accepts algorithm columns in any order, blank lines, comments beginning with `;`, and repeated section headers. Unknown or duplicate columns, missing values and malformed records are reported rather than guessed.
 
-`/40` retains the table: filename and record count appear on the first row, and excess checksum columns wrap onto continuation rows aligned beneath the first checksum column. Headings and values use the same grouping. It changes screen presentation only. Saved lists retain the standard table, and `/LEGACY` retains its historical file layout.
+`/40` displays groups of two equal-width checksum columns. Each group contains its headings, eight-dash separators and values, with a blank line between groups. The filename and record count appear only in the first group; later groups align beneath the checksum columns. Algorithm selection and command-line order determine the groups. It changes screen presentation only. Saved lists retain the standard table, and `/LEGACY` retains its historical file layout.
 
 ### Saving master and local lists
 
