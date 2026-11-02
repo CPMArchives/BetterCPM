@@ -30,6 +30,7 @@ ECB             EQU     LY_SYS+080H
 
 START:                                  ; enter STAT utility
         CALL    UV_CHECK                ; standalone utility identity
+        CALL    CHECKSLASH              ; reject unknown slash options first
         XOR     A
         LD      (SETMODE),A
         LD      (OLDSP),SP
@@ -81,6 +82,46 @@ START:                                  ; enter STAT utility
         JP      C,BADFORM
         CALL    FILES
         JP      FINISH
+
+  ; Only token-leading slashes are switches; R/O and R/W remain operands.
+CHECKSLASH:
+        LD      A,(TAIL)
+        LD      B,A
+        LD      HL,TAIL+1
+        LD      D,1
+SLASHSCAN:
+        LD      A,B
+        OR      A
+        RET     Z
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,SLASHSPACE
+        CP      9
+        JR      Z,SLASHSPACE
+        CP      '/'
+        JR      NZ,SLASHWORD
+        LD      A,D
+        OR      A
+        JR      NZ,SLASHBAD
+SLASHWORD:
+        LD      D,0
+        JR      SLASHNEXT
+SLASHSPACE:
+        LD      D,1
+SLASHNEXT:
+        INC     HL
+        DJNZ    SLASHSCAN
+        RET
+SLASHBAD:
+        LD      DE,MSLASH
+        LD      C,9
+        CALL    BDOS
+        LD      DE,UH_TEXT
+        LD      C,9
+        CALL    BDOS
+        POP     HL                      ; discard CHECKSLASH return
+        RET                             ; return directly to CCP
+MSLASH: DB      13,10,'STAT: Invalid option.',13,10,'$'
 
   ; Remove leading spaces. HL/B remain the unconsumed command.
 
