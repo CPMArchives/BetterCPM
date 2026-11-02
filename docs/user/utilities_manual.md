@@ -68,8 +68,8 @@ In syntax descriptions, `file` and `offset` are placeholders to replace with you
 
 ## SEARCH file-content search
 
-**SEARCH 1.0 — included in newly generated Utilities candidates.** This chapter
-describes the interface qualified on both paired emulator targets.
+**SEARCH 1.0 (002-dev) — included in the candidate Utilities images.** This chapter
+describes the interface supported by the recorded paired-emulator component checks; final release acceptance remains separate.
 The [engineering specification](../engineering/SEARCH%20Specification.md)
 controls the design.
 
@@ -116,9 +116,13 @@ bytes. The entire command tail, including quotes, filespec and options, must fit
 within 127 bytes; consequently a 64-byte HEX pattern cannot fit on the command
 line. SEARCH does not silently shorten a pattern.
 
-The current CCP uppercases command tails, including quoted text. SEARCH cannot
-recover original case lost before it starts. On that CCP, use `/NOCASE` for
-ASCII text regardless of case, or `/NOTEXT` with HEX to specify exact bytes.
+The current release candidate preserves command-tail letter case (compatibility
+profile difference 0020), while default FCB filenames remain uppercase. SEARCH
+therefore receives the original quoted pattern case in this profile. An environment
+that uppercases command tails before launching SEARCH cannot recover the original
+pattern spelling; in that environment use `/NOCASE` for ASCII text regardless of
+case, or `/NOTEXT` with HEX to specify exact bytes. See the
+[release conformance record](../engineering/Release-Conformance-2026-11-02.md).
 A double quote ends the pattern; no embedded-quote escape is provided. A TAB
 inside quotes is literal pattern data; outside quotes it separates arguments.
 
@@ -208,9 +212,11 @@ archives, or replace text.
 
 ## COMPARE binary file comparison
 
-**Development candidate — included on the NOAH companion disk.** Remaining Model 4
-validation is waived for finalization and deferred to a later manual campaign. This chapter describes the
-implemented interface. The [engineering specification](../engineering/COMPARE%20Specification.md)
+**COMPARE 1.0 (004-dev) — included on the candidate NOAH companion disk.**
+This chapter describes the implemented interface. Earlier component-specific
+Model 4 deferrals remain in the engineering record; the November 2 native
+conformance batch is bounded evidence, not a blanket COMPARE qualification.
+Final release acceptance and fresh-package installation remain open. The [engineering specification](../engineering/COMPARE%20Specification.md)
 records the approved design decisions and narrow display layout.
 
 COMPARE compares exactly two files without changing either file, its directory
@@ -551,7 +557,7 @@ Ctrl-C cancels and reports an incomplete operation. Completed independent output
 
 ## MD5SUM file digests and verification lists
 
-**MD5SUM 1.0 development candidate.** MD5SUM is included in newly built candidate Utilities images. Focused native-build and cpmsim checks pass; the maintainer has waived and deferred the remaining Model 4 validation; full Model 4 qualification and paired release acceptance are not asserted. This is not a released-disk qualification claim. The [engineering specification](../engineering/MD5SUM-Specification.md) controls the design.
+**MD5SUM 1.0 (003-dev) — included in the candidate Utilities images.** The current revision is recorded in [utility version metadata](../../metadata/utility-versions.tsv). Component-specific tests and historical deferrals are documented in the [implementation notes](../engineering/MD5SUM-Implementation.md); the [November 2 release conformance record](../engineering/Release-Conformance-2026-11-02.md) does not establish exhaustive MD5SUM qualification on both platforms. Final release acceptance remains open. The [engineering specification](../engineering/MD5SUM-Specification.md) controls the design.
 
 MD5SUM calculates one MD5 digest for each selected file. Save the results, and you can later check whether the files still agree with that list. Its selection, master/local output, overwrite and checking behavior follows CRCKSUM. There is only one algorithm and one saved-list format.
 
@@ -679,12 +685,13 @@ The common entry syntax permits exchange of these lists. MD5SUM does not reprodu
 
 ## PATCH verified binary file patching
 
-**PATCH 1.0 development candidate.** Newly built Utilities packages include PATCH
-on the NOAH companion disk. Native/cross parity and cpmsim execution checks pass;
-Model 4 qualification and paired release acceptance remain pending. The
-[engineering specification](../engineering/PATCH-Specification.md) controls the
-interface, and [implementation notes](../engineering/PATCH-Implementation.md)
-record qualification limits.
+**PATCH 1.0 (002-dev) — included on the candidate NOAH companion disk.**
+The [engineering specification](../engineering/PATCH-Specification.md) controls
+the interface, and [implementation notes](../engineering/PATCH-Implementation.md)
+record component-specific qualification and historical limitations. The
+[November 2 release conformance record](../engineering/Release-Conformance-2026-11-02.md)
+does not establish exhaustive PATCH qualification on both platforms. Fresh-package
+installation and final release acceptance remain open.
 
 PATCH applies verified byte replacements from a patch instruction file to a
 binary input file, producing a separate output. The original input remains
