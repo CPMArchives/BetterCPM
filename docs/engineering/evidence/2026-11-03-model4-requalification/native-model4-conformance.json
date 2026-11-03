@@ -1,0 +1,170 @@
+{
+  "status": "PASS_REVIEWED_NATIVE_GROUPS",
+  "candidate_commit": "0bd7f127ebca849fe613c7a36b3cd9c1c38314a8",
+  "image_sha256": "83e9ac2daa566312d5825a39d0f0ac4e3ef04cf83446aac7b493db30640edc5d",
+  "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+  "passes": 269,
+  "failures": 0,
+  "errors": 0,
+  "source_capture": "model4-bios-requal-20261103-150136",
+  "cases": [
+    {
+      "command": "BDOSTEST /GROUP:REQUIRED",
+      "passes": 56,
+      "failures": 0,
+      "errors": 0,
+      "receipt": "conformance/bdostest/bdostest-1x6qd3w4/result.json",
+      "receipt_sha256": "15b3221fb133f25aa8f6c2131e56fedcffde0ca6977094b8f7a4bde54f12c25d"
+    },
+    {
+      "command": "BIOSTEST /SAFE",
+      "passes": 5,
+      "failures": 0,
+      "errors": 0,
+      "receipt": "conformance/bios-error/model4-returning-a23pvnht/result.json",
+      "receipt_sha256": "980e0143dbce8f78e8f2595b5a854ed5622f03afdc633b926144686334ba8d04"
+    },
+    {
+      "command": "ERRTEST /SAFE",
+      "passes": 5,
+      "failures": 0,
+      "errors": 0,
+      "receipt": "conformance/bios-error/model4-returning-a23pvnht/result.json",
+      "receipt_sha256": "980e0143dbce8f78e8f2595b5a854ed5622f03afdc633b926144686334ba8d04"
+    },
+    {
+      "command": "CCPTEST /GROUP:REQUIRED",
+      "passes": 12,
+      "failures": 0,
+      "errors": 0,
+      "receipt": "conformance/ccp/model4-returning-e2kxxvmc/result.json",
+      "receipt_sha256": "7ddea36e0d64b0b7a03123e28ee2ff639d173c1368eb6da7a3f0b753044bcd60"
+    },
+    {
+      "command": "ENTRYTST /GROUP:REQUIRED",
+      "passes": 25,
+      "failures": 0,
+      "errors": 0,
+      "receipt": "conformance/ccp/model4-returning-e2kxxvmc/result.json",
+      "receipt_sha256": "7ddea36e0d64b0b7a03123e28ee2ff639d173c1368eb6da7a3f0b753044bcd60"
+    },
+    {
+      "command": "DIRTEST /SAFE",
+      "passes": 49,
+      "failures": 0,
+      "errors": 0,
+      "receipt": "conformance/dirtest/dirtest-ylsvn1g2/result.json",
+      "receipt_sha256": "563308bd823e4baf9ce8b561e87468c498e501e92c1d310eefc49431c2dc08ca"
+    },
+    {
+      "command": "FILETEST /GROUP:REQUIRED",
+      "passes": 68,
+      "failures": 0,
+      "errors": 0,
+      "receipt": "conformance/filetest/filetest-4eri3u5i/result.json",
+      "receipt_sha256": "8d870e569e15dbf687695a103e6501a8650be9da60a0dbf549538d74bf558e7e"
+    },
+    {
+      "command": "RANDTEST /SAFE",
+      "passes": 39,
+      "failures": 0,
+      "errors": 0,
+      "receipt": "conformance/randtest/randtest-4euf0bpr/result.json",
+      "receipt_sha256": "f77d9677f8df9eebc2852ae57601efa030bd7dab3d6684560d961a3fc8e82818"
+    },
+    {
+      "command": "CPUTEST /ALL",
+      "passes": 2,
+      "failures": 0,
+      "errors": 0,
+      "receipt": "conformance/small/model4-returning-xom6hyet/result.json",
+      "receipt_sha256": "afac0bf015b92d2e24d622b71b263cc26984b8c7ec190092e59753411bc94284"
+    },
+    {
+      "command": "ECOTEST /GROUP:REQUIRED",
+      "passes": 1,
+      "failures": 0,
+      "errors": 0,
+      "receipt": "conformance/small/model4-returning-xom6hyet/result.json",
+      "receipt_sha256": "afac0bf015b92d2e24d622b71b263cc26984b8c7ec190092e59753411bc94284"
+    },
+    {
+      "command": "DISKTEST /SAFE",
+      "passes": 7,
+      "failures": 0,
+      "errors": 0,
+      "receipt": "conformance/small/model4-returning-xom6hyet/result.json",
+      "receipt_sha256": "afac0bf015b92d2e24d622b71b263cc26984b8c7ec190092e59753411bc94284"
+    }
+  ],
+  "data_audits": [
+    {
+      "receipt": "conformance/bdostest/bdostest-1x6qd3w4/data-audit.json",
+      "sha256": "f88fa3b558a3412f5dc6ebdb96910208f2ba7dbace8ffaac9727b338c40a0c2d"
+    },
+    {
+      "receipt": "conformance/dirtest/dirtest-ylsvn1g2/data-audit.json",
+      "sha256": "818301a34c6df392b3fb6f3f44ec5957250d3be5e9ca8ccb36fcf592c7950f79"
+    },
+    {
+      "receipt": "conformance/filetest/filetest-4eri3u5i/data-audit.json",
+      "sha256": "e99107ce963b629d330b62beb7c97b706f8872e5610eb39d5b20c38a26f5771d"
+    },
+    {
+      "receipt": "conformance/randtest/randtest-4euf0bpr/data-audit.json",
+      "sha256": "43b9df0169d5f5b08256b0867131cf8cefd2bec4009d214d81afc4272d2002e5"
+    }
+  ],
+  "scope": "Reviewed returning groups, summary screens and retained integrity audits; not all 627 cards or a complete scrolling transcript.",
+  "native_provider_checks": {
+    "status": "PASS",
+    "providers": [
+      {
+        "monitor": "ADM3A",
+        "status": "PASS",
+        "receipt": "monitors/adm3a-73n5u7r9/result.json",
+        "sha256": "a6ffb409ad0a1c10ec4c9ad040e8331c362f417d246c5289df5c53e2f6b4731c",
+        "stages": [
+          "loaded",
+          "position",
+          "reset",
+          "movement",
+          "video",
+          "keyboard",
+          "unloaded"
+        ],
+        "system_tracks_unchanged": true,
+        "filesystem_status": 0
+      },
+      {
+        "monitor": "ANSI",
+        "status": "PASS",
+        "receipt": "monitors/ansi-kp_1l8hk/result.json",
+        "sha256": "53dfb53b9c15276280531757d7cb40dd879a521d19657317b4c6baa260b39678",
+        "stages": [
+          "loaded",
+          "position",
+          "reset",
+          "unloaded"
+        ],
+        "system_tracks_unchanged": true,
+        "filesystem_status": 0
+      },
+      {
+        "monitor": "VT52",
+        "status": "PASS",
+        "receipt": "monitors/vt52-14315tfi/result.json",
+        "sha256": "825c4ba779572d724952188bb64d818ca1d13ccd15f0172d0f049db9c30e9a3a",
+        "stages": [
+          "loaded",
+          "position",
+          "reset",
+          "erase",
+          "unloaded"
+        ],
+        "system_tracks_unchanged": true,
+        "filesystem_status": 0
+      }
+    ]
+  }
+}

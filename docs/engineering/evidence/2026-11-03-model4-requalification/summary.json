@@ -1,0 +1,231 @@
+{
+  "status": "SELECTED_CPMSIM_AND_MODEL4_CHECKS_PASS_ACCEPTANCE_PENDING",
+  "source_commit": "0bd7f127ebca849fe613c7a36b3cd9c1c38314a8",
+  "integration_parent": "232f059a032b58a4079d394c35a81a164f393da3",
+  "branch": "codex/model4-requalification",
+  "previous_candidate_preserved": {
+    "source_commit": "6d6c103507ce8558700b3b8e412ac500de361226",
+    "model4_image_sha256": "4105ff45e411e25c0f3cd6024b970ddc231e6287086a553933e1fb577aaf2467"
+  },
+  "images": {
+    "trs80gp": {
+      "path": "build/model4-requalification-systems-v3/trs80gp/BetterCPM-Distribution-trs80gp-80T-DS-System.dmk",
+      "sha256": "83e9ac2daa566312d5825a39d0f0ac4e3ef04cf83446aac7b493db30640edc5d",
+      "source_commit": "0bd7f127ebca849fe613c7a36b3cd9c1c38314a8",
+      "bios_bytes": 757,
+      "bios_sha256": "c7b8150ce55ae151880de64ab38ed4f873d3080ea5589be090253a1461a8ab4c",
+      "validation": {
+        "filesystem": "PASS",
+        "file_integrity": "PASS",
+        "config_fingerprint": "PASS",
+        "boot": "PENDING manual execution; no automated Model 4 launch attempted"
+      },
+      "report_sha256": "666629919de8a0daa6de6c01a3b23ecbe193fedf6724f6275058ea1bb3e5dbbd"
+    },
+    "z80pack": {
+      "path": "build/model4-requalification-systems-v3/z80pack/BetterCPM-Distribution-z80pack-332K.dsk",
+      "sha256": "e44e39f9dd938da9039853296867ea8b099fc93e8389dd19d138794d7569169b",
+      "source_commit": "0bd7f127ebca849fe613c7a36b3cd9c1c38314a8",
+      "bios_bytes": 623,
+      "bios_sha256": "989ee082cfaa644cd89a4b031198dd6a01fc35fb923978fb06d9b39c569ff8c2",
+      "validation": {
+        "filesystem": "PASS",
+        "file_integrity": "PASS",
+        "config_fingerprint": "PASS",
+        "boot": "PASS"
+      },
+      "report_sha256": "4754a1ac941a9311430127bbdd5583124b16c72a094a780834fe464434232ae7"
+    }
+  },
+  "cpmsim_returning": {
+    "groups": [
+      {
+        "program": "BIOSTEST",
+        "exit_code": 0,
+        "log": "build/model4-requalification-results/cpmsim-returning/BIOSTEST.log",
+        "counts": {
+          "-": 30,
+          "O": 11,
+          "P": 5
+        },
+        "failed_or_error_rows": [],
+        "report": "build/model4-requalification-results/cpmsim-returning/BIOSTEST/biostest-y7wzlw2b/result.json",
+        "status": "PASS_SELECTED_GROUP"
+      },
+      {
+        "program": "ERRTEST",
+        "exit_code": 0,
+        "log": "build/model4-requalification-results/cpmsim-returning/ERRTEST.log",
+        "counts": {
+          "-": 26,
+          "O": 12,
+          "P": 5
+        },
+        "failed_or_error_rows": [],
+        "report": "build/model4-requalification-results/cpmsim-returning/ERRTEST/errtest-0zasbf_a/result.json",
+        "status": "PASS_SELECTED_GROUP"
+      },
+      {
+        "program": "ENTRYTST",
+        "exit_code": 0,
+        "log": "build/model4-requalification-results/cpmsim-returning/ENTRYTST.log",
+        "counts": {
+          "-": 13,
+          "P": 25
+        },
+        "failed_or_error_rows": [],
+        "report": "build/model4-requalification-results/cpmsim-returning/ENTRYTST/entrytst-sqjr9eac/result.json",
+        "status": "PASS_SELECTED_GROUP"
+      },
+      {
+        "program": "CCPTEST",
+        "exit_code": 0,
+        "log": "build/model4-requalification-results/cpmsim-returning/CCPTEST.log",
+        "counts": {
+          "-": 29,
+          "P": 12
+        },
+        "failed_or_error_rows": [],
+        "report": "build/model4-requalification-results/cpmsim-returning/CCPTEST/ccptest-iay5q2ma/result.json",
+        "status": "PASS_SELECTED_GROUP"
+      },
+      {
+        "program": "DISKTEST",
+        "exit_code": 0,
+        "log": "build/model4-requalification-results/cpmsim-returning/DISKTEST.log",
+        "counts": {
+          "P": 7
+        },
+        "failed_or_error_rows": [],
+        "report": "build/model4-requalification-results/cpmsim-returning/DISKTEST/disktest-ee_e0xs3/result.json",
+        "status": "PASS_SELECTED_GROUP"
+      },
+      {
+        "program": "FILETEST",
+        "exit_code": 0,
+        "log": "build/model4-requalification-results/cpmsim-returning/FILETEST.log",
+        "counts": {
+          "P": 28
+        },
+        "failed_or_error_rows": [],
+        "report": "build/model4-requalification-results/cpmsim-returning/FILETEST/filetest-e3sxt8y5/result.json",
+        "status": "PASS_SELECTED_GROUP"
+      },
+      {
+        "program": "RANDTEST",
+        "exit_code": 0,
+        "log": "build/model4-requalification-results/cpmsim-returning/RANDTEST.log",
+        "counts": {
+          "-": 2,
+          "P": 39
+        },
+        "failed_or_error_rows": [],
+        "report": "build/model4-requalification-results/cpmsim-returning/RANDTEST/randtest-s3uftu4w/result.json",
+        "status": "PASS_SELECTED_GROUP"
+      }
+    ],
+    "counts": {
+      "-": 100,
+      "O": 23,
+      "P": 121
+    },
+    "scope": "Seven selected groups; observations and exclusions are not passes."
+  },
+  "cpmsim_monitors": [
+    {
+      "monitor": "ADM3A",
+      "status": "PASS",
+      "result": "build/model4-requalification-results/cpmsim-monitors-v3/adm3a-12fsxl2j/result.json",
+      "sha256": "07088623bd0758078ded337e097b69f6cabc1b9cd52f8d5ee74c992397c1b78e"
+    },
+    {
+      "monitor": "ANSI",
+      "status": "PASS",
+      "result": "build/model4-requalification-results/cpmsim-monitors-v3/ansi-52iwirc4/result.json",
+      "sha256": "f2320151cdb1eeb986ef434cdfa5a89d6e18c11eb18755959b3d6ce93ce0ce44"
+    },
+    {
+      "monitor": "VT52",
+      "status": "PASS",
+      "result": "build/model4-requalification-results/cpmsim-monitors-v3/vt52-73vo0rgg/result.json",
+      "sha256": "5406a54b721f88c57f3b61ab44808c3ac0990e0070993a4b3e830ea85bbf0afa"
+    }
+  ],
+  "cpmsim_batch": {
+    "status": "PASS",
+    "cases": [
+      {
+        "xsub": false,
+        "status": "PASS"
+      },
+      {
+        "xsub": true,
+        "status": "PASS"
+      }
+    ]
+  },
+  "host_instruction_checks": {
+    "status": "PASS",
+    "commands": [
+      "tools/test_model4_keyboard_case.py",
+      "tools/test_bios.py",
+      "tools/test_monitor_bios_hooks.py",
+      "tools/test_monitor_bios_hooks.py --z80pack-build build/z80pack"
+    ],
+    "executed_in": "build/model4-requalification-systems-v3/work/z80pack"
+  },
+  "rom_reconciliation": {
+    "copy_sources": {
+      "bdos-live-state": "E3BC",
+      "bios-disk-state": "EB64"
+    },
+    "packed_reference_words": 788,
+    "config_reference_words": 105,
+    "unexplained_changed_bytes": 0,
+    "unresolved_targets": 0,
+    "production_source_changed": false,
+    "protected_xip_execution_qualified": false
+  },
+  "model4_native_preflight": {
+    "status": "BLOCKED_OR_INCOMPLETE",
+    "candidate_commit": "0bd7f127ebca849fe613c7a36b3cd9c1c38314a8",
+    "baseline_sha256": "83e9ac2daa566312d5825a39d0f0ac4e3ef04cf83446aac7b493db30640edc5d",
+    "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+    "runs": [],
+    "scope": "Reviewed native returning groups only. Not all 627 cards; exclusions, devices and other external procedures remain separate.",
+    "error": "macOS LaunchServices permission denied (BOOTSTRAP_NOT_PRIVILEGED), code 1100. trs80gp was not started: AppKit application registration cannot complete in this execution context. Permit this launch through the host approval mechanism or run the same test from a normal Terminal. This is a host launch failure, not a Model 4 test result."
+  },
+  "limits": [
+    "Ordinary physical CAPS quick-tap behavior remains unconfirmed.",
+    "Previous manual keyboard/application evidence used the same BIOS but a different image.",
+    "Official BIOS component revision and release acceptance remain maintainer decisions.",
+    "269 native assertions cover the reviewed batch, not all 627 cards or every physical device."
+  ],
+  "unscored_attempts": [
+    "systems v1 stopped on stale ROM template-source addresses.",
+    "systems v2 stopped on old exact relocation-count expectations.",
+    "monitor attempts v1/v2 used relative paths unsuitable for the helper working directory; final v3 used absolute paths and passed."
+  ],
+  "model4_native_conformance": {
+    "status": "PASS_REVIEWED_NATIVE_GROUPS",
+    "passes": 269,
+    "failures": 0,
+    "errors": 0,
+    "image_sha256": "83e9ac2daa566312d5825a39d0f0ac4e3ef04cf83446aac7b493db30640edc5d",
+    "receipt": "native-model4-conformance.json"
+  },
+  "model4_native_providers": {
+    "status": "PASS",
+    "providers": [
+      "ADM3A",
+      "ANSI",
+      "VT52"
+    ],
+    "receipt": "native-model4-conformance.json"
+  },
+  "native_archive": {
+    "file": "native-qualification-evidence.tar.gz",
+    "sha256": "d361698111af870e320eaf24889a9d8907c157e8e5934b4b548ae6c50d5dc152",
+    "members": 132
+  }
+}
