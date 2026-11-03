@@ -52,6 +52,20 @@
       ]
     }
   },
-  "installation_cold_boot": "pending independent integration verification",
-  "package_freeze": "on hold"
+  "installation_cold_boot": {
+    "status": "PASS both platforms",
+    "source_commit": "a54dc243b549d54154488d31a2b318b54d8d6bfc",
+    "receipts": "2026-11-04-bcpm780/",
+    "final_config_sha256": {
+      "cpmsim": "29db48952a559454003b92874740cd7f15b53451f9cf9876b893f06b1820919b",
+      "model4": "4b8f39baa0fa3ac2f57a580f815d49c308293a766a716038fcf96b6de225793a"
+    },
+    "note": "Earlier entry109 receipts above precede identity-only correction; final installation receipts use corrected hashes."
+  },
+  "package_freeze": "on hold",
+  "final_fdb": {
+    "bytes": 19714,
+    "sha256": "c38439969b3fe1fc2a9a9fbc9a73b0c091b4bd29005f659fe58586c1e031616c",
+    "tests": "Integration workstream: editor, session/recovery, all40 roundtrip, native name lookup/refusal and CONFIG CLI regressions pass."
+  }
 }

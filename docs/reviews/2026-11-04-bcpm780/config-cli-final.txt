@@ -1,0 +1,1 @@
+PASS: logical parser/quote bounds, no side effects on invalid tails, exact case-insensitive/ambiguous names, backend rejection, unbind/reset, no-prompt CLI catalogue errors

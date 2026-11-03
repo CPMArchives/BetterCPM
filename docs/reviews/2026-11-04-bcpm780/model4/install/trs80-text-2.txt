@@ -1,0 +1,24 @@
+
+                Type TYPE README.TXT for more
+|                                                            |
+ - - -                                                  - - -
+
+A0>CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT="BETTERCP/M MODEL 4 SYSTEM 780K"
+
+Disk configuration changed (until cold boot).
+
+A0>DIR B:
+
+B0: README   TXT : STARTUP  SUB : DIR      COM : ERA      COM
+B0: TYPE     COM : REN      COM : VER      COM : COPY     COM
+B0: CONFIG   COM : DUP      COM : TIME     COM : SYSGEN   COM
+B0: STAT     COM : SUBMIT   COM : CPX      COM : RSX      COM
+B0: DISK     FDB : RCP      CPX : FREHDCLK RSX : R3PACK   RSX
+B0: PIP      COM : ED       COM : ADM3A    RSX : ADMTST   COM
+B0: VT52     RSX : VT52TST  COM : ANSI     RSX : ANSITST  COM
+B0: M4SCRN   RSX : P2DOS    RSX : KEEP     TXT
+
+A0>TYPE B:KEEP.TXT
+SHIPPED TOOLS INSTALL PRESERVES THIS FILE
+
+A0>

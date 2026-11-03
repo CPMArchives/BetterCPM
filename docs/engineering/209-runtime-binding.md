@@ -28,7 +28,7 @@ CONFIG's prior rejection of the catalogue's bootstrap cylinder representation.
 - `tools/test_fdb_editor.py` checks the shared editor Apply path, preserving the
   other drives and original catalogue. Existing capture/edit/apply tests remain.
 - Session and round-trip tests cover recoverable replacement and native binary/
-  text identity. Current FDB.COM is 19704 bytes; measured stack use is 34 bytes
+  text identity. Current FDB.COM is 19714 bytes; measured stack use is 34 bytes
   and the standard TPA margin remains 3328 bytes.
 - `tools/qualify_fdb_session.py --config-read` imports and saves entry 109, then
   selects its display name through freshly built CONFIG and reads KNOWN.TXT

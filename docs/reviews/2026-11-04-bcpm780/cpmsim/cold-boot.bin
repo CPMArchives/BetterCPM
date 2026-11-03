@@ -1,0 +1,120 @@
+
+#######  #####    ###            #####    ###   #     #
+     #  #     #  #   #          #     #    #    ##   ##
+    #   #     # #     #         #          #    # # # #
+   #     #####  #     #  #####   #####     #    #  #  #
+  #     #     # #     #               #    #    #     #
+ #      #     #  #   #          #     #    #    #     #
+#######  #####    ###            #####    ###   #     #
+
+Release 1.39, Copyright (C) 1987-2025 by Udo Munk and others
+
+CPU speed is unlimited, CPU executes undocumented instructions
+
+Booting...
+
+
+A0>:VER /BANNER
+
+ - - -                                                  - - - 
+|                                                            |
+|                         BetterCP/M                         |
+                         Core OS 1.0
+
+                  CP/M 2.2 Compatible System
+
+                Type TYPE README.TXT for more
+|                                                            |
+ - - -                                                  - - - 
+
+A0>A0>_ A0>A0>T_ A0>TA0>TY_ A0>TYA0>TYP_ A0>TYPA0>TYPE_ A0>TYPEA0>TYPE _ A0>TYPE A0>TYPE K_ A0>TYPE KA0>TYPE KE_ A0>TYPE KEA0>TYPE KEE_ A0>TYPE KEEA0>TYPE KEEP_ A0>TYPE KEEPA0>TYPE KEEP._ A0>TYPE KEEP.A0>TYPE KEEP.T_ A0>TYPE KEEP.TA0>TYPE KEEP.TX_ A0>TYPE KEEP.TXA0>TYPE KEEP.TXT_ A0>TYPE KEEP.TXTA0>TYPE KEEP.TXT 
+NORMALIZED BINDING INSTALL PRESERVES THIS FILE
+
+A0>A0>_ A0>A0>C_ A0>CA0>CO_ A0>COA0>CON_ A0>CONA0>CONF_ A0>CONFA0>CONFI_ A0>CONFIA0>CONFIG_ A0>CONFIGA0>CONFIG _ A0>CONFIG A0>CONFIG /_ A0>CONFIG /A0>CONFIG /S_ A0>CONFIG /SA0>CONFIG /SH_ A0>CONFIG /SHA0>CONFIG /SHO_ A0>CONFIG /SHOA0>CONFIG /SHOW_ A0>CONFIG /SHOWA0>CONFIG /SHOW 
+Live IOBYTE (decimal): 149
+Saved disk-boot IOBYTE (decimal): 149
+CONFIG 1.0 (018-dev)
+Active physical-drive profiles:
+0
+[ A ] Type of drive (inches):     5
+[ B ] Number of tracks:           40
+[ C ] Number of sides:            2
+[ D ] Step rate (ms):             6
+[ E ] Motor spin-up (1/4 sec):    0
+[ F ] Head settling time (ms):    0
+1
+[ A ] Type of drive (inches):     5
+[ B ] Number of tracks:           40
+[ C ] Number of sides:            2
+[ D ] Step rate (ms):             6
+[ E ] Motor spin-up (1/4 sec):    0
+[ F ] Head settling time (ms):    0
+2
+[ A ] Type of drive (inches):     5
+[ B ] Number of tracks:           40
+[ C ] Number of sides:            2
+[ D ] Step rate (ms):             6
+[ E ] Motor spin-up (1/4 sec):    0
+[ F ] Head settling time (ms):    0
+3
+[ A ] Type of drive (inches):     5
+[ B ] Number of tracks:           40
+[ C ] Number of sides:            2
+[ D ] Step rate (ms):             6
+[ E ] Motor spin-up (1/4 sec):    0
+[ F ] Head settling time (ms):    0
+Active logical-drive bindings:
+A: 0: Current BIOS format (not listed in format catalogue)
+B: 1: California Computer Systems     
+C: 2: California Computer Systems     
+D: 3: California Computer Systems     
+Saved cold-start command: SUBMIT STARTUP
+Pending changes: none (new invocation).
+Saved drive defaults (system disk A:):
+Saved physical-drive profiles:
+0
+[ A ] Type of drive (inches):     5
+[ B ] Number of tracks:           40
+[ C ] Number of sides:            2
+[ D ] Step rate (ms):             6
+[ E ] Motor spin-up (1/4 sec):    0
+[ F ] Head settling time (ms):    0
+1
+[ A ] Type of drive (inches):     5
+[ B ] Number of tracks:           40
+[ C ] Number of sides:            2
+[ D ] Step rate (ms):             6
+[ E ] Motor spin-up (1/4 sec):    0
+[ F ] Head settling time (ms):    0
+2
+[ A ] Type of drive (inches):     5
+[ B ] Number of tracks:           40
+[ C ] Number of sides:            2
+[ D ] Step rate (ms):             6
+[ E ] Motor spin-up (1/4 sec):    0
+[ F ] Head settling time (ms):    0
+3
+[ A ] Type of drive (inches):     5
+[ B ] Number of tracks:           40
+[ C ] Number of sides:            2
+[ D ] Step rate (ms):             6
+[ E ] Motor spin-up (1/4 sec):    0
+[ F ] Head settling time (ms):    0
+Saved logical-drive bindings:
+A: 0: Current BIOS format (not listed in format catalogue)
+B: 1: California Computer Systems     
+C: 2: California Computer Systems     
+D: 3: California Computer Systems     
+
+A0>A0>_ A0>A0>R_ A0>RA0>RS_ A0>RSA0>RSX_ A0>RSXA0>RSX _ A0>RSX A0>RSX L_ A0>RSX LA0>RSX LI_ A0>RSX LIA0>RSX LIS_ A0>RSX LISA0>RSX LIST_ A0>RSX LISTA0>RSX LIST 
+
+No RSXs loaded
+
+TPA available: 53K
+
+A0>A0>_ A0>A0>B_ A0>BA0>BY_ A0>BYA0>BYE_ A0>BYEA0>BYE _ A0>BYE A0>BYE /_ A0>BYE /A0>BYE /Y_ A0>BYE /YA0>BYE /Y 
+
+System halted
+I/O ran for 50 ms, waited for 0 ms
+CPU executed 56598129 t-states in 17 ms
+Clock frequency 3216.71 MHz

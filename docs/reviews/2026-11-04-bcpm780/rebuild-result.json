@@ -1,0 +1,14 @@
+{
+  "cpmsim": {
+    "sha256": "29db48952a559454003b92874740cd7f15b53451f9cf9876b893f06b1820919b",
+    "bytes": 17236,
+    "source_commit": "a54dc243b549d54154488d31a2b318b54d8d6bfc",
+    "layout_check": "PASS"
+  },
+  "model4": {
+    "sha256": "4b8f39baa0fa3ac2f57a580f815d49c308293a766a716038fcf96b6de225793a",
+    "bytes": 17236,
+    "source_commit": "a54dc243b549d54154488d31a2b318b54d8d6bfc",
+    "layout_check": "PASS"
+  }
+}
