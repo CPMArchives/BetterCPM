@@ -119,9 +119,10 @@
     "subsystem:BDOS": [
       "build/bdos/bdos.bin"
     ],
-    "subsystem:BIOS": [
-      "build/bios/bios.bin"
-    ],
+    "subsystem:BIOS": {
+      "trs80gp": ["build/bios/bios.bin"],
+      "z80pack": ["build/z80pack/bios.bin"]
+    },
     "subsystem:CCP": [
       "build/ccp/ccp.rlm"
     ],

@@ -752,22 +752,23 @@ class Z80:
                 target = self.word(self.pc)
                 self.pc += 2
                 self.bc = self.word(target)
-            elif op == 0xED and self.mem[self.pc] == 0xB0:  # LDIR
+            elif op == 0xED and self.mem[self.pc] in (0xB0, 0xB8):  # LDIR/LDDR
+                prefix = self.pc - 1
+                repeat = self.mem[self.pc]
+                step = 1 if repeat == 0xB0 else -1
                 self.pc += 1
-                count = self.bc
-                for _ in range(count):
+                while True:
                     self.mem[self.de] = self.mem[self.hl]
-                    self.hl = (self.hl + 1) & 0xFFFF
-                    self.de = (self.de + 1) & 0xFFFF
-                self.bc = 0
-            elif op == 0xED and self.mem[self.pc] == 0xB8:  # LDDR
-                self.pc += 1
-                count = self.bc
-                for _ in range(count):
-                    self.mem[self.de] = self.mem[self.hl]
-                    self.hl = (self.hl - 1) & 0xFFFF
-                    self.de = (self.de - 1) & 0xFFFF
-                self.bc = 0
+                    self.hl = (self.hl + step) & 0xFFFF
+                    self.de = (self.de + step) & 0xFFFF
+                    self.bc = (self.bc - 1) & 0xFFFF
+                    if self.bc == 0:
+                        break
+                    # A repeat fetches the instruction again. A copy through
+                    # its own code can end the transfer before BC reaches zero.
+                    if self.mem[prefix] != op or self.mem[prefix + 1] != repeat:
+                        self.pc = prefix
+                        break
             elif op == 0xC0:            # RET NZ
                 if not self.z:
                     self.pc = self.pop()

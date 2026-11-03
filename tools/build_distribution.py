@@ -107,14 +107,6 @@ def current_build(work, target, identity, reuse):
         raise ValueError(f'{root} exists; select a fresh --work or use --reuse-work')
     root.mkdir(parents=True)
     stage_sources(root)
-    # Break the existing clean-build metadata cycle without changing development builders.
-    bootstrap = ("import sys;sys.path.insert(0,'tools');"
-                 "from pathlib import Path;from build_trs80_boot import assemble,SOURCE,BUILD,BOOT_ADDRESS,STAGE1_ADDRESS;"
-                 "a=Path.home()/'bin/z80asm';"
-                 "assemble(a,SOURCE/'boot.mac',BUILD/'boot.bin',BOOT_ADDRESS);"
-                 "assemble(a,SOURCE/'stage1.mac',BUILD/'stage1.bin',STAGE1_ADDRESS)")
-    run([sys.executable, '-c', bootstrap], root, root/'bootstrap-build.log')
-    run([sys.executable, 'tools/build_rsxselect.py'], root, root/'selector-build.log')
     # SYSBUILD utility metadata currently depends on the common system build.
     run([sys.executable, 'tools/build_complete_system.py'], root, root / 'common-build.log')
     if target == 'z80pack':
