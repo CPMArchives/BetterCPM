@@ -63,7 +63,7 @@ class PackageNotices(unittest.TestCase):
                         for name in ('COPYING', 'NOTICE'):
                             self.assertEqual(archive.read(package+'/licenses/BetterCPM/'+name), tracked[name])
                         self.assertEqual(archive.read(package+'/docs/LICENSING.md'), tracked['docs/LICENSING.md'])
-                        self.assertEqual('Montezuma Micro DISK.FDF — distribution rights undetermined' in notice,
+                        self.assertEqual('Montezuma Micro DISK.FDF and the 16 disk-format definitions recovered from CONFIG.COM — distribution rights undetermined' in notice,
                                          package != 'documentation')
                         self.assertEqual('Montezuma Micro disk-format data' in notice,
                                          package != 'documentation')

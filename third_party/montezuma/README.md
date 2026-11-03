@@ -33,16 +33,15 @@ and [the media record](../../docs/engineering/186%20FDB%20Build%20and%20Media%20
 
 ### Redistribution review for 1.0
 
-**Montezuma Micro DISK.FDF — distribution rights undetermined.**
-The maintainer accepts inclusion of the external file identified above in
-1.0 with this notice because it records technical disk-format parameters.
-Retain the notice with the original file and identify the external entries
-where they are compiled into the System disk catalogue. No rightsholder
-grant has been verified. Keep the external file outside the project licenses.
+**Montezuma Micro DISK.FDF and the 16 disk-format definitions recovered from CONFIG.COM — distribution rights undetermined.**
 
-The decision covers the external catalogue. The 16 definitions recovered
-from CONFIG, including their source and compiled representations, remain
-under separate review. Montezuma utilities and disassemblies remain excluded.
+The maintainer accepts these data for 1.0 because they describe functional
+disk parameters. Preserve the notice and provenance with the external file,
+the internal definitions in `DISK-INT.FDF` and `metadata/mm-builtin-formats.json`,
+the migrated catalogue and the compiled `DISK.FDB`. No rightsholder grant has
+been verified. The project licenses do not cover these historical data.
+Montezuma utility binaries and disassemblies remain excluded, including in
+nested source archives.
 
 The retained 2001/2022 Digital Research correspondence does not establish a
 grant of Montezuma's separate contributions. The supplied 2005 MMCPM232
@@ -54,8 +53,7 @@ vol. 3, no. 11, p. 3, reports that Montezuma Micro president John Lancione
 and CN80 agreed to exclusive CN80 distribution of the Model 4 CP/M system. This is a research lead about historical distribution. It establishes
 neither present ownership nor downstream permission for this project.
 
-Package freeze remains on hold pending the internal-definition decision
-and remaining release checks.
+Package freeze remains on hold pending the remaining release checks.
 
 ### Customer update service and format decisions
 
@@ -108,4 +106,4 @@ These are third-party reference materials, not original BetterCP/M code.
 
 ## Agreed project license boundary
 
-Original BetterCP/M software and reusable code examples use GPL-2.0-or-later; original documentation prose and illustrations use CC BY 4.0. Neither grant relicenses the historical materials in this directory. See [project licensing](../../docs/LICENSING.md) and the [permission investigation](../../docs/engineering/Montezuma-Permission-Review-2026-11-03.md). The external catalogue carries the notice above.
+Original BetterCP/M software and reusable code examples use GPL-2.0-or-later; original documentation prose and illustrations use CC BY 4.0. Neither grant relicenses the historical materials in this directory. See [project licensing](../../docs/LICENSING.md) and the [permission investigation](../../docs/engineering/Montezuma-Permission-Review-2026-11-03.md). Both sources of format data carry the notice above.

@@ -8,7 +8,7 @@ import tarfile
 import zipfile
 
 
-# Keep the catalogue inputs visible for the separate, unresolved 1.0 review.
+# Keep the accepted format data and their provenance in release source kits.
 MM_REFERENCE_DATA = {'readme.md', 'config-extraction-manifest.json', 'disk.fdf', 'disk-int.fdf'}
 MM_ANALYSIS = {'disk-format-mm-config-analysis.md', 'mm-config-reverse-engineering.md'}
 MM_REFERENCE = 'third_party/montezuma/'

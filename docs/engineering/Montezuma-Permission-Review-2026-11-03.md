@@ -1,6 +1,6 @@
 # Montezuma permission investigation — 3 November 2026
 
-**External DISK.FDF accepted for 1.0 with the notice “distribution rights undetermined.”** The 16 CONFIG-derived definitions remain under separate review. Package freeze is on hold.
+**The maintainer accepts the external DISK.FDF and all 16 CONFIG-derived definitions for 1.0 with the notice “distribution rights undetermined.”** Package freeze is on hold.
 Read-only public-source research; no person or archive has been contacted.
 No current rights-holder identity or chain of title is established here.
 
@@ -35,8 +35,8 @@ not proof that permission cannot exist. Retain the full search/retrieval limits.
 
 ## Maintainer decision and current exposure
 
-The maintainer accepts inclusion of the 10,752-byte external catalogue with
-the stated notice because it describes technical disk-format parameters.
+The maintainer accepts inclusion of the 10,752-byte external catalogue and the 16
+definitions recovered from CONFIG.COM because they describe technical disk parameters.
 A technical fact and a compilation's original selection or arrangement are
 distinct copyright questions. The project records an inclusion decision
 without asserting public-domain status, ownership, or a rightsholder grant.
@@ -44,6 +44,6 @@ See [U.S. Copyright Office Circular 14](https://www.copyright.gov/circs/circ14.p
 
 The Source and nested Utilities kits carry the external file. Both System
 disks carry 91 external entries in DISK.FDB alongside 16 recovered from
-CONFIG. Decide those 16 separately before freeze. The package selectors
+CONFIG.COM. The notice covers both sets of data and their compiled forms. The package selectors
 exclude the historical utilities and disassemblies. See the
 [file identity and provenance](../../third_party/montezuma/README.md).

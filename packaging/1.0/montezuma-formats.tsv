@@ -95,19 +95,19 @@ MMF093	Montezuma Micro CP/M v 1.26 & 1.30 (40T, SS, DD, 170K)	DISK.FDF	External 
 MMF094	Montezuma Micro CP/M v 1.26 & 1.30 (40T, DS, DD, 350K, *)	DISK.FDF	External FDF accepted with notice: distribution rights undetermined	—
 MMF095	Montezuma Micro CP/M v 1.32 (40T/256S, DS, DD, 350K, *)	DISK.FDF	External FDF accepted with notice: distribution rights undetermined	—
 MMF096	Montezuma Micro CP/M v 1.42 & 1.44 (40T, DS, DD, 342K)	DISK.FDF	External FDF accepted with notice: distribution rights undetermined	—
-MMI001	Montezuma Micro Standard SYSTEM (40T, SS, DD, 170K)	CONFIG	Independently source or obtain separate clearance	—
-MMI002	Montezuma Micro Standard DATA (40T, SS, DD, 200K)	CONFIG	Independently source or obtain separate clearance	—
-MMI003	Montezuma Micro Standard DS SYSTEM (40T, DS, DD, 350K)	CONFIG	Independently source or obtain separate clearance	—
-MMI004	Montezuma Micro Standard DS DATA (40T, DS, DD, 400K)	CONFIG	Independently source or obtain separate clearance	—
-MMI005	Montezuma Micro 80T SYSTEM (80T, SS, DD, 350K)	CONFIG	Independently source or obtain separate clearance	—
-MMI006	Montezuma Micro 80T DATA (80T, SS, DD, 400K)	CONFIG	Independently source or obtain separate clearance	—
-MMI007	Montezuma Micro 80T DS SYSTEM (80T, DS, DD, 710K)	CONFIG	Independently source or obtain separate clearance	—
-MMI008	Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)	CONFIG	Independent review definition tested; production catalogue still uses historical input	Model 4 Work and Utilities
-MMI009	Montezuma Micro Extended SYSTEM (40T, SS, DD, 190K)	CONFIG	Independently source or obtain separate clearance	—
-MMI010	Montezuma Micro Extended DS SYSTEM (40T, DS, DD, 390K)	CONFIG	Independently source or obtain separate clearance	—
-MMI011	Montezuma Micro Extended 80T SYSTEM (80T, SS, DD, 390K)	CONFIG	Independently source or obtain separate clearance	—
-MMI012	Montezuma Micro Extended 80T DS SYSTEM (80T, DS, DD, 790K)	CONFIG	Independent review definition tested; production catalogue still uses historical input	790K compatibility media only; release System uses BetterCP/M 780K
-MMI013	Montezuma Micro SUPER DATA (40T, SS, DD, 220K)	CONFIG	Independently source or obtain separate clearance	—
-MMI014	Montezuma Micro SUPER DS DATA (40T, DS, DD, 440K)	CONFIG	Independently source or obtain separate clearance	—
-MMI015	Montezuma Micro 80T SUPER DATA (80T, SS, DD, 440K)	CONFIG	Independently source or obtain separate clearance	—
-MMI016	Montezuma Micro 80T SUPER DS DATA (80T, DS, DD, 880K)	CONFIG	Independently source or obtain separate clearance	—
+MMI001	Montezuma Micro Standard SYSTEM (40T, SS, DD, 170K)	CONFIG	CONFIG definition accepted with notice: distribution rights undetermined	—
+MMI002	Montezuma Micro Standard DATA (40T, SS, DD, 200K)	CONFIG	CONFIG definition accepted with notice: distribution rights undetermined	—
+MMI003	Montezuma Micro Standard DS SYSTEM (40T, DS, DD, 350K)	CONFIG	CONFIG definition accepted with notice: distribution rights undetermined	—
+MMI004	Montezuma Micro Standard DS DATA (40T, DS, DD, 400K)	CONFIG	CONFIG definition accepted with notice: distribution rights undetermined	—
+MMI005	Montezuma Micro 80T SYSTEM (80T, SS, DD, 350K)	CONFIG	CONFIG definition accepted with notice: distribution rights undetermined	—
+MMI006	Montezuma Micro 80T DATA (80T, SS, DD, 400K)	CONFIG	CONFIG definition accepted with notice: distribution rights undetermined	—
+MMI007	Montezuma Micro 80T DS SYSTEM (80T, DS, DD, 710K)	CONFIG	CONFIG definition accepted with notice: distribution rights undetermined	—
+MMI008	Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)	CONFIG	CONFIG definition accepted with notice: distribution rights undetermined; independent definition tested	Model 4 Work and Utilities
+MMI009	Montezuma Micro Extended SYSTEM (40T, SS, DD, 190K)	CONFIG	CONFIG definition accepted with notice: distribution rights undetermined	—
+MMI010	Montezuma Micro Extended DS SYSTEM (40T, DS, DD, 390K)	CONFIG	CONFIG definition accepted with notice: distribution rights undetermined	—
+MMI011	Montezuma Micro Extended 80T SYSTEM (80T, SS, DD, 390K)	CONFIG	CONFIG definition accepted with notice: distribution rights undetermined	—
+MMI012	Montezuma Micro Extended 80T DS SYSTEM (80T, DS, DD, 790K)	CONFIG	CONFIG definition accepted with notice: distribution rights undetermined; independent definition tested	790K compatibility media only; release System uses BetterCP/M 780K
+MMI013	Montezuma Micro SUPER DATA (40T, SS, DD, 220K)	CONFIG	CONFIG definition accepted with notice: distribution rights undetermined	—
+MMI014	Montezuma Micro SUPER DS DATA (40T, DS, DD, 440K)	CONFIG	CONFIG definition accepted with notice: distribution rights undetermined	—
+MMI015	Montezuma Micro 80T SUPER DATA (80T, SS, DD, 440K)	CONFIG	CONFIG definition accepted with notice: distribution rights undetermined	—
+MMI016	Montezuma Micro 80T SUPER DS DATA (80T, DS, DD, 880K)	CONFIG	CONFIG definition accepted with notice: distribution rights undetermined	—
