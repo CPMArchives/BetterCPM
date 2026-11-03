@@ -135,14 +135,27 @@ the command prompt), followed by rejected B: commands. The runner had also
 constructed B: with the reserved-track system layout; configured B: requires
 the standard 800K data layout, including its sector order and OFF=0.
 
-`tools/test_ui_integration_media.py` now uses the existing FDF data-disk
+`tools/test_ui_integration_media.py` uses the existing FDF data-disk
 conversion and cpmtools path for B:, independently reads every payload back
-after conversion, and checks the filesystem before launch. A private A:
-STARTUP.SUB runs a blocking `UIREADY.COM` sentinel after loading the existing
-screen/terminal modules. Input begins only after that sentinel is visible.
-Captured help and version output must be present before native execution can
-pass. Native launch/capture failures receive a FAIL receipt. Utility binaries,
-core code and reference media are unchanged.
+after conversion, and checks the filesystem before launch. The first correction
+used a blocking `UIREADY.COM` startup sentinel, but continued to wait on generic
+`A0>` text between utility launches. The second Terminal attempt at
+`ui-model4-fixed-20261103-115606` timed out after 600 seconds and seven captures.
+Its captures show alternate commands being lost while the runner matched an
+older prompt on screen. Version commands executed; this was not a completed
+query or choice campaign.
+
+The current runner uses the established SUBMIT/marker protocol from
+`dasm_native.campaign`: private STARTUP.SUB loads the existing screen/terminal
+modules and runs `SUBMIT UIQUAL`. All shell commands are queued in UIQUAL.SUB.
+Each completed operation runs a unique blocking `UIxx.COM` marker; only modal
+responses and marker acknowledgements use physical key input. After a marker is
+acknowledged it scrolls old screen text away before warm boot, preventing a later
+wait from matching a previous question. A: scripts/markers and B: payloads are
+independently read back, and both prepared filesystems are checked before launch.
+Captured help/version output and all twenty completion/prompt captures are
+required. Failures receive a concise FAIL receipt with the last capture count
+and next expected marker. Utility binaries, core and reference media are unchanged.
 
 Corrected Model 4 preparation and the 24-step cpmsim regression pass:
 
@@ -155,6 +168,29 @@ Preparation is not Model 4 execution; the corrected native campaign still
 requires a normal Terminal run. Failed captures and corrected preparation/
 cpmsim receipts are retained in
 `evidence/2026-11-03-model4-runner/receipts-and-logs.tar.gz`.
+
+The replacement protocol additionally passes six executable Z80 marker tests
+(including hostile BDOS scratch registers), the exact twenty Model 4 command
+phases on real cpmsim, all six query-output checks, preserved-input/new-list
+readback, boot-area comparison and filesystem checks. The command script hashes
+match between the cpmsim exercise and prepared Model 4 media:
+`b8f8d2df27ebfbe14ce84b1d8e124d86e599926cbd8f1806e984690b805c4b28`.
+
+```sh
+python3 tools/test_ui_integration_schedule.py
+python3 tools/test_ui_integration_schedule.py --system ../BetterCPM-release-push/build/rc564-systems --output build/ui-integration/cpmsim-submit-final
+python3 tools/test_ui_integration_media.py --system ../BetterCPM-release-push/build/rc564-systems --platform model4 --prepare-only --output build/ui-integration/model4-submit-final
+```
+
+The BYE queued-input case remains in the original cpmsim campaign. It is excluded
+from the Model 4 SUBMIT protocol test because BYE is cpmsim-only and its Escape
+accepts cancellation before a subsequent queued `n`; the CCP intentionally treats
+that pending byte as SUBMIT cancellation. An initial overbroad test captured this
+expected boundary and is retained as a failed harness trial. Another trial passed
+the command/file checks but used invalid fsck option ordering; the final campaign
+uses `fsck.cpm ... -n image` and passes. Current evidence and the second failed
+Terminal capture set are in
+`evidence/2026-11-03-model4-submit/receipts-and-logs.tar.gz`.
 
 ### Build and regression commands
 

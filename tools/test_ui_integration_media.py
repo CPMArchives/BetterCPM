@@ -18,6 +18,38 @@ ROOT=Path(__file__).resolve().parents[1]
 sha=lambda b:hashlib.sha256(b).hexdigest()
 
 
+def native_marker(message):
+    """Print a unique completion marker, block, clear old screen text, warm boot.
+
+    Uses the same BDOS 9/1 marker handshake as dasm_native.campaign. Scrolling
+    after acknowledgement prevents the next -iw matching an earlier prompt.
+    """
+    code=bytearray.fromhex('1100000e09cd05000e01cd05001100000e09cd0500c30000')
+    text=(message+'\r\n$').encode('ascii')
+    code[1:3]=(256+len(code)).to_bytes(2,'little')
+    code[14:16]=(256+len(code)+len(text)).to_bytes(2,'little')
+    return bytes(code)+text+b'\r\n'*24+b'$'
+
+
+def native_schedule(steps):
+    """SUBMIT owns shell commands; only modal responses use physical keys."""
+    script=[];markers={};actions=[]
+    for index,(key,prompt) in enumerate(steps):
+        if key.startswith('B:'):
+            assert key.endswith('\r'),key
+            script+=['CLS',key[:-1]]
+            outgoing=''
+        else:outgoing=key
+        complete=prompt=='A0>'
+        if complete:
+            name=f'UI{index:02}'
+            prompt=f'UI STEP {index:02} DONE'
+            markers[name+'.COM']=native_marker(prompt)
+            script.append(name)
+        actions.append((outgoing,prompt,complete))
+    return ('\r\n'.join(script)+'\r\n\x1a').encode(),markers,actions
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--system',type=Path,required=True,help='Existing paired system directory, containing z80pack/trs80gp report.json')
@@ -56,15 +88,25 @@ def main():
         for i in range(DIRECTORY_ENTRIES):
             at=directory+i*32
             if raw[at]==0 and raw[at+1:at+12]==b'STARTUP SUB':raw[at]=0xe5
-        # Startup itself prints A0> prompts. Wait on a unique blocking program,
-        # then release it, so no test command races the startup command stream.
-        ready=bytes.fromhex('1110010e09cd05000e01cd0500c30000')+b'UI INTEGRATION READY\r\n$'
-        add_file(raw,'UIREADY.COM',ready)
-        add_file(raw,'STARTUP.SUB',b'RSX LOAD M4SCRN\r\nRSX LOAD ADM3A\r\nUIREADY\r\n\x1a')
+        # Neither startup prompts nor previous A0> text establish readiness.
+        # Let the established SUBMIT path sequence all shell commands, with a
+        # blocking completion program after each returned operation.
+        script,markers,actions=native_schedule(steps)
+        system_files={'UIQUAL.SUB':script,**markers,
+                      'STARTUP.SUB':b'RSX LOAD M4SCRN\r\nRSX LOAD ADM3A\r\nSUBMIT UIQUAL\r\n\x1a'}
+        for name,data in system_files.items():add_file(raw,name,data)
+        (w/'UIQUAL.SUB').write_bytes(script)
         (w/'a.dmk').write_bytes(make_dmk(raw))
         data_format=select_fdf(ROOT/'third_party/montezuma/DISK-INT.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
         definitions=disk_definition(select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT))
+        definitions+='diskdef ui-system\n libdsk:format pcw800\n seclen 512\n tracks 160\n sectrk 10\n blocksize 2048\n maxdir 128\n skew 1\n boottrk 4\n os 2.2\nend\n'
         (w/'diskdefs').write_text(definitions)
+        system_preflight=w/'a-preflight.raw';system_preflight.write_bytes(extract_raw((w/'a.dmk').read_bytes()))
+        for name,data in system_files.items():
+            dest=w/('PRE-'+name)
+            subprocess.run(['cpmcp','-T','raw','-f','ui-system',str(system_preflight),'0:'+name,str(dest)],cwd=w,check=True,capture_output=True)
+            assert dest.read_bytes()[:len(data)]==data,('prepared system script/marker',name)
+        subprocess.run(['fsck.cpm','-T','raw','-f','ui-system','-n',str(system_preflight)],cwd=w,check=True,capture_output=True)
         disk=w/'work.raw';disk.write_bytes(bytes([0xe5])*data_format.image_bytes)
         subprocess.run(['mkfs.cpm','-f','bettercpm-mm-80t-ds-data',str(disk)],cwd=w,check=True,capture_output=True)
         for name,data in files.items():
@@ -80,12 +122,12 @@ def main():
             subprocess.run(['cpmcp','-T','raw','-f','bettercpm-mm-80t-ds-data',str(preflight),'0:'+name,str(dest)],cwd=w,check=True,capture_output=True)
             assert dest.read_bytes()[:len(data)]==data,('prepared media',name)
         subprocess.run(['fsck.cpm','-T','raw','-f','bettercpm-mm-80t-ds-data','-n',str(preflight)],cwd=w,check=True,capture_output=True)
-        invocation=[str(a.emulator),'-m4','-batch','-turbo','-ktx','-d0',str(w/'a.dmk'),'-d1',str(w/'b.dmk'),'-itime','60000','-iw','UI INTEGRATION READY']
-        invocation+=key_args('\r',delay=25)+['-id','60','-iw','A0>']
-        for key,marker in steps:
+        invocation=[str(a.emulator),'-m4','-batch','-turbo','-sx','-sfmute','-ktx','-d0',str(w/'a.dmk'),'-d1',str(w/'b.dmk'),'-itime','60000']
+        for key,marker,complete in actions:
             for part in key.split('\x1b')[:-1]:
                 invocation+=key_args(part,delay=25)+['-ik','6','2','-id','25','-ik','6','0','-id','25']
-            invocation+=key_args(key.split('\x1b')[-1],delay=25)+['-iw',marker,'-id','2000','-it']
+            invocation+=key_args(key.split('\x1b')[-1],delay=25)+['-iw',marker,'-id','60','-it']
+            if complete:invocation+=key_args('\r',delay=25)+['-id','120']
         invocation+=['-ix'];(w/'invocation.json').write_text(json.dumps(invocation,indent=2)+'\n')
         # Terminal command is generated as argv, avoiding shell escaping entirely.
         runner='import json,subprocess\nfrom pathlib import Path\nw=Path(__file__).resolve().parent\nsubprocess.run(json.loads((w/"invocation.json").read_text()),cwd=w,check=True)\n'
@@ -102,7 +144,7 @@ def main():
             path=w/name;path.write_bytes(data)
             subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disk),str(path),'0:'+name],cwd=w,check=True,capture_output=True)
     receipt={'status':'PREPARED','platform':a.platform,'system_sha256':sha(original),'binaries':{n:{'bytes':len(b),'sha256':sha(b)} for n,b in artifacts.items()},'steps':len(steps),'scope':'queries, checksum creation/repeated help/invalid bytes/No/Ctrl-C, DASM restart refusal, cpmsim BYE cancellation; independently read back preserved files and new lists'}
-    if native:receipt.update(work_format=data_format.name,media_preflight='PASS',startup_gate='UI INTEGRATION READY')
+    if native:receipt.update(work_format=data_format.name,media_preflight='PASS',command_transport='SUBMIT UIQUAL with unique blocking completion markers',command_script_sha256=sha(script))
     (w/'result.json').write_text(json.dumps(receipt,indent=2)+'\n')
     if a.prepare_only:print('PREPARED; execution and readback pending:',w);return
     if native:
@@ -112,13 +154,19 @@ def main():
             assert len(captures)==len(steps),('missing native captures',len(captures),len(steps))
             screens=[bytes(value&127 for value in path.read_bytes()[:1920]) for path in captures]
             (w/'console.bin').write_bytes(b'\n'.join(screens))
+            for index,(_,marker,_) in enumerate(actions):
+                assert marker.encode() in screens[index],('missing completion/prompt',index,marker)
             for index,name in enumerate(artifacts):
                 assert b'Usage:' in screens[2*index],('help did not execute',name)
                 assert (name+' 1.0 (').encode() in screens[2*index+1],('version did not execute',name)
         except BaseException as error:
-            receipt.update(status='FAIL',stage='native execution/capture',error=f'{type(error).__name__}: {error}')
+            count=len(list(w.glob('trs80-text-*.bin')))
+            expected=actions[count][1] if count<len(actions) else 'capture validation'
+            reason=(f'timed out after {error.timeout}s' if isinstance(error,subprocess.TimeoutExpired)
+                    else 'interrupted' if isinstance(error,KeyboardInterrupt) else f'{type(error).__name__}: {error}')
+            receipt.update(status='FAIL',stage='native execution/capture',error=reason,completed_captures=count,next_expected=expected)
             (w/'result.json').write_text(json.dumps(receipt,indent=2)+'\n')
-            raise
+            raise SystemExit(f'FAIL: {reason}; captures {count}/{len(steps)}; next expected {expected!r}. Results: {w}') from None
     else:session(a.simulator,w/'disks',[(key.encode(),(marker+'_ ' if marker=='A0>' else marker).encode(),30) for key,marker in steps],w/'transcript.bin')
     if native:
         raw=dmk_to_raw((w/'b.dmk').read_bytes(),data_format);disk=w/'readback.raw';disk.write_bytes(raw);fmt='bettercpm-mm-80t-ds-data'
