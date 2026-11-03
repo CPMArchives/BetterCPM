@@ -1,0 +1,32 @@
+{
+  "candidate_commit": "8921a509838e7b46dc88bb9536e36ee847e0870c",
+  "candidate_tree": "1b334c96d09e5205f0a0f22db876a655f65bfc94",
+  "artifacts": {
+    "install-cpmsim-absolute/installed-cold-boot.bin": {
+      "sha256": "b9cf734de4f55cbe299c5f7fdda9df6817107c31d874b8c4b1398215d4a5bbfa",
+      "bytes": 3042
+    },
+    "install-cpmsim-absolute/save-export-install.bin": {
+      "sha256": "9380be2be3331ac00d26c0fd4b8f70ca2589d67d9a24dfc2a48fd64126fd2636",
+      "bytes": 7880
+    },
+    "corrected-install-cpmsim-rerun/installed-cold-boot.bin": {
+      "sha256": "aba14f7985f8938e41a77f10af47545be3d5ef1ca0bd6af268a13dd2341d77af",
+      "bytes": 4134
+    },
+    "corrected-install-cpmsim-rerun/save-export-install.bin": {
+      "sha256": "afe370c33666e5d2b5cb4dfd87ecc99453ebf1120258b7792427898296a13d7a",
+      "bytes": 7987
+    },
+    "fresh-runtime/environment.json": {
+      "sha256": "ea0e28be0ee47671381b140435298bc6ad27a9368a7cdae874c9f2261425ec8e",
+      "bytes": 29985
+    },
+    "negative-original-install/installed-cold-boot.bin": {
+      "sha256": "b9cf734de4f55cbe299c5f7fdda9df6817107c31d874b8c4b1398215d4a5bbfa",
+      "bytes": 3042
+    }
+  },
+  "full_local_evidence": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/final-media-qualification-20261103",
+  "status": "CANDIDATE REJECTED FOR FREEZE; corrections require review"
+}

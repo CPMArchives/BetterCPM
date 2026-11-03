@@ -20,7 +20,10 @@ def main():
     p.add_argument('--assembler',type=Path,default=Path.home()/'bin/z80asm')
     p.add_argument('--config-extra-resident',type=Path)
     p.add_argument('--config-extra-spt',type=int)
+    p.add_argument('--config-extra-bootstrap-spt',type=int)
     args=p.parse_args()
+    if args.config_extra_bootstrap_spt and (not args.config_extra_resident or not args.config_extra_spt or args.config_extra_bootstrap_spt != 2*args.config_extra_spt):
+        p.error('bootstrap SPT requires the matching double-sided extra resident')
     out=ROOT/'build/utilities'
     out.mkdir(parents=True,exist_ok=True)
     builtin=builtin_source()
@@ -44,6 +47,9 @@ def main():
             if not args.config_extra_spt:p.error('--config-extra-spt required')
             records.append(validation_record(args.config_extra_resident.read_bytes(),
                            LAYOUT['SYSTEM'],52,8,args.config_extra_spt))
+    if not checked and args.config_extra_bootstrap_spt:
+        records.append(validation_record(args.config_extra_resident.read_bytes(),
+                       LAYOUT['SYSTEM'],52,8,args.config_extra_bootstrap_spt))
     validation=assembly(records)
     (out/'config-validation.inc').write_text(validation)
 
@@ -58,6 +64,9 @@ def main():
         if args.config_extra_resident:
             io_records.append(descriptor(args.config_extra_resident.read_bytes(),LAYOUT['SYSTEM'],
                               (args.config_extra_resident.parent/'bios.lst').read_text(),args.config_extra_spt,8))
+    if not checked and args.config_extra_bootstrap_spt:
+        io_records.append(descriptor(args.config_extra_resident.read_bytes(),LAYOUT['SYSTEM'],
+                          (args.config_extra_resident.parent/'bios.lst').read_text(),args.config_extra_bootstrap_spt,8))
     io_meta=io_assembly(io_records)
     (out/'config-iobyte.inc').write_text(io_meta)
     ccp = (ROOT/'build/ccp/ccp.bin').read_bytes()

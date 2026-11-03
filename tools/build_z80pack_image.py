@@ -261,7 +261,10 @@ def main():
  if not args.resident_only:
   subprocess.run([sys.executable,str(ROOT/'tools/build_disk_utilities.py'),
                   '--config-extra-resident',str(out/'resident.bin'),
-                  '--config-extra-spt',str(fmt.spt)],check=True,stdout=subprocess.DEVNULL)
+                  '--config-extra-spt',str(fmt.spt),
+                  *(['--config-extra-bootstrap-spt',str(2*fmt.spt)]
+                    if fmt.spt==36 and fmt.sides==2 and fmt.off%2==0 and not (fmt.flags & 0x20) else [])],
+                  check=True,stdout=subprocess.DEVNULL)
  if args.system_tracks_only:
   # The distribution builder supplies its own filesystem from its manifest.
   # Do not first pack the unrelated, larger development/test file inventory.

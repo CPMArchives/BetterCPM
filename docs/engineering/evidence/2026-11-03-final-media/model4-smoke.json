@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "scope": "Exact packaged Model 4 System + both Utilities + Work: native boot, CONFIG saved bindings, both directories, guest COPY to Work and independent complete file readback. TYPE not captured: runner waited for a progress message resident COPY does not emit.",
+  "copied_file_sha256": "a6f581c7d797e227f3b9296d856439373d2354a4dd9b19a6e226f20f251d6c80",
+  "copied_bytes": 3471,
+  "work_image_after_sha256": "346cf4d7f87fbe6ee9bcffe1730f495843e02acd30c5a13b71b35c9d177077b1"
+}

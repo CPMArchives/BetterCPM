@@ -1,0 +1,384 @@
+{
+  "status": "PASS",
+  "baseline_sha256": "4e661bab569b81ac583f74aabedf41001a76b28d9721ab911e6ff0995feaf5cd",
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "runner_sha256": "b4faf768e0d5708b79e48c7a1b5ddab3119a2e511c04521c6a40ba71afb09c89",
+  "source_file_audit": {
+    "unchanged_shipped_files": [
+      {
+        "name": "README.TXT",
+        "user": 0,
+        "record_bytes": 3471,
+        "sha256": "a6f581c7d797e227f3b9296d856439373d2354a4dd9b19a6e226f20f251d6c80"
+      },
+      {
+        "name": "STARTUP.SUB",
+        "user": 0,
+        "record_bytes": 53,
+        "sha256": "6d90dc33337716f96996318a8da16d6ebed821e88f99227b5adbd9c5b3037806"
+      },
+      {
+        "name": "DIR.COM",
+        "user": 0,
+        "record_bytes": 11593,
+        "sha256": "320c9332ffac29e3dc7b1e99fc623c44b0b1888a4f493a2c361329821bfdd9c3"
+      },
+      {
+        "name": "ERA.COM",
+        "user": 0,
+        "record_bytes": 8510,
+        "sha256": "6383bb226e92a835ac40d90066ac5a17063bb173c8c34a6e65063063fc0f7627"
+      },
+      {
+        "name": "TYPE.COM",
+        "user": 0,
+        "record_bytes": 4967,
+        "sha256": "b7bebb4956b28a4aca9b38c53e75d5320e719c286f2ce4af95e3e47973ad4dd4"
+      },
+      {
+        "name": "REN.COM",
+        "user": 0,
+        "record_bytes": 6511,
+        "sha256": "71a3f3095ed5401068c8831244d3e852fa9ad0b499a52cb39895838c4acd0b89"
+      },
+      {
+        "name": "VER.COM",
+        "user": 0,
+        "record_bytes": 6954,
+        "sha256": "3ff699507701f1dd64609f579fb85470d9476750d63af7d863ea01534a3b2a63"
+      },
+      {
+        "name": "COPY.COM",
+        "user": 0,
+        "record_bytes": 14459,
+        "sha256": "3eb0e22353a6fdf5fb2545faaeda0cdd9051a1a8e6a24b1906172d8809e4e177"
+      },
+      {
+        "name": "CONFIG.COM",
+        "user": 0,
+        "record_bytes": 17236,
+        "sha256": "fb3dbea97a6140f62aca04051333ddc0b9641a376ca9d602a644070833631714"
+      },
+      {
+        "name": "DUP.COM",
+        "user": 0,
+        "record_bytes": 9148,
+        "sha256": "361a7caf3741face4a311115f6479dd4542a23ce92ccdff2c7574b6c99f494c4"
+      },
+      {
+        "name": "TIME.COM",
+        "user": 0,
+        "record_bytes": 1874,
+        "sha256": "3f0ceb6389ff5f76569bfb4f02736520419a26ddf2cdea53ba7315d4501f7124"
+      },
+      {
+        "name": "SYSGEN.COM",
+        "user": 0,
+        "record_bytes": 6433,
+        "sha256": "a04998fd2b4928d7b2a40b8fa21b8e7d202048a7a35ced43ede753a30af6c0bd"
+      },
+      {
+        "name": "STAT.COM",
+        "user": 0,
+        "record_bytes": 8140,
+        "sha256": "d0aed286dc9ec92f503594732acbd0918f62e70494b6fb2248228384ea5b562b"
+      },
+      {
+        "name": "SUBMIT.COM",
+        "user": 0,
+        "record_bytes": 3901,
+        "sha256": "32132d15f194a1776aae882a160eddd0421a70e738146098ef46a201926dd80a"
+      },
+      {
+        "name": "CPX.COM",
+        "user": 0,
+        "record_bytes": 1490,
+        "sha256": "09132ee1178ab46a68ee5159697d489ca280f589ac835c9784d018234b40c24f"
+      },
+      {
+        "name": "RSX.COM",
+        "user": 0,
+        "record_bytes": 1562,
+        "sha256": "2dd217cc3c07a4d281713e322603c730413da551e51cfbcff749b4c070acdf87"
+      },
+      {
+        "name": "DISK.FDB",
+        "user": 0,
+        "record_bytes": 8448,
+        "sha256": "06e2d88e30c38bebe4eaf0975a3e302086874e719109dc3898bb72a0f7ded6a5"
+      },
+      {
+        "name": "RCP.CPX",
+        "user": 0,
+        "record_bytes": 8472,
+        "sha256": "2fe51c9883ca67aedf9c47f613b833c79b8552fbe6dbd1871a3160e765bf7ed4"
+      },
+      {
+        "name": "FREHDCLK.RSX",
+        "user": 0,
+        "record_bytes": 906,
+        "sha256": "0fe9c0534f288b6c59f4a7733beca5ae760f175e10fa16d2098af3a1671f9a18"
+      },
+      {
+        "name": "R3PACK.RSX",
+        "user": 0,
+        "record_bytes": 15360,
+        "sha256": "d761fb628e00e1d661642a1b874e918969c48c564751a2a5e0f7060ed6a454ab"
+      },
+      {
+        "name": "PIP.COM",
+        "user": 0,
+        "record_bytes": 15444,
+        "sha256": "08f82abccb5821134ea4489eb4186e9eb388bdb7da59284b7a1f7ced059b10ff"
+      },
+      {
+        "name": "ED.COM",
+        "user": 0,
+        "record_bytes": 8914,
+        "sha256": "5ce608f179ca87a17f887beb73a755e96ab4f0a36c5410bc640bcd49e30f6c1f"
+      },
+      {
+        "name": "ADM3A.RSX",
+        "user": 0,
+        "record_bytes": 1028,
+        "sha256": "b4bdae27acc1d9e155178558921b457e5f0a61727f8be3114e17e35757454ef9"
+      },
+      {
+        "name": "ADMTST.COM",
+        "user": 0,
+        "record_bytes": 2045,
+        "sha256": "cc587c6b133b25b65f67a544b3e6ab3dcb8ab1dfc029f5e83ea7c68139bf9654"
+      },
+      {
+        "name": "VT52.RSX",
+        "user": 0,
+        "record_bytes": 1095,
+        "sha256": "abbf8661158de109e954df214d0023fc9157524fd2c8c9cf1d617bf936dd496d"
+      },
+      {
+        "name": "VT52TST.COM",
+        "user": 0,
+        "record_bytes": 1410,
+        "sha256": "b1953940dd2069c2ad79b58d01464402778483e52c987bcaf3a2ca416bbbf1b0"
+      },
+      {
+        "name": "ANSI.RSX",
+        "user": 0,
+        "record_bytes": 2002,
+        "sha256": "79b7fe071575d416aeebe08b01f97ed3ce3b1bc9cd0c8928c6e759d2cad76d30"
+      },
+      {
+        "name": "ANSITST.COM",
+        "user": 0,
+        "record_bytes": 1115,
+        "sha256": "c86ed522c239ce531a64cf85768f27eaa1496cffdcf7a798ba1c95e874a6236c"
+      },
+      {
+        "name": "M4SCRN.RSX",
+        "user": 0,
+        "record_bytes": 1718,
+        "sha256": "1d88316632621b89f3a3062c85412a7a5b052e62dac031bfc632029350803edb"
+      },
+      {
+        "name": "P2DOS.RSX",
+        "user": 0,
+        "record_bytes": 668,
+        "sha256": "9c854dd4aa8afcf439ac28233a8c723cd2cc32888d2aa137ba1bf9e2c3e82a08"
+      }
+    ],
+    "scratch_file_absent": true
+  },
+  "target_file_audit": {
+    "unchanged_shipped_files": [
+      {
+        "name": "README.TXT",
+        "user": 0,
+        "record_bytes": 3471,
+        "sha256": "a6f581c7d797e227f3b9296d856439373d2354a4dd9b19a6e226f20f251d6c80"
+      },
+      {
+        "name": "STARTUP.SUB",
+        "user": 0,
+        "record_bytes": 53,
+        "sha256": "6d90dc33337716f96996318a8da16d6ebed821e88f99227b5adbd9c5b3037806"
+      },
+      {
+        "name": "DIR.COM",
+        "user": 0,
+        "record_bytes": 11593,
+        "sha256": "320c9332ffac29e3dc7b1e99fc623c44b0b1888a4f493a2c361329821bfdd9c3"
+      },
+      {
+        "name": "ERA.COM",
+        "user": 0,
+        "record_bytes": 8510,
+        "sha256": "6383bb226e92a835ac40d90066ac5a17063bb173c8c34a6e65063063fc0f7627"
+      },
+      {
+        "name": "TYPE.COM",
+        "user": 0,
+        "record_bytes": 4967,
+        "sha256": "b7bebb4956b28a4aca9b38c53e75d5320e719c286f2ce4af95e3e47973ad4dd4"
+      },
+      {
+        "name": "REN.COM",
+        "user": 0,
+        "record_bytes": 6511,
+        "sha256": "71a3f3095ed5401068c8831244d3e852fa9ad0b499a52cb39895838c4acd0b89"
+      },
+      {
+        "name": "VER.COM",
+        "user": 0,
+        "record_bytes": 6954,
+        "sha256": "3ff699507701f1dd64609f579fb85470d9476750d63af7d863ea01534a3b2a63"
+      },
+      {
+        "name": "COPY.COM",
+        "user": 0,
+        "record_bytes": 14459,
+        "sha256": "3eb0e22353a6fdf5fb2545faaeda0cdd9051a1a8e6a24b1906172d8809e4e177"
+      },
+      {
+        "name": "CONFIG.COM",
+        "user": 0,
+        "record_bytes": 17236,
+        "sha256": "fb3dbea97a6140f62aca04051333ddc0b9641a376ca9d602a644070833631714"
+      },
+      {
+        "name": "DUP.COM",
+        "user": 0,
+        "record_bytes": 9148,
+        "sha256": "361a7caf3741face4a311115f6479dd4542a23ce92ccdff2c7574b6c99f494c4"
+      },
+      {
+        "name": "TIME.COM",
+        "user": 0,
+        "record_bytes": 1874,
+        "sha256": "3f0ceb6389ff5f76569bfb4f02736520419a26ddf2cdea53ba7315d4501f7124"
+      },
+      {
+        "name": "SYSGEN.COM",
+        "user": 0,
+        "record_bytes": 6433,
+        "sha256": "a04998fd2b4928d7b2a40b8fa21b8e7d202048a7a35ced43ede753a30af6c0bd"
+      },
+      {
+        "name": "STAT.COM",
+        "user": 0,
+        "record_bytes": 8140,
+        "sha256": "d0aed286dc9ec92f503594732acbd0918f62e70494b6fb2248228384ea5b562b"
+      },
+      {
+        "name": "SUBMIT.COM",
+        "user": 0,
+        "record_bytes": 3901,
+        "sha256": "32132d15f194a1776aae882a160eddd0421a70e738146098ef46a201926dd80a"
+      },
+      {
+        "name": "CPX.COM",
+        "user": 0,
+        "record_bytes": 1490,
+        "sha256": "09132ee1178ab46a68ee5159697d489ca280f589ac835c9784d018234b40c24f"
+      },
+      {
+        "name": "RSX.COM",
+        "user": 0,
+        "record_bytes": 1562,
+        "sha256": "2dd217cc3c07a4d281713e322603c730413da551e51cfbcff749b4c070acdf87"
+      },
+      {
+        "name": "DISK.FDB",
+        "user": 0,
+        "record_bytes": 8448,
+        "sha256": "06e2d88e30c38bebe4eaf0975a3e302086874e719109dc3898bb72a0f7ded6a5"
+      },
+      {
+        "name": "RCP.CPX",
+        "user": 0,
+        "record_bytes": 8472,
+        "sha256": "2fe51c9883ca67aedf9c47f613b833c79b8552fbe6dbd1871a3160e765bf7ed4"
+      },
+      {
+        "name": "FREHDCLK.RSX",
+        "user": 0,
+        "record_bytes": 906,
+        "sha256": "0fe9c0534f288b6c59f4a7733beca5ae760f175e10fa16d2098af3a1671f9a18"
+      },
+      {
+        "name": "R3PACK.RSX",
+        "user": 0,
+        "record_bytes": 15360,
+        "sha256": "d761fb628e00e1d661642a1b874e918969c48c564751a2a5e0f7060ed6a454ab"
+      },
+      {
+        "name": "PIP.COM",
+        "user": 0,
+        "record_bytes": 15444,
+        "sha256": "08f82abccb5821134ea4489eb4186e9eb388bdb7da59284b7a1f7ced059b10ff"
+      },
+      {
+        "name": "ED.COM",
+        "user": 0,
+        "record_bytes": 8914,
+        "sha256": "5ce608f179ca87a17f887beb73a755e96ab4f0a36c5410bc640bcd49e30f6c1f"
+      },
+      {
+        "name": "ADM3A.RSX",
+        "user": 0,
+        "record_bytes": 1028,
+        "sha256": "b4bdae27acc1d9e155178558921b457e5f0a61727f8be3114e17e35757454ef9"
+      },
+      {
+        "name": "ADMTST.COM",
+        "user": 0,
+        "record_bytes": 2045,
+        "sha256": "cc587c6b133b25b65f67a544b3e6ab3dcb8ab1dfc029f5e83ea7c68139bf9654"
+      },
+      {
+        "name": "VT52.RSX",
+        "user": 0,
+        "record_bytes": 1095,
+        "sha256": "abbf8661158de109e954df214d0023fc9157524fd2c8c9cf1d617bf936dd496d"
+      },
+      {
+        "name": "VT52TST.COM",
+        "user": 0,
+        "record_bytes": 1410,
+        "sha256": "b1953940dd2069c2ad79b58d01464402778483e52c987bcaf3a2ca416bbbf1b0"
+      },
+      {
+        "name": "ANSI.RSX",
+        "user": 0,
+        "record_bytes": 2002,
+        "sha256": "79b7fe071575d416aeebe08b01f97ed3ce3b1bc9cd0c8928c6e759d2cad76d30"
+      },
+      {
+        "name": "ANSITST.COM",
+        "user": 0,
+        "record_bytes": 1115,
+        "sha256": "c86ed522c239ce531a64cf85768f27eaa1496cffdcf7a798ba1c95e874a6236c"
+      },
+      {
+        "name": "M4SCRN.RSX",
+        "user": 0,
+        "record_bytes": 1718,
+        "sha256": "1d88316632621b89f3a3062c85412a7a5b052e62dac031bfc632029350803edb"
+      },
+      {
+        "name": "P2DOS.RSX",
+        "user": 0,
+        "record_bytes": 668,
+        "sha256": "9c854dd4aa8afcf439ac28233a8c723cd2cc32888d2aa137ba1bf9e2c3e82a08"
+      }
+    ],
+    "scratch_file_absent": true
+  },
+  "payload_differences": [
+    [
+      7030,
+      224,
+      160
+    ]
+  ],
+  "scope": "Native CONFIG startup and IOBYTE save/live unchanged, exact configured named package, confirmed containing-disk install preserving complete filesystem, installed cold boot executes saved startup and restores IOBYTE55; shipped files/sentinel preserved."
+}

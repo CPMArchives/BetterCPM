@@ -165,7 +165,8 @@ def assemble(args):
         raise ValueError('CP/M Tools source companion is not completely tracked')
     identity=encoded({'source_commit':commit,'status':'CANDIDATE; NOT ACCEPTED'})
     source_manifest={n:sha(data) for n,data in sorted(tracked.items())}
-    common={'SOURCE-IDENTITY.json':identity}
+    common={'SOURCE-IDENTITY.json':identity,
+            'docs/platform/FORMAT-SUPPORT-1.0.md':tracked['docs/platform/FORMAT-SUPPORT-1.0.md']}
     pin=json.loads(tracked['third_party/z80pack/upstream.json'])
     runtime=json.loads(args.runtime_manifest.read_text())
     if (runtime.get('status')!='BUILT' or runtime.get('profile')!='runtime'

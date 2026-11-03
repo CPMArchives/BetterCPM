@@ -1,0 +1,24 @@
+[ E ] Motor spin-up (1/4 sec):    2
+[ F ] Head settling time (ms):    15
+Saved logical-drive bindings:
+A: 0: BetterCP/M Model 4 System 780K
+B: 1: MM 80T DS DATA
+C: 2: MM 80T DS DATA
+D: 3: MM 80T DS DATA
+
+A0>DIR B:
+
+B0: DDT      COM : DUMP     COM : XSUB     COM : BATCHIO  RSX
+B0: SQ       COM : USQ      COM : UNCR     COM : CR       COM
+B0: UNLZH    COM : LZH      COM : ZSM4     COM : LINK     COM
+B0: TOOLINFO TXT : ZSM4COPY TXT : LINKCOPY TXT : DASM     COM
+B0: DSYM     COM : DLINK    COM : DASM     TXT : DASMCOPY TXT
+B0: TED      COM : TED      TXT : TEDCOPY  TXT : SEARCH   COM
+B0: CRCKSUM  COM : MD5SUM   COM
+
+A0>DIR C:
+
+C0: NOAH     COM : NOAH     OVL : NOAH     TXT : PATCH    COM
+C0: PATCH    TXT : COMPARE  COM : COMPARE  TXT
+
+A0>

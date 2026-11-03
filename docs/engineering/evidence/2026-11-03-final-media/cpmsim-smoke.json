@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "commands": [
+    "VER /VER",
+    "CONFIG /SHOW",
+    "DIR B:",
+    "DIR C:",
+    "COPY A:README.TXT D:INSTALL.TXT",
+    "TYPE D:INSTALL.TXT"
+  ],
+  "simulator_sha256": "0f6b256cd6beea2ab7bf0eab8a9cc2a5241ed772408e811150c3f6e0f5cff4e8",
+  "scope": "Fresh offline runtime, System + both Utilities images + writable work; boot/settings/directory/copy/read checks; originals retained."
+}
