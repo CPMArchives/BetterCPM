@@ -10,7 +10,7 @@ logs=root/'assessment-build-logs';logs.mkdir(exist_ok=True)
 a=Path.home()/'bin/z80asm'
 assemble(a,SOURCE/'boot.mac',BUILD/'boot.bin',BOOT_ADDRESS)
 assemble(a,SOURCE/'stage1.mac',BUILD/'stage1.bin',STAGE1_ADDRESS)
-for name in ('rsxselect',)+COMPONENTS+('z80pack_bye',):
+for name in COMPONENTS+('z80pack_bye',):
     with (logs/(name+'.log')).open('wb') as f:
         p=subprocess.run([sys.executable,str(root/'tools'/f'build_{name}.py')],cwd=root,stdout=f,stderr=subprocess.STDOUT)
     if p.returncode:raise SystemExit(f'{name} failed: '+(logs/(name+'.log')).read_text()[-4000:])

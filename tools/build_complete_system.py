@@ -7,7 +7,7 @@ from system_layout import CONTEXT
 ROOT = Path(__file__).resolve().parents[1]
 COMPONENTS = (
     "fdf_catalog",
-    "bdos", "ccp", "ccpreload", "rcp_cpx", "hello_cpx",
+    "bdos", "ccp", "ccpreload", "rsxselect", "rcp_cpx", "hello_cpx",
     "hello_rsx", "echo_rsx", "fdf_rsx", "p2dos_rsx", "frehd_time_rsx", "zprtc_rsx",
     "test_service_rsx", "svctest",
     "stateful_test_rsx", "stattst",
@@ -18,6 +18,10 @@ COMPONENTS = (
 if __name__ == "__main__":
     if CONTEXT:
         raise SystemExit('Checked-profile full-system integration is pending; build individual layout components for now.')
+    # SYSBUILD embeds part sizes before the final disk image is assembled.
+    import build_trs80_boot as boot
+    boot.assemble(Path.home() / "bin/z80asm", boot.SOURCE / "boot.mac",
+                  boot.BUILD / "boot.bin", boot.BOOT_ADDRESS)
     for component in COMPONENTS:
         subprocess.run([sys.executable, str(ROOT / "tools" / f"build_{component}.py")],
                        cwd=ROOT, check=True)

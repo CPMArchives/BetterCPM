@@ -21,6 +21,8 @@ def record_collection(root, target, source, assembler=None):
     template=json.loads((root/'metadata/component-artifacts.json').read_text())
     records={}
     for key,products in template['components'].items():
+        if isinstance(products, dict):
+            products = products.get(target, [])
         try:
             context=root/'build/profile/context.json'
             context=context if context.is_file() else None

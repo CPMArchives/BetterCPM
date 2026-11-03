@@ -8,7 +8,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from component_inputs import ROOT, capture, classify, source_path
+from component_inputs import ROOT, capture, classify, digest, source_path
+from component_tracking import record_collection
 
 
 class InputTests(unittest.TestCase):
@@ -97,6 +98,25 @@ class InputTests(unittest.TestCase):
     def test_unsupported_component(self):
         with self.assertRaisesRegex(ValueError, 'pending'):
             capture('utility:UNKNOWN', self.assembler, root=self.root)
+
+    def test_bios_collection_uses_selected_platform(self):
+        key = 'subsystem:BIOS'
+        plan = json.loads((ROOT/'metadata/component-inputs.json').read_text())
+        for name in plan['components'][key]['files']:
+            destination = self.root/name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT/name, destination)
+        catalog = json.loads((ROOT/'metadata/component-artifacts.json').read_text())
+        catalog['components'] = {key: catalog['components'][key]}
+        (self.root/'metadata/component-artifacts.json').write_text(json.dumps(catalog))
+        for target, name in [('trs80gp', 'bios'), ('z80pack', 'z80pack')]:
+            path = self.root/'build'/name/'bios.bin'
+            path.parent.mkdir(parents=True)
+            path.write_bytes(target.encode())
+        for target in ('trs80gp', 'z80pack'):
+            record = record_collection(self.root, target, {}, self.assembler)[key]
+            self.assertEqual(record['input_record']['inputs']['variant']['target'], target)
+            self.assertEqual(record['artifact']['sha256'], digest(target.encode()))
 
     def test_missing_files_refused(self):
         (self.root/'src/platform/z80pack/bye.mac').unlink()
