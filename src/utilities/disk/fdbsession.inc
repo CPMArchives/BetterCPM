@@ -26,6 +26,7 @@ SESSIONSTART:
         LDIR
 STARTNAMED:
         XOR A
+        LD (VIEWCOMPARE),A
         LD (ACTION),A
         JP READSOURCE
 MENU:   LD SP,STACKTOP
@@ -71,6 +72,10 @@ SHOWSTATE: CALL PUTS
         JP Z,SAVECAT
         CP 'I'
         JP Z,IMPORTCAT
+        CP 'D'
+        JP Z,DETAILMENU
+        CP 'P'
+        JP Z,COMPAREMENU
         CP 'O'
         JP Z,EXPORTMENU
         CP 'L'
@@ -1105,7 +1110,8 @@ COUNTMSG:DB '   Entries: ',0
 MODSTATE:DB '   Modified',13,10,0
 CLEANSTATE:DB '   Unmodified',13,10,0
 MENUMSG:DB 'A Capture drive  B Load entry  C Blank format  E Resume editor',13,10
-        DB 'F Open  N New  L List  I Import  O Export  S Save  Q Quit (or BREAK)',13,10,'Choice: ',0
+        DB 'F Open  N New  L List  I Import  D Details  P Compare',13,10
+        DB 'O Export  S Save  Q Quit (or BREAK)',13,10,'Choice: ',0
 PENDINGMSG:DB 'Unsaved catalogue: S Save, D Discard, C Cancel: ',0
 OPENMSG:DB 'Open catalogue filename: ',0
 IMPORTMSG:DB 'Import into working catalogue',13,10,0

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Build the native FDB catalogue workbench from specification 209."""
 import argparse
+import binascii
+import zlib
 from pathlib import Path
 import re
 import subprocess
@@ -30,9 +32,12 @@ def build(assembler=Path.home()/'bin/z80asm', destination=ROOT/'build/fdb'):
         '        .PHASE 0B900H\nEDITORBASE:',
         (UTILITIES/'disk/fdbdrive.inc').read_text(),
         (UTILITIES/'disk/fdbexchange.inc').read_text(),
+        (UTILITIES/'disk/fdbviewload.inc').read_text(),
         (UTILITIES/'common/monitorconsole.inc').read_text(),
         'EDITOREND:\n        .DEPHASE\n        END\n',
     ])
+    token = zlib.crc32(source.encode()).to_bytes(4,'little')
+    source = source.replace('VIEWTOKEN:DB 0,0,0,0', 'VIEWTOKEN:DB '+','.join(map(str,token)))
     output = destination/'FDB.COM'
     listing = destination/'fdb.lst'
     with tempfile.TemporaryDirectory(prefix='fdb-build-') as temporary:
@@ -49,6 +54,26 @@ def build(assembler=Path.home()/'bin/z80asm', destination=ROOT/'build/fdb'):
         return int(re.search(rf'^([0-9a-f]{{4}}).*?\b{label}:', layout, re.M | re.I)[1], 16)
     if address('IMAGEEND') > 0x3600 or address('EDITOREND') > 0xd400:
         raise ValueError('FDB editor exceeds the session memory layout')
+    # Compile the read-only viewer against this exact resident symbol table.
+    symbols = {}
+    for value, label in re.findall(r'^([0-9a-f]{4}).*?\b([A-Z][A-Z0-9_]*):', layout, re.M|re.I):
+        symbols[label.upper()] = int(value,16)
+    view = (UTILITIES/'disk/fdbview.inc').read_text()
+    labels = set(re.findall(r'^([A-Z][A-Z0-9_]*):', view, re.M))
+    links = 'WORKBUF EQU 05B00H\n' + ''.join(f'{label} EQU 0{value:04X}H\n' for label,value in symbols.items() if label not in labels)
+    with tempfile.TemporaryDirectory(prefix='fdb-view-') as temp:
+        source = Path(temp)/'view.mac'
+        source.write_text('        ASEG\n        ORG 08000H\n'+links+'        JP VIEWENTRY\n        DB '+','.join(map(str,token))+'\n        DW 0\n'+view+'\n        END\n')
+        subprocess.run([str(assembler),'-e32','-fb',f'-o{destination / "FDBVIEW.OVL"}',f'-l{destination / "view.lst"}',str(source)],check=True)
+    overlay = (destination/'FDBVIEW.OVL').read_bytes()
+    if overlay[:0x8000] == bytes(0x8000):
+        overlay=overlay[0x8000:]
+    if len(overlay)>0x2500:
+        raise ValueError('FDB viewer exceeds its overlay arena')
+    overlay = bytearray(overlay)
+    overlay.extend(bytes((-len(overlay)) % 128))
+    overlay[7:9] = binascii.crc_hqx(overlay[9:], 0xffff).to_bytes(2,'little')
+    (destination/'FDBVIEW.OVL').write_bytes(overlay)
     return image
 
 

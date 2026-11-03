@@ -60,6 +60,14 @@ def main():
         assert not m.unexpected_prompt, console
         return console
 
+    console = run('D\rMMI012\r4\rQ\rQ\r', {**original,key('FDBVIEW.OVL'):(work/'FDBVIEW.OVL').read_bytes()})
+    assert 'Directory byte offset: 10240' in console
+    console = run('P\rMMI012\rMMI012\r4\rA\rQ\rQ\r', {**original,key('FDBVIEW.OVL'):(work/'FDBVIEW.OVL').read_bytes()})
+    assert 'Directory byte offset: 10240 | 10240' in console
+    damaged = bytearray((work/'FDBVIEW.OVL').read_bytes())
+    damaged[-1] ^= 1
+    run('D\rQ\r', {**original,key('FDBVIEW.OVL'):bytes(damaged)})
+    assert 'invalid catalogue' in m.console
     edit = 'I\rADD.FDB\rTEST109\r'
     save = 'S\r\rY\r'
     result = run(edit + save + 'Q\r')
