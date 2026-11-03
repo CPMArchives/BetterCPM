@@ -1,0 +1,76 @@
+DETAILMENU:XOR A
+        JR STARTVIEW
+COMPAREMENU:LD A,1
+STARTVIEW:LD (VIEWCOMPARE),A
+        LD HL,VIEWFCB
+        LD DE,INPUT
+        CALL COPYFCB
+        CALL OPENIN
+        LD HL,0A500H
+VIEWLOAD:
+        LD (POS),HL
+        LD DE,0B900H
+        OR A
+        SBC HL,DE
+        JP NC,MEMERR
+        LD DE,(POS)
+        CALL SETDMA
+        LD DE,INPUT
+        LD C,20
+        CALL BDOS
+        CP 1
+        JR Z,VIEWLOADED
+        OR A
+        JP NZ,IOERR
+        LD HL,(POS)
+        LD DE,128
+        ADD HL,DE
+        JR VIEWLOAD
+VIEWLOADED:CALL CLOSEIN
+        LD HL,0A500H+3
+        LD DE,VIEWTOKEN
+        LD B,4
+        CALL CMPFIELD
+        JP NZ,BADFDB
+        LD HL,(POS)
+        LD DE,0A509H
+        OR A
+        SBC HL,DE
+        JP C,BADFDB
+        LD B,H
+        LD C,L
+        LD HL,0FFFFH
+VCRC:   LD A,(DE)
+        XOR H
+        LD H,A
+        PUSH BC
+        LD B,8
+VCRCBIT:ADD HL,HL
+        JR NC,VCRCNEXT
+        LD A,H
+        XOR 010H
+        LD H,A
+        LD A,L
+        XOR 021H
+        LD L,A
+VCRCNEXT:DJNZ VCRCBIT
+        POP BC
+        INC DE
+        DEC BC
+        LD A,B
+        OR C
+        JR NZ,VCRC
+        LD DE,(0A507H)
+        OR A
+        SBC HL,DE
+        JP NZ,BADFDB
+        JP 0A500H
+VIEWCOMPARE:DB 0
+VIEWACTIVE:DB 0
+VIEWFCB:DB 0,'FDBVIEW OVL'
+
+VIEWTOKEN:DB 0,0,0,0
+
+VIEWCLEANUP:DW 0
+VIEWERROR:LD SP,STACKTOP
+        JP (HL)

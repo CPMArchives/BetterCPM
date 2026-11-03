@@ -31,6 +31,7 @@ def main():
                    help='leave only one free allocation block and verify failed replacement')
     p.add_argument('--exchange', action='store_true',
                    help='inspect and export the pending entry before saving the session')
+    p.add_argument('--details', action='store_true')
     args = p.parse_args()
     if args.exchange and args.disk_full:
         p.error('exchange requires space for its output files')
@@ -48,6 +49,8 @@ def main():
         names.append(('BYE.COM', (root/'build/z80pack-tools/BYE.COM').read_bytes()))
     if args.exchange:
         names.append(('TARGET.FDB', serialize((entries[0],))))
+    if args.details:
+        names.append(('FDBVIEW.OVL',(out/'FDBVIEW.OVL').read_bytes()))
     files = [({'name': name, 'user': 0}, data) for name, data in names]
     g = geometry(args.target, root)
     if args.disk_full:
@@ -58,6 +61,25 @@ def main():
              ('ADD.FDB', 'entire catalogue): '), ('TEST109', '1 added, 0 replaced.'),
              ('S', 'displayed default): '), ('', 'Replace entire file (Y/N)? '),
              ('Y', 'Catalogue saved and verified.'), ('Q', 'A0>')]
+    if args.details:
+        steps[4:4] = [('D','Source: catalogue ID,'), ('MMI012','Q or BREAK Return:'),
+                      ('4','Q or BREAK Return:'), ('Q','Choice:'),
+                      ('P','Source: catalogue ID,'), ('MMI012','Source: catalogue ID,'),
+                      ('MMI012','Q or BREAK Return:'), ('4','Q or BREAK Return:'),
+                      ('A','Q or BREAK Return:'), ('Q','Choice:'),
+                      ('P','Source: catalogue ID,'), (':B','Source: catalogue ID,'),
+                      (':C','Q or BREAK Return:'), ('4','Q or BREAK Return:'),
+                      ('A','Q or BREAK Return:'), ('Q','Choice:'),
+                      ('B','Source filename'), ('','Catalogue ID:'), ('MMI012','Q Back:'),
+                      ('Q','Choice:'), ('D','Source: catalogue ID,'), ('@','Q or BREAK Return:'),
+                      ('4','Q or BREAK Return:'), ('Q','Choice:'),
+                      ('D','Source: catalogue ID,'), ('/','Source .FDB filename:'),
+                      ('DISK.FDB','Working catalogue ID:'), ('MMI012','Q or BREAK Return:'),
+                      ('Q','Choice:')]
+    if args.details:
+        # The loaded pristine editor remains available. Choose W at S.
+        at = next(i for i,step in enumerate(steps) if step == ('S','displayed default): '))
+        steps[at:at+1] = [('S','other Cancel:'),('W','displayed default): ')]
     if args.exchange:
         steps[4:4] = [('L', 'capacity in bytes): '), ('test109', 'Choice: '),
                       ('O', 'working catalogue): '), ('TEST109', 'or .FDF: '),
