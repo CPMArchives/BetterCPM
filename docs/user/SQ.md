@@ -10,6 +10,7 @@ source unchanged until SQ finishes. Use USQ to restore it.
 
 ```text
 SQ [drive:]file [destination-drive:]
+SQ /H
 SQ /HELP
 SQ /VER
 ```
@@ -27,7 +28,7 @@ for program lookup, filename syntax and drive defaults.
 Options list, then returns without accessing files. Examples, defaults and
 restrictions are described below. Letter case and surrounding spaces or TABs
 do not matter.
-An exact `/HELP` token anywhere in the command ignores other arguments and
+An exact `/H` or `/HELP` token anywhere in the command ignores other arguments and
 shows help. If `/VER` is also present, help takes precedence in either order.
 Longer tokens such as `/HELPER` are syntax errors. Empty or malformed commands
 show short syntax and `Use SQ /HELP for help.`
@@ -35,14 +36,14 @@ show short syntax and `Use SQ /HELP for help.`
 The help screen is:
 
 ```text
-SQ 1.0 (Build 004)
+SQ 1.0 (006-dev)
   - - -
  | Squeeze compression
  |
  |   Usage: SQ [drive:]file [destination-drive:]
 
    Options:
-     /HELP       Display this help.
+     /H /HELP    Display this help.
      /VER        Display utility identification.
 ```
 
@@ -53,7 +54,7 @@ opening files or starting compression/expansion. `/ver` and mixed letter case
 work too. For the current build:
 
 ```text
-SQ 1.0 (Build 004)
+SQ 1.0 (006-dev)
   - - -
  | BetterCP/M Utilities
  | Squeeze File Compression
@@ -62,7 +63,7 @@ SQ 1.0 (Build 004)
 Version and build numbers come from the standard utility metadata. The build
 counter advances with published executable changes; it does not reset at a new
 version. An exact `/VER` token anywhere in the command shows identification and ignores
-other arguments, unless `/HELP` is also present, in which case help is shown.
+other arguments, unless `/H` or `/HELP` is also present, in which case help is shown.
 Normal file
 processing does not print this identification banner.
 
@@ -113,4 +114,4 @@ encoder byte for byte.
 
 - [USQ command](USQ.md)
 - [Common operating rules](utilities_manual.md#compression-utilities)
-- [SQ/USQ engineering specification](../engineering/SQ-USQ%20Specification.md)
+- In the Documentation ZIP, see `docs/engineering/SQ-USQ Specification.md`.

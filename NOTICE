@@ -2,7 +2,8 @@ BetterCP/M licensing and attribution scope
 
 Original software, build tools, tests and reusable code examples: GPL-2.0-or-later.
 Original documentation prose and illustrations: CC BY 4.0. LICENSE describes
-the split; COPYING and LICENSES/CC-BY-4.0.txt retain the respective terms.
+the split. The package license directory contains COPYING and CC-BY-4.0.txt.
+In the source tree the CC text is under LICENSES/.
 Copyright remains with the respective authors. No new individual owner or
 rights transfer is asserted. See docs/LICENSING.md for embedded code examples.
 

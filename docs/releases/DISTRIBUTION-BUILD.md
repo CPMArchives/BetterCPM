@@ -2,8 +2,8 @@
 
 The authoritative [manifest in progress](DISTRIBUTION-MANIFEST.md) selects disk
 membership. `metadata/distribution.json` records its System Disk projection,
-implementation status, target applicability, and user area. PIP and WHEREIS are
-selected System Disk utilities; TED is on the primary Utilities Disk.
+implementation status, target applicability, and user area. Both System disks carry PIP.COM. Use `:DIR /WHEREIS filename` to locate a file.
+TED is on the primary Utilities Disk.
 This builder does not assemble Utilities or the separate CP/M Tools Disk.
 
 Both System Disks include `README.TXT` in user 0. Its authoritative source is
@@ -102,7 +102,8 @@ or the cpmsim reproducibility requirement.
 
 
 Distribution cold boot runs `SUBMIT STARTUP`. The selected `STARTUP.SUB` is an
-ASCII, CR/LF script with a CP/M EOF marker and initially contains `:VER /BANNER`. The
+ASCII, CR/LF script with a CP/M EOF marker. On cpmsim it runs `:VER /BANNER`.
+On Model 4 it runs `RSX LOAD M4SCRN`, `RSX LOAD ADM3A`, `CLS`, then `:VER /BANNER`. The
 builder installs it in A0: and writes a checksummed BCST command record using
 each platform’s physical record mapping. Development/test image builders retain
 their disabled startup default so scripted qualification can choose its own

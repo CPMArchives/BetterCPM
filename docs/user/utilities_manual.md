@@ -2,7 +2,7 @@
 
 License: original prose/illustrations are CC BY 4.0; original reusable code examples are GPL-2.0-or-later. Third-party material retains its own terms. See [licensing and example boundaries](../LICENSING.md).
 
-Package references: ZSM4 and LINK operator guides accompany both platform Utilities downloads. Engineering, architecture and source-code links refer to the matching Documentation or Source download unless explicitly supplied locally; they are not additional installed disk members.
+Both platform Utilities downloads include the ZSM4, LINK and six compression command guides. Engineering, architecture and source-code links refer to the matching Documentation or Source download unless explicitly supplied locally; they are not additional installed disk members.
 
 This manual explains how to use the programs supplied on the BetterCP/M Utilities Disk. For the command prompt, drive and user areas, file management, configuration, and the System Disk commands, see the [BetterCP/M User’s Guide](users_guide.md).
 
@@ -100,7 +100,7 @@ Options and filenames are case-insensitive. Repeating a flag has no extra effect
 | `/NOTEXT` | Search only decoded HEX bytes; the pattern must be valid HEX. |
 | `/NOCASE` | Ignore ASCII letter case in TEXT; HEX bytes remain exact. |
 | `/P` | Pause result details one page at a time, moving forward only. |
-| `/HELP` | Display help without searching; takes precedence over `/VER`. |
+| `/H`, `/HELP` | Display help without searching; takes precedence over `/VER`. |
 | `/VER` | Display utility identification without searching. |
 
 By default SEARCH tries **both** interpretations independently. `"4142"` searches
@@ -358,7 +358,7 @@ Handled exits close opened files and restore the caller's drive and user area.
 
 ## CRCKSUM file checksums and verification lists
 
-**CRCKSUM 1.0 (009-dev), release candidate.** CRCKSUM.COM is included in the candidate Utilities images; the BetterCP/M 1.0 release has not yet been accepted or published. The current revision is recorded in [utility version metadata](../../metadata/utility-versions.tsv). The [engineering specification](../engineering/CRC-Specification.md) defines the interface; the [implementation record](../engineering/CRC-Implementation.md) preserves earlier revision-specific results. The [November 2 release conformance record](../engineering/Release-Conformance-2026-11-02.md) documents bounded candidate testing, not exhaustive qualification of every utility on both platforms.
+**CRCKSUM 1.0 (010-dev), release candidate.** CRCKSUM.COM is included in the candidate Utilities images; the BetterCP/M 1.0 release has not yet been accepted or published. Run `B0:CRCKSUM /VER` to check your copy. The [engineering specification](../engineering/CRC-Specification.md) defines the interface; the [implementation record](../engineering/CRC-Implementation.md) preserves earlier revision-specific results. The [November 2 release conformance record](../engineering/Release-Conformance-2026-11-02.md) documents bounded candidate testing, not exhaustive qualification of every utility on both platforms.
 
 CRCKSUM answers two related questions: what check values identify these files, and do the files still agree with an earlier list? It calculates eight values: the original CP/M CRCK calculation, corrected CRCK, CHEK, CRC-32, SUM8, SUM16, KERM6 and KERM12. You can display them, save a list, or check a directory against a saved reference. No input file is altered.
 
@@ -399,7 +399,7 @@ CRCKSUM [options] [filespec ...] [options]
 | `/CHECK` | Verify against a reference discovered in each selected DU. |
 | `/CHECK=filename` | Verify against this exact list name in each selected DU. Supply a filename only. |
 | `/40` | Display complete groups of two checksum columns within 40 columns. Saved lists are unchanged. |
-| `/HELP` | Display help without accessing files. |
+| `/H`, `/HELP` | Display help without accessing files. |
 | `/VER` | Display the utility's version and revision without accessing files. |
 
 Option names are case-insensitive, and options may appear before, between or after filespecs. Without algorithm switches, calculation displays all eight values. Supplying switches selects their combination: `/CRCK /CHEK` displays those two. Explicit algorithm switches also determine output order: `/SUM16 /CRCK /KERM6` puts those three columns in that order. Repeating a switch neither moves nor duplicates its column. This order also applies to the narrow display and mismatch details. Successful verification reports `FILENAME.EXT: MATCH (all N checksums)`, counting the checksum fields verified from the matching list entry. When a value option is repeated, every occurrence must be valid and the last value is used. `/HELP` takes precedence over `/VER`; either query suppresses ordinary command processing.
@@ -561,7 +561,7 @@ Ctrl-C cancels and reports an incomplete operation. Completed independent output
 
 ## MD5SUM file digests and verification lists
 
-**MD5SUM 1.0 (003-dev) — included in the candidate Utilities images.** The current revision is recorded in [utility version metadata](../../metadata/utility-versions.tsv). Component-specific tests and historical deferrals are documented in the [implementation notes](../engineering/MD5SUM-Implementation.md); the [November 2 release conformance record](../engineering/Release-Conformance-2026-11-02.md) does not establish exhaustive MD5SUM qualification on both platforms. Final release acceptance remains open. The [engineering specification](../engineering/MD5SUM-Specification.md) controls the design.
+**MD5SUM 1.0 (004-dev) — included in the candidate Utilities images.** Run `B0:MD5SUM /VER` to check your copy. Component-specific tests and historical deferrals are documented in the [implementation notes](../engineering/MD5SUM-Implementation.md); the [November 2 release conformance record](../engineering/Release-Conformance-2026-11-02.md) does not establish exhaustive MD5SUM qualification on both platforms. Final release acceptance remains open. The [engineering specification](../engineering/MD5SUM-Specification.md) controls the design.
 
 MD5SUM calculates one MD5 digest for each selected file. Save the results, and you can later check whether the files still agree with that list. Its selection, master/local output, overwrite and checking behavior follows CRCKSUM. There is only one algorithm and one saved-list format.
 
@@ -593,7 +593,7 @@ MD5SUM [options] [filespec ...] [options]
 | `/CHECK` | Check against MD5SUM.LST in each target DU. |
 | `/CHECK=filename` | Check against this exact list name in each target DU; supply a filename only. |
 | `/40` | Fit console results and messages within 40 columns; saved lists are unchanged. |
-| `/HELP` | Display help without file access. |
+| `/H`, `/HELP` | Display help without file access. |
 | `/VER` | Display the utility's identity without file access. |
 
 Options are case-insensitive and may appear before, between or after filespecs. Repeated value options must all be valid; the last value is used. A later bare CHECK does not erase an explicit CHECK filename. HELP takes precedence over VER, and either query ignores ordinary operands and options.
@@ -724,7 +724,7 @@ PATCH patchfile [ /INPUT=filespec ] [ /OUTPUT=filespec ] [ /VERBOSE ]
 | `/INPUT=filespec` | Select the original input, overriding the patch file's INPUT directive. |
 | `/OUTPUT=filespec` | Select a separate patched output, overriding the OUTPUT directive. |
 | `/VERBOSE` | Display instructions and validation results, continuing through independently identifiable mismatches. |
-| `/HELP` | Display help without file access. |
+| `/H`, `/HELP` | Display help without file access. |
 | `/VER` | Display the utility identity without file access. |
 
 Option names are case-insensitive. Unknown or malformed options, conflicting
@@ -1590,7 +1590,7 @@ use your current user area. The destination is a drive only, such as `C:`;
 you cannot supply a new output filename. Names and drive letters are
 case-insensitive. Wildcards, paths, explicit user/DU operands such as
 `A0:FILE.TXT`, quoted names, other switches and extra operands are not accepted.
-Each command also accepts `/HELP` and `/VER` queries. There is no overwrite option.
+Each command accepts `/H` or `/HELP` for help and `/VER` for its version. There is no overwrite option.
 
 With no source prefix, input comes from your logged drive. With no destination
 operand, output also goes to your logged drive, independently of where the
@@ -1616,7 +1616,7 @@ Use `SQ /HELP`, `USQ /HELP`, `CR /HELP`, `UNCR /HELP`, `LZH /HELP` or
 `UNLZH /HELP` for a compact screen with purpose, syntax and the two query options.
 A short corner groups the purpose and Usage line; the Options list is unframed.
 Examples and detailed operating rules are provided in the command pages.
-Help returns without accessing files. Queries ignore letter case and use spaces or TABs as separators. An exact `/HELP` token anywhere
+Help returns without accessing files. Queries ignore letter case and use spaces or TABs as separators. An exact `/H` or `/HELP` token anywhere
 shows help and ignores all other arguments, including `/VER`.
 Longer tokens such as `/HELPER` remain syntax errors. Empty or malformed
 commands show short syntax and a hint to use that command's `/HELP`.
@@ -1628,7 +1628,7 @@ to display that command's version and build without accessing files. Letter case
 does not matter. For example:
 
 ```text
-SQ 1.0 (Build 004)
+SQ 1.0 (006-dev)
   - - -
  | BetterCP/M Utilities
  | Squeeze File Compression

@@ -1,6 +1,7 @@
 ## MD5SUM file digests and verification lists
 
-**MD5SUM 1.0 development candidate.** MD5SUM is included in newly built candidate Utilities images. Focused native-build and cpmsim checks pass; the maintainer has waived and deferred the remaining Model 4 validation; full Model 4 qualification and paired release acceptance are not asserted. This is not a released-disk qualification claim. The [engineering specification](../engineering/MD5SUM-Specification.md) controls the design.
+**MD5SUM 1.0 (004-dev)** ships on the primary Utilities disk. With that disk in B:,
+run `B0:MD5SUM /VER` to check your copy or `B0:MD5SUM /H` for help.
 
 MD5SUM calculates one MD5 digest for each selected file. Save the results, and you can later check whether the files still agree with that list. Its selection, master/local output, overwrite and checking behavior follows CRCKSUM. There is only one algorithm and one saved-list format.
 
@@ -32,7 +33,7 @@ MD5SUM [options] [filespec ...] [options]
 | `/CHECK` | Check against MD5SUM.LST in each target DU. |
 | `/CHECK=filename` | Check against this exact list name in each target DU; supply a filename only. |
 | `/40` | Fit console results and messages within 40 columns; saved lists are unchanged. |
-| `/HELP` | Display help without file access. |
+| `/H`, `/HELP` | Display help without file access. |
 | `/VER` | Display the utility's identity without file access. |
 
 Options are case-insensitive and may appear before, between or after filespecs. Repeated value options must all be valid; the last value is used. A later bare CHECK does not erase an explicit CHECK filename. HELP takes precedence over VER, and either query ignores ordinary operands and options.

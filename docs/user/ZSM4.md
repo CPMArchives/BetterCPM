@@ -7,10 +7,10 @@ It reads assembly source and produces Microsoft/DRI-format relocatable objects.
 This is Hector Peraza's tool, with the earlier contributors acknowledged in its
 source; its original interface and version remain intact.
 
-With Utilities on B:, log a writable work drive containing `PROGRAM.MAC`:
+Put `PROGRAM.MAC` on the writable work disk in D:. With primary Utilities in B:, use the following sequence.
 
 ```text
-A:
+D:
 B:ZSM4 PROGRAM=PROGRAM
 B:LINK PROGRAM[A]
 PROGRAM
@@ -30,6 +30,7 @@ The complete upstream manual, source, tests and Makefile accompany the Utilities
 images in `ZSM4-SOURCE.tar.gz`; see `zsm4-source/docs` after unpacking on the host.
 
 ZSM4 is GPL-2.0-or-later. The disk contains `ZSM4COPY.TXT`; distribute the full
-source companion with these images. Exact identity and upstream revision are
-recorded in `Toolchain-Provenance.json` and the repository's
-[provenance](../../third_party/zsm4/provenance.json).
+source companion with these images. In the Utilities ZIP, `source/Toolchain-Provenance.json`
+identifies the shipped executable. The upstream record is at
+`licenses/third_party/zsm4/provenance.json`. See also the
+[guide to third-party records](../LICENSING.md#third-party-records).

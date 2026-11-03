@@ -260,7 +260,7 @@ def assemble(args):
                                                 util_reports,inventory)
             files.update(selected)
             files['docs/user/utilities_manual.md']=tracked['docs/user/utilities_manual.md']
-            for guide in ('ZSM4.md','LINK.md'):
+            for guide in ('ZSM4.md','LINK.md','SQ.md','USQ.md','CR.md','UNCR.md','LZH.md','UNLZH.md'):
                 files['docs/user/'+guide]=tracked['docs/user/'+guide]
             files['docs/engineering/Model 4 Release Checklist.md']=tracked['docs/engineering/Model 4 Release Checklist.md']
         elif id=='source':
@@ -274,6 +274,8 @@ def assemble(args):
                     files['source/native-companions/'+name]=data
         else:
             for name,data in tracked.items():
+                if name == 'docs/user/users_guide_backup.md':
+                    continue
                 if name.startswith('docs/') and Path(name).suffix.lower() in ('.md','.txt','.json','.tsv','.png','.svg'):
                     files[name]=data
             files['CONTENTS.md']=tracked['packaging/1.0/DOCUMENTATION-CONTENTS.md']

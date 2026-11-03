@@ -10,7 +10,8 @@ COPYING contains the complete GNU GPL version 2 text and warranty disclaimer.
 Original documentation: CC-BY-4.0
 --------------------------------
 Original documentation prose and illustrations are licensed under Creative
-Commons Attribution 4.0 International. LICENSES/CC-BY-4.0.txt contains the terms;
+Commons Attribution 4.0 International. The terms are in CC-BY-4.0.txt beside
+this file in the package license directory, or LICENSES/CC-BY-4.0.txt in the source tree.
 https://creativecommons.org/licenses/by/4.0/ provides the license description.
 Retain supplied attribution/license notices and indicate changes as required.
 The documentation grant does not replace the GPL terms for reusable code.
