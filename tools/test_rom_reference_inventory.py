@@ -22,12 +22,14 @@ from system_layout import LAYOUT
 # Directory-full recovery compaction: two byte-store pairs become word stores,
 # Open uses IX directly, and shared branches/calls net one fewer ROM operand.
 # Shifted-assembly discovery and every relocated operand remain checked.
+# BIOS compaction removes one duplicate JP MC_CALL and changes the cursor
+# dispatch JP to JR: two fewer immutable-ROM address operands, no RAM loss.
 EXPECTED_REFERENCES = {
     "gateway": 24,
     "bdos": 492,
     "extensions": 55,
     "disk": 82,
-    "bios": 124,
+    "bios": 122,
     "fileloader": 13,
     "tables": 0,
 }
@@ -36,13 +38,13 @@ EXPECTED_DISCOVERED = {
     "bdos": 492,
     "extensions": 55,
     "disk": 82,
-    "bios": 124,
+    "bios": 122,
     "fileloader": 13,
     "tables": 16,
 }
 # Shared Open/Make extent matching removes two state references; the explicit
 # sequential-write wrapper adds two code calls. Total coverage is unchanged.
-EXPECTED_CLASSES = {"immutable-rom": 470, "live-ram": 320}
+EXPECTED_CLASSES = {"immutable-rom": 468, "live-ram": 320}
 EXPECTED_OVERLAY_CLASSES = {"immutable-rom": 3, "live-ram": 102}
 EXPECTED_OVERLAY_REFERENCES = 105
 
@@ -74,7 +76,7 @@ def main() -> None:
         raise AssertionError("packed-code reference counts changed")
     if inventory["target_class_counts"] != EXPECTED_CLASSES:
         raise AssertionError("ROM/RAM reference classification changed")
-    if inventory["reference_count"] != 790:
+    if inventory["reference_count"] != 788:
         raise AssertionError("packed-code reference total changed")
     if (inventory["overlay_discovered_word_count"] !=
             EXPECTED_OVERLAY_REFERENCES or
@@ -162,7 +164,7 @@ def main() -> None:
             any(row["target_class"] != "immutable-rom"
                 for row in extension_entries)):
         raise AssertionError("Extension entry references lost ROM semantics")
-    print("ROM address inventory verified: 790 packed-code words and 105 CONFIG "
+    print("ROM address inventory verified: 788 packed-code words and 105 CONFIG "
           "overlay words; no unresolved references")
 
 

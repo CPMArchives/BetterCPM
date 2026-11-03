@@ -14,15 +14,18 @@ from build_rom_relocated_image import build
 # Directory-full recovery compaction: two byte-store pairs become word stores,
 # Open uses IX directly, and shared branches/calls net one fewer ROM operand.
 # Shifted-assembly discovery and every relocated operand remain checked.
+# Merged BIOS compaction removes two ROM operands. The BDOS invalid-drive
+# correction shifts following packed code by one byte; retain exact measured
+# totals as well as independent validation of every relocation and other byte.
 EXPECTED_COMPONENTS = {
     "bdos": 492,
-    "bios": 124,
+    "bios": 122,
     "disk": 82,
     "extensions": 55,
     "fileloader": 13,
     "gateway": 24,
 }
-EXPECTED_CLASSES = {"immutable-rom": 470, "live-ram": 320}
+EXPECTED_CLASSES = {"immutable-rom": 468, "live-ram": 320}
 
 
 def digest(data: bytes) -> str:
@@ -59,12 +62,12 @@ def main() -> None:
     if (manifest["boot_integrated"] is not False or
             manifest["protected_xip_qualified"] is not False):
         raise AssertionError("relocation artifact overclaims later qualification")
-    if (manifest["relocation_words"] != 790 or
-            manifest["changed_words"] != 779 or
+    if (manifest["relocation_words"] != 788 or
+            manifest["changed_words"] != 777 or
             manifest["unchanged_final_words"] != 11 or
-            manifest["changed_bytes"] != 1540):
+            manifest["changed_bytes"] != 1328):
         raise AssertionError("accepted relocation totals changed")
-    if (manifest["accounted_layout_words"] != 809 or
+    if (manifest["accounted_layout_words"] != 807 or
             manifest["mutable_template_fixups"] != 16 or
             manifest["mutable_already_final_words"] != 3):
         raise AssertionError("mutable layout-word accounting changed")
@@ -75,7 +78,7 @@ def main() -> None:
     if manifest["entries"] != {
             "system_init": 0xDF00,
             "system_boot": 0xDF20,
-            "bios_boot": 0xf1ae,
+            "bios_boot": 0xf1af,
             "bdos": 0xDF9E,
             "ram_template": 0xF47D,
             "cold_initializer": 0xFDE9}:
