@@ -11,6 +11,7 @@ from fdf_v1 import parse, serialize
 class Session(FDBCommand):
     corrupt_readback = False
     fail_restoration = False
+    arrival = None
 
     def bdos(self, fn, de):
         if fn == 32 and (de & 255) == 255:
@@ -24,6 +25,9 @@ class Session(FDBCommand):
                 self.keys = iter("Q\rD\r")
                 char = next(self.keys)
             return ord(char)
+        if fn == 17 and self.arrival and self.fcbkey(de)[2] == 'NEW.$$$':
+            self.files[self.arrival] = b'appeared after confirmation'
+            self.arrival = None
         if fn == 23 and self.fail_restoration and len(self.renamed) == 1:
             return 255
         result = super().bdos(fn, de)
@@ -107,6 +111,37 @@ def main():
     revised = replace(entries[0], description='Replacement')
     run('I\rADD.FDB\r\rR\r'+save+'Q\r', {dest:stock, src:serialize((revised,))})
     assert m.files[dest] == serialize((revised, *entries[1:]))
+    exchange = serialize((entries[0], extra))
+    result = run(edit + 'L\r' + save + 'Q\r', {dest:stock, src:exchange})
+    assert 'TEST109 New test definition' in result
+    assert m.files == {dest:expected, src:exchange}
+    # Only Return requests a whole-file import. A leading space never does.
+    run('I\rADD.FDB\r TEST109\rQ\r')
+    assert m.files == original and 'Invalid filename or ID' in m.console
+    # A stray suffix cannot confirm replacement, discard pending work or
+    # leak out of an overlong field into a menu command.
+    run(edit + 'S\r\rYNO\rQ\rDISAGREE\r' + save + 'Q\r')
+    assert m.files[dest] == expected and len(m.renamed) == 2
+    run(edit + 'S\r' + 'X'*33 + 'Q\r' + save + 'Q\r')
+    assert m.files[dest] == expected
+    # The next save can be retried in the same session after a write failure.
+    run(edit + save + save + 'Q\r', failures={'write':2})
+    assert m.files == {dest:expected, src:imported}
+    # Opening an ambiguous catalogue cannot silently commit it as the new default.
+    ambiguous = serialize((extra, replace(entries[0], description=extra.description.lower())))
+    run(edit + 'F\rD\rBAD.FDB\r' + save + 'Q\r',
+        {**original, key('BAD.FDB'):ambiguous})
+    assert m.files[dest] == expected and m.files[key('BAD.FDB')] == ambiguous
+    assert 'Duplicate display names' in m.console
+    run('F\rEMPTY.FDB\rQ\r', {**original, key('EMPTY.FDB'):serialize(())})
+    assert 'EMPTY.FDB   Entries: 0' in m.console
+    m.arrival = key('NEW.FDB')
+    run(edit + 'S\rNEW.FDB\rY\rQ\rD\r')
+    assert m.files[key('NEW.FDB')] == b'appeared after confirmation'
+    assert m.files[key('NEW.$$$')] == expected and not m.renamed
+    # BREAK from a naming prompt and a dirty exit preserves pending edits.
+    run(edit + 'S\r\x03\x03C\r' + save + 'Q\r')
+    assert m.files == {dest:expected, src:imported}
     for reserved in (temp, backup):
         run(edit + save + 'Q\rD\r', {**original, reserved:b'KEEP'})
         assert m.files == {**original, reserved:b'KEEP'}

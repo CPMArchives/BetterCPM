@@ -10,15 +10,16 @@ continues to convert to a new destination. In the session, type a choice and
 press Return. BREAK cancels a prompt or requests exit at the menu.
 
 - **F** opens a validated .FDB or .FDF. **N** starts an untitled empty catalogue.
-  Leaving modified work offers Save, Discard or Cancel. An unsuccessful open
-  preserves the current working copy.
+  Leaving modified work offers Save, Discard or Cancel. An unsuccessful open, including one with ambiguous
+  display names, preserves the current working copy and its save default.
 - **I** accepts a source filename and one ID or Return for all entries. Duplicate
   IDs offer replacement, a different ID or cancellation. Conflicting descriptions
   can be renamed on the imported copy. A successful import marks the working
   catalogue modified. Cancelling any conflict discards the entire pending import.
 - **L** lists IDs and descriptions. **S** writes the whole working catalogue.
   Return accepts the displayed default. An untitled catalogue requires a name.
-  The final prompt shows the drive, user and filename. A successful Save As
+  The final prompt shows the drive, user and filename and distinguishes creating
+  a new file from replacing an entire existing one. A successful Save As
   becomes the new default. **Q** or BREAK exits.
 - The working copy and import snapshot each hold 9,472 compiled bytes. The session
   accepts up to 128 entries subject to this size limit. The stock 108 entries
@@ -69,7 +70,7 @@ disposable system tracks and extracts both files for comparison.
 The CONFIG-style working-format editor, live drive operations, richer inspection
 and the separate O export workflow belong to later specification 209 stages.
 
-On cpmsim and Model 4 under trs80gp, the same 13,230-byte COM imported TEST109
+On cpmsim and Model 4 under trs80gp, the same 13,331-byte COM imported TEST109
 into the stock catalogue, confirmed replacement of DISK.FDB, and returned to
 the command prompt. Each extracted result matched the host's serialization of
 the original 108 definitions followed by TEST109. The source file was unchanged
@@ -77,3 +78,13 @@ and neither recovery name remained. The resulting 109-entry catalogue SHA-256
 was `f05a2a1561aadd40d365ca391c85dd18bab7ef6170852ce1019c6325bb345619`.
 All 40 conversion regression cases passed. Failure injection and interrupted
 directory states were tested in the full Z80 core with a BDOS test harness.
+
+
+The PR review also exercised the platform qualifier with `--disk-full`. It
+leaves one allocation block free, enough to begin writing the temporary file
+but insufficient to finish it. On both platforms the extracted destination was
+the original 108-entry catalogue (SHA-256
+`06e2d88e30c38bebe4eaf0975a3e302086874e719109dc3898bb72a0f7ded6a5`).
+The import source was intact and the directory contained neither recovery name.
+The harness separately tests retry in the same modified session, BREAK, invalid
+confirmation text, ambiguous opens and a destination appearing after confirmation.

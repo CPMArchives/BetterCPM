@@ -45,8 +45,7 @@ SHOWCOUNT:
         LD HL,MODSTATE
 SHOWSTATE: CALL PUTS
         LD HL,MENUMSG
-        CALL ASK
-        LD A,(ANSWER)
+        CALL ASKCHOICE
         CP 'S'
         JP Z,SAVECAT
         CP 'I'
@@ -111,7 +110,8 @@ STAGED: CALL FITCHECK
         LD A,(ACTION)
         OR A
         JP NZ,MERGEIMPORT
-        LD HL,INPUT
+        JP CHECKNAMES
+OPENACCEPT:LD HL,INPUT
         LD DE,DEFAULTNAME
         LD BC,12
         LDIR
@@ -159,8 +159,7 @@ PENDING:
         OR A
         RET Z
         LD HL,PENDINGMSG
-        CALL ASK
-        LD A,(ANSWER)
+        CALL ASKCHOICE
         CP 'D'
         RET Z
         CP 'S'
@@ -218,7 +217,12 @@ SELECTIMPORT:
         LD A,(ANSWER)
         CP 3
         JP Z,MENU
+        ; Only an empty line selects all records. A leading space in a
+        ; mistyped ID must never widen a single-entry import.
         LD HL,ANSWER
+        LD A,(HL)
+        CP ' '
+        JP Z,BADNAME
         LD DE,ANSWER
         LD B,8
 PADSEL: LD A,(HL)
@@ -445,7 +449,9 @@ MERGED: LD HL,0
         JP C,BADFDB
         CALL SEMANTICS
 ; Reject ambiguous descriptions before changing the session.
-        LD A,(FCOUNT)
+CHECKNAMES:LD A,(FCOUNT)
+        OR A
+        JP Z,NAMESOK
         LD C,A
         LD IX,FDFRAM+128
 NAMENEXT: DEC C
@@ -477,6 +483,9 @@ NAMECMP:LD A,(DE)
         DJNZ NAMECMP
         POP HL
         POP BC
+        LD A,(ACTION)
+        OR A
+        JP Z,AMBIGFAIL
         ; C = remaining pairs at IX, B = remaining pairs from HL.
         LD A,(REFCOUNT)
         SUB C
@@ -547,7 +556,10 @@ NAMEDIFF:POP HL
         JP NZ,NAMEPAIR
         ADD IX,DE
         JP NAMENEXT
-NAMESOK:CALL COMMITWORK
+NAMESOK:LD A,(ACTION)
+        OR A
+        JP Z,OPENACCEPT
+        CALL COMMITWORK
         LD A,1
         LD (DIRTY),A
         LD A,(ADDED)
@@ -591,9 +603,20 @@ DESTREADY:XOR A
         JP NZ,BADNAME
         LD A,1
         LD (TEXTDEST),A
-SHOWDEST:LD HL,DESTFCB
+SHOWDEST:LD DE,DESTFCB
+        CALL PRESENT
+        LD A,0
+        JR Z,DESTABSENT
+        INC A
+DESTABSENT:LD (HADDEST),A
+        LD HL,DESTFCB
         CALL SHOWNAME
         LD HL,WRITEMSG
+        LD A,(HADDEST)
+        OR A
+        JR Z,CONFIRMSAVE
+        LD HL,REPLACEMSG
+CONFIRMSAVE:
         CALL ASKCHOICE
         CP 'Y'
         JP NZ,MENU
@@ -627,12 +650,6 @@ SHOWDEST:LD HL,DESTFCB
         LD DE,BACKFCB
         CALL PRESENT
         JP NZ,RECFILES
-        LD DE,DESTFCB
-        CALL PRESENT
-        LD A,0
-        JR Z,DESTABSENT
-        INC A
-DESTABSENT:LD (HADDEST),A
         LD HL,TEMPFCB
         LD DE,OUTPUT
         CALL COPYFCB
@@ -755,7 +772,10 @@ READTEMP:LD DE,INBUF
         JP BDOS
 VERIFYERR:LD HL,VERIFYMSG
         JP EXITMSG
-RECFILES:LD HL,RECMSG
+RECFILES:LD HL,DESTFCB
+        CALL SHOWNAME
+        CALL CRLF
+        LD HL,RECMSG
         JP EXITMSG
 ; Never rename over an existing target, including a recovery file.
 RENAMEFILE:
@@ -939,6 +959,9 @@ UPPER:  CP 'a'
         SUB 32
         RET
 ASKCHOICE:CALL ASK
+        LD A,(ANSWER+1)
+        OR A
+        JP NZ,MENU
         LD A,(ANSWER)
         RET
 ; Read directly so BREAK returns to the session and can protect dirty work.
@@ -967,7 +990,7 @@ ASKREAD:POP HL
         LD C,A
         LD A,B
         CP 32
-        JP NC,BADNAME
+        JR NC,ASKOVER
         LD A,(RAWANSWER)
         OR A
         LD A,C
@@ -977,7 +1000,13 @@ ASKREAD:POP HL
         INC B
         CALL PUTC
         JR ASKKEY
+; Drain the rest of an overlong line before returning to the menu.
+; Otherwise its suffix could be interpreted as an independent command.
+ASKOVER:LD B,33
+        JR ASKKEY
 ASKBACK:LD A,B
+        CP 33
+        JR Z,ASKKEY
         OR A
         JR Z,ASKKEY
         DEC B
@@ -992,7 +1021,10 @@ ASKBACK:LD A,B
 ASKBREAK:LD HL,ANSWER
         LD (HL),3
         INC HL
-ASKDONE:LD (HL),0
+ASKDONE:LD A,B
+        CP 33
+        JP Z,BADNAME
+        LD (HL),0
         JP CRLF
 SESSION:DB 0
 DIRTY:  DB 0
@@ -1034,15 +1066,16 @@ SOURCEMSG:DB 'Source .FDB or .FDF: ',0
 SELECTMSG:DB 'ID to import (Return for entire catalogue): ',0
 DUPMSG: DB ' exists. R Replace, U Use new ID, C Cancel: ',0
 AMBIGMSG:DB ' has a duplicate name. New description (Return cancels): ',0
-AMBIGBAD:DB 'Existing names conflict. Import cancelled.',13,10,0
+AMBIGBAD:DB 'Duplicate display names. Working catalogue preserved.',13,10,0
 IDMSG: DB 'New ID (1-8 letters/digits): ',0
 NONEFOUND:DB 'No matching entries. Nothing imported.',13,10,0
 ADDMSG: DB ' added, ',0
 REPLMSG:DB ' replaced. Changes are unsaved.',13,10,0
 DESTMSG:DB 'Write .FDB or .FDF (Return for displayed default): ',0
-WRITEMSG:DB '  Write this catalogue (Y/N)? ',0
+WRITEMSG:DB '  Create new file (Y/N)? ',0
+REPLACEMSG:DB '  Replace entire file (Y/N)? ',0
 SAVEDMSG:DB 'Catalogue saved and verified.',13,10,0
 KEEPBACK:DB 'Published. Old catalogue retained as .BAK.',13,10,0
-RECMSG: DB 'Save stopped. Inspect same-name .FDB, .BAK and .$$$ before retry.',13,10,0
+RECMSG: DB 'Save stopped. Inspect this destination, its .BAK and .$$$ before retry.',13,10,0
 VERIFYMSG:DB 'Temporary file failed readback. Inspect .$$$; original preserved.',13,10,0
 NAMEMSG:DB 'Invalid filename or ID.',13,10,0
