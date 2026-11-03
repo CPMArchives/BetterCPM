@@ -1,0 +1,90 @@
+{
+  "status": "PREPARED; Model 4 not executed",
+  "reviewed_pr_commit": "b69664b8dae31b64b5dae86f58a80660f4037b5f",
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "source_boot_sha256": "49caa9819a9c2b3ebd03fa715895c253aef0506acfcc866a2fbfcb61e1076bcb",
+  "artifacts": {
+    "BDOS": "2c9efde1dded13a82849d0440e1b86b307166ee8d298455268cd0e31dafdbb0b",
+    "SYSBUILD": "8c7c781c8be6913b3c1da7e23321e213c055eb7e164e24143c7cb29b5e8e1b59",
+    "RLMBUILD": "885d9f28aaed9fdd20c457241592b25d6a83024e838182436d52054dea61d629"
+  },
+  "runner_sha256": "38569b0a6f2f9fbd12465d3922856e90d8c08e4c40d304618e083a977d64a762",
+  "cases": {
+    "invalid-drive": [
+      [
+        "DRIVE5",
+        "AUD001 PASS: 13 invalid-drive calls rejected",
+        "A0>"
+      ]
+    ],
+    "low-tpa": [
+      [
+        "RSX LOAD BIGMEM",
+        "BIGMEM",
+        "A0>"
+      ],
+      [
+        "GATE",
+        "GATE8001 PASS",
+        "A0>"
+      ],
+      [
+        "SYSBUILD",
+        "SYSBUILD: insufficient active TPA.",
+        "A0>"
+      ],
+      [
+        "RLMBUILD",
+        "RLMBUILD: insufficient active TPA.",
+        "A0>"
+      ],
+      [
+        "SYSBUILD /VER",
+        "SYSBUILD 1.0",
+        "A0>"
+      ],
+      [
+        "RLMBUILD /HELP",
+        "Display utility identification.",
+        "A0>"
+      ],
+      [
+        "RSX LIST",
+        "BIGMEM",
+        "A0>"
+      ],
+      [
+        "GATE",
+        "GATE8001 PASS",
+        "A0>"
+      ]
+    ],
+    "normal-tpa": [
+      [
+        "B:",
+        "B0>",
+        "B0>"
+      ],
+      [
+        "A:RLMBUILD",
+        "CCP.RLM created and verified.",
+        "B0>"
+      ],
+      [
+        "A:SYSBUILD",
+        "SYSTEM.SYS created and verified",
+        "B0>"
+      ]
+    ]
+  },
+  "host_launch_status": {
+    "status": "NOT RUN",
+    "reason": "macOS LaunchServices permission denied (BOOTSTRAP_NOT_PRIVILEGED), code 1100. trs80gp was not started: AppKit application registration cannot complete in this execution context. Permit this launch through the host approval mechanism or run the same test from a normal Terminal. This is a host launch failure, not a Model 4 test result."
+  },
+  "diagnostic_control": {
+    "status": "PASS",
+    "scope": "diagnostic program control under cpmsim; not Model 4 qualification",
+    "disk_unchanged": true,
+    "probe_sha256": "89632eaaa5ddf8bd083e90a9d0cc0d95ab747a38dfe573d7b2ed24f9527aa7d8"
+  }
+}

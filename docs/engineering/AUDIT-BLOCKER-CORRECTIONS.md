@@ -115,6 +115,31 @@ audited commit, keeping the test programs outside that immutable snapshot.
 
 ## Remaining qualification
 
+The follow-up `tools/test_audit_blockers_model4.py` prepares and resumes three
+Model 4 batches: all 13 invalid-drive service entry points, an admitted 8001h
+RSX gateway with safe builder/query returns, and normal-TPA native creation of
+both host-matching outputs. Preparation checks the production artifacts against
+the revision receipts and verifies that the boot image contains that BDOS.
+Resume verifies frozen input, runner/helper and emulator hashes, uses private
+disk copies and retains screen captures and file-integrity checks. It does not
+rebuild or mount release masters. A failed or incomplete run cannot produce an
+aggregate PASS record.
+
+```sh
+python3 tools/test_audit_blockers_model4.py \
+  --prepare-only --output build/blocker-validation/model4
+# From a normal macOS Terminal, using the same checkout and emulator:
+python3 tools/test_audit_blockers_model4.py \
+  --resume --output build/blocker-validation/model4
+```
+
+The assistant host's LaunchServices preflight returns permission-denied code
+1100, so trs80gp is deliberately not started there. The packet is prepared and
+the generated 13-operation diagnostic passes a separate native cpmsim control
+with a byte-identical disk. Neither result qualifies Model 4 runtime. The
+[preparation record](audit-blockers-20261103/model4-preparation.json) explicitly
+retains this NOT RUN status; the native run must be completed from Terminal.
+
 Model 4 runtime under trs80gp has not been requalified here; its common code
 and BIOS cross build pass. The independently active Model 4 keyboard/BIOS and
 shared UI integration branches are untouched. A separate delta audit and
