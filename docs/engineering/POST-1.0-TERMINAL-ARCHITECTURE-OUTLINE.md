@@ -577,6 +577,13 @@ rebinding rules.
 
 ### Fallback and output policy
 
+For utilities whose operations do not inherently require a cursor-addressable
+screen, readable and correct operation without an installed TCAP definition,
+terminal profile or enhancement provider is an explicit acceptance requirement.
+Choose ordinary ASCII output before emitting presentation controls when usable
+capabilities have not been established. Installing terminal support must not be
+a prerequisite for using an otherwise line-oriented utility.
+
 - Preserve wording, field widths, default indicators, choices and operation
   semantics in plain mode. Attributes must carry no essential information.
 - Keep ordinary file output, checksum lists, machine-readable output and
@@ -613,7 +620,11 @@ No new selector, save-state contract, configuration syntax or library API is
 chosen here. Reuse the existing screen tests and compare plain-mode text and
 file bytes, supported/unsupported attributes, interrupted cleanup, mixed output
 paths and right-edge behavior: legacy cell output clamps at the last column,
-whereas styled glyph output uses delayed wrap. Measure executable growth,
+whereas styled glyph output uses delayed wrap. Explicitly qualify the same
+line-oriented operations with no TCAP/profile, no enhancement provider,
+unrecognized or rejected capability metadata, and an explicit plain setting;
+check readable output, absence of presentation controls, unchanged command
+semantics and file effects. Measure executable growth,
 loaded allocation and stack/workspace cost; do not assume that optional code is
 free or add a full-screen buffer merely for highlighting. Batch platform
 qualification after the implementation stabilizes. These are future acceptance
