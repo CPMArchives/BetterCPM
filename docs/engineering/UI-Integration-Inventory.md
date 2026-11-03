@@ -14,7 +14,7 @@ Subsequent checkpoint: #571 merged at
 `bd4df2cd9f0a7a2edfa12112a8c02151eea5b90d`. The separate
 `stabilization/ui-argument-validation` follow-up preserves four no-operand fixes
 found during the remaining parser review. All four affected paths build and pass
-host/cpmsim checks; their Model 4 gate remains pending. The matrix closes 28
+host/cpmsim and the 22-phase current-payload Model 4 gate. The matrix closes 28
 bounded malformed-tail entries, documents five existing language/host exceptions,
 and retains six development-only O entries. See the
 [follow-up record](UI-Argument-Validation-Followup.md) for exact evidence and limits.

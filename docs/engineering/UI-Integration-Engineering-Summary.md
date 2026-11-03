@@ -4,7 +4,7 @@
 `bd4df2cd9f0a7a2edfa12112a8c02151eea5b90d`. Its bounded current-payload
 Model 4 gates pass. The [argument-validation follow-up](UI-Argument-Validation-Followup.md)
 fixes four discovered no-operand gaps and closes 28 malformed-tail evidence cells;
-its host/build/cpmsim gates pass, but its Model 4 gate remains pending.
+its host/build/cpmsim and current-payload 22-phase Model 4 gates pass.
 Six development-only operational-tail entries remain explicitly outstanding.
 No core, BIOS, resident RCP or historical third-party reference source was changed.
 No new utility feature/library was introduced. Overall completion is not yet claimed.
@@ -286,8 +286,8 @@ python3 tools/test_ui_integration_media.py --system "$SYSTEMS" --platform model4
    release packaging/conformance remains a separate acceptance boundary.
 3. The follow-up closes the released-command malformed-tail review with bounded
    tests or documented existing language/host exceptions. Six development-only
-   entries remain O. The four changed follow-up executables still require their
-   Model 4 execution gate. Broader release packaging acceptance remains separate.
+   entries remain O. The four changed follow-up executables now pass their
+   22-phase Model 4 execution gate. Broader release packaging acceptance remains separate.
 
 This branch is suitable for engineering review as a draft. It is not presented
 as satisfying the assignment's complete-and-ready-to-merge criterion.
@@ -355,3 +355,20 @@ stack high-water is 52 bytes at exclusive TPA ceiling 50,689.
 [captures/readback](evidence/2026-11-03-ted-model4-scope/receipts-and-logs.tar.gz)
 close the second bounded native TED gate. This does not close outstanding
 malformed/combination cells or assert whole-release qualification.
+
+## Four-utility follow-up: Model 4 gate closed
+
+The maintainer's 3 November 2026 run at
+`/Users/nathanael/Downloads/ui-noargs-model4-20261103-143246` passes all 22
+phases with the current ADMTST/ANSITST/VT52TST/XSUB hashes. Eight queries,
+twelve invalid invocations, normal XSUB installation and RSX LIST are captured
+with unique completion markers. Payload and BATCHIO readback, both filesystems
+and the reserved system area pass. All 22 captures, output checks and exact
+payload/source hashes were reviewed before archiving the
+[native receipt and file hashes](evidence/2026-11-03-ui-noargs-model4-pass/results.json).
+
+The [follow-up record](UI-Argument-Validation-Followup.md) gives the exact
+reproduction command and memory comparison. Its native gate is complete;
+#573 is reviewable without another native run for these unchanged payloads.
+Six development-only operational-tail O entries and missing historical UNLZH
+fixtures remain recorded. No release images were refreshed or main merged here.

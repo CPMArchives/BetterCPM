@@ -1,0 +1,96 @@
+{
+  "date": "2026-11-03",
+  "status": "PASS",
+  "platform": "trs80gp Model 4",
+  "scope": "22 bounded no-operand/query/normal XSUB installation phases; not full release qualification",
+  "original_output": "/Users/nathanael/Downloads/ui-noargs-model4-20261103-143246",
+  "receipt": {
+    "status": "PASS",
+    "platform": "model4",
+    "system_sha256": "4105ff45e411e25c0f3cd6024b970ddc231e6287086a553933e1fb577aaf2467",
+    "binaries": {
+      "ADMTST": {
+        "bytes": 2045,
+        "sha256": "cc587c6b133b25b65f67a544b3e6ab3dcb8ab1dfc029f5e83ea7c68139bf9654"
+      },
+      "ANSITST": {
+        "bytes": 1115,
+        "sha256": "c86ed522c239ce531a64cf85768f27eaa1496cffdcf7a798ba1c95e874a6236c"
+      },
+      "VT52TST": {
+        "bytes": 1410,
+        "sha256": "b1953940dd2069c2ad79b58d01464402778483e52c987bcaf3a2ca416bbbf1b0"
+      },
+      "XSUB": {
+        "bytes": 768,
+        "sha256": "f4c0cb3aada979e04b78515d22c88d1f19d1e402dff899b53e8f027d57e11ed7"
+      }
+    },
+    "steps": 22,
+    "scope": "diagnostic/XSUB query precedence and invalid arguments; valid XSUB installation and RSX LIST; independent payload/companion readback and filesystem checks",
+    "batchio_sha256": "0347270c05d040e0c7b82d73402803e26baa6a7977880d2764f0700fc1dc5ee0",
+    "work_format": "Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)",
+    "media_preflight": "PASS",
+    "command_transport": "SUBMIT UIQUAL with unique blocking completion markers",
+    "command_script_sha256": "ead86e3348c1ca002a063c064f62b1bbf9ae81921e50ce0e3ae10f7eaaafab2e",
+    "unchanged_inputs": true,
+    "unchanged_system_area": true,
+    "filesystem": "PASS",
+    "invalid_arguments": "PASS",
+    "normal_xsub_installation": "PASS",
+    "companion_unchanged": true
+  },
+  "captures": 22,
+  "review": "completion markers, help/version outputs, twelve invalid diagnostics, normal XSUB installation, exact payload hashes and independent readback rechecked",
+  "source_sha256": {
+    "src/utilities/admtst.mac": "fcfc275b32cf7a747e9f784a17853f84a95247c92981df600ac57f639284ca66",
+    "src/utilities/ansitst.mac": "dc3e99befe060bc26af39ee1cce1860d8c56de52ae9feac614e90a2a6bebcfba",
+    "src/utilities/vt52tst.mac": "28bf947d79460c6872eb134d982cfe0090934aca49e8bff69f1f3f988db60bf0",
+    "src/utilities/xsub.mac": "74a25c48a2ed6d1a0c44bbf915ed7f43d0f591abb05a0ef0adae69373faf00b0",
+    "tools/test_utility_finalization.py": "630d8f3e4cf4a82baf11d4f2e064ed6af6a494012d4942b6498a47928cc11d19",
+    "tools/test_ui_integration_media.py": "f07068c4b5d66801f524ca526b9401c040ed9a66ad71c4b45e890bf50c318d48",
+    "tools/test_ui_integration_schedule.py": "23b6c6773a3fd472c7ee799d2d922360f397e3a6d14c3fd8f1d27f550868507d",
+    "tools/test_utility_versions.py": "ad880a8755ba259fb1bd8acd3585e908a19da889661a65e586814c1f82cb1bbb",
+    "tools/test_ed_invocation.py": "b7e1cd147eea9a9027c4b9489c5e5bf15aa757657fcb2963ff6c240d09fdbce4",
+    "tools/test_sysgen_command_line.py": "3de07ba2985e15ecf2ca8b1049c1613f531477dc9858d6c826ddefd837e5c157",
+    "tools/test_unlzh_com.py": "452d67af786b5e9ae1f49818641604713c73d2a7bd8159fac816e4f0659b790d"
+  },
+  "file_sha256": {
+    "trs80-text-0.bin": "bb6ded8b7e70a7e4dc88b024fe10d7da950e34d98920c1f902ececf38e5efe56",
+    "trs80-text-1.bin": "c3dfdcadf55b3ea94b7222151b69f5f26e265b17748d1b07cd7bd6471df15bb0",
+    "trs80-text-2.bin": "8703f2ea5b357e0f3c3ec72c1c3694a574a9000be58f6994adf2d69a3a2d1b4b",
+    "trs80-text-3.bin": "34147d4bbfdb173cae35ceb43375fff5eaac69445eb67bbc12d87dfaaed1971b",
+    "trs80-text-4.bin": "1003e6e8d6af4dc2462da6cc17607934f5514c0ff74d9d99f4ba3e1035b92fc0",
+    "trs80-text-5.bin": "0b8d840f95128da89ed74619dc89fc5f563db3e89a01e06708f642debfd07057",
+    "trs80-text-6.bin": "a16f8a553200f1c98eda2a21c08fc1f623311358ab0602d7fb7c6aa985851aea",
+    "trs80-text-7.bin": "f9595a35c3949091fe3fc12f563ccce542956030ebb0cc212b520dc94d7caa7a",
+    "trs80-text-8.bin": "59b449294241bb1434013ba22c9e70c3c73715494a707967ce3b355ed682a304",
+    "trs80-text-9.bin": "860e2f992c5c4c971e96e099692566dfa728efdf9d198047a0919782ba896d35",
+    "trs80-text-10.bin": "05e1f222b11af49b480561395c4c1e5d758e18e203de750dace766f6ac467fe9",
+    "trs80-text-11.bin": "68a89d6cdd73ac57d92606da786083f0cea20b92bcade4e8b08faac1c706b394",
+    "trs80-text-12.bin": "bec6df88bcc7546067770bf63dbced6863ba51a65bc98fb8de37c61f683862e7",
+    "trs80-text-13.bin": "a1754f4e1d36b9f9f08cbcc417bb89607b5edb76c4eb0169b7bff5b3965c0656",
+    "trs80-text-14.bin": "0250c27f05b1455442ea60438b900352cd434680f4112373a0e4b3bb0290ee70",
+    "trs80-text-15.bin": "7d71c2127b364de8829a21491fee775c423e2cfee573881062469186224e7944",
+    "trs80-text-16.bin": "6238c933ef7752546aa690d64f6ffbd33fd70cccff6154b658fc299721180ce5",
+    "trs80-text-17.bin": "86b61ac9d6599777666fb5803444e4e39d909376894be24a04fc8ab43fa8bb45",
+    "trs80-text-18.bin": "a3ef585d6dbb80382a46b2a258ab264f0d1dcb673762d51ef8bbfe250bad3f18",
+    "trs80-text-19.bin": "a358bfa5e8efe7aa2bf952fc3ebd2cf6a52158b337c8db0006ffbf663bf29baf",
+    "trs80-text-20.bin": "23d30f8bc32dbc5739527697cab364a8ff7127fd857eaa28f8525601149df547",
+    "trs80-text-21.bin": "de300f181f8c10250310cdf2abbb9f9843bd18ad12bb65b9ac1e5caa625d4a6c",
+    "result.json": "89f8b9a64d32b026d776ad44f29d7bb7db0e1f2f636145d0dc30ae3125713ace",
+    "invocation.json": "738163834eb490bd4b9427ea6c4ebe2276c0251050718ccd0d4b8cd10ecf3489",
+    "steps.json": "f211f2726d69ed39a4ccedcb17ddc3344a4f4bfae796b2c8b8e0c129a7b3312c",
+    "UIQUAL.SUB": "ead86e3348c1ca002a063c064f62b1bbf9ae81921e50ce0e3ae10f7eaaafab2e",
+    "console.bin": "a29b82328344a50c265a3d0dcca5ee0a8c554144aaa899d2945e55cc6edb8e5e",
+    "filesystem.log": "2d2efe6c1502d5754c19efaf4612f2018b7b9ac49e464daf6384f9f27cff51b2",
+    "system-filesystem.log": "b5ddbf1b8a24a587a9ae6b65603b67e84bdf43bc8112fd57c18aecce5bb1c9a9",
+    "diskdefs": "1141cb2d4ac9365183de3db37ce553135316609ec99203e02f7c3cced58d97d7",
+    "run_model4.py": "983199016690374fd83eb6031cc202642fcb1b9a901e23ed39fb3842f6ccb0a0",
+    "READ-ADMTST.COM": "cc587c6b133b25b65f67a544b3e6ab3dcb8ab1dfc029f5e83ea7c68139bf9654",
+    "READ-ANSITST.COM": "c86ed522c239ce531a64cf85768f27eaa1496cffdcf7a798ba1c95e874a6236c",
+    "READ-BATCHIO.RSX": "aed6ff4ec0e84ad814023741a7dc28fbbad69d6a40668b01a0686c216cc63157",
+    "READ-VT52TST.COM": "b1953940dd2069c2ad79b58d01464402778483e52c987bcaf3a2ca416bbbf1b0",
+    "READ-XSUB.COM": "f4c0cb3aada979e04b78515d22c88d1f19d1e402dff899b53e8f027d57e11ed7"
+  }
+}

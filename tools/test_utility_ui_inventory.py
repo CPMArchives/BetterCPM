@@ -39,6 +39,10 @@ def main():
             artifact=ROOT/'build/utilities'/(name+'.COM')
             if artifact.exists():
                 assert hashlib.sha256(artifact.read_bytes()).hexdigest()==proof['current'][name]['sha256'],('stale argument binary',name)
+        native=json.loads((ROOT/'docs/engineering/evidence/2026-11-03-ui-noargs-model4-pass/results.json').read_text())
+        assert native['status']=='PASS' and native['captures']==22
+        for name in noargs:
+            assert native['receipt']['binaries'][name]==proof['current'][name],('native argument payload differs',name)
     print(f'PASS: {len(rows)} unique utility rows cover distribution, companion, host helpers and registry')
 
 if __name__=='__main__':main()

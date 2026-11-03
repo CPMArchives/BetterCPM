@@ -78,8 +78,10 @@ Exception cells retain the utility-specific specification; they do not waive dat
 The [follow-up record](UI-Argument-Validation-Followup.md) and its archived receipts
 supply bounded malformed-tail evidence for the 28 newly classified C entries.
 ADMTST/ANSITST/VT52TST/XSUB now reject operands after query processing, before
-provider lookup or installation. Their host and cpmsim checks pass; their
-current-payload Model 4 gate is **pending**, not qualified by the previous receipts.
+provider lookup or installation. Their host, cpmsim and current-payload Model 4
+checks pass. The [22-phase native receipt](evidence/2026-11-03-ui-noargs-model4-pass/results.json)
+includes all captures and independently read-back payloads; the previous #571
+receipts are not transferred to these changed binaries.
 The other 24 entries use existing parser/full-command suites without production
 changes. USER/VER retain the frozen RCP-derived `?` diagnostic format; C records
 detection and existing grammar, not a new diagnostic presentation.

@@ -1,6 +1,6 @@
 # UI argument-validation follow-up to #571
 
-3 November 2026. **Host/build/cpmsim PASS; Model 4 execution PENDING.**
+3 November 2026. **Host/build/cpmsim/Model 4 PASS for the bounded follow-up gates.**
 PR #571 merged at `bd4df2cd9f0a7a2edfa12112a8c02151eea5b90d`.
 This follow-up preserves that implementation and the accepted UI/library APIs.
 No frozen core, resident RCP, BIOS, new library or release image is changed.
@@ -83,10 +83,14 @@ bind exact source hashes and before/after binary hashes.
   invocations, ordinary XSUB installation and `RSX LIST`. Independent payload
   and BATCHIO readback, system/data filesystem checks and unchanged reserved
   system area pass on private copies of the reference system.
-- Model 4: media preflight/preparation passes; **execution has not run** for
-  these four new binaries. Previous #571 native receipts cannot qualify them.
-  The seven marker executions in `test_ui_integration_schedule.py` check the
-  SUBMIT transport (including `A:RSX LIST`), not native emulator execution.
+- Model 4: all 22 executed phases pass on these exact four binaries. Eight
+  queries, twelve invalid invocations, normal XSUB installation and RSX LIST
+  have matching completion captures. Independent payload/companion readback,
+  both filesystems and unchanged system area pass. The maintainer's receipt is
+  `/Users/nathanael/Downloads/ui-noargs-model4-20261103-143246/result.json`.
+  Captures, query/error output, payload/source hashes and readback were reviewed
+  again before archiving [native evidence](evidence/2026-11-03-ui-noargs-model4-pass/results.json).
+  This closes this follow-up's native gate; it does not qualify the whole release.
 
 The parser campaigns also close 24 other matrix entries without production
 changes. Their exact commands/statuses are in the archive's `parser-closure*`
@@ -108,7 +112,7 @@ from current release disk membership, but have not been relabeled conforming.
 The candidate report records the four identical guards as a low-priority,
 maintenance-only consolidation possibility; no new library is implemented.
 
-## Pending native gate
+## Native gate reproduction
 
 Run from an ordinary macOS Terminal, with the correct Model 4 emulator session
 available. The existing runner drives the private images automatically:
@@ -121,5 +125,7 @@ python3 "$ui/tools/test_ui_integration_media.py" \
   --output "$HOME/Downloads/ui-noargs-model4-$(date +%Y%m%d-%H%M%S)"
 ```
 
-Keep this follow-up in draft until that receipt and its matching captures and
-readback checks are reviewed. No automatic merge is authorized.
+The receipt, all 22 captures and payload/companion readback have been reviewed.
+PR #573 is ready for engineering review of this bounded follow-up. Six development-only
+matrix O entries and the absent historical UNLZH fixtures remain explicitly
+recorded; no overall workstream-completion claim or automatic merge is authorized.
