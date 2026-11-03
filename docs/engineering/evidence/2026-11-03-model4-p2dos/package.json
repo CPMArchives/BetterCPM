@@ -1,0 +1,12 @@
+{
+  "candidate_zip": "BetterCPM-1.0-System-Model4-candidate.zip",
+  "candidate_build": "61aeda2f276b7b1a1fe5474177109258cb38f582",
+  "candidate_zip_sha256": "2157e6aaf40c09390f370d889f643985977851399857b448152c42434deb7195",
+  "member": "BetterCPM-1.0-System-Model4-candidate/images/BetterCPM-Distribution-trs80gp-80T-DS-System.dmk",
+  "member_sha256": "4e661bab569b81ac583f74aabedf41001a76b28d9721ab911e6ff0995feaf5cd",
+  "work_image_sha256": "a2bd8239531919ae078c6d2dcef650738ec77e8307993df8d3fcd74a46c29107",
+  "work_probe_disk_sha256": "f1c2e95bd5f14898134be7370bd4913597991f0504d38b34c4c3b59503a70bbb",
+  "submitted_script_sha256": "edd70c0a81986e7a97b2701b9d52844629651b663a697f2f1302712a546f9309",
+  "warm_probe_sha256": "b20d1fe7cf1dfb50aac0b413c20a3db17e2e94e799e498fdc78de72a90e50de2",
+  "mode": "trs80gp -m4 -batch -turbo -ktx with private FreHD directory"
+}

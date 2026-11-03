@@ -14,7 +14,7 @@ The independent CCS parameters come from [the vendor manual](https://bitsavers.o
 
 ## Supported release media and compatibility catalogue
 
-The three layouts above are the release-media qualification scope for 1.0. Recorded trials cover emulator images, not physical controllers or universal disk interchange. Exact final candidate media, including the P2DOS System changes, still require qualification and fresh-package installation.
+The three layouts above are the release-media qualification scope for 1.0. Recorded trials cover emulator images, not physical controllers or universal disk interchange. The [Model 4 P2DOS trial](../engineering/evidence/2026-11-03-model4-p2dos/README.md) qualifies the clock lifecycle for the System image identified there. Final candidates still require matching image hashes and fresh-package installation checks.
 
 The full historical compatibility catalogue remains available. Catalogue admission means a structurally valid descriptor, not successful runtime testing of each format on every controller. Five previously rejected historical records remain excluded for their recorded validity errors; this change removes no admitted format.
 

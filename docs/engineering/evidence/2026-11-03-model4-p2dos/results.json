@@ -1,0 +1,92 @@
+{
+  "status": "PASS",
+  "source_commit": "064c003db9951d17e858be10c155e1299d2164b0",
+  "image": "BetterCPM-Distribution-trs80gp-80T-DS-System.dmk",
+  "system_sha256": "4e661bab569b81ac583f74aabedf41001a76b28d9721ab911e6ff0995feaf5cd",
+  "carriers": {
+    "P2DOS.RSX": "9c854dd4aa8afcf439ac28233a8c723cd2cc32888d2aa137ba1bf9e2c3e82a08",
+    "FREHDCLK.RSX": "0fe9c0534f288b6c59f4a7733beca5ae760f175e10fa16d2098af3a1671f9a18",
+    "TIME.COM": "3f0ceb6389ff5f76569bfb4f02736520419a26ddf2cdea53ba7315d4501f7124",
+    "STARTUP.SUB": "6d90dc33337716f96996318a8da16d6ebed821e88f99227b5adbd9c5b3037806"
+  },
+  "probe_sha256": {
+    "CK1": "3a0760f9e7f4cdc6c312b50705ddefeee2fc9b5cdac6c5e21674eeea7ce8aa17",
+    "CK2": "34cdd90e4e714bf65166decb16710ba4ae2f02eadc60d4ff8110ff0c240f13f5",
+    "CK3": "f2beda993bcf004cdbfc54efef2db8fba2f6b6da2e4c2422085fb159287e3ae8",
+    "CK4": "f44bbb51c8a0e7e15ce6cb27aa91f579484f9052c43d50d0e344fa224ee9e99c",
+    "CK5": "775eca4825c62c9001a2bf23a98555dd6bd04d80c6c01ea64a140ca6ee0bfcab",
+    "CK6": "8f593af68499db90513cc67e772e27b6fcb20ae3374ab7e6c97eb7df4d413391"
+  },
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "commands": [
+    "RSX LIST",
+    "TIME /PROVIDER",
+    "B:CK1 2",
+    "RSX LOAD FREHDCLK",
+    "RSX LOAD P2DOS",
+    "TIME /PROVIDER",
+    "TIME",
+    "B:CK2 0",
+    "B:WBOOT",
+    "B:CK3 0",
+    "RSX UNLOAD FREHDCLK",
+    "TIME /PROVIDER",
+    "RSX LIST",
+    "B:CK4 1",
+    "RSX LOAD FREHDCLK",
+    "TIME /PROVIDER",
+    "B:CK5 0",
+    "RSX UNLOAD P2DOS",
+    "TIME /PROVIDER",
+    "B:CK6 2"
+  ],
+  "stages": [
+    [
+      "cold frontend absent",
+      "CK1 ABI PASS"
+    ],
+    [
+      "loaded",
+      "CK2 ABI PASS"
+    ],
+    [
+      "after explicit warm boot",
+      "CK3 ABI PASS"
+    ],
+    [
+      "provider absent, frontend resident",
+      "CK4 ABI PASS"
+    ],
+    [
+      "provider reloaded, same frontend",
+      "CK5 ABI PASS"
+    ],
+    [
+      "frontend removed, provider resident",
+      "CK6 ABI PASS"
+    ]
+  ],
+  "screens": [
+    "A0>:VER /BANNER\n\n - - -                                                  - - -\n|                                                            |\n|                         BetterCP/M                         |\n                         Core OS 1.0\n\n                  CP/M 2.2 Compatible System\n\n                Type TYPE README.TXT for more\n|                                                            |\n - - -                                                  - - -\n\nA0>",
+    "|                         BetterCP/M                         |\n                         Core OS 1.0\n\n                  CP/M 2.2 Compatible System\n\n                Type TYPE README.TXT for more\n|                                                            |\n - - -                                                  - - -\n\nA0>SUBMIT B:P2QUAL\n\nA0>RSX LIST\n\nM4SCRN : BDOS 255\nADM3A : BDOS 255\nTPA available: 50K\n\nA0>TIME /PROVIDER\n\nNo TIME provider is loaded; service status 01\n                    loaded; service status 01\n\nA0>B:CK1 2\nCK1 ABI PASS",
+    "A0>TIME /PROVIDER\n\nNo TIME provider is loaded; service status 01\n                         d; service status 01\n\nA0>B:CK1 2\nCK1 ABI PASS\n\nA0>RSX LOAD FREHDCLK\n\nA0>RSX LOAD P2DOS\n\nA0>TIME /PROVIDER\n\nProvider: FREHDCLK\n\nTIME service ABI 01.00, GET, read-only, provider index 02\n\nA0>TIME\n\n2026-11-03 22:57:40\n\nA0>B:CK2 0\nCK2 ABI PASS",
+    "CK1 ABI PASS\n\nA0>RSX LOAD FREHDCLK\n\nA0>RSX LOAD P2DOS\n\nA0>TIME /PROVIDER\n\nProvider: FREHDCLK\n\nTIME service ABI 01.00, GET, read-only, provider index 02\n\nA0>TIME\n\n2026-11-03 22:57:40\n\nA0>B:CK2 0\nCK2 ABI PASS\n\nA0>B:WBOOT\n\nA0>B:CK3 0\nCK3 ABI PASS",
+    "A0>B:CK2 0\nCK2 ABI PASS\n\nA0>B:WBOOT\n\nA0>B:CK3 0\nCK3 ABI PASS\n\nA0>RSX UNLOAD FREHDCLK\n\nA0>TIME /PROVIDER\n\nNo TIME provider is loaded; service status 01\n\nA0>RSX LIST\nA0>RSX LIST\n\nM4SCRN : BDOS 255\nADM3A : BDOS 255\nP2DOS : BDOS 200\nTPA available: 50K\n\nA0>B:CK4 1\nCK4 ABI PASS",
+    "No TIME provider is loaded; service status 01\n\nA0>RSX LIST\n\nM4SCRN : BDOS 255\nADM3A : BDOS 255\nADM3A : BDOS 255\nP2DOS : BDOS 200\nTPA available: 50K\n\nA0>B:CK4 1\nCK4 ABI PASS\n\nA0>RSX LOAD FREHDCLK\n\nA0>TIME /PROVIDER\n\nProvider: FREHDCLK\n\nTIME service ABI 01.00, GET, read-only, provider index 03\n\nA0>B:CK5 0\nCK5 ABI PASS",
+    "CK4 ABI PASS\n\nA0>RSX LOAD FREHDCLK\nA0>RSX LOAD FREHDCLK\n\nA0>TIME /PROVIDER\n\nProvider: FREHDCLK\n\nTIME service ABI 01.00, GET, read-only, provider index 03\n\nA0>B:CK5 0\nCK5 ABI PASS\n\nA0>RSX UNLOAD P2DOS\n\nA0>TIME /PROVIDER\n\nProvider: FREHDCLK\n\nTIME service ABI 01.00, GET, read-only, provider index 02\n\nA0>B:CK6 2\nCK6 ABI PASS",
+    "A0>RSX LOAD FREHDCLK\n\nA0>TIME /PROVIDER\n\nProvider: FREHDCLK\n\nTIME service ABI 01.00, GET, read-only, provider index 03\n\nA0>B:CK5 0\nCK5 ABI PASS\n\nA0>RSX UNLOAD P2DOS\n\nA0>TIME /PROVIDER\n\nProvider: FREHDCLK\n\nTIME service ABI 01.00, GET, read-only, provider index 02\n\nA0>B:CK6 2\nCK6 ABI PASS\n\nA0>"
+  ],
+  "capture_sha256": {
+    "trs80-text-0.bin": "97d86a4e65ed57e4fbf49ad88a4967bd0f45fd06e6c278e827d168ce1cd2d326",
+    "trs80-text-1.bin": "bc05861d2b8dc14851fa8b5752d23a3ddb42c31c1427dfb9be4cf77a97c4ce98",
+    "trs80-text-2.bin": "f452f0854ea106ae6f5e03a568e1abf189fc5c64d753a9126153733a55315c27",
+    "trs80-text-3.bin": "9c0e950f3bea57460c39d5e63b9e8db3c87a83400a2407f99b2dfcb7d354a353",
+    "trs80-text-4.bin": "08d4a66e10789458690a4a8013790317a98c6deb01e8c24bf83d9aba5ae86409",
+    "trs80-text-5.bin": "7e2d4cf42810e1f218867b2594939cd6611201d2aba7b123566db755500372aa",
+    "trs80-text-6.bin": "1242a6c68af3953ac4e044877475995c6e9bd436e32f80650ca25d27a0d33aed",
+    "trs80-text-7.bin": "47450b2f21946a839312966ce759665b2db1d17889a3514f0f1dfadc726b6b18"
+  },
+  "work_disk_sha256": "f1c2e95bd5f14898134be7370bd4913597991f0504d38b34c4c3b59503a70bbb",
+  "warm_probe_sha256": "b20d1fe7cf1dfb50aac0b413c20a3db17e2e94e799e498fdc78de72a90e50de2",
+  "script_sha256": "edd70c0a81986e7a97b2701b9d52844629651b663a697f2f1302712a546f9309"
+}
