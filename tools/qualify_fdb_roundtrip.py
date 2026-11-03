@@ -8,6 +8,7 @@ This tool neither modifies that tree nor writes release/package destinations.
 import argparse
 import hashlib
 import json
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -48,12 +49,14 @@ def main():
     files=[({'name':name,'user':0},data) for name,data in names]
     raw=construct(args.target,root,out,files,geometry(args.target,root),'')
     commands=['FDB DISK.FDB ROUND.FDF','FDB ROUND.FDF ROUND.FDB','FDB HOST.FDF HOST.FDB']
+    captures_text = ''
     if args.target=='z80pack':
         disks=out/'disks';disks.mkdir();disk=disks/'drivea.dsk';shutil.copy2(raw,disk)
         trace=session(args.simulator.resolve(),disks,
                       [(command.encode()+b'\r',b'A0>_ ',40) for command in commands]+
                       [(b'BYE /Y\r',b'System halted',10)],out/'transcript.bin')
         assert trace.count(b'FDB: complete.')==3
+        captures_text = trace.decode("ascii", errors="replace")
         after=disk
         emulator=args.simulator
     else:
@@ -62,13 +65,14 @@ def main():
         # message from the preceding invocation.
         for index,command in enumerate(commands):
             here=out/f'command-{index}';here.mkdir()
-            invocation=[str(args.emulator),'-m4','-batch','-turbo','-d0',str(disk),'-id','3000']
+            invocation=[str(args.emulator),'-m4','-batch','-turbo','-d0',str(disk),'-itime','0','-iw','A0> ','-id','32']
             invocation+=key_args(command+'\r')+['-itime','0','-iw','FDB: complete.',
-                                                '-iw','A0> ','-id','1000','-it','-ix']
+                                                '-iw','A0> ','-id','32','-it','-ix']
             (here/'invocation.json').write_text(json.dumps(invocation,indent=2)+'\n')
-            run(invocation,cwd=here,check=True,timeout=60)
+            run(invocation,cwd=here,check=True,timeout=180)
             captures=list(here.glob('trs80-text-*.bin'));assert len(captures)==1
             text=screen(captures[0]);captures[0].with_suffix('.txt').write_text(text)
+            captures_text += text + '\n'
             assert 'FDB: complete.' in text and text.rstrip().endswith('A0>'),text
         after=out/'after.raw';after.write_bytes(extract_raw(disk.read_bytes()))
         emulator=args.emulator
@@ -87,6 +91,9 @@ def main():
             'emulator_sha256':sha(emulator.read_bytes()),'build_root':str(root),
             'tpa_address_span_bytes':0xc800-0x100,'standard_tpa_bytes':53*1024,
             'source_revision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()}
+    free = [int(n, 16) for n in re.findall(r'FDB stack free ([0-9A-F]{4})h of 0200h', captures_text)]
+    assert len(free) == len(commands) and all(0 < n < 512 for n in free), free
+    report['stack_free_bytes_by_command'] = free
     (out/'evidence.json').write_text(json.dumps(report,indent=2)+'\n')
     print(f'PASS {args.target}: native stock round trip and both host cross-checks')
 

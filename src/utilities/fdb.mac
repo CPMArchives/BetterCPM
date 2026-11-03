@@ -8,6 +8,11 @@ FDFLIM  EQU 0C800H
 POOLRAM EQU 0A080H
 MAXFORM EQU 128
 START:  LD (OLDSP),SP
+        LD HL,STACK
+        LD DE,STACK+1
+        LD BC,STACKTOP-STACK-1
+        LD (HL),0A5H
+        LDIR
         LD SP,STACKTOP
         LD HL,(6)
         LD DE,FDFLIM
@@ -143,9 +148,29 @@ COMPILE:
         XOR A
         LD (FCOUNT),A
         CALL READLINE
+        JP C,TEXTERR
         LD HL,LINE
         LD DE,VERSIONWORD
-        CALL STREQ
+VERSIONKEY:
+        LD A,(DE)
+        OR A
+        JR Z,VERSIONVALUE
+        CP (HL)
+        JP NZ,TEXTERR
+        INC HL
+        INC DE
+        JR VERSIONKEY
+VERSIONVALUE:
+        LD A,(HL)
+        CP ' '
+        JP NZ,TEXTERR
+        CALL SKIPSPACE
+        LD A,(HL)
+        CP '1'
+        JP NZ,TEXTERR
+        INC HL
+        LD A,(HL)
+        OR A
         JP NZ,TEXTERR
 NEXTFORMAT:
         CALL READLINE
@@ -386,7 +411,7 @@ GOTBUF: LD A,(INCOUNT)
         RET
 BYTEEOF: SCF
         RET
-; Strip CR, comments outside quotes, leading/trailing spaces; 1100-byte lines
+; Strip CR, comments outside quotes, leading/trailing spaces; 1299-byte lines
 ; accommodate 255 decimal 1024-byte sector sizes without truncation.
 READLINE:
         CALL POLLBREAK
@@ -402,11 +427,14 @@ READLINE:
 LINELP: CALL GETBYTE
         JR C,LINEEOF
         CP 13
-        JR Z,LINELP
+        JR Z,LINEEND
         CP 10
         JR Z,LINEEND
         CP 9
         JR NZ,LINENOTAB
+        LD A,(QUOTED)
+        OR A
+        JP NZ,TEXTERR
         LD A,' '
 LINENOTAB:
         LD B,A
@@ -414,6 +442,10 @@ LINENOTAB:
         OR A
         JR NZ,LINELP
         LD A,B
+        CP 32
+        JP C,TEXTERR
+        CP 127
+        JP NC,TEXTERR
         CP '"'
         JR NZ,LINEHASH
         LD A,(QUOTED)
@@ -449,8 +481,6 @@ LINECASEOK:
         SBC HL,DE
         POP HL
         JP NC,TEXTERR
-        LD (HL),A
-; A was clobbered by bounds comparison; use original byte B.
         LD (HL),B
         INC HL
         LD (LINEPTR),HL
@@ -669,7 +699,30 @@ PUTS:   LD A,(HL)
         CALL PUTC
         INC HL
         JR PUTS
-SUCCESS:LD HL,DONEMSG
+; Sample the private stack after conversion and file close, including BDOS.
+SUCCESS:LD HL,STACK
+        LD BC,0
+STACKSCAN:
+        LD A,(HL)
+        CP 0A5H
+        JR NZ,STACKREPORT
+        INC HL
+        INC BC
+        LD A,B
+        CP 2
+        JR NZ,STACKSCAN
+STACKREPORT:
+        PUSH BC
+        LD HL,STACKMSG
+        CALL PUTS
+        POP BC
+        LD A,B
+        CALL HEXBYTE
+        LD A,C
+        CALL HEXBYTE
+        LD HL,STACKUNIT
+        CALL PUTS
+        LD HL,DONEMSG
         JR EXITMSG
 USAGE:  LD HL,USAGEMSG
         JR EXITMSG
@@ -711,7 +764,7 @@ EXIT:   LD DE,80H
         LD SP,(OLDSP)
         RET
 VERSION:DB 'FDF_VERSION 1',13,10,0
-VERSIONWORD:DB 'FDF_VERSION 1',0
+VERSIONWORD:DB 'FDF_VERSION',0
 FORMATWORD:DB 'FORMAT',0
 ENDWORD:DB 'END',0
 FDBEXT: DB 'FDB'
@@ -725,7 +778,7 @@ BADMSG: DB 'FDB: invalid catalogue.',13,10,0
 TEXTMSG:DB 'FDB: invalid definition or unsupported FDF text.',13,10,0
 LOSSMSG:DB 'FDB: cannot export this encoding losslessly.',13,10,0
 EXISTMSG:DB 'FDB: destination exists; nothing replaced.',13,10,0
-IOMSG:  DB 'FDB: file operation failed; incomplete output removed.',13,10,0
+IOMSG:  DB 'FDB: file operation failed.',13,10,0
 OLDSP:  DW 0
 MODE:   DB 0
 INOPEN: DB 0
@@ -951,10 +1004,10 @@ LIST_SECTOR_IDS:
         LD A,E
         POP DE
         POP BC
-        LD (DE),A
-        INC DE
         INC B
         JP Z,TEXTERR
+        LD (DE),A
+        INC DE
         CALL SKIPSPACE
         LD A,(HL)
         OR A
@@ -1042,10 +1095,10 @@ LIST_SECTOR_SIZES:
         CALL SIZECODE
         POP DE
         POP BC
-        LD (DE),A
-        INC DE
         INC B
         JP Z,TEXTERR
+        LD (DE),A
+        INC DE
         CALL SKIPSPACE
         LD A,(HL)
         OR A
@@ -2198,6 +2251,24 @@ POLLBREAK:
 CANCELLED:
         LD HL,CANCELMSG
         JP EXITMSG
-CANCELMSG: DB 'FDB: cancelled; incomplete output removed.',13,10,0
+CANCELMSG: DB 'FDB: cancelled.',13,10,0
 
 CLEANMSG: DB 'FDB: cleanup failed; incomplete destination may remain.',13,10,0
+
+HEXBYTE:
+        PUSH AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        CALL HEXDIGIT
+        POP AF
+HEXDIGIT:
+        AND 15
+        ADD A,'0'
+        CP '9'+1
+        JR C,HEXDONE
+        ADD A,7
+HEXDONE:JP PUTC
+STACKMSG: DB 'FDB stack free ',0
+STACKUNIT: DB 'h of 0200h',13,10,0

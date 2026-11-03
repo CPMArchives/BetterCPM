@@ -140,6 +140,14 @@ def main():
     assert m.files[out]==fixture
     assert 'complete' in m.run('DISK.FDB ROUND.FDF',{source:fixture})
     assert serialize(parse(m.files[textkey].split(b'\x1a')[0].decode()))==fixture
+    # Line endings and header whitespace accepted by the host parser.
+    alternate = decompile(stock).replace('VERSION 1', 'VERSION   1').replace('\n', '\r')
+    assert 'complete' in m.run('ROUND.FDF ROUND.FDB', {textkey: alternate.encode()})
+    assert m.files[out] == stock
+    for invalid in (text.replace('FORMAT\n', 'FORMAT\0ignored\n', 1),
+                    text.replace('DESCRIPTION "', 'DESCRIPTION "\t', 1)):
+        assert 'invalid' in m.run('ROUND.FDF ROUND.FDB', {textkey: invalid.encode()})
+        assert not m.created
     # Capture exact resource claims from this binary rather than source estimates.
     report={'cases':m.cases,'com_bytes':len(m.image),'stock_bytes':len(stock),
             'stock_sha256':hashlib.sha256(stock).hexdigest(),'stack_bytes':m.stack_used,
