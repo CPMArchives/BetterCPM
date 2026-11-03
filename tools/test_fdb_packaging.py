@@ -5,7 +5,8 @@ import tempfile
 
 from build_fdf_catalog import build
 from build_source_disk import extract_files, install_files
-from fdf_v1 import read_fdb
+from fdfdecomp import decompile
+from fdf_v1 import parse, read_fdb, serialize
 
 
 def main() -> None:
@@ -13,6 +14,7 @@ def main() -> None:
         first = build(Path(directory) / "first" / "DISK.FDB").read_bytes()
         second = build(Path(directory) / "second" / "DISK.FDB").read_bytes()
         assert first == second
+        assert serialize(parse(decompile(first))) == first
         database = read_fdb(first)
         assert len(database.descriptors) == 107
         assert all(item.supported for item in database.descriptors)

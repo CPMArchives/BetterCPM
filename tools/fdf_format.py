@@ -1,6 +1,7 @@
 """Parse and normalize Montezuma-style DISK.FDF format definitions."""
 from __future__ import annotations
 
+import csv
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -125,7 +126,18 @@ def select_fdf(path: Path, name: str) -> FDFFormat:
         aliases = {"california computer systems (40t, ds, dd, 332k)": "mmf017",
                    "montezuma micro 80t ds data (80t, ds, dd, 800k)": "mmi008"}
         wanted = aliases.get(wanted, wanted)
-        for f in parse(text, str(path)):
+        formats = parse(text, str(path))
+        # Older CLI invocations can use long historical names from the format
+        # inventory. Native IDs and descriptions take precedence.
+        if not any(wanted in (f.ident.casefold(), f.description.casefold()) for f in formats):
+            inventory = path.parent.parent / "packaging/1.0/montezuma-formats.tsv"
+            if inventory.is_file():
+                with inventory.open(encoding="utf-8") as stream:
+                    for row in csv.DictReader(stream, delimiter="\t"):
+                        if row["Format"].casefold() == wanted:
+                            wanted = row["ID"].casefold()
+                            break
+        for f in formats:
             if wanted not in (f.ident.casefold(), f.description.casefold()):
                 continue
             if f.logical_track != "SURFACE" or f.sector_sizes is not None:
