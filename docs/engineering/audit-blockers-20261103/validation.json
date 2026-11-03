@@ -1,0 +1,133 @@
+{
+  "base_commit": "a5bf9a2dfeafec3fbff4d836c014cd7f47ba75e3",
+  "status": "development correction validation; not release certification",
+  "native_regression": {
+    "status": "PASS",
+    "input_sha256": "9deec064a0357b58822eb5deae5b0c89442037492c7ce29312a998dda841f455",
+    "fixture_disk_sha256": "ec09b22197ebeabc30cdef6464b7957431a77d721bd2b09650d0a977419852fe",
+    "after_sha256": "ec09b22197ebeabc30cdef6464b7957431a77d721bd2b09650d0a977419852fe",
+    "target_retained": true,
+    "disk_unchanged": true,
+    "normal_tpa_outputs_match_host": [
+      "CCP.RLM",
+      "SYSTEM.SYS"
+    ],
+    "commands": [
+      "DRIVE5",
+      "RSX LOAD BIGMEM",
+      "STAT MEM",
+      "SYSBUILD",
+      "RLMBUILD",
+      "SYSBUILD /VER",
+      "RLMBUILD /HELP",
+      "RSX LIST",
+      "STAT MEM"
+    ],
+    "scope": "default-layout RAM cpmsim, invalid E: delete and admitted low-TPA RSX; not Model 4 runtime qualification"
+  },
+  "suite_commit": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+  "simulator_sha256": "0f6b256cd6beea2ab7bf0eab8a9cc2a5241ed772408e811150c3f6e0f5cff4e8",
+  "unique_passes": 270,
+  "unique_observations": 23,
+  "unique_not_run": 109,
+  "conformance_invocations": [
+    {
+      "command": "BDOSTEST /GROUP:REQUIRED",
+      "counts": {
+        "-": 3,
+        "P": 56
+      },
+      "failed_or_error_rows": [],
+      "program_sha256": "6cb0b0b08ec2e6d121ede892ea6431d821724402e8b3787509d86cc8dba729dc"
+    },
+    {
+      "command": "BIOSTEST /SAFE",
+      "counts": {
+        "-": 30,
+        "O": 11,
+        "P": 5
+      },
+      "failed_or_error_rows": [],
+      "program_sha256": "e62a67529cbef91d7177028668644882c8d1ea4ec753894880f71c16a3b3f922"
+    },
+    {
+      "command": "CCPTEST /GROUP:REQUIRED",
+      "counts": {
+        "-": 29,
+        "P": 12
+      },
+      "failed_or_error_rows": [],
+      "program_sha256": "df97481f57a92c3c900e6b39d3fe4dd425f4280cde6c07ea99aeac78bf34419c"
+    },
+    {
+      "command": "DIRTEST /SAFE",
+      "counts": {
+        "P": 49
+      },
+      "failed_or_error_rows": [],
+      "program_sha256": "46d3c4e58f275140b228034e169e1cba4150568003dc4a32af76f6531bc4f7bd"
+    },
+    {
+      "command": "DISKTEST /SAFE",
+      "counts": {
+        "P": 7
+      },
+      "failed_or_error_rows": [],
+      "program_sha256": "7457e73a227282547b510b45c63741c7a93bc0d6429bbb3efae4c38385837d1b"
+    },
+    {
+      "command": "DISKTEST /GROUP:REQUIRED",
+      "counts": {
+        "-": 6,
+        "P": 11
+      },
+      "failed_or_error_rows": [],
+      "program_sha256": "7457e73a227282547b510b45c63741c7a93bc0d6429bbb3efae4c38385837d1b"
+    },
+    {
+      "command": "ENTRYTST /GROUP:REQUIRED",
+      "counts": {
+        "-": 13,
+        "P": 25
+      },
+      "failed_or_error_rows": [],
+      "program_sha256": "f85ca4616e34a2264423b25285b0c0731a950bb4825ca7b75b04cde1396063de"
+    },
+    {
+      "command": "ERRTEST /SAFE",
+      "counts": {
+        "-": 26,
+        "O": 12,
+        "P": 5
+      },
+      "failed_or_error_rows": [],
+      "program_sha256": "c100c2213a561da1fba7b68c02ca53283f044902ca195e8f3cfcb1f7c7b692b0"
+    },
+    {
+      "command": "FILETEST /SAFE",
+      "counts": {
+        "P": 28
+      },
+      "failed_or_error_rows": [],
+      "program_sha256": "a07880af68acf8282557a084a0e346d4cde7f0c762206601895f76270ff2efe5"
+    },
+    {
+      "command": "FILETEST /GROUP:REQUIRED",
+      "counts": {
+        "-": 2,
+        "P": 68
+      },
+      "failed_or_error_rows": [],
+      "program_sha256": "a07880af68acf8282557a084a0e346d4cde7f0c762206601895f76270ff2efe5"
+    },
+    {
+      "command": "RANDTEST /SAFE",
+      "counts": {
+        "-": 2,
+        "P": 39
+      },
+      "failed_or_error_rows": [],
+      "program_sha256": "041bddda388acdf9284566ab7c410ca5a520198b78a3973ba1af1d84a329f2c0"
+    }
+  ]
+}

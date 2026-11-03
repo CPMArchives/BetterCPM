@@ -268,7 +268,7 @@
       "builders": [
         "tools/build_disk_utilities.py"
       ],
-      "revision": 5,
+      "revision": 6,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -302,7 +302,7 @@
       "builders": [
         "tools/build_disk_utilities.py"
       ],
-      "revision": 5,
+      "revision": 6,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -645,7 +645,7 @@
         "tools/build_bdos.py",
         "tools/build_native_bdos.py"
       ],
-      "revision": 1,
+      "revision": 2,
       "api_version": "1.2",
       "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending"

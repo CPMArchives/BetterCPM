@@ -1,0 +1,187 @@
+{
+  "artifact": {
+    "bytes": 3437,
+    "name": "bdos.bin",
+    "sha256": "2c9efde1dded13a82849d0440e1b86b307166ee8d298455268cd0e31dafdbb0b"
+  },
+  "component": "subsystem:BDOS",
+  "final_report_sha256": "dda8c73db1680d443ae64b895da9d6eccba548b0c15c313b7280a104a03f0def",
+  "identity": {
+    "revision": 2,
+    "version": "1.10"
+  },
+  "input_record": {
+    "assigned_identity": {
+      "revision": 2,
+      "version": "1.10"
+    },
+    "fingerprint": "da9b7b62cf4180da50a8fe64af85d4bec8fbd98aa95fe462cb34d49d4960514e",
+    "inputs": {
+      "component": "subsystem:BDOS",
+      "configuration": {
+        "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment",
+        "invocation": {
+          "command": [
+            "/Users/nathanael/.local/share/uv/python/cpython-3.11.16-macos-aarch64-none/bin/python3",
+            "tools/build_bdos.py"
+          ]
+        }
+      },
+      "files": {
+        "metadata/DISK.FDF": "adc8fe74ec0435482b574648ec476b366a1f2b826fca28a2a3f439c6d8c9573e",
+        "metadata/mm-builtin-formats.json": "1511439a2104f48a8f69e2fedc66f13484fddb72361ee7b44c04d9f712fea97a",
+        "src/bdos/dirsvc.mac": "96ccc02f15186d24fee6697824eea7bb43e0cd8c206b1f7b05cf6f95c36c0f2b",
+        "src/bdos/dispatch.mac": "7f0f9d8bb0c9472bd681980835b314e6a8e77e2a232bbca3a34dd7f480010275",
+        "src/bdos/unified.mac": "8955205ea93eee0062f8aaf331e80c1cbef2bd63a4a77ed90f794dca5d34d95d",
+        "src/bdos/versions.inc": "6560176573c7d4fd2b30374b898e1cced22dcb811d795eb5ad77341f226e4172",
+        "src/bios/bios.mac": "093e5480800a362f35bf567b0a714db76afcd1fb53089fda7b5ce5fcf55b52a4",
+        "src/bios/biosplat.inc": "58b1aa618335220ff7b858720c01d6149de67da4383ff3184e03ead6e49083a5",
+        "src/bios/config.mac": "0036667679cdb6c91bbe7a53083ce16e033c14478b6317c5a12e0f10b9e264e7",
+        "src/bios/disk.mac": "2df84e2116c5ee75272802b721d7f9f0fe574a8d7d2a1e007f426c4e9db1abd0",
+        "src/bios/tables.mac": "9b98eaa3cfed208133d24acb2bde4103b2fed4b448a317b29e1cef926b8925e9",
+        "src/ccp/ccp.mac": "c6f60a8982936979a1477febdc8ec95e5f685d3838ece63700a0e5b8ae81effc",
+        "src/core/bringup.inc": "7636c403c9df7dceda9edf9efc6989dbf6c85ba5e1ec7fd51975016483bfd6fb",
+        "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+        "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+        "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+        "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+        "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+        "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+        "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+        "src/platform/trs80m4/boot.mac": "39ca9dcebe9a4257aba478704e2e5d6839a201351d014d6fb97c0a27a25fa388",
+        "src/platform/trs80m4/ccprelod.mac": "ba0356066860db0794d2a238dfb74a4feda88d887b2c1b8533d5079c5129d715",
+        "src/platform/trs80m4/ccprload.mac": "b157f4ad35285115a37ad62ab577c415f88d0996440594cadea239c6cb833b43",
+        "src/platform/trs80m4/diskread.mac": "e97657a51b989f8381b370ad29f2a686cf8df9e1b698e74331bd16bf1ce1cb78",
+        "src/platform/trs80m4/diskwrit.mac": "3cbfda1fa7c24a90d1a2f1d868dbe5ceaaca6453bc417fe5c48b96477b480914",
+        "src/platform/trs80m4/hal.inc": "13850d1b483ac6e5981ac863413bc3d8f489f65d188dc15dbee958452c9c38c6",
+        "src/platform/trs80m4/hardware.inc": "239f8bef37ccee742447b843cc209e7104748f376cdc32a692dcad6ee6fac6e2",
+        "src/platform/trs80m4/m4cons.inc": "fa54cd4d60ed92d03d32ed196eebf1954a8c260399df2e0ab079a73af03a8302",
+        "src/platform/trs80m4/m4disk.inc": "1ab88296e2f87c2a6b87d877a836c461122884ac2a86c29a2a3e8c69b729e757",
+        "src/platform/trs80m4/m4scroll.inc": "1f03e03655cba9f600145380236134f157291b66fd5cf612bf4d7cbdbde3cfa3",
+        "src/platform/trs80m4/reload.inc": "08ef1a2af6e7d47aae59dce543dfffc18a63801b5078ecd40d78e8a0eb37d5df",
+        "src/platform/trs80m4/rsxsel.mac": "8b72f66dcbd79ef0b875e38d711a2eb4c30d9576ad71838b52aa1b30c48e10fd",
+        "src/platform/trs80m4/stage1.mac": "44bca3fa8d96406e424b9a4cbdc9ab09a8f285aa305b8cc0d3fad0b69adeaf2f",
+        "src/platform/z80pack/README.md": "b0f577102557fd4ddd68cb78bb3e2f70ecaa3594edc3edfd414ddf32d19234ac",
+        "src/platform/z80pack/biosplat.inc": "980a562b08c0675bed1296935c71293e8c1acb14244d9104ae09303fbc68a847",
+        "src/platform/z80pack/boot.mac": "f7f705b7c408f56b1ded7b891d95a73c88d149c8140912d86a6f1f455a15244b",
+        "src/platform/z80pack/chario.inc": "c3128d453c4becbe016953204ea35bcb585fa40d230f24f197d08e51808b9697",
+        "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+        "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+        "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+        "src/platform/z80pack/config.mac": "192db09a6553652bd8b8c0d2c6d3b00dd777e5b29cd5b9a7d837aee3511fb6cb",
+        "src/platform/z80pack/disk.mac": "093e440d292ee737c5dc28889a6237a3d2b533355da94aeb491245b9ab67c0c1",
+        "src/platform/z80pack/recordio.inc": "dd86c89dcf3402c0b4ca49862267a4282a0c342a298103392e127c7e0a47bf77",
+        "src/platform/z80pack/romboot.mac": "67e2b0594a2e99d877de7d5257ac17ea041c31794ebaa9a15f6fc0f0883a35b8",
+        "src/platform/z80pack/rominit.mac": "6942e3fcc099f973f2154adc865c9af28f6bf385f01f971cde3be7173b1e6bc2",
+        "src/platform/z80pack/rsxsel.mac": "19c93d7a44dd2e75b6937d21ad57bd2aab83313e9b6418574c9de3e733918ff8",
+        "src/system/command-stage1.mac": "3744575b581800a50af7513d9b2fe5945988149e81dc581a0bd3c8febb9afe16",
+        "src/system/command-stage2.mac": "9715ffb4b2ee8d321df5e469ee818c05900d052cbc67409124c8543985bad8b2",
+        "src/system/extens.mac": "44280577d9e1059fddd2939b24281fda2ccb5ef7f8bc97b20c41ec251088bcea",
+        "src/system/fileload.mac": "4e81a4c473ef1a7a7c911ab447ad186f8193eaf9551df5c1b171afaea00fb0e1",
+        "src/system/gateway.mac": "3c5d0805e61ec0755a9ef10a760f9beabf613ec63b68525d1bb9d3a42f5609ea",
+        "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+        "src/system/part10-stream-load.inc": "1e9dab767d451f6dc0c9d555bf205805a11ac26e379ea7c50182a6c68ed1a493",
+        "src/system/part8-binding.inc": "0517ddd6b753e814309594c1a8cec9b7432cc8bddf4328affc8b7fb750ac0b46",
+        "src/system/part8-record-gate.mac": "e28ea614e80dbbb91917ba470049379107630329f28c20b687cf95dc0c988feb",
+        "src/system/part9-stage-load.inc": "2943a71fcb6bbbc18e85916d7377e0967ada91ee8cc0822536f8a9cc398d6eb3",
+        "src/system/part9-stage1.mac": "8f3d13527dbc6cc9263ad9acdf167aed8ca482869990ed762b4105af8e33a953",
+        "src/system/r3carr.mac": "e1f6e056f6806d3e625b7721c29eb6a0c1d9ccb061820b0b3792d7a7269e7e07",
+        "src/system/r3comit.mac": "f3d4ee3dbea7f7455ee9f6aa1e1c8881b5be97c799dfec31e9a35b553f61d46a",
+        "src/system/r3coord.mac": "b27aa83f8e80908255eb82ce5d45b63fab37e0b3030c51f9b5e2fa4e97f6dd38",
+        "src/system/r3drop.mac": "0464dff9bb627e990544b4d6dc061d58762b7665bdd4c1f2cde8a13a712b8a11",
+        "src/system/r3entry.mac": "5b7c0252dec879035fdff85fded795e8b7ffcd25a0138555c22268e5e7fc1556",
+        "src/system/r3final.mac": "f59ebf2d5b409284b0ecc37fbe638c0894b0050b0c421e712a8b873d3694cee7",
+        "src/system/r3kctx.mac": "be80110f09bb7c9852ced3637a24f77754422d3ac81d703a2aae464692f1164e",
+        "src/system/r3keep.mac": "fefda63c45acf0101522ef97d3666eed8e0449f5c69cd803a6fbb4c6ade4cab8",
+        "src/system/r3kpre.mac": "e6343e8c5f86f90f9be95d02298198ac39a63c720fc7fd1d3fac95b9054746d2",
+        "src/system/r3meta.mac": "f1cd6c36d64fa56145eb1925966d967c182ede9feb113f1695e29950bd8917b1",
+        "src/system/r3ovload.mac": "7796fc16cc8317a1b8cca37a9215f7e8be36f615f67fad853eb0a7ff31ae6d1c",
+        "src/system/r3prep.mac": "f7d15e7e57034730736c27e299c361d026570c3d6a96be968d8560326c54fc17",
+        "src/system/r3prof.mac": "5cd9ccabcc2dbc3d59f8a777955d748a2140f958b58e61ea03028f11ea6d86df",
+        "src/system/r3pst.mac": "a3f25e369ce22b0fd9793ba0d8ebfd4e788beacf66470275ddda39fa32c084d5",
+        "src/system/r3snap.mac": "e5ca56e0b0ce429924d0a0a5ce49df9740fd004ccec34f9bb95dbddc3b24b9b4",
+        "src/system/rsxmover.mac": "cecba03c3f44562ce2d698ddc7b4cf821ee886af4b68912d09e7b2c66500924b",
+        "src/system/rsxplan.mac": "8fe731955ace136182b9ff5d5d1e802e41c46b1135e91e01d601894150df3402",
+        "src/system/rsxresol.mac": "fa28d6ffe610566bbb09660ba2da5572c67233a330e18bfa0bd6fba832346357",
+        "src/system/rsxsched.mac": "46075e44f8c7bb26e06cac50de2ae909e296cf3870990a66e6cd53093fba6321",
+        "src/system/rsxslots.mac": "65f53879eb5cbdc6e7eeb93ee80dd2854189e748a1dc9d1665fedd6629de1464",
+        "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+        "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+        "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+        "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+        "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+        "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+        "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+        "third_party/montezuma/DISK.FDF": "9635fc0e93838f28c96aa274033fae1c8eb747db97fe4b2bd04337e39a286d66",
+        "tools/build_bdos.py": "af1be4b95cd71a7117c6b8df8343ebff2fc15faa35dc66de89e284ca92f22e01",
+        "tools/build_native_bdos.py": "52263df77a8d319e976b7571612c5c64efb6a7958073a8c302037f6e7c214e47",
+        "tools/build_native_trs80.py": "7bd6b2bf85c2edf3505f674a662c4b600adc934ad786e519dff6baee44e2b4cf",
+        "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+        "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+        "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+        "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+        "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+        "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+        "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+        "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+        "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+        "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+        "tools/utility_versions.py": "a885d8df2bf8ab2faf900eca0a54e59bc7acf802e0522ab3b9f84b0d680f0f3f"
+      },
+      "identity_fields": {
+        "api_version": "1.2",
+        "version": "1.10"
+      },
+      "schema": 1,
+      "toolchain": {
+        "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+      },
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      }
+    },
+    "schema": 1,
+    "status": "selected-input-capture"
+  },
+  "proposal": {
+    "candidate_artifact_sha256": "2c9efde1dded13a82849d0440e1b86b307166ee8d298455268cd0e31dafdbb0b",
+    "candidate_identity": {
+      "revision": 1,
+      "version": "1.10"
+    },
+    "candidate_input_fingerprint": "da9b7b62cf4180da50a8fe64af85d4bec8fbd98aa95fe462cb34d49d4960514e",
+    "candidate_report_sha256": "b39e96a36bd5bc3b5fc7e81784a3c3508bb4e94ec4774262284c1f86d5d9b5c2",
+    "component": "subsystem:BDOS",
+    "executable_changed": true,
+    "proposed_identity": {
+      "revision": 2,
+      "version": "1.10"
+    },
+    "reference_artifact_sha256": "588f23def7a09f37dd4675fc09f8c3cda68142da43efcf4100906efff736aacc",
+    "reference_identity": {
+      "revision": 1,
+      "version": "1.10"
+    },
+    "reference_report_sha256": "6517bca523141275701e8e0255c9e8d8d506a13ed01d0da64e67aa50a40f4b98",
+    "schema": 1,
+    "selected_inputs_changed": true,
+    "status": "revision-proposal; not acceptance",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "z80pack"
+    }
+  },
+  "provenance": {
+    "repository_commit": "a5bf9a2dfeafec3fbff4d836c014cd7f47ba75e3"
+  },
+  "schema": 1,
+  "status": "explicit revision assignment; not qualification",
+  "variant": {
+    "build_mode": "cross",
+    "profile": "default",
+    "target": "z80pack"
+  }
+}

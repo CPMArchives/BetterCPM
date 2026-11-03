@@ -223,7 +223,8 @@ def main() -> None:
     cpu.mem[FCB] = 5
     cpu.de = FCB
     cpu.run(fcbdrv)
-    require(cpu.carry, "unsupported drive E was accepted through an FCB")
+    require(cpu.carry and not cpu.z,
+            "unsupported drive E must reject both carry and NZ context callers")
 
     # Shared U05 iterator and U06 DPH-backed cache: wildcard Search First/Next
     # must retain one cursor, return containing records, and avoid rereading a
@@ -318,6 +319,31 @@ def main() -> None:
     cpu.mem[BIOS_BASE + 14 * 3:BIOS_BASE + 14 * 3 + 3] = bytes((0xC3, 0x00, 0x74))
     cpu.mem[0x7400:0x7409] = bytes((
         0x3A, 0x04, 0x73, 0x3C, 0x32, 0x04, 0x73, 0xAF, 0xC9))
+
+    # BCPM-AUD-001: the first unsupported drive (E:, byte 5) used to leave
+    # Z set, so FCTX/MCTX clients reused the previously selected drive B.
+    # Exercise every unsupported byte, including all mutation entry points,
+    # against a live, matching directory and an already established context.
+    saved = bytes(cpu.mem)
+    for drive in range(5, 256):
+        if drive == ord('?'):           # documented Search First wildcard
+            continue
+        for function in (15, 16, 17, 19, 20, 21, 22, 23, 30, 33, 34, 35, 40):
+            cpu.mem[:] = saved
+            cpu.mem[FCB:FCB + 36] = bytes(36)
+            cpu.mem[FCB] = drive
+            cpu.mem[FCB + 1:FCB + 12] = b"ONE     COM"
+            cpu.mem[FCB + 17:FCB + 28] = b"RENAMED COM"
+            directory = bytes(cpu.mem[LAYOUT['DIRBUF']:LAYOUT['DIRBUF'] + 512])
+            reads, writes = cpu.mem[0x7303], cpu.mem[0x7304]
+            require(call(function, FCB) == 0xFF,
+                    f"function {function} accepted unsupported FCB drive {drive}")
+            require((cpu.mem[0x7303], cpu.mem[0x7304]) == (reads, writes),
+                    f"function {function} performed disk I/O for drive {drive}")
+            require(bytes(cpu.mem[LAYOUT['DIRBUF']:LAYOUT['DIRBUF'] + 512]) == directory,
+                    f"function {function} changed directory for drive {drive}")
+    cpu.mem[:] = saved
+
     cpu.mem[FCB:FCB + 36] = bytes(36)
     cpu.mem[FCB + 1:FCB + 12] = b"NEW     COM"
     # DRI PIP reuses this allocation-map space for its rename target.

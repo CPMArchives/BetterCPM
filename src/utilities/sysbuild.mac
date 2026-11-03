@@ -34,6 +34,16 @@ START:  CALL    UV_CHECK
         CALL 5
         JP 0
         ENDIF
+        LD      HL,(6)                  ; active gateway is the exclusive TPA end
+        LD      DE,BUFFER+SYSRECS*128
+        OR      A
+        SBC     HL,DE
+        JR      NC,STARTMEM
+        LD      DE,NOMEM
+        CALL    PRINT
+        RET                             ; retain caller stack on rejection
+NOMEM:  DB      'SYSBUILD: insufficient active TPA.',13,10,'$'
+STARTMEM:
         LD      SP,03F00H               ; enter protected-system builder
         LD      DE,BANNER
         CALL    PRINT
