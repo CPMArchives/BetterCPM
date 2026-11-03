@@ -178,3 +178,9 @@ The CP/M compatibility foundation used by BetterCP/M is maintained in the [**CP/
 General CP/M diagnostic and system utilities such as SYSINFO are maintained separately in [**CP/M Tools**](https://github.com/CPMArchives/cpm-tools).
 
 The BetterCP/M cpmsim target requires the [pinned emulator reconstruction](third_party/z80pack/README.md), including geometry interface v2. Runtime and ROM-qualification profiles are distinct.
+
+## Licensing
+
+Original BetterCP/M software is MIT-licensed. Original BetterCP/M manuals
+are licensed under CC BY 4.0. See [licensing and attribution](LICENSING.md)
+for code examples, exclusions and third-party notices.

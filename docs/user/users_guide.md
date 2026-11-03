@@ -1,5 +1,7 @@
 # BetterCP/M 1.0 User's Guide
 
+Original BetterCP/M manual content: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), BetterCP/M contributors. Original code examples: MIT. Preserve separate third-party credits and terms.
+
 ## Contents
 
 [Part I — Using BetterCP/M](#part-i)

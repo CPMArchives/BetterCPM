@@ -125,6 +125,30 @@ def utilities_members(platform, sums, images, reports, inventory):
                   'independent_inventory':proof}
 
 
+def package_license_files(tracked, package_id):
+    """Attach the first-party grants and notices for this independent download."""
+    notices = json.loads(tracked['packaging/1.0/third-party-notices.json'])
+    selected = [row for row in notices if package_id in row['packages']]
+    if not selected:
+        raise ValueError('missing package notice inventory: ' + package_id)
+    sections = [
+        'BetterCP/M 1.0 — ' + package_id,
+        'Original BetterCP/M software and original code examples: MIT (LICENSE).',
+        'Original BetterCP/M manuals: © 2026 BetterCP/M contributors, '
+        'CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). '
+        'Retain named credits and indicate changes. See licenses/CC-BY-4.0.txt.',
+        'Third-party works retain their own terms. Keep the applicable license '
+        'texts, provenance and corresponding-source companions with each download.',
+    ]
+    for row in selected:
+        sections.append(row['work'] + '\n' + row['notice'])
+    return {
+        'LICENSE': tracked['LICENSE'],
+        'licenses/CC-BY-4.0.txt': tracked['LICENSES/CC-BY-4.0.txt'],
+        'THIRD-PARTY-NOTICES.txt': ('\n\n'.join(sections) + '\n').encode('utf-8'),
+    }
+
+
 def assemble(args):
     if git('status','--porcelain','--untracked-files=no').strip():
         raise ValueError('candidate assembly requires clean tracked source')
@@ -191,6 +215,7 @@ def assemble(args):
     packages=[]
     for asset in layout['assets']:
         id=asset['id'];files=dict(common);evidence={}
+        files.update(package_license_files(tracked, id))
         template=tracked[asset['readme_template']].decode()
         template=template.replace('ASSEMBLY TEMPLATE — not a completed or accepted release package.\nRemove this notice only after the release acceptance checks pass.',
                                   'CANDIDATE — assembled for review; NOT ACCEPTED FOR RELEASE.')
