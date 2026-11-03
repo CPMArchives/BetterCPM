@@ -16,7 +16,7 @@
       "system-cpmsim",
       "source"
     ],
-    "notice": "Udo Munk and other contributors. Preserve licenses/third_party/z80pack/LICENSE and individual upstream notices (including iodevices/apu/LICENSE). The pinned upstream revision is 91fd28eb04e675c2127df88ed3f40675e15282e2. The cpmsim System kit contains the upstream source bundle, patch series and reconstructor in host/BetterCPM; the Source download carries the bundle in source/dependencies/. Full Git history also contains separate historical guest media, including WordStar and BASIC. Review redistribution or narrow the offline kit before release."
+    "notice": "Udo Munk and other contributors. The cpmsim System and Source kits carry selected upstream source from commit 91fd28eb04e675c2127df88ed3f40675e15282e2. Preserve the upstream LICENSE, module COPYING files and embedded notices in the source tar, together with the BetterCP/M patch series and offline-inputs.json inventory."
   },
   {
     "work": "DRI CP/M material",

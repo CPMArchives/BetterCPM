@@ -22,7 +22,7 @@ explicit source identity without requiring a BetterCP/M .git directory.
 
 ## Requirements and limitations
 
-- cpmsim requires the pinned runtime patches and helpers. Stock upstream cpmsim is insufficient. The Source and cpmsim System packages contain a pinned upstream Git bundle for offline reconstruction; follow their dependency README and installation guide.
+- cpmsim requires the pinned runtime patches and helpers. Stock upstream cpmsim is insufficient. The Source and cpmsim System packages contain a pinned cpmsim source tar for offline reconstruction; follow their dependency README and installation guide.
 - Select Model 4 DMKs or cpmsim raw images as appropriate. They are different containers and system bindings. The System images use platform-specific reserved tracks and geometry.
 - For the combined installation use A: System, B: primary Utilities, C: historical BetterCPM-NOAH companion, D: work. Utilities are separate downloads from the System packages.
 - Keep NOAH.COM and NOAH.OVL from the same package. Check individual utility requirements before use on another CP/M implementation.
