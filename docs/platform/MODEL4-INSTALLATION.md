@@ -66,6 +66,8 @@ do not replace the bounded recorded validation campaign or fresh-package accepta
 
 Keep personal files on work media. Back up the System image before changing
 CONFIG defaults or STARTUP.SUB. TYPE A0:STARTUP.SUB shows the startup script.
+For the verified 780K System-copy installation procedure, follow
+[the shipped-tool walkthrough](MODEL4-SHIPPED-INSTALLATION.txt).
 For copying/installing system tracks to compatible prepared media, consult the
 User's Guide DUP/SYSGEN procedures; copying ordinary directory files alone does
 not install a bootable system. Do not format a disk containing wanted data.
