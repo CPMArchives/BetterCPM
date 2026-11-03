@@ -29,7 +29,11 @@ def main():
     p.add_argument('--simulator', type=Path, default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim')
     p.add_argument('--disk-full', action='store_true',
                    help='leave only one free allocation block and verify failed replacement')
+    p.add_argument('--exchange', action='store_true',
+                   help='inspect and export the pending entry before saving the session')
     args = p.parse_args()
+    if args.exchange and args.disk_full:
+        p.error('exchange requires space for its output files')
     root = args.build_root.resolve()
     out = args.output.resolve()
     out.mkdir(parents=True)
@@ -42,6 +46,8 @@ def main():
              ('ADD.FDB', single), ('RCP.CPX', (root/'build/cpx/RCP.CPX').read_bytes())]
     if args.target == 'z80pack':
         names.append(('BYE.COM', (root/'build/z80pack-tools/BYE.COM').read_bytes()))
+    if args.exchange:
+        names.append(('TARGET.FDB', serialize((entries[0],))))
     files = [({'name': name, 'user': 0}, data) for name, data in names]
     g = geometry(args.target, root)
     if args.disk_full:
@@ -52,6 +58,12 @@ def main():
              ('ADD.FDB', 'entire catalogue): '), ('TEST109', '1 added, 0 replaced.'),
              ('S', 'displayed default): '), ('', 'Replace entire file (Y/N)? '),
              ('Y', 'Catalogue saved and verified.'), ('Q', 'A0>')]
+    if args.exchange:
+        steps[4:4] = [('L', 'capacity in bytes): '), ('test109', 'Choice: '),
+                      ('O', 'working catalogue): '), ('TEST109', 'or .FDF: '),
+                      ('TARGET.FDB', 'Replace entire file (Y/N)? '), ('Y','Catalogue saved and verified.'),
+                      ('O', 'working catalogue): '), ('', 'or .FDF: '),
+                      ('ALL.FDF', 'Create new file (Y/N)? '), ('Y','Catalogue saved and verified.')]
     if args.disk_full:
         steps[-2:] = [('Y', 'file operation failed'), ('Q', 'C Cancel: '), ('D', 'A0>')]
     if args.target == 'z80pack':
@@ -85,6 +97,12 @@ def main():
         subprocess.run(['cpmcp', '-T', 'raw', '-f', 'bettercpm-default', str(after),
                         '0:'+name, str(out/name)], check=True, cwd=out)
         assert (out/name).read_bytes() == wanted, name
+    if args.exchange:
+        for name in ('TARGET.FDB','ALL.FDF'):
+            subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(after),
+                            '0:'+name,str(out/name)],cwd=out,check=True)
+        assert (out/'TARGET.FDB').read_bytes() == serialize((entries[0],new))
+        assert serialize(parse((out/'ALL.FDF').read_bytes().split(b'\x1a')[0].decode())) == expected
     listing = subprocess.check_output(['cpmls','-T','raw','-f','bettercpm-default',str(after)], cwd=out).upper()
     assert b'DISK.BAK' not in listing and b'DISK.$$$' not in listing
     report = {'target':args.target, 'entries':108 if args.disk_full else 109, 'disk_full':args.disk_full,

@@ -27,8 +27,9 @@ def build(assembler=Path.home()/'bin/z80asm', destination=ROOT/'build/fdb'):
         (UTILITIES/'disk/fdbsession.inc').read_text(),
         validator.replace(fixed_limit, 'LD HL,(ARENALIMIT)\n'),
         'STACK: DS 512\nSTACKTOP:\nIMAGEEND:',
-        '        .PHASE 0BD00H\nEDITORBASE:',
+        '        .PHASE 0B900H\nEDITORBASE:',
         (UTILITIES/'disk/fdbdrive.inc').read_text(),
+        (UTILITIES/'disk/fdbexchange.inc').read_text(),
         (UTILITIES/'common/monitorconsole.inc').read_text(),
         'EDITOREND:\n        .DEPHASE\n        END\n',
     ])

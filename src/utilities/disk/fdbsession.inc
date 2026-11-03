@@ -34,6 +34,7 @@ MENU:   LD SP,STACKTOP
         LD (OUTOPEN),A
         LD (COMPAREOUT),A
         LD (RAWANSWER),A
+        LD (ACTION),A
         LD (EDAFTER),A
         LD HL,HEADMSG
         CALL PUTS
@@ -70,6 +71,8 @@ SHOWSTATE: CALL PUTS
         JP Z,SAVECAT
         CP 'I'
         JP Z,IMPORTCAT
+        CP 'O'
+        JP Z,EXPORTMENU
         CP 'L'
         JP Z,LISTCAT
         CP 'N'
@@ -133,6 +136,9 @@ STAGED: LD A,(ACTION)
         CALL FITCHECK
         LD A,(ACTION)
         OR A
+        CP 4
+        JP Z,EXPORTBASE
+        OR A
         JP NZ,MERGEIMPORT
         JP CHECKNAMES
 OPENACCEPT:LD HL,INPUT
@@ -189,28 +195,6 @@ PENDING:
         CP 'S'
         JP NZ,MENU
         JP DOSAVE
-LISTCAT:
-        LD IX,WORKBUF+128
-        LD A,(WORKBUF+8)
-        OR A
-        JP Z,MENU
-        LD B,A
-LISTNEXT:
-        PUSH BC
-        PUSH IX
-        POP HL
-        LD B,40
-LISTCHAR: LD A,(HL)
-        CALL PUTC
-        INC HL
-        DJNZ LISTCHAR
-        CALL CRLF
-        LD DE,64
-        ADD IX,DE
-        POP BC
-        DJNZ LISTNEXT
-        JP MENU
-
 ; Build a pointer table, resolving IDs before writing the proposed catalogue.
 MERGEIMPORT:
         LD HL,FDFRAM
@@ -218,8 +202,8 @@ MERGEIMPORT:
         LD BC,(FDBLEN)
         LDIR
         LD HL,WORKBUF+128
-        LD DE,REFS
         LD A,(WORKBUF+8)
+INITREFS:LD DE,REFS
         LD (REFCOUNT),A
         OR A
         JR Z,SELECTIMPORT
@@ -236,6 +220,9 @@ REFINIT:LD A,L
         POP DE
         DJNZ REFINIT
 SELECTIMPORT:
+        LD A,(ACTION)
+        CP 4
+        JP Z,EXPORTMATCH
         LD A,(ACTION)
         CP 3
         JR NZ,ASKIMPORTID
@@ -414,11 +401,17 @@ COPYREF:
         LD H,(IY+1)
         INC IY
         INC IY
+        LD DE,BIND
+        PUSH HL
+        OR A
+        SBC HL,DE
+        POP HL
+        JR Z,REFWORK
         LD DE,IMPORTBUF
         LD A,H
         CP 05BH
         JR C,HASBASE
-        LD DE,WORKBUF
+REFWORK:LD DE,WORKBUF
 HASBASE:LD (SRCBASE),DE
         PUSH IX
         POP DE
@@ -530,7 +523,7 @@ NAMECMP:LD A,(DE)
         INC HL
         LD D,(HL)
         LD A,D
-        CP 05BH
+        CALL CANRENAME
         JR C,EDITDESCRIPTION
         LD A,(REFCOUNT)
         SUB B
@@ -543,7 +536,7 @@ NAMECMP:LD A,(DE)
         INC HL
         LD D,(HL)
         LD A,D
-        CP 05BH
+        CALL CANRENAME
         JP NC,AMBIGFAIL
 EDITDESCRIPTION:
         EX DE,HL
@@ -590,6 +583,8 @@ NAMEDIFF:POP HL
 NAMESOK:LD A,(ACTION)
         OR A
         JP Z,OPENACCEPT
+        CP 4
+        JP Z,EXPORTREADY
         CALL COMMITWORK
         LD A,1
         LD (DIRTY),A
@@ -648,6 +643,10 @@ SHOWDEST:LD DE,DESTFCB
         JR Z,DESTABSENT
         INC A
 DESTABSENT:LD (HADDEST),A
+        LD A,(ACTION)
+        CP 4
+        JP Z,EXPORTREAD
+SHOWCONFIRM:
         LD HL,DESTFCB
         CALL SHOWNAME
         LD HL,WRITEMSG
@@ -659,12 +658,15 @@ CONFIRMSAVE:
         CALL ASKCHOICE
         CP 'Y'
         JP NZ,MENU
+        LD A,(ACTION)
+        CP 4
+        JR Z,SAVEVALID
         LD HL,WORKBUF
         LD DE,FDFRAM
         LD BC,(WORKLEN)
         LD (FDBLEN),BC
         LDIR
-        CALL FDBVALID
+SAVEVALID:CALL FDBVALID
         JP C,BADFDB
         CALL SEMANTICS
         LD HL,DESTFCB
@@ -698,8 +700,8 @@ CONFIRMSAVE:
         JR Z,SAVEBIN
         CALL WRITETEXT
         JR VERIFYOPEN
-SAVEBIN:LD HL,WORKBUF
-        LD BC,(WORKLEN)
+SAVEBIN:LD HL,FDFRAM
+        LD BC,(FDBLEN)
 SAVEREC:PUSH HL
         PUSH BC
         CALL POLLBREAK
@@ -740,8 +742,8 @@ VERIFYOPEN:LD HL,TEMPFCB
         XOR A
         LD (COMPAREOUT),A
         JR VERIFYEOF
-VERIFYBIN:LD HL,WORKBUF
-        LD BC,(WORKLEN)
+VERIFYBIN:LD HL,FDFRAM
+        LD BC,(FDBLEN)
 VERIFYREC:
         PUSH BC
         PUSH HL
@@ -786,13 +788,16 @@ PROMOTE:LD HL,TEMPFCB
         CALL RENAMEFILE
         JP RECFILES
 PUBLISHED:
+        LD A,(ACTION)
+        CP 4
+        JR NC,EXPORTCLEAN
         LD HL,DESTFCB
         LD DE,DEFAULTNAME
         LD BC,12
         LDIR
         XOR A
         LD (DIRTY),A
-        LD A,(HADDEST)
+EXPORTCLEAN:LD A,(HADDEST)
         OR A
         JR Z,SAVED
         LD DE,BACKFCB
@@ -1097,7 +1102,7 @@ COUNTMSG:DB '   Entries: ',0
 MODSTATE:DB '   Modified',13,10,0
 CLEANSTATE:DB '   Unmodified',13,10,0
 MENUMSG:DB 'A Capture drive  B Load entry  C Blank format  E Resume editor',13,10
-        DB 'F Open  N New  L List  I Import  S Save  Q Quit (or BREAK)',13,10,'Choice: ',0
+        DB 'F Open  N New  L List  I Import  O Export  S Save  Q Quit (or BREAK)',13,10,'Choice: ',0
 PENDINGMSG:DB 'Unsaved catalogue: S Save, D Discard, C Cancel: ',0
 OPENMSG:DB 'Open catalogue filename: ',0
 IMPORTMSG:DB 'Import into working catalogue',13,10,0
