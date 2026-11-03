@@ -104,7 +104,7 @@ def main():
  p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim')
  p.add_argument('--format',default=DEFAULT_FORMAT,
                 help='exact DISK.FDF format name')
- p.add_argument('--fdf',type=Path,default=ROOT/'third_party/montezuma/DISK.FDF')
+ p.add_argument('--fdf',type=Path,default=ROOT/'metadata/DISK.FDF')
  p.add_argument('--system-tracks-only',action='store_true',
                 help='emit reserved system tracks and diskdefs for manifest-driven distribution')
  p.add_argument('--ram-only',action='store_true',help='build RAM system tracks without ROM artifacts')

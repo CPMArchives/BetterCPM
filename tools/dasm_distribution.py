@@ -5,6 +5,7 @@ import io
 import json
 from pathlib import Path
 import subprocess
+from build_qualified_cpmsim import project_revision
 import tarfile
 from release_source import source_files
 
@@ -24,7 +25,7 @@ def companions(root):
     from cpm_tools_source import verify as verify_cpm_tools_source
     required |= verify_cpm_tools_source(root)
     if not required<=files.keys():raise ValueError('DASM source companion requires tracked implementation files')
-    revision=subprocess.run(['git','-C',str(root),'rev-parse','HEAD'],check=True,capture_output=True,text=True).stdout.strip()
+    revision=project_revision(root)
     manifest={'schema':1,'repository_commit':revision,'files':{n:hashlib.sha256(v).hexdigest() for n,v in sorted(files.items())}}
     files['DASM-SOURCE-MANIFEST.json']=(json.dumps(manifest,indent=2)+'\n').encode()
     content=io.BytesIO()

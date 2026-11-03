@@ -18,7 +18,9 @@ class PackageNotices(unittest.TestCase):
     def test_release_selection_retains_catalogue_inputs_and_own_implementations(self):
         selected = source_files(ROOT)
         refs = {name.split('/')[-1] for name in selected if name.startswith('third_party/montezuma/')}
-        self.assertEqual(refs, {'README.md', 'DISK.FDF', 'DISK-INT.FDF', 'CONFIG-extraction-manifest.json'})
+        self.assertEqual(refs, {'README.md', 'DISK-INT.FDF', 'CONFIG-extraction-manifest.json'})
+        self.assertIn(bytes.fromhex('9635fc0e93838f28c96aa274033fae1c8eb747db97fe4b2bd04337e39a286d66'),
+                      forbidden_digests(ROOT))
         self.assertNotIn('docs/engineering/DISK-FORMAT-MM-CONFIG-ANALYSIS.md', selected)
         for name in ('metadata/DISK.FDF', 'src/utilities/config.mac', 'src/utilities/dup.mac'):
             self.assertIn(name, selected)

@@ -20,7 +20,7 @@ MARKER = "STARTUP-PROBE"
 
 def install_record(disk: Path, record: bytes) -> None:
     """Install the two logical BCST records in one raw CCS image."""
-    fmt = select_fdf(ROOT / "third_party/montezuma/DISK.FDF", FORMAT_NAME)
+    fmt = select_fdf(ROOT / "metadata/DISK.FDF", FORMAT_NAME)
     raw = bytearray(disk.read_bytes())
     record_map = fmt.raw_record_map()
     for index in range(2):

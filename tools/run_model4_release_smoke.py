@@ -37,7 +37,7 @@ def main():
         for i,f in enumerate(originals):
             dest=w/('drive'+str(i)+'.dmk');shutil.copyfile(f,dest);drives.append(dest)
         root=Path(__file__).resolve().parents[1]
-        fmt=select_fdf(root/'third_party/montezuma/DISK-INT.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
+        fmt=select_fdf(root/'metadata/DISK.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
         (w/'diskdefs').write_text(disk_definition(fmt))
         disk=w/'work.raw';disk.write_bytes(b'\xe5'*fmt.image_bytes)
         def cpm(*args):return subprocess.run(['cpmcp','-T','raw','-f','bettercpm-mm-80t-ds-data',str(disk),*map(str,args)],cwd=w,check=True,capture_output=True)

@@ -288,13 +288,13 @@ HMSG: DB 13,10,'SEARCH TEST STEP',13,10,'$'
             assert (w/'b.dmk').read_bytes()==utility_before
             from convert_fdf_image import dmk_to_raw
             from fdf_format import select_fdf
-            fmt=select_fdf(ROOT/'third_party/montezuma/DISK-INT.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
+            fmt=select_fdf(ROOT/'metadata/DISK.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
             utility_raw=w/'utilities.raw'
             utility_raw.write_bytes(dmk_to_raw(utility_before,fmt))
             # Existing source companion's diskdefs already contains the data format.
             from build_z80pack_image import disk_definition,DEFAULT_FORMAT
             defs=(w/'diskdefs').read_text()
-            (w/'diskdefs').write_text(defs+disk_definition(select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)))
+            (w/'diskdefs').write_text(defs+disk_definition(select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT)))
             subprocess.run(['cpmcp','-T','raw','-f','bettercpm-mm-80t-ds-data',str(utility_raw),'0:SEARCH.COM',str(w/'PACKAGED.COM')],cwd=w,check=True)
             assert (w/'PACKAGED.COM').read_bytes()[:len(binary)]==binary
             evidence['model4'].update(utilities_sha256=hashlib.sha256(utility_before).hexdigest(),

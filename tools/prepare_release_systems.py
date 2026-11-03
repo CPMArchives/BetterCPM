@@ -17,7 +17,10 @@ from test_utilities_inventory import inspect
 
 def prepare(output, simulator):
     output=output.resolve();simulator=simulator.resolve()
-    if subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],cwd=ROOT).strip():
+    if (ROOT/'SOURCE-IDENTITY.json').is_file() and not (ROOT/'.git').exists():
+        from release_source import source_files
+        source_files(ROOT)  # Verify the exported source manifest.
+    elif subprocess.check_output(['git','status','--porcelain','--untracked-files=no'],cwd=ROOT).strip():
         raise ValueError('System candidate preparation requires clean tracked source')
     output.mkdir(parents=True,exist_ok=False)
     identity=source_identity();manifest=json.loads(MANIFEST.read_text())
@@ -44,7 +47,7 @@ def prepare(output, simulator):
         if target=='z80pack':
             result=boot(target,path,out,root,simulator,Path('/unused-no-model4-launch'))
         native=target=='trs80gp'
-        fmt=select_fdf(ROOT/'third_party/montezuma'/('DISK-INT.FDF' if native else 'DISK.FDF'),
+        fmt=select_fdf(ROOT/'metadata/DISK.FDF',
             'Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)' if native else DEFAULT_FORMAT)
         blank=bytes([0xe5])*fmt.image_bytes
         inspect(blank,fmt,{})

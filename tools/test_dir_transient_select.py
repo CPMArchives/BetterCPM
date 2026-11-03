@@ -159,7 +159,7 @@ def main():
         disk=report/'disks/drivea.dsk'
         # This seed predates force-transient dispatch; WBOOT reads reserved CCP.
         from fdf_format import select_fdf
-        fmt=select_fdf(ROOT/'third_party/montezuma/DISK.FDF',
+        fmt=select_fdf(ROOT/'metadata/DISK.FDF',
                        'California Computer Systems (40T, DS, DD, 332K)')
         mapping=fmt.raw_record_map();raw=bytearray(disk.read_bytes())
         carrier=(ROOT/'build/ccp/ccp.rlm').read_bytes().ljust(13*512,b'\0')

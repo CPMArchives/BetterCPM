@@ -37,7 +37,7 @@ def main():
   originals=[a.images.resolve()/n for n in names]
   result['images']=[{'source':str(f),'sha256':sha(f)} for f in originals];result['emulator_sha256']=sha(a.emulator)
   root=Path(__file__).resolve().parents[1]
-  fmt=select_fdf(root/'third_party/montezuma/DISK-INT.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
+  fmt=select_fdf(root/'metadata/DISK.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
   blank=raw_to_dmk(b'\xe5'*fmt.image_bytes,fmt)
   for name,(text,expected) in CASES.items():
    if a.only and a.only!=name:continue

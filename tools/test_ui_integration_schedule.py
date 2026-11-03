@@ -60,7 +60,7 @@ def media_test(system,output):
         assert token in dest.read_bytes(),name
     from fdf_format import select_fdf
     from build_z80pack_image import DEFAULT_FORMAT
-    boundary=select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT).reserved_records*128
+    boundary=select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT).reserved_records*128
     assert system_disk.read_bytes()[:boundary]==before[:boundary]
     for name,volume in [('system',system_disk),('work',disk)]:
         result=subprocess.run(['fsck.cpm','-T','raw','-f','bettercpm-default','-n',str(volume)],cwd=work,capture_output=True)

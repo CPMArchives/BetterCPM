@@ -2,6 +2,7 @@
 import gzip
 import hashlib
 import io
+import json
 from pathlib import Path, PurePosixPath
 import subprocess
 import tarfile
@@ -9,7 +10,7 @@ import zipfile
 
 
 # Keep the accepted format data and their provenance in release source kits.
-MM_REFERENCE_DATA = {'readme.md', 'config-extraction-manifest.json', 'disk.fdf', 'disk-int.fdf'}
+MM_REFERENCE_DATA = {'readme.md', 'config-extraction-manifest.json', 'disk-int.fdf'}
 MM_ANALYSIS = {'disk-format-mm-config-analysis.md', 'mm-config-reverse-engineering.md'}
 MM_REFERENCE = 'third_party/montezuma/'
 
@@ -23,6 +24,20 @@ def excluded_path(name):
 
 def source_files(root):
     root = Path(root).resolve()
+    identity = root / 'SOURCE-IDENTITY.json'
+    if identity.is_file() and not (root / '.git').exists():
+        manifest = json.loads((root / 'SOURCE-FILES.json').read_text())
+        files = {}
+        for name, expected in manifest.items():
+            path = (root / name).resolve()
+            path.relative_to(root)
+            if excluded_path(name):
+                raise ValueError('excluded file in source manifest: ' + name)
+            data = path.read_bytes()
+            if hashlib.sha256(data).hexdigest() != expected:
+                raise ValueError('source manifest checksum differs: ' + name)
+            files[name] = data
+        return files
     names = subprocess.check_output(['git', '-C', str(root), 'ls-files', '-z'])
     result = {}
     for raw in names.split(b'\0'):
@@ -45,6 +60,7 @@ def forbidden_digests(root):
         digests.add(hashlib.sha256(excerpt.read_bytes()).digest())
     # Original DUP 2.01 and the complete historical disassembly archive.
     digests.update(bytes.fromhex(value) for value in (
+        '9635fc0e93838f28c96aa274033fae1c8eb747db97fe4b2bd04337e39a286d66',
         '71df2862c4a5f645353f9d07d8b97fc230737e712df5bd99609035e98d0aac31',
         'e6a76f496240c22b92090ec1721b28a345ac815f54eecdfd36a88579177f50db'))
     return digests

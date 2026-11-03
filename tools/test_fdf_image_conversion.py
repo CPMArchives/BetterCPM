@@ -4,7 +4,7 @@ from convert_fdf_image import DEFAULT_FDF, DEFAULT_FORMAT, dmk_to_raw, raw_to_dm
 from fdf_format import select_fdf
 
 
-INTERNAL_FDF = DEFAULT_FDF.with_name("DISK-INT.FDF")
+INTERNAL_FDF = DEFAULT_FDF
 INTERNAL_800K_FORMAT = "Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)"
 
 
@@ -41,10 +41,10 @@ def main() -> None:
     expect_failure(lambda: dmk_to_raw(bytes(damaged), fmt), "bad ID CRC")
     expect_failure(lambda: raw_to_dmk(raw[:-1], fmt), "expected 368640 raw bytes")
 
-    fm = select_fdf(DEFAULT_FDF, "Acorn (80T, SS, SD, 392K)")
+    fm = select_fdf(DEFAULT_FDF, "MMF029")
     expect_failure(lambda: raw_to_dmk(bytes(fm.image_bytes), fm), "FM conversion is not implemented")
 
-    inverted = select_fdf(DEFAULT_FDF, "Columbia 964 (40T, SS, DD, 190K)")
+    inverted = select_fdf(DEFAULT_FDF, "MMF019")
     inverted_raw = bytes((index * 13) & 0xFF for index in range(inverted.image_bytes))
     assert dmk_to_raw(raw_to_dmk(inverted_raw, inverted), inverted) == inverted_raw
 

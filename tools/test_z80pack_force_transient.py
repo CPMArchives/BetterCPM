@@ -13,7 +13,7 @@ def main():
  shutil.copytree(args.image_dir/'disks',work/'disks');shutil.copy2(args.image_dir/'diskdefs',work/'diskdefs')
  a=work/'disks/drivea.dsk';b=work/'disks/driveb.dsk'
  # CCP reconstruction reads its reserved carrier, not a filesystem CCP.RLM.
- fmt=select_fdf(ROOT/'third_party/montezuma/DISK.FDF','California Computer Systems (40T, DS, DD, 332K)')
+ fmt=select_fdf(ROOT/'metadata/DISK.FDF','California Computer Systems (40T, DS, DD, 332K)')
  mapping=fmt.raw_record_map(); raw=bytearray(a.read_bytes())
  carrier=(ROOT/'build/ccp/ccp.rlm').read_bytes().ljust(13*512,b'\0')
  for i in range(len(carrier)//128):

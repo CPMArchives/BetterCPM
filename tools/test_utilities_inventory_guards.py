@@ -12,7 +12,7 @@ ROOT=Path(__file__).resolve().parents[1]
 def main():
     p=argparse.ArgumentParser();p.add_argument('--artifacts',type=Path,required=True);p.add_argument('--image',type=Path,required=True);a=p.parse_args()
     files={n:(a.artifacts/path).read_bytes() for n,path in COMPONENTS.items()}
-    fmt=select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT);raw=a.image.read_bytes();mapping=fmt.raw_record_map()
+    fmt=select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT);raw=a.image.read_bytes();mapping=fmt.raw_record_map()
     def position(record):
         track,slot=divmod(record,fmt.spt);return (track*fmt.spt+mapping[slot])*128
     directory=position(fmt.reserved_records);first=raw[directory:directory+32]

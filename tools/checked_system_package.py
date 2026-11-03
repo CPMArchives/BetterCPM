@@ -37,7 +37,7 @@ def validate(package,contract):
 def raw_payload(root,path):
     from fdf_format import select_fdf
     from build_z80pack_image import DEFAULT_FORMAT
-    f=select_fdf(root/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT);b=path.read_bytes();p=bytearray()
+    f=select_fdf(root/'metadata/DISK.FDF',DEFAULT_FORMAT);b=path.read_bytes();p=bytearray()
     for rec in range(160):
         track,within=divmod(rec,f.spt);at=track*f.raw_track_bytes+f.raw_record_map()[within]*128;p+=b[at:at+128]
     return bytes(p)

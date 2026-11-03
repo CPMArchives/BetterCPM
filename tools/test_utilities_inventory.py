@@ -54,7 +54,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--artifacts',type=Path,required=True);p.add_argument('--images',type=Path,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
     files={n:(a.artifacts/path).read_bytes() for n,path in COMPONENTS.items()};result={'status':'PASS','platforms':{}}
     for native,target in ((False,'z80pack'),(True,'trs80gp')):
-        fmt=select_fdf(ROOT/'third_party/montezuma'/('DISK-INT.FDF' if native else 'DISK.FDF'),'Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)' if native else DEFAULT_FORMAT)
+        fmt=select_fdf(ROOT/'metadata/DISK.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)' if native else DEFAULT_FORMAT)
         path=a.images/('BetterCPM-Utilities-'+target+('-80T-DS-800K.dmk' if native else '-332K.dsk'));image=path.read_bytes();raw=dmk_to_raw(image,fmt) if native else image
         if native:assert raw_to_dmk(raw,fmt)==image
         r=inspect(raw,fmt,files);r.update(image=path.name,image_sha256=sha(image),raw_bytes=len(raw),files_sha256={n:sha(b) for n,b in files.items()});result['platforms'][target]=r

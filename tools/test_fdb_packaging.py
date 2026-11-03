@@ -5,7 +5,8 @@ import tempfile
 
 from build_fdf_catalog import build
 from build_source_disk import extract_files, install_files
-from fdf_v1 import read_fdb, compile_file
+from fdfdecomp import decompile
+from fdf_v1 import compile_file, parse, read_fdb, serialize
 
 
 def main() -> None:
@@ -13,10 +14,13 @@ def main() -> None:
         first = build(Path(directory) / "first" / "DISK.FDB").read_bytes()
         second = build(Path(directory) / "second" / "DISK.FDB").read_bytes()
         assert first == second
+        assert serialize(parse(decompile(first))) == first
         database = read_fdb(first)
         assert len(database.descriptors) == 108
         assert all(item.supported for item in database.descriptors)
-        historical = read_fdb(compile_file(Path(__file__).resolve().parents[1]/"metadata/DISK.FDF"))
+        historical_bytes = compile_file(Path(__file__).resolve().parents[1]/"metadata/DISK.FDF")
+        assert serialize(parse(decompile(historical_bytes))) == historical_bytes
+        historical = read_fdb(historical_bytes)
         assert database.descriptors[:107] == historical.descriptors
         native = database.descriptors[-1].format
         assert native.ident == "BCPM780"

@@ -17,7 +17,7 @@ from startup_record import build as startup_record
 
 def qualify(root,image,out,simulator):
     out.mkdir(parents=True);results={}
-    fmt=select_fdf(root/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)
+    fmt=select_fdf(root/'metadata/DISK.FDF',DEFAULT_FORMAT)
     expected=(L['TPA']-256)//128*128
     contract=json.loads((root/'build/z80pack/checked-package.json').read_text())
     good=(root/'build/z80pack/system-package/SYSTEM.SYS').read_bytes()

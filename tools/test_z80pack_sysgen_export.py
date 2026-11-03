@@ -26,7 +26,7 @@ def main():
         shutil.copytree(args.image_dir/'disks', w/'disks')
         shutil.copy2(args.image_dir/'diskdefs', w/'diskdefs')
         src = w/'disks/drivea.dsk'
-        fmt = select_fdf(ROOT/'third_party/montezuma/DISK.FDF', DEFAULT_FORMAT)
+        fmt = select_fdf(ROOT/'metadata/DISK.FDF', DEFAULT_FORMAT)
         mapping = fmt.raw_record_map()
         data = bytearray(src.read_bytes())
         saved = startup_record('VER /BANNER', system_base=LAYOUT['SYSTEM'])

@@ -39,7 +39,7 @@ def main():
     original = args.baseline / report['image']
     assert report['target'] == 'z80pack' and sha(original) == report['sha256']
     args.output.mkdir(parents=True, exist_ok=True)
-    fmt = select_fdf(ROOT / 'third_party/montezuma/DISK.FDF', DEFAULT_FORMAT)
+    fmt = select_fdf(ROOT / 'metadata/DISK.FDF', DEFAULT_FORMAT)
     mapping = fmt.raw_record_map()
 
     def offset(record):
