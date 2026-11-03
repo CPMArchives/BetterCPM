@@ -1,0 +1,71 @@
+{
+  "source_commit": "6e3980b647c2a5c9a76c7d5f2ee451e0300f0bf1",
+  "tests": [
+    "test_native_fdb_reader.py",
+    "test_config_logical_cli.py",
+    "test_config_validation.py",
+    "test_fdb_editor.py",
+    "test_fdb_session.py",
+    "test_fdb_roundtrip.py"
+  ],
+  "platforms": {
+    "cpmsim": {
+      "result": {
+        "target": "z80pack",
+        "entries": 109,
+        "disk_full": false,
+        "catalogue_sha256": "eb3ab70ba37298a7430165f0db382862e75b1e29bbda82cc6511707e231c8d36",
+        "config_file_read": true,
+        "source_preserved": true,
+        "com_sha256": "5940a9ef89dc954f9de4efb8b7eaba4ec675a3b4712ce143599c33f6edba5099",
+        "com_bytes": 19704
+      },
+      "config_sha256": "f39fd7f02fc7aa658e75bfaf6813cf27d549cb2b44704b033c93ec9e12fdd032",
+      "checks": [
+        "CONFIG success diagnostic",
+        "known file read through B:",
+        "entry 109 saved exactly",
+        "original source unchanged",
+        "reserved system tracks unchanged",
+        "no backup/temp residue"
+      ]
+    },
+    "model4": {
+      "result": {
+        "target": "trs80gp",
+        "entries": 109,
+        "disk_full": false,
+        "catalogue_sha256": "51d1f1551242cc433690fd91cd932c79343f852203da2a84f3217aec3d2bd56e",
+        "config_file_read": true,
+        "source_preserved": true,
+        "com_sha256": "5940a9ef89dc954f9de4efb8b7eaba4ec675a3b4712ce143599c33f6edba5099",
+        "com_bytes": 19704
+      },
+      "config_sha256": "431e9c6b7db4b0e0d97714e2d354ee89c7c5cec451bf4996ad5fc5ab5ca037b1",
+      "checks": [
+        "CONFIG success diagnostic",
+        "known file read through B:",
+        "entry 109 saved exactly",
+        "original source unchanged",
+        "reserved system tracks unchanged",
+        "no backup/temp residue"
+      ]
+    }
+  },
+  "installation_cold_boot": {
+    "status": "PASS both platforms",
+    "source_commit": "a54dc243b549d54154488d31a2b318b54d8d6bfc",
+    "receipts": "2026-11-04-bcpm780/",
+    "final_config_sha256": {
+      "cpmsim": "29db48952a559454003b92874740cd7f15b53451f9cf9876b893f06b1820919b",
+      "model4": "4b8f39baa0fa3ac2f57a580f815d49c308293a766a716038fcf96b6de225793a"
+    },
+    "note": "Earlier entry109 receipts above precede identity-only correction; final installation receipts use corrected hashes."
+  },
+  "package_freeze": "on hold",
+  "final_fdb": {
+    "bytes": 19714,
+    "sha256": "c38439969b3fe1fc2a9a9fbc9a73b0c091b4bd29005f659fe58586c1e031616c",
+    "tests": "Integration workstream: editor, session/recovery, all40 roundtrip, native name lookup/refusal and CONFIG CLI regressions pass."
+  }
+}

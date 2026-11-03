@@ -731,6 +731,10 @@ FDBCURLOOP:
         LD A,(FINDIDX)
         CALL FDBBIND
         JR C,FDBCURNEXT
+        LD A,(CURB+19)
+        BIT 5,A
+        CALL Z,FDBRUNTIME             ; retain raw cylinder bootstrap names too
+        JR C,FDBCURNEXT
         LD HL,CURB+1
         LD DE,BIND+1
         LD B,63
@@ -1079,3 +1083,37 @@ FDBPACKPOS:DB 0
 FDBBITS:DB 1,2,4,8,16,32,64,128
 FDBTYPES:DS 16
 FDBSUPPORT:DS 32
+
+; Convert a catalogue/bootstrap cylinder DPB to the runtime surface-track
+; representation, preserving every byte address. Apply paths call this only
+; on their temporary binding; the catalogue descriptor stays unchanged.
+FDBRUNTIME:
+        LD A,(BIND+19)
+        OR A
+        BIT 5,A
+        RET Z
+        AND 06FH
+        CP 060H
+        JR NZ,FDBRTBAD
+        LD HL,(BIND+1)
+        LD A,H
+        OR L
+        JR Z,FDBRTBAD
+        BIT 0,L
+        JR NZ,FDBRTBAD
+        LD DE,(BIND+14)
+        BIT 7,D
+        JR NZ,FDBRTBAD
+        SRL H
+        RR L
+        EX DE,HL
+        ADD HL,HL
+        LD (BIND+14),HL
+        LD (BIND+1),DE
+        LD A,(BIND+19)
+        AND 0DFH
+        LD (BIND+19),A
+        OR A
+        RET
+FDBRTBAD:SCF
+        RET

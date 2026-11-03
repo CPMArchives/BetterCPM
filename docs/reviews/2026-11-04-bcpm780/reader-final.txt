@@ -1,0 +1,4 @@
+Z80/8080-Macro-Assembler  Release 2.1
+Copyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt
+0 error(s)
+Native FDB reader: validation and all 108 normalized bindings pass

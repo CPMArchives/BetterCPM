@@ -1,0 +1,19 @@
+
+A0>:VER /BANNER
+
+ - - -                                                  - - -
+|                                                            |
+|                         BetterCP/M                         |
+                         Core OS 1.0
+
+                  CP/M 2.2 Compatible System
+
+                Type TYPE README.TXT for more
+|                                                            |
+ - - -                                                  - - -
+
+A0>CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT="BETTERCP/M MODEL 4 SYSTEM 780K"
+
+Disk configuration changed (until cold boot).
+
+A0>

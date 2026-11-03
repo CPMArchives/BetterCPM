@@ -1,0 +1,65 @@
+{
+  "branch": "qualify/fdb-workbench-closure",
+  "commit": "a54dc243b549d54154488d31a2b318b54d8d6bfc",
+  "source_ready": true,
+  "core_tests_pass": [
+    "test_native_fdb_reader.py",
+    "test_config_logical_cli.py",
+    "test_config_validation.py",
+    "test_fdb_editor.py",
+    "test_fdb_session.py",
+    "test_fdb_roundtrip.py"
+  ],
+  "cpmsim_named_read": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/native-fdb/build/closure-config-sim-names-final/result.json",
+  "model4_status": "Previous complete entry109 qualification passed before display-name correction; final CONFIG built/layout checked; independent integration owns final installation/read/name/coldboot verification.",
+  "notes": "Shared CONFIG/FDB runtime normalization; no BIOS changes. Please own independent named binding and install/coldboot verification on both platforms, then coordinated PR. No PR opened here. Freeze remains on hold.",
+  "model4_named_read": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/native-fdb/build/closure-config-m4-final/result.json",
+  "platform_artifacts": {
+    "cpmsim": {
+      "config": {
+        "path": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/native-fdb/build/closure-config-sim-names-final/CONFIG.COM",
+        "sha256": "29db48952a559454003b92874740cd7f15b53451f9cf9876b893f06b1820919b",
+        "bytes": 17236
+      },
+      "qualified_build_root": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/native-fdb/build/fdb-platform-work/z80pack",
+      "validation_record": {
+        "path": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/native-fdb/build/fdb-platform-work/z80pack/build/utilities/config-validation.inc",
+        "sha256": "ae400c75b7003fff9c0871e14c6f5f2219cff912fffa7b3c410c657297e2c36a",
+        "text": "SGVALID:\n        DB 66,67,83,71,1,5,52,8,196,213,110,233,23,237,80,0,5,7,187,55\n        DB 66,67,83,71,1,5,52,8,196,213,81,233,23,237,36,0,11,43,225,45\n        DB 66,67,83,71,1,5,52,8,196,213,81,233,23,237,72,0,11,43,225,45\nSGVEND:\n"
+      },
+      "historical_entry109_fdb": {
+        "path": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/native-fdb/build/closure-config-sim-final/FDB.COM",
+        "sha256": "5940a9ef89dc954f9de4efb8b7eaba4ec675a3b4712ce143599c33f6edba5099",
+        "bytes": 19704
+      }
+    },
+    "model4": {
+      "config": {
+        "path": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/native-fdb/build/closure-name-config-final/CONFIG.COM",
+        "sha256": "4b8f39baa0fa3ac2f57a580f815d49c308293a766a716038fcf96b6de225793a",
+        "bytes": 17236
+      },
+      "qualified_build_root": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/native-fdb/build/fdb-model4-work/trs80gp",
+      "validation_record": {
+        "path": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/native-fdb/build/fdb-model4-work/trs80gp/build/utilities/config-validation.inc",
+        "sha256": "adcf3ae016d1147ca7ff95e9838e912917ac72ee161e254564c61d750f73eb9d",
+        "text": "SGVALID:\n        DB 66,67,83,71,1,5,52,8,196,213,110,233,23,237,80,0,5,7,187,55\nSGVEND:\n"
+      },
+      "historical_entry109_fdb": {
+        "path": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/native-fdb/build/closure-config-m4-final/FDB.COM",
+        "sha256": "5940a9ef89dc954f9de4efb8b7eaba4ec675a3b4712ce143599c33f6edba5099",
+        "bytes": 19704
+      }
+    }
+  },
+  "receipt": "docs/reviews/fdb-runtime-binding-qualification.json",
+  "pr_owner": "Independent integration chat; no competing PR opened",
+  "cpmsim_780k_profile_note": "Confirmed source restriction: tools/build_z80pack_image.py lines158-159 initializes ALL FOUR physical descriptors to boot-format cylinders/sides (default CCS40T DS). CONFIG COMPAT rejects BCPM780 80 cylinders against any unchanged 40-cylinder physical profile before setter. Changing logical B/D or physical1/3 alone cannot fix this. Configure intended nonboot physical profile for80 cylinders first, then named binding; preserve driveA. BIOS ZC_ATTACH independently enforces same cylinder bound. No production fix needed for intended refusal.",
+  "identity_fix": "a54dc243: FDBCURNAME normalizes candidates only for surface CURB; retains raw bootstrap matching; regression verifies both BCPM780 names and altered DSM Custom.",
+  "checkpoint_scope": "Final CONFIG artifacts; earlier entry109 receipts retain historical FDB5940 hash. Final shared-path regression FDB is recorded below.",
+  "final_fdb": {
+    "bytes": 19714,
+    "sha256": "c38439969b3fe1fc2a9a9fbc9a73b0c091b4bd29005f659fe58586c1e031616c"
+  },
+  "independent_installation": "PASS both platforms: see cpmsim/result.json and model4/result.json"
+}

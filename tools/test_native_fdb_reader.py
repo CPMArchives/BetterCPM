@@ -43,7 +43,8 @@ CURB:   DS 64
 FINDIDX:DB 0
 CUSTOM: DB 0
 UNDEF:  DB 0
-PUTC:   RET
+PUTC:   OUT (254),A
+        RET
 PUTS:   RET
 FDFRAM  EQU 04000H
 FDFLIM  EQU 07F80H
@@ -201,6 +202,55 @@ FDFLIM  EQU 07F80H
             assert not cpu.carry, index
             actual = cpu.mem[names["BIND"]:names["BIND"] + 64]
             assert actual == expected, (index, actual.hex(), expected.hex())
+
+        # Runtime conversion is bounded and only changes the temporary binding.
+        def runtime(binding):
+            cpu.mem[names["BIND"]:names["BIND"] + 64] = binding
+            cpu.carry = True
+            cpu.run(names["FDBRUNTIME"])
+            return bytes(cpu.mem[names["BIND"]:names["BIND"] + 64]), cpu.carry
+
+        index = next(i for i, entry in enumerate(catalogue.descriptors)
+                     if entry.format.ident == "BCPM780")
+        cpu.a = index
+        cpu.run(names["FDBBIND"])
+        cylinder_binding = bytes(cpu.mem[names["BIND"]:names["BIND"] + 64])
+        normalized, failed = runtime(cylinder_binding)
+        expected_runtime = bytearray(cylinder_binding)
+        expected_runtime[1:3] = (40).to_bytes(2, "little")
+        expected_runtime[14:16] = (4).to_bytes(2, "little")
+        expected_runtime[19] &= ~0x20
+        assert not failed and normalized == expected_runtime
+        assert int.from_bytes(normalized[6:8], "little") == 389
+        # The catalogue bytes and a second conversion are both unchanged.
+        assert bytes(cpu.mem[FDFRAM:FDFRAM + len(payload)]) == payload
+        assert runtime(normalized) == (normalized, False)
+        # Name lookup recognizes both bootstrap and runtime representations.
+        for active in (cylinder_binding, normalized):
+            cpu.mem[names["CURB"]:names["CURB"] + 64] = active
+            printed = []
+            cpu.port_write = lambda port, value: printed.append(value)
+            cpu.run(names["FDBCURNAME"], limit=3_000_000)
+            assert bytes(printed) == catalogue.descriptors[index].format.description.ljust(32).encode()
+        altered = bytearray(normalized)
+        altered[6] ^= 1
+        cpu.mem[names["CURB"]:names["CURB"] + 64] = altered
+        printed.clear()
+        cpu.run(names["FDBCURNAME"], limit=3_000_000)
+        assert not printed  # Custom, never a false catalogue name.
+        for offset, value in ((1, 0), (1, 79), (14, 0x8000),
+                              (19, 0xA0), (19, 0xE1), (19, 0xE2),
+                              (19, 0xE4), (19, 0xE8)):
+            invalid = bytearray(cylinder_binding)
+            if offset in (1, 14):
+                invalid[offset:offset + 2] = value.to_bytes(2, "little")
+            else:
+                invalid[offset] = value
+            assert runtime(invalid) == (invalid, True), (offset, value)
+        boundary = bytearray(cylinder_binding)
+        boundary[14:16] = (0x7FFF).to_bytes(2, "little")
+        converted, failed = runtime(boundary)
+        assert not failed and converted[14:16] == b"\xfe\xff"
 
         for kind, supported in ((0x03, 1), (0x83, 0)):
             changed = bytearray(payload)

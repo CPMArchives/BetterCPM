@@ -32,7 +32,11 @@ def main():
     p.add_argument('--exchange', action='store_true',
                    help='inspect and export the pending entry before saving the session')
     p.add_argument('--details', action='store_true')
+    p.add_argument('--config-read', action='store_true',
+                   help='qualify entry 109 through CONFIG and a known file read')
     args = p.parse_args()
+    if args.config_read and (args.exchange or args.disk_full):
+        p.error('CONFIG read is a separate acceptance case')
     if args.exchange and args.disk_full:
         p.error('exchange requires space for its output files')
     root = args.build_root.resolve()
@@ -41,6 +45,10 @@ def main():
     stock = catalogue_payload()
     entries = parse(decompile(stock))
     new = replace(entries[0], ident='TEST109', description='New test definition')
+    if args.config_read:
+        source_id = 'MMF017' if args.target == 'z80pack' else 'BCPM780'
+        base = next(entry for entry in entries if entry.ident == source_id)
+        new = replace(base, ident='TEST109', description='FDB Gate 109')
     single = serialize((new,))
     expected = serialize((*entries, new))
     names = [('FDB.COM', build(destination=out)), ('DISK.FDB', stock),
@@ -51,6 +59,15 @@ def main():
         names.append(('TARGET.FDB', serialize((entries[0],))))
     if args.details:
         names.append(('FDBVIEW.OVL',(out/'FDBVIEW.OVL').read_bytes()))
+    if args.config_read:
+        from build_config import expanded_source, validate_layout
+        from build_ccp import assemble
+        config = assemble(Path.home()/'bin/z80asm', expanded_source(root),
+                          out/'CONFIG.COM',out/'config.lst',0x100)
+        validate_layout(config,(out/'config.lst').read_text())
+        names += [('CONFIG.COM',config),
+                  ('TYPE.COM',(root/'build/utilities/TYPE.COM').read_bytes()),
+                  ('KNOWN.TXT',b'FDB GATE FILE READ PASS\r\n\x1a')]
     files = [({'name': name, 'user': 0}, data) for name, data in names]
     g = geometry(args.target, root)
     if args.disk_full:
@@ -86,6 +103,9 @@ def main():
                       ('TARGET.FDB', 'Replace entire file (Y/N)? '), ('Y','TARGET.FDB exported and verified.'),
                       ('O', 'working catalogue): '), ('', 'or .FDF: '),
                       ('ALL.FDF', 'Create new file (Y/N)? '), ('Y','ALL.FDF exported and verified.')]
+    if args.config_read:
+        steps += [('CONFIG /LOGICAL=B /PHYSICAL=0 /FORMAT="FDB Gate 109"', 'A0>'),
+                  ('TYPE B:KNOWN.TXT', 'FDB GATE FILE READ PASS')]
     if args.disk_full:
         steps[-2:] = [('Y', 'file operation failed'), ('Q', 'C Cancel: '), ('D', 'A0>')]
     if args.target == 'z80pack':
@@ -94,7 +114,7 @@ def main():
         after = disks/'drivea.dsk'
         shutil.copy2(raw, after)
         session(args.simulator.resolve(), disks,
-                [((k+'\r').encode(), message.encode(), 45) for k, message in steps] +
+                [((k+'\r').encode(), (b'A0>_ ' if message=='A0>' else message.encode()), 45) for k, message in steps] +
                 [(b'BYE /Y\r', b'System halted', 15)], out/'transcript.bin')
     else:
         disk = out/'session.dmk'
@@ -106,7 +126,7 @@ def main():
             # Inspect its directory after shutdown, before issuing another command.
             steps = steps[:-3] + [('Y', 'FDB: file operation failed.')]
         for keys, message in steps:
-            cmd += key_args(keys+'\r') + ['-iw', message.rstrip(), '-id', '60']
+            cmd += key_args(keys+'\r') + ['-iw', ('A0> ' if message=='A0>' else message.rstrip()), '-id', '3000' if message=='A0>' else '200']
         run(cmd + ['-id', '4000' if args.disk_full else '60', '-it', '-ix'], cwd=out, check=True, timeout=240)
         if args.disk_full:
             snapshot = screen(next(out.glob('trs80-text-*.bin')))
@@ -115,6 +135,15 @@ def main():
             assert '109   Modified' in current_menu and current_menu.rstrip().endswith('Choice:')
         after = out/'after.raw'
         after.write_bytes(extract_raw(disk.read_bytes()))
+    if args.config_read:
+        transcript = ((out/'transcript.bin').read_bytes().decode('ascii', 'replace')
+                      if args.target == 'z80pack' else
+                      screen(next(out.glob('trs80-text-*.bin'))))
+        assert 'Disk configuration changed (until cold boot).' in transcript
+        assert 'FDB GATE FILE READ PASS' in transcript
+        assert 'Nothing changed.' not in transcript
+        # The cold-boot carrier and startup defaults occupy reserved tracks.
+        assert after.read_bytes()[:g['reserved']] == raw.read_bytes()[:g['reserved']]
     for name, wanted in [('DISK.FDB', stock if args.disk_full else expected), ('ADD.FDB', single)]:
         subprocess.run(['cpmcp', '-T', 'raw', '-f', 'bettercpm-default', str(after),
                         '0:'+name, str(out/name)], check=True, cwd=out)
@@ -129,7 +158,7 @@ def main():
     assert b'DISK.BAK' not in listing and b'DISK.$$$' not in listing
     report = {'target':args.target, 'entries':108 if args.disk_full else 109, 'disk_full':args.disk_full,
               'catalogue_sha256':sha((out/'DISK.FDB').read_bytes()),
-              'source_preserved':True, 'com_sha256':sha(names[0][1]), 'com_bytes':len(names[0][1])}
+              'config_file_read':args.config_read, 'source_preserved':True, 'com_sha256':sha(names[0][1]), 'com_bytes':len(names[0][1])}
     (out/'result.json').write_text(json.dumps(report, indent=2)+'\n')
     print('PASS', report)
 

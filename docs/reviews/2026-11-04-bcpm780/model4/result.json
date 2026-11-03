@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "baseline_sha256": "a2d264fb6df4ef9a1cded2add30f24beb657b5b23262d9e70be9fc20ae8afa4c",
+  "config_sha256": "4b8f39baa0fa3ac2f57a580f815d49c308293a766a716038fcf96b6de225793a",
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "commands": [
+    "CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT=\"BetterCP/M Model 4 System 780K\"",
+    "DIR B:",
+    "TYPE B:KEEP.TXT",
+    "SYSGEN A: B:INSTALL.SYS",
+    "SYSGEN B:INSTALL.SYS B:",
+    "Y",
+    "cold boot target in physical drive 0",
+    "TYPE KEEP.TXT",
+    "CONFIG /SHOW",
+    "RSX LIST"
+  ],
+  "cold_screens": [
+    "\nA0>:VER /BANNER\n\n - - -                                                  - - -\n|                                                            |\n|                         BetterCP/M                         |\n                         Core OS 1.0\n\n                  CP/M 2.2 Compatible System\n\n                Type TYPE README.TXT for more\n|                                                            |\n - - -                                                  - - -\n\nA0>TYPE KEEP.TXT\nSHIPPED TOOLS INSTALL PRESERVES THIS FILE\n\nA0>\n\n\n\n\n\n",
+    "[ D ] Step rate (ms):             6\n[ E ] Motor spin-up (1/4 sec):    2\n[ F ] Head settling time (ms):    15\n2\n[ A ] Type of drive (inches):     5\n[ B ] Number of tracks:           80\n[ C ] Number of sides:            2\n[ D ] Step rate (ms):             6\n[ E ] Motor spin-up (1/4 sec):    2\n[ F ] Head settling time (ms):    15\n3\n[ A ] Type of drive (inches):     5\n[ B ] Number of tracks:           80\n[ C ] Number of sides:            2\n[ D ] Step rate (ms):             6\n[ E ] Motor spin-up (1/4 sec):    2\n[ F ] Head settling time (ms):    15\nSaved logical-drive bindings:\nA: 0: Current BIOS format (not listed in format catalogue)\nB: 1: MM 80T DS DATA\nC: 2: MM 80T DS DATA\nD: 3: MM 80T DS DATA\n\nA0>",
+    "[ C ] Number of sides:            2\n[ D ] Step rate (ms):             6\n[ E ] Motor spin-up (1/4 sec):    2\n[ F ] Head settling time (ms):    15\n3\n[ A ] Type of drive (inches):     5\n[ B ] Number of tracks:           80\n[ C ] Number of sides:            2\n[ D ] Step rate (ms):             6\n[ E ] Motor spin-up (1/4 sec):    2\n[ F ] Head settling time (ms):    15\nSaved logical-drive bindings:\nA: 0: Current BIOS format (not listed in format catalogue)\nB: 1: MM 80T DS DATA\nC: 2: MM 80T DS DATA\nD: 3: MM 80T DS DATA\n\nA0>RsX LIST\n\nM4SCRN : BDOS 255\nADM3A : BDOS 255\nTPA available: 50K\n\nA0>"
+  ],
+  "scope": "Only shipped commands; private source and 780K SYSTEM target copies plus KEEP.TXT fixture.",
+  "original_baseline_sha256": "4e661bab569b81ac583f74aabedf41001a76b28d9721ab911e6ff0995feaf5cd",
+  "source_commit": "a54dc243b549d54154488d31a2b318b54d8d6bfc",
+  "installed_sha256": "68750bacf3cfd328943d23ead9da446a1c8d8be67497cae7c1bfe726a663e1c3",
+  "exported_package_sha256": "be637970a3bc14fd9f3ece6b74fa8a060e9133373d68850cac60d9950f29907c",
+  "installation_payload_differences": [
+    [
+      7030,
+      224,
+      160
+    ]
+  ],
+  "installation_payload_difference_check": "PASS exact bootstrap A binding normalization at payload offset7030 E0->A0",
+  "original_files_preserved": 30
+}

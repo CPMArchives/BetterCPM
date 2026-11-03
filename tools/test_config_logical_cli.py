@@ -45,7 +45,8 @@ def main():
     c.mem[addr('INIT'):addr('INIT')+3]=bytes.fromhex('c3ffff')
     c.port_read=lambda p:(_ for _ in ()).throw(AssertionError('quoted format was treated as version'))
     c.run(256,limit=100000)
-    for case in ['bind','unknown','ambiguous','unsupported','tracks','sides','get-fail','set-fail','unbind']:
+    for case in ['bind','unknown','ambiguous','unsupported','tracks','sides','get-fail','set-fail','unbind',
+                 'cylinder','cylinder-odd','cylinder-overflow','cylinder-topology']:
         tail='/LOGICAL=C /UNBIND' if case=='unbind' else '/LOGICAL=B /PHYSICAL=1 /FORMAT="Target"'
         c=cpu(tail);c.run(addr('CF_PARSE'),limit=100000);assert not c.carry
         names=['Other','Target']
@@ -54,6 +55,11 @@ def main():
         c.mem[addr('FCOUNT')]=len(names)
         for i,name in enumerate(names):c.mem[0x9000+i*32:0x9020+i*32]=name.ljust(32).encode()
         bind=bytearray(64);bind[0]=0;bind[16]=40;bind[19]=64
+        if case.startswith('cylinder'):
+            bind[1:3]=(79 if case=='cylinder-odd' else 80).to_bytes(2,'little')
+            bind[6:8]=(389).to_bytes(2,'little')
+            bind[14:16]=(0x8000 if case=='cylinder-overflow' else 2).to_bytes(2,'little')
+            bind[19]=0xE2 if case=='cylinder-topology' else 0xE0
         old=bytearray([7]*64);active=bytearray(old);ops=[];resets=[];out=[]
         for label,port in [('FDBNAME',230),('FDBBIND',231),('API',232)]:
             c.mem[addr(label):addr(label)+3]=bytes((0xdb,port,0xc9))
@@ -83,8 +89,12 @@ def main():
             c.z=True;return 0
         c.port_read=io;c.run(addr('CL_UNBIND') if case=='unbind' else addr('CL_BIND'),limit=200000)
         text=bytes(out);assert b'Push ENTER' not in text
-        if case=='bind':
+        if case in ('bind','cylinder'):
             expected=bytearray(bind);expected[0]=1
+            if case=='cylinder':
+                expected[1:3]=(40).to_bytes(2,'little')
+                expected[14:16]=(4).to_bytes(2,'little')
+                expected[19]=0xC0
             assert active==expected and ops==[1,4] and resets==[2]
             assert b'until cold boot' in text
         elif case=='unbind':assert active[0]==255 and active[1:]==old[1:] and ops==[4] and resets==[4]
