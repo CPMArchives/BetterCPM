@@ -13,7 +13,7 @@ expansion is not mistaken for independent copies. The six codecs already share
 `codecfile.mac`, `codecver.inc` and codec implementations; CRCKSUM/MD5SUM already
 share traversal, output, support and selected parser routines; the file selectors
 already use `duselect.inc`, `filespec.inc` and `attrselect.inc` in many consumers.
-PATCH also expands COMPARE numeric/parser helpers through `tools/build_patch.py`; it is not another independent implementation of those algorithms. Those are existing reuse, not proposals to invent a competing library. The source scan records 224 utility/common source files and 11,509 routine/data labels; semantic equivalence is asserted only for the exact matches below.
+PATCH also expands COMPARE numeric/parser helpers through `tools/build_patch.py`; it is not another independent implementation of those algorithms. Those are existing reuse, not proposals to invent a competing library. The initial source scan recorded 224 utility/common source files and 11,509 routine/data labels; semantic equivalence is asserted only for the exact matches below.
 
 No high-priority **new** library is justified for 1.0 by the evidence below.
 The most measurable opportunities are small post-1.0 investigations; hypothetical
@@ -29,6 +29,23 @@ value, not authorization or a release gate.
 | FCB extent/random-record initialization | TED `publisher.mac:TS_RESETFCB`, `workspace.mac:TW_FCB_RESET`; CRC `output.inc:WTRESET`; file adapters in `common/dasmsafe.inc` and `codecfile.mac` | TED publisher resets an arbitrary FCB+12 for 23 bytes while preserving HL/DE/BC; workspace resets a fixed FCB with different clobbers. Other adapters reset 24 or 36 bytes and retain different identity/attribute fields. | Tiny local helper or macro with an explicit byte range; keep the already shared codec and checksum adapters. | Makes bounds and preserved identity easier to audit. Raw repetition is small; no proved data-integrity defect or aggregate saving. | One-byte extent-state differences matter. A generic zero-FCB routine can erase drive/name/attributes or omit CR/random state. Parameterization and wrappers can cost more than local instructions. | Low | Retain existing code pending a consumer-by-consumer state contract. |
 | File publication/backup/recovery | TED `publisher.mac:TS_RUN`, DASM `common/dasmfile.inc` and `dasmsession.inc`, CRC `output.inc`, PATCH `patch/transaction.inc`, codec `codecfile.mac` | Similar create/close/rename sequences implement materially different fingerprint, replay, verification, backup, protection, multi-file/session and cancellation policies. This is functional overlap, not proven equivalent implementations. | No new publication framework. Compare state machines in the separate post-1.0 audit before considering extraction of individual exact primitives. | Possible long-term correctness review; no measured benefit of unification established here. | Highest data-loss and recovery risk; register/stack/workspace ownership and exact failure ordering differ. Existing fault-injection receipts would need extensive requalification. | Low | Retain existing code. |
 | Command queries/error presentation | `common/version.inc:UV_QUERY`, `tools/utility_help.py:query_source`, codec query selection; staged R/W in `third_party/z80pack/patches/0005-host-transfer.patch` | Owned Z80 utilities already share exact bounded recognition. CONFIG and PIP retain literal-data boundaries. R/W are 8080 host adapters with version-over-help precedence and a separate host ABI. | Continue using existing query source; evaluate the host helpers separately, without a second query library. | Existing reuse already prevents most duplication. Host policy mismatch is a concrete review item, not a demonstrated need for a new library. | Must not interpret literal file data as queries, change precedence silently or introduce hardware dependencies into portable utilities. Pre-private-stack query depth is already tightly bounded. | Low | Retain existing libraries; seek an explicit host-helper policy decision separately. |
+
+## Follow-up observation: no-operand tail validation
+
+Low priority; retain existing code for 1.0. The follow-up contains four identical
+36-byte instruction sequences (labels aside) at `ARG_SCAN`/`ARG_BAD` in
+`src/utilities/admtst.mac`, `ansitst.mac`, `vt52tst.mac`, and `xsub.mac`.
+Each accepts only spaces/TABs after the existing query handler and rejects any
+other byte or counted length >=128; the dollar-terminated messages name different
+utilities. This is confirmed duplication with the same grammar, distinct from
+the specialized parsers above. A parameterized include/macro could remove source
+maintenance duplication but saves no emitted bytes. A shared callable routine
+would need an explicit message pointer, A/B/HL clobber contract and caller-stack
+budget; current inline code adds no pushes or resident storage. ADMTST has only
+three bytes left in its current 2-KiB allocation, so unmeasured abstraction
+cost is unwelcome. No demonstrated maintenance problem justifies a new library
+now. Investigate further only if additional equivalent consumers emerge; no
+candidate implementation is authorized by this observation.
 
 ## Confirmed versus inferred
 

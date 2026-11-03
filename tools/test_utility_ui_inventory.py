@@ -29,6 +29,20 @@ def main():
         assert proof['host']=='PASS' and proof['cpmsim']=='PASS'
         for path,digest in proof['source_sha256'].items():
             assert hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==digest,('stale TED confirmation evidence',path)
+    noargs=('ADMTST','ANSITST','VT52TST','XSUB')
+    if any(rows[name][3]=='C' for name in noargs):
+        proof=json.loads((ROOT/'docs/engineering/evidence/2026-11-03-ui-argument-validation/results.json').read_text())
+        assert proof['host']=='PASS' and proof['cpmsim']=='PASS'
+        for name in noargs:
+            path='src/utilities/'+name.lower()+'.mac'
+            assert hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==proof['source_sha256'][path],('stale argument evidence',name)
+            artifact=ROOT/'build/utilities'/(name+'.COM')
+            if artifact.exists():
+                assert hashlib.sha256(artifact.read_bytes()).hexdigest()==proof['current'][name]['sha256'],('stale argument binary',name)
+        native=json.loads((ROOT/'docs/engineering/evidence/2026-11-03-ui-noargs-model4-pass/results.json').read_text())
+        assert native['status']=='PASS' and native['captures']==22
+        for name in noargs:
+            assert native['receipt']['binaries'][name]==proof['current'][name],('native argument payload differs',name)
     print(f'PASS: {len(rows)} unique utility rows cover distribution, companion, host helpers and registry')
 
 if __name__=='__main__':main()

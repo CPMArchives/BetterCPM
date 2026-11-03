@@ -26,6 +26,29 @@ RSXFUNC         EQU     177
 
 XS_START:                               ; enter XSUB installer
         CALL    UV_CHECK                ; standalone utility identity
+        ; Queries have already returned; these commands accept no operands.
+        LD      A,(0080H)
+        CP      128
+        JR      NC,ARG_BAD
+        OR      A
+        JR      Z,ARG_OK
+        LD      B,A
+        LD      HL,0081H
+ARG_SCAN:
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,ARG_NEXT
+        CP      9
+        JR      NZ,ARG_BAD
+ARG_NEXT:
+        INC     HL
+        DJNZ    ARG_SCAN
+        JR      ARG_OK
+ARG_BAD:
+        LD      DE,ARG_MSG
+        LD      C,9
+        JP      BDOS
+ARG_OK:
   ; Preserve the CCP's transient return frame. Function 177 temporarily moves
   ; its own manager frame, and the CCP must reconstruct the newly committed
   ; chain before BATCHIO receives another public BDOS call.
@@ -96,6 +119,8 @@ XS_WHIGH:                               ; bound scratch below TPA and stack
 XS_REQUEST:     DB      2,3,0,0,'BATCHIO ',0,0,0,0,0,0 ; Function-177 request
 XS_ALREADY:     DB      13,10,'Xsub Already Present','$' ; already-active message
 XS_LOADERR:     DB      13,10,'Xsub Load Error','$' ; load-failure message
+ARG_MSG: DB 'Invalid usage.',13,10,'Use XSUB /HELP.',13,10,'$'
+
 XS_END:                                 ; end of caller-owned program image
 ; @utility-version XSUB@
 

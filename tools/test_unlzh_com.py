@@ -165,6 +165,7 @@ def main():
     parser.add_argument('--assembler', type=Path, default=Path.home() / 'bin/z80asm')
     parser.add_argument('--z80pack', type=Path, default=Path.home() / 'projects/git/z80pack')
     parser.add_argument('--archives', type=Path, nargs=2, default=[ROOT / 'build/test-fixtures/crlzh' / n for n in ('crlzh11.lbr', 'crlzh20.lbr')])
+    parser.add_argument('--synthetic-only', action='store_true', help='Run self-contained cases; explicitly omit historical archives')
     parser.add_argument('--cc', default='cc')
     args = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix='bettercpm-unlzh-com-') as temp:
@@ -181,9 +182,10 @@ def main():
         m = Command(C.CDLL(str(work / 'core.so')), image,
                     (work / 'unlzh.lst').read_text(errors='replace'))
         m.instruction_budget = 1000000000
-        count = tests(m, args.archives)
+        count = tests(m, [] if args.synthetic_only else args.archives)
         print(f'PASS: {m.cases} UNLZH.COM cases, including {count} historical files (unsafe names refused);')
         print('record I/O, metadata, drives, faults, cleanup and original-file preservation checked.')
+        if args.synthetic_only:print('Historical archive cases NOT RUN (--synthetic-only).')
 
 
 if __name__ == '__main__':

@@ -35,7 +35,7 @@ def native_schedule(steps):
     """SUBMIT owns shell commands; only modal responses use physical keys."""
     script=[];markers={};actions=[]
     for index,(key,prompt) in enumerate(steps):
-        if key.startswith('B:'):
+        if key.startswith(('A:','B:')):
             assert key.endswith('\r'),key
             script+=['CLS',key[:-1]]
             outgoing=''
@@ -56,28 +56,37 @@ def main():
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--platform',choices=('cpmsim','model4'),required=True)
     p.add_argument('--prepare-only',action='store_true')
+    p.add_argument('--noargs-only',action='store_true',help='Query/invalid-tail gate for diagnostic tools and XSUB; smoke-test normal XSUB installation')
     p.add_argument('--emulator',type=Path,default=DEFAULT_EMULATOR)
     p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim')
     a=p.parse_args();w=a.output.resolve();w.mkdir(parents=True,exist_ok=False)
     native=a.platform=='model4';platform='trs80gp' if native else 'z80pack'
     report=json.loads((a.system/platform/'report.json').read_text())
     base=a.system/platform/report['image'];original=base.read_bytes()
-    artifacts={name:(ROOT/'build/utilities'/(name+'.COM')).read_bytes() for name in ('CRCKSUM','MD5SUM','DASM')}
-    if not native:artifacts['BYE']=(ROOT/'build/z80pack-tools/BYE.COM').read_bytes()
+    selected=('ADMTST','ANSITST','VT52TST','XSUB') if a.noargs_only else ('CRCKSUM','MD5SUM','DASM')
+    artifacts={name:(ROOT/'build/utilities'/(name+'.COM')).read_bytes() for name in selected}
+    if not native and not a.noargs_only:artifacts['BYE']=(ROOT/'build/z80pack-tools/BYE.COM').read_bytes()
+    batchio=(ROOT/'build/rsx/BATCHIO.RSX').read_bytes() if a.noargs_only else None
     files={name+'.COM':data for name,data in artifacts.items()}
-    files.update({'FIX.DAT':b'123456789'+b'\x1a'*119,'CRC.LST':b'KEEP CRC'+b'\x1a'*120,'MD5.LST':b'KEEP MD5'+b'\x1a'*120})
+    if not a.noargs_only:files.update({'FIX.DAT':b'123456789'+b'\x1a'*119,'CRC.LST':b'KEEP CRC'+b'\x1a'*120,'MD5.LST':b'KEEP MD5'+b'\x1a'*120})
     # Always use logged A: and explicit B: file operands; no user source is modified.
     steps=[]
     for name in artifacts:
         for query in ('/HELP /VER /BOGUS','/VER /BOGUS'):
             steps.append((f'B:{name} {query}\r','A0>'))
-    for name,listname in [('CRCKSUM','CRC.LST'),('MD5SUM','MD5.LST')]:
-        steps += [(f'B:{name} B:FIX.DAT /FILE=B:NEW{listname}\r','A0>'),
-                  (f'B:{name} B:FIX.DAT /FILE=B:{listname}\r','Overwrite?'),
-                  (('??-[\x1bn' if native else '??#-\x1bn'),'A0>'),
-                  (f'B:{name} B:FIX.DAT /FILE=B:{listname}\r','Overwrite?'),('\x03','A0>')]
-    steps += [('B:DASM\r','*'),('X\r','Restart DASM (Y/N)? '),('n','*'),('G\r','A0>')]
-    if not native:steps += [('B:BYE\r','Exit cpmsim? (Y/N) [N]: '),('#-\x1bn','A0>')]
+    if a.noargs_only:
+        for name in artifacts:
+            for tail in ('/BOGUS','/HELPER','JUNK'):
+                steps.append((f'B:{name} {tail}\r','A0>'))
+        steps += [('B:XSUB\r','A0>'),('A:RSX LIST\r','A0>')]
+    else:
+        for name,listname in [('CRCKSUM','CRC.LST'),('MD5SUM','MD5.LST')]:
+            steps += [(f'B:{name} B:FIX.DAT /FILE=B:NEW{listname}\r','A0>'),
+                      (f'B:{name} B:FIX.DAT /FILE=B:{listname}\r','Overwrite?'),
+                      (('??-[\x1bn' if native else '??#-\x1bn'),'A0>'),
+                      (f'B:{name} B:FIX.DAT /FILE=B:{listname}\r','Overwrite?'),('\x03','A0>')]
+        steps += [('B:DASM\r','*'),('X\r','Restart DASM (Y/N)? '),('n','*'),('G\r','A0>')]
+        if not native:steps += [('B:BYE\r','Exit cpmsim? (Y/N) [N]: '),('#-\x1bn','A0>')]
     (w/'steps.json').write_text(json.dumps(steps,indent=2)+'\n')
     if native:
         # A: uses the reserved-track system format; configured B: uses the
@@ -87,13 +96,14 @@ def main():
         directory=FILESYSTEM_FIRST_SECTOR*SECTOR_SIZE
         for i in range(DIRECTORY_ENTRIES):
             at=directory+i*32
-            if raw[at]==0 and raw[at+1:at+12]==b'STARTUP SUB':raw[at]=0xe5
+            if raw[at]==0 and (raw[at+1:at+12]==b'STARTUP SUB' or (batchio and raw[at+1:at+12]==b'BATCHIO RSX')):raw[at]=0xe5
         # Neither startup prompts nor previous A0> text establish readiness.
         # Let the established SUBMIT path sequence all shell commands, with a
         # blocking completion program after each returned operation.
         script,markers,actions=native_schedule(steps)
         system_files={'UIQUAL.SUB':script,**markers,
                       'STARTUP.SUB':b'RSX LOAD M4SCRN\r\nRSX LOAD ADM3A\r\nSUBMIT UIQUAL\r\n\x1a'}
+        if batchio:system_files['BATCHIO.RSX']=batchio
         for name,data in system_files.items():add_file(raw,name,data)
         (w/'UIQUAL.SUB').write_bytes(script)
         (w/'a.dmk').write_bytes(make_dmk(raw))
@@ -143,7 +153,11 @@ def main():
         for name,data in files.items():
             path=w/name;path.write_bytes(data)
             subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disk),str(path),'0:'+name],cwd=w,check=True,capture_output=True)
+        if batchio:
+            path=w/'BATCHIO.RSX';path.write_bytes(batchio)
+            subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(w/'disks/drivea.dsk'),str(path),'0:BATCHIO.RSX'],cwd=w,check=True,capture_output=True)
     receipt={'status':'PREPARED','platform':a.platform,'system_sha256':sha(original),'binaries':{n:{'bytes':len(b),'sha256':sha(b)} for n,b in artifacts.items()},'steps':len(steps),'scope':'queries, checksum creation/repeated help/invalid bytes/No/Ctrl-C, DASM restart refusal, cpmsim BYE cancellation; independently read back preserved files and new lists'}
+    if a.noargs_only:receipt.update(scope='diagnostic/XSUB query precedence and invalid arguments; valid XSUB installation and RSX LIST; independent payload/companion readback and filesystem checks',batchio_sha256=sha(batchio))
     if native:receipt.update(work_format=data_format.name,media_preflight='PASS',command_transport='SUBMIT UIQUAL with unique blocking completion markers',command_script_sha256=sha(script))
     (w/'result.json').write_text(json.dumps(receipt,indent=2)+'\n')
     if a.prepare_only:print('PREPARED; execution and readback pending:',w);return
@@ -159,6 +173,11 @@ def main():
             for index,name in enumerate(artifacts):
                 assert b'Usage:' in screens[2*index],('help did not execute',name)
                 assert (name+' 1.0 (').encode() in screens[2*index+1],('version did not execute',name)
+                if a.noargs_only:
+                    for screen in screens[2*len(artifacts)+3*index:2*len(artifacts)+3*index+3]:
+                        assert b'Invalid usage.' in screen and ('Use '+name+' /HELP.').encode() in screen,(name,'missing invalid-argument diagnostic')
+            if a.noargs_only:
+                assert b'BATCHIO' in screens[-1] and b'Xsub Load Error' not in screens[-2], 'normal XSUB installation failed'
         except BaseException as error:
             count=len(list(w.glob('trs80-text-*.bin')))
             expected=actions[count][1] if count<len(actions) else 'capture validation'
@@ -167,7 +186,11 @@ def main():
             receipt.update(status='FAIL',stage='native execution/capture',error=reason,completed_captures=count,next_expected=expected)
             (w/'result.json').write_text(json.dumps(receipt,indent=2)+'\n')
             raise SystemExit(f'FAIL: {reason}; captures {count}/{len(steps)}; next expected {expected!r}. Results: {w}') from None
-    else:session(a.simulator,w/'disks',[(key.encode(),(marker+'_ ' if marker=='A0>' else marker).encode(),30) for key,marker in steps],w/'transcript.bin')
+    else:
+        transcript=session(a.simulator,w/'disks',[(key.encode(),(marker+'_ ' if marker=='A0>' else marker).encode(),30) for key,marker in steps],w/'transcript.bin')
+        if a.noargs_only:
+            for name in artifacts:assert transcript.count(('Invalid usage.\r\nUse '+name+' /HELP.\r\n').encode())==3,name
+            assert b'BATCHIO' in transcript and b'Xsub Load Error' not in transcript
     if native:
         raw=dmk_to_raw((w/'b.dmk').read_bytes(),data_format);disk=w/'readback.raw';disk.write_bytes(raw);fmt='bettercpm-mm-80t-ds-data'
     else:disk=w/'disks/driveb.dsk';fmt='bettercpm-default'
@@ -175,7 +198,7 @@ def main():
         dest=w/('READ-'+name)
         subprocess.run(['cpmcp','-T','raw','-f',fmt,str(disk),'0:'+name,str(dest)],cwd=w,check=True,capture_output=True)
         actual=dest.read_bytes();assert actual[:len(data)]==data,name
-    for name in ('NEWCRC.LST','NEWMD5.LST'):
+    for name in (() if a.noargs_only else ('NEWCRC.LST','NEWMD5.LST')):
         dest=w/('READ-'+name)
         subprocess.run(['cpmcp','-T','raw','-f',fmt,str(disk),'0:'+name,str(dest)],cwd=w,check=True,capture_output=True)
         assert (b'FIX      DAT' if name=='NEWCRC.LST' else b'FIX.DAT') in dest.read_bytes(),name
@@ -190,7 +213,18 @@ def main():
         fmt=select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)
         boundary=fmt.reserved_records*128
         assert private_system[:boundary]==original[:boundary]
+    if batchio:
+        system_disk=w/'system-readback.raw'
+        system_disk.write_bytes(extract_raw(private_system) if native else private_system)
+        system_format='ui-system' if native else 'bettercpm-default'
+        dest=w/'READ-BATCHIO.RSX'
+        subprocess.run(['cpmcp','-T','raw','-f',system_format,str(system_disk),'0:BATCHIO.RSX',str(dest)],cwd=w,check=True,capture_output=True)
+        assert dest.read_bytes()[:len(batchio)]==batchio
+        result=subprocess.run(['fsck.cpm','-T','raw','-f',system_format,'-n',str(system_disk)],cwd=w,capture_output=True)
+        (w/'system-filesystem.log').write_bytes(result.stdout+result.stderr);assert result.returncode==0
     receipt.update(status='PASS',unchanged_inputs=True,unchanged_system_area=True,filesystem='PASS',new_lists='PASS')
+    if a.noargs_only:
+        receipt.pop('new_lists');receipt.update(invalid_arguments='PASS',normal_xsub_installation='PASS',companion_unchanged=True)
     (w/'result.json').write_text(json.dumps(receipt,indent=2)+'\n');print(json.dumps(receipt,indent=2))
 
 if __name__=='__main__':main()

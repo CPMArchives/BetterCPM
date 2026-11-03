@@ -149,7 +149,7 @@
       "builders": [
         "tools/build_batch.py"
       ],
-      "revision": 5,
+      "revision": 6,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -387,7 +387,7 @@
       "builders": [
         "tools/build_adm3a.py"
       ],
-      "revision": 6,
+      "revision": 7,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -404,7 +404,7 @@
       "builders": [
         "tools/build_vt52.py"
       ],
-      "revision": 6,
+      "revision": 7,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -421,7 +421,7 @@
       "builders": [
         "tools/build_ansi.py"
       ],
-      "revision": 5,
+      "revision": 6,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",

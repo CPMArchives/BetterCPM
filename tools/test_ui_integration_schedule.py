@@ -87,17 +87,18 @@ def main():
            ('??-[\x1bn','A0>'),
            ('B:CRCKSUM B:FIX.DAT /FILE=B:CRC.LST\r','Overwrite?'),
            ('\x03','A0>'),('B:DASM\r','*'),
-           ('X\r','Restart DASM (Y/N)? '),('n','*'),('G\r','A0>')]
+           ('X\r','Restart DASM (Y/N)? '),('n','*'),('G\r','A0>'),('A:RSX LIST\r','A0>')]
     script,markers,actions=native_schedule(steps)
     lines=script.rstrip(b'\x1a').decode().splitlines()
-    commands=[key[:-1] for key,_ in steps if key.startswith('B:')]
-    assert [line for line in lines if line.startswith('B:')]==commands
+    commands=[key[:-1] for key,_ in steps if key.startswith(('A:','B:'))]
+    assert [line for line in lines if line.startswith(('A:','B:'))]==commands
     assert [key for key,_,_ in actions if key]==['??-[\x1bn','\x03','X\r','n','G\r']
     completions=[prompt for _,prompt,complete in actions if complete]
-    assert len(completions)==len(set(completions))==len(markers)==6
+    assert len(completions)==len(set(completions))==len(markers)==7
     assert all(prompt!='A0>' for _,prompt,_ in actions)
     assert lines[lines.index(commands[3])+1]=='UI04'
     assert lines[lines.index('B:DASM')+1]=='UI10'
+    assert lines[lines.index('A:RSX LIST')+1]=='UI11'
     for index,(_,prompt,complete) in enumerate(actions):
         if complete:assert markers[f'UI{index:02}.COM']==native_marker(prompt)
     for message in completions:
@@ -121,7 +122,7 @@ def main():
             return 13
         cpu.port_read=io;sp=cpu.sp;cpu.run(256)
         assert cpu.sp==sp and calls[-1]==('warmboot',)
-    print('PASS: SUBMIT owns every shell command; unique completion markers; six Z80 marker executions block before clearing stale prompts and warm booting')
+    print('PASS: SUBMIT owns every shell command; unique completion markers; seven Z80 marker executions block before clearing stale prompts and warm booting')
     if args.system:media_test(args.system,args.output)
 
 

@@ -15,7 +15,11 @@ def runner(image,base=256):
     c=Z80(b'');c.mem[base:base+len(image)]=image
     # Record output service; a nonreturning WBOOT ends handled requests.
     c.mem[0:3]=bytes.fromhex("c3ffff")
-    c.mem[5:14]=bytes.fromhex('ed530070ed430270c9')
+    # A real CP/M entry is JP BDOS; guarded utilities use (0006h) as TPA
+    # ceiling. An inline recording stub here made that word 0053h and caused
+    # TED to return before its query path, falsely reporting missing output.
+    c.mem[5:8]=bytes.fromhex('c300f0')
+    c.mem[0xf000:0xf009]=bytes.fromhex('ed530070ed430270c9')
     return c
 def output(c):
     assert c.word(0x7002)&255==9,('unexpected BDOS service',c.word(0x7002))
@@ -33,6 +37,7 @@ def expected_identification(name):
     return banner(name)+'\r\n'
 
 def main():
+    from test_utility_finalization import execute
     count=0
     for name in identities():
         # The codecs and NOAH require the full Z80 harness (IX/IY).
@@ -40,20 +45,11 @@ def main():
         if name=='NOAH':
             print('NOAH: identity checks are in tools/test_noah.py (full Z80 core).')
             continue
-        artifact=ROOT/('build/pip-development/PIP.COM' if name=='PIP' else f'build/utilities/{name}.COM')
-        image=artifact.read_bytes()
         for tail in ['/VER',' /ver  ','/VER x','x /VER','/VER /VER','/VER /B','\t/VeR\tX','FILE\t/ver']:
-            c=runner(image);data=tail.encode();c.mem[128]=len(data);c.mem[129:129+len(data)]=data
-            c.run(256,limit=100000)
-            if name in ('DUMP','DDT','SQ','USQ','CR','UNCR','LZH','UNLZH'):
-                import importlib
-                identity=importlib.import_module('build_'+name.lower()).version_text()
-            else:identity=banner(name)+'\r\n'
-            expected=identity
-            row=load()['components']['utility:'+name]
-            if name not in ('DUMP','DDT','SQ','USQ','CR','UNCR','LZH','UNLZH') and row.get('display_format')=='numeric':
-                expected=identification(name,row['version'],row['revision'],row['description'],development=display_development('utility:'+name))
-            assert output(c)==expected,(name,tail,output(c));count+=1
+            # Reuse the existing console collector: current utilities emit
+            # either Function 9 strings or Function 2/6 character streams.
+            actual,_=execute(name,tail)
+            assert actual==expected_identification(name),(name,tail,actual);count+=1
     image=(ROOT/'build/cpx/rcp.bin').read_bytes()
     listing=(ROOT/'build/cpx/rcp.lst').read_text()
     for name in ['DIR','ERA','TYPE','REN','CLS','USER','VER','COPY','MOVE']:
