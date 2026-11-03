@@ -3,8 +3,8 @@
 3 November 2026. **Draft; workstream completion and merge acceptance remain
 open.** Clear, compatible work is implemented and tested. TED's confirmation
 correction is approved and implemented; the matrix's outstanding verification
-cells and TED's native `choice-scope` execution remain open. TED native `choices`
-passes on the current payload. The bounded native
+cells remain open. Both bounded native TED campaigns pass on the current
+payload. The bounded native
 CRCKSUM/MD5SUM/DASM campaign now passes. No core, BIOS, resident RCP or historical third-party
 reference source was changed. No new utility feature/library was introduced.
 
@@ -278,9 +278,9 @@ python3 tools/test_ui_integration_media.py --system "$SYSTEMS" --platform model4
 
 1. TED approval is resolved: immediate Y/N/default-No/invalid-retry conversion is
    implemented and covered by current host/cpmsim and native assembly evidence.
-2. Execute corrected TED `choice-scope` under Model 4 and inspect captured
-   screens. TED `choices` and the checksum/DASM campaign pass; prepared TED
-   inputs and historical receipts alone are not native qualification.
+2. The changed-payload Model 4 gates now pass: checksum/DASM and both TED
+   campaigns, with captured-screen and independent file/backup checks. Whole
+   release packaging/conformance remains a separate acceptance boundary.
 3. Close remaining per-utility malformed/combination verification cells before
    claiming complete suite-wide conformance. Broader release conformance and
    packaged release acceptance remain separate.
@@ -304,8 +304,8 @@ readback. TED grows by 192 bytes within its existing allocation, and Utilities
 retains 2 KiB free. Updated user/native scripts no longer send Enter after Y/N.
 Current [evidence](evidence/2026-11-03-ted-choice/results.json) supersedes TED 003
 receipts for this scope; original evidence remains historical. TED Model 4 execution
-has passed `choices`; the PR remains a draft pending corrected native `choice-scope`
-and the matrix's other outstanding verification. No further TED behavior approval
+has passed both `choices` and corrected `choice-scope`; the PR remains a draft
+pending the matrix's other outstanding verification. No further TED behavior approval
 is requested.
 
 ### TED Model 4 choices pass and substitution-fixture correction
@@ -327,7 +327,7 @@ Only the harness fixture, search and expected bytes change to matching uppercase
 on both platforms. The corrected cpmsim run passes, saving exactly
 `ONE X ONE ONE\r\n` plus padding, retaining the original backup, with intact
 guards and filesystems. TED production bytes, BIOS case behavior and core are
-unchanged. Native execution of that corrected fixture is still outstanding.
+unchanged. Native execution of that corrected fixture now passes as recorded below.
 
 ```sh
 python3 tools/qualify_ted_editor.py --system "$SYSTEMS" --utilities "$UTILITIES" --output "$OUTPUT" --platforms z80pack --cross-smoke --scenario choice-scope --identity-state auto
@@ -336,3 +336,18 @@ python3 tools/qualify_ted_editor.py --system "$SYSTEMS" --utilities "$UTILITIES"
 [Receipts and RAM diagnosis](evidence/2026-11-03-ted-model4-choices/results.json)
 and [retained captures/readback](evidence/2026-11-03-ted-model4-choices/receipts-and-logs.tar.gz)
 separate the successful campaign, failed harness attempt and corrected host run.
+
+### Completed native TED substitution scope
+
+The maintainer's `ted-scope-model4-20261103-125254` run passes on the same TED
+payload, after correcting the fixture case only. Eleven captures show the
+expected replacement/overwrite questions and return path. No skips the first
+match, Yes replaces the second, Ctrl-C stops before the third/fourth; readback
+is exactly `ONE X ONE ONE\r\n` plus padding. The original
+`ONE ONE ONE ONE\r\n` backup is retained. Filesystem and canary checks pass;
+stack high-water is 52 bytes at exclusive TPA ceiling 50,689.
+
+[Receipt](evidence/2026-11-03-ted-model4-scope/results.json) and
+[captures/readback](evidence/2026-11-03-ted-model4-scope/receipts-and-logs.tar.gz)
+close the second bounded native TED gate. This does not close outstanding
+malformed/combination cells or assert whole-release qualification.

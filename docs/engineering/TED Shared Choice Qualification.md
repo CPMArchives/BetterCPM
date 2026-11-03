@@ -4,7 +4,7 @@
 UI integration thread. TED 1.0 revision 004 now uses the established shared choice
 controller. This record closes the TED behavior decision and bounded host/cpmsim
 checks. The current-payload Model 4 `choices` campaign also passes; native
-`choice-scope` and whole-release acceptance remain open.
+`choice-scope` also passes. Whole-release acceptance remains separate.
 
 ## Behavior and interface
 
@@ -75,13 +75,16 @@ Current COM SHA-256:
   invalid retry, Enter=No on abandonment, overwrite No and immediate Yes, exact
   target/original backup readback, no earlier unauthorized backup, filesystem and
   stack checks. Observed high-water 54 bytes; exclusive TPA ceiling 50,689.
-- OUTSTANDING: Model 4 `choice-scope`. The initial attempt's RAM capture shows
+- PASS: corrected Model 4 `choice-scope` saves exactly `ONE X ONE ONE` plus CRLF
+  and padding, with the original four-match backup, intact guards and filesystems.
+  Observed stack high-water 52 bytes; TPA ceiling 50,689. The initial attempt's RAM capture shows
   startup completed and TED returned to command input after `SU M /ONE/X/` found
   no match in lowercase `one one one one`. The physical-key helper uppercases
   letters; cpmsim had received lowercase text directly. This is a harness fixture
   mismatch, not a demonstrated editor hang. The fixture/search/expected output
   now use uppercase on both targets. Corrected cpmsim execution passes, saving
-  exactly `ONE X ONE ONE` plus CRLF and padding; native rerun remains required.
+  exactly `ONE X ONE ONE` plus CRLF and padding; the corrected native rerun now
+  independently passes the same operation boundaries.
 
 [Results and source hashes](evidence/2026-11-03-ted-choice/results.json),
 [receipts/logs](evidence/2026-11-03-ted-choice/receipts-and-logs.tar.gz) and
@@ -95,6 +98,9 @@ The [Model 4 choices receipt and RAM diagnosis](evidence/2026-11-03-ted-model4-c
 and its [capture/readback archive](evidence/2026-11-03-ted-model4-choices/receipts-and-logs.tar.gz)
 retain the native pass, failed case-mismatch attempt and corrected cpmsim run.
 No production TED source, binary or keyboard case policy changed for this correction.
+The [corrected native scope receipt](evidence/2026-11-03-ted-model4-scope/results.json)
+and [captures/readback](evidence/2026-11-03-ted-model4-scope/receipts-and-logs.tar.gz)
+close the second bounded Model 4 gate on the same current TED payload.
 
 ## Reproduction
 

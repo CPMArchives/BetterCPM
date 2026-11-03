@@ -32,7 +32,7 @@ BIOS work and is not incorporated here. No shared-library work is overwritten.
 | --- | --- | --- |
 | DUMP, CONFIG, COPY, REN, ERA, DUP, SYSGEN, protected PIP replacement | Existing qualified compatibility-profile consumers | Reuse; rerun focused regressions. Do not silently add default/key aliases. |
 | DDT adaptation | Standard shared editor already selected; historical reference separately immutable | Preserve debugger command language; no replacement needed. |
-| TED | Standard text fields/renderer already selected; confirmations still called a text field | Maintainer-approved immediate-choice correction implemented; bounded host/cpmsim checks pass, Model 4 pending. |
+| TED | Standard text fields/renderer already selected; confirmations still called a text field | Maintainer-approved immediate-choice correction implemented; bounded host/cpmsim and both current-payload Model 4 campaigns pass. |
 | NOAH | Shared choice binding already present | Review separately from frozen six standalone codecs; retain overlay boundaries. |
 | BYE | Local Y/N/default-No loop | Adopt existing choice-only controller; standard question/default notation. |
 | DASM | Local CHIN only-Y approval in historical command language | Adopt existing strict compatibility binding; preserve raw fold, echo and any-other-key decline. |
@@ -73,11 +73,11 @@ their existing operation boundaries. Questions display `(Y/N) [N]`.
 
 Current compiled and cpmsim evidence is recorded in
 [TED shared choice qualification](TED%20Shared%20Choice%20Qualification.md).
-Model 4 execution remains outstanding. Historical TED 003 receipts are not
+Both bounded Model 4 campaigns pass on TED 004. Historical TED 003 receipts are not
 transferred to the changed revision. The existing full-screen editor and
 command language are otherwise preserved.
 
-## Outstanding execution
+## Platform execution
 
 The maintainer's normal-Terminal run now passes the twenty-phase Model 4 campaign
 for the current CRCKSUM/MD5SUM/DASM binaries. All captures, exact payload hashes,
@@ -86,11 +86,14 @@ in [current native evidence](evidence/2026-11-03-model4-pass/results.json).
 The two earlier runner failures remain separately recorded. BYE is cpmsim-only.
 
 TED's changed-binary `choices` native campaign now also passes on the exact current
-payload. `choice-scope` remains open: a RAM capture establishes that its initial
+payload. The corrected `choice-scope` run now also passes, saving precisely
+`ONE X ONE ONE` with its original backup; guards and filesystems pass. A RAM
+capture establishes that its initial
 attempt returned to command input after the physical-key helper uppercased the
 search while the fixture remained lowercase. The harness now uses matching
-uppercase fixture/search text; corrected cpmsim execution passes. Native rerun
-is still required. This agent session cannot launch AppKit (preflight 1100);
+uppercase fixture/search text; corrected cpmsim and native execution pass.
+See the [native scope receipt](evidence/2026-11-03-ted-model4-scope/results.json).
+This agent session cannot launch AppKit (preflight 1100);
 use a normal Terminal. Preparation and historical TED receipts alone do not
 qualify the changed TED binary.
 
