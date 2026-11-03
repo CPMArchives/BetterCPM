@@ -129,7 +129,7 @@ def main():
                '-id', '3000', '-itime', '0']
         if args.system_image:
             cmd=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-ktx','-d0',str(disk),
-                 '-id','4000','-itime','15000','-iw','Type TYPE README.TXT for more','-id','300']
+                 '-id','4000','-itime','15000','-iw','Type TYPE README.TXT for more','-id','4000']
         if args.disk_full:
             # Capture the failed save while the modified session is still live.
             # Inspect its directory after shutdown, before issuing another command.

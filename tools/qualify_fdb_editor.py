@@ -126,7 +126,7 @@ def main():
             cmd=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-d0',str(image),'-id','3000','-itime','0']
             if a.system_image:
                 cmd=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-ktx','-d0',str(image),
-                     '-id','4000','-itime','15000','-iw','Type TYPE README.TXT for more','-id','300']
+                     '-id','4000','-itime','15000','-iw','Type TYPE README.TXT for more','-id','4000']
             for k,msg in startup(a.target,a.system_image)+commands:
                 wait_for='ENDSTATE' if k=='STATE' else ('A0> ' if msg=='A0>' else msg)
                 cmd+=key_args(k+'\r')+['-iw',wait_for,'-id','3000' if msg=='A0>' else '200'] + (['-it'] if a.system_image else [])
