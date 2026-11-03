@@ -1,0 +1,2203 @@
+; Native FDB round-trip foundation, spec 209. No catalogue replacement.
+        ASEG
+        ORG 100H
+        JP START
+BDOS    EQU 5
+FDFRAM  EQU 08000H
+FDFLIM  EQU 0C800H
+POOLRAM EQU 0A080H
+MAXFORM EQU 128
+START:  LD (OLDSP),SP
+        LD SP,STACKTOP
+        LD HL,(6)
+        LD DE,FDFLIM
+        OR A
+        SBC HL,DE
+        JP C,MEMERR
+        LD HL,INPUT
+        LD DE,INPUT+1
+        LD BC,71
+        LD (HL),0
+        LDIR
+        LD HL,5CH
+        LD DE,INPUT
+        LD BC,12
+        LDIR
+        LD HL,6CH
+        LD DE,OUTPUT
+        LD BC,12
+        LDIR
+        LD A,(INPUT+1)
+        CP ' '
+        JP Z,USAGE
+        LD A,(OUTPUT+1)
+        CP ' '
+        JP Z,USAGE
+        LD HL,INPUT+1
+        LD B,11
+NAMECHECK:
+        LD A,(HL)
+        CP '?'
+        JP Z,USAGE
+        INC HL
+        DJNZ NAMECHECK
+        LD HL,OUTPUT+1
+        LD B,11
+NAMECHECK2:
+        LD A,(HL)
+        CP '?'
+        JP Z,USAGE
+        INC HL
+        DJNZ NAMECHECK2
+        LD HL,INPUT+9
+        LD DE,FDBEXT
+        CALL MATCH3
+        JR Z,EXPORT
+        LD HL,INPUT+9
+        LD DE,FDFEXT
+        CALL MATCH3
+        JP NZ,USAGE
+        LD HL,OUTPUT+9
+        LD DE,FDBEXT
+        CALL MATCH3
+        JP NZ,USAGE
+        LD A,1
+        LD (MODE),A
+        JP COMPILE
+EXPORT: LD HL,OUTPUT+9
+        LD DE,FDFEXT
+        CALL MATCH3
+        JP NZ,USAGE
+        CALL OPENIN
+        LD HL,FDFRAM
+LOADLP: LD (POS),HL
+        LD DE,FDFLIM-128
+        OR A
+        SBC HL,DE
+        JP NC,MEMERR
+        LD DE,(POS)
+        CALL SETDMA
+        LD DE,INPUT
+        LD C,20
+        CALL BDOS
+        CP 1
+        JR Z,LOADED
+        OR A
+        JP NZ,IOERR
+        LD HL,(POS)
+        LD DE,128
+        ADD HL,DE
+        JR LOADLP
+LOADED: CALL CLOSEIN
+        LD HL,(POS)
+        LD DE,FDFRAM
+        OR A
+        SBC HL,DE
+        LD (FDBLEN),HL
+        CALL FDBVALID
+        JP C,BADFDB
+; Export only the canonical envelope. Unknown optional TLVs and noncanonical
+; layout are refused too: silently discarding them would violate byte identity.
+        LD A,(FDFRAM+5)
+        OR A
+        JP NZ,LOSSY
+        LD A,(FDFRAM+6)
+        CP 16
+        JP NZ,LOSSY
+        LD A,(FDFRAM+7)
+        CP 64
+        JP NZ,LOSSY
+        CALL CHECKCANON
+        CALL SEMANTICS
+        CALL CREATEOUT
+        LD HL,VERSION
+        CALL TEXT
+        XOR A
+        LD (INDEX),A
+EXLOOP: LD A,(INDEX)
+        LD HL,FCOUNT
+        CP (HL)
+        JR Z,EXDONE
+        CALL GETDESC
+        CALL EMITFORMAT
+        LD HL,INDEX
+        INC (HL)
+        JR EXLOOP
+EXDONE: LD A,26
+        CALL BYTEOUT
+        CALL FINISHOUT
+        JP SUCCESS
+COMPILE:
+        CALL OPENIN
+        LD HL,FDFRAM
+        LD DE,FDFRAM+1
+        LD BC,128-1
+        LD (HL),0
+        LDIR
+        LD HL,HEADER
+        LD DE,FDFRAM
+        LD BC,16
+        LDIR
+        LD HL,POOLRAM
+        LD (POOLPTR),HL
+        XOR A
+        LD (FCOUNT),A
+        CALL READLINE
+        LD HL,LINE
+        LD DE,VERSIONWORD
+        CALL STREQ
+        JP NZ,TEXTERR
+NEXTFORMAT:
+        CALL READLINE
+        JP C,COMPILED
+        LD HL,LINE
+        LD DE,FORMATWORD
+        CALL STREQ
+        JP NZ,TEXTERR
+        LD A,(FCOUNT)
+        CP MAXFORM
+        JP NC,MEMERR
+        LD (INDEX),A
+        CALL GETDESC
+        LD (DESC),IX
+        PUSH IX
+        POP HL
+        LD D,H
+        LD E,L
+        INC DE
+        LD BC,63
+        LD (HL),0
+        LDIR
+        PUSH IX
+        POP HL
+        LD B,40
+INITSPACE:
+        LD (HL),' '
+        INC HL
+        DJNZ INITSPACE
+        LD HL,SEEN
+        LD DE,SEEN+1
+        LD BC,25
+        LD (HL),0
+        LDIR
+        XOR A
+        LD (HASIDS),A
+        LD (HASSIZES),A
+        LD (CYLINDER),A
+        LD (IX+42),255
+FIELDLOOP:
+        CALL READLINE
+        JP C,TEXTERR
+        LD HL,LINE
+        LD DE,ENDWORD
+        CALL STREQ
+        JP Z,ENDFORMAT
+        LD HL,LINE
+FINDVALUE:
+        LD A,(HL)
+        OR A
+        JP Z,TEXTERR
+        CP ' '
+        JR Z,FOUNDVALUE
+        INC HL
+        JR FINDVALUE
+FOUNDVALUE:
+        LD (HL),0
+        INC HL
+        CALL SKIPSPACE
+        LD (VALUE),HL
+        LD HL,FIELDS
+        LD DE,SEEN
+FINDKEY:
+        LD A,(HL)
+        INC HL
+        OR (HL)
+        DEC HL
+        JP Z,TEXTERR
+        PUSH HL
+        PUSH DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD HL,LINE
+        CALL STREQ
+        POP DE
+        POP HL
+        JR Z,KEYFOUND
+        INC HL
+        INC HL
+        INC HL
+        INC HL
+        INC DE
+        JR FINDKEY
+KEYFOUND:
+        LD A,(DE)
+        OR A
+        JP NZ,TEXTERR
+        INC A
+        LD (DE),A
+        INC HL
+        INC HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD HL,(VALUE)
+        PUSH DE
+        RET
+ENDFORMAT:
+        CALL FINALFORMAT
+        LD HL,FCOUNT
+        INC (HL)
+        JP NEXTFORMAT
+COMPILED:
+        CALL CLOSEIN
+        CALL PACKCAT
+        CALL FDBVALID
+        JP C,BADFDB
+        CALL SEMANTICS
+        CALL CREATEOUT
+        LD HL,FDFRAM
+        LD BC,(FDBLEN)
+BINWRITE:
+        PUSH BC
+        PUSH HL
+        LD A,(HL)
+        CALL BYTEOUT
+        POP HL
+        POP BC
+        INC HL
+        DEC BC
+        LD A,B
+        OR C
+        JR NZ,BINWRITE
+        CALL FINISHOUT
+        JP SUCCESS
+
+; Open/create calls never replace an existing file, including the input itself.
+OPENIN: LD DE,INPUT
+        LD C,15
+        CALL BDOS
+        CP 255
+        JP Z,IOERR
+        LD A,1
+        LD (INOPEN),A
+        RET
+CLOSEIN:
+        LD DE,INPUT
+        LD C,16
+        CALL BDOS
+        CP 255
+        JP Z,IOERR
+        XOR A
+        LD (INOPEN),A
+        RET
+CREATEOUT:
+        LD DE,OUTBUF
+        CALL SETDMA
+        LD DE,OUTPUT
+        LD C,17
+        CALL BDOS
+        CP 255
+        JP NZ,EXISTS
+        LD DE,OUTPUT
+        LD C,22
+        CALL BDOS
+        CP 255
+        JP Z,IOERR
+        LD A,1
+        LD (OUTOPEN),A
+        XOR A
+        LD (OUTCOUNT),A
+        RET
+FINISHOUT:
+        LD A,(OUTCOUNT)
+        OR A
+        JR Z,OUTCLOSE
+PADOUT: LD A,26
+        CALL BYTEOUT
+        LD A,(OUTCOUNT)
+        OR A
+        JR NZ,PADOUT
+OUTCLOSE:
+        LD DE,OUTPUT
+        LD C,16
+        CALL BDOS
+        CP 255
+        JP Z,IOERR
+        XOR A
+        LD (OUTOPEN),A
+        RET
+BYTEOUT:
+        PUSH HL
+        PUSH DE
+        PUSH BC
+        LD HL,OUTCOUNT
+        LD E,(HL)
+        LD D,0
+        INC (HL)
+        LD HL,OUTBUF
+        ADD HL,DE
+        LD (HL),A
+        LD A,(OUTCOUNT)
+        CP 128
+        JR NZ,BYTEOK
+        CALL POLLBREAK
+        LD DE,OUTBUF
+        CALL SETDMA
+        LD DE,OUTPUT
+        LD C,21
+        CALL BDOS
+        OR A
+        JP NZ,IOERR
+        XOR A
+        LD (OUTCOUNT),A
+BYTEOK: POP BC
+        POP DE
+        POP HL
+        RET
+SETDMA: LD C,26
+        JP BDOS
+GETBYTE:
+        LD A,(INCOUNT)
+        CP 128
+        JR NZ,GOTBUF
+        LD DE,INBUF
+        CALL SETDMA
+        LD DE,INPUT
+        LD C,20
+        CALL BDOS
+        CP 1
+        JR Z,BYTEEOF
+        OR A
+        JP NZ,IOERR
+        XOR A
+        LD (INCOUNT),A
+GOTBUF: LD A,(INCOUNT)
+        LD E,A
+        LD D,0
+        LD HL,INBUF
+        ADD HL,DE
+        LD A,(HL)
+        LD HL,INCOUNT
+        INC (HL)
+        CP 26
+        JR Z,BYTEEOF
+        OR A
+        RET
+BYTEEOF: SCF
+        RET
+; Strip CR, comments outside quotes, leading/trailing spaces; 1100-byte lines
+; accommodate 255 decimal 1024-byte sector sizes without truncation.
+READLINE:
+        CALL POLLBREAK
+        LD A,(ATEOF)
+        OR A
+        SCF
+        RET NZ
+        LD HL,LINE
+        LD (LINEPTR),HL
+        XOR A
+        LD (QUOTED),A
+        LD (COMMENT),A
+LINELP: CALL GETBYTE
+        JR C,LINEEOF
+        CP 13
+        JR Z,LINELP
+        CP 10
+        JR Z,LINEEND
+        CP 9
+        JR NZ,LINENOTAB
+        LD A,' '
+LINENOTAB:
+        LD B,A
+        LD A,(COMMENT)
+        OR A
+        JR NZ,LINELP
+        LD A,B
+        CP '"'
+        JR NZ,LINEHASH
+        LD A,(QUOTED)
+        XOR 1
+        LD (QUOTED),A
+        LD A,B
+LINEHASH:
+        CP '#'
+        JR NZ,LINESTORE
+        LD A,(QUOTED)
+        OR A
+        JR NZ,LINESTOREB
+        INC A
+        LD (COMMENT),A
+        JR LINELP
+LINESTOREB: LD A,B
+LINESTORE:
+        LD A,(QUOTED)
+        OR A
+        JR NZ,LINECASEOK
+        LD A,B
+        CP 97
+        JR C,LINECASEOK
+        CP 123
+        JR NC,LINECASEOK
+        SUB 32
+        LD B,A
+LINECASEOK:
+        LD HL,(LINEPTR)
+        LD DE,LINE+1299
+        PUSH HL
+        OR A
+        SBC HL,DE
+        POP HL
+        JP NC,TEXTERR
+        LD (HL),A
+; A was clobbered by bounds comparison; use original byte B.
+        LD (HL),B
+        INC HL
+        LD (LINEPTR),HL
+        JR LINELP
+LINEEOF:
+        LD HL,(LINEPTR)
+        LD DE,LINE
+        OR A
+        SBC HL,DE
+        JR NZ,LINELAST
+        SCF
+        RET
+LINELAST:LD A,1
+        LD (ATEOF),A
+LINEEND:
+        LD A,(QUOTED)
+        OR A
+        JP NZ,TEXTERR
+        LD HL,(LINEPTR)
+        LD (HL),0
+TRIMEND:
+        LD DE,LINE
+        PUSH HL
+        OR A
+        SBC HL,DE
+        POP HL
+        JR Z,TRIMSTART
+        DEC HL
+        LD A,(HL)
+        CP ' '
+        JR NZ,TRIMSTART
+        LD (HL),0
+        JR TRIMEND
+TRIMSTART:
+        LD HL,LINE
+        CALL SKIPSPACE
+        LD DE,LINE
+COPYLINE:
+        LD A,(HL)
+        LD (DE),A
+        INC HL
+        INC DE
+        OR A
+        JR NZ,COPYLINE
+        LD A,(LINE)
+        OR A
+        JR NZ,LINEOK
+        LD A,(ATEOF)
+        OR A
+        JP Z,READLINE
+        SCF
+        RET
+LINEOK: OR A
+        RET
+SKIPSPACE:
+        LD A,(HL)
+        CP ' '
+        RET NZ
+        INC HL
+        JR SKIPSPACE
+STREQ:  LD A,(DE)
+        CP (HL)
+        RET NZ
+        INC HL
+        INC DE
+        OR A
+        JR NZ,STREQ
+        RET
+MATCH3: LD B,3
+MATCHLP:LD A,(DE)
+        CP (HL)
+        RET NZ
+        INC HL
+        INC DE
+        DJNZ MATCHLP
+        RET
+GETDESC:
+        LD L,A
+        LD H,0
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        ADD HL,HL
+        LD DE,FDFRAM+128
+        ADD HL,DE
+        PUSH HL
+        POP IX
+        RET
+; Unsigned decimal/0x hexadecimal, overflow rejected; HL advanced to delimiter.
+NUMBER: LD DE,0
+        LD C,10
+        LD A,(HL)
+        CP '0'
+        JR NZ,NUMLOOP
+        INC HL
+        LD A,(HL)
+        CP 'x'
+        JR Z,NUMHEX
+        CP 'X'
+        JR Z,NUMHEX
+        DEC HL
+        JR NUMLOOP
+NUMHEX: INC HL
+        LD C,16
+NUMLOOP:LD B,0
+NUMDIGIT:
+        LD A,(HL)
+        CP '0'
+        JR C,NUMEND
+        CP ':'
+        JR C,NUMDEC
+        AND 0DFH
+        CP 'A'
+        JR C,NUMEND
+        CP 'G'
+        JR NC,NUMEND
+        SUB 'A'-10
+        JR NUMVAL
+NUMDEC: SUB '0'
+NUMVAL: CP C
+        JP NC,TEXTERR
+        PUSH BC
+        PUSH HL
+        LD B,C
+        LD HL,0
+NUMMUL: ADD HL,DE
+        JP C,TEXTERR
+        DJNZ NUMMUL
+        LD E,A
+        LD D,0
+        ADD HL,DE
+        JP C,TEXTERR
+        EX DE,HL
+        POP HL
+        POP BC
+        INC HL
+        INC B
+        JR NUMDIGIT
+NUMEND: LD A,B
+        OR A
+        JP Z,TEXTERR
+        RET
+SCALAR: CALL NUMBER
+        CALL SKIPSPACE
+        LD A,(HL)
+        OR A
+        JP NZ,TEXTERR
+        RET
+BYTEVAL:CALL SCALAR
+        LD A,D
+        OR A
+        JP NZ,TEXTERR
+        LD A,E
+        RET
+; Decimal output preserves BC/DE/HL.
+DECIMAL:
+        PUSH HL
+        PUSH DE
+        PUSH BC
+        LD B,0
+        LD DE,10000
+        CALL DIGIT
+        LD DE,1000
+        CALL DIGIT
+        LD DE,100
+        CALL DIGIT
+        LD DE,10
+        CALL DIGIT
+        LD A,L
+        ADD A,'0'
+        CALL BYTEOUT
+        POP BC
+        POP DE
+        POP HL
+        RET
+DIGIT:  LD C,0
+DIGITLP:OR A
+        SBC HL,DE
+        JR C,DIGITEND
+        INC C
+        JR DIGITLP
+DIGITEND:
+        ADD HL,DE
+        LD A,C
+        OR B
+        RET Z
+        LD B,1
+        LD A,C
+        ADD A,'0'
+        JP BYTEOUT
+TEXT:   LD A,(HL)
+        OR A
+        RET Z
+        CALL BYTEOUT
+        INC HL
+        JR TEXT
+NEWLINE:LD A,13
+        CALL BYTEOUT
+        LD A,10
+        JP BYTEOUT
+PUTC:   PUSH HL
+        PUSH DE
+        PUSH BC
+        LD E,A
+        LD C,2
+        CALL BDOS
+        POP BC
+        POP DE
+        POP HL
+        RET
+PUTS:   LD A,(HL)
+        OR A
+        RET Z
+        CALL PUTC
+        INC HL
+        JR PUTS
+SUCCESS:LD HL,DONEMSG
+        JR EXITMSG
+USAGE:  LD HL,USAGEMSG
+        JR EXITMSG
+MEMERR: LD HL,MEMMSG
+        JR EXITMSG
+BADFDB: LD HL,BADMSG
+        JR EXITMSG
+TEXTERR:LD HL,TEXTMSG
+        JR EXITMSG
+LOSSY:  LD HL,LOSSMSG
+        JR EXITMSG
+EXISTS: LD HL,EXISTMSG
+        JR EXITMSG
+IOERR:  LD HL,IOMSG
+EXITMSG:
+        CALL PUTS
+        LD A,(INOPEN)
+        OR A
+        JR Z,CLEANOUT
+        LD DE,INPUT
+        LD C,16
+        CALL BDOS
+CLEANOUT:
+        LD A,(OUTOPEN)
+        OR A
+        JR Z,EXIT
+        LD DE,OUTPUT
+        LD C,16
+        CALL BDOS
+        LD DE,OUTPUT
+        LD C,19
+        CALL BDOS
+        CP 255
+        JR NZ,EXIT
+        LD HL,CLEANMSG
+        CALL PUTS
+EXIT:   LD DE,80H
+        CALL SETDMA
+        LD SP,(OLDSP)
+        RET
+VERSION:DB 'FDF_VERSION 1',13,10,0
+VERSIONWORD:DB 'FDF_VERSION 1',0
+FORMATWORD:DB 'FORMAT',0
+ENDWORD:DB 'END',0
+FDBEXT: DB 'FDB'
+FDFEXT: DB 'FDF'
+HEADER: DB 'BFDB',1,0,16,64,0,0,128,0,0,0,0,0
+USAGEMSG:DB 'FDB round-trip milestone: FDB source.FDB dest.FDF',13,10
+        DB '                     or FDB source.FDF dest.FDB',13,10,0
+DONEMSG:DB 'FDB: complete.',13,10,0
+MEMMSG: DB 'FDB: insufficient TPA or catalogue workspace.',13,10,0
+BADMSG: DB 'FDB: invalid catalogue.',13,10,0
+TEXTMSG:DB 'FDB: invalid definition or unsupported FDF text.',13,10,0
+LOSSMSG:DB 'FDB: cannot export this encoding losslessly.',13,10,0
+EXISTMSG:DB 'FDB: destination exists; nothing replaced.',13,10,0
+IOMSG:  DB 'FDB: file operation failed; incomplete output removed.',13,10,0
+OLDSP:  DW 0
+MODE:   DB 0
+INOPEN: DB 0
+OUTOPEN:DB 0
+INPUT:  DS 36
+OUTPUT: DS 36
+POS:    DW 0
+DESC:   DW 0
+VALUE:  DW 0
+INDEX:  DB 0
+FCOUNT: DB 0
+INCOUNT:DB 128
+OUTCOUNT:DB 0
+POOLPTR:DW 0
+CANONPTR:DW 0
+HASIDS: DB 0
+HASSIZES:DB 0
+CYLINDER:DB 0
+QUOTED: DB 0
+COMMENT:DB 0
+ATEOF:  DB 0
+LINEPTR:DW 0
+SEEN:   DS 26
+SIZES:  DS 255
+INBUF:  DS 128
+OUTBUF: DS 128
+LINE:   DS 1300
+BIND:   DS 64
+CURB:   DS 64
+FINDIDX:DB 0
+CUSTOM: DB 0
+UNDEF:  DB 0
+
+FIELDS:
+        DW KEY_ID,PARSE_ID
+        DW KEY_SPT,PARSE_SPT
+        DW KEY_BSH,PARSE_BSH
+        DW KEY_DSM,PARSE_DSM
+        DW KEY_DRM,PARSE_DRM
+        DW KEY_AL0,PARSE_AL0
+        DW KEY_AL1,PARSE_AL1
+        DW KEY_CKS,PARSE_CKS
+        DW KEY_OFF,PARSE_OFF
+        DW KEY_PSECTORS,PARSE_PSECTORS
+        DW KEY_SECSIZE,PARSE_SECSIZE
+        DW KEY_CYLINDERS,PARSE_CYLINDERS
+        DW KEY_SIDES,PARSE_SIDES
+        DW KEY_ENCODING,PARSE_ENCODING
+        DW KEY_SECTOR_IDS,PARSE_SECTOR_IDS
+        DW KEY_DESCRIPTION,PARSE_DESCRIPTION
+        DW KEY_BLM,PARSE_BLM
+        DW KEY_EXM,PARSE_EXM
+        DW KEY_INVERT,PARSE_INVERT
+        DW KEY_SECTOR_SIZES,PARSE_SECTOR_SIZES
+        DW KEY_LOGICAL_TRACK,PARSE_LOGICAL_TRACK
+        DW KEY_SIDE_ORDER,PARSE_SIDE_ORDER
+        DW KEY_SIDE1_DIRECTION,PARSE_SIDE1_DIRECTION
+        DW KEY_TRACK_ID_MODE,PARSE_TRACK_ID_MODE
+        DW KEY_SECTOR_ID_MODE,PARSE_SECTOR_ID_MODE
+        DW 0
+KEY_ID: DB 'ID',0
+KEY_SPT: DB 'SPT',0
+KEY_BSH: DB 'BSH',0
+KEY_DSM: DB 'DSM',0
+KEY_DRM: DB 'DRM',0
+KEY_AL0: DB 'AL0',0
+KEY_AL1: DB 'AL1',0
+KEY_CKS: DB 'CKS',0
+KEY_OFF: DB 'OFF',0
+KEY_PSECTORS: DB 'PSECTORS',0
+KEY_SECSIZE: DB 'SECSIZE',0
+KEY_CYLINDERS: DB 'CYLINDERS',0
+KEY_SIDES: DB 'SIDES',0
+KEY_ENCODING: DB 'ENCODING',0
+KEY_SECTOR_IDS: DB 'SECTOR_IDS',0
+KEY_DESCRIPTION: DB 'DESCRIPTION',0
+KEY_BLM: DB 'BLM',0
+KEY_EXM: DB 'EXM',0
+KEY_INVERT: DB 'INVERT',0
+KEY_SECTOR_SIZES: DB 'SECTOR_SIZES',0
+KEY_LOGICAL_TRACK: DB 'LOGICAL_TRACK',0
+KEY_SIDE_ORDER: DB 'SIDE_ORDER',0
+KEY_SIDE1_DIRECTION: DB 'SIDE1_DIRECTION',0
+KEY_TRACK_ID_MODE: DB 'TRACK_ID_MODE',0
+KEY_SECTOR_ID_MODE: DB 'SECTOR_ID_MODE',0
+PARSE_ID:
+        PUSH IX
+        POP DE
+        PUSH HL
+        LD HL,0
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD B,8
+        LD C,0
+TEXT_ID: LD A,(HL)
+        OR A
+        JR Z,TEXT_IDEND
+        CP 48
+        JP C,TEXTERR
+        CP 58
+        JR C,IDCHAROK
+        CP 65
+        JP C,TEXTERR
+        CP 91
+        JP NC,TEXTERR
+IDCHAROK:
+        INC C
+        LD (DE),A
+        INC HL
+        INC DE
+        DJNZ TEXT_ID
+        LD A,(HL)
+        OR A
+        JP NZ,TEXTERR
+TEXT_IDEND:
+        LD A,C
+        OR A
+        JP Z,TEXTERR
+        JP FIELDLOOP
+PARSE_SPT:
+        CALL SCALAR
+        LD (IX+40),E
+        LD (IX+41),D
+        JP FIELDLOOP
+PARSE_BSH:
+        CALL BYTEVAL
+        LD (IX+42),E
+        JP FIELDLOOP
+PARSE_DSM:
+        CALL SCALAR
+        LD (IX+45),E
+        LD (IX+46),D
+        JP FIELDLOOP
+PARSE_DRM:
+        CALL SCALAR
+        LD (IX+47),E
+        LD (IX+48),D
+        JP FIELDLOOP
+PARSE_AL0:
+        CALL BYTEVAL
+        LD (IX+49),E
+        JP FIELDLOOP
+PARSE_AL1:
+        CALL BYTEVAL
+        LD (IX+50),E
+        JP FIELDLOOP
+PARSE_CKS:
+        CALL SCALAR
+        LD (IX+51),E
+        LD (IX+52),D
+        JP FIELDLOOP
+PARSE_OFF:
+        CALL SCALAR
+        LD (IX+53),E
+        LD (IX+54),D
+        JP FIELDLOOP
+PARSE_PSECTORS:
+        CALL BYTEVAL
+        LD (IX+55),E
+        JP FIELDLOOP
+PARSE_SECSIZE:
+        CALL SCALAR
+        CALL SIZECODE
+        LD (IX+56),A
+        JP FIELDLOOP
+PARSE_CYLINDERS:
+        CALL BYTEVAL
+        LD (IX+57),E
+        JP FIELDLOOP
+PARSE_SIDES:
+        PUSH HL
+        LD DE,ENUM_SIDES0
+        CALL STREQ
+        POP HL
+        JR Z,SET_SIDES0
+        PUSH HL
+        LD DE,ENUM_SIDES1
+        CALL STREQ
+        POP HL
+        JR Z,SET_SIDES1
+        JP TEXTERR
+SET_SIDES0: RES 0,(IX+58)
+        JP FIELDLOOP
+SET_SIDES1: SET 0,(IX+58)
+        JP FIELDLOOP
+ENUM_SIDES0: DB '1',0
+ENUM_SIDES1: DB '2',0
+PARSE_ENCODING:
+        PUSH HL
+        LD DE,ENUM_ENCODING0
+        CALL STREQ
+        POP HL
+        JR Z,SET_ENCODING0
+        PUSH HL
+        LD DE,ENUM_ENCODING1
+        CALL STREQ
+        POP HL
+        JR Z,SET_ENCODING1
+        JP TEXTERR
+SET_ENCODING0: RES 1,(IX+58)
+        JP FIELDLOOP
+SET_ENCODING1: SET 1,(IX+58)
+        JP FIELDLOOP
+ENUM_ENCODING0: DB 'FM',0
+ENUM_ENCODING1: DB 'MFM',0
+PARSE_SECTOR_IDS:
+        LD DE,(POOLPTR)
+        PUSH HL
+        LD HL,0-FDFRAM
+        ADD HL,DE
+        LD (IX+60),L
+        LD (IX+61),H
+        POP HL
+        LD B,0
+LIST_SECTOR_IDS:
+        PUSH BC
+        PUSH DE
+        CALL NUMBER
+        LD A,D
+        OR A
+        JP NZ,TEXTERR
+        LD A,E
+        POP DE
+        POP BC
+        LD (DE),A
+        INC DE
+        INC B
+        JP Z,TEXTERR
+        CALL SKIPSPACE
+        LD A,(HL)
+        OR A
+        JR Z,LISTEND_SECTOR_IDS
+        CP 44
+        JP NZ,TEXTERR
+        INC HL
+        CALL SKIPSPACE
+        JR LIST_SECTOR_IDS
+LISTEND_SECTOR_IDS: LD A,B
+        LD (HASIDS),A
+        LD (IX+59),A
+        LD (POOLPTR),DE
+        JP FIELDLOOP
+PARSE_DESCRIPTION:
+        LD A,(HL)
+        CP 34
+        JP NZ,TEXTERR
+        INC HL
+        PUSH IX
+        POP DE
+        PUSH HL
+        LD HL,8
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD B,32
+        LD C,0
+TEXT_DESCRIPTION: LD A,(HL)
+        CP 34
+        JR Z,TEXT_DESCEND
+        CP 32
+        JP C,TEXTERR
+        CP 127
+        JP NC,TEXTERR
+        INC C
+        LD (DE),A
+        INC HL
+        INC DE
+        DJNZ TEXT_DESCRIPTION
+        LD A,(HL)
+        CP 34
+        JP NZ,TEXTERR
+TEXT_DESCEND: INC HL
+        LD A,(HL)
+        OR A
+        JP NZ,TEXTERR
+        LD A,C
+        OR A
+        JP Z,TEXTERR
+        JP FIELDLOOP
+PARSE_BLM:
+        CALL BYTEVAL
+        LD (IX+43),E
+        JP FIELDLOOP
+PARSE_EXM:
+        CALL BYTEVAL
+        LD (IX+44),E
+        JP FIELDLOOP
+PARSE_INVERT:
+        PUSH HL
+        LD DE,ENUM_INVERT0
+        CALL STREQ
+        POP HL
+        JR Z,SET_INVERT0
+        PUSH HL
+        LD DE,ENUM_INVERT1
+        CALL STREQ
+        POP HL
+        JR Z,SET_INVERT1
+        JP TEXTERR
+SET_INVERT0: RES 2,(IX+58)
+        JP FIELDLOOP
+SET_INVERT1: SET 2,(IX+58)
+        JP FIELDLOOP
+ENUM_INVERT0: DB 'NO',0
+ENUM_INVERT1: DB 'YES',0
+PARSE_SECTOR_SIZES:
+        LD DE,SIZES
+        LD B,0
+LIST_SECTOR_SIZES:
+        PUSH BC
+        PUSH DE
+        CALL NUMBER
+        CALL SIZECODE
+        POP DE
+        POP BC
+        LD (DE),A
+        INC DE
+        INC B
+        JP Z,TEXTERR
+        CALL SKIPSPACE
+        LD A,(HL)
+        OR A
+        JR Z,LISTEND_SECTOR_SIZES
+        CP 44
+        JP NZ,TEXTERR
+        INC HL
+        CALL SKIPSPACE
+        JR LIST_SECTOR_SIZES
+LISTEND_SECTOR_SIZES: LD A,B
+        LD (HASSIZES),A
+        JP FIELDLOOP
+PARSE_LOGICAL_TRACK:
+        PUSH HL
+        LD DE,SURFACE
+        CALL STREQ
+        POP HL
+        JR Z,TRACKSURFACE
+        LD DE,CYLWORD
+        CALL STREQ
+        JP NZ,TEXTERR
+        LD A,1
+        LD (CYLINDER),A
+TRACKSURFACE:
+        JP FIELDLOOP
+PARSE_SIDE_ORDER:
+        PUSH HL
+        LD DE,ENUM_SIDE_ORDER0
+        CALL STREQ
+        POP HL
+        JR Z,SET_SIDE_ORDER0
+        PUSH HL
+        LD DE,ENUM_SIDE_ORDER1
+        CALL STREQ
+        POP HL
+        JR Z,SET_SIDE_ORDER1
+        JP TEXTERR
+SET_SIDE_ORDER0: RES 3,(IX+58)
+        JP FIELDLOOP
+SET_SIDE_ORDER1: SET 3,(IX+58)
+        JP FIELDLOOP
+ENUM_SIDE_ORDER0: DB 'ALTERNATING',0
+ENUM_SIDE_ORDER1: DB 'SIDE_MAJOR',0
+PARSE_SIDE1_DIRECTION:
+        PUSH HL
+        LD DE,ENUM_SIDE1_DIRECTION0
+        CALL STREQ
+        POP HL
+        JR Z,SET_SIDE1_DIRECTION0
+        PUSH HL
+        LD DE,ENUM_SIDE1_DIRECTION1
+        CALL STREQ
+        POP HL
+        JR Z,SET_SIDE1_DIRECTION1
+        JP TEXTERR
+SET_SIDE1_DIRECTION0: RES 4,(IX+58)
+        JP FIELDLOOP
+SET_SIDE1_DIRECTION1: SET 4,(IX+58)
+        JP FIELDLOOP
+ENUM_SIDE1_DIRECTION0: DB 'FORWARD',0
+ENUM_SIDE1_DIRECTION1: DB 'REVERSE',0
+PARSE_TRACK_ID_MODE:
+        PUSH HL
+        LD DE,ENUM_TRACK_ID_MODE0
+        CALL STREQ
+        POP HL
+        JR Z,SET_TRACK_ID_MODE0
+        PUSH HL
+        LD DE,ENUM_TRACK_ID_MODE1
+        CALL STREQ
+        POP HL
+        JR Z,SET_TRACK_ID_MODE1
+        JP TEXTERR
+SET_TRACK_ID_MODE0: RES 5,(IX+58)
+        JP FIELDLOOP
+SET_TRACK_ID_MODE1: SET 5,(IX+58)
+        JP FIELDLOOP
+ENUM_TRACK_ID_MODE0: DB 'PER_CYLINDER',0
+ENUM_TRACK_ID_MODE1: DB 'CONTINUOUS',0
+PARSE_SECTOR_ID_MODE:
+        PUSH HL
+        LD DE,ENUM_SECTOR_ID_MODE0
+        CALL STREQ
+        POP HL
+        JR Z,SET_SECTOR_ID_MODE0
+        PUSH HL
+        LD DE,ENUM_SECTOR_ID_MODE1
+        CALL STREQ
+        POP HL
+        JR Z,SET_SECTOR_ID_MODE1
+        JP TEXTERR
+SET_SECTOR_ID_MODE0: RES 6,(IX+58)
+        JP FIELDLOOP
+SET_SECTOR_ID_MODE1: SET 6,(IX+58)
+        JP FIELDLOOP
+ENUM_SECTOR_ID_MODE0: DB 'RESTART',0
+ENUM_SECTOR_ID_MODE1: DB 'CONTINUOUS',0
+
+SURFACE:DB 'SURFACE',0
+CYLWORD:DB 'CYLINDER',0
+SIZECODE:
+        LD A,E
+        OR A
+        JR NZ,SIZE128
+        LD A,D
+        CP 1
+        LD A,1
+        RET Z
+        LD A,D
+        CP 2
+        LD A,2
+        RET Z
+        LD A,D
+        CP 4
+        LD A,3
+        RET Z
+        JP TEXTERR
+SIZE128:CP 128
+        JP NZ,TEXTERR
+        LD A,D
+        OR A
+        JP NZ,TEXTERR
+        XOR A
+        RET
+FINALFORMAT:
+        LD HL,SEEN
+        LD B,15
+REQUIRED:
+        LD A,(HL)
+        OR A
+        JP Z,TEXTERR
+        INC HL
+        DJNZ REQUIRED
+        LD A,(SEEN+15)
+        OR A
+        JR NZ,HASDESC
+        PUSH IX
+        POP HL
+        PUSH IX
+        POP DE
+        LD BC,8
+        ADD HL,BC
+        EX DE,HL
+        LDIR
+HASDESC:
+        LD A,(HASIDS)
+        CP (IX+55)
+        JP NZ,TEXTERR
+; Fill derived optional DPB fields using CP/M's standard masks.
+        LD A,(IX+42)
+        CP 3
+        JP C,TEXTERR
+        CP 8
+        JP NC,TEXTERR
+        LD B,A
+        LD A,1
+BLMCALC:ADD A,A
+        DJNZ BLMCALC
+        DEC A
+        LD B,A
+        LD A,(SEEN+16)
+        OR A
+        JR Z,SETBLM
+        LD A,B
+        CP (IX+43)
+        JP NZ,TEXTERR
+SETBLM: LD (IX+43),B
+        LD A,(IX+42)
+        SUB 3
+        LD B,A
+        LD A,(IX+46)
+        OR A
+        JR Z,EXMSTART
+        LD A,B
+        OR A
+        JP Z,TEXTERR
+        DEC B
+EXMSTART: LD A,B
+        OR A
+        LD A,1
+        JR Z,EXMCALCDONE
+EXMCALC:ADD A,A
+        DJNZ EXMCALC
+EXMCALCDONE:
+        DEC A
+        LD B,A
+        LD A,(SEEN+17)
+        OR A
+        JR Z,SETEXM
+        LD A,(IX+44)
+        CP B
+        JR Z,SETEXMVAL
+        JP NC,TEXTERR
+SETEXMVAL: LD B,A
+        INC A
+        AND B
+        JP NZ,TEXTERR
+SETEXM: LD (IX+44),B
+        LD A,(HASSIZES)
+        OR A
+        JR Z,NO_MIXED
+        CP (IX+55)
+        JP NZ,TEXTERR
+        LD B,A
+        LD HL,SIZES
+        LD C,(HL)
+        LD E,0
+        LD D,0
+CHECKMIX:
+        LD A,(HL)
+        CP (IX+56)
+        JP C,MIXMAXOK
+        JP NZ,TEXTERR
+        LD D,1
+MIXMAXOK: CP C
+        JR Z,MIXSAME
+        LD E,1
+MIXSAME:INC HL
+        DJNZ CHECKMIX
+        LD A,D
+        OR A
+        JP Z,TEXTERR
+        LD A,E
+        OR A
+        JR Z,NO_MIXED
+        CALL STARTEXT
+        LD A,081H
+        CALL POOLBYTE
+        LD A,(IX+55)
+        CALL POOLBYTE
+        LD B,A
+        LD HL,SIZES
+COPYMIX:LD A,(HL)
+        CALL POOLBYTE
+        INC HL
+        DJNZ COPYMIX
+NO_MIXED:
+        LD A,(CYLINDER)
+        OR A
+        JR Z,NO_CYL
+        CALL STARTEXT
+        LD A,082H
+        CALL POOLBYTE
+        LD A,1
+        CALL POOLBYTE
+        CALL POOLBYTE
+NO_CYL: LD A,(IX+58)
+        AND 080H
+        JR Z,FORMATREADY
+        XOR A
+        CALL POOLBYTE
+        CALL POOLBYTE
+FORMATREADY:
+        LD HL,(POOLPTR)
+        LD DE,0C000H-512
+        OR A
+        SBC HL,DE
+        JP NC,MEMERR
+        RET
+STARTEXT:
+        BIT 7,(IX+58)
+        RET NZ
+        SET 7,(IX+58)
+        LD HL,(POOLPTR)
+        LD DE,0-FDFRAM
+        ADD HL,DE
+        LD (IX+62),L
+        LD (IX+63),H
+        RET
+POOLBYTE:
+        PUSH HL
+        LD HL,(POOLPTR)
+        LD (HL),A
+        INC HL
+        LD (POOLPTR),HL
+        POP HL
+        RET
+PACKCAT:
+        LD A,(FCOUNT)
+        LD (FDFRAM+8),A
+        CALL GETDESC
+        PUSH IX
+        POP HL
+        LD DE,FDFRAM
+        OR A
+        SBC HL,DE
+        LD (FDFRAM+12),HL
+        LD DE,POOLRAM-FDFRAM
+        OR A
+        SBC HL,DE
+        LD (DELTA),HL
+        XOR A
+        LD (INDEX),A
+FIXOFFSET:
+        LD A,(INDEX)
+        LD HL,FCOUNT
+        CP (HL)
+        JR Z,MOVEPOOL
+        CALL GETDESC
+        LD L,(IX+60)
+        LD H,(IX+61)
+        LD DE,(DELTA)
+        ADD HL,DE
+        LD (IX+60),L
+        LD (IX+61),H
+        LD L,(IX+62)
+        LD H,(IX+63)
+        LD A,H
+        OR L
+        JR Z,FIXNEXT
+        ADD HL,DE
+        LD (IX+62),L
+        LD (IX+63),H
+FIXNEXT:LD HL,INDEX
+        INC (HL)
+        JR FIXOFFSET
+MOVEPOOL:
+        LD HL,(POOLPTR)
+        LD DE,POOLRAM
+        OR A
+        SBC HL,DE
+        LD B,H
+        LD C,L
+        LD HL,(FDFRAM+12)
+        LD DE,FDFRAM
+        ADD HL,DE
+        EX DE,HL
+        LD HL,POOLRAM
+        LD A,B
+        OR C
+        JR Z,POOLMOVED
+        LDIR
+POOLMOVED:
+        EX DE,HL
+        LD DE,FDFRAM
+        OR A
+        SBC HL,DE
+        LD DE,127
+        ADD HL,DE
+        LD A,L
+        AND 080H
+        LD L,A
+        LD (FDBLEN),HL
+        LD DE,FDFRAM
+        ADD HL,DE
+        EX DE,HL
+        LD HL,(POOLPTR)
+; The moved end comes from pool length + final pool offset, not the old end.
+        LD BC,POOLRAM
+        OR A
+        SBC HL,BC
+        LD BC,(FDFRAM+12)
+        ADD HL,BC
+        LD BC,FDFRAM
+        ADD HL,BC
+ZEROALIGN:
+        LD A,H
+        CP D
+        JR NZ,ZEROBYTE
+        LD A,L
+        CP E
+        JR Z,MAKECRC
+ZEROBYTE:LD (HL),0
+        INC HL
+        JR ZEROALIGN
+MAKECRC:
+        LD HL,0FFFFH
+        LD DE,FDFRAM
+        LD BC,(FDBLEN)
+CRCBYTE:
+        LD A,(DE)
+        XOR H
+        LD H,A
+        PUSH BC
+        LD B,8
+CRCBIT: ADD HL,HL
+        JR NC,CRCNEXT
+        LD A,H
+        XOR 010H
+        LD H,A
+        LD A,L
+        XOR 021H
+        LD L,A
+CRCNEXT:DJNZ CRCBIT
+        POP BC
+        INC DE
+        DEC BC
+        LD A,B
+        OR C
+        JR NZ,CRCBYTE
+        LD (FDFRAM+14),HL
+        RET
+DELTA: DW 0
+; Require exact serializer order, offsets, supported TLVs and zero padding.
+CHECKCANON:
+        LD HL,(FDBPOOL)
+        LD DE,FDFRAM
+        ADD HL,DE
+        LD (CANONPTR),HL
+        XOR A
+        LD (INDEX),A
+CANONLOOP:
+        LD A,(INDEX)
+        LD HL,FCOUNT
+        CP (HL)
+        RET Z
+        CALL GETDESC
+        PUSH IX
+        POP HL
+        LD DE,8
+        ADD HL,DE
+        LD B,32
+CANONQUOTE:
+        LD A,(HL)
+        CP 34
+        JP Z,LOSSY
+        INC HL
+        DJNZ CANONQUOTE
+        LD L,(IX+60)
+        LD H,(IX+61)
+        LD DE,FDFRAM
+        ADD HL,DE
+        LD DE,(CANONPTR)
+        OR A
+        SBC HL,DE
+        JP NZ,LOSSY
+        EX DE,HL
+        LD E,(IX+55)
+        LD D,0
+        ADD HL,DE
+        BIT 7,(IX+58)
+        JR Z,CANONNEXT
+        PUSH HL
+        LD L,(IX+62)
+        LD H,(IX+63)
+        LD DE,FDFRAM
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        PUSH HL
+        OR A
+        SBC HL,DE
+        POP HL
+        JP NZ,LOSSY
+        LD A,(HL)
+        OR A
+        JP Z,LOSSY
+        CP 081H
+        JR NZ,CANONCYL
+; Uniform mixed-size TLV would be dropped by the serializer: refuse it.
+        INC HL
+        LD B,(HL)
+        INC HL
+        LD C,(HL)
+        LD E,0
+CANONMIX:
+        LD A,(HL)
+        CP C
+        JR Z,CANONMIXSAME
+        LD E,1
+CANONMIXSAME: INC HL
+        DJNZ CANONMIX
+        LD A,E
+        OR A
+        JP Z,LOSSY
+CANONCYL:
+        LD A,(HL)
+        CP 082H
+        JR NZ,CANONTERM
+        INC HL
+        INC HL
+        INC HL
+CANONTERM:
+        LD A,(HL)
+        INC HL
+        OR (HL)
+        JP NZ,LOSSY
+        INC HL
+CANONNEXT:
+        LD (CANONPTR),HL
+        LD HL,INDEX
+        INC (HL)
+        JP CANONLOOP
+EMITFORMAT:
+        LD HL,FORMATWORD
+        CALL TEXT
+        CALL NEWLINE
+        LD HL,KEY_ID
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        PUSH IX
+        POP HL
+        LD DE,8
+        ADD HL,DE
+        LD B,8
+TRIM_ID: DEC HL
+        LD A,(HL)
+        CP 32
+        JR NZ,TRIMMED_ID
+        DJNZ TRIM_ID
+TRIMMED_ID:
+        LD C,B
+        PUSH IX
+        POP HL
+        LD DE,0
+        ADD HL,DE
+        LD B,C
+EMIT_ID: LD A,(HL)
+        CALL BYTEOUT
+        INC HL
+        DJNZ EMIT_ID
+        CALL NEWLINE
+        LD HL,KEY_DESCRIPTION
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD A,34
+        CALL BYTEOUT
+        PUSH IX
+        POP HL
+        LD DE,40
+        ADD HL,DE
+        LD B,32
+TRIM_DESCRIPTION: DEC HL
+        LD A,(HL)
+        CP 32
+        JR NZ,TRIMMED_DESCRIPTION
+        DJNZ TRIM_DESCRIPTION
+TRIMMED_DESCRIPTION:
+        LD C,B
+        PUSH IX
+        POP HL
+        LD DE,8
+        ADD HL,DE
+        LD B,C
+EMIT_DESCRIPTION: LD A,(HL)
+        CALL BYTEOUT
+        INC HL
+        DJNZ EMIT_DESCRIPTION
+        LD A,34
+        CALL BYTEOUT
+        CALL NEWLINE
+        LD HL,KEY_SPT
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD L,(IX+40)
+        LD H,(IX+41)
+        CALL DECIMAL
+        CALL NEWLINE
+        LD HL,KEY_BSH
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD L,(IX+42)
+        LD H,0
+        CALL DECIMAL
+        CALL NEWLINE
+        LD HL,KEY_BLM
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD L,(IX+43)
+        LD H,0
+        CALL DECIMAL
+        CALL NEWLINE
+        LD HL,KEY_EXM
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD L,(IX+44)
+        LD H,0
+        CALL DECIMAL
+        CALL NEWLINE
+        LD HL,KEY_DSM
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD L,(IX+45)
+        LD H,(IX+46)
+        CALL DECIMAL
+        CALL NEWLINE
+        LD HL,KEY_DRM
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD L,(IX+47)
+        LD H,(IX+48)
+        CALL DECIMAL
+        CALL NEWLINE
+        LD HL,KEY_AL0
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD L,(IX+49)
+        LD H,0
+        CALL DECIMAL
+        CALL NEWLINE
+        LD HL,KEY_AL1
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD L,(IX+50)
+        LD H,0
+        CALL DECIMAL
+        CALL NEWLINE
+        LD HL,KEY_CKS
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD L,(IX+51)
+        LD H,(IX+52)
+        CALL DECIMAL
+        CALL NEWLINE
+        LD HL,KEY_OFF
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD L,(IX+53)
+        LD H,(IX+54)
+        CALL DECIMAL
+        CALL NEWLINE
+        LD HL,KEY_PSECTORS
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD L,(IX+55)
+        LD H,0
+        CALL DECIMAL
+        CALL NEWLINE
+        LD HL,KEY_SECSIZE
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD A,(IX+56)
+        CALL SIZEVALUE
+        CALL DECIMAL
+        CALL NEWLINE
+        LD HL,KEY_CYLINDERS
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD L,(IX+57)
+        LD H,0
+        CALL DECIMAL
+        CALL NEWLINE
+        LD HL,KEY_SIDES
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD HL,ENUM_SIDES0
+        BIT 0,(IX+58)
+        JR Z,EMIT_SIDES
+        LD HL,ENUM_SIDES1
+EMIT_SIDES: CALL TEXT
+        CALL NEWLINE
+        LD HL,KEY_ENCODING
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD HL,ENUM_ENCODING0
+        BIT 1,(IX+58)
+        JR Z,EMIT_ENCODING
+        LD HL,ENUM_ENCODING1
+EMIT_ENCODING: CALL TEXT
+        CALL NEWLINE
+        LD HL,KEY_INVERT
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD HL,ENUM_INVERT0
+        BIT 2,(IX+58)
+        JR Z,EMIT_INVERT
+        LD HL,ENUM_INVERT1
+EMIT_INVERT: CALL TEXT
+        CALL NEWLINE
+        LD HL,KEY_SECTOR_IDS
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD L,(IX+60)
+        LD H,(IX+61)
+        LD DE,FDFRAM
+        ADD HL,DE
+        LD B,(IX+55)
+EMITLIST_SECTOR_IDS: PUSH HL
+        LD A,(HL)
+        LD L,A
+        LD H,0
+        CALL DECIMAL
+        POP HL
+        INC HL
+        DEC B
+        JR Z,LISTDONE_SECTOR_IDS
+        LD A,44
+        CALL BYTEOUT
+        JR EMITLIST_SECTOR_IDS
+LISTDONE_SECTOR_IDS:
+        CALL NEWLINE
+        LD L,(IX+62)
+        LD H,(IX+63)
+        LD A,H
+        OR L
+        JR Z,SKIPSIZES
+        LD DE,FDFRAM
+        ADD HL,DE
+        LD A,(HL)
+        CP 081H
+        JR NZ,SKIPSIZES
+        INC HL
+        INC HL
+        PUSH HL
+        LD HL,KEY_SECTOR_SIZES
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        POP HL
+        LD B,(IX+55)
+EMITLIST_SECTOR_SIZES: PUSH HL
+        LD A,(HL)
+        CALL SIZEVALUE
+        CALL DECIMAL
+        POP HL
+        INC HL
+        DEC B
+        JR Z,LISTDONE_SECTOR_SIZES
+        LD A,44
+        CALL BYTEOUT
+        JR EMITLIST_SECTOR_SIZES
+LISTDONE_SECTOR_SIZES:
+        CALL NEWLINE
+SKIPSIZES:
+        LD HL,KEY_LOGICAL_TRACK
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD HL,SURFACE
+        LD E,(IX+62)
+        LD D,(IX+63)
+        LD A,D
+        OR E
+        JR Z,EMITTRACK
+        PUSH HL
+        LD HL,FDFRAM
+        ADD HL,DE
+        LD A,(HL)
+        CP 081H
+        JR NZ,LOOKTRACK
+        INC HL
+        LD E,(HL)
+        LD D,0
+        INC HL
+        ADD HL,DE
+LOOKTRACK:
+        LD A,(HL)
+        CP 082H
+        POP HL
+        JR NZ,EMITTRACK
+        LD HL,CYLWORD
+EMITTRACK: CALL TEXT
+        CALL NEWLINE
+        LD HL,KEY_SIDE_ORDER
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD HL,ENUM_SIDE_ORDER0
+        BIT 3,(IX+58)
+        JR Z,EMIT_SIDE_ORDER
+        LD HL,ENUM_SIDE_ORDER1
+EMIT_SIDE_ORDER: CALL TEXT
+        CALL NEWLINE
+        LD HL,KEY_SIDE1_DIRECTION
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD HL,ENUM_SIDE1_DIRECTION0
+        BIT 4,(IX+58)
+        JR Z,EMIT_SIDE1_DIRECTION
+        LD HL,ENUM_SIDE1_DIRECTION1
+EMIT_SIDE1_DIRECTION: CALL TEXT
+        CALL NEWLINE
+        LD HL,KEY_TRACK_ID_MODE
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD HL,ENUM_TRACK_ID_MODE0
+        BIT 5,(IX+58)
+        JR Z,EMIT_TRACK_ID_MODE
+        LD HL,ENUM_TRACK_ID_MODE1
+EMIT_TRACK_ID_MODE: CALL TEXT
+        CALL NEWLINE
+        LD HL,KEY_SECTOR_ID_MODE
+        CALL TEXT
+        LD A,32
+        CALL BYTEOUT
+        LD HL,ENUM_SECTOR_ID_MODE0
+        BIT 6,(IX+58)
+        JR Z,EMIT_SECTOR_ID_MODE
+        LD HL,ENUM_SECTOR_ID_MODE1
+EMIT_SECTOR_ID_MODE: CALL TEXT
+        CALL NEWLINE
+        LD HL,ENDWORD
+        CALL TEXT
+        JP NEWLINE
+SIZEVALUE:
+        LD HL,128
+        OR A
+        RET Z
+        PUSH BC
+        LD B,A
+SIZEVLP:ADD HL,HL
+        DJNZ SIZEVLP
+        POP BC
+        RET
+
+; Semantic checks common to compilation and export. All arithmetic that can
+; exceed a word uses an explicit 32-bit product, including OFF * SPT.
+SEMANTICS:
+        XOR A
+        LD (INDEX),A
+SEMLOOP:
+        LD A,(INDEX)
+        LD HL,FCOUNT
+        CP (HL)
+        RET Z
+        CALL GETDESC
+        CALL SEMFORMAT
+; Duplicate IDs cannot be represented by FDF v1.
+        LD A,(INDEX)
+        LD (OTHER),A
+DUPLOOP:
+        LD A,(OTHER)
+        OR A
+        JR Z,SEMNEXT
+        DEC A
+        LD (OTHER),A
+        PUSH IX
+        CALL GETDESC
+        PUSH IX
+        POP DE
+        POP IX
+        PUSH IX
+        POP HL
+        LD B,8
+DUPCMP: LD A,(DE)
+        CP (HL)
+        JR NZ,DUPLOOP
+        INC DE
+        INC HL
+        DJNZ DUPCMP
+        JP TEXTERR
+SEMNEXT:LD HL,INDEX
+        INC (HL)
+        JR SEMLOOP
+SEMFORMAT:
+        LD A,(IX+42)
+        CP 3
+        JP C,TEXTERR
+        CP 8
+        JP NC,TEXTERR
+        LD B,A
+        LD HL,1
+BLOCKSHIFT:ADD HL,HL
+        DJNZ BLOCKSHIFT
+        LD (BLOCKRECS),HL
+        DEC HL
+        LD A,L
+        CP (IX+43)
+        JP NZ,TEXTERR
+        LD A,(IX+42)
+        SUB 3
+        LD B,A
+        LD A,(IX+46)
+        OR A
+        JR Z,SEMEXM
+        LD A,B
+        OR A
+        JP Z,TEXTERR
+        DEC B
+SEMEXM: LD A,B
+        OR A
+        LD A,1
+        JR Z,SEMEXMDONE
+SEMEXMSHIFT: ADD A,A
+        DJNZ SEMEXMSHIFT
+SEMEXMDONE: DEC A
+        LD B,A
+        LD A,(IX+44)
+        CP B
+        JR Z,SEMEXMOK
+        JP NC,TEXTERR
+SEMEXMOK: LD B,A
+        INC A
+        AND B
+        JP NZ,TEXTERR
+; Check topology and byte-valued track/sector IDs.
+        BIT 0,(IX+58)
+        JR NZ,SEMTWO
+        LD A,(IX+58)
+        AND 078H
+        JP NZ,TEXTERR
+SEMTWO: BIT 4,(IX+58)
+        JR Z,SEMDIRECTION
+        BIT 3,(IX+58)
+        JP Z,TEXTERR
+SEMDIRECTION:
+        BIT 5,(IX+58)
+        JR Z,SEMTRACK
+        LD A,(IX+57)
+        CP 129
+        JP NC,TEXTERR
+SEMTRACK:
+        LD L,(IX+60)
+        LD H,(IX+61)
+        LD DE,FDFRAM
+        ADD HL,DE
+        LD B,(IX+55)
+        LD C,0
+SEMMAX: LD A,(HL)
+        CP C
+        JR C,SEMMAXNEXT
+        LD C,A
+SEMMAXNEXT: INC HL
+        DJNZ SEMMAX
+        BIT 6,(IX+58)
+        JR Z,SEMRECORDS
+        LD A,(IX+55)
+        ADD A,C
+        JP C,TEXTERR
+SEMRECORDS:
+        XOR A
+        LD (ISCYL),A
+        LD L,(IX+62)
+        LD H,(IX+63)
+        LD A,H
+        OR L
+        JR Z,SEMUNIFORM
+        LD DE,FDFRAM
+        ADD HL,DE
+        LD A,(HL)
+        CP 081H
+        JR NZ,SEMEXTTRACK
+        INC HL
+        LD B,(HL)
+        INC HL
+        LD DE,0
+SEMCOUNT:
+        PUSH HL
+        LD A,(HL)
+        LD HL,1
+        OR A
+        JR Z,SEMADD
+SEMSHIFT: ADD HL,HL
+        DEC A
+        JR NZ,SEMSHIFT
+SEMADD: ADD HL,DE
+        EX DE,HL
+        POP HL
+        INC HL
+        DJNZ SEMCOUNT
+        LD (SURFACERECS),DE
+        JR SEMEXTTRACK
+SEMUNIFORM:
+        LD B,(IX+55)
+        LD A,(IX+56)
+        LD HL,1
+        OR A
+        JR Z,SEMUNIFMULT
+SEMUNIFSHIFT: ADD HL,HL
+        DEC A
+        JR NZ,SEMUNIFSHIFT
+SEMUNIFMULT:
+        EX DE,HL
+        LD HL,0
+SEMUNIFLP: ADD HL,DE
+        DJNZ SEMUNIFLP
+        LD (SURFACERECS),HL
+        JR SEMSPT
+SEMEXTTRACK:
+        LD A,(HL)
+        CP 082H
+        JR NZ,SEMNOTCYL
+        LD A,(IX+58)
+        AND 079H
+        CP 1
+        JP NZ,TEXTERR
+        LD A,1
+        LD (ISCYL),A
+SEMNOTCYL:
+; If no mixed TLV was seen, obtain uniform sector records.
+        LD L,(IX+62)
+        LD H,(IX+63)
+        LD DE,FDFRAM
+        ADD HL,DE
+        LD A,(HL)
+        CP 081H
+        JR NZ,SEMUNIFORM
+SEMSPT: LD HL,(SURFACERECS)
+        LD A,(ISCYL)
+        OR A
+        JR Z,SEMCMPSPT
+        ADD HL,HL
+SEMCMPSPT:
+        LD E,(IX+40)
+        LD D,(IX+41)
+        OR A
+        SBC HL,DE
+        JP NZ,TEXTERR
+; Directory allocation bitmap must reserve every directory block.
+        LD HL,(BLOCKRECS)
+        ADD HL,HL
+        ADD HL,HL
+        EX DE,HL
+        LD L,(IX+47)
+        LD H,(IX+48)
+        LD B,0
+SEMDIRCOUNT:
+        INC B
+        LD A,B
+        CP 17
+        JP NC,TEXTERR
+        OR A
+        SBC HL,DE
+        JR NC,SEMDIRCOUNT
+        LD H,(IX+49)
+        LD L,(IX+50)
+SEMDIRBIT:
+        ADD HL,HL
+        JP NC,TEXTERR
+        DJNZ SEMDIRBIT
+; allocated = (DSM + 1) * block records, at most 65536 records.
+        LD L,(IX+45)
+        LD H,(IX+46)
+        LD DE,(BLOCKRECS)
+        CALL MULTIPLY
+        LD HL,(PRODUCT)
+        LD DE,(BLOCKRECS)
+        ADD HL,DE
+        LD (PRODUCT),HL
+        LD HL,(PRODUCT+2)
+        LD DE,0
+        ADC HL,DE
+        LD (PRODUCT+2),HL
+        LD A,H
+        OR A
+        JP NZ,TEXTERR
+        LD A,L
+        CP 2
+        JP NC,TEXTERR
+        OR A
+        JR Z,SEMALLOCOK
+        LD HL,(PRODUCT)
+        LD A,H
+        OR L
+        JP NZ,TEXTERR
+SEMALLOCOK:
+        LD HL,(PRODUCT)
+        LD (ALLOCATED),HL
+        LD HL,(PRODUCT+2)
+        LD (ALLOCATED+2),HL
+        LD L,(IX+53)
+        LD H,(IX+54)
+        LD E,(IX+40)
+        LD D,(IX+41)
+        CALL MULTIPLY
+        LD HL,(PRODUCT)
+        LD DE,(ALLOCATED)
+        ADD HL,DE
+        LD (ALLOCATED),HL
+        LD HL,(PRODUCT+2)
+        LD DE,(ALLOCATED+2)
+        ADC HL,DE
+        JP C,TEXTERR
+        LD (ALLOCATED+2),HL
+        LD L,(IX+57)
+        LD H,0
+        BIT 0,(IX+58)
+        JR Z,SEMTOTAL
+        LD A,(ISCYL)
+        OR A
+        JR NZ,SEMTOTAL
+        ADD HL,HL
+SEMTOTAL:
+        LD E,(IX+40)
+        LD D,(IX+41)
+        CALL MULTIPLY
+        LD HL,(PRODUCT)
+        LD DE,(ALLOCATED)
+        OR A
+        SBC HL,DE
+        LD HL,(PRODUCT+2)
+        LD DE,(ALLOCATED+2)
+        SBC HL,DE
+        JP C,TEXTERR
+        RET
+; HL * DE -> PRODUCT (little-endian 32 bits), shift/add, exact.
+MULTIPLY:
+        LD (MULTIPLIER),HL
+        LD (MULTIPLICAND),DE
+        LD HL,0
+        LD (MULTIPLICAND+2),HL
+        LD (PRODUCT),HL
+        LD (PRODUCT+2),HL
+        LD B,16
+MULTLP: LD HL,(MULTIPLIER)
+        SRL H
+        RR L
+        LD (MULTIPLIER),HL
+        JR NC,MULTSKIP
+        LD HL,(PRODUCT)
+        LD DE,(MULTIPLICAND)
+        ADD HL,DE
+        LD (PRODUCT),HL
+        LD HL,(PRODUCT+2)
+        LD DE,(MULTIPLICAND+2)
+        ADC HL,DE
+        LD (PRODUCT+2),HL
+MULTSKIP:
+        LD HL,(MULTIPLICAND)
+        ADD HL,HL
+        LD (MULTIPLICAND),HL
+        LD HL,(MULTIPLICAND+2)
+        ADC HL,HL
+        LD (MULTIPLICAND+2),HL
+        DJNZ MULTLP
+        RET
+OTHER: DB 0
+ISCYL: DB 0
+BLOCKRECS: DW 0
+SURFACERECS: DW 0
+ALLOCATED: DS 4
+PRODUCT: DS 4
+MULTIPLIER: DW 0
+MULTIPLICAND: DS 4
+
+POLLBREAK:
+        PUSH HL
+        PUSH DE
+        PUSH BC
+        LD E,255
+        LD C,6
+        CALL BDOS
+        CP 3
+        JP Z,CANCELLED
+        POP BC
+        POP DE
+        POP HL
+        RET
+CANCELLED:
+        LD HL,CANCELMSG
+        JP EXITMSG
+CANCELMSG: DB 'FDB: cancelled; incomplete output removed.',13,10,0
+
+CLEANMSG: DB 'FDB: cleanup failed; incomplete destination may remain.',13,10,0
