@@ -1,4 +1,4 @@
-; Native FDB round-trip foundation, spec 209. No catalogue replacement.
+; Native FDB converter and catalogue workbench, engineering specification 209.
         ASEG
         ORG 100H
         JP START
@@ -34,10 +34,10 @@ START:  LD (OLDSP),SP
         LDIR
         LD A,(INPUT+1)
         CP ' '
-        JP Z,USAGE
+        JP Z,SESSIONSTART
         LD A,(OUTPUT+1)
         CP ' '
-        JP Z,USAGE
+        JP Z,SESSIONSTART
         LD HL,INPUT+1
         LD B,11
 NAMECHECK:
@@ -73,6 +73,7 @@ EXPORT: LD HL,OUTPUT+9
         LD DE,FDFEXT
         CALL MATCH3
         JP NZ,USAGE
+READBINARY:
         CALL OPENIN
         LD HL,FDFRAM
 LOADLP: LD (POS),HL
@@ -114,7 +115,13 @@ LOADED: CALL CLOSEIN
         JP NZ,LOSSY
         CALL CHECKCANON
         CALL SEMANTICS
+        LD A,(SESSION)
+        OR A
+        JP NZ,STAGED
         CALL CREATEOUT
+        CALL WRITETEXT
+        JP SUCCESS
+WRITETEXT:
         LD HL,VERSION
         CALL TEXT
         XOR A
@@ -130,8 +137,7 @@ EXLOOP: LD A,(INDEX)
         JR EXLOOP
 EXDONE: LD A,26
         CALL BYTEOUT
-        CALL FINISHOUT
-        JP SUCCESS
+        JP FINISHOUT
 COMPILE:
         CALL OPENIN
         LD HL,FDFRAM
@@ -280,6 +286,9 @@ COMPILED:
         CALL FDBVALID
         JP C,BADFDB
         CALL SEMANTICS
+        LD A,(SESSION)
+        OR A
+        JP NZ,STAGED
         CALL CREATEOUT
         LD HL,FDFRAM
         LD BC,(FDBLEN)
@@ -344,6 +353,9 @@ PADOUT: LD A,26
         OR A
         JR NZ,PADOUT
 OUTCLOSE:
+        LD A,(COMPAREOUT)
+        OR A
+        RET NZ
         LD DE,OUTPUT
         LD C,16
         CALL BDOS
@@ -367,6 +379,19 @@ BYTEOUT:
         CP 128
         JR NZ,BYTEOK
         CALL POLLBREAK
+        LD A,(COMPAREOUT)
+        OR A
+        JR Z,WRITERECORD
+        CALL READTEMP
+        OR A
+        JP NZ,VERIFYERR
+        LD HL,OUTBUF
+        LD DE,INBUF
+        LD B,128
+        CALL CMPFIELD
+        JP NZ,VERIFYERR
+        JR RECORDDONE
+WRITERECORD:
         LD DE,OUTBUF
         CALL SETDMA
         LD DE,OUTPUT
@@ -375,6 +400,7 @@ BYTEOUT:
         OR A
         JP NZ,IOERR
         XOR A
+RECORDDONE: XOR A
         LD (OUTCOUNT),A
 BYTEOK: POP BC
         POP DE
@@ -748,7 +774,7 @@ EXITMSG:
 CLEANOUT:
         LD A,(OUTOPEN)
         OR A
-        JR Z,EXIT
+        JR Z,RESUMEORQUIT
         LD DE,OUTPUT
         LD C,16
         CALL BDOS
@@ -756,9 +782,13 @@ CLEANOUT:
         LD C,19
         CALL BDOS
         CP 255
-        JR NZ,EXIT
+        JR NZ,RESUMEORQUIT
         LD HL,CLEANMSG
         CALL PUTS
+RESUMEORQUIT:
+        LD A,(SESSION)
+        OR A
+        JP NZ,MENU
 EXIT:   LD DE,80H
         CALL SETDMA
         LD SP,(OLDSP)
