@@ -187,5 +187,5 @@ documentation prose and illustrations use CC BY 4.0; the complete text is in
 [LICENSES/CC-BY-4.0.txt](LICENSES/CC-BY-4.0.txt).
 [Documentation licensing](docs/LICENSING.md) explains embedded examples and reuse.
 [NOTICE](NOTICE) identifies the scope and separately licensed/historical works.
-Third-party material keeps its own terms; the project grant does not settle
-the outstanding Montezuma permission review or accept release packages.
+Third-party material retains its own terms. The release ships BetterCP/M’s native
+catalogue and excludes the original Montezuma DISK.FDF from all packages.

@@ -32,7 +32,7 @@ This split does not grant new terms for examples copied or adapted from
 third-party work. Those examples, historical quotations, imported diagrams and
 underlying third-party content visible in screenshots retain their applicable
 notices and rights. NOTICE and the per-work provenance records control those
-exclusions. The project licenses do not clear Montezuma redistribution rights.
+exclusions. The release excludes the original Montezuma catalogue. NOTICE identifies the historical format data retained in BetterCP/M’s native catalogue.
 
 ## Current distribution status
 

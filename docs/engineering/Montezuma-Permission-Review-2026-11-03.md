@@ -1,6 +1,6 @@
 # Montezuma permission investigation — 3 November 2026
 
-**The maintainer accepts the external DISK.FDF and all 16 CONFIG-derived definitions for 1.0 with the notice “distribution rights undetermined.”** Package freeze is on hold.
+**Historical permission investigation.** The release now builds entirely from BetterCP/M FDF v1 text. All six packages and their nested archives exclude the original Montezuma DISK.FDF. The earlier investigation below records the provenance of the historical definitions. Package freeze is on hold.
 Read-only public-source research; no person or archive has been contacted.
 No current rights-holder identity or chain of title is established here.
 
@@ -33,17 +33,15 @@ No current rights-holder identity or chain of title is established here.
 No broad public redistribution grant was located. This is an evidence gap,
 not proof that permission cannot exist. Retain the full search/retrieval limits.
 
-## Maintainer decision and current exposure
+## Earlier inclusion decision
 
-The maintainer accepts inclusion of the 10,752-byte external catalogue and the 16
+The maintainer initially accepted inclusion of the 10,752-byte external catalogue and the 16
 definitions recovered from CONFIG.COM because they describe technical disk parameters.
 A technical fact and a compilation's original selection or arrangement are
 distinct copyright questions. The project records an inclusion decision
 without asserting public-domain status, ownership, or a rightsholder grant.
 See [U.S. Copyright Office Circular 14](https://www.copyright.gov/circs/circ14.pdf).
 
-The Source and nested Utilities kits carry the translated BetterCP/M text catalogue and exclude the original external file. Both System
-disks carry 91 external entries in DISK.FDB alongside 16 recovered from
-CONFIG.COM. The notice covers both sets of data and their compiled forms. The package selectors
+The Source and nested Utilities kits carry the translated BetterCP/M text catalogue and exclude the original external file. Both System disks carry 108 entries, including independent definitions for MMF017 and MMI008 and the native BCPM780 layout. The notice covers both sets of data and their compiled forms. The package selectors
 exclude the historical utilities and disassemblies. See the
 [file identity and provenance](../../third_party/montezuma/README.md).

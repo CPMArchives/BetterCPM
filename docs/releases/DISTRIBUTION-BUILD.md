@@ -91,9 +91,10 @@ verifies a real simulator exit before publishing that image.
 Clock providers are available for explicit loading: `ZPRTC.RSX` on cpmsim and
 `FREHDCLK.RSX` on Model 4. FreHD requires the relevant hardware/emulation;
 shipping that provider does not make every Model 4 clock-capable. CPX/RSX
-management includes its required file-backed runtime helpers. Optional P2DOS
-and 104/105 clock adapters and test extensions are not selected. No on-disk
-user documentation has been selected yet; host documentation remains here.
+management includes its required file-backed runtime helpers. Both System disks ship A0:P2DOS.RSX. Load the platform clock provider first,
+then use `RSX LOAD P2DOS` for the optional Functions 200/201 interface.
+The 104/105 clock adapters remain deferred. Both System disks include
+README.TXT. The full manuals accompany the host packages.
 
 These are distributions of the current implemented state. They are not final
 1.0 release candidates and do not replace the remaining conformance campaign

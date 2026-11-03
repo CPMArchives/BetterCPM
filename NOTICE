@@ -18,10 +18,10 @@ Separate material retains its own notices and recorded terms:
 - Richard Conn DASM imports and adaptation retain SIG/M historical provenance,
   credits and the maintainer’s separately recorded distribution basis.
 - z80pack and patched host/guest components retain upstream notices and terms.
-- Montezuma Micro DISK.FDF and the 16 disk-format definitions recovered from
-  CONFIG.COM — distribution rights undetermined. The maintainer accepts these
-  data for 1.0 in source and compiled form. No rightsholder grant has been
-  verified. Montezuma utility binaries and disassemblies remain excluded.
+- BetterCP/M distributes its native text and compiled disk catalogues.
+  Historical format data, including definitions recovered from CONFIG.COM,
+  retain their provenance and the notice “distribution rights undetermined”.
+  All packages exclude the original Montezuma DISK.FDF, utilities and disassemblies.
 - Third-party material inside documentation/evidence archives, code quotations
   or generated source companions retains its original terms wherever located.
 
