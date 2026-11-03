@@ -4654,6 +4654,8 @@
         "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
       },
       "files": [
+        "src/bios/bios.mac",
+        "src/bios/biosplat.inc",
         "src/cpx/copy-select.inc",
         "src/cpx/dir-select.inc",
         "src/cpx/era-resident.inc",
@@ -4661,6 +4663,11 @@
         "src/cpx/feature-hint.inc",
         "src/cpx/ren-select.inc",
         "src/cpx/type-select.inc",
+        "src/platform/trs80m4/hardware.inc",
+        "src/platform/trs80m4/m4cons.inc",
+        "src/platform/trs80m4/m4disk.inc",
+        "src/platform/trs80m4/m4scroll.inc",
+        "src/platform/trs80m4/reload.inc",
         "src/platform/z80pack/checked-crc.inc",
         "src/platform/z80pack/checked-identity.inc",
         "src/platform/z80pack/checked-load.inc",
@@ -4674,6 +4681,7 @@
         "src/utilities/common/private-utility.inc",
         "src/utilities/common/rcpselect.inc",
         "src/utilities/common/version.inc",
+        "tools/build_bios.py",
         "tools/build_ccp.py",
         "tools/build_cpx_module.py",
         "tools/build_profiles.py",
