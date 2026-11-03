@@ -26,13 +26,16 @@ def main():
     native=cpm_text(compact_source((a.output/'cross/TEDNAT.MAC').read_text().rstrip('\x1a')))
     original=b'Original\t spaces  \r\nLF\nCR\rend  '
     original+=b'\x1a'*(-len(original)%128)
-    if a.scenario=='choice-scope':original=b'one one one one\r\n'
+    # key_args sends uppercase physical letters on the reference Model 4.
+    # Use the same case in fixture/search on both targets: substitution is
+    # deliberately case-sensitive, independent of the BIOS case workstream.
+    if a.scenario=='choice-scope':original=b'ONE ONE ONE ONE\r\n'
     if a.scenario=='groups':original=cpm_text('one\ntwo\nthree\nfour\n')
     if a.scenario=='interaction':original=b'ALPHA BETA  \r\nSECOND\tEND\nTHIRD\rLAST'
     if a.scenario=='large':original=cpm_text(('long file with literal TAB\t and trailing spaces  \r\n'*900).rstrip('\r\n'))
     original+=b'\x1a'*(-len(original)%128)
     edited=original.replace(b'SECOND',b'CHANGED') if a.scenario=='interaction' else b'X'+original[1:]
-    if a.scenario=='choice-scope':edited=b'one X one one\r\n'+b'\x1a'*((-len(b'one X one one\r\n'))%128)
+    if a.scenario=='choice-scope':edited=b'ONE X ONE ONE\r\n'+b'\x1a'*((-len(b'ONE X ONE ONE\r\n'))%128)
     if a.scenario=='interaction':edited=edited.rstrip(b'\x1a')+b'\x1a'*(-len(edited.rstrip(b'\x1a'))%128)
     listing=(a.output/'cross/TEDDEV.LST').read_text()
     def address(name):
@@ -132,7 +135,7 @@ QC_BAD: DB 'TED GUARD FAIL',13,10,'$'
                       (b'Q',b'TED EDITOR POSTEXIT PASS' if native_platform else b'C0>_ ',90)]
         if a.scenario=='choice-scope':
             command_ready=b'TED>'
-            sequence=[(b'SU M /one/X/\r',b'Replace? (Y/N) [N]:',120),
+            sequence=[(b'SU M /ONE/X/\r',b'Replace? (Y/N) [N]:',120),
                       (b'?x',b'Replace? (Y/N) [N]:',30),
                       (b'n',b'Replace? (Y/N) [N]:',120),
                       (b'y',b'Replace? (Y/N) [N]:',120),

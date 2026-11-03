@@ -3,7 +3,8 @@
 3 November 2026. The maintainer approved the immediate-choice correction in the
 UI integration thread. TED 1.0 revision 004 now uses the established shared choice
 controller. This record closes the TED behavior decision and bounded host/cpmsim
-checks; changed-binary Model 4 execution and whole-release acceptance remain open.
+checks. The current-payload Model 4 `choices` campaign also passes; native
+`choice-scope` and whole-release acceptance remain open.
 
 ## Behavior and interface
 
@@ -70,8 +71,17 @@ Current COM SHA-256:
   pass. These are disposable cross-build executions, not final packaged media.
 - Observed private stack high-water: 54 bytes in the modeled frontend and save
   campaign, 52 bytes in the real substitution campaign; guards remain intact.
-- BLOCKED: Model 4 LaunchServices preflight 1100. Private media and invocation are
-  prepared; no Model 4 app was started and no native display/input pass is claimed.
+- PASS: maintainer-run Model 4 `choices` campaign on the exact current payload:
+  invalid retry, Enter=No on abandonment, overwrite No and immediate Yes, exact
+  target/original backup readback, no earlier unauthorized backup, filesystem and
+  stack checks. Observed high-water 54 bytes; exclusive TPA ceiling 50,689.
+- OUTSTANDING: Model 4 `choice-scope`. The initial attempt's RAM capture shows
+  startup completed and TED returned to command input after `SU M /ONE/X/` found
+  no match in lowercase `one one one one`. The physical-key helper uppercases
+  letters; cpmsim had received lowercase text directly. This is a harness fixture
+  mismatch, not a demonstrated editor hang. The fixture/search/expected output
+  now use uppercase on both targets. Corrected cpmsim execution passes, saving
+  exactly `ONE X ONE ONE` plus CRLF and padding; native rerun remains required.
 
 [Results and source hashes](evidence/2026-11-03-ted-choice/results.json),
 [receipts/logs](evidence/2026-11-03-ted-choice/receipts-and-logs.tar.gz) and
@@ -80,6 +90,11 @@ Initial failed test-harness attempts remain in the archive: response timing was
 corrected, and a missing-file check was changed to an independent directory
 listing because cpmcp can return zero when no file matches. They are not program
 regressions relabeled as passes.
+
+The [Model 4 choices receipt and RAM diagnosis](evidence/2026-11-03-ted-model4-choices/results.json)
+and its [capture/readback archive](evidence/2026-11-03-ted-model4-choices/receipts-and-logs.tar.gz)
+retain the native pass, failed case-mismatch attempt and corrected cpmsim run.
+No production TED source, binary or keyboard case policy changed for this correction.
 
 ## Reproduction
 

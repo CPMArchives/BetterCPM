@@ -1,0 +1,21 @@
+{
+  "model4_choices": "PASS: current TED payload, 54-byte stack high-water, 50689-byte TPA ceiling; target/backup/readback/filesystem checks passed",
+  "model4_choice_scope": "FAIL harness case mismatch; native rerun pending",
+  "ted_sha256": "5bf8ea6bd52987225c15ff880b6b80ccadfe811472c4bb9a2362516583d87e17",
+  "ram_diagnosis": {
+    "file": "model4-scope-case-mismatch/trs80gp/trs80-ram-0.bin",
+    "bytes": 131072,
+    "sha256": "db969db1aa4a2845d12c8ccfd52c42f2f9e637fb433ed28fa25e8fba13536b14",
+    "TE_FIELD_address": "53CDh",
+    "TE_FIELD": "SU M /ONE/X/",
+    "TE_COMMAND_READ": "1",
+    "EDITLEN": "0",
+    "TE_QUEUE_COUNT": "0",
+    "document": "one one one one CRLF",
+    "interpretation": "TED completed startup and the unmatched command, returned to its command input; runner still waited for Replace? because physical Model 4 key_args uppercases letters"
+  },
+  "correction": "Uppercase fixture, search and expected result on both targets; no production source/binary change. Native keyboard/case behavior remains unchanged.",
+  "cpmsim_uppercase_scope": "PASS: N skips first, Y changes second, Ctrl-C stops remaining; ONE X ONE ONE CRLF saved; backup preserved and filesystem/stack checks pass",
+  "runner_before_sha256": "c9d646beba2d016f88d823ee3b172bd10c25b45cd93bd799110574a09f20eb36",
+  "runner_after_sha256": "5fd07f6e0f1dc066776177efe12088f3cce004c98391b873eeb33185b7aae977"
+}

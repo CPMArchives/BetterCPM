@@ -3,7 +3,8 @@
 3 November 2026. **Draft; workstream completion and merge acceptance remain
 open.** Clear, compatible work is implemented and tested. TED's confirmation
 correction is approved and implemented; the matrix's outstanding verification
-cells and TED's changed-binary Model 4 execution remain open. The bounded native
+cells and TED's native `choice-scope` execution remain open. TED native `choices`
+passes on the current payload. The bounded native
 CRCKSUM/MD5SUM/DASM campaign now passes. No core, BIOS, resident RCP or historical third-party
 reference source was changed. No new utility feature/library was introduced.
 
@@ -277,9 +278,9 @@ python3 tools/test_ui_integration_media.py --system "$SYSTEMS" --platform model4
 
 1. TED approval is resolved: immediate Y/N/default-No/invalid-retry conversion is
    implemented and covered by current host/cpmsim and native assembly evidence.
-2. Execute TED's `choices` and `choice-scope` campaigns under Model 4 and inspect
-   captured screens. The checksum/DASM campaign is complete; prepared TED inputs
-   and historical receipt applicability are not current TED native qualification.
+2. Execute corrected TED `choice-scope` under Model 4 and inspect captured
+   screens. TED `choices` and the checksum/DASM campaign pass; prepared TED
+   inputs and historical receipts alone are not native qualification.
 3. Close remaining per-utility malformed/combination verification cells before
    claiming complete suite-wide conformance. Broader release conformance and
    packaged release acceptance remain separate.
@@ -303,6 +304,35 @@ readback. TED grows by 192 bytes within its existing allocation, and Utilities
 retains 2 KiB free. Updated user/native scripts no longer send Enter after Y/N.
 Current [evidence](evidence/2026-11-03-ted-choice/results.json) supersedes TED 003
 receipts for this scope; original evidence remains historical. TED Model 4 execution
-still requires a normal Terminal, so the PR remains a draft pending those campaigns
+has passed `choices`; the PR remains a draft pending corrected native `choice-scope`
 and the matrix's other outstanding verification. No further TED behavior approval
 is requested.
+
+### TED Model 4 choices pass and substitution-fixture correction
+
+The maintainer's `ted-ui-model4-20261103-123016/choices` run passes on TED SHA-256
+`5bf8ea6bd52987225c15ff880b6b80ccadfe811472c4bb9a2362516583d87e17`,
+with exact target/backup verification, no premature backup generation, filesystem
+checks and 54-byte private-stack high-water at TPA ceiling 50,689.
+
+The following `choice-scope` run appeared stuck after launch. A 128-KiB RAM capture
+establishes that startup and the substitution command had completed: TE_COMMAND_READ
+is 1, EDITLEN is 0, the queue is empty and the private stack is in TE_PROMPT/TE_READ.
+TE_FIELD at 53CDh contains `SU M /ONE/X/`, while the input file is lowercase
+`one one one one`. `key_args` uppercases physical letters; the script waited for
+a replacement question after a case-sensitive search which had no matches.
+The previous inference that TED was stuck in startup was incorrect.
+
+Only the harness fixture, search and expected bytes change to matching uppercase
+on both platforms. The corrected cpmsim run passes, saving exactly
+`ONE X ONE ONE\r\n` plus padding, retaining the original backup, with intact
+guards and filesystems. TED production bytes, BIOS case behavior and core are
+unchanged. Native execution of that corrected fixture is still outstanding.
+
+```sh
+python3 tools/qualify_ted_editor.py --system "$SYSTEMS" --utilities "$UTILITIES" --output "$OUTPUT" --platforms z80pack --cross-smoke --scenario choice-scope --identity-state auto
+```
+
+[Receipts and RAM diagnosis](evidence/2026-11-03-ted-model4-choices/results.json)
+and [retained captures/readback](evidence/2026-11-03-ted-model4-choices/receipts-and-logs.tar.gz)
+separate the successful campaign, failed harness attempt and corrected host run.

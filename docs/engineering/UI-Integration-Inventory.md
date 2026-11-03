@@ -85,10 +85,14 @@ independent preserved-input/new-list readback and filesystem checks are archived
 in [current native evidence](evidence/2026-11-03-model4-pass/results.json).
 The two earlier runner failures remain separately recorded. BYE is cpmsim-only.
 
-TED's changed-binary `choices` and `choice-scope` native campaigns remain open.
-This agent session still cannot launch AppKit (LaunchServices preflight 1100);
-these campaigns need a normal Terminal. Preparation alone and historical TED
-receipts do not qualify the changed TED binary.
+TED's changed-binary `choices` native campaign now also passes on the exact current
+payload. `choice-scope` remains open: a RAM capture establishes that its initial
+attempt returned to command input after the physical-key helper uppercased the
+search while the fixture remained lowercase. The harness now uses matching
+uppercase fixture/search text; corrected cpmsim execution passes. Native rerun
+is still required. This agent session cannot launch AppKit (preflight 1100);
+use a normal Terminal. Preparation and historical TED receipts alone do not
+qualify the changed TED binary.
 
 See the [matrix](UI-Conformance-Matrix.md),
 [library candidate report](Shared-Library-Candidate-Report.md) and
