@@ -594,7 +594,7 @@
       "builders": [
         "tools/build_z80pack_bye.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -881,7 +881,7 @@
       "builders": [
         "tools/build_dasm.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "tracked-conservative",
@@ -1014,7 +1014,7 @@
       "builders": [
         "tools/build_crc.py"
       ],
-      "revision": 9,
+      "revision": 10,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "tracked-conservative; shared DU/filespec/attribute parser and FCB builder",
@@ -1037,7 +1037,7 @@
       "builders": [
         "tools/build_md5sum.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "tracked-conservative; shared CRCKSUM file engine and DU parser",

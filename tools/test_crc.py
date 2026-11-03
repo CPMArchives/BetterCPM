@@ -65,6 +65,7 @@ def execute(files=None, tail='', *, caller=(2, 7), keys=b'Y', fault=None,
     keypos = polls = 0
     search = []
     searchpos = 0
+    pending_poll = False
 
     def identity(addr):
         dr = c.mem[addr]
@@ -84,7 +85,7 @@ def execute(files=None, tail='', *, caller=(2, 7), keys=b'Y', fault=None,
         c.a = 0
 
     def bdos(port, value):
-        nonlocal drive, user, dma, keypos, polls, search, searchpos
+        nonlocal drive, user, dma, keypos, polls, search, searchpos, pending_poll
         fn = c.c
         services.append(fn)
         counts[fn] = counts.get(fn, 0)+1
@@ -97,10 +98,18 @@ def execute(files=None, tail='', *, caller=(2, 7), keys=b'Y', fault=None,
             c.a = keys[keypos] if keypos < len(keys) else 13
             keypos += 1
         elif fn == 6:
-            c.a = 3 if cancel_at is not None and polls >= cancel_at else 0
+            if c.e != 255:
+                output.append(c.e)
+            elif pending_poll:
+                c.a = 3
+                pending_poll = False
+            else:
+                c.a = keys[keypos] if keypos < len(keys) else 13
+                keypos += 1
         elif fn == 11:
             polls += 1
-            c.a = 255 if cancel_at is not None and polls >= cancel_at else 0
+            pending_poll = cancel_at is not None and polls >= cancel_at
+            c.a = 255 if pending_poll else 0
         elif fn == 25:
             c.a = drive
         elif fn == 14:

@@ -42,11 +42,12 @@ def main():
   if field=='UC_LIST':c.setword(at(field),value)
   else:c.mem[at(field)]=value
   c,r=invoke(image,ls,'CC_ASK',b'',c=c);assert r==(3,[],[],[]),(field,r)
- assert len(image)<=0x3d00
+ from build_config import validate_layout
+ validate_layout(image,ls)
  # Both platform validation and boot-IOBYTE records must remain linked.
  assert address(ls,'SGVEND')-address(ls,'SGVALID')==40
  io=address(ls,'IO_VALID')-256
  assert image[io:io+2]==bytes([80,0]) and image[io+10:io+12]==bytes([128,0]) and image[io+20:io+22]==bytes(2)
- report={'result':'PASS','menu_cases':cases,'approval_cases':256,'mixed_context_cases':6,'malformed_cases':4,'bytes':len(image),'stack_gap_bytes':0x3d00-len(image),'sha256':hashlib.sha256(image).hexdigest()}
+ report={'result':'PASS','menu_cases':cases,'approval_cases':256,'mixed_context_cases':6,'malformed_cases':4,'bytes':len(image),'stack_gap_bytes':0x3e00-address(ls,'CF_MAIN_END'),'sha256':hashlib.sha256(image).hexdigest()}
  (OUT/'result.json').write_text(json.dumps(report,indent=2)+'\n');print(report)
 if __name__=='__main__':main()

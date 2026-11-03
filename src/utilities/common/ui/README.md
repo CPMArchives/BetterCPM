@@ -159,3 +159,13 @@ selection; `../sysgeninput.inc` restores the strict approval context on return.
 CONFIG Build 015 uses `../configchoice.inc` for legacy menu and approval keys.
 Its one-token transport retains the caller's key policy; the editor keeps its
 separate CI_READ binding. See the developer guide for context and size rules.
+
+
+The release-stabilization review adds BYE and DASM as choice-only consumers.
+BYE uses explicit `(Y/N) [N]` notation. DASM retains historical fold/echo and
+only-Y approval. CRCKSUM/MD5SUM retain one existing shared local decision loop
+as a disk-space exception: including the full controller in each crosses two
+2-KiB allocation boundaries and overflows current Utilities media. Their modal
+transport now uses direct input/output so documented Ctrl-C cleanup is reachable.
+See the [integration inventory](../../../../docs/engineering/UI-Integration-Inventory.md)
+and [conformance matrix](../../../../docs/engineering/UI-Conformance-Matrix.md).

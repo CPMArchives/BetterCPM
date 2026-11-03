@@ -21,6 +21,14 @@ def output(c):
     assert c.word(0x7002)&255==9,('unexpected BDOS service',c.word(0x7002))
     p=c.word(0x7000);end=c.mem.index(36,p)
     return bytes(c.mem[p:end]).decode()
+def expected_identification(name):
+    """Current metadata-owned transient identity, including its full numeric block."""
+    row=load()['components']['utility:'+name]
+    if row.get('display_format')=='numeric':
+        return identification(name,row['version'],row['revision'],row['description'],
+                              development=display_development('utility:'+name))
+    return banner(name)+'\r\n'
+
 def main():
     count=0
     for name in identities():

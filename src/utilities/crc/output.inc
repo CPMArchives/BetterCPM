@@ -132,6 +132,8 @@ WOPENFAI:
         CALL WERROR
         JP WSOURCE
 WPROMPT:
+        LD A,1
+        LD (WC_ACTIVE),A
         LD A,(IX+108)
         ADD A,'A'
         CALL CHAR
@@ -176,8 +178,7 @@ WPTEXT:
         LD HL,MSGPROMP
         CALL TEXT
 WPKEY:
-        LD C,1
-        CALL BDOS
+        CALL WC_READ
         CP 3
         JR Z,WPCANCEL
         CP '?'
@@ -196,7 +197,10 @@ WPYES:
         LD A,'Y'
 WPANSWER:
         LD (WRESPONS),A
-        JP NL
+        CALL NL
+        XOR A
+        LD (WC_ACTIVE),A
+        RET
 WPHELP:
         CALL NL
         LD HL,MSGPHELP
@@ -206,7 +210,42 @@ WPCANCEL:
         LD A,1
         LD (CANCEL),A
         LD (INCOMPLE),A
-        JP NL
+        CALL NL
+        XOR A
+        LD (WC_ACTIVE),A
+        RET
+; Capacity exception: keep the compact legacy decision loop. A full choice
+; controller crosses both checksum disk allocation boundaries. Transport alone
+; uses direct I/O so documented Ctrl-C cleanup remains reachable.
+WC_READ:
+        LD C,6
+        LD E,255
+        CALL BDOS
+        OR A
+        JR Z,WC_READ
+        ; Echo only printable ASCII and the historical CR/LF/BS controls.
+        ; Direct output prevents queued ^C from warm-booting during repaint.
+        CP 32
+        JR NC,WC_ECHO
+        CP 13
+        JR Z,WC_ECHO
+        CP 10
+        JR Z,WC_ECHO
+        CP 8
+        RET NZ
+WC_ECHO:
+        CP 127
+        CALL C,CHAR
+        RET
+WC_PUT:
+        LD A,(WC_ACTIVE)
+        OR A
+        LD C,2
+        JR Z,WC_OUTPUT
+        LD C,6
+WC_OUTPUT:
+        JP BDOS
+WC_ACTIVE: DB 0
 ; Find a fresh temporary/backup pair, preserving files from earlier sessions.
 WUNIQUET:
         PUSH IX

@@ -57,30 +57,15 @@ SPACE:  INC HL
 PARSED: LD A,(YESFLAG)
         OR A
         JR NZ,SHUTDOWN
-ASK:    LD DE,PROMPT
-        CALL PRINT
-READKEY:
-        LD C,6
-        LD E,0FFH
-        CALL 00005H
-        OR A
-        JR Z,READKEY
-        CP 13
-        JR Z,CANCEL
-        CP 10
-        JR Z,CANCEL
-        CP 27
-        JR Z,CANCEL
-        CP 3
-        JR Z,CANCEL
-        AND 0DFH
+ASK:    CALL UC_RUN
+        CP UI_SEND
+        JR Z,BY_VALUE
+        CP UI_DEF
+        JR NZ,CANCEL
+BY_VALUE:
+        LD A,(UC_VALUE)
         CP 'Y'
-        JR Z,CONFIRM
-        CP 'N'
-        JR Z,CANCEL
-        LD DE,NEWLINE
-        CALL PRINT
-        JR ASK
+        JR NZ,CANCEL
 CONFIRM:
         LD DE,YESLINE
         CALL PRINT
@@ -104,11 +89,61 @@ DONE:   POP IY
         RET
 PRINT:  LD C,9
         JP 00005H
-PROMPT: DB 'Exit cpmsim? [y/N] $'
+PROMPT: DB 'Exit cpmsim? (Y/N) [N]: $'
 YESLINE:DB 'Y',13,10,'$'
 NOLINE: DB 'N',13,10,'$'
 NEWLINE:DB 13,10,'$'
 USAGE:  DB 'Usage: BYE [/Y]',13,10,'Use BYE /HELP for help.',13,10,'$'
+; Existing raw-key policy: CR/LF selects No, ESC/^C cancels, any other
+; invalid key repaints the question. No typeahead purge or text editor.
+UIREAD:
+        LD C,6
+        LD E,0FFH
+        CALL 00005H
+        OR A
+        JR Z,UIREAD
+        CP 10
+        JR NZ,BY_FOLD
+        LD A,13
+        RET
+BY_FOLD:
+        CP 13
+        RET Z
+        CP 27
+        RET Z
+        CP 3
+        RET Z
+        AND 0DFH
+        CP 'Y'
+        RET Z
+        CP 'N'
+        RET Z
+        XOR A
+        RET
+UC_PAINT:
+        LD A,(BY_PAINTED)
+        OR A
+        JR Z,BY_QUESTION
+        LD DE,NEWLINE
+        CALL PRINT
+BY_QUESTION:
+        LD A,1
+        LD (BY_PAINTED),A
+        LD DE,PROMPT
+        JP PRINT
+UI_VALID:
+        OR A
+        RET
+UI_CLOSE:
+UC_ERROR:
+        RET
+BY_CHOICES: DB 'YN'
+BY_PAINTED: DB 0
+UC_LIST: DW BY_CHOICES
+UC_COUNT: DB 2
+UC_DEF: DB 'N'
+UC_VALUE: DB 0
+; @bye-choice@
 ; @bye-text@
 ; @bye-queries@
 OLDSP:  DS 2

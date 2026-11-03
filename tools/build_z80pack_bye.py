@@ -61,6 +61,8 @@ def build(assembler=Path.home() / 'bin/z80asm', output=None, *, baseline=None, i
     help_query = query_source(ROOT)
     source = source.replace('; @bye-text@', '\n'.join(text))
     source = source.replace('; @bye-queries@', help_query + '\n' + query)
+    from shared_ui import UI, controller_source
+    source = source.replace('; @bye-choice@', (UI/'events.inc').read_text()+'\n'+controller_source(text=False, choice=True))
     image = assemble(assembler, source, output / 'BYE.COM', output / 'bye.lst', 0x100)
     after, after_error = inputs()
     if (before != after or unsupported != after_error

@@ -26,6 +26,9 @@ def source(reference=False):
                           ' REPT 100H-($ MOD 100H)\n DB 0FFH\n ENDM')
         from utility_help import source as help_source, query_source
         text=text.replace('; @dasm-version@',strings('DASM',label='D_VERSION_MSG')+query_source(ROOT)+help_source('DASM','D_HELP_MSG'))
+        from shared_ui import confirmation_source
+        binding = confirmation_source().replace('CALL KEY', 'CALL D_ASK_KEY')
+        text = text.replace('; @dasm-choice@', binding)
     # Both assemblers need the workspace EQU dependency chain after ENDALL.
     definitions=[]
     def move(match):
