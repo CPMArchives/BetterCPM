@@ -8,6 +8,7 @@ import tempfile
 
 from build_z80pack_bye import build, help_text, version_text
 from test_usq import SHIM
+from test_utility_versions import address
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -40,6 +41,8 @@ void io_out(BYTE l, BYTE h, BYTE d) {
         values = (C.c_int*16).in_dll(lib,'values')
         image = build(output=work/'first')
         assert build(output=work/'second') == image
+        listing=(work/'first/bye.lst').read_text()
+        stack_start=address(listing,'STACK');stack_top=address(listing,'STACKTOP')
         state = {}
 
         @C.CFUNCTYPE(None,C.c_int)
@@ -79,6 +82,7 @@ void io_out(BYTE l, BYTE h, BYTE d) {
             nonlocal count
             C.memset(mem,0,65536)
             mem[256:256+len(image)] = image
+            mem[stack_start:stack_top]=bytes([0xa5])*(stack_top-stack_start)
             # BDOS hook handles services, RET supplies the real call return.
             mem[5] = 0xC9
             mem[0x80] = len(tail)
@@ -92,6 +96,7 @@ void io_out(BYTE l, BYTE h, BYTE d) {
             state.update(text='',calls=[],keys=list(keys),error=None)
             result = lib.test_run(256,100000)
             assert state['error'] is None, state['error']
+            assert bytes(mem[stack_start:stack_start+64])==bytes([0xa5])*64,'private stack guard'
             assert bytes(mem[:256]) == low, tail
             if shutdown:
                 assert result < 0 and result != -1000, (tail,result)
@@ -109,13 +114,22 @@ void io_out(BYTE l, BYTE h, BYTE d) {
                 assert state['text'] == expected, (tail,state['text'],expected)
             count += 1
 
-        prompt = 'Exit cpmsim? [y/N] '
+        prompt = 'Exit cpmsim? (Y/N) [N]: '
         for tail in ('',' ','\t',' '*127):
             for key in (ord('N'),ord('n'),13,10,27,3):
                 run(tail,[key],expected=prompt+'N\r\n')
             for key in (ord('Y'),ord('y')):
                 run(tail,[key],shutdown=True,expected=prompt+'Y\r\n')
         run('',[0,0,ord('x'),ord('n')],expected=prompt+'\r\n'+prompt+'N\r\n')
+        # Every raw byte retains the pre-migration decision and typeahead policy.
+        for key in range(256):
+            folded=key & 0xdf
+            no=key in (3,10,13,27) or folded==ord('N')
+            yes=not no and folded==ord('Y')
+            retry=not (no or yes)
+            expected=prompt+('\r\n'+prompt if retry and key else '')+('Y' if yes else 'N')+'\r\n'
+            run('',[key,ord('N'),ord('!')],shutdown=yes,expected=expected)
+            assert state['keys']==([ord('!')] if retry else [ord('N'),ord('!')]),key
         for tail in ('/Y','/y',' /y\t','/Y /Y','\t/y\t/Y', ' '*125+'/y'):
             run(tail,shutdown=True,expected='')
             assert state['calls'] == []

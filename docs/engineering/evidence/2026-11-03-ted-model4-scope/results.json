@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "scope": "interactive startup/edit/save/exit integration gate; full acceptance separate",
+  "scenario": "choice-scope",
+  "installed": false,
+  "payload_sha256": "5bf8ea6bd52987225c15ff880b6b80ccadfe811472c4bb9a2362516583d87e17",
+  "platforms": {
+    "trs80gp": {
+      "status": "PASS",
+      "stack_high_water": 52,
+      "tpa_ceiling": 50689,
+      "private_stack_bytes": 2048,
+      "guard_bytes": 64,
+      "physical_redraw_chord": "UNAVAILABLE",
+      "native_build": false,
+      "native_cross_parity": false,
+      "execution": "trs80gp/execution.json"
+    }
+  },
+  "source_commit": "995c55c57565f9463c89bd16c06415ddf508c5db",
+  "capture_count": 11,
+  "independent_review": "PASS: invalid retry, No skips first match, Yes changes second, Ctrl-C stops before remaining matches; ONE X ONE ONE CRLF plus padding saved; original ONE ONE ONE ONE backup retained",
+  "input_sha256": "1d8de71ac4a9c31ad2c68061d604594c239ea367b9e03d552249816b1ee6d29a",
+  "backup_sha256": "fa70256bd081caa1e4b138c0fa14694e68f3914ee5f16779be8b640ce8d854ff",
+  "runner_sha256": "5fd07f6e0f1dc066776177efe12088f3cce004c98391b873eeb33185b7aae977",
+  "scope_limit": "Bounded current-payload editor integration. Full release and suite-wide malformed-input qualification remain separate."
+}

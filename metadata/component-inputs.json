@@ -44,7 +44,11 @@
         "tools/rsx_container.py",
         "tools/system_layout.py",
         "tools/utility_versions.py",
-        "tools/utility_help.py"
+        "tools/utility_help.py",
+        "src/utilities/common/ui/checks.inc",
+        "src/utilities/common/ui/choice.inc",
+        "src/utilities/common/ui/events.inc",
+        "tools/shared_ui.py"
       ],
       "modes": [
         "cross",
@@ -4846,7 +4850,12 @@
         "tools/component_inputs.py",
         "tools/component_registry.py",
         "tools/utility_versions.py",
-        "tools/utility_help.py"
+        "tools/utility_help.py",
+        "src/utilities/common/ui/checks.inc",
+        "src/utilities/common/ui/choice.inc",
+        "src/utilities/common/ui/confirm.inc",
+        "src/utilities/common/ui/events.inc",
+        "tools/shared_ui.py"
       ],
       "modes": [
         "cross",

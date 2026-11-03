@@ -54,3 +54,15 @@ command/data protocols, navigation and acknowledgment pauses above intentionally
 retain their existing semantics. This is not a claim that every keyboard read
 must use a field editor. Any future standard-profile behavior change needs its
 own specification and qualification.
+
+
+## Release-stabilization reassessment — 2026-11-03
+
+The inventory above describes its October snapshot, not the complete current
+utility suite. DDT's owned adaptation now uses the standard editor; TED uses
+standard text fields and the shared renderer; NOAH has a shared choice binding.
+BYE, DASM and CRCKSUM/MD5SUM were additional suitable choice consumers and are
+addressed in the [current inventory](UI-Integration-Inventory.md). TED's
+confirmation correction was approved and is now covered by a separate shared-choice
+qualification; Model 4 execution remains outstanding. The [matrix](UI-Conformance-Matrix.md) covers
+current manifest commands, registry tools and staged host helpers explicitly.

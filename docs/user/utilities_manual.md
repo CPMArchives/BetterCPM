@@ -1316,9 +1316,12 @@ Enter these commands at `TED>`, without the prompt text:
 | `CL` / `EX` | Clear / exit, with an abandonment safeguard. |
 
 Search does not wrap or cross line endings. Use `P 1` before searching from
-the beginning. There is no repeat-find key. In confirmed substitution, Y
-replaces, Return skips and Ctrl-C stops; an empty replacement deletes matches,
-while an empty search is refused.
+the beginning. There is no repeat-find key. Confirmations use immediate Y/N:
+Y approves, N or Enter declines, and ESC or Ctrl-C cancels. Invalid responses
+retain the question and its displayed default `[N]`; no Enter is needed after
+Y or N. In confirmed substitution, No skips one match and Cancel stops the
+remaining substitutions. An empty replacement deletes matches, while an empty
+search is refused.
 
 R inserts after the specified line, or appends to the document if that position
 is omitted. It also selects the default filename. An alternate filename or

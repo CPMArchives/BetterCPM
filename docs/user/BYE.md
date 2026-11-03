@@ -9,7 +9,7 @@ BYE /VER
 BYE /HELP
 ```
 
-With no operational switch, BYE asks `Exit cpmsim? [y/N] `. Press Y or y to
+With no operational switch, BYE asks `Exit cpmsim? (Y/N) [N]: `. Press Y or y to
 exit immediately. N, n, Enter, Escape or Ctrl-C cancels and returns to the
 caller. Other keys repeat the prompt. No Enter is required after Y or N.
 

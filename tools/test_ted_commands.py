@@ -36,6 +36,10 @@ class Commands(Workspace):
 
     def bdos(self, fn, de):
         if fn == 6:
+            if self.prompts:
+                answer=self.prompts.pop(0)
+                assert len(answer)<=1,answer
+                return answer[0] if answer else 13
             return 0
         return super().bdos(fn, de)
 
@@ -43,6 +47,9 @@ class Commands(Workspace):
     def start(self, text):
         self.begin()
         self.prompts = []
+        self.mem[0x40]=0xc9
+        backend=self.address(self.mapping['frontend']['TE_BACKEND'])
+        self.mem[backend:backend+2]=(0x40).to_bytes(2,'little')
         self.lib.set_hooks(5, self.address('TE_PROMPT'), self.hook)
         assert self.load(padded(text)) == 0
         assert self.invoke('TC_INIT') == 0

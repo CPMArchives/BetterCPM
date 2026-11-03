@@ -196,3 +196,14 @@ Ctrl-C abort, empty submission, literal raw input and sticky overflow until
 clear/reinitialization. REN retains echo, ASCII normalization, filename syntax,
 blank policy and application actions. This profile does not broaden or replace
 the standard editor contract; new fields should use the standard profile.
+
+
+### TED standard choices — approved 3 November 2026
+
+TED revision 004 uses `choice.inc` for overwrite/protection, recovery, abandonment
+and confirmed substitution, in addition to its existing standard text fields.
+Y/N act immediately, Enter selects No, invalid keys retain the full question,
+and ESC/Ctrl-C cancels. No skips one substitution; Cancel stops remaining matches.
+The field editor, command aliases and choice reader remain separate adapters.
+See [current qualification](TED%20Shared%20Choice%20Qualification.md); compiled,
+native assembly and cpmsim evidence do not qualify Model 4 display/input.

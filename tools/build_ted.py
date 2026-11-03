@@ -67,7 +67,14 @@ def source(reference=False, legacy=False):
             help_query = query_source(ROOT)
             text = text.replace('; @te-query@', query+'\n'+help_query)
             text = text.replace('; @te-input@', input_source(standard=True, words=True))
-            text = text.replace('; @te-controller@', controller_source(text=True)+'\n'+(ROOT/'src/utilities/common/ui/screen.inc').read_text())
+            controllers = controller_source(text=True, choice=True)
+            # Choice input bypasses TED command recall/control aliases. Text fields
+            # retain UIREAD; both controllers share the single checks module.
+            reader = 'UC_READ:\n        CALL UIREAD'
+            if controllers.count(reader) != 1:
+                raise ValueError('TED choice-reader binding no longer matches the selected module')
+            controllers = controllers.replace(reader, 'UC_READ:\n        CALL TE_READ')
+            text = text.replace('; @te-controller@', controllers+'\n'+(ROOT/'src/utilities/common/ui/screen.inc').read_text())
         if module == 'publisher':
             crc = (ROOT/'src/utilities/common/dasmcrc.inc').read_text().replace('D_CRC', 'TS_CRC')
             text = text.replace('; @ts-crc@', crc)

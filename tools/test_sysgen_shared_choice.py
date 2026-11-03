@@ -4,6 +4,7 @@ import hashlib,json
 from pathlib import Path
 from test_bios import Z80
 from test_utility_versions import address,runner,output
+from test_utility_versions import expected_identification
 from utility_versions import banner
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -42,7 +43,7 @@ def qualify(name,entry):
     for tail in tails:
         c=runner(image);data=tail.encode();c.mem[128]=len(data);c.mem[129:129+len(data)]=data
         c.run(256,limit=100000)
-        expected=banner(name)+'\r\n'
+        expected=expected_identification(name)
         assert output(c)==expected,(tail,output(c))
     report={'status':'PASS','cases':cases,'program_bytes':len(image),
             'version_cases':len(tails),

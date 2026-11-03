@@ -598,3 +598,25 @@ source expansion. Generate both validation profiles and IOBYTE descriptors befor
 measuring release size. Build 015 is 15,564 bytes with 52 bytes before 3E00h;
 the editor scratch and disk/recovery workspaces are unchanged. See
 [qualification](../engineering/CONFIG%20Choice%20Input%20Qualification.md).
+
+
+### TED text and choice binding
+
+TED revision 004 selects `controller_source(text=True, choice=True)`; the common
+checks module is emitted once. Its choice read hook binds directly to `TE_READ`,
+bypassing the command field's recall and Ctrl-C aliases in `UIREAD`. The builder
+checks that the expected hook occurs exactly once before expanding the binding.
+No shared entry point or library calling convention changes.
+
+`TE_CHOOSE` takes HL pointing to a complete NUL-terminated `(Y/N) [N]` question.
+It returns A=Y/N with carry clear; ESC/Ctrl-C or malformed configuration returns
+carry set. Invalid input retries with the question retained. It uses the existing
+prompt pointer and preserves provisional text/history buffers. `TE_CONFIRM`
+wraps that interface and returns carry clear only for Y, preserving authorization
+callers. Confirmed substitution uses `TE_CHOOSE` directly to distinguish No from
+Cancel. General scratch registers are not preserved; the application retains
+operation state in its own storage. No typeahead purge is performed.
+
+Seven bytes hold list/count/default/value data. The complete executable grows
+192 bytes and retains its 30-KiB disk allocation and existing 2-KiB private stack.
+See [qualification](../engineering/TED%20Shared%20Choice%20Qualification.md).

@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "platform": "model4",
+  "system_sha256": "4105ff45e411e25c0f3cd6024b970ddc231e6287086a553933e1fb577aaf2467",
+  "binaries": {
+    "CRCKSUM": {
+      "bytes": 22473,
+      "sha256": "eb88e97a98cdab83132c3b7e930783d54de8fd28ab74fcbf59e682ecfbc20465"
+    },
+    "MD5SUM": {
+      "bytes": 18378,
+      "sha256": "82ed5fb20f5064a5341dca936cc2500c5b2b85bb4244b60db39e581939e10f74"
+    },
+    "DASM": {
+      "bytes": 21504,
+      "sha256": "e49617950226990b59f5ba1a978564684a8c58373879862796dcb45b76e3c3ba"
+    }
+  },
+  "steps": 20,
+  "scope": "queries, checksum creation/repeated help/invalid bytes/No/Ctrl-C, DASM restart refusal, cpmsim BYE cancellation; independently read back preserved files and new lists",
+  "work_format": "Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)",
+  "media_preflight": "PASS",
+  "command_transport": "SUBMIT UIQUAL with unique blocking completion markers",
+  "command_script_sha256": "b8f8d2df27ebfbe14ce84b1d8e124d86e599926cbd8f1806e984690b805c4b28",
+  "unchanged_inputs": true,
+  "unchanged_system_area": true,
+  "filesystem": "PASS",
+  "new_lists": "PASS",
+  "native_execution": "PASS: 20 captured phases; six query outputs and all expected markers reviewed",
+  "user_run_directory": "ui-model4-submit-20261103-121633",
+  "source_commit": "bb5b5577080b17c7989acacd422ad5ffee49f171",
+  "scope_note": "Model 4 CRCKSUM, MD5SUM and DASM only. BYE is cpmsim-only; the inherited generic scope field does not claim a Model 4 BYE test.",
+  "runner_sha256": "975b3ad600444f32aa800f4c58a0113a88332f5874b35ec68fc5aea0805f3284",
+  "ted_model4": "OUTSTANDING choices and choice-scope campaigns"
+}

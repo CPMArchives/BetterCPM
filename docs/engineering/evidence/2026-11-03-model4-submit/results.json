@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "platform": "cpmsim",
+  "steps": 20,
+  "markers": 13,
+  "command_script_sha256": "b8f8d2df27ebfbe14ce84b1d8e124d86e599926cbd8f1806e984690b805c4b28",
+  "unchanged_inputs": true,
+  "new_lists": "PASS",
+  "filesystem": "PASS",
+  "unchanged_system_area": true,
+  "model4_qualification": false,
+  "model4": "PENDING execution; preparation/media readback PASS",
+  "queries": "PASS six output checks before corresponding markers",
+  "marker_core": "PASS six Z80 executions, hostile scratch registers",
+  "failed_trials": [
+    "second native attempt timed out",
+    "cpmsim-only BYE queued-input cancellation cancels SUBMIT as specified",
+    "fsck options originally placed after image"
+  ],
+  "source_sha256": {
+    "tools/test_ui_integration_media.py": "975b3ad600444f32aa800f4c58a0113a88332f5874b35ec68fc5aea0805f3284",
+    "tools/test_ui_integration_schedule.py": "cd145cd246bdb4ee1c1a85d61d3eea2113651e4cf5cf78f9d40a0863a26e7650"
+  }
+}

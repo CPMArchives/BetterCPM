@@ -69,3 +69,9 @@ disposable copies of paired media and bind evidence to source/payload hashes.
 The original foundation receipt remains historical and does not qualify this
 later implementation. Current acceptance is recorded in
 [TED Qualification](../../../docs/engineering/TED%20Qualification.md).
+
+Confirmations use the existing shared choice controller, immediate Y/N and
+default No. Invalid keys repaint the full bottom-row question. ESC/^C cancels;
+No skips a single confirmed substitution while Cancel stops the remaining
+substitutions. The choice reader bypasses command recall aliases; ordinary
+text fields retain their existing shared editor and TED command-mode adapter.

@@ -18,18 +18,24 @@ def main():
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--platforms',nargs='+',default=['z80pack','trs80gp'])
     p.add_argument('--cross-smoke',action='store_true')
-    p.add_argument('--scenario',choices=['basic','groups','large','interaction'],default='basic')
+    p.add_argument('--scenario',choices=['basic','groups','large','interaction','choices','choice-scope'],default='basic')
     p.add_argument('--installed',action='store_true')
+    p.add_argument('--identity-state',choices=['auto','assigned','development'],default='assigned')
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
-    image=build(Path.home()/'bin/z80asm',a.output/'cross',identity_state='assigned')
+    image=build(Path.home()/'bin/z80asm',a.output/'cross',identity_state=a.identity_state)
     native=cpm_text(compact_source((a.output/'cross/TEDNAT.MAC').read_text().rstrip('\x1a')))
     original=b'Original\t spaces  \r\nLF\nCR\rend  '
     original+=b'\x1a'*(-len(original)%128)
+    # key_args sends uppercase physical letters on the reference Model 4.
+    # Use the same case in fixture/search on both targets: substitution is
+    # deliberately case-sensitive, independent of the BIOS case workstream.
+    if a.scenario=='choice-scope':original=b'ONE ONE ONE ONE\r\n'
     if a.scenario=='groups':original=cpm_text('one\ntwo\nthree\nfour\n')
     if a.scenario=='interaction':original=b'ALPHA BETA  \r\nSECOND\tEND\nTHIRD\rLAST'
     if a.scenario=='large':original=cpm_text(('long file with literal TAB\t and trailing spaces  \r\n'*900).rstrip('\r\n'))
     original+=b'\x1a'*(-len(original)%128)
     edited=original.replace(b'SECOND',b'CHANGED') if a.scenario=='interaction' else b'X'+original[1:]
+    if a.scenario=='choice-scope':edited=b'ONE X ONE ONE\r\n'+b'\x1a'*((-len(b'ONE X ONE ONE\r\n'))%128)
     if a.scenario=='interaction':edited=edited.rstrip(b'\x1a')+b'\x1a'*(-len(edited.rstrip(b'\x1a'))%128)
     listing=(a.output/'cross/TEDDEV.LST').read_text()
     def address(name):
@@ -112,11 +118,31 @@ QC_BAD: DB 'TED GUARD FAIL',13,10,'$'
             files['TEDNAT.MAC']=native
             commands=['B:ZSM4 TEDDEV=TEDNAT','B:LINK TEDDEV[A]']+commands
         sequence=[(b'S\r',b'^Z command',60),(b'X',b'Xriginal',90),
-                  (b'\x0b',b'^K...',30),(b'S',b'replace? Y/N:',90),
-                  (b'Y\r',b'Saved.',120),(b'\x0b',b'^K...',30),
+                  (b'\x0b',b'^K...',30),(b'S',b'replace? (Y/N) [N]:',90),
+                  (b'Y',b'Saved.',120),(b'\x0b',b'^K...',30),
                   (b'Q',b'TED EDITOR POSTEXIT PASS' if native_platform else b'C0>_ ',90)]
         executable='B:TED' if a.installed else 'TEDDEV'
         screen_ready=b'^Z command  ^K file/range  OVR'.ljust(80)+b' '*80 if native_platform else b'^Z command'
+        if a.scenario=='choices':
+            sequence=[(b'S\r',b'^Z command',60),(b'X',b'Xriginal',90),
+                      (b'\x0b',b'^K...',30),(b'Q',b'Discard changes? (Y/N) [N]:',90),
+                      (b'?',b'Discard changes? (Y/N) [N]:',30),
+                      (b'\r',b'^Z command',60),
+                      (b'\x0b',b'^K...',30),(b'S',b'replace? (Y/N) [N]:',90),
+                      (b'?x',b'replace? (Y/N) [N]:',30),(b'n',b'^Z command',60),
+                      (b'\x0b',b'^K...',30),(b'S',b'replace? (Y/N) [N]:',90),
+                      (b'y',b'Saved.',120),(b'\x0b',b'^K...',30),
+                      (b'Q',b'TED EDITOR POSTEXIT PASS' if native_platform else b'C0>_ ',90)]
+        if a.scenario=='choice-scope':
+            command_ready=b'TED>'
+            sequence=[(b'SU M /ONE/X/\r',b'Replace? (Y/N) [N]:',120),
+                      (b'?x',b'Replace? (Y/N) [N]:',30),
+                      (b'n',b'Replace? (Y/N) [N]:',120),
+                      (b'y',b'Replace? (Y/N) [N]:',120),
+                      (b'\x03',command_ready,120),
+                      (b'W\r',b'replace? (Y/N) [N]:',120),
+                      (b'y',command_ready,120),
+                      (b'EX\r',b'TED EDITOR POSTEXIT PASS' if native_platform else b'C0>_ ',120)]
         if a.scenario=='groups':
             files['INSERT.TXT']=cpm_text('read line\n')
             files['INSERT.TXT']+=b'\x1a'*(-len(files['INSERT.TXT'])%128)
@@ -130,7 +156,7 @@ QC_BAD: DB 'TED GUARD FAIL',13,10,'$'
             prefix(b'R',b'R arguments:');key(b'(1) INSERT.TXT\r',b'Read.')
             prefix(b'W',b'W arguments:');key(b'2 2 WRITE.TXT\r',b'Written.')
             prefix(b'Y',b'First line:');key(b'2\r',b'Last line:');key(b'2\r',b'Deleted.')
-            prefix(b'X',b'replace? Y/N:');key(b'Y\r',b'TED EDITOR POSTEXIT PASS' if native_platform else b'C0>_ ')
+            prefix(b'X',b'replace? (Y/N) [N]:');key(b'Y',b'TED EDITOR POSTEXIT PASS' if native_platform else b'C0>_ ')
         if a.scenario=='interaction':
             command_ready=b'TED> _'.ljust(80) if native_platform else b'TED>'
             sequence=[(b'SU /SECOND/CHANGED/\r',command_ready,120),
@@ -146,16 +172,16 @@ QC_BAD: DB 'TED GUARD FAIL',13,10,'$'
                 sequence.append((bytes([control]),b'^Z command',30))
             sequence += [(b'\x0e',b'BROWSE',30),(b'\r',b'^Z command',30),
                          (b'\x1a',b'TED>',30),(b'P 1\r',command_ready,30),
-                         (b'W\r',b'replace? Y/N:',120),
-                         (b'Y\r',command_ready,120),(b'S\r',b'^Z command',30),
+                         (b'W\r',b'replace? (Y/N) [N]:',120),
+                         (b'Y',command_ready,120),(b'S\r',b'^Z command',30),
                          (b'\x0b',b'^K...',30),
                          (b'Q',b'TED EDITOR POSTEXIT PASS' if native_platform else b'C0>_ ',90)]
         if a.scenario=='large':
             # One in-line overwrite of a file larger than twice free editor RAM;
             # exact full-file publication and backup are checked on the host.
             sequence=[(b'S\r',b'^Z command',60),(b'X',b'Xong',120),
-                      (b'\x0b',b'^K...',30),(b'X',b'replace? Y/N:',120),
-                      (b'Y\r',b'TED EDITOR POSTEXIT PASS' if native_platform else b'C0>_ ',240)]
+                      (b'\x0b',b'^K...',30),(b'X',b'replace? (Y/N) [N]:',120),
+                      (b'Y',b'TED EDITOR POSTEXIT PASS' if native_platform else b'C0>_ ',240)]
         if native_platform:interactive=sequence
         else:
             interactive=[((executable+' INPUT.TXT\r').encode(),b'TED>',240)]+sequence+[(b'QPOST\r',b'TED EDITOR POSTEXIT PASS',30)]
@@ -174,6 +200,15 @@ QC_BAD: DB 'TED GUARD FAIL',13,10,'$'
         else:
             assert outputs['INPUT.TXT']==edited,(platform,len(outputs['INPUT.TXT']))
             assert outputs['TEB00000.BAK']==original
+        if a.scenario=='choices':
+            # Require a successful directory read and a positive control as well
+            # as absence; cpmcp may return zero when a wildcard matches no file.
+            result=subprocess.run(['cpmls','-T','raw','-f','dasm-system' if native_platform else 'bettercpm-default',
+                                   str(a.output/platform/'system.raw')],
+                                  cwd=a.output/platform,check=True,capture_output=True)
+            (a.output/platform/'backup-listing.txt').write_bytes(result.stdout+result.stderr)
+            names=result.stdout.upper()
+            assert b'TEB00000.BAK' in names and b'TEB00001.BAK' not in names, names
         if not a.installed:assert outputs['TEDDEV.COM'][:len(image)]==image
         measured=re.search(rb'TED STACK HIGH WATER (\d+) TPA CEILING (\d+)',log)
         assert measured and int(measured[1])<=1536, ('stack reserve',measured)

@@ -111,9 +111,9 @@ CHAR:
         JR C,CHARINC
         LD E,13
         LD C,2
-        CALL BDOS
+        CALL WC_PUT
         LD E,10
-        CALL BDOS
+        CALL WC_PUT
         XOR A
 CHARINC:
         INC A
@@ -125,7 +125,7 @@ CHARZERO:
 CHAREMIT:
         LD E,B
         LD C,2
-        CALL BDOS
+        CALL WC_PUT
         POP DE
         POP BC
         POP AF

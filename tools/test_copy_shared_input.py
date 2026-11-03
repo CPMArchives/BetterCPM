@@ -69,10 +69,10 @@ def main():
  # Keep the selected modules bounded; the standard editor is not linked.
  for label in ('EDITNEW','UP_RUN','UW_LEFT','UR_DRAW'):assert not re.search(r'\b'+label+':',listing),label
  from test_utility_versions import runner,output
- from utility_versions import banner
+ from test_utility_versions import expected_identification
  for tail in ['/VER',' /ver  ','/VER x','x /VER','/VER /VER','/VER /B']:
   cpu=runner(image);data=tail.encode();cpu.mem[128]=len(data);cpu.mem[129:129+len(data)]=data;cpu.run(256,limit=100000)
-  expected=banner('COPY')+'\r\n'
+  expected=expected_identification('COPY')
   assert output(cpu)==expected,(tail,output(cpu))
  (OUT/'results.json').write_text(json.dumps({'result':'PASS','differential_cases':count,'copy_sha256':hashlib.sha256(image).hexdigest(),'bytes':len(image),'scope':'actual prompt/field code, echoed bytes, consumed input, choice policy flags and bounded field; actions stop at dispatch and are separately native-media qualified'},indent=2)+'\n')
  print(f'PASS: {count} COPY prompt/field comparisons including hostile BDOS clobbers')

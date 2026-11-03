@@ -34,7 +34,7 @@ def main():
         assert shipped[:len(binary)] == binary
         assert len(shipped)-len(binary) < 128
         prompt = b'A0>_ '
-        ask = b'Exit cpmsim? [y/N] '
+        ask = b'Exit cpmsim? (Y/N) [N]: '
         steps = []
         for command, screen in [(b'BYE /ver\r',version_text()),
                                 (b'BYE /Y /HELP /VER\r',help_text())]:

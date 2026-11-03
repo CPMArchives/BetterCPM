@@ -74,6 +74,9 @@ needed at newly joined boundaries.
 Saves use checked unique stage files and retain the previous target as
 TEBnnnnn.BAK. TED never erases a destination to create its replacement.
 Overwrite and read-only/system protection require explicit authorization.
+Questions use (Y/N) [N]: Y/N act immediately; Enter means No.
+Invalid keys retry. ESC/^C cancels. In per-match substitution, No skips
+one match; Cancel stops further matches.
 Keep sufficient free space for checkpoints, stages and retained backups.
 Failures report exact work/stage/backup names to inspect; do not delete
 those files until you have checked your text. Inspect ambiguous failures
