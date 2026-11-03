@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Reject malformed full tails before either SYSGEN source loader is entered."""
 from pathlib import Path
-from test_utility_versions import address, runner, output
-from utility_versions import banner
+from test_utility_versions import address, runner, output, expected_identification
 ROOT=Path(__file__).resolve().parents[1]
 def main():
     image=(ROOT/'build/utilities/SYSGEN.COM').read_bytes()
@@ -34,7 +33,7 @@ def main():
         c=runner(image);data=tail.encode()
         c.mem[128]=len(data);c.mem[129:129+len(data)]=data
         c.run(256,limit=100000)
-        expected=banner('SYSGEN')+'\r\n'
+        expected=expected_identification('SYSGEN')
         assert output(c)==expected,(tail,output(c))
     print(f'{len(valid)+len(invalid)} SYSGEN command-tail and no-source-I/O checks pass')
 if __name__=='__main__':main()
