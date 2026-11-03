@@ -41,7 +41,7 @@ class PackageNotices(unittest.TestCase):
 
     def test_independent_downloads_carry_matching_terms_and_notices(self):
         assets = json.loads((ROOT/'metadata/release-assets.json').read_text())['assets']
-        inputs = ('LICENSE', 'LICENSES/CC-BY-4.0.txt', 'packaging/1.0/third-party-notices.json')
+        inputs = ('LICENSE', 'LICENSES/CC-BY-4.0.txt', 'packaging/1.0/third-party-notices.json', 'COPYING', 'NOTICE', 'docs/LICENSING.md')
         tracked = {path: (ROOT/path).read_bytes() for path in inputs}
         package_ids = {asset['id'] for asset in assets}
         for row in json.loads(tracked[inputs[2]]):
@@ -54,10 +54,15 @@ class PackageNotices(unittest.TestCase):
                     path = Path(tmp)/asset['filename']
                     write_package(path, package, files, {'package': package})
                     with zipfile.ZipFile(path) as archive:
-                        self.assertEqual(archive.read(package+'/LICENSE'), tracked['LICENSE'])
-                        self.assertEqual(archive.read(package+'/licenses/CC-BY-4.0.txt'), tracked[inputs[1]])
+                        self.assertEqual(archive.read(package+'/licenses/BetterCPM/LICENSE'), tracked['LICENSE'])
+                        self.assertEqual(archive.read(package+'/licenses/BetterCPM/CC-BY-4.0.txt'), tracked[inputs[1]])
                         notice = archive.read(package+'/THIRD-PARTY-NOTICES.txt').decode()
                         self.assertIn('CC BY 4.0', notice)
+                        self.assertIn('GPL-2.0-or-later', notice)
+                        self.assertNotIn('MIT (LICENSE)', notice)
+                        for name in ('COPYING', 'NOTICE'):
+                            self.assertEqual(archive.read(package+'/licenses/BetterCPM/'+name), tracked[name])
+                        self.assertEqual(archive.read(package+'/docs/LICENSING.md'), tracked['docs/LICENSING.md'])
                         self.assertEqual('Montezuma Micro disk-format data' in notice,
                                          package != 'documentation')
                         self.assertEqual('Hector Peraza TED adaptation' in notice,

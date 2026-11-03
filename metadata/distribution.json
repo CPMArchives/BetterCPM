@@ -365,6 +365,17 @@
         "z80pack"
       ],
       "user": 0
+    },
+    {
+      "name": "P2DOS.RSX",
+      "artifact": "build/rsx/P2DOS.RSX",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0,
+      "role": "Optional-to-load P2DOS clock frontend; not loaded by default startup"
     }
   ],
   "cold_start_command": "SUBMIT STARTUP"

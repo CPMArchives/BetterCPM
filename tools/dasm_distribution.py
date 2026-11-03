@@ -21,6 +21,8 @@ def companions(root):
         'src/utilities/common/dasmsession.inc','src/utilities/common/dsymlog.inc',
         'tools/build_dasm.py','tools/build_dsym.py','tools/build_dlink.py','tools/dasm_distribution.py',
         'third_party/dasm/dasm.mac','third_party/dasm/provenance.json'}
+    from cpm_tools_source import verify as verify_cpm_tools_source
+    required |= verify_cpm_tools_source(root)
     if not required<=files.keys():raise ValueError('DASM source companion requires tracked implementation files')
     revision=subprocess.run(['git','-C',str(root),'rev-parse','HEAD'],check=True,capture_output=True,text=True).stdout.strip()
     manifest={'schema':1,'repository_commit':revision,'files':{n:hashlib.sha256(v).hexdigest() for n,v in sorted(files.items())}}
@@ -35,7 +37,7 @@ def companions(root):
         'DASM-Provenance.json':(root/'third_party/dasm/provenance.json').read_bytes(),
         'DASM-SOURCE-README.txt':(
             'Maintained BetterCP/M DASM, DSYM and DLINK source companion\n\n'
-            'Extract BetterCPM-DASM-SOURCE.tar.gz. It contains the release-selected\n'
+            'Extract BetterCPM-DASM-SOURCE.tar.gz. It contains the complete release-selected\n'
             'repository source, build helpers, metadata, tests, documentation and\n'
             'unaltered historical imports, with a per-file SHA-256 manifest.\n'
             'See docs/engineering/DASM Implementation Status.md for build/test\n'

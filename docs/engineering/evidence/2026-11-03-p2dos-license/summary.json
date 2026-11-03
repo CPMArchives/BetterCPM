@@ -1,0 +1,155 @@
+{
+  "base_main": "663e1ff33e9c67b6f68b6bf1acf544fac64f401a",
+  "base_tree": "790c21adc2eb9cf3eab3b18458fa9bd3fd5ef809",
+  "local_build_commit": "e4a49f7371f0959e49134a019938a886d3c50d75",
+  "local_build_tree": "895f9a8176e7282de7cc302e9bad90f9a3188bc4",
+  "identity_note": "Local verification commit uses a tree-identical base snapshot; it is not authoritative main or the future PR head. Media were built from the recorded local commit. Later edits are guide/test/evidence changes, not production assembly or membership; the recorded build identity retains its own scope.",
+  "system_media": {
+    "z80pack": {
+      "image": "BetterCPM-Distribution-z80pack-332K.dsk",
+      "sha256": "5ec551ec41403f0959b3838a727846e169f16580b6d00fe920f7c4d59322fbff",
+      "format": "California Computer Systems (40T, DS, DD, 332K)",
+      "allocated_bytes": 217088,
+      "available_bytes": 337920,
+      "free_bytes": 120832,
+      "directory_entries": 35,
+      "validation": {
+        "filesystem": "PASS",
+        "file_integrity": "PASS",
+        "config_fingerprint": "PASS",
+        "boot": "PASS"
+      },
+      "manifest_sha256": "353ce93fb79f6e11001fe1562339ee1b2c25e413a5a464c7e8742bfec019fcfe",
+      "cold_start_command": "SUBMIT STARTUP",
+      "files": 34,
+      "p2dos": {
+        "name": "P2DOS.RSX",
+        "artifact": "build/rsx/P2DOS.RSX",
+        "status": "implemented",
+        "targets": [
+          "z80pack",
+          "trs80gp"
+        ],
+        "user": 0,
+        "role": "Optional-to-load P2DOS clock frontend; not loaded by default startup",
+        "bytes": 668,
+        "sha256": "9c854dd4aa8afcf439ac28233a8c723cd2cc32888d2aa137ba1bf9e2c3e82a08"
+      },
+      "full_local_report_sha256": "6a51f5397c64b01a01a25863dbd1b8afdacb77361a2d72c3239732cfe8bc05f0",
+      "source_input_record_sha256": "4ec498367ccb9b4fe0542c0003fb21e00482e574fbc017568a4635ac13de7954"
+    },
+    "trs80gp": {
+      "image": "BetterCPM-Distribution-trs80gp-80T-DS-System.dmk",
+      "sha256": "d148a4f39249ba6ba9dc225f309f7f7ba3eb63d1bd02b4087b722f0baa900971",
+      "format": "MM Extended 80T DS SYSTEM (780K filesystem)",
+      "allocated_bytes": 204800,
+      "available_bytes": 794624,
+      "free_bytes": 589824,
+      "directory_entries": 31,
+      "validation": {
+        "filesystem": "PASS",
+        "file_integrity": "PASS",
+        "config_fingerprint": "PASS",
+        "boot": "PENDING manual execution; no automated Model 4 launch attempted"
+      },
+      "manifest_sha256": "353ce93fb79f6e11001fe1562339ee1b2c25e413a5a464c7e8742bfec019fcfe",
+      "cold_start_command": "SUBMIT STARTUP",
+      "files": 30,
+      "p2dos": {
+        "name": "P2DOS.RSX",
+        "artifact": "build/rsx/P2DOS.RSX",
+        "status": "implemented",
+        "targets": [
+          "z80pack",
+          "trs80gp"
+        ],
+        "user": 0,
+        "role": "Optional-to-load P2DOS clock frontend; not loaded by default startup",
+        "bytes": 668,
+        "sha256": "9c854dd4aa8afcf439ac28233a8c723cd2cc32888d2aa137ba1bf9e2c3e82a08"
+      },
+      "full_local_report_sha256": "00c9e71d8c2bc415f48227f0b76df56c691caff74aad5d523fbe09aa3826a0fb",
+      "source_input_record_sha256": "4ec498367ccb9b4fe0542c0003fb21e00482e574fbc017568a4635ac13de7954"
+    }
+  },
+  "p2dos_matches_prior_built_artifact": true,
+  "builds": "default common build plus independent staged System builds for each target passed",
+  "tests": [
+    "15 distribution failure/scope gates PASS",
+    "9 candidate-packaging gates PASS",
+    "P2DOS controlled GET/SET, 21 provider-write failures, recovery, per-call discovery PASS",
+    "26 assembled provider sampling/rollover checks PASS"
+  ],
+  "retained_failure": "The initial preparation attempt used an older runtime lacking cpmtools/mount.com and stopped before media construction; its local log is preserved. Retried using the pinned qualification environment, ordinary RAM mode.",
+  "freeze": "ON HOLD",
+  "not_claimed": [
+    "Model 4 runtime acceptance of the new image",
+    "new protected-XIP qualification",
+    "fresh public-package installation or final six archives",
+    "Montezuma rights clearance"
+  ],
+  "native_cpmsim_probe": {
+    "status": "PASS",
+    "input_image_sha256": "5ec551ec41403f0959b3838a727846e169f16580b6d00fe920f7c4d59322fbff",
+    "p2dos_sha256": "9c854dd4aa8afcf439ac28233a8c723cd2cc32888d2aa137ba1bf9e2c3e82a08",
+    "probe_sha256": "cb893b4517d41ef1f2d0ca66ef688eff04c635f35fb7467672810a43e34e4c41",
+    "simulator_sha256": "981a69da751fb9dc5a25bcbd2dc56ccf270943605f463e9c5882b5e7811ef443",
+    "simulator_mode": "ordinary RAM mode; record the selected runtime/qualification environment separately",
+    "commands": [
+      [
+        "B:CLKPROB 2",
+        "abi"
+      ],
+      [
+        "RSX LOAD ZPRTC",
+        null
+      ],
+      [
+        "RSX LOAD P2DOS",
+        null
+      ],
+      [
+        "B:CLKPROB 0",
+        "abi"
+      ],
+      [
+        "TIME",
+        null
+      ],
+      [
+        "B:CLKPROB 0",
+        "abi"
+      ],
+      [
+        "RSX UNLOAD ZPRTC",
+        null
+      ],
+      [
+        "B:CLKPROB 1",
+        "abi"
+      ],
+      [
+        "RSX LIST",
+        "resident"
+      ],
+      [
+        "RSX LOAD ZPRTC",
+        null
+      ],
+      [
+        "B:CLKPROB 0",
+        "abi"
+      ],
+      [
+        "RSX UNLOAD P2DOS",
+        null
+      ],
+      [
+        "B:CLKPROB 2",
+        "abi"
+      ]
+    ],
+    "scope": "Supplied A0 P2DOS: absent/loaded/provider-unloaded/replaced/unloaded results; GET/SET A/HL, DE/SP/IX/IY and failed-GET atomicity. Transient JP0 returns exercise warm reconstruction. Private disks only; not Model 4 runtime or public-package acceptance.",
+    "environment_profile": "qualification profile; ROM guard not requested; existing reconstructed pinned emulator"
+  }
+}

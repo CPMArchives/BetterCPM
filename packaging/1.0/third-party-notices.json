@@ -54,7 +54,7 @@
       "utilities-model4",
       "source"
     ],
-    "notice": "Full source snapshots carry the seven COMs and TOOLS.DOC under third_party/cpm-tools/, including inside the Utilities source tarballs. These seven COMs are outside the selected System and Utilities disk inventories. Preserve the GPL text and match the corresponding source and build scripts to pin 3e5eee55cac154e125659aadaa865b2c66e7d06a wherever those binaries are conveyed. Source: https://github.com/CPMArchives/cpm-tools/tree/3e5eee55cac154e125659aadaa865b2c66e7d06a."
+    "notice": "Full source snapshots carry the seven COMs and TOOLS.DOC under third_party/cpm-tools/, including inside the Utilities source tarballs. These seven COMs are outside the selected System and Utilities disk inventories. The matching 66-file source/build companion is included and integrity-checked. Preserve the GPL text and corresponding source and build scripts at pin 3e5eee55cac154e125659aadaa865b2c66e7d06a wherever those binaries are conveyed. Source: https://github.com/CPMArchives/cpm-tools/tree/3e5eee55cac154e125659aadaa865b2c66e7d06a."
   },
   {
     "work": "Historical documentation, evidence, fixtures and nested sources",

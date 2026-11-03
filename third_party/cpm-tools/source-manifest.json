@@ -1,0 +1,397 @@
+{
+  "schema": 1,
+  "repository": "https://github.com/CPMArchives/cpm-tools",
+  "commit": "3e5eee55cac154e125659aadaa865b2c66e7d06a",
+  "license": "GPL-2.0-or-later",
+  "selection": "All pinned tracked files except .COM binaries and .dmk disk images; source, scripts, tests, documentation and notices retained verbatim. Existing binary snapshot unchanged.",
+  "files": {
+    ".gitignore": {
+      "sha256": "7df2bbd7f654f1e81a59a15ee734f4ef789947670db8a71330688f87194a1350",
+      "git_blob": "e1dfb083d8236d65a9fec765956c90f4245c1b49",
+      "mode": "100644"
+    },
+    "BUILD.SUB": {
+      "sha256": "7609c19b0b9b0e4ff526133e129bcb936fda404149d946b71a55f17eab44d8bc",
+      "git_blob": "26cf779ebccf52adbca789f42216fd06d2a16aae",
+      "mode": "100644"
+    },
+    "LICENSE": {
+      "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+      "git_blob": "d159169d1050894d3ea3b98e1c965c4058208fe1",
+      "mode": "100644"
+    },
+    "README.md": {
+      "sha256": "1a0f46071738d72c93c1ee2b8253081b55106c3c0894f72fb599b6bb34ffb5da",
+      "git_blob": "4a7d0eefac5aa19b8fbac8bfcb330f4704487e14",
+      "mode": "100644"
+    },
+    "ROADMAP.md": {
+      "sha256": "b874201cbecf23b8f4592712aca0c6baf5a487d900c1bc2bba09c5a8c5f29ecb",
+      "git_blob": "dcf7d3be2b618a91a863736f864fcd5299b9c41d",
+      "mode": "100644"
+    },
+    "archive/dev1/SYSINFO.ASM": {
+      "sha256": "aacba42afe26585a2d83fe58788d370166b46f32886edaac5ab507d87d6f149f",
+      "git_blob": "729da83762cbaadbbdc82397864ff5a09c92e83d",
+      "mode": "100644"
+    },
+    "archive/dev2/SYSINFO.ASM": {
+      "sha256": "59877451d4806f21eddcddd7616c708d9c5feae9cff575d904bf0808a154c7a7",
+      "git_blob": "d8857206a961912bbb0e659c9ec8424b680d948d",
+      "mode": "100644"
+    },
+    "archive/dev3/SYSINFO.ASM": {
+      "sha256": "609bfd36383efa966b91112ec5a617ac4144a701272fbc939fa693e6fa4cc3e0",
+      "git_blob": "abac01314ba151276a640314cde79daacb52f031",
+      "mode": "100644"
+    },
+    "archive/dev4/SYSINFO.ASM": {
+      "sha256": "465f66df2c934a1f66f753ce9753a42fe901ecc35db6cced314e945f9d5747de",
+      "git_blob": "4d22ff5e9913279f3d2deb66e5c70f6e41be3c90",
+      "mode": "100644"
+    },
+    "archive/dev5/SYSINFO.ASM": {
+      "sha256": "66246b781d755f35ae2d8ee81995818e9bc3f12c88a1ef604c368018c84d0500",
+      "git_blob": "6cac295ce1e9cad09a07b5bf35f5a7ca20f96624",
+      "mode": "100644"
+    },
+    "archive/dev6/SYSINFO.ASM": {
+      "sha256": "a66c20fc4f6e3a73127a0b04f42a01e0dd9578fee952f872c9f90c2d87ca0c80",
+      "git_blob": "445b0cb7568fd3f83c66f5eaa27c059e30783cea",
+      "mode": "100644"
+    },
+    "archive/dev7/SYSINFO.ASM": {
+      "sha256": "13065da00dd2a08d2779334eb89b1979f904d89ca9bb27eccd2a2d18d8880930",
+      "git_blob": "093126aafec7a2b5038a211f98d34e1692c83719",
+      "mode": "100644"
+    },
+    "bdosprobe/CHANGELOG.md": {
+      "sha256": "a0a76dd46f7fc18b9b447edc5b6129b43dd36f784cd98c752a498bad88244c5b",
+      "git_blob": "6002dbc9af8de1a19cccaf452218dae5416361ed",
+      "mode": "100644"
+    },
+    "bdosprobe/README.md": {
+      "sha256": "5927b14c362e2bc425b08f4695a042b2c7685d21edb99a53a8b1762328b9206b",
+      "git_blob": "ca4ba249f3e37b545e197ea0b6988e43826115a9",
+      "mode": "100644"
+    },
+    "bdosprobe/build.sh": {
+      "sha256": "3bd1eae0da3c01ab2f64c355cdb8092823df47c8bb22c45ff99f098641c2c369",
+      "git_blob": "1268cc35026423ea2bc10cf32f957c13904584d1",
+      "mode": "100755"
+    },
+    "bdosprobe/build/SHA256SUMS.txt": {
+      "sha256": "1c06818ff764affd37ca20953ef778242d51c42ec817d1892ddcc61d29cebe96",
+      "git_blob": "304febfb37423b4aa4bb6533993d19a3c3e9c388",
+      "mode": "100644"
+    },
+    "bdosprobe/src/BDOSPRB.MAC": {
+      "sha256": "df983cce03c0f37a0c1dc074a1c73ffb6407f494f76196c2a023c47f27b168c9",
+      "git_blob": "cc8698518f31604ff8e3ee84ef0f0f41d1620199",
+      "mode": "100644"
+    },
+    "bdosprobe/tools/build_bdosprobe.py": {
+      "sha256": "b03aa8addfc98529b7214f7f682d71793f47c512e692905964d7f08b035d6c0c",
+      "git_blob": "164ef846a44e64691fca2cf93b067e96f0d2eed3",
+      "mode": "100755"
+    },
+    "build.sh": {
+      "sha256": "d08836bedae5d230a34a2ef30d27dbb80ecc297e0aebf86f30eb7ca6b1c3e05a",
+      "git_blob": "1b7ab1da62761b580de3107098f56da472ce846b",
+      "mode": "100755"
+    },
+    "build/CPM-TOOLS-880K-SHA256.txt": {
+      "sha256": "3e2d02c391920055f7892dedd2e339a4d5b89cee7f95dfa637463799102e845f",
+      "git_blob": "7b862358801221ebf44301763937c292d6fbd6c6",
+      "mode": "100644"
+    },
+    "build/CPM-TOOLS-880K-listing.txt": {
+      "sha256": "5dd796423316124114e9dd49e3ac03c82c400dec3222bbbab30d1e3eaf48bb0f",
+      "git_blob": "df80f0f7e04c26e7d76424bdffa06533b4b4aa7b",
+      "mode": "100644"
+    },
+    "cominfo/CHANGELOG.md": {
+      "sha256": "950d064026a9dd9178e9887b2b79b7f62b6a80f3435903d547493b2fc867ab00",
+      "git_blob": "cefd59b5747bbace117a023b66e03316f9e41ded",
+      "mode": "100644"
+    },
+    "cominfo/README.md": {
+      "sha256": "6ffe13659ce2bfcdc051f33ad70b4b75a0bdf70f278b1199a2ab695298dedccc",
+      "git_blob": "62efe518a2c9e2499568512f7beeb881f9d38648",
+      "mode": "100644"
+    },
+    "cominfo/build.sh": {
+      "sha256": "998c182ffa17cc859fc0627cf20f9cd751543c08119d765f0175c68bb7447cd2",
+      "git_blob": "1e4720cf357d4ae0275e63ee28f3905030cf9507",
+      "mode": "100755"
+    },
+    "cominfo/build/SHA256SUMS.txt": {
+      "sha256": "66787d8852e62b6b62287843fedd839af87ce8753ca14ca56de4cc052bcff663",
+      "git_blob": "3583e0505d8a45ab8e889feab8be466746f238f2",
+      "mode": "100644"
+    },
+    "cominfo/src/COMINFO.MAC": {
+      "sha256": "3c312c1279a6afdd69ed027c0c851f20d861be98a770c0b40b50ae3d57409e68",
+      "git_blob": "8f7101264a1ab627c3e883b9d5836a448b38bdad",
+      "mode": "100644"
+    },
+    "cominfo/tools/build_cominfo.py": {
+      "sha256": "4023c85e08ee5956d1a25f3de6b303ec4b21a569c2e677d1445884d8da6f83d8",
+      "git_blob": "258b2b707c99c2f6c9df2e393a85de0d1e31ab72",
+      "mode": "100755"
+    },
+    "diskedit/CHANGELOG.md": {
+      "sha256": "a157c326844605580415254e4ce11fea49dfbd6b5e78aaa2dfc7496d13a27dbd",
+      "git_blob": "5a9ef59fa5cc07ed258f8fc29095cb3291e9fbcf",
+      "mode": "100644"
+    },
+    "diskedit/README.md": {
+      "sha256": "5434ea07c9707978489eb001fb3808cfcac29ff1fdc9f94284fd6122560cc4cd",
+      "git_blob": "b625c2e566e7398cfb99c0eb4539fce826217882",
+      "mode": "100644"
+    },
+    "diskedit/build.sh": {
+      "sha256": "a3975a69ed215e1e3a02531bfe6aa7089bb5e16c301228d323da6a4612557969",
+      "git_blob": "e4b968c50544ee9fca64488f29107b21c9834519",
+      "mode": "100755"
+    },
+    "diskedit/build/SHA256SUMS.txt": {
+      "sha256": "487ccda6c32865f867b0d0105eab1d950aecc1a2f2f008366328f5abe425580d",
+      "git_blob": "889e0597f104cd63498bc6cd07292f124a3272f6",
+      "mode": "100644"
+    },
+    "diskedit/src/DISKEDIT.MAC": {
+      "sha256": "98e5b941be542ae91dcdfce8658d5d9616da962d0a9c3db61af9eee56af633e2",
+      "git_blob": "c59d6fe0d8fe5d71e06aded55e4ecbe366c7479a",
+      "mode": "100644"
+    },
+    "diskedit/tools/build_diskedit.py": {
+      "sha256": "b0fcb4736c2b14b691b974c8fd6fdb25116c4b30b76e56a0565b84dae1725358",
+      "git_blob": "9960687bb7dfe873f028925fec15c8432dc40063",
+      "mode": "100755"
+    },
+    "diskinfo/CHANGELOG.md": {
+      "sha256": "4f3b278396d3343d4eadad37ab5a51da72e0b0a2425a2d524c3f5d3f1513e0e0",
+      "git_blob": "ccc773afe2b7f4d9ba0cbce9e909bb96a89a96b4",
+      "mode": "100644"
+    },
+    "diskinfo/README.md": {
+      "sha256": "53f358d76349778f9d6abfa48909d8963228f72f775fc10a99bb72980a295d89",
+      "git_blob": "88e5221c51260eb5cc719777ab5032e45fc28b5d",
+      "mode": "100644"
+    },
+    "diskinfo/build.sh": {
+      "sha256": "7de2678a63d1209f39500692dc2b8f464df9171b2b4340b74bd6b5124f6b0450",
+      "git_blob": "4e7fb79974863f16326ce4ea28ac4f9548a6a278",
+      "mode": "100755"
+    },
+    "diskinfo/build/SHA256SUMS.txt": {
+      "sha256": "e87ef2adc55534ecab9636aeae098a9060130b427cba01726daae7e6bfa94b46",
+      "git_blob": "8fc89bb7acbebe31c5b4afa323957dcb424b7da0",
+      "mode": "100644"
+    },
+    "diskinfo/src/DISKINFO.MAC": {
+      "sha256": "71a9ef597c0a203537df5cd989ea1c11a71687370a796f5bee639e3851283ff9",
+      "git_blob": "682cb21a78026773704631f078b92eff711f5f5b",
+      "mode": "100644"
+    },
+    "diskinfo/tools/build_diskinfo.py": {
+      "sha256": "036ccead2ee12b89fbb413362599270e09210b8977c5fb98728a641a19ce39bf",
+      "git_blob": "e70cddccc05e32f1d8e0e5c64319345afb3720b8",
+      "mode": "100755"
+    },
+    "docs/BDOSPROBE-DESIGN.md": {
+      "sha256": "e79976985a03ad54cd5b74c8305ebe87ddca959f35cd887f2b5b1a1be8f6372d",
+      "git_blob": "6145cbdd8af32c7a175ee55bf7ba8bdc9427460b",
+      "mode": "100644"
+    },
+    "docs/TOOLS.DOC": {
+      "sha256": "01609f081aa4acce4a0aa01b87bfb5f84cf33b5f94009b94d4dca58a08d5b5b3",
+      "git_blob": "93d74e9549f9ebacf2a75ef416fe651542eb9eab",
+      "mode": "100644"
+    },
+    "dpbchk/CHANGELOG.md": {
+      "sha256": "b5b626f04233225d79f1fa88a2521040661cfdfde0f7e3a9acf574df4e77f315",
+      "git_blob": "f0ac77562da14c46df1af80b482dba1ae9e19198",
+      "mode": "100644"
+    },
+    "dpbchk/README.md": {
+      "sha256": "efdf77ba205e27b3b7c594108004cc640bee0a6e4a3ae5d25569594ad348ad2f",
+      "git_blob": "dcb223b01a608e90790deff31b85e9533051a7e2",
+      "mode": "100644"
+    },
+    "dpbchk/build.sh": {
+      "sha256": "728d13faade205b15e3ab5dc0190d243a546fab5d334fec3e9b32a7cea903d99",
+      "git_blob": "64d9290186f95a69b4a60665a97d8fdf83548502",
+      "mode": "100755"
+    },
+    "dpbchk/build/SHA256SUMS.txt": {
+      "sha256": "dc542ca6e50fd1070a61add8b3bd20399aedb77eebfc2b8ac0a9d3d9779c40ea",
+      "git_blob": "7034b931ed1c45335ee625373663c1193158da82",
+      "mode": "100644"
+    },
+    "dpbchk/src/DPBCHK.MAC": {
+      "sha256": "ed9257c80a2b0da91f1ef2926bad0266e5e7d1778293d89feb30b208b97655a3",
+      "git_blob": "f0f22024e33b765e04202b38345f2b82df6e8bbf",
+      "mode": "100644"
+    },
+    "dpbchk/tools/build_dpbchk.py": {
+      "sha256": "85d03450bc6b068b3a275e832974ab80060dabf407f350cd84500a9ff2517d5c",
+      "git_blob": "1884cbd6fbd95dbbe088a57bdb38df8d04f8a28b",
+      "mode": "100755"
+    },
+    "fsck/CHANGELOG.md": {
+      "sha256": "0e5d4f2651273e652206aaf16b97191a7806f9dfe1431c0c098bd8d4f75e8ed0",
+      "git_blob": "2c950d3fbeba007e15fc4d97f847374dba088dca",
+      "mode": "100644"
+    },
+    "fsck/README.md": {
+      "sha256": "284051d679a3950b646d1124506a48ab76be2f5dfc83158b9ba25c2e00cdc1c1",
+      "git_blob": "7ec1e9b184c227dbb12012ebb860c0cc43b6853d",
+      "mode": "100644"
+    },
+    "fsck/build.sh": {
+      "sha256": "4b408ca2a65bb9ce692da46807655d963681b9fae70973862bab0ec7f87dedd3",
+      "git_blob": "9ea0a3c09e2cb9a5153cef4c30e1cb5eb5c5598d",
+      "mode": "100755"
+    },
+    "fsck/build/SHA256SUMS.txt": {
+      "sha256": "196076e1ee2ed0e44e51e891e84186a171e8b47dc4b6bc0c8cbb282931dba84f",
+      "git_blob": "9c2a5951326e7bfcea0eda210588f00b5a3af53d",
+      "mode": "100644"
+    },
+    "fsck/src/FSCK.MAC": {
+      "sha256": "62e7d48a20b4d941934359c664aa0d0e7050b140e430313e2a08b8c3ffc4222b",
+      "git_blob": "dc44dc9278321092cff738a7e2c9e87f930d4c7d",
+      "mode": "100644"
+    },
+    "fsck/tools/build_fsck.py": {
+      "sha256": "38c41c476890094bc82502c15f5df2c51d3217b746a7f948494757ab69cc9a21",
+      "git_blob": "40702d34bec6c3adc850905482e65d97328e9107",
+      "mode": "100755"
+    },
+    "sysinfo/CHANGELOG.md": {
+      "sha256": "2228c943aeddc7fec02b9507ba1077503d2da83f311b5a772615535d77c74ba9",
+      "git_blob": "3788e752b760b216633cfb72522d103ee205e4e5",
+      "mode": "100644"
+    },
+    "sysinfo/README.md": {
+      "sha256": "c380cf6a5519296901ba1a634ea69158457cff7894628e1a29dfa53047f8bbf9",
+      "git_blob": "6afce4d60e6e5539000f3a8e284b179663b8bd3f",
+      "mode": "100644"
+    },
+    "sysinfo/build.sh": {
+      "sha256": "940a6cb3636eced8fd8484a592c3dfca43b7e320b0546d6e6ea0ebda489377f1",
+      "git_blob": "21af3ab321b6ffe3d51f1b3145774309326cc45a",
+      "mode": "100755"
+    },
+    "sysinfo/build/SHA256SUMS.txt": {
+      "sha256": "e43dca7657ec4772d716aee96d5994598c6d9909a8bb2d172e415af6dea3fe01",
+      "git_blob": "92636f83d2a39e3b039566a2bc2fb80a8282a430",
+      "mode": "100644"
+    },
+    "sysinfo/docs/SYSINFO.md": {
+      "sha256": "34a0f78257ee18c724f26f007682ab20027a75b07de313e316929388c56bccb3",
+      "git_blob": "4adc63112bd02cea037ab6c714ce8346fb7cbc5d",
+      "mode": "100644"
+    },
+    "sysinfo/src/SYSINFO.ASM": {
+      "sha256": "643eb1082bc1ec364f4d3c57de9e213dd586c95a9d2cdb892b172e37dadac85d",
+      "git_blob": "4fc476c1de9256e2a488fc4e3b8c1c12fa1fb9b8",
+      "mode": "100644"
+    },
+    "sysinfo/tests/cpmsim-path.exp": {
+      "sha256": "c2b4806b06a184a9e27561cfe6cfbaacff170ef25920228b2b7c31f59967ee04",
+      "git_blob": "c5f323df866bc9cfbb68c69cbdd5e69253e6b881",
+      "mode": "100644"
+    },
+    "sysinfo/tests/run_sysinfo_dev3.exp": {
+      "sha256": "c47c809458171750ddd5979e16e6821c1340d14e92fcd1fcaf8e0be3fe7d541c",
+      "git_blob": "b7a2a33542e7f71521889aecd2d85be06bbbdaed",
+      "mode": "100644"
+    },
+    "sysinfo/tests/run_sysinfo_dev4.exp": {
+      "sha256": "05c3dc7c82bf11f9da93f4c7fe279f06a22d1678c43c687d13ba6bb4b8de444c",
+      "git_blob": "e499203a44d94fa0d000d59efe48e1ecac36335d",
+      "mode": "100644"
+    },
+    "sysinfo/tests/run_sysinfo_dev5.exp": {
+      "sha256": "81674d427527e108948f4b44bb9ca85788f8475b4a681ba6520c8930b6786a8e",
+      "git_blob": "a5d97df268283f011b31ad6f904dbb13fc4dead4",
+      "mode": "100644"
+    },
+    "sysinfo/tests/run_sysinfo_dev6.exp": {
+      "sha256": "64fb1ede8447bef76d01db67dc42255f77e1f84971870f4a1f440778b8d81fa8",
+      "git_blob": "e722ce7b60ff592b2d9d99f774157a2427ae7821",
+      "mode": "100644"
+    },
+    "sysinfo/tests/run_sysinfo_dev7.exp": {
+      "sha256": "d4e7e554dbc9656a12fc956dcb59bc1f1b6daa0364be5cba4674af6f72ff0ee7",
+      "git_blob": "a38cfb8d81bb191e48ba2f52cf1aeb1f4acd52a8",
+      "mode": "100644"
+    },
+    "tools/build_tools_image.py": {
+      "sha256": "c6f23abccada9374c00c982c154a349fbabe0ebca098ea4b14397b4644307f43",
+      "git_blob": "4641648667c96ec6171ea46b7403b5ff058cac25",
+      "mode": "100755"
+    }
+  },
+  "binaries": {
+    "BDOSPRB.COM": {
+      "binary_sha256": "6062cd5b56618c92e68dada8783c1d5ec4cf09e0117ace90737ff0e811d76d3e",
+      "upstream_binary_path": "bdosprobe/build/BDOSPRB.COM",
+      "upstream_binary_git_blob": "1e0e003cd0772d26500a8bc60e99f710d72c3ab5",
+      "source": "bdosprobe/src/BDOSPRB.MAC",
+      "build": "bdosprobe/build.sh",
+      "host_builder": "bdosprobe/tools/build_bdosprobe.py"
+    },
+    "COMINFO.COM": {
+      "binary_sha256": "5a4495b0c2d42db9de57fe328d911aec01646666693ffd607dec683d88890e69",
+      "upstream_binary_path": "cominfo/build/COMINFO.COM",
+      "upstream_binary_git_blob": "fa88cd32e4f1a1be44f3f879cc7d33b5896e08c6",
+      "source": "cominfo/src/COMINFO.MAC",
+      "build": "cominfo/build.sh",
+      "host_builder": "cominfo/tools/build_cominfo.py"
+    },
+    "DISKEDIT.COM": {
+      "binary_sha256": "df514e1a4bf11224579db51ca5bd63a86c9581689bb3e75e5b95d4f5b0cec9cf",
+      "upstream_binary_path": "diskedit/build/DISKEDIT.COM",
+      "upstream_binary_git_blob": "72f7c9b19dfdc5f872f716bdb94e87810dcbef0f",
+      "source": "diskedit/src/DISKEDIT.MAC",
+      "build": "diskedit/build.sh",
+      "host_builder": "diskedit/tools/build_diskedit.py"
+    },
+    "DISKINFO.COM": {
+      "binary_sha256": "fa03f5acfd1366d15d248bac6ab30ec4fad415c83eb6e7ebf1b24302b9b31db6",
+      "upstream_binary_path": "diskinfo/build/DISKINFO.COM",
+      "upstream_binary_git_blob": "57dd9cb5c99638f0e956811799077bdf9121fdd2",
+      "source": "diskinfo/src/DISKINFO.MAC",
+      "build": "diskinfo/build.sh",
+      "host_builder": "diskinfo/tools/build_diskinfo.py"
+    },
+    "DPBCHK.COM": {
+      "binary_sha256": "05d310a0d9a7293abf9c2c3973c1d5af3bdb4ee7110762a838dbd6721df9c4e4",
+      "upstream_binary_path": "dpbchk/build/DPBCHK.COM",
+      "upstream_binary_git_blob": "1fcb838e3b1e560630cb8e242cd925492dd5e8f0",
+      "source": "dpbchk/src/DPBCHK.MAC",
+      "build": "dpbchk/build.sh",
+      "host_builder": "dpbchk/tools/build_dpbchk.py"
+    },
+    "FSCK.COM": {
+      "binary_sha256": "d9a48ee1967eb95686ea4806e9cb3d64e8477fffa9e2ba82402e17ac8deaab7c",
+      "upstream_binary_path": "fsck/build/FSCK.COM",
+      "upstream_binary_git_blob": "afa3b1a441f759eef49fafef7e7752885da696e7",
+      "source": "fsck/src/FSCK.MAC",
+      "build": "fsck/build.sh",
+      "host_builder": "fsck/tools/build_fsck.py"
+    },
+    "SYSINFO.COM": {
+      "binary_sha256": "83617404d28feda80b159470dc2d0dbebd5f207a2402e9646958fb3474999d6f",
+      "upstream_binary_path": "sysinfo/build/SYSINFO.COM",
+      "upstream_binary_git_blob": "4039a18d8d12aa16bcb6ddead1a30b5763cf5360",
+      "source": "sysinfo/src/SYSINFO.ASM",
+      "build": "sysinfo/build.sh",
+      "host_builder": null
+    }
+  }
+}

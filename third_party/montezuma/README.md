@@ -105,3 +105,7 @@ not reassemblable source. Hashes are in `CONFIG-extraction-manifest.json`.
 See [CONFIG analysis](../../docs/engineering/MM-CONFIG-REVERSE-ENGINEERING.md)
 for the A–D restriction, BIOS table evidence, provenance and limitations.
 These are third-party reference materials, not original BetterCP/M code.
+
+## Agreed project license boundary
+
+Original BetterCP/M software and reusable code examples use GPL-2.0-or-later; original documentation prose and illustrations use CC BY 4.0. Neither grant relicenses the historical materials in this directory. See [project licensing](../../docs/LICENSING.md) and the [permission investigation](../../docs/engineering/Montezuma-Permission-Review-2026-11-03.md). Catalogue permission remains unresolved.

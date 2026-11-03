@@ -44,6 +44,21 @@ class DistributionGates(unittest.TestCase):
             self.assertEqual(len(selected), 2)
             self.assertEqual(omitted, [])
 
+    def test_clock_release_scope_and_no_default_load(self):
+        root=Path(__file__).resolve().parents[1]
+        manifest=json.loads((root/'metadata/distribution.json').read_text())
+        for target in ('z80pack','trs80gp'):
+            entries=[e for e in manifest['system_disk'] if target in e['targets']]
+            clock=[e for e in entries if e['name']=='P2DOS.RSX']
+            self.assertEqual(len(clock),1)
+            self.assertEqual(clock[0]['user'],0)
+            self.assertFalse({'T104C3.RSX','T104Z8.RSX'} & {e['name'] for e in entries})
+            script=next(e for e in entries if e['name']=='STARTUP.SUB')
+            text=(root/script['artifact']).read_bytes()
+            self.assertNotIn(b'P2DOS',text)
+            self.assertNotIn(b'ZPRTC',text)
+            self.assertNotIn(b'FREHDCLK',text)
+
     def test_platform_monitor_startup(self):
         root=Path(__file__).resolve().parents[1]
         manifest=json.loads((root/'metadata/distribution.json').read_text())

@@ -13,10 +13,12 @@ Use the matching BetterCP/M source package, including
 `third_party/z80pack/patches/` directory.
 
 The upstream repository is <https://github.com/udo-munk/z80pack.git>, pinned at
-`91fd28eb04e675c2127df88ed3f40675e15282e2`. The runtime profile applies
-`0001-disk-geometry.patch` followed by `0002-raw-fdf-backend.patch`.
-Their SHA-256 checksums are in `upstream.json`. Do not substitute a moving
-branch, a stock executable or an unidentified local patch.
+`91fd28eb04e675c2127df88ed3f40675e15282e2`. The ordered runtime profile in `upstream.json` selects patches 0001, 0002,
+0004, 0005, 0006 and 0007 (geometry, raw FDF, live media, host transfer, guest
+MOUNT and MOUNT help). The qualification profile also includes patch 0003.
+Use the builder’s named profile and exact ordered filenames/checksums from
+that lock; do not manually apply only a subset or substitute a moving branch,
+stock executable or unidentified local patch.
 
 Install Python 3, Git, tar, make and a C99 compiler. On macOS, install the
 Xcode Command Line Tools, including codesign. cpmtools is needed for host-side
@@ -25,6 +27,12 @@ The reconstruction builder compiles cpmsim and its helpers, including cpmrecv
 and cpmsend, from the same pinned source.
 
 ## Build the patched runtime
+
+The independent cpmsim System ZIP contains a self-contained reconstruction kit
+at `host/BetterCPM/`. Use that directory as the source root for the commands
+below; its `dependencies/README.txt` describes offline restoration. The full
+Source download provides the same inputs under its documented source root.
+No Utilities download is needed to build the runtime or boot the System disk.
 
 From the root of the matching BetterCP/M source package:
 
@@ -55,7 +63,7 @@ bytes, so record and validate the actual binary used.
 The separate `qualification` profile adds `0003-rom-qualification.patch` and
 ROM instrumentation. Ordinary users need the `runtime` profile. Do not set
 `CPMSIM_ROM_START` for normal operation. See the
-[pinned reconstruction instructions](../../third_party/z80pack/README.md)
+[reconstruction notes in the matching Source download](../../third_party/z80pack/README.md)
 for engineering qualification.
 
 ## Mount release media and boot
@@ -75,8 +83,12 @@ C: retains its historical NOAH image name. It contains NOAH.COM, NOAH.OVL,
 NOAH.TXT, PATCH.COM, PATCH.TXT, COMPARE.COM and COMPARE.TXT. Use the matching
 NOAH executable and overlay. CRCKSUM and MD5SUM are on B:.
 
-Create `session/disks/`. Copy A:, B:, C: and the formatted work disk to
-`drivea.dsk`, `driveb.dsk`, `drivec.dsk` and `drived.dsk` in that directory.
+Create `session/disks/`. For System-only use, put a writable copy of the
+System image at `drivea.dsk` and three separate writable copies of the supplied
+blank work image at `driveb.dsk`, `drivec.dsk` and `drived.dsk`. Do not use
+multiple links to the same writable image. With Utilities installed, replace
+B: and C: with writable copies of their primary and companion images; D:
+remains the work disk.
 The default raw images are 368,640 bytes each; they are not DMK files.
 Close an emulator before changing its mounted media. From the source root:
 
@@ -107,11 +119,17 @@ images must resolve to regular files. Plain `bcpm z` retains automatic selection
 of the built System/Utilities images on A–C, leaving D: as configured. Close the
 emulator before changing its mounts.
 
-At the guest prompt:
+At the guest prompt, the System-only smoke checks are:
 
 ```text
 :VER /BANNER
 DIR A:
+DIR D:
+```
+
+When the optional Utilities package is installed, also run:
+
+```text
 DIR B:
 DIR C:
 B0:CRCKSUM /VER
@@ -119,8 +137,10 @@ B0:MD5SUM /VER
 C0:NOAH /VER
 C0:PATCH /VER
 C0:COMPARE /VER
-BYE /Y
 ```
+
+Finish either session with `BYE /Y`. The optional checks are not prerequisites
+for booting or using the independent System package.
 
 Check banners against the candidate manifest. Save the transcript, initial
 image hashes and emulator environment.json. The cpmsim startup script runs
@@ -207,3 +227,7 @@ Host filenames preserve case and refer to files in the emulator working
 directory; R/W do not accept host paths or wildcards. Quote names containing
 spaces. A long host source name requires an explicit CP/M 8.3 destination.
 MOUNT, R and W are omitted from Model 4 media and general utility manuals.
+
+P2DOS.RSX is supplied in A0 for optional compatibility with Functions 200/201.
+Load the platform’s native clock provider before `RSX LOAD P2DOS`; startup
+loads neither. T104C3/T104Z8 are deferred and are not supplied in the 1.0 RC.

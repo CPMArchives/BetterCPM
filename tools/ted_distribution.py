@@ -4,6 +4,7 @@ import hashlib
 import io
 import json
 from pathlib import Path
+import subprocess
 import tarfile
 from release_source import source_files
 
@@ -13,6 +14,8 @@ def companions(root):
     files=source_files(root)
     plan=json.loads((root/'metadata/component-inputs.json').read_text())['components']['utility:TED']
     required=set(plan['files'])|{'tools/ted_distribution.py','src/distribution/TED.TXT','src/distribution/TEDCOPY.TXT'}
+    from cpm_tools_source import verify as verify_cpm_tools_source
+    required |= verify_cpm_tools_source(root)
     if not required<=files.keys():raise ValueError('TED source companion requires tracked implementation files')
     record=json.loads((root/'build/utilities/TED-build-report.json').read_text())
     if record['artifact']['sha256']!=hashlib.sha256((root/'build/utilities/TED.COM').read_bytes()).hexdigest():
@@ -36,7 +39,7 @@ def companions(root):
             archive.addfile(info,io.BytesIO(data))
     return {'BetterCPM-TED-SOURCE.tar.gz':gzip.compress(content.getvalue(),mtime=0),
             'TED-SOURCE-README.txt':b'''BetterCP/M TED corresponding source (GPL-2.0-or-later)
-Extract BetterCPM-TED-SOURCE.tar.gz. Release-selected repository sources,
+Extract BetterCPM-TED-SOURCE.tar.gz. Complete release-selected repository sources,
 immutable upstream TED, license, build tools, tests and documentation are
 included, together with exact standalone native/TEDNAT.MAC and build record.
 Each file is hashed in TED-SOURCE-MANIFEST.json.

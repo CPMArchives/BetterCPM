@@ -11,7 +11,7 @@ from pathlib import Path, PurePosixPath
 import subprocess
 import tempfile
 import zipfile
-from release_source import forbidden_digests, source_files, verify_members
+from release_source import source_files as selected_source_files, forbidden_digests, verify_members
 
 ROOT = Path(__file__).resolve().parents[1]
 PENDING = ['Manual Model 4 runtime campaign', 'Fresh-package installation on both platforms',
@@ -78,6 +78,18 @@ def write_package(path, root_name, files, record):
     return {'filename':path.name,'sha256':sha(path.read_bytes()),'size_bytes':path.stat().st_size}
 
 
+def project_license_files(tracked):
+    files={'licenses/BetterCPM/'+name:tracked[name]
+           for name in ('LICENSE','COPYING','NOTICE')}
+    files['licenses/BetterCPM/CC-BY-4.0.txt']=tracked['LICENSES/CC-BY-4.0.txt']
+    files['docs/LICENSING.md']=tracked['docs/LICENSING.md']
+    return files
+
+
+def source_files():
+    return selected_source_files(ROOT)
+
+
 def upstream_bundle(repository, commit, destination):
     """Bundle an exact commit without adding a ref to the caller's repository."""
     with tempfile.TemporaryDirectory(prefix='bcpm-bundle-source-') as tmp:
@@ -122,20 +134,18 @@ def package_license_files(tracked, package_id):
         raise ValueError('missing package notice inventory: ' + package_id)
     sections = [
         'BetterCP/M 1.0 — ' + package_id,
-        'Original BetterCP/M software and original code examples: MIT (LICENSE).',
-        'Original BetterCP/M manuals: © 2026 BetterCP/M contributors, '
+        'Original BetterCP/M software and original code examples: GPL-2.0-or-later (licenses/BetterCPM/LICENSE and COPYING).',
+        'Original BetterCP/M documentation prose and illustrations: '
         'CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). '
-        'Retain named credits and indicate changes. See licenses/CC-BY-4.0.txt.',
+        'Retain named credits and indicate changes. See licenses/BetterCPM/CC-BY-4.0.txt.',
         'Third-party works retain their own terms. Keep the applicable license '
         'texts, provenance and corresponding-source companions with each download.',
     ]
     for row in selected:
         sections.append(row['work'] + '\n' + row['notice'])
-    return {
-        'LICENSE': tracked['LICENSE'],
-        'licenses/CC-BY-4.0.txt': tracked['LICENSES/CC-BY-4.0.txt'],
-        'THIRD-PARTY-NOTICES.txt': ('\n\n'.join(sections) + '\n').encode('utf-8'),
-    }
+    files = project_license_files(tracked)
+    files['THIRD-PARTY-NOTICES.txt'] = ('\n\n'.join(sections) + '\n').encode('utf-8')
+    return files
 
 
 def assemble(args):
@@ -146,9 +156,13 @@ def assemble(args):
     output=args.output.resolve()/'candidates'/commit
     output.mkdir(parents=True,exist_ok=False)
     # Failed candidates are preserved for inspection; never overwrite/reuse.
-    tracked=source_files(ROOT)
+    from cpm_tools_source import verify as verify_cpm_tools_source
+    cpm_source_paths=verify_cpm_tools_source(ROOT)
+    tracked=source_files()
     forbidden=forbidden_digests(ROOT)
     inspected=set()
+    if not cpm_source_paths <= tracked.keys():
+        raise ValueError('CP/M Tools source companion is not completely tracked')
     identity=encoded({'source_commit':commit,'status':'CANDIDATE; NOT ACCEPTED'})
     source_manifest={n:sha(data) for n,data in sorted(tracked.items())}
     common={'SOURCE-IDENTITY.json':identity}
@@ -174,6 +188,10 @@ def assemble(args):
     host['tools/build_qualified_cpmsim.py']=tracked['tools/build_qualified_cpmsim.py']
     host['docs/platform/CPMSIM-INSTALLATION.md']=tracked['docs/platform/CPMSIM-INSTALLATION.md']
     host.update(common)
+    for name in ('LICENSE','COPYING','NOTICE'):
+        host[name]=tracked[name]
+    host['LICENSES/CC-BY-4.0.txt']=tracked['LICENSES/CC-BY-4.0.txt']
+    host['docs/LICENSING.md']=tracked['docs/LICENSING.md']
     host['dependencies/'+upstream_name]=upstream
     host['dependencies/README.txt']=restore
     util=args.utilities.resolve()
@@ -229,6 +247,8 @@ def assemble(args):
             files['images/'+('BetterCPM-Work-332K.dsk' if platform=='cpmsim' else 'BetterCPM-Work-800K.dmk')]=work
             guide='CPMSIM-INSTALLATION.md' if platform=='cpmsim' else 'MODEL4-INSTALLATION.md'
             files['docs/platform/'+guide]=tracked['docs/platform/'+guide]
+            if platform=='cpmsim':
+                files['third_party/z80pack/README.md']=tracked['third_party/z80pack/README.md']
             files['docs/user/users_guide.md']=tracked['docs/user/users_guide.md']
             files['docs/engineering/Model 4 Release Checklist.md']=tracked['docs/engineering/Model 4 Release Checklist.md']
             files['docs/releases/RELEASE-NOTES-1.0.md']=tracked['docs/releases/RELEASE-NOTES-1.0.md']
@@ -249,6 +269,8 @@ def assemble(args):
                                                 util_reports,inventory)
             files.update(selected)
             files['docs/user/utilities_manual.md']=tracked['docs/user/utilities_manual.md']
+            for guide in ('ZSM4.md','LINK.md'):
+                files['docs/user/'+guide]=tracked['docs/user/'+guide]
             files['docs/engineering/Model 4 Release Checklist.md']=tracked['docs/engineering/Model 4 Release Checklist.md']
         elif id=='source':
             files.update({'source/BetterCPM/'+n:d for n,d in tracked.items()})
@@ -264,6 +286,7 @@ def assemble(args):
                 if name.startswith('docs/') and Path(name).suffix.lower() in ('.md','.txt','.json','.tsv','.png','.svg'):
                     files[name]=data
             files['CONTENTS.md']=tracked['packaging/1.0/DOCUMENTATION-CONTENTS.md']
+            files['third_party/z80pack/README.md']=tracked['third_party/z80pack/README.md']
             evidence['generated_editions']='PDF/DOCX omitted pending source-to-edition reconciliation'
         # Retain tracked licensing/permission and provenance files in each ZIP.
         for name,data in tracked.items():
