@@ -11,6 +11,7 @@ from pathlib import Path, PurePosixPath
 import subprocess
 import tempfile
 import zipfile
+from release_source import forbidden_digests, source_files, verify_members
 
 ROOT = Path(__file__).resolve().parents[1]
 PENDING = ['Manual Model 4 runtime campaign', 'Fresh-package installation on both platforms',
@@ -75,18 +76,6 @@ def write_package(path, root_name, files, record):
             if z.read(root_name+'/'+name)!=data:
                 raise ValueError('candidate archive readback differs: '+name)
     return {'filename':path.name,'sha256':sha(path.read_bytes()),'size_bytes':path.stat().st_size}
-
-
-def source_files():
-    names=[n.decode() for n in git('ls-files','-z').split(b'\0') if n]
-    # Preserve symlinked source fragments as their resolved bytes, rejecting
-    # references that escape the tracked source tree.
-    result={}
-    for name in names:
-        p=ROOT/name
-        p.resolve().relative_to(ROOT)
-        result[name]=p.read_bytes()
-    return result
 
 
 def upstream_bundle(repository, commit, destination):
@@ -157,7 +146,9 @@ def assemble(args):
     output=args.output.resolve()/'candidates'/commit
     output.mkdir(parents=True,exist_ok=False)
     # Failed candidates are preserved for inspection; never overwrite/reuse.
-    tracked=source_files()
+    tracked=source_files(ROOT)
+    forbidden=forbidden_digests(ROOT)
+    inspected=set()
     identity=encoded({'source_commit':commit,'status':'CANDIDATE; NOT ACCEPTED'})
     source_manifest={n:sha(data) for n,data in sorted(tracked.items())}
     common={'SOURCE-IDENTITY.json':identity}
@@ -278,6 +269,7 @@ def assemble(args):
         for name,data in tracked.items():
             if name.startswith('third_party/') and any(x in Path(name).name.lower() for x in ('license','permission','provenance','copying','notice')):
                 files['licenses/'+name]=data
+        verify_members(files, forbidden, inspected)
         record={'schema':1,'package':id,'version':'1.0','source_commit':commit,
                 'status':'CANDIDATE; NOT ACCEPTED','accepted_commit':None,'tag':None,
                 'platforms':asset['platforms'],'pending':PENDING,'evidence':evidence,

@@ -1,5 +1,8 @@
 """Check licence scope and notice delivery in each independent package."""
+import gzip
+import io
 import json
+import tarfile
 from pathlib import Path
 import tempfile
 import unittest
@@ -8,7 +11,34 @@ import zipfile
 from package_release_candidates import ROOT, package_license_files, write_package
 
 
+from release_source import forbidden_digests, source_files, verify_members
+
+
 class PackageNotices(unittest.TestCase):
+    def test_release_selection_retains_catalogue_inputs_and_own_implementations(self):
+        selected = source_files(ROOT)
+        refs = {name.split('/')[-1] for name in selected if name.startswith('third_party/montezuma/')}
+        self.assertEqual(refs, {'README.md', 'DISK.FDF', 'DISK-INT.FDF', 'CONFIG-extraction-manifest.json'})
+        self.assertNotIn('docs/engineering/DISK-FORMAT-MM-CONFIG-ANALYSIS.md', selected)
+        for name in ('metadata/DISK.FDF', 'src/utilities/config.mac', 'src/utilities/dup.mac'):
+            self.assertIn(name, selected)
+
+    def test_stale_nested_companion_rejected_even_with_renamed_binary(self):
+        forbidden = forbidden_digests(ROOT)
+        data = (ROOT/'third_party/montezuma/MDIR.COM').read_bytes()
+        buf = io.BytesIO()
+        with tarfile.open(fileobj=buf, mode='w') as archive:
+            member = tarfile.TarInfo('renamed.bin')
+            member.size = len(data)
+            archive.addfile(member, io.BytesIO(data))
+        outer = io.BytesIO()
+        with zipfile.ZipFile(outer, 'w') as archive:
+            archive.writestr('old-source.tar.gz', gzip.compress(buf.getvalue()))
+        with self.assertRaisesRegex(ValueError, 'old-source.tar.gz.*renamed.bin'):
+            verify_members({'nested.zip': outer.getvalue()}, forbidden)
+        with self.assertRaisesRegex(ValueError, 'new.lst'):
+            verify_members({'clean.txt': b'x', 'src/third_party/montezuma/new.lst': b'x'}, forbidden)
+
     def test_independent_downloads_carry_matching_terms_and_notices(self):
         assets = json.loads((ROOT/'metadata/release-assets.json').read_text())['assets']
         inputs = ('LICENSE', 'LICENSES/CC-BY-4.0.txt', 'packaging/1.0/third-party-notices.json')

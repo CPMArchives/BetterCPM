@@ -1,0 +1,113 @@
+ID	Format	Origin	1.0 action	Release media priority
+MMF001	Access Matrix (40T, SS, DD, 171K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF002	Access Matrix (40T, DS, DD, 350K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF003	Acorn (80T, SS, SD, 392K)	DISK.FDF	Already excluded from FDB	—
+MMF004	Adler Textriter Series III (40T, SS, DD, 160K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF005	Altertext Diskreader (40T, SS, DD, 144K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF006	Ampro Little Board (40T, SS, DD, 190K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF007	Ampro Little Board (40T, DS, DD, 390K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF008	AOS/VT Basic 4 S-10 (80T, DS, DD, 626K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF009	Archives Model III (80T, DS, DD, 790K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF010	ATR-8000 512 byte sector (40T, SS, DD, 190K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF011	ATR-8000 1024 byte sector (40T, SS, DD, 190K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF012	Aust. Comp. & Telecomm. (40T, SS, DD, 171K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF013	AVATAR TC1 Terminal Converter (40T, SS, DD, 184K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF014	AVATAR TC1 Terminal Converter (40T, DS, DD, 384K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF015	BMC if800/20 (40T, DS, DD, 384K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF016	Bondwell Model 12 (40T, SS, DD, 170K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF017	California Computer Systems (40T, DS, DD, 332K)	DISK.FDF	Clear exact external edition or independently source	cpmsim System, Work and Utilities
+MMF018	Cifer 2683 (40T, DS, DD, 384K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF019	Columbia 964 (40T, SS, DD, 190K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF020	Compustar Model 30 (35T, DS, DD, 340K, *)	DISK.FDF	Clear exact external edition or independently source	—
+MMF021	Computer Operation NCHQ (40T, SS, SD, 82K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF022	Cromemco Z-2 (40T, SS, SD, 82K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF023	Cromemco Z-2 (40T, SS, DD, 190K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF024	DEC Rainbow 100+ (80T, SS, DD, 390K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF025	DEC RX50K (80T, SS, DD, 390K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF026	DEC VT-180 (40T, SS, DD, 171K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF027	Dictaphone 6000 CP/M Rev. A (80T, DS, DD, 692K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF028	Dictaphone 6000 CP/M v. 2.26 (80T, DS, DD, 706K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF029	Digital Research 8" CP/M Standard (77T, SS, SD, 243K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF030	Digital Research 8" CP/M Standard (77T, DS, DD, 988K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF031	Eagle (80T, SS, DD, 390K)	DISK.FDF	Already excluded from FDB	—
+MMF032	Eagle (80T, DS, DD, 790K, *)	DISK.FDF	Clear exact external edition or independently source	—
+MMF033	ECB Bus (80T, DS, DD, 760K, *)	DISK.FDF	Clear exact external edition or independently source	—
+MMF034	Epson QX-10 (40T, DS, DD, 380K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF035	Epson QX-10 MF (40T, DS, DD, 280K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF036	Heath H8 with Trionyx H-C8 controller (40T, DS, DD, 390K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF037	Hewlett-Packard HP-125 (40T, DS, DD, 252K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF038	Hewlett-Packard HP-87XM (35T, DS, DD, 244K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF039	Holmes Engineering VID80 (40T, SS, DD, 195K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF040	Hurricane Labs Inc. Compactor I & II (40T, SS, DD, 190K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF041	IBM PC using CP/M 86 (40T, SS, DD, 156K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF042	IBM PC using CP/M 86 (40T, DS, DD, 316K, *)	DISK.FDF	Clear exact external edition or independently source	—
+MMF043	Intertec Superbrain (35T, SS, DD, 164K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF044	Intertec Superbrain (35T, DS, DD, 340K, *)	DISK.FDF	Clear exact external edition or independently source	—
+MMF045	Kaypro 2 (40T, SS, DD, 195K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF046	Kaypro 2X, 4, & 10 (40T, DS, DD, 392K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF047	Lifeboat TRS-80 Mod 1 (40T, SS, SD, 72K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF048	LNW Research LNW80 (40T, SS, DD, 166K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF049	Lobo MAX-80 (40T, SS, DD, 166K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF050	Lobo MAX-80 (40T, DS, DD, 346K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF051	Lobo MAX-80 CP/M 3.0 (40T, SS, DD, 185K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF052	Lobo MAX-80 CP/M 3.0 (40T, DS, DD, 384K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF053	Memory Merchant Shuffle Board (40T, SS, DD, 190K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF054	Micro-Abacus (80T, DS, DD, 624K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF055	Monroe OC 8820 (40T, DS, DD, 308K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF056	Monroe OC 8820 (80T, SS, DD, 308K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF057	Morrow Micro Decision (40T, SS, DD, 190K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF058	Morrow Micro Decision MD3 (40T, DS, DD, 390K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF059	NCR Decision Mate V (40T, DS, DD, 308K, *)	DISK.FDF	Clear exact external edition or independently source	—
+MMF060	NEC PC-8001A (40T, SS, DD, 148K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF061	Octagon 8/16 CP/M-86 (40T, SS, DD, 156K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF062	Octagon 8/16 CP/M-86 (40T, DS, DD, 316K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF063	Omikron Mapper I, Model 1 & 3 (40T, SS, SD, 83K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF064	Omikron Mapper II (40T, SS, DD, 134K)	DISK.FDF	Already excluded from FDB	—
+MMF065	Omikron Mapper III (40T, SS, DD, 190K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF066	Osborne 1 (40T, SS, SD, 90K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF067	Osborne 1 with 2x2 upgrade (40T, DS, DD, 390K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF068	Osborne Executive (40T, SS, DD, 185K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF069	Otrona 816A (40T, DS, DD, 364K, *)	DISK.FDF	Clear exact external edition or independently source	—
+MMF070	Otrona 816A (80T, DS, DD, 774K, *)	DISK.FDF	Clear exact external edition or independently source	—
+MMF071	Pied Piper Executive (80T, DS, DD, 784K)	DISK.FDF	Already excluded from FDB	—
+MMF072	Radio Shack TRS-80 Model 4 CP/M Plus (40T, SS, DD, 156K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF073	Sanyo (40T, DS, DD, 312K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF074	Sanyo MBC-1200/1250 (80T, DS, DD, 624K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF075	Sperry UTS-30 (80T, DS, DD, 710K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF076	Tecron TEF System 10 (80T, DS, DD, 790K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF077	Tektronics 4170 CP/M 86 (40T, DS, DD, 316K, *)	DISK.FDF	Clear exact external edition or independently source	—
+MMF078	Teletek Systemaster (80T, SS, SD, 72K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF079	Teletek Systemaster (40T, SS, DD, 144K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF080	Televideo 802 (40T, DS, DD, 342K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF081	Toshiba T-100 (40T, DS, DD, 256K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF082	Video Genie III (80T, DS, DD, 692K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF083	Visual 1050 (80T, SS, DD, 390K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF084	Xerox 820-1 (40T, SS, SD, 82K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF085	Xerox 820-2 (40T, SS, DD, 157K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF086	XOR S100-4 (40T, SS, DD, 185K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF087	Zenith H89 (40T, SS, SD, 94K)	DISK.FDF	Already excluded from FDB	—
+MMF088	Zenith H89/H90 (40T, SS, DD, 152K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF089	Zenith H90 (80T, DS, DD, 632K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF090	Zenith Z100 (40T, SS, DD, 152K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF091	Zenith Z100 (40T, DS, DD, 312K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF092	Zorba GC200 (40T, DS, DD, 390K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF093	Montezuma Micro CP/M v 1.26 & 1.30 (40T, SS, DD, 170K)	DISK.FDF	Clear exact external edition or independently source	—
+MMF094	Montezuma Micro CP/M v 1.26 & 1.30 (40T, DS, DD, 350K, *)	DISK.FDF	Clear exact external edition or independently source	—
+MMF095	Montezuma Micro CP/M v 1.32 (40T/256S, DS, DD, 350K, *)	DISK.FDF	Clear exact external edition or independently source	—
+MMF096	Montezuma Micro CP/M v 1.42 & 1.44 (40T, DS, DD, 342K)	DISK.FDF	Clear exact external edition or independently source	—
+MMI001	Montezuma Micro Standard SYSTEM (40T, SS, DD, 170K)	CONFIG	Independently source or obtain separate clearance	—
+MMI002	Montezuma Micro Standard DATA (40T, SS, DD, 200K)	CONFIG	Independently source or obtain separate clearance	—
+MMI003	Montezuma Micro Standard DS SYSTEM (40T, DS, DD, 350K)	CONFIG	Independently source or obtain separate clearance	—
+MMI004	Montezuma Micro Standard DS DATA (40T, DS, DD, 400K)	CONFIG	Independently source or obtain separate clearance	—
+MMI005	Montezuma Micro 80T SYSTEM (80T, SS, DD, 350K)	CONFIG	Independently source or obtain separate clearance	—
+MMI006	Montezuma Micro 80T DATA (80T, SS, DD, 400K)	CONFIG	Independently source or obtain separate clearance	—
+MMI007	Montezuma Micro 80T DS SYSTEM (80T, DS, DD, 710K)	CONFIG	Independently source or obtain separate clearance	—
+MMI008	Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)	CONFIG	Independently source or obtain separate clearance	Model 4 Work and Utilities
+MMI009	Montezuma Micro Extended SYSTEM (40T, SS, DD, 190K)	CONFIG	Independently source or obtain separate clearance	—
+MMI010	Montezuma Micro Extended DS SYSTEM (40T, DS, DD, 390K)	CONFIG	Independently source or obtain separate clearance	—
+MMI011	Montezuma Micro Extended 80T SYSTEM (80T, SS, DD, 390K)	CONFIG	Independently source or obtain separate clearance	—
+MMI012	Montezuma Micro Extended 80T DS SYSTEM (80T, DS, DD, 790K)	CONFIG	Independently source or obtain separate clearance	Model 4 System
+MMI013	Montezuma Micro SUPER DATA (40T, SS, DD, 220K)	CONFIG	Independently source or obtain separate clearance	—
+MMI014	Montezuma Micro SUPER DS DATA (40T, DS, DD, 440K)	CONFIG	Independently source or obtain separate clearance	—
+MMI015	Montezuma Micro 80T SUPER DATA (80T, SS, DD, 440K)	CONFIG	Independently source or obtain separate clearance	—
+MMI016	Montezuma Micro 80T SUPER DS DATA (80T, DS, DD, 880K)	CONFIG	Independently source or obtain separate clearance	—

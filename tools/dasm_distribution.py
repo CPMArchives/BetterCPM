@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import subprocess
 import tarfile
+from release_source import source_files
 
 
 def companions(root):
@@ -15,8 +16,7 @@ def companions(root):
         data=(root/'third_party/dasm'/name).read_bytes()
         if len(data)!=row['bytes'] or hashlib.sha256(data).hexdigest()!=row['sha256']:
             raise ValueError('original DASM provenance mismatch: '+name)
-    names=subprocess.run(['git','-C',str(root),'ls-files','-z'],check=True,capture_output=True).stdout.split(b'\0')
-    files={name.decode(): (root/name.decode()).read_bytes() for name in names if name}
+    files=source_files(root)
     required={'src/utilities/dasm.mac','src/utilities/dsym.mac','src/utilities/dlink.mac',
         'src/utilities/common/dasmsession.inc','src/utilities/common/dsymlog.inc',
         'tools/build_dasm.py','tools/build_dsym.py','tools/build_dlink.py','tools/dasm_distribution.py',
@@ -35,7 +35,7 @@ def companions(root):
         'DASM-Provenance.json':(root/'third_party/dasm/provenance.json').read_bytes(),
         'DASM-SOURCE-README.txt':(
             'Maintained BetterCP/M DASM, DSYM and DLINK source companion\n\n'
-            'Extract BetterCPM-DASM-SOURCE.tar.gz. It contains the complete tracked\n'
+            'Extract BetterCPM-DASM-SOURCE.tar.gz. It contains the release-selected\n'
             'repository source, build helpers, metadata, tests, documentation and\n'
             'unaltered historical imports, with a per-file SHA-256 manifest.\n'
             'See docs/engineering/DASM Implementation Status.md for build/test\n'

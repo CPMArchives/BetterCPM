@@ -25,9 +25,9 @@ to `DISK.FDB`. The migration draws on 96 external definitions and 16 internal
 CONFIG definitions. Five external definitions are excluded. The resulting
 107-descriptor, 8,320-byte file is present on both reviewed System disks
 (SHA-256 `4dea7bd989580fc13f61e79d47e92466a440799c41b002f4caba65ec8f893c03`).
-The guest reads the binary catalogue. The raw catalogue, internal definitions,
-original utilities and reference listings also travel in full tracked-source
-snapshots, including those nested in the Utilities packages. See
+The guest reads the binary catalogue. The raw catalogue and internal definitions still travel in the Source and
+nested Utilities source kits. The 1.0 package selection now omits the
+original utilities, disassembly listings and the document quoting the BIOS. See
 [the migration record](../../docs/engineering/185%20Qualified%20FDF%20v1%20Catalogue%20Migration.md)
 and [the media record](../../docs/engineering/186%20FDB%20Build%20and%20Media%20Packaging.md).
 
@@ -53,6 +53,31 @@ unneeded historical files from every public archive, including nested source
 kits, and independently source or replace the required catalogue. Reproduce
 the clean build and requalify affected formats and media before acceptance.
 Removing the raw reference files alone leaves the derived FDB on both disks.
+
+### Customer update service and format decisions
+
+The March 1985 issue of [80 Micro](https://colorcomputerarchive.com/repo/Documents/Magazines/80%20Micro/1985/80%20Micro%20-%208503%20-%20March%201985.pdf)
+describes a customer sending Montezuma a disk and format information and
+receiving the disk back with an updated definition. The [TRS-80 Archives
+index](https://electrickery.hosting.philpem.me.uk/comp/trs80-4p/trs80Archives_cpm/index.html)
+lists DISK.FDF on cpm2, cpm15 and cpm16. Neither source states permission to
+republish this particular catalogue or a compiled edition. Matching editions
+and a notice from an authorized distributor or rights holder remain open.
+
+The [format decision list](../../packaging/1.0/montezuma-formats.tsv) names all
+112 historical entries by stable ID. To preserve today's support, independently
+source or verify 91 admitted external entries unless a grant covers them.
+Review the 16 internal CONFIG entries separately even if the external file
+is cleared. Five rejected external entries require no runtime replacement.
+Their archival parameters also appear in the source and must be considered
+when retiring or clearing the raw catalogue.
+
+Prioritize MMF017 (cpmsim 332K), MMI012 (Model 4 790K System), and MMI008
+(Model 4 800K Work and Utilities). Check system builders, diskdefs, work and
+Utilities media as well as the guest catalogue against independent format
+specifications or measured disks. Rebuild the catalogue and test affected
+formats before signing off. Research-only tests that exercise original
+Montezuma binaries require a separate, privately supplied reference copy.
 
 ## DUP 2.01 working disassembly
 
