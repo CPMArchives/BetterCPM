@@ -19,7 +19,13 @@ These changes are proposed for review; no merge or candidate acceptance is impli
   Package and full Utilities-source assembly reject missing/changed source.
   This does not add those seven programs to System or Utilities disks.
 
-## Recommendations requiring maintainer decisions
+## Recommendations at the time of PR #585
+
+The maintainer subsequently approved preparing P2DOS on both System Disks,
+GPL-2.0-or-later for original work, and explicit 104/105 deferral for review.
+The current proposal and measurements are in
+[P2DOS and licensing release-scope follow-up](P2DOS-License-Scope-2026-11-03.md).
+The recommendations below retain their earlier historical scope.
 
 **Clock scope.** Keep P2DOS’s retained 1.0 ship requirement. Recommend distributing
 P2DOS.RSX on both System disks, optional to load and absent from default startup,

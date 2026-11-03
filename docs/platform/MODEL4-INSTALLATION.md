@@ -80,3 +80,7 @@ expected results and actual outcomes for the fresh-package test. Work from the
 [Model 4 release checklist](../engineering/Model%204%20Release%20Checklist.md).
 Preserve earlier blocked/deferred records and append actual results. Do not
 retry the automated LaunchServices path merely to execute these manual checks.
+
+P2DOS.RSX is supplied in A0 for optional compatibility with Functions 200/201.
+Load the platform’s native clock provider before `RSX LOAD P2DOS`; startup
+loads neither. T104C3/T104Z8 are deferred and are not supplied in the 1.0 RC.

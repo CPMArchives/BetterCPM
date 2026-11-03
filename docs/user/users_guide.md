@@ -472,16 +472,16 @@ The System Disk contains the operating system and the following user-0 files. Th
 |---|---|
 | Both platforms: file commands | `DIR.COM`, `ERA.COM`, `TYPE.COM`, `REN.COM`, `VER.COM`, `COPY.COM`, `PIP.COM`, `ED.COM` |
 | Both platforms: system utilities | `CONFIG.COM`, `DUP.COM`, `TIME.COM`, `SYSGEN.COM`, `STAT.COM`, `SUBMIT.COM`, `CPX.COM`, `RSX.COM` |
-| Both platforms: support files | `README.TXT`, `STARTUP.SUB`, `DISK.FDB`, `RCP.CPX`, `R3PACK.RSX` |
+| Both platforms: support files | `README.TXT`, `STARTUP.SUB`, `DISK.FDB`, `RCP.CPX`, `R3PACK.RSX`, `P2DOS.RSX` |
 | Both platforms: portable monitors and tests | `ADM3A.RSX`, `ADMTST.COM`, `VT52.RSX`, `VT52TST.COM`, `ANSI.RSX`, `ANSITST.COM` |
 | TRS-80 Model 4 / trs80gp only | `M4SCRN.RSX`, `FREHDCLK.RSX` (requires FreHD hardware or emulation) |
-| z80pack / cpmsim only | `ANSISCRN.RSX`, `ZPRTC.RSX`, `BYE.COM` |
+| z80pack / cpmsim only | `ANSISCRN.RSX`, `ZPRTC.RSX`, `BYE.COM`, `MOUNT.COM`, `R.COM`, `W.COM` |
 
 A supplied clock provider is available for explicit loading; neither platform loads one by default. Model 4 startup does load its screen backend and ADM-3A personality, as shown in [Section 7.3](#section-7-3).
 
 The separate **primary Utilities Disk** (B:) includes DDT, DUMP, XSUB/BATCHIO, compression utilities, ZSM4/LINK, DASM/DSYM/DLINK, TED, SEARCH, CRCKSUM and MD5SUM. The **companion Utilities Disk** (C:) retains the historical BetterCPM-NOAH image name and contains NOAH.COM/OVL/TXT, PATCH.COM/TXT and COMPARE.COM/TXT. Use matching NOAH executable and overlay files. D: is work media where applicable. Inclusion does not replace outstanding platform acceptance; the candidate inventory and qualification records identify the exact files. The [BetterCP/M Utilities Manual](utilities_manual.md) covers Utilities Disk programs, beginning with the enhanced DUMP command reference. The **CP/M Tools Disk** is another separate collection, selected for SYSINFO, BIOSINFO, DISKINFO, MEMINFO and related portable diagnostics; it is not the System Disk or Utilities Disk.
 
-An implemented or buildable component is not automatically a selected distribution file. In particular, `CLS.COM`, `P2DOS.RSX`, the 104/105 clock-compatibility adapters, and `FDF.RSX` are not selected System Disk contents. CLS is available through `RCP.CPX`. Optional adapters and FDF support require separately prepared, compatible files; a maintainer can build these from the matching BetterCP/M source, then install extension files in A0 as described in [Section 8.2](#section-8-2). Diagnostic and conformance packages are also outside the selected distribution.
+An implemented or buildable component is not automatically a selected distribution file. In particular, `CLS.COM`, the 104/105 clock-compatibility adapters, and `FDF.RSX` are not selected System Disk contents. P2DOS.RSX is supplied in A0 on both System Disks, optional to load after the native provider; it is not enabled by startup. CLS is available through `RCP.CPX`. Optional adapters and FDF support require separately prepared, compatible files; a maintainer can build these from the matching BetterCP/M source, then install extension files in A0 as described in [Section 8.2](#section-8-2). Non-selected development diagnostics and conformance packages are outside the selected distribution; the monitor tests listed in the table are supplied.
 
 Historical ASM and LOAD examples assume separately obtained compatible tools; those programs are not selected BetterCP/M disk contents. DDT is supplied on the primary Utilities Disk; ED is supplied on the System Disk. Refer to the distribution manifest and the disk's release report for the approved inventory and any outstanding packaging decisions, rather than treating a development disk or build directory as a release inventory.
 
@@ -4140,7 +4140,7 @@ This means that the same provider can serve both native BetterCP/M applications 
 
 ##### Loading P2DOS Support
 
-`P2DOS.RSX` is not on the selected System Disk. To use it, obtain a compatible separately built carrier, install it in A0, then load an appropriate clock provider and the P2DOS extension. See [Section 3.2](#section-3-2), *What Is on Each Disk*, for distribution scope.
+`P2DOS.RSX` is supplied in A0 on both System Disks. To use it, load the platform’s native clock provider, then the P2DOS extension; neither is enabled by the default startup script. See [Section 3.2](#section-3-2), *What Is on Each Disk*, for distribution scope.
 
 For example, under z80pack:
 
@@ -8524,7 +8524,7 @@ The SET interface is implemented for compatibility with the native clock service
 
 ##### P2DOS Compatibility
 
-An optional, separately buildable `P2DOS.RSX` supplies the P2DOS-compatible clock interface. It is not selected System Disk content; install a compatible carrier in A0 before using the example below.
+The optional-to-load `P2DOS.RSX` on both System Disks supplies the P2DOS-compatible clock interface. Its carrier is already in A0; load the appropriate native clock provider before the example below.
 
 To use it under z80pack:
 
@@ -10253,7 +10253,7 @@ For more information, see [Chapter 11](#chapter-11), *Date and Time*, and [Secti
 
 ##### P2DOS Clock Compatibility
 
-The optional `P2DOS.RSX` implements compatibility with the P2DOS date-and-time interface. It is not on the selected System Disk; the following example requires a compatible separately built carrier installed in A0.
+The optional-to-load `P2DOS.RSX` implements compatibility with the P2DOS date-and-time interface. Its matched carrier is supplied in A0 on both System Disks; the following example loads it after the native provider.
 
 For example:
 
@@ -10410,7 +10410,7 @@ Load z80pack clock support:
 A0>RSX LOAD ZPRTC
 ```
 
-Load P2DOS-compatible clock services after separately installing the optional `P2DOS.RSX` in A0 and loading a native clock provider:
+Load P2DOS-compatible clock services using the supplied A0:P2DOS.RSX after loading a native clock provider:
 
 ```text
 A0>RSX LOAD P2DOS
@@ -12407,7 +12407,7 @@ The TIME utility implements a SET request, but the supplied providers reject it 
 
 ##### P2DOS Compatibility
 
-The optional, separately buildable `P2DOS.RSX` supports applications using the P2DOS-compatible date-and-time interface. It is not selected System Disk content; install a compatible carrier in A0 before using the example below.
+The optional-to-load `P2DOS.RSX` supports applications using the P2DOS-compatible date-and-time interface. Its matched carrier is supplied in A0 on both System Disks; load the platform’s native provider before the example below.
 
 The extension supplies the corresponding BDOS functions through BetterCP/M's native clock service.
 

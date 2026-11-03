@@ -71,6 +71,11 @@ and its exact disk/overlay/emulator configuration. A changed candidate does not
 inherit that receipt automatically. BCPM-AUD-006’s stale memory/cold-history
 text was corrected in merged PR #584. Neither result accepts public packages.
 
-Clock-frontend distribution and original-work/Montezuma licensing decisions
-remain open. No new membership or licensing grant is implied by these notes.
-Package freeze remains on hold.
+P2DOS.RSX is supplied in A0 on both System Disks, optional to load after the
+native provider; it is not loaded by default startup. Both 104/105 adapters
+(T104C3/T104Z8) are explicitly deferred from the 1.0 RC.
+
+Original BetterCP/M contributions are distributed under GPL-2.0-or-later;
+see the package’s LICENSE, COPYING and NOTICE for scope and separate terms.
+This grant does not relicense third-party or historical material. Montezuma
+rights evidence remains unresolved. Package freeze remains on hold.

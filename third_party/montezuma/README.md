@@ -8,9 +8,11 @@ Montezuma Micro CP/M boot disk `MMCPM.dmk`.
 - Extraction: 512-byte sectors in Montezuma logical skew order
 
 The binary is retained as third-party software and is not part of BetterCP/M's
-original source. Its CP/M redistribution status follows the Digital Research
-CP/M open-source distribution permission reaffirmed in 2022; it is not
-relicensed under BetterCP/M's project license.
+original source. Specific Montezuma redistribution permission has not been
+established. The Digital Research CP/M permission does not by itself demonstrate
+rights to independently authored Montezuma additions. This material is not
+relicensed by BetterCP/M's GPL declaration. See the
+[permission investigation](../../docs/engineering/Montezuma-Permission-Review-2026-11-03.md).
 
 ## Disk format catalogue
 

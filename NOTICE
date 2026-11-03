@@ -1,0 +1,27 @@
+BetterCP/M licensing and attribution scope
+
+Original BetterCP/M contributions: GPL-2.0-or-later, as declared in LICENSE;
+COPYING retains the unmodified GNU GPL version 2 text. Copyright remains with
+the respective authors. No new individual author/owner attribution is invented.
+
+Separate material retains its own notices and recorded terms:
+- third_party/**, including the pinned CP/M Tools source snapshot, upstream
+  archives and imported reference binaries/listings, is not relicensed here.
+- Hector Peraza’s TED and its maintained adaptation under src/utilities/ted/
+  retain GPL-2.0-or-later notices and the required source/build companions.
+- ZSM4 retains GPL-2.0-or-later and its complete corresponding source.
+- Digital Research LINK, DDT, PIP, ED, DUMP and historical reference/compiler
+  material retain the applicable CP/M permission/provenance records; do not
+  substitute this original-work grant for those records.
+- Richard Conn DASM imports and adaptation retain SIG/M historical provenance,
+  credits and the maintainer’s separately recorded distribution basis.
+- z80pack and patched host/guest components retain upstream notices and terms.
+- Montezuma catalog data, utilities and disassemblies are third-party works;
+  no broad redistribution permission is established by this declaration.
+- Third-party material inside documentation/evidence archives, code quotations
+  or generated source companions retains its original terms wherever located.
+
+A complete source snapshot or a collection of license files is not a blanket
+rights clearance. Preserve notices, source mappings and separate-work scope
+in each standalone package. Recheck actual package members before acceptance.
+Package freeze and public release acceptance remain on hold.

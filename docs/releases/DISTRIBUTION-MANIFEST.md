@@ -44,6 +44,7 @@ change the disk membership below.
 - R3PACK.RSX: required RSX-manager runtime container.
 - BYE.COM: cpmsim-only simulator exit command with confirmation, `/Y`, `/VER` and `/HELP`; [command reference](../user/BYE.md).
 - ZPRTC.RSX: cpmsim clock provider only.
+- P2DOS.RSX: optional-to-load clock compatibility frontend on both System Disks, using the loaded native TIME provider for Functions 200/201.
 - ADM3A.RSX and ADMTST.COM: portable ADM-3A personality and its diagnostic on both targets; load the matching screen backend first.
 - VT52.RSX / VT52TST.COM and ANSI.RSX / ANSITST.COM: portable personalities and diagnostics on both targets.
 - M4SCRN.RSX: Model 4 screen backend. ANSISCRN.RSX: cpmsim ANSI-host screen backend.
@@ -229,8 +230,12 @@ build. This packaging cleanup does not change the overlay architecture; the
 post-1.0 architectural review remains planned.
 
 Clock providers are shipped for explicit loading; no provider is loaded by
-default. P2DOS and 104/105 compatibility adapters are not selected by this
-manifest. No HELLO, STATEFUL, diagnostic, or conformance-test packages are shipped.
+default. P2DOS.RSX ships in A0 on both System Disks and is optional to load
+after the native clock provider; startup does not load it. T104C3.RSX and
+T104Z8.RSX (BDOS 104/105 frontends) are explicitly deferred from the 1.0 RC
+and are not shipped. Their source and historical qualification remain available
+for post-1.0 work. No HELLO, STATEFUL or conformance-test packages are shipped;
+ADMTST, VT52TST and ANSITST are the selected monitor diagnostics listed above.
 
 `metadata/distribution.json` is the machine-readable System Disk projection of
 this document. It records build/status/target information separately from disk
