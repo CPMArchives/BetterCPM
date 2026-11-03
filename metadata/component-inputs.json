@@ -764,6 +764,7 @@
       },
       "files": [
         "metadata/DISK.FDF",
+        "metadata/release-formats.fdf",
         "metadata/mm-builtin-formats.json",
         "src/bdos/dirsvc.mac",
         "src/bdos/dispatch.mac",
@@ -933,6 +934,7 @@
       },
       "files": [
         "metadata/DISK.FDF",
+        "metadata/release-formats.fdf",
         "metadata/mm-builtin-formats.json",
         "src/bdos/dirsvc.mac",
         "src/bdos/dispatch.mac",
@@ -1156,6 +1158,7 @@
       },
       "files": [
         "metadata/DISK.FDF",
+        "metadata/release-formats.fdf",
         "metadata/mm-builtin-formats.json",
         "src/bdos/dirsvc.mac",
         "src/bdos/dispatch.mac",
@@ -2046,6 +2049,7 @@
       },
       "files": [
         "metadata/DISK.FDF",
+        "metadata/release-formats.fdf",
         "metadata/mm-builtin-formats.json",
         "src/bdos/dirsvc.mac",
         "src/bdos/dispatch.mac",
@@ -2225,6 +2229,7 @@
       },
       "files": [
         "metadata/DISK.FDF",
+        "metadata/release-formats.fdf",
         "metadata/mm-builtin-formats.json",
         "src/bdos/dirsvc.mac",
         "src/bdos/dispatch.mac",
@@ -2404,6 +2409,7 @@
       },
       "files": [
         "metadata/DISK.FDF",
+        "metadata/release-formats.fdf",
         "metadata/mm-builtin-formats.json",
         "src/bdos/dirsvc.mac",
         "src/bdos/dispatch.mac",
@@ -3686,6 +3692,7 @@
       },
       "files": [
         "metadata/DISK.FDF",
+        "metadata/release-formats.fdf",
         "metadata/mm-builtin-formats.json",
         "src/bdos/dirsvc.mac",
         "src/bdos/dispatch.mac",
@@ -3820,6 +3827,7 @@
       },
       "files": [
         "metadata/DISK.FDF",
+        "metadata/release-formats.fdf",
         "metadata/mm-builtin-formats.json",
         "src/bdos/dirsvc.mac",
         "src/bdos/dispatch.mac",
@@ -3968,6 +3976,7 @@
       },
       "files": [
         "metadata/DISK.FDF",
+        "metadata/release-formats.fdf",
         "metadata/mm-builtin-formats.json",
         "src/bdos/dirsvc.mac",
         "src/bdos/dispatch.mac",
@@ -4101,6 +4110,7 @@
       },
       "files": [
         "metadata/DISK.FDF",
+        "metadata/release-formats.fdf",
         "metadata/mm-builtin-formats.json",
         "src/bdos/dirsvc.mac",
         "src/bdos/dispatch.mac",
@@ -4234,6 +4244,7 @@
       },
       "files": [
         "metadata/DISK.FDF",
+        "metadata/release-formats.fdf",
         "metadata/mm-builtin-formats.json",
         "src/bdos/dirsvc.mac",
         "src/bdos/dispatch.mac",

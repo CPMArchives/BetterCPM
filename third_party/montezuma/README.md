@@ -25,6 +25,8 @@ to `DISK.FDB`. The migration draws on 96 external definitions and 16 internal
 CONFIG definitions. Five external definitions are excluded. The resulting
 107-descriptor, 8,320-byte file is present on both reviewed System disks
 (SHA-256 `4dea7bd989580fc13f61e79d47e92466a440799c41b002f4caba65ec8f893c03`).
+The production release builder now preserves all 107 compatibility descriptors, substitutes field-identical independent MMF017/MMI008 definitions, and appends the native BCPM780 descriptor (108 total). The hash above identifies the historical 107-entry migration, not the expanded release catalogue. See [1.0 format support](../../docs/platform/FORMAT-SUPPORT-1.0.md).
+
 The guest reads the binary catalogue. The raw catalogue and internal definitions still travel in the Source and
 nested Utilities source kits. The 1.0 package selection now omits the
 original utilities, disassembly listings and the document quoting the BIOS. See
@@ -74,8 +76,7 @@ The [independent format trial](../../docs/engineering/evidence/2026-11-03-releas
 identified the actual release media as CCS 332K (MMF017), 800K data (MMI008)
 and BetterCP/M's own 780K System layout. Historical MMI012 has 790K of
 allocation space and puts the directory 10 KiB earlier than the release
-System. The independent definitions are review inputs. The shipping build
-and its catalogue still depend on historical material. Research-only tests that
+System. The production builder uses the independent release definitions while retaining the historical compatibility catalogue and its notices. Research-only tests that
 exercise original Montezuma binaries require a separate, privately supplied reference copy.
 
 ## DUP 2.01 working disassembly
