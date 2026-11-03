@@ -127,13 +127,16 @@ def main():
         disk.write_bytes(make_dmk(raw.read_bytes()))
         cmd = [str(DEFAULT_EMULATOR), '-m4', '-batch', '-turbo', '-d0', str(disk),
                '-id', '3000', '-itime', '0']
+        if args.system_image:
+            cmd=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-ktx','-d0',str(disk),
+                 '-id','4000','-itime','15000','-iw','Type TYPE README.TXT for more','-id','300']
         if args.disk_full:
             # Capture the failed save while the modified session is still live.
             # Inspect its directory after shutdown, before issuing another command.
             steps = steps[:-3] + [('Y', 'FDB: file operation failed.')]
         for keys, message in steps:
-            cmd += key_args(keys+'\r') + ['-iw', ('A0> ' if message=='A0>' else message.rstrip()), '-id', '3000' if message=='A0>' else '200']
-        run(cmd + ['-id', '4000' if args.disk_full else '60', '-it', '-ix'], cwd=out, check=True, timeout=240)
+            cmd += key_args(keys+'\r') + ['-iw', ('A0> ' if message=='A0>' else message.rstrip()), '-id', '3000' if message=='A0>' else '200'] + (['-it'] if args.system_image else [])
+        run(cmd + ['-id', '4000' if args.disk_full else '60', '-it', '-ix'], cwd=out, check=True, timeout=900 if args.system_image else 240)
         if args.disk_full:
             snapshot = screen(next(out.glob('trs80-text-*.bin')))
             assert 'FDB: file operation failed.' in snapshot
@@ -145,7 +148,7 @@ def main():
     if args.config_read:
         transcript = ((out/'transcript.bin').read_bytes().decode('ascii', 'replace')
                       if args.target == 'z80pack' else
-                      screen(next(out.glob('trs80-text-*.bin'))))
+                      '\n'.join(screen(p) for p in out.glob('trs80-text-*.bin')))
         assert 'Disk configuration changed (until cold boot).' in transcript
         assert 'FDB GATE FILE READ PASS' in transcript
         assert 'Nothing changed.' not in transcript
