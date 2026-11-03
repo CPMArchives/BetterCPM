@@ -113,3 +113,12 @@ hardware results, if later supplied, must be recorded separately.
 This document records future work. Open an actionable issue only when a bounded
 piece of port work is selected; the inventory itself does not require speculative
 issues or changes to the shared core.
+
+## Related post-1.0 architecture work
+
+The [Functional Commonality and Shared-Library Architecture Audit](releases/1.0-ROADMAP.md#functional-commonality-and-shared-library-architecture-audit)
+is a separate read-only workstream covering utility functionality, duplicated
+code and independently implemented equivalent or overlapping capabilities.
+It will produce prioritized, source-referenced recommendations with behavioral,
+memory/TPA and compatibility tradeoffs. It does not change the platform
+priorities above, add pre-1.0 scope, or authorize refactoring or port changes.
