@@ -76,10 +76,20 @@ packed records within the 192-byte allocation.  It may evict the oldest whole
 record when required.  It may not grow beyond the published PDS boundary.
 Failure to add one command leaves the segment valid and must not impair the CCP.
 
-The current source validates or resets history when the reconstructed CCP
-starts.  Its cold gateway entry does not yet force a previously valid object to
-empty.  Making cold boot perform that unconditional initialization is a 1.0
-implementation task, not a reason to enlarge or redesign the PDS contract.
+True cold entry (SYS_COLD in src/system/gateway.mac) invalidates the history
+signature before reconstructing the CCP. CCP_HINIT then creates the canonical
+empty version-1 object. SYS_WARM bypasses that invalidation and preserves valid
+history. Cold-history initialization is implemented; it is not an outstanding
+1.0 task and does not require enlarging or redesigning the PDS.
+
+Signature/version validation is not full packed-record validation. As recorded
+in BCPM-AUD-003, a pre-corrupted object retaining valid magic and version can
+still contain unsafe count, used-span or record lengths. Comprehensive
+validation remains deferred to post-1.0 under the explicit audit disposition;
+this lifecycle description does not claim that malformed records are safe.
+Reopen that disposition before release if supported input can produce invalid
+records, or if the history writer or PDS layout changes. See
+../engineering/AUDIT-BLOCKER-CORRECTIONS.md, "Audit follow-up on 3 November 2026".
 
 
 5. CAPACITY AND TPA

@@ -136,9 +136,9 @@ classes.  From high to low, the intended 64K organization is:
          BIOS buffers
          Directory and filesystem services
          BDOS core
-  base+100h  Fixed core BDOS entry
-  base+080h  Resident Extension Control Block
-  base       BetterCP/M system gateway
+  LY_BDOS    Fixed core BDOS entry
+  LY_SYS+080h  Resident Extension Control Block
+  LY_SYS     BetterCP/M system gateway
          Persistent Data Segment (PDS), growing downward
          Installed RSXs, allocated downward
   xxxxh  Dynamic CP/M compatibility gateway
@@ -180,14 +180,16 @@ The jump at `0005h` targets the dynamic CP/M compatibility gateway.  Its
 operand at `0006h..0007h` therefore advertises the true exclusive TPA ceiling
 expected by historical CP/M software.  The gateway always occupies the
 lowest protected resident address and dispatches through the installed RSX
-chain before reaching the fixed BDOS core at system base + 100h.
+chain before reaching the fixed BDOS core at LY_BDOS.
 
 "Fixed" means fixed during a running configuration, not an architectural
-promise of C000h/C100h. The packed Model 4 build uses D200h/D300h, with its
-no-RSX compatibility gateway at CFFDh. src/system/layout.inc defines build
-addresses; application and module BDOS calls use 0005h. These private
-addresses may change between builds. Engineering Specification 126 records
-the complete packed map and measured TPA.
+promise of particular private addresses or a fixed offset between components.
+The current default RAM layout uses D5C4h for the system gateway (LY_SYS)
+and D6BCh for the BDOS core (LY_BDOS), with its no-RSX compatibility gateway
+at D501h (LY_HIST-3). src/system/layout.inc defines these build addresses;
+application and module BDOS calls use 0005h. These private addresses may
+change between builds or profiles. The emitted layout for the selected build,
+not an older packed-map example, determines its actual placement.
 
 Installed RSXs are dynamically loadable and unloadable, but remain protected
 for as long as they are installed.  Changing the active RSX set recalculates
@@ -225,11 +227,12 @@ establishes the dynamic compatibility gateway, initializes the active CPX
 reconstruction table from the saved CPX profile, and loads the CPXs and CCP.
 
 The active addresses are recorded in a fixed, versioned Extension Control
-Block at `C080h`.  The descriptor, not a compiled CCP address, is the source
-of truth for the active RSX head, CPX head, region boundaries, CCP base and
-size, TPA ceiling, and configuration generation.  Stable gateways consult
-the descriptor; movable components must not treat their current addresses as
-permanent ABI values.
+Block at LY_PDSD (LY_SYS+080h), D644h in the current default RAM layout.
+The versioned discovery contract, not a hard-coded descriptor or CCP address,
+is the source of truth for the active RSX head, CPX head, region boundaries,
+CCP base and size, TPA ceiling, and configuration generation. Stable gateways
+consult the descriptor; movable components must not treat its current address
+or their own current addresses as permanent ABI values.
 
 The packed Model 4 build reserves `D504h..D5C3h` as the fixed 192-byte 1.0 PDS,
 including ten history-control/working bytes and 182 packed command-record
