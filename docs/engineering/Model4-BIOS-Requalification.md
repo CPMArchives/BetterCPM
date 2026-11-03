@@ -31,6 +31,28 @@ screens and old release conformance are not full-image acceptance for this disk.
 The later audit follow-up assigned BIOS 1.14 revision 002 to both recorded
 BIOS binaries. [Assignment and replay procedure](AUDIT-BLOCKER-CORRECTIONS.md#audit-follow-up-on-3-november-2026)
 
+The Model 4 screen backend built for this BIOS is M4SCRN 1.7 revision 002.
+The previous revision-001 carrier used cursor and column addresses EBA7h and
+EBA9h. Rebuilding at revision 001 with the current BIOS changes those bindings
+to EBC0h and EBC2h. The revision-002 rebuild matches the qualified 1,718-byte
+carrier, SHA-256 `1d88316632621b89f3a3062c85412a7a5b052e62dac031bfc632029350803edb`.
+
+The [assignment receipt](audit-blockers-20261103/M4SCRN-acceptance.json)
+records the default trs80gp cross-build identity. To replay the assignment,
+extract the [build reports and carriers](audit-blockers-20261103/m4scrn-revision-002.tar.gz)
+into a fresh directory, set `evidence` to that directory, and run from the
+repository root:
+
+```sh
+python3 tools/component_revision.py accept \
+  --reference-report "$evidence/old.json" --reference-artifact "$evidence/old.rsx" \
+  --candidate-report "$evidence/candidate-001.json" --candidate-artifact "$evidence/candidate-001.rsx" \
+  --proposal "$evidence/proposal.json" \
+  --final-report "$evidence/final.json" --final-artifact "$evidence/final.rsx" \
+  --output "$evidence/replayed.json"
+cmp "$evidence/replayed.json" docs/engineering/audit-blockers-20261103/M4SCRN-acceptance.json
+```
+
 ## ROM metadata and exact expectations
 
 The first clean preparation stopped at an ownership consistency check. The
