@@ -35,6 +35,8 @@ class FDBCommand(Command):
         self.mem[:]=bytes(65536)
         self.mem[0x100:0x100+len(self.image)]=self.image
         self.mem[5]=0xc9;self.mem[6:8]=tpa.to_bytes(2,'little')
+        for at in (0x5c, 0x6c):
+            self.mem[at+1:at+12] = b' ' * 11
         for at,name in zip((0x5c,0x6c),command.split()):
             drive=0
             if ':' in name: drive=ord(name[0])-64;name=name[2:]
@@ -51,7 +53,7 @@ class FDBCommand(Command):
         self.cases+=1
         return self.console
 
-def machine(work):
+def machine(work, command_class=FDBCommand):
     image=build(destination=work)
     z80pack=Path.home()/'projects/git/z80pack';core=z80pack/'z80core'
     (work/'sim.h').write_text('#define DEF_CPU Z80\n#define EXCLUDE_I8080\n')
@@ -64,7 +66,7 @@ def machine(work):
         match=re.search(rf'^([0-9a-f]{{4}}).*\b{new}:',listing,re.M|re.I)
         listing+=f'\n{match[1]} {old}: '
 
-    return FDBCommand(C.CDLL(str(work/'core.so')),image,listing)
+    return command_class(C.CDLL(str(work/'core.so')),image,listing)
 
 def main():
     work=ROOT/'build/fdb-test';work.mkdir(parents=True,exist_ok=True)
