@@ -43,7 +43,7 @@ def main():
     stock=catalogue_payload()
     # Keep the qualification filesystem small; all system tracks are copied
     # from the supplied freshly assembled platform build.
-    names=[('FDB.COM',image),('DISK.FDB',stock),('HOST.FDF',decompile(stock).encode()),
+    names=[('FDB.COM',image),('DISK.FDB',stock),('HOST.FDF',decompile(stock).encode('ascii') + b'\x1a'),
            ('RCP.CPX',(root/'build/cpx/RCP.CPX').read_bytes())]
     if args.target=='z80pack':names.append(('BYE.COM',(root/'build/z80pack-tools/BYE.COM').read_bytes()))
     files=[({'name':name,'user':0},data) for name,data in names]
