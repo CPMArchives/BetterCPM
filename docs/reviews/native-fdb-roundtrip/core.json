@@ -1,0 +1,12 @@
+{
+  "cases": 40,
+  "com_bytes": 9601,
+  "stock_bytes": 8448,
+  "stock_sha256": "06e2d88e30c38bebe4eaf0975a3e302086874e719109dc3898bb72a0f7ded6a5",
+  "stack_bytes": 32,
+  "workspace_start": 32768,
+  "workspace_end_exclusive": 51200,
+  "address_span_bytes": 50944,
+  "standard_tpa_bytes": 54272,
+  "standard_tpa_margin_bytes": 3328
+}

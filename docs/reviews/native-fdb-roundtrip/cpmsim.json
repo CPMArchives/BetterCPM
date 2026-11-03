@@ -1,0 +1,35 @@
+{
+  "target": "z80pack",
+  "result": "PASS",
+  "entries": 108,
+  "files": {
+    "DISK.FDB": {
+      "bytes": 8448,
+      "sha256": "06e2d88e30c38bebe4eaf0975a3e302086874e719109dc3898bb72a0f7ded6a5"
+    },
+    "ROUND.FDF": {
+      "bytes": 40576,
+      "sha256": "35d1dc50ca366fe82359f037f2b49057280f3b58310ce2b592fd6c47572b7f76"
+    },
+    "ROUND.FDB": {
+      "bytes": 8448,
+      "sha256": "06e2d88e30c38bebe4eaf0975a3e302086874e719109dc3898bb72a0f7ded6a5"
+    },
+    "HOST.FDB": {
+      "bytes": 8448,
+      "sha256": "06e2d88e30c38bebe4eaf0975a3e302086874e719109dc3898bb72a0f7ded6a5"
+    }
+  },
+  "fdb_com_bytes": 9601,
+  "fdb_com_sha256": "8c44c6687c1fd2139b001e3677b21fd7246fedb889f0127ccc6d80d6cd54efc8",
+  "emulator_sha256": "0f6b256cd6beea2ab7bf0eab8a9cc2a5241ed772408e811150c3f6e0f5cff4e8",
+  "build_root": "build/fdb-platform-work/z80pack",
+  "tpa_address_span_bytes": 50944,
+  "standard_tpa_bytes": 54272,
+  "source_revision": "ddb7d7db15015a1114ef930299704c3a84d2db77",
+  "stack_free_bytes_by_command": [
+    482,
+    490,
+    490
+  ]
+}
