@@ -546,10 +546,9 @@
     "ui-current-runtime": "PASS 24 steps using freshly reconstructed runtime",
     "noargs-current-runtime": "PASS 22 steps using freshly reconstructed runtime"
   },
-  "native": "NOT RUN: one consolidated returning-groups/audit-blocker batch prepared for a normal desktop Terminal",
+  "native": "PASS: supplied seven-job selected suite campaign and all three monitor personalities on the exact same whole-disk SHA-256. Separate audit-blocker PASS applies to matching BDOS/SYSBUILD/RLMBUILD artifacts; see ../2026-11-03-merged-native-pass/results.json.",
   "unresolved": [
     "Standard combined System build: bdos-live-state template source drift in metadata/rom-profile-ram-z80pack.tsv versus metadata/rom-ram-ownership.tsv. Separate unmerged reconciliation already active in Model 4 workstream.",
-    "Current Model 4 candidate needs native execution; no historical receipt transferred by source name.",
     "Profile/device/manual/installation and final release acceptance remain separate."
   ],
   "harness_sha256": {
@@ -571,5 +570,6 @@
       "profile": "qualification",
       "executable_sha256": "981a69da751fb9dc5a25bcbd2dc56ccf270943605f463e9c5882b5e7811ef443"
     }
-  }
+  },
+  "native_evidence": "../2026-11-03-merged-native-pass/results.json"
 }

@@ -5,7 +5,8 @@ checkpoint containing #571–#574. Builds use the isolated
 `validation/merged-release-232f059` worktree. RC564 masters are preserved.
 
 **Both RAM System candidates and both paired Utilities sets are built.
-cpmsim card accounting is reconciled. Release acceptance remains open.**
+cpmsim card accounting is reconciled. The supplied native suite and three
+monitor campaigns pass on the identical Model 4 image. Release acceptance remains open.**
 
 The normal combined System preparation stopped at
 `test_rom_profile_ram_map.py:main`: `bdos-live-state template source drifted
@@ -110,14 +111,18 @@ The remaining native work is consolidated. The existing
 to run its seven returning-group jobs and the three prepared audit-blocker
 scenarios in one invocation. It records runner identity and keeps separate
 logs/results for each job. Ordinary existing invocations retain their scope.
-The packet is prepared and bound to the reviewed production artifacts; **none
-of these current-candidate native jobs has executed here**. CLI/syntax checks
-do not qualify the new batch option on Model 4.
+The local packet was prepared without execution. Subsequently supplied native
+results cover the same seven suite jobs on an exactly matching System image;
+the separate successful audit-blocker packet matches the production artifact
+hashes. Their bounded assertions are retained below. The new aggregate batch
+option itself has only CLI/syntax checks; no native execution of that wrapper
+is claimed.
 
 `build/merged232-validation/Run-Model4-Qualification.command` is prepared for a
 normal Terminal launch. It requires one start, without per-test operator input.
-It should be scheduled against the stable final candidate, rather than asking
-the maintainer to keep running fragmented checks during source reconciliation.
+It is a future convenience, not another requirement to run the already passing
+checks. Reuse the verified native evidence below; do not ask the maintainer to
+repeat this packet merely because it lives in another worktree.
 
 ## Evidence and reproduction
 
@@ -149,7 +154,37 @@ flags. `$BASELINE`, `$SUITE`, `$SIMULATOR` and `$EVIDENCE` denote the absolute
 paths recorded in the receipts. pyte-based runs use the private dependency path
 recorded in `python-deps.json`.
 
-Remaining gates are the normal combined-build reconciliation, native execution,
-profile/release review, documentation and fresh-package installation. No release
+Remaining gates are the normal combined-build reconciliation, profile/release
+review, documentation and fresh-package installation. Selected native suite,
+monitor and matching-artifact audit-blocker gates are closed as recorded below. No release
 masters were promoted, no tag or release was published, and no main merge was
 performed in this workstream.
+
+## Supplied native pass: reuse matching bytes
+
+The maintainer supplied `model4-bios-requal-20261103-150136/conformance/result.json`
+with PASS_SELECTED_GROUPS for all seven jobs (eleven reviewed suite programs).
+Its original source checkpoint is `0bd7f127ebca849fe613c7a36b3cd9c1c38314a8`;
+its System SHA-256 is exactly the `83e9ac…` image above. Different source
+checkpoints produced identical disk bytes. Keep the original receipt identity
+and reuse its bounded assertions, rather than invent a new execution from this
+worktree. Suite program checksums match the pinned a9a878f revision.
+
+All three companion monitor runs also pass: ADM3A, VT52 and ANSI. Their receipts
+include stage checks, matching shipped-file hashes, unchanged system tracks,
+filesystem status zero, and unload/53K assertions. All use the same recorded
+emulator. Captured summaries, receipt statuses, exact baseline bytes, program
+hashes, monitor runner identity and shipped-file inventories were rechecked.
+This does not claim an exhaustive terminal protocol or an audible-bell test.
+
+The separate `BetterCPM-audit-blockers/build/blocker-validation/model4-final`
+receipt passes invalid-drive rejection, low-TPA refusal/query returns and both
+normal-TPA builders. Its BDOS/SYSBUILD/RLMBUILD hashes match this worktree's
+products exactly, under the same emulator. These are matching-artifact assertions
+on private diagnostic fixtures; their boot disk is not relabeled as the whole
+distribution image. No repeat of those targeted tests is required here.
+
+[Native evidence and scope](evidence/2026-11-03-merged-native-pass/results.json)
+and its capture archive preserve the supplied and supporting receipts. The
+original prepared/NOT RUN records above remain historical. The supplied
+`result(1).json` and `result(2).json` contain the same aggregate receipt.
