@@ -762,7 +762,7 @@ UB_LOMLP:                               ; lomlp
 
   ; U04 -- common FCB drive view. More accessors join this block as file calls
   ; move in; no public operation receives a private FCB decoder.
-  ; DE=FCB. Return C=zero-based drive, carry set for an invalid drive byte.
+  ; DE=FCB. Return C=zero-based drive, carry and NZ for an invalid drive byte.
 
 ; ================================================================================
 ; =                         Common File-Service Context                          =
@@ -796,6 +796,7 @@ UB_FCBEXP:                              ; fcbexp
         RET
 
 UB_FCBBAD:                              ; fcbbad
+        OR      A                       ; A=4..254: reject NZ context callers too
         SCF
         RET
 

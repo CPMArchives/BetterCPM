@@ -37,6 +37,16 @@ START:  CALL    UV_CHECK
         CALL 5
         JP 0
         ENDIF
+        LD      HL,(6)                  ; include all three images and RLM header
+        LD      DE,HEADER+HDRSIZE
+        OR      A
+        SBC     HL,DE
+        JR      NC,STARTMEM
+        LD      DE,NOMEM
+        CALL    PRINT
+        RET                             ; retain caller stack on rejection
+NOMEM:  DB      'RLMBUILD: insufficient active TPA.',13,10,'$'
+STARTMEM:
         LD      SP,03F00H               ; enter CCP relocatable-module builder
         LD      DE,BANNER
         CALL    PRINT
