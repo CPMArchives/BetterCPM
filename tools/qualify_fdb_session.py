@@ -61,9 +61,9 @@ def main():
     if args.exchange:
         steps[4:4] = [('L', 'capacity in bytes): '), ('test109', 'Choice: '),
                       ('O', 'working catalogue): '), ('TEST109', 'or .FDF: '),
-                      ('TARGET.FDB', 'Replace entire file (Y/N)? '), ('Y','Catalogue saved and verified.'),
+                      ('TARGET.FDB', 'Replace entire file (Y/N)? '), ('Y','TARGET.FDB exported and verified.'),
                       ('O', 'working catalogue): '), ('', 'or .FDF: '),
-                      ('ALL.FDF', 'Create new file (Y/N)? '), ('Y','Catalogue saved and verified.')]
+                      ('ALL.FDF', 'Create new file (Y/N)? '), ('Y','ALL.FDF exported and verified.')]
     if args.disk_full:
         steps[-2:] = [('Y', 'file operation failed'), ('Q', 'C Cancel: '), ('D', 'A0>')]
     if args.target == 'z80pack':

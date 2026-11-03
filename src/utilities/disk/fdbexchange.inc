@@ -265,3 +265,9 @@ EXPORTSCOPE:DB 'Export ID (Return for entire working catalogue): ',0
 EXPORTDEST:DB 'Export destination .FDB or .FDF: ',0
 EXPORTALL:DB 'Export entire working catalogue',13,10,0
 EXPORTSINGLE:DB 'Export format ',0
+
+EXPORTED:LD HL,DESTFCB
+        CALL SHOWNAME
+        LD HL,EXPORTOK
+        JP PUTS
+EXPORTOK:DB ' exported and verified.',13,10,0
