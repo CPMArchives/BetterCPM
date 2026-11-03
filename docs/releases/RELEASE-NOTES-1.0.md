@@ -30,6 +30,8 @@ explicit source identity without requiring a BetterCP/M .git directory.
 - Existing PDF/DOCX manual editions have not been reconciled against all recent Markdown changes; candidate Documentation contains editable/textual documentation instead. Engineering history retains dated evidence and earlier outcomes.
 - The Utilities packaging failure observed on the Linux host is historical evidence. New macOS assembly and independent inventory/readback checks pass; this does not establish Model 4 runtime acceptance.
 
+The [35c56a03 technical lock and qualification record](../engineering/Qualification-Lock-35c56a03.md) identifies the qualified core, runtimes and unaffected utilities. FDB.COM, CONFIG.COM and DISK.FDB remain open for 1.0 integration. The package freeze remains on hold.
+
 ## Remaining acceptance work
 
 Fresh-package installation passed on both emulators for the six-package
