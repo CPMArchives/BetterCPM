@@ -14,7 +14,12 @@ def stage(target, raw, system_image, fixtures, out):
     raw.write_bytes(extract_raw(payload) if target == 'trs80gp' else payload)
     (out/'media-origin.json').write_text(json.dumps({
         'image': str(image), 'sha256': hashlib.sha256(payload).hexdigest()}, indent=2)+'\n')
+    receipt = json.loads((image.parent/'report.json').read_text())
+    shipped = {item['name']: item for item in receipt['included'] if item.get('user',0) == 0}
     for index, (name, data) in enumerate(fixtures):
+        if name in shipped:
+            assert hashlib.sha256(data).hexdigest() == shipped[name]['sha256'], 'fixture would replace shipped '+name
+            continue
         path = out/f'fixture-{index}'
         path.write_bytes(data)
         subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(raw),
