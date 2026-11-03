@@ -1,6 +1,7 @@
 # Model 4 CAPS native diagnosis
 
-Status: unresolved native compatibility observation, 2026-11-03. This is a
+Status: one native single-press sequence passes; earlier host-key observations
+remain unresolved, 2026-11-03. This is a
 follow-up to `Model4-Lowercase-First-Draft.md`. Production BIOS source and
 its 757-byte allocation remain unchanged from `37fa57a`.
 
@@ -82,6 +83,40 @@ checked. The app-launch API is mocked for the request check; no native result
 is inferred from it. Generated `report.json` records the exact COM/image hashes
 and leaves native input qualification pending.
 
+## Native capture — 13:33 run
+
+The maintainer ran the new diagnostic image, SHA-256
+`26f119878a2631e1ebc9400bb551b5f7315a29e929a565e6fb2c2f34682b651b`.
+The screenshot shows actual LAST-BYTE changes `61,41,61,41,61`. The matching
+capture folder's event log contains five A-key presses/releases and four CAPS
+presses/releases. After the first A-key actuation, each round is exactly:
+
+```text
+k731   CAPS contact down
+k011   A contact down
+k730   CAPS contact up
+k010   A contact up
+```
+
+That sequence repeats four times. Each CAPS press changed the subsequent A-key
+return once. The two-press requirement was not reproduced in this run. In
+particular, the log rules out a maintained contact spanning alternate CAPS
+actuations for these four rounds. The emulated release occurs when ordinary
+typing resumes, rather than appearing as a separate event before A goes down.
+
+Brief screen rows with a different RAW contact and confirmed STATE settle on
+following scans. They are consistent with sampling around the confirmation
+interval, rather than evidence of a missed release in this sequence. This is
+not a continuous timing trace.
+
+The evidence is recorded as `PASS_FOR_CAPTURED_SEQUENCE` in
+`evidence/2026-11-03-model4-caps/native-single-press-sequence.json` and its keyboard
+event snapshot. There are no event timestamps, so actual press durations cannot
+be measured; the requested protocol used half-second presses. Keyboard layout
+selection was not captured by the launcher. The earlier double-press and
+remapped-key observations remain unqualified. Ordinary short-tap comparison and
+the planned application/regression checks are still needed.
+
 ## Native handoff
 
 1. Double-click the new standalone launcher, or mount its DMK in drive 0 of a
@@ -99,5 +134,5 @@ both physical edges as lock toggles merely to accommodate a possible host latch:
 a complete momentary key actuation would then toggle twice on real hardware.
 
 The earlier validated candidate and its conformance evidence remain separate.
-This diagnostic does not qualify CAPS, terminal providers, TED, SEARCH, or the
-new production candidate for release.
+This diagnostic and its single native sequence do not establish full CAPS,
+terminal-provider, TED, SEARCH, or new production-candidate release acceptance.
