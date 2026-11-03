@@ -108,6 +108,11 @@ def main():
     expected[6:8]=bytes((100,0))
     assert m.drives[2]==expected
     assert m.files[out]==serialize((*entries,replace(base,ident='CAP1',description='Captured format',dsm=100)))
+    viewfiles={src:stock,diskkey(1,'FDBVIEW.OVL'):(work/'FDBVIEW.OVL').read_bytes()}
+    console=run('P\r:B\r:C\r4\rA\rQ\rQ\r', viewfiles)
+    assert '<unknown> | <unknown>' in console and m.files==viewfiles
+    console=run('B\r\rMMI012\rG\r1\rQ\rD\r@\rE\rG\r0\rQ\rQ\r',viewfiles)
+    assert 'Cannot inspect this source' in console and 'Working format pending' not in console
     print('PASS effective geometry, DSM warning, external working copy, mixed 255-slot editing and save')
 
 

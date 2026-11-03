@@ -27,7 +27,8 @@ def build(assembler=Path.home()/'bin/z80asm', destination=ROOT/'build/fdb'):
     source = '\n'.join([
         (UTILITIES/'fdb.mac').read_text(),
         (UTILITIES/'disk/fdbsession.inc').read_text(),
-        validator.replace(fixed_limit, 'LD HL,(ARENALIMIT)\n'),
+        validator.replace(fixed_limit, 'LD HL,(ARENALIMIT)\n').replace(
+            '        LD (FDBOWNBASE),HL', '        LD A,(VIEWACTIVE)\n        OR A\n        JR Z,VIEWOWNNORMAL\n        LD HL,IMPORTBUF\n        LD (FDBOWNBASE),HL\n        JR FDBOWNFIT\nVIEWOWNNORMAL:LD (FDBOWNBASE),HL'),
         'STACK: DS 512\nSTACKTOP:\nIMAGEEND:',
         '        .PHASE 0B900H\nEDITORBASE:',
         (UTILITIES/'disk/fdbdrive.inc').read_text(),
@@ -60,15 +61,15 @@ def build(assembler=Path.home()/'bin/z80asm', destination=ROOT/'build/fdb'):
         symbols[label.upper()] = int(value,16)
     view = (UTILITIES/'disk/fdbview.inc').read_text()
     labels = set(re.findall(r'^([A-Z][A-Z0-9_]*):', view, re.M))
-    links = 'WORKBUF EQU 05B00H\n' + ''.join(f'{label} EQU 0{value:04X}H\n' for label,value in symbols.items() if label not in labels)
+    links = 'WORKBUF EQU 05B00H\nBDOS EQU 5\nIMPORTBUF EQU 03600H\nFDFRAM EQU 08000H\n' + ''.join(f'{label} EQU 0{value:04X}H\n' for label,value in symbols.items() if label not in labels)
     with tempfile.TemporaryDirectory(prefix='fdb-view-') as temp:
         source = Path(temp)/'view.mac'
-        source.write_text('        ASEG\n        ORG 08000H\n'+links+'        JP VIEWENTRY\n        DB '+','.join(map(str,token))+'\n        DW 0\n'+view+'\n        END\n')
+        source.write_text('        ASEG\n        ORG 0A500H\n'+links+'EDITBIND EQU CURB\n'+'        JP VIEWENTRY\n        DB '+','.join(map(str,token))+'\n        DW 0\n'+view+'\n        END\n')
         subprocess.run([str(assembler),'-e32','-fb',f'-o{destination / "FDBVIEW.OVL"}',f'-l{destination / "view.lst"}',str(source)],check=True)
     overlay = (destination/'FDBVIEW.OVL').read_bytes()
-    if overlay[:0x8000] == bytes(0x8000):
-        overlay=overlay[0x8000:]
-    if len(overlay)>0x2500:
+    if overlay[:0xa500] == bytes(0xa500):
+        overlay=overlay[0xa500:]
+    if len(overlay)>0x1400:
         raise ValueError('FDB viewer exceeds its overlay arena')
     overlay = bytearray(overlay)
     overlay.extend(bytes((-len(overlay)) % 128))

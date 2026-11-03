@@ -26,6 +26,7 @@ SESSIONSTART:
         LDIR
 STARTNAMED:
         XOR A
+        LD (VIEWACTIVE),A
         LD (VIEWCOMPARE),A
         LD (ACTION),A
         JP READSOURCE

@@ -945,6 +945,10 @@ EDSEEN: LD (HL),1
 ; EDMAKE validates only scratch RAM. Keep the working format on screen
 ; when its temporary geometry or allocation values cannot yet be saved.
 EDCHECKFAIL:
+        LD HL,(VIEWCLEANUP)
+        LD A,H
+        OR L
+        JP NZ,VIEWERROR
         LD SP,STACKTOP
         XOR A
         LD (EDITCHECK),A

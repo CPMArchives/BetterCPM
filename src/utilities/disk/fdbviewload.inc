@@ -6,10 +6,10 @@ STARTVIEW:LD (VIEWCOMPARE),A
         LD DE,INPUT
         CALL COPYFCB
         CALL OPENIN
-        LD HL,FDFRAM
+        LD HL,0A500H
 VIEWLOAD:
         LD (POS),HL
-        LD DE,0A500H
+        LD DE,0B900H
         OR A
         SBC HL,DE
         JP NC,MEMERR
@@ -27,13 +27,13 @@ VIEWLOAD:
         ADD HL,DE
         JR VIEWLOAD
 VIEWLOADED:CALL CLOSEIN
-        LD HL,FDFRAM+3
+        LD HL,0A500H+3
         LD DE,VIEWTOKEN
         LD B,4
         CALL CMPFIELD
         JP NZ,BADFDB
         LD HL,(POS)
-        LD DE,FDFRAM+9
+        LD DE,0A509H
         OR A
         SBC HL,DE
         JP C,BADFDB
@@ -60,13 +60,17 @@ VCRCNEXT:DJNZ VCRCBIT
         LD A,B
         OR C
         JR NZ,VCRC
-        LD DE,(FDFRAM+7)
+        LD DE,(0A507H)
         OR A
         SBC HL,DE
         JP NZ,BADFDB
-        JP 08000H
+        JP 0A500H
 VIEWCOMPARE:DB 0
 VIEWACTIVE:DB 0
 VIEWFCB:DB 0,'FDBVIEW OVL'
 
 VIEWTOKEN:DB 0,0,0,0
+
+VIEWCLEANUP:DW 0
+VIEWERROR:LD SP,STACKTOP
+        JP (HL)

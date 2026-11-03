@@ -62,11 +62,24 @@ def main():
              ('S', 'displayed default): '), ('', 'Replace entire file (Y/N)? '),
              ('Y', 'Catalogue saved and verified.'), ('Q', 'A0>')]
     if args.details:
-        steps[4:4] = [('D','Working catalogue ID:'), ('MMI012','Q or BREAK Return:'),
+        steps[4:4] = [('D','Source: catalogue ID,'), ('MMI012','Q or BREAK Return:'),
                       ('4','Q or BREAK Return:'), ('Q','Choice:'),
-                      ('P','Working catalogue ID:'), ('MMI012','Working catalogue ID:'),
+                      ('P','Source: catalogue ID,'), ('MMI012','Source: catalogue ID,'),
                       ('MMI012','Q or BREAK Return:'), ('4','Q or BREAK Return:'),
-                      ('A','Q or BREAK Return:'), ('Q','Choice:')]
+                      ('A','Q or BREAK Return:'), ('Q','Choice:'),
+                      ('P','Source: catalogue ID,'), (':B','Source: catalogue ID,'),
+                      (':C','Q or BREAK Return:'), ('4','Q or BREAK Return:'),
+                      ('A','Q or BREAK Return:'), ('Q','Choice:'),
+                      ('B','Source filename'), ('','Catalogue ID:'), ('MMI012','Q Back:'),
+                      ('Q','Choice:'), ('D','Source: catalogue ID,'), ('@','Q or BREAK Return:'),
+                      ('4','Q or BREAK Return:'), ('Q','Choice:'),
+                      ('D','Source: catalogue ID,'), ('/','Source .FDB filename:'),
+                      ('DISK.FDB','Working catalogue ID:'), ('MMI012','Q or BREAK Return:'),
+                      ('Q','Choice:')]
+    if args.details:
+        # The loaded pristine editor remains available. Choose W at S.
+        at = next(i for i,step in enumerate(steps) if step == ('S','displayed default): '))
+        steps[at:at+1] = [('S','other Cancel:'),('W','displayed default): ')]
     if args.exchange:
         steps[4:4] = [('L', 'capacity in bytes): '), ('test109', 'Choice: '),
                       ('O', 'working catalogue): '), ('TEST109', 'or .FDF: '),

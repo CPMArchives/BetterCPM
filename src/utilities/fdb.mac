@@ -766,6 +766,12 @@ EXISTS: LD HL,EXISTMSG
         JR EXITMSG
 IOERR:  LD HL,IOMSG
 EXITMSG:
+        PUSH HL
+        LD HL,(VIEWCLEANUP)
+        LD A,H
+        OR L
+        JP NZ,VIEWERROR
+        POP HL
         LD A,(EDITCHECK)
         OR A
         JP NZ,EDCHECKFAIL
