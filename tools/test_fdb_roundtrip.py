@@ -52,6 +52,13 @@ class FDBCommand(Command):
         assert self.exception is None,(repr(self.exception),self.console,self.symbols,hex(self.reg["SP"].value),self.events[-8:])
         assert self.reg['SP'].value==0xd3fe
         assert self.dma==0x80
+        column=peak=0
+        for ch in self.console:
+            if ch in '\r\n':column=0
+            elif ch=='\b':column=max(0,column-1)
+            elif ' '<=ch<='~':column+=1;peak=max(peak,column)
+        assert peak<=80,('console exceeds80columns',peak,self.console)
+        self.max_console_width=max(getattr(self,'max_console_width',0),peak)
         low=C.c_uint.in_dll(self.lib,'minimum_sp').value
         self.stack_used=max(getattr(self,'stack_used',0),self.symbols['UC_STACK_TOP']-low)
         self.cases+=1
