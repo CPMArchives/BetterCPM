@@ -17,6 +17,18 @@ EXPECTED = [0x3A, 0x2A, *range(0x21, 0x2C), 0x3C, 0x3D, 0x3E, 0x3F, 0x61, 0x62, 
             97, 65, 97]
 
 
+def keyboard_output(video: bytes) -> str:
+    """Read the probe's linear output without inserting display-row breaks.
+
+    PRINT advances through video memory; a hex pair can straddle two rows.
+    The human-readable screen() view inserts a newline there and also strips
+    trailing spaces, so it cannot be used to reconstruct byte boundaries.
+    """
+    if len(video) < 1920 or video[:9] != b'KBD READY':
+        raise ValueError('missing complete keyboard probe screen')
+    return ' '.join(video[160:1920].decode('ascii').split())
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--image', type=Path, default=ROOT / 'build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk')
@@ -86,7 +98,7 @@ def main():
     captured = screen(out / 'trs80-text-0.bin')
     (out / 'screen.txt').write_text(captured + '\n')
     expected = ' '.join(f'{byte:02X}' for byte in EXPECTED)
-    observed = ' '.join(' '.join(captured.splitlines()[2:]).split())
+    observed = keyboard_output((out / 'trs80-text-0.bin').read_bytes())
     result = {'image_sha256': hashlib.sha256(original).hexdigest(),
               'expected': expected, 'observed': observed,
               'status': 'PASS' if observed == expected else 'FAIL'}

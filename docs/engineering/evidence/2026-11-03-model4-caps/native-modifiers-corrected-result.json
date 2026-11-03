@@ -1,0 +1,18 @@
+{
+  "image_sha256": "556d6144cd78b2ff0f02ffee4a628d1927dba4fe54c036f823c773c167e943f8",
+  "expected": "3A 2A 21 22 23 24 25 26 27 28 29 2A 2B 3C 3D 3E 3F 61 62 01 0B 0A 5B 5D 7B 7D 5C 7C 7E 5E 60 5F 5B 5D 7B 7D 5C 7C 7E 5E 60 5F 1B 1B 1B 7F 7F 7F 03 03 61 41 41 41 01 01 01 01 41 41 41 41 01 01 01 01 61 41 61",
+  "observed": "3A 2A 21 22 23 24 25 26 27 28 29 2A 2B 3C 3D 3E 3F 61 62 01 0B 0A 5B 5D 7B 7D 5C 7C 7E 5E 60 5F 5B 5D 7B 7D 5C 7C 7E 5E 60 5F 1B 1B 1B 7F 7F 7F 03 03 61 41 41 41 01 01 01 01 41 41 41 41 01 01 01 01 61 41 61",
+  "status": "PASS_FROM_RETAINED_NATIVE_CAPTURE",
+  "original_harness_status": "FAIL",
+  "original_harness_error": "Inserted screen-row newline split the hex pair 41 into 4 1 at video offsets 319/320.",
+  "source_capture": "model4-modifiers-20261103-144107",
+  "capture_sha256": "55c852637ac5d45d4e683d2c50c0f24ee1413facbc3cb97b5dd2cae1589d2219",
+  "bios_sha256": "c7b8150ce55ae151880de64ab38ed4f873d3080ea5589be090253a1461a8ab4c",
+  "private_test_disk_bios_independently_verified": true,
+  "byte_count": 69,
+  "native_rerun_performed_for_parser_fix": false,
+  "limits": [
+    "Native scripted matrix input; not a physical host CAPS quick-tap test.",
+    "No full release conformance result is inferred."
+  ]
+}
