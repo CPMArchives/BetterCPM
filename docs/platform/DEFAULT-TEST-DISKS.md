@@ -59,3 +59,7 @@ The end-of-disk test exposed a stale BDOS selection when a transient used BIOS
 calls directly. The command reloader now invalidates the cached context before
 opening its system files; the test then returned successfully to A's prompt.
 This adds transient reloader code and does not reduce TPA.
+
+## 1.0 disk-format qualification scope
+
+The three release-media layouts are CCS 332K (cpmsim), Model 4 800K data and BetterCP/M 780K System. The complete compatibility catalogue is retained; its entries are not all runtime-qualified. Historical 790K is a separate optional compatibility layout. See [format support scope](FORMAT-SUPPORT-1.0.md). Final candidate qualification and package acceptance remain pending; package freeze is on hold.

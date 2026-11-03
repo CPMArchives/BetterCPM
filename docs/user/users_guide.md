@@ -13995,3 +13995,7 @@ The User's Guide should ordinarily provide enough information for everyday opera
 When a subject requires deeper technical treatment, the appropriate programming, architecture, or engineering document provides the next level of detail.
 
 ---
+
+## 1.0 disk-format qualification scope
+
+The three release-media layouts are CCS 332K (cpmsim), Model 4 800K data and BetterCP/M 780K System. The complete compatibility catalogue is retained; its entries are not all runtime-qualified. Historical 790K is a separate optional compatibility layout. See [format support scope](../platform/FORMAT-SUPPORT-1.0.md). Final candidate qualification and package acceptance remain pending; package freeze is on hold.
