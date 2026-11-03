@@ -79,12 +79,16 @@ command language are otherwise preserved.
 
 ## Outstanding execution
 
-Model 4 LaunchServices preflight returns 1100 (BOOTSTRAP_NOT_PRIVILEGED) in this
-session. No app launch or native display pass is claimed. The focused media test
-supports `--platform model4 --prepare-only` to produce private disks, exact
-binary hashes, input steps and a native invocation. Run the full test from a
-normal Terminal to execute and perform independent file readback/filesystem
-checks. Historical Model 4 receipts remain bound to their original bytes.
+The maintainer's normal-Terminal run now passes the twenty-phase Model 4 campaign
+for the current CRCKSUM/MD5SUM/DASM binaries. All captures, exact payload hashes,
+independent preserved-input/new-list readback and filesystem checks are archived
+in [current native evidence](evidence/2026-11-03-model4-pass/results.json).
+The two earlier runner failures remain separately recorded. BYE is cpmsim-only.
+
+TED's changed-binary `choices` and `choice-scope` native campaigns remain open.
+This agent session still cannot launch AppKit (LaunchServices preflight 1100);
+these campaigns need a normal Terminal. Preparation alone and historical TED
+receipts do not qualify the changed TED binary.
 
 See the [matrix](UI-Conformance-Matrix.md),
 [library candidate report](Shared-Library-Candidate-Report.md) and

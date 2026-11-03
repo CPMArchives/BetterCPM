@@ -3,7 +3,8 @@
 3 November 2026. **Draft; workstream completion and merge acceptance remain
 open.** Clear, compatible work is implemented and tested. TED's confirmation
 correction is approved and implemented; the matrix's outstanding verification
-cells and changed-binary Model 4 execution remain open. No core, BIOS, resident RCP or historical third-party
+cells and TED's changed-binary Model 4 execution remain open. The bounded native
+CRCKSUM/MD5SUM/DASM campaign now passes. No core, BIOS, resident RCP or historical third-party
 reference source was changed. No new utility feature/library was introduced.
 
 ## Reviewable implementation
@@ -192,6 +193,25 @@ uses `fsck.cpm ... -n image` and passes. Current evidence and the second failed
 Terminal capture set are in
 `evidence/2026-11-03-model4-submit/receipts-and-logs.tar.gz`.
 
+### Completed Model 4 checksum and DASM campaign
+
+The maintainer ran the full corrected command from a normal Terminal, with output
+`ui-model4-submit-20261103-121633`. It passes all twenty executed/captured phases
+on the reference system SHA-256
+`4105ff45e411e25c0f3cd6024b970ddc231e6287086a553933e1fb577aaf2467`.
+The command-script hash matches the independently exercised cpmsim protocol.
+All six help/version outputs and the expected prompts/markers were reviewed;
+checksum refusal/local Ctrl-C and DASM restart refusal complete normally.
+Original payload/input/list readback, new checksum lists, system area and
+filesystem checks pass. Binary hashes match the measured artifacts above.
+
+[Receipt](evidence/2026-11-03-model4-pass/results.json),
+[captures/readback/logs](evidence/2026-11-03-model4-pass/receipts-and-logs.tar.gz)
+and [checksums](evidence/2026-11-03-model4-pass/SHA256SUMS.txt) retain the result.
+This closes this bounded native gate for CRCKSUM/MD5SUM/DASM. The runner's generic
+scope text mentions cpmsim BYE cancellation; BYE is not part of this Model 4 run.
+TED native execution and whole-release acceptance remain separate gates.
+
 ### Build and regression commands
 
 Use the branch's existing reference toolchain and frozen system prerequisites.
@@ -243,8 +263,9 @@ python3 tools/test_ui_integration_media.py --system "$SYSTEMS" --platform cpmsim
 python3 tools/test_ui_integration_media.py --system "$SYSTEMS" --platform model4 --prepare-only --output build/ui-model4-prepared
 ```
 
-Model 4 **execution remains blocked**, preflight code 1100. From a normal Terminal,
-run the full command below with a fresh output directory; it performs independent
+This agent's Model 4 launch remains blocked by preflight code 1100; the maintainer's
+normal-Terminal execution above passes. To reproduce, run the command below with
+a fresh output directory; it performs independent
 readback and filesystem validation after the emulator exits. Running only a
 prepared invocation does not complete those assertions.
 
@@ -256,8 +277,9 @@ python3 tools/test_ui_integration_media.py --system "$SYSTEMS" --platform model4
 
 1. TED approval is resolved: immediate Y/N/default-No/invalid-retry conversion is
    implemented and covered by current host/cpmsim and native assembly evidence.
-2. Execute changed artifacts under Model 4 and inspect captured screens. Prepared
-   inputs and historical receipt applicability are not native qualification.
+2. Execute TED's `choices` and `choice-scope` campaigns under Model 4 and inspect
+   captured screens. The checksum/DASM campaign is complete; prepared TED inputs
+   and historical receipt applicability are not current TED native qualification.
 3. Close remaining per-utility malformed/combination verification cells before
    claiming complete suite-wide conformance. Broader release conformance and
    packaged release acceptance remain separate.
@@ -280,7 +302,7 @@ ZSM4/LINK parity and two real cpmsim campaigns with independent target/backup
 readback. TED grows by 192 bytes within its existing allocation, and Utilities
 retains 2 KiB free. Updated user/native scripts no longer send Enter after Y/N.
 Current [evidence](evidence/2026-11-03-ted-choice/results.json) supersedes TED 003
-receipts for this scope; original evidence remains historical. Model 4 execution
-still fails host preflight 1100, so the PR remains a draft pending that execution
+receipts for this scope; original evidence remains historical. TED Model 4 execution
+still requires a normal Terminal, so the PR remains a draft pending those campaigns
 and the matrix's other outstanding verification. No further TED behavior approval
 is requested.
