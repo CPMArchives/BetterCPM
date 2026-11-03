@@ -1,0 +1,14 @@
+{
+  "status": "PASS_REPORTED_BY_NATIVE_TEST",
+  "date": "2026-11-03",
+  "target": "trs80gp Model 4 on macOS",
+  "workflow_bios_source_commit": "37fa57a1310f771227115fd269ef224e411ace1d",
+  "command": "python3 -B tools/test_trs80_keyboard_overlap.py",
+  "reported_output": "overlapping A/B key transitions preserved both characters",
+  "evidence_basis": "Maintainer-supplied desktop Terminal transcript in this conversation.",
+  "limits": [
+    "The tool's temporary raw screen was not retained.",
+    "This receipt does not independently verify the BIOS running in the overlap instance.",
+    "The automated overlapping A/B sequence does not qualify all physical-key rollover patterns."
+  ]
+}
