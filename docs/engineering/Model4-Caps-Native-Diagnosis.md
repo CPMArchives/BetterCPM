@@ -1,8 +1,9 @@
 # Model 4 CAPS native diagnosis
 
 Status: one native single-press sequence, the maintainer's TED mixed-case
-typing/save/reopen check, and three SEARCH case-sensitive input checks pass;
-earlier host-key observations remain unresolved,
+typing/save/reopen check, three SEARCH case-sensitive input checks, the native
+scripted modifier suite, and the reported overlap check pass. Earlier host-key
+observations remain unresolved,
 2026-11-03. This is a
 follow-up to `Model4-Lowercase-First-Draft.md`. Production BIOS source and
 its 757-byte allocation remain unchanged from `37fa57a`.
@@ -156,8 +157,43 @@ select different lines, demonstrating that these typed patterns retained their
 case through the CCP and SEARCH invocation. The receipt is
 `evidence/2026-11-03-model4-caps/native-search-case.json`. The screenshots also
 provide a second application view of the first line saved from TED. This is a
-bounded manual application check; the earlier quick-tap CAPS question, native
-modifier/overlap regressions, and new-candidate conformance remain pending.
+bounded manual application check. Subsequent modifier/overlap results follow;
+the earlier quick-tap CAPS question and new-candidate conformance remain pending.
+
+## Native scripted modifier and overlap checks
+
+The maintainer ran both requested tests from a desktop Terminal. The overlap
+test printed `overlapping A/B key transitions preserved both characters`.
+Its temporary screen was not retained by that tool; the supplied Terminal
+transcript is the evidence for this overlap result.
+
+The modifier test initially reported FAIL, but inspection of the original
+2048-byte video capture confirms all 69 expected bytes exactly. The probe
+writes a continuous stream of `HH ` through video memory. At offsets 319/320,
+the digits `4` and `1` occupy adjacent screen rows. The old comparison first
+converted the screen to display lines, then treated the inserted newline as
+whitespace between tokens. It therefore compared `4 1` with the expected `41`.
+This was a harness parsing defect, not a demonstrated BIOS failure.
+
+The corrected parser reads the linear video payload at offsets 160..1919,
+preserving actual spaces between byte tokens without inserting row breaks.
+The regression `tools/test_model4_keyboard_capture.py` checks the retained
+native capture, including that row-spanning pair, and rejects altered/missing
+digits, extra output, a missing probe title, and a truncated screen.
+
+Evidence in `evidence/2026-11-03-model4-caps/` retains the original FAIL receipt,
+the raw video, and a separate `native-modifiers-corrected-result.json`. No
+native rerun is claimed for the parser correction. The original development
+image hash is `556d6144cd78b2ff0f02ffee4a628d1927dba4fe54c036f823c773c167e943f8`;
+the private test disk independently contains the exact draft BIOS, SHA-256
+`c7b8150ce55ae151880de64ab38ed4f873d3080ea5589be090253a1461a8ab4c`.
+
+The passing scripted sequence covers Shift/CAPS/Control combinations, shifted
+punctuation and Montezuma chords, CLEAR/BREAK/editor keys, held-key modifier
+changes, CAPS during a held letter, and overlapping A/B input. These are
+emulated matrix events, not evidence about ordinary physical host CAPS taps.
+Production BIOS source is unchanged; quick-tap host behavior and broader BIOS
+requalification remain outstanding.
 
 ## Native handoff
 
