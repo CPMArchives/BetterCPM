@@ -243,6 +243,7 @@ def assemble(args):
             if platform=='cpmsim':
                 files['third_party/z80pack/README.md']=tracked['third_party/z80pack/README.md']
             files['docs/user/users_guide.md']=tracked['docs/user/users_guide.md']
+            files['docs/user/FDB.md']=tracked['docs/user/FDB.md']
             files['docs/engineering/Model 4 Release Checklist.md']=tracked['docs/engineering/Model 4 Release Checklist.md']
             files['docs/releases/RELEASE-NOTES-1.0.md']=tracked['docs/releases/RELEASE-NOTES-1.0.md']
             evidence={'system':report}
@@ -262,7 +263,7 @@ def assemble(args):
                                                 util_reports,inventory)
             files.update(selected)
             files['docs/user/utilities_manual.md']=tracked['docs/user/utilities_manual.md']
-            for guide in ('ZSM4.md','LINK.md','SQ.md','USQ.md','CR.md','UNCR.md','LZH.md','UNLZH.md'):
+            for guide in ('FDB.md','ZSM4.md','LINK.md','SQ.md','USQ.md','CR.md','UNCR.md','LZH.md','UNLZH.md'):
                 files['docs/user/'+guide]=tracked['docs/user/'+guide]
             files['docs/engineering/Model 4 Release Checklist.md']=tracked['docs/engineering/Model 4 Release Checklist.md']
         elif id=='source':

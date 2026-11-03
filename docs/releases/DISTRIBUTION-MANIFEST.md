@@ -38,6 +38,7 @@ change the disk membership below.
 - SUBMIT.COM
 - PIP.COM: DRI-compatible transfers, DU operands, `/VER`, and qualified platform devices.
 - ED.COM: DRI CP/M 2.2 behavioral reimplementation in Z80/ZSM4, with simple DU addressing, `/VER`, and documented DRI defect corrections; [engineering specification](../engineering/ED%20Specification.md).
+- FDB.COM and FDBVIEW.OVL: native spec 209 catalogue workbench and its required matching detail/comparison viewer. Both live in user 0 beside DISK.FDB; keep the pair together when copying the workbench to another disk/user.
 - DISK.FDB
 - RCP.CPX: required resident command package.
 - CPX.COM and RSX.COM: extension managers.

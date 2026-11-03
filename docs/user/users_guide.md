@@ -474,7 +474,7 @@ The System Disk contains the operating system and the following user-0 files. Th
 |---|---|
 | Both platforms: file commands | `DIR.COM`, `ERA.COM`, `TYPE.COM`, `REN.COM`, `VER.COM`, `COPY.COM`, `PIP.COM`, `ED.COM` |
 | Both platforms: system utilities | `CONFIG.COM`, `DUP.COM`, `TIME.COM`, `SYSGEN.COM`, `STAT.COM`, `SUBMIT.COM`, `CPX.COM`, `RSX.COM` |
-| Both platforms: support files | `README.TXT`, `STARTUP.SUB`, `DISK.FDB`, `RCP.CPX`, `R3PACK.RSX`, `P2DOS.RSX` |
+| Both platforms: support files | `README.TXT`, `STARTUP.SUB`, `FDB.COM`, `FDBVIEW.OVL`, `DISK.FDB`, `RCP.CPX`, `R3PACK.RSX`, `P2DOS.RSX` |
 | Both platforms: portable monitors and tests | `ADM3A.RSX`, `ADMTST.COM`, `VT52.RSX`, `VT52TST.COM`, `ANSI.RSX`, `ANSITST.COM` |
 | TRS-80 Model 4 / trs80gp only | `M4SCRN.RSX`, `FREHDCLK.RSX` (requires FreHD hardware or emulation) |
 | z80pack / cpmsim only | `ANSISCRN.RSX`, `ZPRTC.RSX`, `BYE.COM`, `MOUNT.COM`, `R.COM`, `W.COM` |
@@ -14014,3 +14014,10 @@ When a subject requires deeper technical treatment, the appropriate programming,
 ## 1.0 disk-format qualification scope
 
 The three release-media layouts are CCS 332K (cpmsim), Model 4 800K data and BetterCP/M 780K System. The complete compatibility catalogue is retained; its entries are not all runtime-qualified. Historical 790K is a separate optional compatibility layout. See [format support scope](../platform/FORMAT-SUPPORT-1.0.md). Final candidate qualification and package acceptance remain pending; package freeze is on hold.
+
+## Native format catalogue workbench
+
+Both System disks include FDB.COM and its required matching FDBVIEW.OVL.
+The [FDB guide](FDB.md) covers editing DISK.FDB, native text conversion,
+comparison, recoverable saves and confirmed B–D assignment. Keep the COM
+and overlay together in the same drive/user area on writable work media.
