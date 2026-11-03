@@ -83,59 +83,73 @@ M4_LF:                                  ; perform line feed
 ; Console Status and Blocking Input
 ; -------------------------------------------------------------------------------
 
-M4_IN:                                  ; read keyboard character
-        LD      A,(M4_PENDING+1)
-        OR      A
-        JR      NZ,M4_KEYCHANGE
-
-M4_INWAIT:                              ; wait for keyboard input
-        CALL    M4_SCAN
-        OR      A
-        JR      Z,M4_INWAIT
-        LD      D,A
-        LD      (M4_PENDING),DE
-  ; Patch 2026-09-02: the original whole-matrix release wait could discard a
-  ; second key pressed before the first was released.  Retain that debounce for
-  ; reliable repeated letters, but queue one different overlapping key.
-
-; -------------------------------------------------------------------------------
-; Key Debounce and Pending Input
-; -------------------------------------------------------------------------------
-
-M4_KEYCHANGE:                           ; handle changed key state
+M4_IN:                                  ; return captured input on release or rollover
         CALL    M4_SCAN
         OR      A
         JR      Z,M4_KEYDONE
-  ; E identifies the physical matrix slot. Compare that identity, never
-  ; its translated byte: a Shift/Control release is not another keypress.
         LD      D,A
-        LD      A,(M4_PENDING)
-        CP      E
-        JR      Z,M4_KEYCHANGE
-        LD      A,(M4_PENDING+1)
-        LD      (M4_PENDING),DE
-        RET
-
-M4_KEYDONE:                             ; finish keyboard scan
-        LD      HL,M4_PENDING+1
+        LD      HL,M4_PENDING
+        LD      A,E
+        CP      (HL)                    ; compare physical identity, never ASCII
+        JR      Z,M4_IN
+        LD      (HL),E
+        INC     HL
         LD      A,(HL)
-        LD      (HL),0
-        RET
+        LD      (HL),D
 
-  ; Patch 2026-09-01: rows are selected by successive address bits at
-  ; F401h..F440h.  Modifier/configuration policy remains above this scanner.
+M4_RETURN:
+        OR      A
+        RET     NZ
+        JR      M4_IN
+
+M4_KEYDONE:
+        LD      HL,M4_PENDING
+        LD      (HL),0FFH                ; sentinel is outside physical slots 0..55
+        INC     HL
+        LD      A,(HL)
+        LD      (HL),D                  ; M4_SCAN always returns D=0
+        JR      M4_RETURN
 
 ; -------------------------------------------------------------------------------
 ; Keyboard Matrix Scan
 ; -------------------------------------------------------------------------------
 
-M4_STAT:                                ; status uses the same physical scan
-M4_SCAN:                                ; scan keyboard matrix
-        LD      HL,KEYBASE+1
-        LD      E,0                     ; physical matrix slot, 0..55
-        LD      B,7
+M4_STAT:
+M4_SCAN:
+        IF      M4_EDITOR_KEYS EQ 1
+  ; CAPS is a momentary matrix key. Confirm both press and release before
+  ; changing the tracked state; only a confirmed press changes letter case.
+  ; The delay is bounded, not a key-release wait. Nominal 15ms at 4.05504MHz;
+  ; real Model 4 wait states must be included in native timing qualification.
+        LD      A,(KEYBASE+128)
+        AND     8
+        LD      B,A
+        LD      HL,M4_KSTATE
+        XOR     (HL)
+        AND     8
+        JR      Z,M4_ROWS
+        LD      DE,00922H
+M4_KDWAIT:
+        DEC     DE
+        LD      A,D
+        OR      E
+        JR      NZ,M4_KDWAIT
+        LD      A,(KEYBASE+128)
+        AND     8
+        CP      B
+        JR      NZ,M4_ROWS              ; transient did not confirm
+        RLCA
+        RLCA                            ; current CAPS bit 3 -> case mask bit 5
+        OR      8                       ; change tracked press state on either edge
+        XOR     (HL)
+        LD      (HL),A
+        ENDIF
 
-M4_KEYRW:                               ; scan next keyboard row
+M4_ROWS:
+        LD      HL,KEYBASE+1
+        LD      DE,0                    ; E=physical slot, D=0 on every return path
+        LD      B,7
+M4_KEYRW:
         LD      A,(HL)
         OR      A
         JR      NZ,M4_KEYBT
@@ -143,150 +157,130 @@ M4_KEYRW:                               ; scan next keyboard row
         LD      A,E
         ADD     A,8
         LD      E,A
-
-M4_KEYNX:                               ; advance keyboard row
+M4_KEYNX:
         DJNZ    M4_KEYRW
         XOR     A
         RET
 
-; -------------------------------------------------------------------------------
-; Key Translation
-; -------------------------------------------------------------------------------
-
-M4_KEYBT:                               ; translate pressed key bit
+M4_KEYBT:
         RRCA
         JR      C,M4_KEYFD
         INC     E
         JR      M4_KEYBT
 
-M4_KEYFD:                               ; finish key translation
-  ; The first rows are ASCII runs: @.._, 0..;, and ,../. Keeping only
-  ; the eight special keys recovers space for Montezuma punctuation chords.
+; -------------------------------------------------------------------------------
+; Key Translation
+; -------------------------------------------------------------------------------
+
+M4_KEYFD:
+        LD      A,(KEYBASE+128)
+        LD      B,A
         LD      A,E
         CP      32
         JR      NC,M4_NUMKEY
+        IF      M4_EDITOR_KEYS EQ 1
+        BIT     2,B
+        RET     NZ                      ; Control @.._ is the physical index
+        ENDIF
         ADD     A,'@'
-        JR      M4_CHAR
+        LD      C,A
+        IF      M4_EDITOR_KEYS EQ 1
+        LD      A,E
+        DEC     A
+        CP      26
+        LD      A,C
+        RET     NC                      ; keep @ and unconnected [.._ slots
+        LD      A,B
+        AND     3
+        LD      A,C
+        RET     NZ                      ; either/both Shift keys force uppercase
+        LD      A,(M4_KSTATE)
+        AND     020H
+        OR      C
+        RET
+        ELSE
+        JR      M4_KEYSHIFT             ; retain bring-up uppercase behavior
+        ENDIF
 M4_NUMKEY:
-        CP      44
-        JR      NC,M4_PUNKEY
         ADD     A,16
-        JR      M4_CHAR
-M4_PUNKEY:
+        CP      60
+        JR      C,M4_CHAR
+        SUB     16
         CP      48
         JR      C,M4_CHAR
-  ; E already holds the physical key slot. Index without destroying that
-  ; identity; this saves three bytes for MM-compatible CLEAR controls.
         LD      HL,M4_KEYTAB-48
-        LD      D,0
         ADD     HL,DE
         LD      A,(HL)
 M4_CHAR:
         LD      C,A
-        LD      A,(KEYBASE+128)         ; shifts, Control, Caps, and F1-F3
         IF      M4_EDITOR_KEYS EQ 1
-        LD      B,A
-        AND     4
+        BIT     2,B
         JR      Z,M4_KEYSHIFT
-  ; Publish ordinary ASCII control-letter values. This was previously omitted,
-  ; making WordStar-style CCP editing keys physically impossible on the Model 4.
-        LD      A,C
         SUB     ','
         CP      14
         JR      NC,M4_CTRLLETTER
         LD      HL,M4_CTRLTAB
-        LD      B,0
+        LD      B,D                     ; D=0 established by M4_ROWS
         LD      C,A
         ADD     HL,BC
         LD      A,(HL)
         RET
 M4_CTRLLETTER:
         LD      A,C
-        CP      01BH                    ; MM Ctrl-CLEAR is DEL, not ESC
-        JR      NZ,M4_CTRLASCII
+        CP      01BH                    ; Ctrl-CLEAR is DEL; other specials unchanged
+        RET     NZ
         LD      A,07FH
         RET
-M4_CTRLASCII:
-        CP      '@'
-        RET     C
-  ; Ordinary row decoding yields only @.._ here; punctuation and special
-  ; keys are below @. No upper-range test is needed before the control mask.
-        AND     01FH
-        RET
-
-; -------------------------------------------------------------------------------
-; Shifted Key Translation
-; -------------------------------------------------------------------------------
-
-M4_KEYSHIFT:                            ; translate shifted key
-        LD      A,B
         ENDIF
+
+M4_KEYSHIFT:
+        LD      A,B
         AND     3
         LD      A,C
         RET     Z
         IF      M4_EDITOR_KEYS EQ 1
-        CP      28                      ; Shift-Left supplies DEL/Backspace distinctly
+        CP      28
         ELSE
         CP      8
         ENDIF
         LD      A,127
-        RET     Z
+        RET     Z                       ; Shift-Left
         LD      A,C
-  ; The Model 4 shifted punctuation is two ASCII ranges. Keep letters and
-  ; editor controls unchanged, and leave Shift-0 as 0 (no printed symbol).
         CP      ','
         RET     C
+        IF      M4_EDITOR_KEYS EQ 0
         CP      '<'
-        RET     NC
+        RET     NC                      ; letters reach this path only in bring-up
+        ENDIF
         CP      '0'
-        RET     Z
-        JR      C,M4_KADD16              ; flags from CP '0'; equality returned
-        SUB     10H                     ; 1..9, :, ; -> !..), *, +
-        RET
-M4_KADD16:
-        ADD     A,10H                   ; , - . / -> < = > ?
+        RET     Z                       ; preserve Shift-0
+        XOR     010H                    ; ,../ -> <..? and 1..; -> !..+
         RET
 
-; -------------------------------------------------------------------------------
-; Special-Key Translation
-; -------------------------------------------------------------------------------
-
-M4_KEYTAB:                              ; keyboard translation table
-  ; Enter, Clear/ESC, Break, Up, Down, Left, Right, Space.
-  ; Restore normal arrow control codes; punctuation uses the MM chords.
+M4_KEYTAB:
         IF      M4_EDITOR_KEYS EQ 1
         DB      13,27,3,11,10,28,29,' '
         ELSE
         DB      13,27,3,11,10,8,9,' '
         ENDIF
 
-  ; CTRL punctuation is indexed by the physical unshifted character ,..9.
-  ; MM calls these CTRL <, -, >, /, 1, 3, 5, 7, (, ). Shift is immaterial
-  ; to the physical chord. Unassigned number chords keep the digit unchanged.
         IF      M4_EDITOR_KEYS EQ 1
 M4_CTRLTAB:
         DB      '{','_','}',05CH,'0','|','2','~','4','^','6',060H,'[',']'
+M4_KSTATE:
+  ; Bit 3 = confirmed physical CAPS; bit 5 = lowercase mask (Caps Lock off).
+  ; 20h -> 08h -> 00h -> 28h -> 20h for press/release/press/release.
+  ; This replaces the former padding byte. Screen clearing must not reset it.
+        DB      020H
         ENDIF
 
-        IF      M4_EDITOR_KEYS EQ 1
-        DB      0                       ; retain published mutable-state anchors
-        ENDIF
-
-; ================================================================================
-; =                            Console Working State                             =
-; =                                                                              =
-; = Defines the physical cursor, display column, and pending-key state retained by =
-; = the shared Model 4 console implementation.                                   =
-; ================================================================================
 ; -------------------------------------------------------------------------------
-; Console State
+; Console Working State
 ; -------------------------------------------------------------------------------
 
-M4CURSOR:                               ; physical cursor address
+M4CURSOR:
         DW      VIDEOBASE
-
-M4COLUMN:                               ; current display column
+M4COLUMN:
         DB      0
-
-M4_PENDING:                             ; raw key identity, then translated byte
-        DW      0
+M4_PENDING:                             ; raw identity, then captured byte
+        DW      000FFH

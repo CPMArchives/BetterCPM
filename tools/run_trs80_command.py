@@ -24,9 +24,10 @@ KEY_ROWS = (
 )
 
 
-def key_args(text: str, delay: int = 12) -> list[str]:
+def key_args(text: str, delay: int = 12, *, preserve_case: bool = False) -> list[str]:
     result: list[str] = []
-    for character in text.upper():
+    # Existing command campaigns request uppercase; type it with physical Shift.
+    for character in (text if preserve_case else text.upper()):
         mm = {'[': (5, 0), ']': (5, 1), '{': (5, 4), '}': (5, 6),
               '\\': (5, 7), '|': (4, 1), '~': (4, 3), '^': (4, 5),
               '`': (4, 7), '_': (5, 5)}
@@ -58,11 +59,16 @@ def key_args(text: str, delay: int = 12) -> list[str]:
                            "-id", str(delay), "-ik", "7", "0", "-id", str(delay)))
             continue
         for row, characters in enumerate(KEY_ROWS):
-            column = characters.find(character)
+            column = characters.find(character.upper())
             if column >= 0:
                 mask = f"{1 << column:X}"
+                uppercase = 'A' <= character <= 'Z'
+                if uppercase:
+                    result.extend(("-ik", "7", "1", "-id", str(delay)))
                 result.extend(("-ik", str(row), mask, "-id", str(delay),
                                "-ik", str(row), "0", "-id", str(delay)))
+                if uppercase:
+                    result.extend(("-ik", "7", "0", "-id", str(delay)))
                 break
         else:
             # Model 4 punctuation uses the shift row simultaneously with its

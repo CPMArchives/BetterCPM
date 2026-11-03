@@ -123,11 +123,21 @@ BIOWBOOT:                               ; warm boot entry
 ; Console Input
 ; -------------------------------------------------------------------------------
 
+  ; Keep these small monitor adapters near their console callers so the
+  ; dispatches below can use relative jumps. MONCALL still begins with the
+  ; published JP to MC_CALL, whose first instruction remains LD HL,(MP_MON).
+MH_OUT:
+        XOR A
+        JR MC_CALL
+MH_CUR:
+        LD A,3
+MC_CALL:
+        LD HL,(MP_MON)
+        JP (HL)
+
 BIOCONST:
         CALL IO_CON
-        JR Z,IO_STAT
-        XOR A
-        RET
+        JR NZ,BIO_ZERO
 IO_STAT:
         LD A,1
         CALL MC_CALL
@@ -138,7 +148,7 @@ IO_READY:
         RET
 BIOCONIN:
         CALL IO_CON
-        JP NZ,BIOREADR
+        JR NZ,BIOREADR
 IO_INPUT:
         LD A,2
         CALL MC_CALL
@@ -146,10 +156,10 @@ IO_INPUT:
         RET
 BIOCONOT:
         CALL IO_CON
-        JP Z,MH_OUT
-        CP 1
+        JR Z,MH_OUT
+        DEC A
         RET NZ
-        JP BIOLIST
+        JR BIOLIST
 IO_CON:
         LD A,(0003H)
         AND 3
@@ -157,14 +167,13 @@ IO_CON:
         RET
 BIOLIST:
         CALL BIOLSTST
-        OR A
         RET Z
-        JP MH_OUT
-BIOPUNCH:
-        RET
+        JR MH_OUT
 BIOREADR:
         LD A,01AH
+BIOPUNCH:                               ; output sink shares the reader's RET only
         RET
+
 ; ================================================================================
 ; =                     Disk Selection and Transfer Services                     =
 ; =                                                                              =
@@ -204,8 +213,8 @@ BIOREAD:                                ; read logical sector
 
 BIO_RDCOP:                              ; copy sector buffer to DMA
         LD      DE,(BIO_DMA)
-        LD      BC,128
         LDIR
+BIO_ZERO:                               ; shared exact A=0/Z return, no other effects
         XOR     A
         RET
 
@@ -220,7 +229,6 @@ BIOWRITE:                               ; write logical sector
 
 BIO_WRCOP:                              ; copy DMA to sector buffer
         LD      HL,(BIO_DMA)
-        LD      BC,128
         LDIR
         LD      HL,BIO_PHYBF
         JP      LY_DISK+12
@@ -241,13 +249,15 @@ BIO_PREP:                               ; prepare physical sector transfer
         RET     NZ
 
 BIO_SLOT:                               ; select quarter-sector slot
+  ; BIO_QUART is 0..7, including all eight records in a 1024-byte sector.
+  ; RRCA retains q>>1 in A and q bit 0 in carry; RR L forms the low byte.
         LD      A,(BIO_QUART)
-        LD      H,A
+        RRCA
         LD      L,0
-        SRL     H
         RR      L
-        LD      DE,BIO_PHYBF
-        ADD     HL,DE
+        OR      HIGH BIO_PHYBF          ; buffer is aligned to 1024 bytes
+        LD      H,A
+        LD      BC,128                  ; common count for both copy directions
         XOR     A                       ; successful preparation for either caller
         RET
 
@@ -267,9 +277,9 @@ BIO_SLOT:                               ; select quarter-sector slot
 BIOLSTST:
         LD A,(0003H)
         AND 0C0H
-        CP 040H
-        JP Z,IO_READY
-        XOR A
+        SUB 040H
+        CP 1
+        SBC A,A                         ; FFh/NZ only for CRT list, else 00h/Z
         RET
 
   ; BC is the zero-based logical sector; DE is XLT or zero.  Return HL.
@@ -288,6 +298,11 @@ BIOSECTR:                               ; translate logical sector
         ADD     HL,BC
         LD      L,(HL)
         LD      H,0
+        RET
+
+MC_BASE:
+        LD HL,MC_RAW
+        LD (MP_MON),HL
         RET
 
   ; Persistent single-context disk state required by the CP/M BIOS boundary.
@@ -339,14 +354,6 @@ IO_CAPS:
         RET
 
 
-MH_OUT:
-        XOR A
-        JP MC_CALL
-MH_CUR:
-        LD A,3
-MC_CALL:
-        LD HL,(MP_MON)
-        JP (HL)
 MC_RAW:
         OR A
         JP Z,PL_CONOT
@@ -355,7 +362,7 @@ MC_RAW:
         DEC A
         JP Z,PL_CONIN
         DEC A
-        JP Z,PL_CURSOR
+        JR Z,PL_CURSOR
         DEC A
         JR Z,MC_CLEAR
         DEC A
@@ -365,13 +372,10 @@ MC_RAW:
 MC_CLEAR:
         LD C,01CH
         JP PL_CONOT
-MC_BASE:
-        LD HL,MC_RAW
-        LD (MP_MON),HL
-        RET
 ; BIOS-owned binding: only cold initialization and validated manager publication
 ; may store this word. No production provider is bound until lifecycle commit
 ; integration is qualified. MONRAW must never re-enter IOBYTE or MC_CALL.
+        DB 0                            ; retain the published binding at EC84h
 MP_MON: DW 0
 MP_MON_END:
         IF BP_CHECKED EQ 1

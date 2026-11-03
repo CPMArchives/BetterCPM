@@ -1,0 +1,86 @@
+{
+  "identity": "model4-case-first-draft-20261103-1",
+  "status": "DRAFT_NATIVE_QUALIFICATION_PENDING",
+  "branch": "codex/model4-lowercase-draft",
+  "parent_commit": "fb062255d3ea465cf8ba6a9b77ac0f4a4aac5c32",
+  "previous_validated_candidate": "6d6c103507ce8558700b3b8e412ac500de361226",
+  "previous_validated_distribution_sha256": "4105ff45e411e25c0f3cd6024b970ddc231e6287086a553933e1fb577aaf2467",
+  "inputs": {
+    "src/bios/bios.mac": "4baec065a397c2faf97a0f26726ddf1a7c1729463896da0124985856a5c8cd28",
+    "src/platform/trs80m4/m4cons.inc": "94ffbf2a69d5d02d79237bd16a73bf3cf603b80f4358909e8a9b5b95dd5e5bfb",
+    "src/platform/trs80m4/reload.inc": "f73d437fe4904d0e6e018bba4997025ebe31eeac04e3778512b6b682872ce30d",
+    "tools/build_bios.py": "5881b7b70ed403e327ebd371bf53c6719cadf16658c38d4e3f8cff54d9d106c9",
+    "tools/test_model4_keyboard_case.py": "74f4cba416ba63a0733d9f01e82581cd7a5e6ac7ed80ca3cf7bdad47957ea489"
+  },
+  "artifacts": {
+    "build/bios/bios.bin": {
+      "bytes": 757,
+      "sha256": "c7b8150ce55ae151880de64ab38ed4f873d3080ea5589be090253a1461a8ab4c"
+    },
+    "build/system/resident.bin": {
+      "bytes": 6588,
+      "sha256": "429aab44d0989f800e31dbb1d4d259676a6535931fe060b0e262344eca6977e7"
+    },
+    "build/trs80/BetterCPM-Extended-80T-DS-System-790K.dmk": {
+      "bytes": 1020496,
+      "sha256": "556d6144cd78b2ff0f02ffee4a628d1927dba4fe54c036f823c773c167e943f8"
+    },
+    "build/z80pack/bios.bin": {
+      "bytes": 623,
+      "sha256": "989ee082cfaa644cd89a4b031198dd6a01fc35fb923978fb06d9b39c569ff8c2"
+    },
+    "build/screen-backends/M4SCRN.RSX": {
+      "bytes": 1718,
+      "sha256": "1d88316632621b89f3a3062c85412a7a5b052e62dac031bfc632029350803edb"
+    },
+    "build/screen-backends/ANSISCRN.RSX": {
+      "bytes": 1901,
+      "sha256": "2f5afc75a19e30fbf2b66201096970a44ab1da9750761804023a9b029f03b33e"
+    }
+  },
+  "bios_allocation": {
+    "start": "E991",
+    "end_inclusive": "EC85",
+    "capacity_bytes": 757,
+    "emitted_bytes": 757,
+    "free_bytes": 0
+  },
+  "instruction_level_checks": {
+    "translations": 57344,
+    "matrix_key_scans": 448,
+    "rollover_traces": 4096,
+    "mocked_sector_fetch_cases": 1536,
+    "rsx_selector_cases": 768,
+    "iobyte_routing_cases": 5120,
+    "status": "PASS"
+  },
+  "other_passed_checks": [
+    "full Model 4 build",
+    "17 public BIOS contracts with all 80 reads/writes and failures",
+    "CCP reload and CPX lifecycle regression",
+    "monitor hooks on Model 4 and default cpmsim",
+    "screen backends at two relocation addresses",
+    "overflow and stale-product rejection; reproducible rebuild",
+    "Model 4/default cpmsim ROM ownership",
+    "registry projections",
+    "453-byte non-editor diagnostic assembly"
+  ],
+  "native_keyboard": {
+    "status": "BLOCKED_BEFORE_LAUNCH",
+    "host_error": "LaunchServices BOOTSTRAP_NOT_PRIVILEGED (1100)",
+    "prepared_directory": "build/case-draft-native"
+  },
+  "known_parent_failure": {
+    "test": "tools/test_subsystem_versions.py",
+    "message": "src/cpx/rcp.mac does not expose BetterCP/M 1.0",
+    "reproduced_in_untouched_parent": true
+  },
+  "pending": [
+    "native keyboard and rollover tests",
+    "manual CCP, TED and SEARCH input",
+    "native assembler parity",
+    "reviewed Model 4 conformance batch on new distribution identity",
+    "affected cpmsim qualification",
+    "component identity assignment and release acceptance"
+  ]
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Qualify physical-key debounce and Model 4 punctuation through BIOS CONIN."""
+"""Qualify Model 4 physical-key identity, case, CAPS and punctuation via CONIN."""
 import argparse
 import hashlib
 import json
@@ -12,7 +12,9 @@ from test_sysgen_install import screen
 from trs80gp_launch import run
 
 PROBE = "        ASEG\n        ORG 0100H\n        LD HL,0F800H\n        LD DE,0F801H\n        LD BC,1919\n        LD (HL),' '\n        LDIR\n        LD HL,0F800H\n        LD DE,TITLE\n        LD B,9\nREADY:  LD A,(DE)\n        LD (HL),A\n        INC HL\n        INC DE\n        DJNZ READY\nLOOP:   CALL READ\n        PUSH AF\n        RRCA\n        RRCA\n        RRCA\n        RRCA\n        CALL HEX\n        POP AF\n        CALL HEX\n        LD A,' '\n        CALL PRINT\n        JR LOOP\nREAD:   LD HL,(1)\n        LD DE,6\n        ADD HL,DE\n        JP (HL)\nHEX:    AND 0FH\n        ADD A,'0'\n        CP ':'\n        JR C,PRINT\n        ADD A,7\nPRINT:  LD HL,(POS)\n        LD (HL),A\n        INC HL\n        LD (POS),HL\n        RET\nPOS:    DW 0F8A0H\nTITLE:  DB 'KBD READY'\n        END\n"
-EXPECTED = [0x3A, 0x2A, *range(0x21, 0x2C), 0x3C, 0x3D, 0x3E, 0x3F, 0x41, 0x42, 0x01, 0x0B, 0x0A, *[ord(c) for c in '[]{}\\|~^`_'] * 2, 0x1B, 0x1B, 0x1B, 0x7F, 0x7F, 0x7F, 0x03, 0x03]
+EXPECTED = [0x3A, 0x2A, *range(0x21, 0x2C), 0x3C, 0x3D, 0x3E, 0x3F, 0x61, 0x62, 0x01, 0x0B, 0x0A, *[ord(c) for c in '[]{}\\|~^`_'] * 2, 0x1B, 0x1B, 0x1B, 0x7F, 0x7F, 0x7F, 0x03, 0x03,
+            97, 65, 65, 65, 1, 1, 1, 1, 65, 65, 65, 65, 1, 1, 1, 1,
+            97, 65, 97]
 
 
 def main():
@@ -62,6 +64,23 @@ def main():
     for row, bit, modifier in [(6,2,'0'),(6,2,'1'),(6,2,'2'),(6,2,'4'),(6,2,'5'),(6,2,'6'),(6,4,'0'),(6,4,'4')]:
         command += ['-ik','7',modifier,'-id','12','-ik',str(row),f'{bit:X}',
                     '-id','12','-ik',str(row),'0','-id','12','-ik','7','0','-id','12']
+    # All Shift/Control combinations, first unlocked then locked. CAPS is a
+    # momentary matrix contact: confirm press and release separately.
+    for locked in (False, True):
+        if locked:
+            command += ['-ik','7','8','-id','50','-ik','7','0','-id','50']
+        for modifier in range(8):
+            command += ['-ik','7',f'{modifier:X}','-id','20',
+                        '-ik','0','2','-id','20','-ik','0','0','-id','20',
+                        '-ik','7','0','-id','20']
+    command += ['-ik','7','8','-id','50','-ik','7','0','-id','50']
+    # CAPS pressed and released while A stays down must neither repeat A nor
+    # replace its captured lowercase byte. The following press is uppercase.
+    command += ['-ik','0','2','-id','50','-ik','7','8','-id','80',
+                '-ik','7','0','-id','80','-ik','0','0','-id','50',
+                '-ik','0','2','-id','50','-ik','0','0','-id','50',
+                '-ik','7','8','-id','50','-ik','7','0','-id','50',
+                '-ik','0','2','-id','50','-ik','0','0','-id','50']
     command += ['-id', '100', '-it', '-ix']
     run(command, cwd=out, timeout=180)
     captured = screen(out / 'trs80-text-0.bin')
@@ -75,7 +94,7 @@ def main():
     assert args.image.read_bytes() == original, 'reference image changed'
     if observed != expected:
         raise SystemExit(f'BIOS keyboard bytes differ: {result}')
-    print('PASS: modifier edges, shifted punctuation, overlapping A/B, Control release, MM punctuation, CLEAR/ESC/DEL and arrow controls')
+    print('PASS: case, CAPS/Shift/Control, held CAPS, physical overlap, punctuation, CLEAR and editor keys')
 
 
 if __name__ == '__main__':
