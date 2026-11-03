@@ -1,0 +1,42 @@
+{
+  "commit": "35c56a03f253c10d85ccb110ca34c1f368f319a1",
+  "suite": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+  "source_zip_sha256": "1bd39cf0c57af0549e40d7850fd18b9678d9c7c0a2623fae2f7ff6172c39b80f",
+  "RAM": {
+    "z80pack": {
+      "disk_sha256": "6b6e9035b5e6933fd38edd21ab4f611c065b1740c5e6eb83d53f03ace940892d",
+      "emulator_sha256": "0f6b256cd6beea2ab7bf0eab8a9cc2a5241ed772408e811150c3f6e0f5cff4e8"
+    },
+    "trs80gp": {
+      "disk_sha256": "4e661bab569b81ac583f74aabedf41001a76b28d9721ab911e6ff0995feaf5cd",
+      "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f"
+    }
+  },
+  "XIP": {
+    "rom_payload": "cc6917780ce47ab34fbed7949abdf93a17d20eb182ab9fdcd15c8d16cd864168",
+    "loaded_hex": "817cabdf88888a1d856edf6001ac76841d45e5cfc64738d86964f4e2b385ee09",
+    "overlay_manifest": "3189b769744c45a2ef7599dae4905a37cfb5aa068844edea29ac63f02e71a1ec",
+    "packed_overlays": "942d6633ccd09dc6096c0d479c4cc387ffec9558f48b8ad309069ddc35d7e582",
+    "boot_disk": "c844258698a94c3f5792e5524149d8cd94f4a4b74a77e8b868873bf31b188ba1"
+  },
+  "qualification_cpmsim": "981a69da751fb9dc5a25bcbd2dc56ccf270943605f463e9c5882b5e7811ef443",
+  "stock_driver_sha256": "dfcff71af38393a4bdd76be88b15679f7acbe1c884c691c4c5659df334a26fcb",
+  "reference_disk_images": {
+    "BetterCPM-Distribution-z80pack-332K.dsk": "6b6e9035b5e6933fd38edd21ab4f611c065b1740c5e6eb83d53f03ace940892d",
+    "BetterCPM-Work-332K.dsk": "67c99c31d81a5c3429131e872d8f2737607dd8383587c8bb97f9355f04e0dbab",
+    "BetterCPM-Distribution-trs80gp-80T-DS-System.dmk": "4e661bab569b81ac583f74aabedf41001a76b28d9721ab911e6ff0995feaf5cd",
+    "BetterCPM-Work-800K.dmk": "a2bd8239531919ae078c6d2dcef650738ec77e8307993df8d3fcd74a46c29107",
+    "BetterCPM-NOAH-z80pack-332K.dsk": "a5eacfe263f90433a21bec5825ff63d9feb8510aec1ae1b64f8b0da841234cce",
+    "BetterCPM-Utilities-z80pack-332K.dsk": "d175636d1393e0f3dd52ee48cad5b195ba23e699af16d821935cf2f1dcb041e6",
+    "BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk": "4a3f7fc10d5f4f0ef5a5e3906e15810c4478e638ae13db0e1d70daa12102cc7f",
+    "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk": "534766b9ec95f59f4f5f6783005605468d01a79970bf01f52f4da1c248db0bb4"
+  },
+  "reference_candidate_archives": {
+    "BetterCPM-1.0-System-cpmsim-candidate.zip": "92ed649e62870828779bb88ecaf434b8add9ba2e690278abe5c25cfd4363891b",
+    "BetterCPM-1.0-System-Model4-candidate.zip": "65711242079b8541137d09673cf9ca4ddef7e4b540a410308848f4f10da75cd4",
+    "BetterCPM-Utilities-1.0-cpmsim-candidate.zip": "d434f8c033146317052ca52d4766eba50605b8774c3fe91b6982b13c2dffd92e",
+    "BetterCPM-Utilities-1.0-Model4-candidate.zip": "9b1f0f64633e6a9b32bd303f33fb563e8e01bb2470fca7fcffd0840bba0c2331",
+    "BetterCPM-1.0-Source-candidate.zip": "1bd39cf0c57af0549e40d7850fd18b9678d9c7c0a2623fae2f7ff6172c39b80f",
+    "BetterCPM-1.0-Documentation-candidate.zip": "4514353a441e5d91eaed49e7b0fb0b3a559025c7f06453272f27e70242728591"
+  }
+}
