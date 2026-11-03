@@ -112,8 +112,8 @@ def main():
     run('I\rADD.FDB\r\rR\r'+save+'Q\r', {dest:stock, src:serialize((revised,))})
     assert m.files[dest] == serialize((revised, *entries[1:]))
     exchange = serialize((entries[0], extra))
-    result = run(edit + 'L\r' + save + 'Q\r', {dest:stock, src:exchange})
-    assert 'TEST109 New test definition' in result
+    result = run(edit + 'L\rtest109\r' + save + 'Q\r', {dest:stock, src:exchange})
+    assert re.search(r'TEST109 +New test definition +[0-9]+', result)
     assert m.files == {dest:expected, src:exchange}
     # Only Return requests a whole-file import. A leading space never does.
     run('I\rADD.FDB\r TEST109\rQ\r')
@@ -142,6 +142,47 @@ def main():
     # BREAK from a naming prompt and a dirty exit preserves pending edits.
     run(edit + 'S\r\x03\x03C\r' + save + 'Q\r')
     assert m.files == {dest:expected, src:imported}
+    # Export to an existing text catalogue while the session has pending work.
+    textdest = key('OTHER.FDF')
+    oldtext = decompile(serialize((entries[0],))).encode() + b'\x1a'
+    result = run(edit + 'O\rTEST109\rOTHER.FDF\rY\rQ\rD\r', {**original,textdest:oldtext})
+    assert serialize(parse(m.files[textdest].split(b'\x1a')[0].decode())) == serialize((entries[0],extra))
+    assert m.files[dest]==stock and m.files[src]==imported and 'Unsaved catalogue' in result
+    run(edit + 'O\r\rALL.FDB\rY\rQ\rD\r')
+    assert m.files[key('ALL.FDB')] == expected
+    run(edit + 'O\rTEST109\rONE.FDB\rY\rQ\rD\r')
+    assert m.files[key('ONE.FDB')] == imported
+    # Check every listed capacity (including cylinder and mixed-sector entries).
+    result = run('L\r\r' + '\r'*8 + 'Q\r')
+    assert result.count('Return for more') == 8
+    for entry in entries:
+        surface = sum(entry.sector_sizes or (entry.secsize,)*entry.psectors)
+        raw_bytes = entry.cylinders * entry.sides * surface
+        assert re.search(r' '+re.escape(entry.ident)+r' +'+re.escape(entry.description)+r' +'+str(raw_bytes)+r'\r',result)
+    # Export conflict resolution changes only the proposed output descriptor.
+    run(edit + 'O\rTEST109\rADD.FDB\rU\rOTHERID\rOther name\rY\r' + save + 'Q\r')
+    assert m.files[dest] == expected and m.files[src] == serialize((extra,replace(extra,ident='OTHERID',description='Other name')))
+    run(edit + 'O\rTEST109\rADD.FDB\rC\rQ\rD\r')
+    assert m.files == original
+    run(edit + 'O\r\rDISK.FDB\rN\rQ\rD\r')
+    assert m.files == original
+    run(edit + 'O\r\rDISK.FDB\rY\rQ\rD\r', failures={'rename':2})
+    assert m.files[dest]==stock and m.files[src]==imported
+    # Substrings cannot continue from an ID into its description.
+    run('L\r'+entries[0].ident+' '+entries[0].description[:1]+'\rQ\r')
+    assert 'No matching formats.' in m.console
+    run('L\rnot a format\rQ\r')
+    assert 'No matching formats.' in m.console
+    run('L\r\r\x03Q\r')
+    assert m.files == original
+    # Export uses the recovery protocol for both encodings and leaves dirty
+    # work available for a normal save after an output failure.
+    for ext in ('FDB', 'FDF'):
+        for op in ('make', 'write', 'close_output'):
+            run(edit + 'O\rTEST109\rNEW.'+ext+'\rY\r' + save + 'Q\r',
+                failures={op:1})
+            assert m.files[dest] == expected and m.files[src] == imported
+            assert key('NEW.'+ext) not in m.files
     for reserved in (temp, backup):
         run(edit + save + 'Q\rD\r', {**original, reserved:b'KEEP'})
         assert m.files == {**original, reserved:b'KEEP'}
