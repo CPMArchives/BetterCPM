@@ -6,7 +6,8 @@ import struct
 import tempfile
 
 from build_ccp import assemble
-from fdf_v1 import compile_file, crc16, read_fdb
+from fdf_v1 import crc16, read_fdb
+from build_fdf_catalog import catalogue_payload
 from test_bios import Z80
 
 
@@ -29,7 +30,7 @@ def repaired(value: bytearray) -> bytes:
 
 
 def main() -> None:
-    payload = compile_file(ROOT / "metadata" / "DISK.FDF")
+    payload = catalogue_payload()
     reader = (ROOT / "src/utilities/disk/fdbread.inc").read_text()
     validator = reader[reader.index("FDBVALID:"):]
     source = """        ASEG
@@ -153,11 +154,11 @@ FDFLIM  EQU 07F80H
         cpu.mem[FDFRAM:FDFRAM + len(payload)] = payload
         cpu.setword(names["FDBLEN"], len(payload))
         cpu.run(names["ENTRY"], limit=3_000_000)
-        assert cpu.mem[names["FCOUNT"]] == 107
-        assert cpu.word(names["FDBPOOL"]) == 128 + 107 * 64
+        assert cpu.mem[names["FCOUNT"]] == 108
+        assert cpu.word(names["FDBPOOL"]) == 128 + 108 * 64
         assert cpu.mem[FDFRAM + 14:FDFRAM + 16] == payload[14:16]
 
-        for index in (0, 53, 106):
+        for index in (0, 53, 106, 107):
             cpu.a = index
             cpu.run(names["FDBNAME"])
             assert not cpu.carry
@@ -165,7 +166,7 @@ FDFLIM  EQU 07F80H
             assert cpu.hl == expected
             assert cpu.mem[cpu.hl:cpu.hl + 32] == payload[128 + index * 64 + 8:
                                                         128 + index * 64 + 40]
-        cpu.a = 107
+        cpu.a = 108
         cpu.run(names["FDBDESC"])
         assert cpu.carry
 
@@ -220,7 +221,7 @@ FDFLIM  EQU 07F80H
                 cpu.run(names["FDBBIND"])
                 assert cpu.carry
 
-    print("Native FDB reader: validation and all 107 normalized bindings pass")
+    print("Native FDB reader: validation and all 108 normalized bindings pass")
 
 
 if __name__ == "__main__":

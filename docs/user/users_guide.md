@@ -8071,8 +8071,9 @@ This assigns logical drive C to physical drive 1 using the named format.
 
 The operands must appear in the order shown: `/LOGICAL=`, `/PHYSICAL=`, then `/FORMAT=`. Logical targets are B–D and physical indexes are 0–3. The quoted format must exactly match a catalogue display description, ignoring letter case and trailing space padding. It accepts 1–32 printable ASCII characters with at least one non-space character; quote escapes, prefixes, wildcards and row numbers are not accepted.
 
-To edit a catalogue on the host, start with `metadata/DISK.FDF` from the
-Source package or export your installed binary to BetterCP/M FDF v1 text:
+To edit the full release catalogue on the host, export the installed
+`DISK.FDB` to BetterCP/M FDF v1 text. This preserves all 108 entries,
+including the native 780K System layout:
 
 ```sh
 python3 tools/fdfdecomp.py DISK.FDB my-formats.fdf
@@ -14009,3 +14010,7 @@ The User's Guide should ordinarily provide enough information for everyday opera
 When a subject requires deeper technical treatment, the appropriate programming, architecture, or engineering document provides the next level of detail.
 
 ---
+
+## 1.0 disk-format qualification scope
+
+The three release-media layouts are CCS 332K (cpmsim), Model 4 800K data and BetterCP/M 780K System. The complete compatibility catalogue is retained; its entries are not all runtime-qualified. Historical 790K is a separate optional compatibility layout. See [format support scope](../platform/FORMAT-SUPPORT-1.0.md). Final candidate qualification and package acceptance remain pending; package freeze is on hold.

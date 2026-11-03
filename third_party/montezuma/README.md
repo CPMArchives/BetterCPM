@@ -25,7 +25,14 @@ to `DISK.FDB`. The migration draws on 96 external definitions and 16 internal
 CONFIG definitions. Five external definitions are excluded. The resulting
 107-descriptor, 8,320-byte file is present on both reviewed System disks
 (SHA-256 `4dea7bd989580fc13f61e79d47e92466a440799c41b002f4caba65ec8f893c03`).
-The guest reads the binary catalogue. The Source and nested Utilities kits include the translated BetterCP/M text catalogue and internal definitions. They exclude the original external DISK.FDF. The 1.0 package selection now omits the
+The release builder preserves the 107 compatibility descriptors, using
+field-identical independent definitions for MMF017 and MMI008. It appends
+BCPM780 for a total of 108. The hash above identifies the earlier 107-entry
+catalogue. See [1.0 format support](../../docs/platform/FORMAT-SUPPORT-1.0.md).
+
+The guest reads the compiled catalogue. The Source and nested Utilities kits
+include the BetterCP/M text catalogue and internal definitions. They exclude
+the original external DISK.FDF. The 1.0 package selection also excludes the
 original utilities, disassembly listings and the document quoting the BIOS. See
 [the migration record](../../docs/engineering/185%20Qualified%20FDF%20v1%20Catalogue%20Migration.md)
 and [the media record](../../docs/engineering/186%20FDB%20Build%20and%20Media%20Packaging.md).
@@ -73,8 +80,7 @@ The [independent format trial](../../docs/engineering/evidence/2026-11-03-releas
 identified the actual release media as CCS 332K (MMF017), 800K data (MMI008)
 and BetterCP/M's own 780K System layout. Historical MMI012 has 790K of
 allocation space and puts the directory 10 KiB earlier than the release
-System. The independent definitions are review inputs. The shipping build
-and its catalogue still depend on historical material. Research-only tests that
+System. The production builder uses the independent release definitions while retaining the historical compatibility catalogue and its notices. Research-only tests that
 exercise original Montezuma binaries require a separate, privately supplied reference copy.
 
 ## DUP 2.01 working disassembly

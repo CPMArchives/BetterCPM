@@ -6,7 +6,7 @@ import tempfile
 from build_fdf_catalog import build
 from build_source_disk import extract_files, install_files
 from fdfdecomp import decompile
-from fdf_v1 import parse, read_fdb, serialize
+from fdf_v1 import compile_file, parse, read_fdb, serialize
 
 
 def main() -> None:
@@ -16,8 +16,18 @@ def main() -> None:
         assert first == second
         assert serialize(parse(decompile(first))) == first
         database = read_fdb(first)
-        assert len(database.descriptors) == 107
+        assert len(database.descriptors) == 108
         assert all(item.supported for item in database.descriptors)
+        historical_bytes = compile_file(Path(__file__).resolve().parents[1]/"metadata/DISK.FDF")
+        assert serialize(parse(decompile(historical_bytes))) == historical_bytes
+        historical = read_fdb(historical_bytes)
+        assert database.descriptors[:107] == historical.descriptors
+        native = database.descriptors[-1].format
+        assert native.ident == "BCPM780"
+        assert (native.spt, native.off, native.dsm, native.logical_track) == (80, 2, 389, "CYLINDER")
+        assert native.off * native.spt * 128 == 20480
+        compatibility = next(d.format for d in database.descriptors if d.ident == "MMI012")
+        assert compatibility.off * compatibility.spt * 128 == 10240
 
         image = install_files([(0, "DISK.FDB", first)])
         recovered = extract_files(image)[(0, "DISK.FDB")]
@@ -25,7 +35,7 @@ def main() -> None:
         assert len(recovered) == len(first)
         read_fdb(recovered)
 
-    print("FDB packaging: deterministic 107-entry catalogue survives CP/M read-back")
+    print("FDB packaging: deterministic 108-entry catalogue survives CP/M read-back")
 
 
 if __name__ == "__main__":
