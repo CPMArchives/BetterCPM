@@ -65,7 +65,7 @@ def main():
         # message from the preceding invocation.
         for index,command in enumerate(commands):
             here=out/f'command-{index}';here.mkdir()
-            invocation=[str(args.emulator),'-m4','-batch','-turbo','-d0',str(disk),'-itime','0','-iw','A0> ','-id','32']
+            invocation=[str(args.emulator),'-m4','-batch','-turbo','-d0',str(disk),'-id','3000']
             invocation+=key_args(command+'\r')+['-itime','0','-iw','FDB: complete.',
                                                 '-iw','A0> ','-id','32','-it','-ix']
             (here/'invocation.json').write_text(json.dumps(invocation,indent=2)+'\n')
