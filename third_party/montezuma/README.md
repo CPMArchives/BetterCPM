@@ -72,12 +72,13 @@ is cleared. Five rejected external entries require no runtime replacement.
 Their archival parameters also appear in the source and must be considered
 when retiring or clearing the raw catalogue.
 
-Prioritize MMF017 (cpmsim 332K), MMI012 (Model 4 790K System), and MMI008
-(Model 4 800K Work and Utilities). Check system builders, diskdefs, work and
-Utilities media as well as the guest catalogue against independent format
-specifications or measured disks. Rebuild the catalogue and test affected
-formats before signing off. Research-only tests that exercise original
-Montezuma binaries require a separate, privately supplied reference copy.
+The [independent format trial](../../docs/engineering/evidence/2026-11-03-release-formats/README.md)
+identified the actual release media as CCS 332K (MMF017), 800K data (MMI008)
+and BetterCP/M's own 780K System layout. Historical MMI012 has 790K of
+allocation space and puts the directory 10 KiB earlier than the release
+System. The independent definitions are review inputs. The shipping build
+and its catalogue still depend on historical material. Research-only tests that
+exercise original Montezuma binaries require a separate, privately supplied reference copy.
 
 ## DUP 2.01 working disassembly
 

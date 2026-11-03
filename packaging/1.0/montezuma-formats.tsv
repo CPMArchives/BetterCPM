@@ -15,7 +15,7 @@ MMF013	AVATAR TC1 Terminal Converter (40T, SS, DD, 184K)	DISK.FDF	Clear exact ex
 MMF014	AVATAR TC1 Terminal Converter (40T, DS, DD, 384K)	DISK.FDF	Clear exact external edition or independently source	—
 MMF015	BMC if800/20 (40T, DS, DD, 384K)	DISK.FDF	Clear exact external edition or independently source	—
 MMF016	Bondwell Model 12 (40T, SS, DD, 170K)	DISK.FDF	Clear exact external edition or independently source	—
-MMF017	California Computer Systems (40T, DS, DD, 332K)	DISK.FDF	Clear exact external edition or independently source	cpmsim System, Work and Utilities
+MMF017	California Computer Systems (40T, DS, DD, 332K)	DISK.FDF	Independent review definition tested; production catalogue still uses historical input	cpmsim System, Work and Utilities
 MMF018	Cifer 2683 (40T, DS, DD, 384K)	DISK.FDF	Clear exact external edition or independently source	—
 MMF019	Columbia 964 (40T, SS, DD, 190K)	DISK.FDF	Clear exact external edition or independently source	—
 MMF020	Compustar Model 30 (35T, DS, DD, 340K, *)	DISK.FDF	Clear exact external edition or independently source	—
@@ -102,11 +102,11 @@ MMI004	Montezuma Micro Standard DS DATA (40T, DS, DD, 400K)	CONFIG	Independently
 MMI005	Montezuma Micro 80T SYSTEM (80T, SS, DD, 350K)	CONFIG	Independently source or obtain separate clearance	—
 MMI006	Montezuma Micro 80T DATA (80T, SS, DD, 400K)	CONFIG	Independently source or obtain separate clearance	—
 MMI007	Montezuma Micro 80T DS SYSTEM (80T, DS, DD, 710K)	CONFIG	Independently source or obtain separate clearance	—
-MMI008	Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)	CONFIG	Independently source or obtain separate clearance	Model 4 Work and Utilities
+MMI008	Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)	CONFIG	Independent review definition tested; production catalogue still uses historical input	Model 4 Work and Utilities
 MMI009	Montezuma Micro Extended SYSTEM (40T, SS, DD, 190K)	CONFIG	Independently source or obtain separate clearance	—
 MMI010	Montezuma Micro Extended DS SYSTEM (40T, DS, DD, 390K)	CONFIG	Independently source or obtain separate clearance	—
 MMI011	Montezuma Micro Extended 80T SYSTEM (80T, SS, DD, 390K)	CONFIG	Independently source or obtain separate clearance	—
-MMI012	Montezuma Micro Extended 80T DS SYSTEM (80T, DS, DD, 790K)	CONFIG	Independently source or obtain separate clearance	Model 4 System
+MMI012	Montezuma Micro Extended 80T DS SYSTEM (80T, DS, DD, 790K)	CONFIG	Independent review definition tested; production catalogue still uses historical input	790K compatibility media only; release System uses BetterCP/M 780K
 MMI013	Montezuma Micro SUPER DATA (40T, SS, DD, 220K)	CONFIG	Independently source or obtain separate clearance	—
 MMI014	Montezuma Micro SUPER DS DATA (40T, DS, DD, 440K)	CONFIG	Independently source or obtain separate clearance	—
 MMI015	Montezuma Micro 80T SUPER DATA (80T, SS, DD, 440K)	CONFIG	Independently source or obtain separate clearance	—

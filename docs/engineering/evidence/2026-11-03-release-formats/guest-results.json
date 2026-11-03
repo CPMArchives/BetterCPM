@@ -1,0 +1,68 @@
+{
+  "review_fdb_sha256": "0d17c89635dcc9c6c8f55b9915665bf954715d8b77b5fe169fab477a887a4261",
+  "cpmsim": {
+    "executable_sha256": "0f6b256cd6beea2ab7bf0eab8a9cc2a5241ed772408e811150c3f6e0f5cff4e8",
+    "guest_commands": [
+      "CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT=\"CCS 332K CPMSIM\"",
+      "TYPE B:PROBE.TXT",
+      "COPY B:PROBE.TXT B:RESULT.TXT",
+      "BYE /Y"
+    ],
+    "console_result": [
+      "Disk configuration changed (until cold boot).",
+      "MEDIA-OK-MMF017"
+    ],
+    "console_log_sha256": "051ba3f2a31b39747454336186fbe08bcd99bf0b077907f97a3e0792f204530b",
+    "copied_record_sha256": "a7f89f9156ef047ce07bc1bfb3869442f34efe171253094d099dc14d8c10bf8b"
+  },
+  "trs80gp": {
+    "executable_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+    "private_startup": [
+      "RSX LOAD M4SCRN",
+      "RSX LOAD ADM3A",
+      "CLS",
+      "B:",
+      "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"EXTENDED 790K COMPATIBILITY\"",
+      "A:TYPE C:PROBE.TXT",
+      "A:COPY C:PROBE.TXT B:RESULT.TXT",
+      "A:CONFIG /LOGICAL=D /PHYSICAL=1 /FORMAT=\"DOUBLE-SIDED 800K DATA\"",
+      "A:TYPE D:PROBE.TXT",
+      "A:COPY D:PROBE.TXT C:RETURN.TXT"
+    ],
+    "screens": [
+      {
+        "screen": "trs80-text-0.bin",
+        "raw_sha256": "cdaa4d12c66870e3cf9c14e46ea862889aaf3e274c3b25d51504ecab75ffc5d2",
+        "text": "A0>B:\n\nB0>A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"EXTENDED 790K COMPATIBILITY\"\n\nDisk configuration changed (until cold boot).\n\nB0>A:TYPE C:PROBE.TXT\nMEDIA-OK-MMI012"
+      },
+      {
+        "screen": "trs80-text-1.bin",
+        "raw_sha256": "897220372f752250c9b2bcb7f9592e500615a36c4047d75af02c9d600f012f71",
+        "text": "A0>B:\n\nB0>A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"EXTENDED 790K COMPATIBILITY\"\n\nDisk configuration changed (until cold boot).\n\nB0>A:TYPE C:PROBE.TXT\nMEDIA-OK-MMI012\n\nB0>A:COPY C:PROBE.TXT B:RESULT.TXT\n\nC0:PROBE.TXT -> B0:RESULT.TXT [2K]\n\nB0>A:CONFIG /LOGICAL=D /PHYSICAL=1 /FORMAT=\"DOUBLE-SIDED 800K DATA\"\n\nDisk configuration changed (until cold boot).\n\nB0>A:TYPE D:PROBE.TXT\nMEDIA-OK-MMI008"
+      },
+      {
+        "screen": "trs80-text-2.bin",
+        "raw_sha256": "45d2afa6109be0367d222f201e8325a4adb01ac7b4ffafc2b9da4f37deb3f151",
+        "text": "A0>B:\n\nB0>A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"EXTENDED 790K COMPATIBILITY\"\n\nDisk configuration changed (until cold boot).\n\nB0>A:TYPE C:PROBE.TXT\nMEDIA-OK-MMI012\n\nB0>A:COPY C:PROBE.TXT B:RESULT.TXT\n\nC0:PROBE.TXT -> B0:RESULT.TXT [2K]\n\nB0>A:CONFIG /LOGICAL=D /PHYSICAL=1 /FORMAT=\"DOUBLE-SIDED 800K DATA\"\n\nDisk configuration changed (until cold boot).\n\nB0>A:TYPE D:PROBE.TXT\nMEDIA-OK-MMI008\n\nB0>A:COPY D:PROBE.TXT C:RETURN.TXT\n\nD0:PROBE.TXT -> C0:RETURN.TXT [2K]"
+      }
+    ],
+    "verified_copies": [
+      {
+        "volume": "MMI008",
+        "exported_file": "RESULT.TXT",
+        "source_volume": "MMI012",
+        "bytes": 128,
+        "sha256": "59de2a5f063112849f6527f2ed14d2cddeff8bf0d2ac3158377f02912379e310",
+        "post_run_image": "43bc2f2229e7e59d13dec00b461db2a099b791e11581043ad17a7e23e3c1cecf"
+      },
+      {
+        "volume": "MMI012",
+        "exported_file": "RETURN.TXT",
+        "source_volume": "MMI008",
+        "bytes": 128,
+        "sha256": "118237cd7420c06614ae2cc2bfc3ac32bfd0492ee17607ba329fa56ea0b7b59d",
+        "post_run_image": "7a76571300603b410b0d9398e271fe3de18158e3620407be07d58e862f82a70b"
+      }
+    ]
+  }
+}
