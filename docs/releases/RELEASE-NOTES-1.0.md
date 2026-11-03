@@ -32,10 +32,10 @@ explicit source identity without requiring a BetterCP/M .git directory.
 
 ## Remaining acceptance work
 
-Complete the manual Model 4 campaign for current components and matching media,
-run fresh-package installation and platform checks, reconcile final conformance
-applicability, finish manuals/generated editions and audit source/licensing and
-attribution. Preserve results against exact hashes. The maintainer must accept
+Fresh-package installation passed on both emulators for the six-package
+candidate built at `35c56a03`. Documentation remains incomplete. Verify the
+user-facing installation walkthrough, correct the manuals and release guidance,
+and reconcile final conformance and attribution with the exact packages. Preserve results against exact hashes. The maintainer must accept
 the candidate before tagging and publishing the tested final files.
 
 ## Recorded compatibility and residual-risk dispositions
@@ -71,13 +71,16 @@ and its exact disk/overlay/emulator configuration. A changed candidate does not
 inherit that receipt automatically. BCPM-AUD-006’s stale memory/cold-history
 text was corrected in merged PR #584. Neither result accepts public packages.
 
-P2DOS.RSX is supplied in A0 on both System Disks, optional to load after the
-native provider; it is not loaded by default startup. Both 104/105 adapters
+Both System disks ship A0:P2DOS.RSX. Startup leaves it unloaded. Load ZPRTC
+on cpmsim or FREHDCLK on a FreHD-equipped Model 4, then load P2DOS. The
+35c56a03 cpmsim System disk passed the [P2DOS clock tests](../engineering/evidence/2026-11-03-candidate-cpmsim-p2dos.json).
+The matching Model 4 System image passed the [six-stage trs80gp test](../engineering/evidence/2026-11-03-model4-p2dos/README.md). Both 104/105 adapters
 (T104C3/T104Z8) are explicitly deferred from the 1.0 RC.
 
 Original BetterCP/M software and reusable code examples use GPL-2.0-or-later.
 Original documentation prose and illustrations use CC BY 4.0. Each package
 carries both license texts and docs/LICENSING.md, with LICENSE and NOTICE
 defining the split and separate-work exclusions.
-This grant does not relicense third-party or historical material. Montezuma
-rights evidence remains unresolved. Package freeze remains on hold.
+BetterCP/M builds its 108-entry DISK.FDB from its own FDF v1 text definitions.
+All six packages exclude Montezuma Micro’s original DISK.FDF, including nested
+source archives. The historical format parameters retain their provenance. Package freeze remains on hold.

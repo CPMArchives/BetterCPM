@@ -20,34 +20,17 @@ third-party reference data, not original BetterCP/M source.
 
 SHA-256: `9635fc0e93838f28c96aa274033fae1c8eb747db97fe4b2bd04337e39a286d66`.
 
-The release build compiles the migrated host catalogue, `metadata/DISK.FDF`,
-to `DISK.FDB`. The migration draws on 96 external definitions and 16 internal
-CONFIG definitions. Five external definitions are excluded. The resulting
-107-descriptor, 8,320-byte file is present on both reviewed System disks
-(SHA-256 `4dea7bd989580fc13f61e79d47e92466a440799c41b002f4caba65ec8f893c03`).
-The release builder preserves the 107 compatibility descriptors, using
-field-identical independent definitions for MMF017 and MMI008. It appends
-BCPM780 for a total of 108. The hash above identifies the earlier 107-entry
-catalogue. See [1.0 format support](../../docs/platform/FORMAT-SUPPORT-1.0.md).
+The two System disks carry the same 108-entry BetterCP/M `DISK.FDB`.
+Its editable source is BetterCP/M FDF v1 text in `metadata/DISK.FDF` and
+`metadata/release-formats.fdf`. The 107 compatibility entries preserve their
+IDs and order, including independent definitions for MMF017 and MMI008.
+BCPM780 adds the native 780K Model 4 System layout.
 
-The guest reads the compiled catalogue. The Source and nested Utilities kits
-include the BetterCP/M text catalogue and internal definitions. They exclude
-the original external DISK.FDF. The 1.0 package selection also excludes the
-original utilities, disassembly listings and the document quoting the BIOS. See
-[the migration record](../../docs/engineering/185%20Qualified%20FDF%20v1%20Catalogue%20Migration.md)
-and [the media record](../../docs/engineering/186%20FDB%20Build%20and%20Media%20Packaging.md).
-
-### Redistribution review for 1.0
-
-**Montezuma Micro DISK.FDF and the 16 disk-format definitions recovered from CONFIG.COM — distribution rights undetermined.**
-
-The maintainer accepts these data for 1.0 because they describe functional
-disk parameters. Preserve the notice and provenance with the external file,
-the internal definitions in `DISK-INT.FDF` and `metadata/mm-builtin-formats.json`,
-the migrated catalogue and the compiled `DISK.FDB`. No rightsholder grant has
-been verified. The project licenses do not cover these historical data.
-Montezuma utility binaries and disassemblies remain excluded, including in
-nested source archives.
+All six packages and their nested source archives exclude the original
+Montezuma DISK.FDF, utilities and disassemblies. The recorded “distribution
+rights undetermined” notice concerns historical format data retained in
+the native catalogue, including definitions recovered from CONFIG.COM.
+See [1.0 format support](../../docs/platform/FORMAT-SUPPORT-1.0.md).
 
 The retained 2001/2022 Digital Research correspondence does not establish a
 grant of Montezuma's separate contributions. The supplied 2005 MMCPM232
