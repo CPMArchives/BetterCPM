@@ -58,7 +58,7 @@ if a.platform == 'z80pack':
     shutil.copytree(a.image_dir / 'disks', w / 'disks')
     shutil.copy2(a.image_dir / 'diskdefs', w / 'diskdefs')
     disk = w / 'disks/drivea.dsk'
-    fmt = select_fdf(ROOT / 'third_party/montezuma/DISK.FDF',
+    fmt = select_fdf(ROOT / 'metadata/DISK.FDF',
                     'California Computer Systems (40T, DS, DD, 332K)')
     mapping = fmt.raw_record_map()
     raw = bytearray(disk.read_bytes())

@@ -48,7 +48,7 @@ MSG: DB 'IOBYTE=','$'
  END
 '''
  get=assemble(Path.home()/'bin/z80asm',source,work/'IOGET.COM',work/'ioget.lst',256)
- fmt=select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)
+ fmt=select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT)
  def offset(n):
   t,i=divmod(n,fmt.spt);return t*fmt.raw_track_bytes+fmt.raw_record_map()[i]*128
  meta=(ROOT/'build/utilities/config-iobyte.inc').read_text();rows=[bytes(map(int,line.split('DB ')[1].split(','))) for line in meta.splitlines() if 'DB ' in line]

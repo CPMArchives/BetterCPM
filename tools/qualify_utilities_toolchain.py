@@ -121,7 +121,7 @@ def main():
                 files[program+'.COM'] = bytes.fromhex(stub)+(marker+'\r\n$').encode()
                 script += ['CLS', cmd, program]
             files['QUALIFY.SUB'] = ('\r\n'.join(script)+'\r\n\x1a').encode()
-            defs = disk_definition(select_fdf(ROOT / 'third_party/montezuma/DISK.FDF', DEFAULT_FORMAT))
+            defs = disk_definition(select_fdf(ROOT / 'metadata/DISK.FDF', DEFAULT_FORMAT))
             defs += '''diskdef toolchain-system
  libdsk:format pcw800
  seclen 512

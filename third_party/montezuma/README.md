@@ -25,8 +25,7 @@ to `DISK.FDB`. The migration draws on 96 external definitions and 16 internal
 CONFIG definitions. Five external definitions are excluded. The resulting
 107-descriptor, 8,320-byte file is present on both reviewed System disks
 (SHA-256 `4dea7bd989580fc13f61e79d47e92466a440799c41b002f4caba65ec8f893c03`).
-The guest reads the binary catalogue. The raw catalogue and internal definitions still travel in the Source and
-nested Utilities source kits. The 1.0 package selection now omits the
+The guest reads the binary catalogue. The Source and nested Utilities kits include the translated BetterCP/M text catalogue and internal definitions. They exclude the original external DISK.FDF. The 1.0 package selection now omits the
 original utilities, disassembly listings and the document quoting the BIOS. See
 [the migration record](../../docs/engineering/185%20Qualified%20FDF%20v1%20Catalogue%20Migration.md)
 and [the media record](../../docs/engineering/186%20FDB%20Build%20and%20Media%20Packaging.md).

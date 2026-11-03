@@ -26,7 +26,7 @@ def main():
     work.mkdir()
     shutil.copytree(args.image_dir / 'disks', work / 'disks')
     shutil.copy2(args.image_dir / 'diskdefs', work / 'diskdefs')
-    fmt = select_fdf(ROOT / 'third_party/montezuma/DISK-INT.FDF',
+    fmt = select_fdf(ROOT / 'metadata/DISK.FDF',
                      'Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
     a, b, c = (work / 'disks' / f'drive{drive}.dsk' for drive in 'abc')
     data = a.read_bytes()

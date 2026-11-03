@@ -81,7 +81,7 @@ if not a.live_only:
   c.port_read=io;c.run(sy['P11FILES'],limit=5000000);assert c.z==(label=='matching') and state['user']==7,label
   results['destination-files-'+label]={'accepted':label=='matching','user_zero_checked':True,'caller_user_restored':7};save()
 if a.fixtures_only:raise SystemExit(0)
-fmt=select_fdf(root/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT);sim=Path('/tmp/bettercpm-assessment-part2-20261023/runtime-tools/cpmsim')
+fmt=select_fdf(root/'metadata/DISK.FDF',DEFAULT_FORMAT);sim=Path('/tmp/bettercpm-assessment-part2-20261023/runtime-tools/cpmsim')
 def put(w,drive,name,data):
  path=w/name;path.write_bytes(data);disk=w/'disks'/('drive'+drive+'.dsk')
  subprocess.run(['cpmrm','-f','bettercpm-default',str(disk),'0:'+name],cwd=w,capture_output=True)

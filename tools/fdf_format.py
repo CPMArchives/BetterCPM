@@ -4,6 +4,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from fdf_v1 import parse
+
 
 @dataclass(frozen=True)
 class FDFFormat:
@@ -115,6 +117,28 @@ def parse_fdf(path: Path) -> tuple[FDFFormat, ...]:
 
 def select_fdf(path: Path, name: str) -> FDFFormat:
     wanted = name.casefold()
+    text = path.read_text(encoding="ascii")
+    first = next((line.strip() for line in text.splitlines()
+                  if line.strip() and not line.lstrip().startswith("#")), "")
+    if first.upper().startswith("FDF_VERSION"):
+        # Long-standing launcher and builder names remain valid.
+        aliases = {"california computer systems (40t, ds, dd, 332k)": "mmf017",
+                   "montezuma micro 80t ds data (80t, ds, dd, 800k)": "mmi008"}
+        wanted = aliases.get(wanted, wanted)
+        for f in parse(text, str(path)):
+            if wanted not in (f.ident.casefold(), f.description.casefold()):
+                continue
+            if f.logical_track != "SURFACE" or f.sector_sizes is not None:
+                raise ValueError(f"{f.ident}: this image builder requires uniform surface tracks")
+            flags = ((0x80 if f.encoding == "MFM" else 0) | (0x40 if f.sides == 2 else 0)
+                     | (0x10 if f.invert else 0) | (8 if f.sector_id_mode == "CONTINUOUS" else 0)
+                     | (4 if f.track_id_mode == "CONTINUOUS" else 0)
+                     | (2 if f.side_order == "SIDE_MAJOR" else 0)
+                     | (1 if f.side1_direction == "REVERSE" else 0))
+            return FDFFormat(name, f.spt, f.bsh, f.blm, f.exm, f.dsm, f.drm,
+                             f.al0, f.al1, f.cks, f.off, f.psectors,
+                             (f.secsize // 128).bit_length()-1, f.cylinders, flags, f.sector_ids)
+        raise ValueError(f"BetterCP/M catalogue format not found: {name}")
     matches = [item for item in parse_fdf(path) if item.name.casefold() == wanted]
     if len(matches) != 1:
         raise ValueError(f"DISK.FDF format not found: {name}")

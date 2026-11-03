@@ -35,7 +35,7 @@ def main():
         resident = ROOT/'build/z80pack/resident.bin'
         from build_z80pack_image import DEFAULT_FORMAT
         from fdf_format import select_fdf
-        fmt = select_fdf(ROOT/'third_party/montezuma/DISK.FDF', DEFAULT_FORMAT)
+        fmt = select_fdf(ROOT/'metadata/DISK.FDF', DEFAULT_FORMAT)
         records=[validation_record(resident.read_bytes(),LAYOUT['SYSTEM'],52,8,fmt.spt)]
     else:
         records=[validation_record((ROOT/'build/system/resident.bin').read_bytes(),

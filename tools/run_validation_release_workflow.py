@@ -61,7 +61,7 @@ def main():
  assert all(name not in listing.lower() for name in ('copy.txt','final.txt','again.txt','notes.$$$'))
  shipped=audit(a.baseline,report,w,disks/'drivea.dsk')
  fs=subprocess.run(['fsck.cpm','-T','raw','-f','bettercpm-default','-n',str(b)],cwd=w,capture_output=True,check=True);(w/'b-filesystem.txt').write_bytes(fs.stdout+fs.stderr)
- fmt=select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT);before=(w/'a-before.dsk').read_bytes();after=(disks/'drivea.dsk').read_bytes()
+ fmt=select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT);before=(w/'a-before.dsk').read_bytes();after=(disks/'drivea.dsk').read_bytes()
  for i in range(160):
   track,within=divmod(i,fmt.spt);at=track*fmt.raw_track_bytes+fmt.raw_record_map()[within]*128;assert before[at:at+128]==after[at:at+128]
  (w/'result.json').write_text(json.dumps({'status':'PASS','baseline_sha256':report['sha256'],'simulator_sha256':sha(a.simulator),'runner_sha256':sha(w/'executed-runner.py'),'sessions':2,'unchanged_shipped_files':shipped,'scope':'Continuous shipped README/DIR/WHEREIS/ED/PIP/REN/STAT/COPY/ERA/SUBMIT and three-personality TYPE sessions, repeated command returns and cold boot persistence, data/file/filesystem/system-track audits. No configuration installation workflow claim.'},indent=2)+'\n');print('PASS complete two-session cpmsim release workflow',w)

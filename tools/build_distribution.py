@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+from build_qualified_cpmsim import project_revision
 import sys
 import tempfile
 from build_profiles import (CONTEXT_ENV, PROFILES, profile_inputs, read_context,
@@ -40,7 +41,7 @@ def source_identity(profile=None):
         for path in sorted((ROOT / folder).rglob('*')):
             if path.is_file() and '__pycache__' not in path.parts:
                 files[str(path.relative_to(ROOT))] = digest(path.read_bytes())
-    revision = run(['git', 'rev-parse', 'HEAD'], ROOT).decode().strip()
+    revision = project_revision(ROOT)
     identity = {'revision': revision, 'inputs': files,
                 'assembler_sha256': digest((Path.home() / 'bin/z80asm').read_bytes())}
     if profile:
@@ -128,7 +129,7 @@ def geometry(target, build_root):
     if target == 'z80pack':
         from fdf_format import select_fdf
         from build_z80pack_image import DEFAULT_FORMAT
-        f = select_fdf(build_root / 'third_party/montezuma/DISK.FDF', DEFAULT_FORMAT)
+        f = select_fdf(build_root / 'metadata/DISK.FDF', DEFAULT_FORMAT)
         return {'format': f.name, 'bytes': f.image_bytes,
                 'reserved': f.reserved_records*128, 'block': f.block_bytes,
                 'blocks': f.dsm+1, 'directory_blocks': f.directory_blocks,
@@ -203,7 +204,7 @@ def construct(target, root, out, files, g, cold_start_command=""):
     if target == 'z80pack':
         from fdf_format import select_fdf
         from build_z80pack_image import DEFAULT_FORMAT
-        f = select_fdf(root / 'third_party/montezuma/DISK.FDF', DEFAULT_FORMAT)
+        f = select_fdf(root / 'metadata/DISK.FDF', DEFAULT_FORMAT)
         source = (root / 'build/z80pack/disks/drivea.dsk').read_bytes()
         # Raw sector ordering is target-specific. Preserve only reserved records.
         image = bytearray(b'\xe5'*len(source))
@@ -246,7 +247,7 @@ def validate_config_fingerprint(target, raw, files, root):
     if target == 'z80pack':
         from fdf_format import select_fdf
         from build_z80pack_image import DEFAULT_FORMAT
-        f = select_fdf(root / 'third_party/montezuma/DISK.FDF', DEFAULT_FORMAT)
+        f = select_fdf(root / 'metadata/DISK.FDF', DEFAULT_FORMAT)
         def record(n):
             track, within = divmod(n, f.spt)
             at = track*f.raw_track_bytes + f.raw_record_map()[within]*128
@@ -272,7 +273,7 @@ def validate_config_cold_patch(target, raw, files, root):
     if target=='z80pack':
         from fdf_format import select_fdf
         from build_z80pack_image import DEFAULT_FORMAT
-        fmt=select_fdf(root/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)
+        fmt=select_fdf(root/'metadata/DISK.FDF',DEFAULT_FORMAT)
         def record(n):
             t,i=divmod(n,fmt.spt);at=t*fmt.raw_track_bytes+fmt.raw_record_map()[i]*128
             return image[at:at+128]

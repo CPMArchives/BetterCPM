@@ -34,7 +34,7 @@ def main():
             transcript=session(a.simulator,disks,steps,w/'transcript.bin')
             assert b'Invalid /VER usage' not in transcript
             assert (disks/'driveb.dsk').read_bytes()==ub
-            (w/'diskdefs').write_text(disk_definition(select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)))
+            (w/'diskdefs').write_text(disk_definition(select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT)))
             assert subprocess.run(['fsck.cpm','-T','raw','-f','bettercpm-default','-n',str(disks/'drivea.dsk')],cwd=w,capture_output=True).returncode==0
         else:
             raw=extract_raw(source);directory=FILESYSTEM_FIRST_SECTOR*SECTOR_SIZE

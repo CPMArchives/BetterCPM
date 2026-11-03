@@ -9,7 +9,7 @@ from fdf_format import FDFFormat, select_fdf
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_FDF = ROOT / "third_party/montezuma/DISK.FDF"
+DEFAULT_FDF = ROOT / "metadata/DISK.FDF"
 DEFAULT_FORMAT = "California Computer Systems (40T, DS, DD, 332K)"
 TRACK_LENGTH = 0x18EA
 IDAM_FIRST = 175

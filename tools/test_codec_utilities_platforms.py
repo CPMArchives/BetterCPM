@@ -81,7 +81,7 @@ def fixtures():
 
 def prepare(work, platform, family, system, utility, fmt):
     work.mkdir(parents=True)
-    definitions=disk_definition(select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT))+SYSTEM_DEF
+    definitions=disk_definition(select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT))+SYSTEM_DEF
     (work/'diskdefs').write_text(definitions)
     a=work/'a.raw';b=work/'b.raw';c=work/'c.raw'
     a.write_bytes(system.read_bytes() if platform=='z80pack' else extract_raw(system.read_bytes()))
@@ -237,7 +237,7 @@ def verify_system_payloads(work, private, definition, system, platform):
     original=system.read_bytes()
     assert sha(original)==manifest['sha256'], 'System image differs from its build receipt'
     raw=original if platform=='z80pack' else extract_raw(original)
-    reserved=(select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT).reserved_records*128
+    reserved=(select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT).reserved_records*128
               if platform=='z80pack' else 4*10*512)
     assert private.read_bytes()[:reserved]==raw[:reserved], 'private System reserved area changed'
     files={}
@@ -284,7 +284,7 @@ def main():
         candidates=[p for p in (args.system/platform).glob('*') if p.suffix in ('.dsk','.dmk') and 'boot-test' not in p.name]
         assert len(candidates)==1,candidates
         system=candidates[0];before_system=system.read_bytes();utility=out/'packaged'/filename
-        fmt=select_fdf(ROOT/'third_party/montezuma'/('DISK.FDF' if platform=='z80pack' else 'DISK-INT.FDF'),
+        fmt=select_fdf(ROOT/'metadata/DISK.FDF',
                        DEFAULT_FORMAT if platform=='z80pack' else 'Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
         trials={}
         def run_family(family):

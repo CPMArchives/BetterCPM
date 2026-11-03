@@ -34,7 +34,7 @@ def main():
   files=[a.images/n for n in ('BetterCPM-Distribution-trs80gp-80T-DS-System.dmk','BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk')]
   result['original_images']=[{'path':str(f.resolve()),'sha256':sha(f)} for f in files]
   result['emulator_sha256']=sha(a.emulator)
-  fmt=select_fdf(ROOT/'third_party/montezuma/DISK-INT.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
+  fmt=select_fdf(ROOT/'metadata/DISK.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
   (w/'diskdefs').write_text(disk_definition(fmt));raw=w/'utilities.raw';raw.write_bytes(b'\xe5'*fmt.image_bytes)
   result['components']={}
   selected=NAMES if a.only=='all' else (['CRCKSUM'] if a.only=='crcksum' else ['CPX','RSX','STAT'])

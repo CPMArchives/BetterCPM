@@ -8071,6 +8071,20 @@ This assigns logical drive C to physical drive 1 using the named format.
 
 The operands must appear in the order shown: `/LOGICAL=`, `/PHYSICAL=`, then `/FORMAT=`. Logical targets are B–D and physical indexes are 0–3. The quoted format must exactly match a catalogue display description, ignoring letter case and trailing space padding. It accepts 1–32 printable ASCII characters with at least one non-space character; quote escapes, prefixes, wildcards and row numbers are not accepted.
 
+To edit a catalogue on the host, start with `metadata/DISK.FDF` from the
+Source package or export your installed binary to BetterCP/M FDF v1 text:
+
+```sh
+python3 tools/fdfdecomp.py DISK.FDB my-formats.fdf
+# Edit my-formats.fdf; give each added FORMAT a unique ID and description.
+python3 tools/fdfcomp.py my-formats.fdf my-disk.fdb
+```
+
+Install the new binary as `DISK.FDB` on a work disk and select the format by
+its description. Keep a backup of the stock catalogue. Decompilation recovers
+the descriptor fields; source comments are absent from the binary. The exporter
+checks that the text reproduces the input bytes before saving it.
+
 Named binding requires a valid `DISK.FDB`, using CONFIG's current-drive/A: catalogue lookup. Missing, corrupt, unknown, ambiguous or unsupported definitions leave the active binding unchanged.
 
 CONFIG checks that the requested assignment is compatible with the selected drive.

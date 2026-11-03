@@ -42,7 +42,7 @@ distinct copyright questions. The project records an inclusion decision
 without asserting public-domain status, ownership, or a rightsholder grant.
 See [U.S. Copyright Office Circular 14](https://www.copyright.gov/circs/circ14.pdf).
 
-The Source and nested Utilities kits carry the external file. Both System
+The Source and nested Utilities kits carry the translated BetterCP/M text catalogue and exclude the original external file. Both System
 disks carry 91 external entries in DISK.FDB alongside 16 recovered from
 CONFIG.COM. The notice covers both sets of data and their compiled forms. The package selectors
 exclude the historical utilities and disassemblies. See the

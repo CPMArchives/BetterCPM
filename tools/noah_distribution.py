@@ -31,12 +31,12 @@ def media(artifacts, acceptance=None):
     reports = []
     for target in ('z80pack','trs80gp'):
         native = target=='trs80gp'
-        fmt = select_fdf(root/'third_party/montezuma'/('DISK-INT.FDF' if native else 'DISK.FDF'),
+        fmt = select_fdf(root/'metadata/DISK.FDF',
                         'Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)' if native else DEFAULT_FORMAT)
         definition = 'bettercpm-mm-80t-ds-data' if native else 'bettercpm-default'
         with tempfile.TemporaryDirectory(prefix='bettercpm-noah-media-') as temp:
             work = Path(temp)
-            (work/'diskdefs').write_text(disk_definition(select_fdf(root/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)))
+            (work/'diskdefs').write_text(disk_definition(select_fdf(root/'metadata/DISK.FDF',DEFAULT_FORMAT)))
             raw = work/'noah.raw'
             raw.write_bytes(bytes([0xe5])*fmt.image_bytes)
             def run(*args):
