@@ -18,8 +18,9 @@ Separate material retains its own notices and recorded terms:
 - Richard Conn DASM imports and adaptation retain SIG/M historical provenance,
   credits and the maintainer’s separately recorded distribution basis.
 - z80pack and patched host/guest components retain upstream notices and terms.
-- Montezuma catalog data, utilities and disassemblies are third-party works;
-  no broad redistribution permission is established by this declaration.
+- Montezuma Micro DISK.FDF — distribution rights undetermined. The project
+  accepts the external catalogue for 1.0 with this notice. No catalogue-specific
+  grant has been verified. The 16 CONFIG-derived definitions remain under review.
 - Third-party material inside documentation/evidence archives, code quotations
   or generated source companions retains its original terms wherever located.
 

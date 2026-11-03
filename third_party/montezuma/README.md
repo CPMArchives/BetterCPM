@@ -33,10 +33,17 @@ and [the media record](../../docs/engineering/186%20FDB%20Build%20and%20Media%20
 
 ### Redistribution review for 1.0
 
-**Open as of 3 November 2026.** We found provenance, but no documented
-Montezuma-specific permission to redistribute the catalogue, the internal
-CONFIG definitions, their migrated/compiled forms or the archived programs
-and listings. Access to a disk image establishes where the bytes came from.
+**Montezuma Micro DISK.FDF — distribution rights undetermined.**
+The maintainer accepts inclusion of the external file identified above in
+1.0 with this notice because it records technical disk-format parameters.
+Retain the notice with the original file and identify the external entries
+where they are compiled into the System disk catalogue. No rightsholder
+grant has been verified. Keep the external file outside the project licenses.
+
+The decision covers the external catalogue. The 16 definitions recovered
+from CONFIG, including their source and compiled representations, remain
+under separate review. Montezuma utilities and disassemblies remain excluded.
+
 The retained 2001/2022 Digital Research correspondence does not establish a
 grant of Montezuma's separate contributions. The supplied 2005 MMCPM232
 disassembly README describes unsuccessful attempts to reach the original
@@ -47,12 +54,8 @@ vol. 3, no. 11, p. 3, reports that Montezuma Micro president John Lancione
 and CN80 agreed to exclusive CN80 distribution of the Model 4 CP/M system. This is a research lead about historical distribution. It establishes
 neither present ownership nor downstream permission for this project.
 
-Keep public package freeze on hold. Record a verifiable grant or other reviewed
-basis whose scope identifies the selected data and forms. Otherwise exclude
-unneeded historical files from every public archive, including nested source
-kits, and independently source or replace the required catalogue. Reproduce
-the clean build and requalify affected formats and media before acceptance.
-Removing the raw reference files alone leaves the derived FDB on both disks.
+Package freeze remains on hold pending the internal-definition decision
+and remaining release checks.
 
 ### Customer update service and format decisions
 
@@ -65,12 +68,9 @@ republish this particular catalogue or a compiled edition. Matching editions
 and a notice from an authorized distributor or rights holder remain open.
 
 The [format decision list](../../packaging/1.0/montezuma-formats.tsv) names all
-112 historical entries by stable ID. To preserve today's support, independently
-source or verify 91 admitted external entries unless a grant covers them.
-Review the 16 internal CONFIG entries separately even if the external file
-is cleared. Five rejected external entries require no runtime replacement.
-Their archival parameters also appear in the source and must be considered
-when retiring or clearing the raw catalogue.
+112 historical entries by stable ID. The external file has 96 entries. The compiled catalogue uses
+91 of them. Five rejected entries remain in the historical file and require
+no runtime replacement. The 16 internal records have a different origin.
 
 The [independent format trial](../../docs/engineering/evidence/2026-11-03-release-formats/README.md)
 identified the actual release media as CCS 332K (MMF017), 800K data (MMI008)
@@ -108,4 +108,4 @@ These are third-party reference materials, not original BetterCP/M code.
 
 ## Agreed project license boundary
 
-Original BetterCP/M software and reusable code examples use GPL-2.0-or-later; original documentation prose and illustrations use CC BY 4.0. Neither grant relicenses the historical materials in this directory. See [project licensing](../../docs/LICENSING.md) and the [permission investigation](../../docs/engineering/Montezuma-Permission-Review-2026-11-03.md). Catalogue permission remains unresolved.
+Original BetterCP/M software and reusable code examples use GPL-2.0-or-later; original documentation prose and illustrations use CC BY 4.0. Neither grant relicenses the historical materials in this directory. See [project licensing](../../docs/LICENSING.md) and the [permission investigation](../../docs/engineering/Montezuma-Permission-Review-2026-11-03.md). The external catalogue carries the notice above.

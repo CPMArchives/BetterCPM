@@ -1,6 +1,6 @@
 # Montezuma permission investigation — 3 November 2026
 
-Status: **redistribution permission unresolved; package freeze on hold**.
+**External DISK.FDF accepted for 1.0 with the notice “distribution rights undetermined.”** The 16 CONFIG-derived definitions remain under separate review. Package freeze is on hold.
 Read-only public-source research; no person or archive has been contacted.
 No current rights-holder identity or chain of title is established here.
 
@@ -33,28 +33,17 @@ No current rights-holder identity or chain of title is established here.
 No broad public redistribution grant was located. This is an evidence gap,
 not proof that permission cannot exist. Retain the full search/retrieval limits.
 
-## Actual release exposure
+## Maintainer decision and current exposure
 
-`third_party/montezuma/` contains MDIR, CONFIG and DUP reference binaries and
-listings plus DISK.FDF/DISK-INT.FDF and extraction/provenance notes. Full Source
-and Utilities source companions copy that tracked material, even when it is
-not selected on a System/Utilities disk. DISK.FDF is an input to distributed
-DISK.FDB. A GPL declaration for original BetterCP/M work does not clear these
-inputs or waive source/rights checks in nested archives.
+The maintainer accepts inclusion of the 10,752-byte external catalogue with
+the stated notice because it describes technical disk-format parameters.
+A technical fact and a compilation's original selection or arrangement are
+distinct copyright questions. The project records an inclusion decision
+without asserting public-domain status, ownership, or a rightsholder grant.
+See [U.S. Copyright Office Circular 14](https://www.copyright.gov/circs/circ14.pdf).
 
-## Recommended next decision
-
-Seek a specific, retainable permission covering the actual selected file hashes,
-redistribution and any derivative catalog data, including full source companions.
-Historical publisher/author evidence can guide a rights inquiry but is not a
-verified current contact or chain of title. Contacting anyone needs a separate
-instruction; none was sent during this investigation.
-
-If no adequate permission can be established, prepare a separate reviewed
-public-payload plan: exclude nonessential original binaries/listings, preserve
-needed private research separately, and independently document/reconstruct
-required format facts. Audit every build/test/reference dependency and validate
-catalog equivalence/media compatibility before changing inputs or support.
-Do not silently delete references, relabel them GPL, or narrow supported formats.
-These alternatives are recommendations only; no catalog replacement/exclusion
-is implemented by the P2DOS/license review PR.
+The Source and nested Utilities kits carry the external file. Both System
+disks carry 91 external entries in DISK.FDB alongside 16 recovered from
+CONFIG. Decide those 16 separately before freeze. The package selectors
+exclude the historical utilities and disassemblies. See the
+[file identity and provenance](../../third_party/montezuma/README.md).

@@ -8,7 +8,7 @@
       "utilities-model4",
       "source"
     ],
-    "notice": "The release source selection excludes original Montezuma utility binaries, disassembly listings and the engineering document containing a BIOS excerpt, including in nested source kits. Both System disks still contain DISK.FDB, with 91 external catalogue entries and 16 definitions recovered from CONFIG. Source and the TED/DASM kits still carry the catalogue inputs. No catalogue-specific redistribution grant has been verified. Freeze is on hold. See third_party/montezuma/README.md in the repository for provenance and the format-by-format review."
+    "notice": "Montezuma Micro DISK.FDF — distribution rights undetermined. The maintainer accepts inclusion of the external disk-format catalogue in BetterCP/M 1.0 with this notice. No rightsholder grant has been verified. The source kits retain the original file and provenance. Of the definitions compiled into DISK.FDB on both System disks, 91 come from the external file and 16 come from CONFIG. The 16 internal definitions remain under separate review. Montezuma utility binaries and disassemblies are excluded from the packages and their nested source kits."
   },
   {
     "work": "z80pack and the cpmsim support kit",
