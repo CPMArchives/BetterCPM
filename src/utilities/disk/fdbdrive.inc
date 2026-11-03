@@ -223,6 +223,7 @@ EDSTART:LD A,(EDSOURCE)
         JR Z,EDPENDSET
         INC A
 EDPENDSET:LD (EDPENDING),A
+        LD (EDBASEPEND),A
         LD A,1
         LD (EDPAGE),A
         XOR A
@@ -468,7 +469,30 @@ EDSTDSET:LD A,(IY+1)
 EDSETWORD:LD (HL),E
         INC HL
         LD (HL),D
-EDMOD:  LD A,1
+EDMOD:  LD HL,EDITBIND
+        LD DE,EDORIG
+        LD B,64
+        CALL CMPFIELD
+        JR NZ,EDCHANGED
+        LD HL,EDIDENT
+        LD DE,EDOLDID
+        LD B,40
+        CALL CMPFIELD
+        JR NZ,EDCHANGED
+        LD HL,EDIDS
+        LD DE,EDOLDMAP
+        LD B,255
+        CALL CMPFIELD
+        JR NZ,EDCHANGED
+        LD B,255
+        CALL CMPFIELD
+        JR NZ,EDCHANGED
+        XOR A
+        LD (EDDIRTY),A
+        LD A,(EDBASEPEND)
+        LD (EDPENDING),A
+        JP EDSCREEN
+EDCHANGED:LD A,1
         LD (EDPENDING),A
         LD (EDDIRTY),A
         JP EDSCREEN
@@ -605,6 +629,9 @@ EDMAP:  LD HL,EDSLOTMSG
         LD A,(EDITBIND+52)
         OR A
         JR NZ,EDALREADYMIX
+        LD A,(EDITBIND+18)
+        CP C
+        JP Z,EDMOD
         PUSH BC
         PUSH DE
         LD HL,EDCODES
@@ -825,7 +852,9 @@ EDAPPLY:CALL EDMAKE
         JP EDSCREEN
 ; Materialize a one-entry canonical catalogue, using the same DPB/geometry
 ; checks as import. Identity placeholders exist only for drive validation.
-EDMAKE: LD HL,FDFRAM
+EDMAKE: LD A,1
+        LD (EDITCHECK),A
+        LD HL,FDFRAM
         LD DE,FDFRAM+1
         LD BC,191
         LD (HL),0
@@ -910,7 +939,19 @@ EDSEEN: LD (HL),1
         CALL FDBVALID
         JP C,EDERROR
         CALL SEMANTICS
+        XOR A
+        LD (EDITCHECK),A
         RET
+; EDMAKE validates only scratch RAM. Keep the working format on screen
+; when its temporary geometry or allocation values cannot yet be saved.
+EDCHECKFAIL:
+        LD SP,STACKTOP
+        XOR A
+        LD (EDITCHECK),A
+        LD HL,EDINVALIDMSG
+        LD (EDNOTICE),HL
+        JP EDSCREEN
+EDINVALIDMSG:DB 'Invalid working format. Correct the fields and validate again.',13,10,0
 EDNOTICE:DW 0
 EDTARGET:DB 0
 EDACTIONS:DB 'D Apply to drive, K Put in catalogue, W Write catalogue, other Cancel: ',0
@@ -1181,6 +1222,7 @@ EDCOMMITTED:
         LDIR
         XOR A
         LD (EDPENDING),A
+        LD (EDBASEPEND),A
         LD (EDDIRTY),A
         LD HL,EDITBIND
         LD DE,EDORIG
@@ -1206,6 +1248,7 @@ EDFILE: DS 12
 EDTEMPFILE: DS 12
 EDAFTER:DB 0
 EDPENDING:DB 0
+EDBASEPEND: DB 0
 EDINCMSG:DB 'Include working format before saving (Y/N, other cancels)? ',0
 EDQUITMSG:DB 'Working format pending: S Save, D Discard, C Cancel: ',0
 

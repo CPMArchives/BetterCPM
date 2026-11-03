@@ -766,6 +766,9 @@ EXISTS: LD HL,EXISTMSG
         JR EXITMSG
 IOERR:  LD HL,IOMSG
 EXITMSG:
+        LD A,(EDITCHECK)
+        OR A
+        JP NZ,EDCHECKFAIL
         CALL PUTS
         LD A,(INOPEN)
         OR A
@@ -811,6 +814,7 @@ TEXTMSG:DB 'FDB: invalid definition or unsupported FDF text.',13,10,0
 LOSSMSG:DB 'FDB: cannot export this encoding losslessly.',13,10,0
 EXISTMSG:DB 'FDB: destination exists; nothing replaced.',13,10,0
 IOMSG:  DB 'FDB: file operation failed.',13,10,0
+EDITCHECK: DB 0
 ARENALIMIT: DW FDFLIM
 OLDSP:  DW 0
 MODE:   DB 0

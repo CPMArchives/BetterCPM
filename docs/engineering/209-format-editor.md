@@ -17,6 +17,9 @@ Edits can be temporarily inconsistent. Page 1 recalculates raw bytes, directory
 byte offset and maximum DSM from the recorded sectors and logical-track unit.
 It flags an excessive DSM and leaves its value available for explicit editing.
 V runs the native catalogue validator on a temporary one-entry definition.
+Validation errors keep the working copy on the editor page. Restoring the
+original values clears its Modified indicator. An anonymous capture or blank
+definition still prompts before it is discarded.
 Drive captures leave unavailable catalogue identity fields visibly unset.
 Cataloguing requires an ID and description. Validation of anonymous drive
 geometry uses temporary identity fields only in the validation buffer.
@@ -49,10 +52,10 @@ logical records through the public API, changes DSM on a captured format,
 confirms application to D, C and B, then compares complete records and the
 entire system disk against their expected contents.
 
-The qualified COM is 18,452 bytes, SHA-256
-`49d35852959819100d3284ba857ebe389330106c3b91636c8a4ac5d1fae73eaf`.
-The interactive session spans 0100h through D04Fh (53,072 bytes), leaving
-1,200 bytes of the standard 53 KiB TPA. This includes both catalogue snapshots,
+The qualified COM is 18,623 bytes, SHA-256
+`c3b99233c5c87f7e49243fc4982ccf631ca9ac8778bd0e5363e7ecf7708380a4`.
+The interactive session spans 0100h through D0F2h (53,235 bytes), leaving
+1,037 bytes of the standard 53 KiB TPA. This includes both catalogue snapshots,
 working-format maps, originals for field comparisons, and the relocated editor.
 
 On cpmsim and Model 4 under trs80gp the extracted active API records matched

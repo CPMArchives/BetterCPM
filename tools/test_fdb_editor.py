@@ -54,11 +54,15 @@ def main():
         assert not m.unexpected_prompt,console
         return console
 
-    console=run('B\r\rMMI012\rG\r1\rQ\rQ\rD\r',{src:stock})
+    console=run('B\r\rMMI012\rG\r1\rV\r3\rA\r80\rE\r389\rV\rQ\rQ\rD\r',{src:stock})
     assert 'Directory byte: 10240' in console and 'Maximum DSM: 394' in console,console
     assert 'Directory byte: 20480' in console and 'Maximum DSM: 389' in console,console
+    assert 'Invalid working format' in console and 'Format validates.' in console, console
     assert '! invalid allocation' in console
     assert m.files=={src:stock}
+    # Reverting an edit clears the indicator and permits a clean exit.
+    console=run('B\r\rMMI012\rG\r1\rG\r0\rQ\rQ\r',{src:stock})
+    assert 'Working format pending' not in console and m.files=={src:stock}
     # Load an external entry, edit the staged copy and include it in Save As.
     external=replace(entries[0],ident='EXT1',description='external')
     other=diskkey(1,'OTHER.FDB')
