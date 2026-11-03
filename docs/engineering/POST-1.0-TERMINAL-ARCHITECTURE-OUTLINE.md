@@ -533,6 +533,92 @@ Additional questions to retain for the later discussion:
 These notes extend the discussion agenda. They do not choose an API, database
 format, provider ABI or post-1.0 implementation schedule.
 
+## 22. Optional utility presentation and ASCII fallback
+
+Discussion addition, 2026-11-03: BetterCP/M-aware utilities should be able to
+use reverse video, bold and other available presentation attributes while
+retaining ordinary ASCII output when enhancements are unavailable or disabled.
+This is a post-1.0 requirement to investigate within the two-path architecture
+above, not a new 1.0 integration task or an approved interface.
+
+### Portable emphasis and explicit attributes
+
+Distinguish a semantic request for **emphasis/standout** from a request for a
+specific physical attribute. Emphasis may map to bold or reverse according to
+the supported terminal profile; an explicit bold request must not be reported
+as physically supported merely because reverse is available. Unsupported
+effects should leave the text visible in normal presentation.
+
+The historical precedent is concrete but narrower than transparent emulation:
+Richard Conn's [ZCPR3 Installation Manual](https://oldcomputers.dyndns.org/public/pub/manuals/zcpr/zcpr3_installation_manual.pdf),
+sections 7.2.7 and 7.5 (printed pages 99 and 103), describes terminal-dependent
+standout and VLIB's `STNDOUT`/`STNDEND` routines. Highlighting must not move the
+cursor or change how the text characters are supplied. This supports the
+emphasis concept; it does not establish a Z-System terminal-emulation mechanism.
+
+### Existing implementation to build on
+
+The [screen backend ABI](Unloadable%20Screen%20Backend%20ABI.md) already defines
+SCRN 1.1 and optional SCX discovery, rendition setting and styled glyph output.
+It should be evaluated before designing additional capability machinery.
+
+| Current implementation | Relevant limit |
+| --- | --- |
+| [Model 4 backend](../../src/rsx/screen/model4.mac), `SX_DESC` | Advertises reverse and conceal, not physical bold or color. Unsupported attributes can be retained in canonical state without a visible effect. |
+| [ANSI-host backend](../../src/rsx/screen/ansi-host.mac), `BX_DESC` | Advertises the styles/colors it can encode. Actual endpoint support is a separate question; host-managed geometry is not detected screen size. |
+| SCX operation 23 | One shared cursor/rendition save slot, not a nested utility attribute stack. |
+
+Check descriptor version, length and masks. Successful rendition setting alone
+does not prove that the requested effect is displayed. Any wrapper must honor
+the existing calling conventions and the [resident-service address lifetime](../architecture/20%20Resident%20Service%20ABI.txt):
+a transient can cache a lookup during execution while the resident-layout
+generation remains unchanged; resident consumers require the appropriate
+rebinding rules.
+
+### Fallback and output policy
+
+- Preserve wording, field widths, default indicators, choices and operation
+  semantics in plain mode. Attributes must carry no essential information.
+- Keep ordinary file output, checksum lists, machine-readable output and
+  printer/list output free of presentation controls. Define how a caller knows
+  that enhancement is appropriate for its destination; provider presence alone
+  is insufficient.
+- Missing or unsuitable capabilities must produce normal ASCII text, without
+  leaked escape sequences, high-bit character substitutions or lost text.
+  ASCII controls needed for ordinary console operation remain permissible.
+- Investigate explicit terminal/profile configuration and a plain-mode override.
+  Do not assume that an ANSI encoder detects its endpoint, or issue terminal
+  queries whose replies could become application input.
+- Do not load a provider solely to decorate a command's output. Optional styling
+  and essential cursor/geometry requirements are separate: a full-screen editor
+  does not gain a dumb-console interface merely by dropping its attributes.
+
+### Decisions and bounded implementation study
+
+Apply section 21's state/lifecycle questions specifically to attribute use.
+The [ANSI personality](../../src/rsx/ansi-dispatch.inc) keeps its own rendition
+record, so an independent backend style change need not update that record.
+Do not assume that setting a backend attribute and then using arbitrary console
+output is sufficient. The selected path must preserve console handling,
+including pause, cancellation, printer echo and interception where applicable,
+and coordinate personality/backend state. Specify restoration on normal return,
+error, cancellation and warm boot without relying only on a utility's exit code
+being reached. Do not borrow the shared save slot as a general attribute stack.
+
+Evaluate a small optional binding alongside the shared UI library, retaining
+backend ownership of hardware access and terminal encoding. First investigate
+normal text, portable emphasis, explicit bold and explicit reverse with one
+representative utility; defer additional presentation policy until justified.
+No new selector, save-state contract, configuration syntax or library API is
+chosen here. Reuse the existing screen tests and compare plain-mode text and
+file bytes, supported/unsupported attributes, interrupted cleanup, mixed output
+paths and right-edge behavior: legacy cell output clamps at the last column,
+whereas styled glyph output uses delayed wrap. Measure executable growth,
+loaded allocation and stack/workspace cost; do not assume that optional code is
+free or add a full-screen buffer merely for highlighting. Batch platform
+qualification after the implementation stabilizes. These are future acceptance
+checks, not claims of tests performed for this discussion.
+
 ## Provider library and companion qualification utilities
 
 Roadmap addition, 2026-10-12: once the 1.0 monitor support is in place, assemble
