@@ -1,0 +1,24 @@
+{
+  "status": "PASS_FOR_REPORTED_MANUAL_SCENARIO",
+  "date": "2026-11-03",
+  "target": "trs80gp Model 4 on macOS",
+  "workflow_bios_source_commit": "37fa57a1310f771227115fd269ef224e411ace1d",
+  "running_bios_identity_independently_verified_for_this_result": false,
+  "scenario": "TED mixed-case typing, save, exit and reopen",
+  "file": "CASETEST.TXT",
+  "providers_in_requested_workflow": ["M4SCRN", "ANSI"],
+  "requested_steps": [
+    "In screen overwrite mode, replace the beginning of the first line with aBcDeF, using Shift for capitals.",
+    "Press Ctrl-K then X to save and exit.",
+    "Run TED CASETEST.TXT again and enter S.",
+    "Check that the first line begins exactly aBcDeF."
+  ],
+  "maintainer_report": "I followed these steps. Here is the result.",
+  "observed_first_line_prefix": "aBcDeF",
+  "evidence_basis": "Maintainer procedure report and supplied post-reopen screenshot in this conversation.",
+  "limits": [
+    "No independent on-disk file readback was performed for this receipt.",
+    "This does not establish ordinary quick-tap CAPS behavior or resolve earlier host-key observations.",
+    "SEARCH and the remaining regression and release qualification are pending."
+  ]
+}

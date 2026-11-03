@@ -1,7 +1,8 @@
 # Model 4 CAPS native diagnosis
 
-Status: one native single-press sequence passes; earlier host-key observations
-remain unresolved, 2026-11-03. This is a
+Status: one native single-press sequence and the maintainer's TED mixed-case
+typing/save/reopen check pass; earlier host-key observations remain unresolved,
+2026-11-03. This is a
 follow-up to `Model4-Lowercase-First-Draft.md`. Production BIOS source and
 its 757-byte allocation remain unchanged from `37fa57a`.
 
@@ -115,7 +116,27 @@ event snapshot. There are no event timestamps, so actual press durations cannot
 be measured; the requested protocol used half-second presses. Keyboard layout
 selection was not captured by the launcher. The earlier double-press and
 remapped-key observations remain unqualified. Ordinary short-tap comparison and
-the planned application/regression checks are still needed.
+the remaining application/regression checks are still needed.
+
+## Maintainer TED typing, save and reopen check
+
+The maintainer reports following the requested procedure: overwrite the start
+of CASETEST.TXT's first line with `aBcDeF`, using Shift for capitals; save and
+exit with Ctrl-K then X; reopen the file and return to screen mode. The supplied
+post-reopen screenshot shows the first line beginning exactly `aBcDeF`.
+This passes that manual mixed-case input/save/reopen scenario with M4SCRN and
+ANSI loaded according to the preceding handoff. The receipt is
+`evidence/2026-11-03-model4-caps/native-ted-save-reopen.json`.
+
+The evidence is the maintainer's procedure report and screenshot, not an
+independent file readback or a freshly verified running-BIOS identity. It does
+not establish quick-tap CAPS behavior, the complete TED qualification suite, or
+release acceptance. Production BIOS source remains unchanged.
+
+The test overwrote the original lowercase `apple` on the first line. Follow-up
+SEARCH checks must use the edited contents: `aBcDeF` should match the first and
+fourth lines; `Apple` and `APPLE` should each match only their respective line;
+`abcdef` and `ABCDEF` should not match. Use the default case-sensitive mode.
 
 ## Native handoff
 
@@ -134,5 +155,5 @@ both physical edges as lock toggles merely to accommodate a possible host latch:
 a complete momentary key actuation would then toggle twice on real hardware.
 
 The earlier validated candidate and its conformance evidence remain separate.
-This diagnostic and its single native sequence do not establish full CAPS,
-terminal-provider, TED, SEARCH, or new production-candidate release acceptance.
+These bounded manual results do not establish full CAPS, terminal-provider,
+TED, SEARCH, or new production-candidate release acceptance.
