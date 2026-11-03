@@ -34,7 +34,7 @@ def main():
            'DUP','SYSGEN','ED','SUBMIT','XSUB','PIP','DLINK','DUMP','DASM','DSYM','TED',
            'ADMTST','VT52TST','ANSITST','SYSBUILD','RESPACK','RLMBUILD','WARM',
            'DDT','COMPARE','CRCKSUM','MD5SUM','PATCH','SEARCH']
-    count=0
+    count=0;version_count=0
     for name in names:
         expected,_=execute(name,'/HELP')
         from utility_versions import identities
@@ -42,6 +42,12 @@ def main():
         assert f'{name} {version} ({revision:03d}' in expected,(name,'wrong identity',expected)
         assert 'Usage:' in expected and '/H /HELP' in expected,(name,expected)
         assert len(expected.splitlines())<=23 and max(map(len,expected.splitlines()))<=79,(name,'help exceeds screen')
+        from test_utility_versions import expected_identification
+        version_expected=expected_identification(name)
+        for tail in ['/VER',' /ver  ','ignored /VER /BOGUS','/VER /VER','\t/VER\t','X'*122+' /VER']:
+            actual,_=execute(name,tail)
+            assert actual==version_expected,(name,tail,actual,version_expected)
+            version_count+=1
         for tail in ['/h',' /H  ','/ver /h /BOGUS','/VER /HELP','\t/h\t','/h /help','/h'+' '*125,'X'*124+' /h']:
             actual,_=execute(name,tail);assert actual==expected,(name,tail,actual);count+=1
     for name in ('CPX','RSX'):
@@ -55,6 +61,6 @@ def main():
             assert expected,(name,operation)
             for tail in (operation.lower()+' hello',operation+'\thello  '):
                 _,actual=execute(name,tail,False);assert actual==expected,(name,tail);count+=1
-    print(f'PASS: {len(names)} help screens, {count} alias/precedence and manager parser checks; command tails preserved')
+    print(f'PASS: {len(names)} help screens, {count} alias/precedence and manager parser checks; {version_count} version queries; command tails preserved')
 
 if __name__=='__main__':main()

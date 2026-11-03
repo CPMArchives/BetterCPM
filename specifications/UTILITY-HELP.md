@@ -3,7 +3,7 @@
 ## Common contract
 
 BetterCP/M-owned utilities adopting this standard recognize case-insensitive
-exact `/HELP` and `/VER` tokens anywhere in the bounded command tail, separated
+exact `/H` / `/HELP` and `/VER` tokens anywhere in the bounded command tail, separated
 by spaces or TABs. Each query ignores all other arguments: operands, unknown
 switches and repeated query tokens do not cause errors or command operations.
 `/HELP` takes precedence when both queries appear, in either order, in a
@@ -60,6 +60,12 @@ Utilities requiring operands should use this same short response for malformed
 syntax. A specific diagnostic should precede it when the parser can identify
 the error reliably. Runtime/file failures retain their specific diagnostics.
 Do not replace a useful diagnostic with a full help screen.
+
+The later approved CPX/RSX invalid-command and STAT unknown-option changes
+are explicit exceptions to the short-syntax rule above: those paths show a
+specific diagnostic followed by the existing full help screen. Preserve these
+accepted responses; do not infer a suite-wide change in malformed-syntax policy.
+See [utility finalization](../docs/engineering/Utility-Finalization-2026-11-02.md).
 
 ## Initial adoption: compression commands
 
