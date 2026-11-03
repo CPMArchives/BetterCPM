@@ -220,7 +220,10 @@ retain ^C command execution followed by screen editing and ^Z exit, with the
 required modified-document abandonment confirmation. Do not implement
 WordStar's ^Z scroll-down command. In text fields ESC/^C cancels locally; in long operations
 they request interruption at safe boundaries. Literal Q is text in editing
-state. Confirmation Enter means No; invalid choices retain the question.
+state. Confirmations accept Y/N immediately, without Enter. Enter means No;
+invalid choices retain the question and `(Y/N) [N]` default. ESC/^C cancels.
+For confirmed substitution, No skips one match and Cancel stops the remaining
+substitutions; completed replacements are retained.
 Default-No abandonment is required even if the historical oracle differs.
 
 Use the shared field/choice controllers where their defined behavior fits.

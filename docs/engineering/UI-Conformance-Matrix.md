@@ -49,7 +49,7 @@ Exception cells retain the utility-specific specification; they do not waive dat
 | SUBMIT | C | C | O | N | N | N | N | N | N | N | command-tail operation; no generic prompted field |
 | SYSBUILD | C | C | O | N | N | N | N | N | N | N | command-tail operation; no generic prompted field; registry/development command, not current disk membership |
 | SYSGEN | C | C | O | N | E | N | N | E | N | N | destination and only-Y approval |
-| TED | C | C | O | C | C | E | O | O | O | N | standard text fields; confirmation decision outstanding |
+| TED | C | C | O | C | C | E | C | C | C | N | standard fields/choices; immediate Y/N; No skips, Cancel stops |
 | TIME | C | C | O | N | N | N | N | N | N | N | command-tail operation; no generic prompted field |
 | TYPE | C | C | O | N | E | E | N | N | E | N | page/file navigation is an application protocol |
 | UNCR | C | C | O | N | N | N | N | N | N | N | command-tail operation; no generic prompted field |
@@ -77,7 +77,7 @@ Exception cells retain the utility-specific specification; they do not waive dat
 
 All compatibility profiles are selected under sections 1 and 8 of the shared specification. Empty Enter, raw/cooked transport, Ctrl-C context, no-default approval and historical command languages intentionally differ. Q remains ordinary text inside fields. No Q/ESC aliases are invented for other protocols.
 
-TED confirmation is O, not E: its actual first-character/Enter/invalid-response behavior conflicts with the accepted specification. See [inventory and alternatives](UI-Integration-Inventory.md#outstanding-decision-ted-confirmations).
+TED confirmation was corrected with maintainer approval. Its C cells are bounded compiled/cpmsim results from [current qualification](TED%20Shared%20Choice%20Qualification.md): immediate Y/N, default No, invalid retry, local cancellation, and distinct per-match No/Cancel. Model 4 execution remains Outstanding.
 
 R/W currently use version-over-help precedence in the pinned host-transfer patch; owned Z80 utilities use help-over-version. This source-verified difference is explicit E under their separate staged-host contract, pending a policy decision. ZSM4 and LINK retain original options and line editing.
 

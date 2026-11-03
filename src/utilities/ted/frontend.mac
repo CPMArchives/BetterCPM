@@ -1,7 +1,7 @@
 ; Portable TED console/screen adapter. GPL-2.0-or-later.
 ; SCRN typed calls only; no terminal query, keyboard matrix or VRAM access.
  .Z80
- public TE_START,TE_PROMPT,TE_CONFIRM,TE_MESSAGE,TE_READ,TE_RENDER,TE_PRINT
+ public TE_START,TE_PROMPT,TE_CHOOSE,TE_CONFIRM,TE_MESSAGE,TE_READ,TE_RENDER,TE_PRINT
  public TE_FIELD,TE_FIELDLEN,TE_MODE,TE_FILE,TE_CALLER,TE_SCREEN,TE_STATUS
  public TE_BUSY_POLL,TE_RESTORE,TE_SHOW_NAME,TE_FORMAT_FILE,TE_REPORT_FAILURE
  extrn TW_INIT,TW_NEW,TW_LOAD,TW_RECOVER,TW_RELEASE,TW_AREA,TW_NAME,TW_INPUT
@@ -995,15 +995,33 @@ TE_PROMPT_COPIED:
  ldir
  xor a
  ret
+; Choices return A=Y/N, CF=cancel. No remains distinct from Cancel for
+; per-match substitution; authorization callers map either refusal to CF.
+TE_CHOOSE:
+ ld (EDITPROMPT),hl
+ call UC_RUN
+ cp UI_ABORT
+ jp z,TE_CANCEL
+ cp UI_BAD
+ jp z,TE_CANCEL
+ ld a,(UC_VALUE)
+ or a
+ ret
 TE_CONFIRM:
- call TE_PROMPT
+ call TE_CHOOSE
  ret c
- ld a,(TE_FIELD)
- and 0dfh
  cp 'Y'
  jp nz,TE_CANCEL
  or a
  ret
+UC_PAINT:
+UC_ERROR:
+ ld b,23
+ ld c,0
+ call TE_POSITION
+ call TE_CLEARLINE
+ ld hl,(EDITPROMPT)
+ jp TE_PRINT
 UIREAD:
  call TE_READ
  ld b,a
@@ -1210,6 +1228,11 @@ EDITSTART: db 0
 EDITMAX: db 95
 EDITPROMPT: dw TE_CMDLABEL
 EDITBUF: ds 95
+TE_CHOICES: db 'YN'
+UC_LIST: dw TE_CHOICES
+UC_COUNT: db 2
+UC_DEF: db 'N'
+UC_VALUE: db 0
 UP_MODE: db 1
 UP_DPTR: dw 0
 UP_DLEN: db 0

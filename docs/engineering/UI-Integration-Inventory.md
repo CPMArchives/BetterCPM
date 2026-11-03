@@ -32,7 +32,7 @@ BIOS work and is not incorporated here. No shared-library work is overwritten.
 | --- | --- | --- |
 | DUMP, CONFIG, COPY, REN, ERA, DUP, SYSGEN, protected PIP replacement | Existing qualified compatibility-profile consumers | Reuse; rerun focused regressions. Do not silently add default/key aliases. |
 | DDT adaptation | Standard shared editor already selected; historical reference separately immutable | Preserve debugger command language; no replacement needed. |
-| TED | Standard text fields/renderer already selected; confirmations still call a text field | Record precise behavioral conflict below; no silent interface change. |
+| TED | Standard text fields/renderer already selected; confirmations still called a text field | Maintainer-approved immediate-choice correction implemented; bounded host/cpmsim checks pass, Model 4 pending. |
 | NOAH | Shared choice binding already present | Review separately from frozen six standalone codecs; retain overlay boundaries. |
 | BYE | Local Y/N/default-No loop | Adopt existing choice-only controller; standard question/default notation. |
 | DASM | Local CHIN only-Y approval in historical command language | Adopt existing strict compatibility binding; preserve raw fold, echo and any-other-key decline. |
@@ -57,30 +57,25 @@ correction keeps each in its original allocation, with 2 KiB free on the volume.
 This is the assignment's explicitly permitted measured memory/space exception;
 no disk enlargement, membership change or new competing library is introduced.
 
-## Outstanding decision: TED confirmations
+## Approved TED confirmation migration
 
-`src/utilities/ted/frontend.mac:TE_CONFIRM` currently calls `TE_PROMPT`, waits
-for Enter, then approves any submitted value whose first character folds to Y.
-An invalid value declines instead of retaining the question. All callers share
-this behavior, including overwrite, protected-file authorization, recovery and
-modified-document abandonment. `operations.mac:OP_SUB_LOOP` also uses text input
-for per-match substitution decisions.
+The initial review found that `TE_CONFIRM` called the text editor, required
+Enter and accepted any response starting with Y. Invalid responses declined
+instead of retaining the question. The maintainer approved the proposed
+immediate Y/N, Enter=No and invalid-response retry change on 3 November 2026.
 
-The accepted TED specification, section on separate interaction states, says
-“Confirmation Enter means No; invalid choices retain the question.” The shared
-standard additionally calls for immediate single-character choices. This is an
-existing implementation/specification discrepancy, not a newly introduced
-regression or an automatically approved compatibility exception.
+TED revision 004 now selects the existing choice controller alongside its text
+controller, sharing the single checks module. `TE_CHOOSE` distinguishes No from
+Cancel; confirmed substitution skips one match on No and stops remaining matches
+on Cancel. `TE_CONFIRM` preserves its authorization interface: only Y returns
+carry clear. Overwrite, protection, recovery and abandonment callers retain
+their existing operation boundaries. Questions display `(Y/N) [N]`.
 
-Recommended next change: reuse TED's existing checks module with its choice-only
-controller, distinguish No from Cancel for substitution, accept Y/N immediately,
-retain default No and invalid-response retry, and display `(Y/N) [N]`. Update
-all scripted TED interactions and qualify save/protection/abandon/substitution
-on both platforms. Alternative: explicitly approve the present line-based
-policy as an exception. That alternative retains surprising first-character
-acceptance and is not recommended. This consequential established-behavior
-change is left for maintainer approval under the assignment's review boundary.
-TED is therefore **Outstanding**, not conforming by library inclusion.
+Current compiled and cpmsim evidence is recorded in
+[TED shared choice qualification](TED%20Shared%20Choice%20Qualification.md).
+Model 4 execution remains outstanding. Historical TED 003 receipts are not
+transferred to the changed revision. The existing full-screen editor and
+command language are otherwise preserved.
 
 ## Outstanding execution
 

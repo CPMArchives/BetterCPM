@@ -1,0 +1,191 @@
+{
+  "schema": 1,
+  "status": "PASS_BOUNDED_SCOPE",
+  "baseline_commit": "e8bdb5573a4defe695efb35f3df9a29b69fbf901",
+  "approval": "Maintainer approved immediate Y/N, Enter=No, invalid-response retry in this thread on 2026-11-03",
+  "revision": 4,
+  "artifact": {
+    "name": "TED.COM",
+    "bytes": 30492,
+    "sha256": "5bf8ea6bd52987225c15ff880b6b80ccadfe811472c4bb9a2362516583d87e17"
+  },
+  "host": "PASS",
+  "cpmsim": "PASS",
+  "native_assembly": "PASS; exact ZSM4/LINK parity and stock CP/M help execution",
+  "model4": "BLOCKED; prepared private media/invocation; LaunchServices preflight 1100; no emulator execution",
+  "frontend_cases": 318,
+  "commands_cases": 105,
+  "source_sha256": {
+    "src/utilities/ted/frontend.mac": "49435b01827a03535f70aeb02adfeaf42c64c44625546c25d30b1769d07dba5d",
+    "src/utilities/ted/operations.mac": "93e6b4f8dcaf915784b30e76863facc74fb627e54d9fab61113a90a77901b844",
+    "tools/build_ted.py": "23b7718afce8ce088227cf6a1785ebb7d1e6680a21b82b3b4ae2494027422bc1",
+    "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+    "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b"
+  },
+  "sizes": {
+    "before_bytes": 30300,
+    "bytes": 30492,
+    "delta": 192,
+    "sha256": "5bf8ea6bd52987225c15ff880b6b80ccadfe811472c4bb9a2362516583d87e17",
+    "block_bytes": 2048,
+    "ted_allocation_before": 30720,
+    "ted_allocation": 30720,
+    "utilities_capacity": 337920,
+    "utilities_allocated": 335872,
+    "utilities_free": 2048
+  },
+  "files": {
+    "build/remaining-help-native/report.json": {
+      "bytes": 562,
+      "sha256": "bc5e849394a635d5001dd0ddf64adff34a9ec9020a77d678287d9ec94af00e40"
+    },
+    "build/ted-ui-integration/build-final.log": {
+      "bytes": 129,
+      "sha256": "2fb9dd1b54501dccdc28279f0b545f9a46c839a9f57a7a22c417c6ed02c9d115"
+    },
+    "build/ted-ui-integration/build.log": {
+      "bytes": 129,
+      "sha256": "2fb9dd1b54501dccdc28279f0b545f9a46c839a9f57a7a22c417c6ed02c9d115"
+    },
+    "build/ted-ui-integration/choices.log": {
+      "bytes": 276,
+      "sha256": "6f48202519c2e029fe836a110cba32bebe23396db2926c618823c05c9e683c5e"
+    },
+    "build/ted-ui-integration/commands.log": {
+      "bytes": 275,
+      "sha256": "cc34be9baf7d64d719bc2fda83f1641214f3df4ff86a0501c3ade142d76456b2"
+    },
+    "build/ted-ui-integration/cpmsim-absolute.log": {
+      "bytes": 768,
+      "sha256": "480192d66345ec611bffb88ccd371dc1bb98b9d808cdf75cbc54811082a356a2"
+    },
+    "build/ted-ui-integration/cpmsim-pass.log": {
+      "bytes": 278,
+      "sha256": "0e3760bf4b3e1632866bfb59f9e798af30d6af9f428dfd6c4ed98e0ad78c6792"
+    },
+    "build/ted-ui-integration/cpmsim-scope.log": {
+      "bytes": 278,
+      "sha256": "0e3760bf4b3e1632866bfb59f9e798af30d6af9f428dfd6c4ed98e0ad78c6792"
+    },
+    "build/ted-ui-integration/cpmsim-scope/report.json": {
+      "bytes": 604,
+      "sha256": "9dc3095342f3f0bf6196ebf2af246e4eba787f1a1e06edababdda6492a0f8a50"
+    },
+    "build/ted-ui-integration/cpmsim-scope/z80pack/execution.json": {
+      "bytes": 1595,
+      "sha256": "c3f6ad881a4380e19e6101e4f0141afed14614196ad9602bda4af22c915a739b"
+    },
+    "build/ted-ui-integration/cpmsim-scope/z80pack/filesystem.txt": {
+      "bytes": 273,
+      "sha256": "970975805ec0627524578496909d4d49c3ec6b244717116092d8782479955ad0"
+    },
+    "build/ted-ui-integration/cpmsim-scope/z80pack/transcript.bin": {
+      "bytes": 4514,
+      "sha256": "b0d5a4dcb9b2dd36019f2215054eafc68c4d65c5485addb67405fb40d3302c2f"
+    },
+    "build/ted-ui-integration/cpmsim-verified.log": {
+      "bytes": 278,
+      "sha256": "0e3760bf4b3e1632866bfb59f9e798af30d6af9f428dfd6c4ed98e0ad78c6792"
+    },
+    "build/ted-ui-integration/cpmsim-verified/report.json": {
+      "bytes": 599,
+      "sha256": "63dd74774dfc51237dcc58384631defb336707e00d220e450128d1b35281b9c8"
+    },
+    "build/ted-ui-integration/cpmsim-verified/z80pack/backup-listing.txt": {
+      "bytes": 47,
+      "sha256": "cc7f1a27174090d99d0be71587ca480c429a1df77bca962d260c4a82763203e1"
+    },
+    "build/ted-ui-integration/cpmsim-verified/z80pack/execution.json": {
+      "bytes": 1595,
+      "sha256": "b56f1c8fadc04b2fed3ba286eec9d9855f72283bfcac7d8f1b5c3ceb06e5139f"
+    },
+    "build/ted-ui-integration/cpmsim-verified/z80pack/filesystem.txt": {
+      "bytes": 276,
+      "sha256": "cc05d04cebce4d169ef275ebe0aa9fefb404dbffa28cba5adbcad55c1f3da680"
+    },
+    "build/ted-ui-integration/cpmsim-verified/z80pack/transcript.bin": {
+      "bytes": 5070,
+      "sha256": "62b3d654886369e926a6e74a965ced5d4284dc906469d295aae2de2a242fd019"
+    },
+    "build/ted-ui-integration/cpmsim.log": {
+      "bytes": 1514,
+      "sha256": "78283115aa2f9d4540a0aeceb738c30c954257f3ed05d9aa6afc415043eef010"
+    },
+    "build/ted-ui-integration/final-build.log": {
+      "bytes": 129,
+      "sha256": "2fb9dd1b54501dccdc28279f0b545f9a46c839a9f57a7a22c417c6ed02c9d115"
+    },
+    "build/ted-ui-integration/frontend-final.json": {
+      "bytes": 9914,
+      "sha256": "98fdf2a791ed49be64d378b0176087beb4d1c637c7082da98b7d57a38af2d409"
+    },
+    "build/ted-ui-integration/frontend-final.log": {
+      "bytes": 276,
+      "sha256": "6f48202519c2e029fe836a110cba32bebe23396db2926c618823c05c9e683c5e"
+    },
+    "build/ted-ui-integration/frontend.log": {
+      "bytes": 275,
+      "sha256": "727c6b9567addf1ec34aa47c2f077a70754e6fbf3754f5b4d3c5f248f247e6a0"
+    },
+    "build/ted-ui-integration/model4-prepared/trs80gp/invocation.json": {
+      "bytes": 3398,
+      "sha256": "870bc97bb8d7897f46eb104e647fbdb02f864849907cecfdd5f956d34c82e499"
+    },
+    "build/ted-ui-integration/model4.log": {
+      "bytes": 1686,
+      "sha256": "25137f773796a34cbff140dd4c16174842861e4f264efd948d142facee6afb63"
+    },
+    "build/ted-ui-integration/native-final.log": {
+      "bytes": 219,
+      "sha256": "8c30e2fd2f07dfb2087ddf4f1d05be63fb4752a6f34023195f871b9cad278909"
+    },
+    "build/ted-ui-integration/rebuild-current.log": {
+      "bytes": 129,
+      "sha256": "2fb9dd1b54501dccdc28279f0b545f9a46c839a9f57a7a22c417c6ed02c9d115"
+    },
+    "build/ted-ui-integration/sizes.json": {
+      "bytes": 317,
+      "sha256": "760c578767107d1b2b97fe3fae0f4ba713ece43d4a6985ce0392743836962a37"
+    },
+    "build/ted-ui-integration/test_native_remaining_help.log": {
+      "bytes": 219,
+      "sha256": "8c30e2fd2f07dfb2087ddf4f1d05be63fb4752a6f34023195f871b9cad278909"
+    },
+    "build/ted-ui-integration/test_remaining_utility_help.log": {
+      "bytes": 119,
+      "sha256": "0735f792c2306d14ec0f70bb06254ab12665723203171ad66db3b7915c0d9090"
+    },
+    "build/ted-ui-integration/test_ted_commands.log": {
+      "bytes": 275,
+      "sha256": "cc34be9baf7d64d719bc2fda83f1641214f3df4ff86a0501c3ade142d76456b2"
+    },
+    "build/ted-ui-integration/test_ted_frontend.log": {
+      "bytes": 276,
+      "sha256": "6f48202519c2e029fe836a110cba32bebe23396db2926c618823c05c9e683c5e"
+    },
+    "build/ted-ui-integration/test_ted_publisher.log": {
+      "bytes": 277,
+      "sha256": "449e0f542245a31d576df73d894978b74d6a11e6793a68d232acb2500b17792b"
+    },
+    "build/ted-ui-integration/test_ted_text.log": {
+      "bytes": 279,
+      "sha256": "68670d91b5430cbeb037dc34d901b0960873db254f9e29db8a6817114d79ea41"
+    },
+    "build/ted-ui-integration/test_ted_workspace.log": {
+      "bytes": 276,
+      "sha256": "3428a87febb314bb16bbb55b3ace676e204c53c51815fc29e8392f1e46e58ab7"
+    },
+    "build/ted-ui-integration/test_utility_finalization.log": {
+      "bytes": 116,
+      "sha256": "47606280ec634573ccc2129879fb5b4d2673ac0aec0c7c64ba37b223f05682e0"
+    },
+    "build/ted-ui-integration/tests.json": {
+      "bytes": 843,
+      "sha256": "08c46a2cc94e4b9402b8a1e337f83df5ecd33859963487fe53070ff153423083"
+    },
+    "build/utilities/TED-build-report.json": {
+      "bytes": 10129,
+      "sha256": "aecea00f753d6dab2077bd64a5f806c520886a37647b1acc3bd76613ac4c2783"
+    }
+  }
+}

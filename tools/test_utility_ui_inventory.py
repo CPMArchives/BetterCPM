@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Keep UI review coverage aligned with distribution and registry membership."""
-import json,re
+import hashlib,json,re
 from pathlib import Path
 from build_utilities_disk import COMPONENTS
 from noah_distribution import COMPONENTS as COMPANION
@@ -24,7 +24,11 @@ def main():
         assert cells[-1],(name,'missing basis')
         rows[name]=cells
     assert set(rows)==expected,{'missing':sorted(expected-set(rows)),'extra':sorted(set(rows)-expected)}
-    assert rows['TED'][8]=='O','unresolved TED confirmations cannot be marked conforming'
+    if rows['TED'][8]=='C':
+        proof=json.loads((ROOT/'docs/engineering/evidence/2026-11-03-ted-choice/results.json').read_text())
+        assert proof['host']=='PASS' and proof['cpmsim']=='PASS'
+        for path,digest in proof['source_sha256'].items():
+            assert hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==digest,('stale TED confirmation evidence',path)
     print(f'PASS: {len(rows)} unique utility rows cover distribution, companion, host helpers and registry')
 
 if __name__=='__main__':main()

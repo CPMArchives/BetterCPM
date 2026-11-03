@@ -8,7 +8,7 @@
  public OP_LINE_POS,OP_RANGE,OP_WRITE,OP_READ,OP_FIND,OP_SUBSTITUTE
  extrn TL_INIT,TL_ADD,TL_TOTAL,TL_TRANSFER
  extrn WL_FLUSH
- extrn TE_FIELD,TE_FIELDLEN,TE_FILE,TE_CALLER,TE_MODE,TE_PROMPT,TE_CONFIRM
+ extrn TE_FIELD,TE_FIELDLEN,TE_FILE,TE_CALLER,TE_MODE,TE_PROMPT,TE_CHOOSE,TE_CONFIRM
  extrn TE_FORMAT_FILE
  extrn TE_SCREEN
  extrn TE_MESSAGE,TE_RENDER,TE_READ,TE_BUSY_POLL
@@ -2124,10 +2124,8 @@ OP_SUB_LOOP:
  jp z,OP_SUB_APPLY
  call TE_RENDER
  ld hl,OP_REPLACELABEL
- call TE_PROMPT
+ call TE_CHOOSE
  ret c
- ld a,(TE_FIELD)
- call OP_UPPER
  cp 'Y'
  jp z,OP_SUB_APPLY
  call TF_SKIP
@@ -2196,7 +2194,7 @@ OP_POWERS: db 080h,096h,098h,040h,042h,00fh,0a0h,086h,1,010h,027h,0,0e8h,3,0,100
 OP_RECOVER_WORD: db 'ECOVER',0
 OP_WORK_WORD: db 'ORK',0
 OP_WORK_NAME: db 'IGNORED.TMP',0
-OP_RECOVERLABEL: db 'Recover validated checkpoint? Y/N: ',0
+OP_RECOVERLABEL: db 'Recover validated checkpoint? (Y/N) [N]: ',0
 OP_CONFIRMBUF: ds 80
 OP_DOC_CONTEXT: ds 187
 OP_APPEND_CONTEXT: ds 187
@@ -2253,10 +2251,10 @@ OP_DESTLABEL: db 'After line: ',0
 OP_FILELABEL: db 'Filename: ',0
 OP_RLABEL: db 'R arguments: ',0
 OP_WLABEL: db 'W arguments: ',0
-OP_ABANDONLABEL: db 'Discard changes? Y/N: ',0
-OP_OVERWRITELABEL: db ' replace? Y/N: ',0
-OP_PROTECTLABEL: db ' RO/SYS authorize? Y/N: ',0
-OP_REPLACELABEL: db 'Replace? Y/Return/^C: ',0
+OP_ABANDONLABEL: db 'Discard changes? (Y/N) [N]: ',0
+OP_OVERWRITELABEL: db ' replace? (Y/N) [N]: ',0
+OP_PROTECTLABEL: db ' RO/SYS authorize? (Y/N) [N]: ',0
+OP_REPLACELABEL: db 'Replace? (Y/N) [N]: ',0
 OP_MEMORYMSG: db 'Free TPA above static image (bytes): ',0
 OP_NAMEMSG: db 'Default filename is shown in the title.',0
 OP_POSITIONMSG: db 'Line ',0

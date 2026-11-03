@@ -127,7 +127,7 @@ def qualify(system,utilities,output,platform,skip_native_build=False,reuse_group
     k(b'R',b'R arguments:');key(b'(1) INSERT.TXT\r',b'Read.')
     k(b'W',b'W arguments:');key(b'2 2 WRITE.TXT\r',b'Written.')
     k(b'Y',b'First line:');key(b'2\r',b'Last line:');key(b'2\r',b'Deleted.')
-    k(b'X',b'replace? Y/N:');key(b'Y\r',b'TED GROUPS PASS' if native else b'C0>_ ')
+    k(b'X',b'replace? (Y/N) [N]:');key(b'Y',b'TED GROUPS PASS' if native else b'C0>_ ')
     if native:prompt()
     else:
         key(b'QGROUP\r',b'TED GROUPS PASS');key(b'B:TED IMIX.TXT\r',b'TED>')
@@ -138,13 +138,13 @@ def qualify(system,utilities,output,platform,skip_native_build=False,reuse_group
         if native and control==31:continue
         key(bytes([control]),b'^Z command')
     key(b'\x0e',b'BROWSE');key(b'\r',b'^Z command');key(b'\x1a',b'TED>')
-    key(b'P 1\r',command_ready);key(b'W\r',b'replace? Y/N:');key(b'Y\r',command_ready)
+    key(b'P 1\r',command_ready);key(b'W\r',b'replace? (Y/N) [N]:');key(b'Y',command_ready)
     key(b'S\r',b'^Z command');k(b'Q',b'TED INTERACTION PASS' if native else b'C0>_ ')
     if native:prompt()
     else:
         key(b'QMIX\r',b'TED INTERACTION PASS');key(b'B:TED ILARGE.TXT\r',b'TED>')
-    key(b'S\r',b'^Z command');key(b'X',b'Xong');k(b'X',b'replace? Y/N:')
-    key(b'Y\r',b'TED LARGE PASS' if native else b'C0>_ ')
+    key(b'S\r',b'^Z command');key(b'X',b'Xong');k(b'X',b'replace? (Y/N) [N]:')
+    key(b'Y',b'TED LARGE PASS' if native else b'C0>_ ')
     if native:key(b'',b'TED ALL DONE')
     else:
         key(b'QLARGE\r',b'TED LARGE PASS');key(b'TEDCORE\r',b'TED ENGINE NATIVE PASS.')

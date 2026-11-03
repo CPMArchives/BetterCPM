@@ -63,6 +63,6 @@ utility suite. DDT's owned adaptation now uses the standard editor; TED uses
 standard text fields and the shared renderer; NOAH has a shared choice binding.
 BYE, DASM and CRCKSUM/MD5SUM were additional suitable choice consumers and are
 addressed in the [current inventory](UI-Integration-Inventory.md). TED's
-confirmation behavior is separately outstanding; including its text editor does
-not qualify its confirmations. The [matrix](UI-Conformance-Matrix.md) covers
+confirmation correction was approved and is now covered by a separate shared-choice
+qualification; Model 4 execution remains outstanding. The [matrix](UI-Conformance-Matrix.md) covers
 current manifest commands, registry tools and staged host helpers explicitly.

@@ -2,8 +2,8 @@
 
 3 November 2026. **Draft; workstream completion and merge acceptance remain
 open.** Clear, compatible work is implemented and tested. TED's confirmation
-policy, the matrix's outstanding verification cells, and changed-binary Model 4
-execution remain open. No core, BIOS, resident RCP or historical third-party
+correction is approved and implemented; the matrix's outstanding verification
+cells and changed-binary Model 4 execution remain open. No core, BIOS, resident RCP or historical third-party
 reference source was changed. No new utility feature/library was introduced.
 
 ## Reviewable implementation
@@ -29,7 +29,8 @@ uses the current-main tree, preserving those unrelated documentation updates.
   context. Enter still means Yes, A retains its run-wide meaning, `?` repeats
   help/question, and ESC remains invalid.
 - Current input dependency closures and executable revisions are recorded:
-  BYE 004, DASM 004, CRCKSUM 010, MD5SUM 004. No counter advances for unchanged
+  BYE 004, DASM 004, CRCKSUM 010, MD5SUM 004; TED advances to 004 in the
+  approved follow-up below. No counter advances for unchanged
   utilities or test/documentation-only edits.
 - Focused old consumer tests now use current full identification blocks and
   CONFIG's accepted code/stack/help layout validator. No production legacy
@@ -48,6 +49,7 @@ is read-only; none of its proposed consolidation is implemented.
 | MD5SUM.COM | 18,320 | 18,378 | +58 | 18,432 → 18,432 |
 | DASM.COM | 21,248 | 21,504 | +256 | 22,528 → 22,528 |
 | BYE.COM | 1,097 | 1,325 | +228 | 2,048 → 2,048 |
+| TED.COM | 30,300 | 30,492 | +192 | 30,720 → 30,720 |
 
 The initial checksum controller trial used 22,695/18,600 bytes. Both crossed
 allocation boundaries: primary Utilities would require 339,968 content bytes
@@ -100,8 +102,8 @@ All counts below describe bounded tests, not universal qualification.
   and malformed state; DUP 1,024 menu/drive comparisons and strict approval;
   SYSGEN approvals/destination; ERA choices/recovery; REN choices/names;
   COPY 774 prompt/field comparisons; PIP 258 complete protected replacements;
-  DDT 17 compiled consumer cases and 100 repeated entries; TED 21 complete
-  frontend cases. These do not qualify TED's unresolved confirmation contract.
+  DDT 17 compiled consumer cases and 100 repeated entries; TED's original 21 complete
+  frontend cases, superseded for current TED by the follow-up below.
 - Additional applicable regressions pass: DUMP 174 enhanced cases, COMPARE 94,
   PATCH 88, SEARCH parser, PIP parser, STAT unknown options, TIME errors,
   TYPE paging and DIR options. Native parity/help passes for DUMP/DASM/DSYM/TED.
@@ -184,10 +186,8 @@ python3 tools/test_ui_integration_media.py --system "$SYSTEMS" --platform model4
 
 ## Remaining decisions and verification
 
-1. Approve TED's immediate Y/N/default-No/invalid-retry conversion, or explicitly
-   adopt a documented line-based compatibility exception. Exact routines,
-   competing behavior and recommended scope are in the inventory. No speculative
-   redesign is included in this PR.
+1. TED approval is resolved: immediate Y/N/default-No/invalid-retry conversion is
+   implemented and covered by current host/cpmsim and native assembly evidence.
 2. Execute changed artifacts under Model 4 and inspect captured screens. Prepared
    inputs and historical receipt applicability are not native qualification.
 3. Close remaining per-utility malformed/combination verification cells before
@@ -196,3 +196,23 @@ python3 tools/test_ui_integration_media.py --system "$SYSTEMS" --platform model4
 
 This branch is suitable for engineering review as a draft. It is not presented
 as satisfying the assignment's complete-and-ready-to-merge criterion.
+
+
+## Approved TED follow-up
+
+The maintainer approved the proposed TED behavior change. Revision 004 now uses
+the existing choice controller for overwrite/protection, recovery, abandonment
+and substitution. Enter selects No; invalid input retains the question; Y/N are
+immediate; ESC/Ctrl-C cancels locally. No skips one substitution and Cancel stops
+further matches. Text editing and command aliases remain unchanged.
+
+The [TED qualification](TED%20Shared%20Choice%20Qualification.md) records 318 current
+frontend cases, 105 command cases, publisher/workspace/text regressions, exact
+ZSM4/LINK parity and two real cpmsim campaigns with independent target/backup
+readback. TED grows by 192 bytes within its existing allocation, and Utilities
+retains 2 KiB free. Updated user/native scripts no longer send Enter after Y/N.
+Current [evidence](evidence/2026-11-03-ted-choice/results.json) supersedes TED 003
+receipts for this scope; original evidence remains historical. Model 4 execution
+still fails host preflight 1100, so the PR remains a draft pending that execution
+and the matrix's other outstanding verification. No further TED behavior approval
+is requested.

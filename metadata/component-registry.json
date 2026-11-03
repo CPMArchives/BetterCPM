@@ -947,7 +947,7 @@
       "builders": [
         "tools/build_ted.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "tracked-conservative",
