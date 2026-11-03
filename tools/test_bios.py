@@ -574,17 +574,17 @@ class Z80:
                 self.carry = self.a < value
                 self.a = (self.a - value) & 0xFF
                 self.z = self.a == 0
+            elif op == 0xCB and 0x40 <= self.mem[self.pc] < 0x80:  # BIT b,r/(HL)
+                sub = self.mem[self.pc]
+                self.pc += 1
+                register = sub & 7
+                registers = ('b', 'c', 'd', 'e', 'h', 'l', None, 'a')
+                value = (self.mem[self.hl] if register == 6
+                         else getattr(self, registers[register]))
+                self.z = not bool(value & (1 << ((sub >> 3) & 7)))
             elif op == 0xCB and self.mem[self.pc] == 0xBF:  # RES 7,A; flags unchanged
                 self.pc += 1
                 self.a &= 0x7F
-            elif op == 0xCB and self.mem[self.pc] in (0x77, 0x7F):  # BIT 6/7,A
-                mask = 0x40 if self.mem[self.pc] == 0x77 else 0x80
-                self.pc += 1
-                self.z = not bool(self.a & mask)
-            elif op == 0xCB and self.mem[self.pc] in (0x46, 0x7E):  # BIT 0/7,(HL)
-                mask = 1 << ((self.mem[self.pc] >> 3) & 7)
-                self.pc += 1
-                self.z = not bool(self.mem[self.hl] & mask)
             elif op == 0xCB and self.mem[self.pc] in (0x86, 0xBE, 0xFE):  # RES 0/7 or SET 7,(HL)
                 operation = self.mem[self.pc]
                 self.pc += 1
@@ -1023,7 +1023,7 @@ def main() -> None:
             address = 0xF400 + (1 << row)
             cpu.mem[address] = 1 << column
             cpu.run(scan)
-            require(cpu.a == ord(letter), f'matrix key {letter} decoded incorrectly')
+            require(cpu.a == ord(letter.lower()), f'matrix key {letter} decoded incorrectly')
             cpu.mem[address] = 0
     # All MM punctuation mappings accept both Ctrl and Ctrl+Shift.
     chords = [(5,0,'['),(5,1,']'),(5,4,'{'),(5,6,'}'),(5,7,'\\'),

@@ -29,6 +29,8 @@ def validate_bios(data: bytes) -> None:
 
 
 def build_bios(assembler: Path) -> bytes:
+    if LAYOUT["MODULEBUF"] & 1023:
+        raise SystemExit("BIOS physical buffer must be 1024-byte aligned")
     BUILD.mkdir(parents=True, exist_ok=True)
     text = (SOURCE / "bios.mac").read_text(encoding="ascii")
     text = text.replace("        CSEG\n        .PHASE  ",

@@ -24,49 +24,45 @@ M4_RELOAD:                              ; load command-environment reloader
 
 M4_RSLOAD:                              ; load RSX carrier
         PUSH AF
-        LD HL,LY_CFG
         LD DE,M4_RLTAB
-        CALL M4_FETCH                   ; selector occupies the reloader block tail
+        CALL M4_CFGFETCH                ; selector occupies the reloader block tail
         POP BC
         RET NZ
         LD A,B
         JP LY_RSSEL
 
 M4_OVLOAD:                              ; load control overlay
-        LD HL,LY_CFG
         LD DE,M4_OVTAB
+M4_CFGFETCH:
+        LD HL,LY_CFG
   ; Fetch two physical sectors.
   ; IN: HL = destination, DE = cylinder/side/sector triples.
   ; OUT: A = status, Z if good.  AF,BC,DE,HL used; IX preserved.
-  ; The last byte of a triple may replace H after the pointer is spent.
 
 ; -------------------------------------------------------------------------------
 ; Physical Sector Fetch
 ; -------------------------------------------------------------------------------
 
 M4_FETCH:                               ; fetch two boot-media sectors
-        LD B,2
+        CALL M4_ONE
+        RET NZ
+  ; A successful first read falls through for the second. INC DE preserves
+  ; the physical read's status flags; the tables remain arbitrary triples.
 
-M4_RLLOOP:                              ; read next physical sector
-        PUSH BC
+M4_ONE:                                 ; read one physical sector
         PUSH DE
         EX DE,HL
         LD A,(HL)
         INC HL
-        LD C,(HL)
+        LD B,(HL)
         INC HL
-        LD H,(HL)
-        LD B,C
-        LD C,H
+        LD C,(HL)
         EX DE,HL
         CALL BIOPHREAD
         POP DE
-        POP BC
-        RET NZ
         INC DE
         INC DE
         INC DE
-        DJNZ M4_RLLOOP
         RET
 
 M4_RLFAIL:                              ; return sector-read failure

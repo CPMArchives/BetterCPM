@@ -1,0 +1,58 @@
+{
+  "status": "PASS_FOR_CAPTURED_SEQUENCE",
+  "target": "trs80gp Model 4 on macOS",
+  "bios_source_commit": "37fa57a1310f771227115fd269ef224e411ace1d",
+  "diagnostic_image_sha256": "26f119878a2631e1ebc9400bb551b5f7315a29e929a565e6fb2c2f34682b651b",
+  "source_capture": "BetterCPM-Caps-Monitor-20261103-133357-620795",
+  "keyboard_events": [
+    "k011",
+    "k010",
+    "k731",
+    "k011",
+    "k730",
+    "k010",
+    "k731",
+    "k011",
+    "k730",
+    "k010",
+    "k731",
+    "k011",
+    "k730",
+    "k010",
+    "k731",
+    "k011",
+    "k730",
+    "k010",
+    "k701",
+    "k711",
+    "k700",
+    "k710"
+  ],
+  "caps_press_count": 4,
+  "caps_release_count": 4,
+  "a_press_count": 5,
+  "a_release_count": 5,
+  "screen_last_byte_changes": [
+    "61",
+    "41",
+    "61",
+    "41",
+    "61"
+  ],
+  "screen_sequence_source": "Maintainer-supplied screenshot in this conversation; transcribed LAST-BYTE changes.",
+  "interpretation": "Four CAPS contacts each changed the subsequent A-key return exactly once; no double-press requirement occurred in this sequence.",
+  "event_order_after_first_a": [
+    "k731",
+    "k011",
+    "k730",
+    "k010"
+  ],
+  "event_order_repetitions": 4,
+  "limits": [
+    "Event log has no timestamps; actual press durations are not measured.",
+    "Keyboard layout selection was not recorded by this launcher.",
+    "This does not resolve the earlier short-press or remapped-key observations.",
+    "TED, SEARCH, other modifiers and full release qualification remain pending."
+  ],
+  "captured_disk_sha256_verified": "26f119878a2631e1ebc9400bb551b5f7315a29e929a565e6fb2c2f34682b651b"
+}
