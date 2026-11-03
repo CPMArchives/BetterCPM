@@ -1,11 +1,7 @@
 ## PATCH verified binary file patching
 
-**PATCH 1.0 development candidate.** Newly built Utilities packages include PATCH
-on the NOAH companion disk. Native/cross parity and cpmsim execution checks pass;
-Model 4 qualification and paired release acceptance remain pending. The
-[engineering specification](../engineering/PATCH-Specification.md) controls the
-interface, and [implementation notes](../engineering/PATCH-Implementation.md)
-record qualification limits.
+**PATCH 1.0 (002-dev)** ships on the NOAH companion disk. With that disk in C:,
+run `C0:PATCH /VER` to check your copy or `C0:PATCH /H` for help.
 
 PATCH applies verified byte replacements from a patch instruction file to a
 binary input file, producing a separate output. The original input remains
@@ -34,7 +30,7 @@ PATCH patchfile [ /INPUT=filespec ] [ /OUTPUT=filespec ] [ /VERBOSE ]
 | `/INPUT=filespec` | Select the original input, overriding the patch file's INPUT directive. |
 | `/OUTPUT=filespec` | Select a separate patched output, overriding the OUTPUT directive. |
 | `/VERBOSE` | Display instructions and validation results, continuing through independently identifiable mismatches. |
-| `/HELP` | Display help without file access. |
+| `/H`, `/HELP` | Display help without file access. |
 | `/VER` | Display the utility identity without file access. |
 
 Option names are case-insensitive. Unknown or malformed options, conflicting

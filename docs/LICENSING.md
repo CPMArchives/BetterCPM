@@ -34,6 +34,21 @@ underlying third-party content visible in screenshots retain their applicable
 notices and rights. NOTICE and the per-work provenance records control those
 exclusions. The release excludes the original Montezuma catalogue. NOTICE identifies the historical format data retained in BetterCP/M’s native catalogue.
 
+## Third-party records
+
+Each download includes `THIRD-PARTY-NOTICES.txt` at its top level.
+In an extracted release ZIP, open `licenses/third_party/` for the component
+records. The Documentation contents page links directly to them. In the
+source tree the records are under `third_party/`.
+
+| Work | File under the component records directory |
+| --- | --- |
+| Digital Research LINK | `dri-link/provenance.json` and `dri-link/permission.html` |
+| ZSM4 assembler | `zsm4/provenance.json` and `zsm4/LICENSE` |
+| TED editor | `ted/provenance.json` and `ted/LICENSE` |
+| DASM disassembler | `dasm/provenance.json` |
+| z80pack | `z80pack/LICENSE` |
+
 ## Current distribution status
 
 Both license texts and this boundary notice travel with all six package types.

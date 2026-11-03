@@ -53,7 +53,7 @@ change the disk membership below.
 
 ## Utilities Disk
 
-- CRCKSUM.COM: CRCKSUM 1.0 revision 009 development candidate, supporting historical
+- CRCKSUM.COM: CRCKSUM 1.0 revision 010 development candidate, supporting historical
   CRCK, corrected CRCK5, CHEK, CRC-32, SUM8, SUM16, KERM6 and KERM12, native and legacy saved lists, and
   local verification against native lists and original SIG/M catalogs.
   Newly generated candidate images include CRCKSUM with its prepared native source
@@ -63,7 +63,7 @@ change the disk membership below.
   are not asserted.
   See [CRC implementation notes](../engineering/CRC-Implementation.md).
 
-- MD5SUM.COM: MD5SUM 1.0 revision 003 development candidate. Conventional
+- MD5SUM.COM: MD5SUM 1.0 revision 004 development candidate. Conventional
   md5sum lists, stored-record byte coverage, master/local output and local
   verification. Native/cross parity and focused packaged cpmsim checks pass;
   The maintainer waived/deferred remaining Model 4 validation; paired release
@@ -169,7 +169,7 @@ change the disk membership below.
 selected components: DUMP.COM, DDT.COM, XSUB.COM and its required BATCHIO.RSX,
 SQ.COM, USQ.COM, CR.COM, UNCR.COM, LZH.COM and UNLZH.COM, plus the selected
 ZSM4/LINK binaries and their three notice files, the DASM/DSYM/DLINK set and
-its two notice files, TED and its two notice files, SEARCH.COM and CRCKSUM.COM
+its two notice files, TED and its two notice files, SEARCH.COM, CRCKSUM.COM and MD5SUM.COM
 (26 files total). CRCKSUM occupies 22K and MD5SUM 18K of allocation on the
 332K candidate, which has 2K free. DDT is the owned adaptation, not the historical reference; its Model 4 screen/input campaign passes on disposable current-system media. DDT also passes [Utilities release acceptance](../engineering/DDT%20Utilities%20Release%20Acceptance.md) from B: beside normal System A: on both platforms. `--ddt-acceptance REPORT` binds that component verdict to the exact artifact and image hashes; it does not promote the whole disk. The builder verifies
 file readback and the filesystem, and produces a 332K raw cpmsim image and an

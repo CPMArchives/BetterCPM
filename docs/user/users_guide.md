@@ -422,9 +422,9 @@ Getting started with BetterCP/M is much like getting started with conventional C
 
 The exact steps required to prepare and start BetterCP/M depend on the computer or emulator you're using. Rather than duplicate those instructions here, this chapter describes the general process and introduces the facilities you'll encounter when the system starts.
 
-For the required patched cpmsim, source pin, patch series, build steps and release-media launch procedure, see [Installing BetterCP/M on z80pack / cpmsim](../platform/CPMSIM-INSTALLATION.md). Stock upstream cpmsim is insufficient.
-
-For current platform preparation and launch instructions, see [Default high-capacity test disks](../platform/DEFAULT-TEST-DISKS.md) and the [z80pack / cpmsim adapter](../../src/platform/z80pack/README.md). For the selected System Disk build procedure, see [Building the current BetterCP/M System Disks](../releases/DISTRIBUTION-BUILD.md). These are working build/platform instructions; a consolidated Supported Platforms user manual is not yet available.
+Open the [platform instructions](../platform/) in your System download. Use
+`CPMSIM-INSTALLATION.md` for the patched cpmsim build and launch procedure, or
+`MODEL4-INSTALLATION.md` for the Model 4 drive assignments and startup procedure.
 
 <a id="section-3-1"></a>
 
@@ -464,7 +464,7 @@ The system disk may have sufficient free space for experimentation, but a separa
 
 If you're using physical removable media, it's a good idea to prepare a backup of the original system disk before making configuration changes.
 
-The [Model 4 test-disk instructions](../platform/DEFAULT-TEST-DISKS.md) and [z80pack / cpmsim adapter instructions](../../src/platform/z80pack/README.md) describe the current emulator setup. These documents include development history; use instructions that match your build and platform.
+Work with writable copies of the supplied images. Use the drive assignments in your platform’s installation guide.
 
 ##### What Is on Each Disk
 
@@ -5206,7 +5206,7 @@ identifies the transient DIR utility.
 A version display might resemble:
 
 ```text
-BetterCP/M DIR 1.0 (Build 002)
+DIR 1.0 (012-dev)
 ```
 
 The exact build number depends on the installed utility.
@@ -5236,10 +5236,10 @@ The **build number** identifies a particular revision of the executable.
 For example:
 
 ```text
-BetterCP/M DIR 1.0 (Build 002)
+DIR 1.0 (012-dev)
 ```
 
-identifies version 1.0 of DIR, build 002.
+identifies the transient DIR 1.0 development build 012.
 
 Different utilities maintain their own build sequences.
 
@@ -13732,7 +13732,7 @@ The User's Guide is not intended to describe the internal implementation of ever
 
 ##### Technical Manuals and Architecture References
 
-The [README documentation plan](../../README.md#documentation) groups the developing manuals into User Documentation, Programmer Documentation, Technical Manuals, and a Build & Development Guide. These families are still being developed; they are not four completed books.
+The documentation plan in the Source ZIP (`source/BetterCPM/README.md`, “Documentation”) groups the developing manuals into User Documentation, Programmer Documentation, Technical Manuals, and a Build & Development Guide. These families are still being developed; they are not four completed books.
 
 There is no separate completed manual titled *Architecture Overview* in the current repository. Start with [Overall System Architecture](../architecture/02%20Overall%20System%20Architecture.txt) and the [architecture specifications](../architecture/) for the current system contracts.
 
@@ -13749,7 +13749,7 @@ The consolidated *Build & Development Guide* is being developed; there is no sep
 - [Building the current BetterCP/M System Disks](../releases/DISTRIBUTION-BUILD.md) — host-side distribution assembly and its current status.
 - [BetterCP/M build disk](../programmers/BUILD-DISK.md) — self-hosted native build, source volumes and installation.
 - [Default high-capacity test disks](../platform/DEFAULT-TEST-DISKS.md) — Model 4 test-disk preparation and launcher, with historical qualification notes.
-- [z80pack / cpmsim adapter](../../src/platform/z80pack/README.md) — that target's builder, launcher, media and platform requirements.
+- `source/BetterCPM/src/platform/z80pack/README.md` in the Source ZIP — that target's builder, launcher, media and platform requirements.
 - [Hardware Abstraction](../architecture/08%20Hardware%20Abstraction.txt) and [platform specifications](../platform/) — current architecture and platform material for maintainers.
 
 ##### Engineering Specifications and History
@@ -13768,7 +13768,7 @@ This documentation is useful when investigating a program that behaves different
 
 [Appendix E](#appendix-e) provides a user-level introduction to these issues.
 
-For detailed compatibility analysis, see the [compatibility documentation](../compatibility/) and the [README compatibility and testing section](../../README.md#compatibility-and-testing).
+For detailed compatibility analysis, see the [compatibility documentation](../compatibility/) and “Compatibility and Testing” in the Source ZIP’s `source/BetterCPM/README.md`.
 
 <a id="section-h-2"></a>
 

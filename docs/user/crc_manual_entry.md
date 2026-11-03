@@ -1,6 +1,7 @@
 ## CRCKSUM file checksums and verification lists
 
-**CRCKSUM 1.0 (009-dev), release candidate.** CRCKSUM.COM is included in the candidate Utilities images; the BetterCP/M 1.0 release has not yet been accepted or published. The current revision is recorded in [utility version metadata](../../metadata/utility-versions.tsv). The [engineering specification](../engineering/CRC-Specification.md) defines the interface; the [implementation record](../engineering/CRC-Implementation.md) preserves earlier revision-specific results. The [November 2 release conformance record](../engineering/Release-Conformance-2026-11-02.md) documents bounded candidate testing, not exhaustive qualification of every utility on both platforms.
+**CRCKSUM 1.0 (010-dev)** ships on the primary Utilities disk. With that disk in B:,
+run `B0:CRCKSUM /VER` to check your copy or `B0:CRCKSUM /H` for help.
 
 CRCKSUM answers two related questions: what check values identify these files, and do the files still agree with an earlier list? It calculates eight values: the original CP/M CRCK calculation, corrected CRCK, CHEK, CRC-32, SUM8, SUM16, KERM6 and KERM12. You can display them, save a list, or check a directory against a saved reference. No input file is altered.
 
@@ -41,7 +42,7 @@ CRCKSUM [options] [filespec ...] [options]
 | `/CHECK` | Verify against a reference discovered in each selected DU. |
 | `/CHECK=filename` | Verify against this exact list name in each selected DU. Supply a filename only. |
 | `/40` | Display complete groups of two checksum columns within 40 columns. Saved lists are unchanged. |
-| `/HELP` | Display help without accessing files. |
+| `/H`, `/HELP` | Display help without accessing files. |
 | `/VER` | Display the utility's version and revision without accessing files. |
 
 Option names are case-insensitive, and options may appear before, between or after filespecs. Without algorithm switches, calculation displays all eight values. Supplying switches selects their combination: `/CRCK /CHEK` displays those two. Explicit algorithm switches also determine output order: `/SUM16 /CRCK /KERM6` puts those three columns in that order. Repeating a switch neither moves nor duplicates its column. This order also applies to the narrow display and mismatch details. Successful verification reports `FILENAME.EXT: MATCH (all N checksums)`, counting the checksum fields verified from the matching list entry. When a value option is repeated, every occurrence must be valid and the last value is used. `/HELP` takes precedence over `/VER`; either query suppresses ordinary command processing.

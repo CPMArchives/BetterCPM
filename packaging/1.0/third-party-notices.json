@@ -27,7 +27,7 @@
       "utilities-model4",
       "source"
     ],
-    "notice": "Digital Research. Keep the 2001 permission and 2022 clarification and component provenance under licenses/third_party/dri-*/. The system contains BetterCP/M ED and PIP implementations. Utilities contains the DDT/DUMP implementations and the separate unmodified DRI LINK 1.3. Retained original references and reproduction tools in full source snapshots have their own provenance. The project applies the CP/M grant to LINK as documented in third_party/dri-link/provenance.json. No separate LINK-specific grant is asserted. Keep LINKCOPY.TXT and the host LINK permission with Utilities."
+    "notice": "Digital Research. Keep the 2001 permission and 2022 clarification and component provenance under licenses/third_party/dri-*/. The system contains BetterCP/M ED and PIP implementations. Utilities contains the DDT/DUMP implementations and the separate unmodified DRI LINK 1.3. Retained original references and reproduction tools in full source snapshots have their own provenance. The project applies the CP/M grant to LINK as documented in licenses/third_party/dri-link/provenance.json. No separate LINK-specific grant is asserted. Keep LINKCOPY.TXT and the host LINK permission with Utilities."
   },
   {
     "work": "Hector Peraza TED adaptation and ZSM4 assembler",
@@ -64,6 +64,6 @@
       "source",
       "documentation"
     ],
-    "notice": "Keep work-specific credits, provenance, permissions and applicable texts with third-party quotations, illustrations, reference disks, software and scans. The project manual license applies only to original BetterCP/M manual content. Review selected artifacts and nested archives before publication. Candidate inclusion alone establishes no new redistribution grant."
+    "notice": "Keep work-specific credits, provenance, permissions and applicable texts with third-party quotations, illustrations, reference disks, software and scans. See docs/LICENSING.md for the component index and licenses/third_party/ for the individual records. The project manual license applies only to original BetterCP/M manual content. Review selected artifacts and nested archives before publication. Candidate inclusion alone establishes no new redistribution grant."
   }
 ]

@@ -25,7 +25,7 @@ Native output is rounded to CP/M records with `1Ah` padding.
 
 LINK retains its native `LINK 1.3` identity; BetterCP/M `/HELP` and `/VER` have
 not been added. Copyright remains with Digital Research. `LINKCOPY.TXT` contains
-the retained CP/M permission and clarification. The host package records the
-exact archive origin, binary hash and redistribution basis in
-`Toolchain-Provenance.json`; see also the repository's
-[provenance](../../third_party/dri-link/provenance.json).
+the retained CP/M permission and clarification. In the Utilities ZIP, `source/Toolchain-Provenance.json` identifies the shipped
+executable. The upstream record is at
+`licenses/third_party/dri-link/provenance.json`. See also the
+[guide to third-party records](../LICENSING.md#third-party-records).
