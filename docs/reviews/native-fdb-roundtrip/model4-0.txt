@@ -1,4 +1,5 @@
 A0>FDB DISK.FDB ROUND.FDF
+FDB stack free 01E2h of 0200h
 FDB: complete.
 
 A0>

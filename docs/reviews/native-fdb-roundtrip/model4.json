@@ -20,11 +20,16 @@
       "sha256": "06e2d88e30c38bebe4eaf0975a3e302086874e719109dc3898bb72a0f7ded6a5"
     }
   },
-  "fdb_com_bytes": 9507,
-  "fdb_com_sha256": "f8a4fe79c70161758a5a4c54a9119ef808f8ecff360e3fa5432d941805ccaca4",
+  "fdb_com_bytes": 9601,
+  "fdb_com_sha256": "8c44c6687c1fd2139b001e3677b21fd7246fedb889f0127ccc6d80d6cd54efc8",
   "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
   "build_root": "build/fdb-model4-work/trs80gp",
   "tpa_address_span_bytes": 50944,
   "standard_tpa_bytes": 54272,
-  "source_revision": "48a1ab71403172956a2b7a82070d8bbb413f85c4"
+  "source_revision": "54608433ccfa46d1588da628ef5eb2c18ca953bc",
+  "stack_free_bytes_by_command": [
+    482,
+    490,
+    490
+  ]
 }

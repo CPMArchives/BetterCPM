@@ -20,8 +20,10 @@ The extension selects export or compilation. Both directions run natively;
 there is no host converter embedded in the executable. Text is streamed in
 128-byte records; descriptors and pool objects are kept in bounded memory.
 The compiler accepts FDF v1 fields, optional derived BLM/EXM and description,
-case-insensitive keywords/enums, comments, decimal/hex numbers, and CRLF/LF.
-The initial version statement is `FDF_VERSION 1` with one intervening space.
+case-insensitive keywords/enums, comments, decimal/hex numbers, and CRLF, LF
+or CR line endings. Spaces or tabs can separate the version keyword from 1.
+Embedded NULs and control characters in descriptions are rejected. Host text
+transferred to a record-padded CP/M file should include a logical EOF (1Ah).
 It supports up to 128 definitions and a bounded pool, with explicit refusal
 when workspace is insufficient. This is a command-line foundation, not the
 specification's finished session UI.
@@ -53,10 +55,10 @@ cylinder logical-track definitions. Original and rebuilt binaries have SHA-256:
 06e2d88e30c38bebe4eaf0975a3e302086874e719109dc3898bb72a0f7ded6a5
 ```
 
-Both emulators ran the same 9,507-byte executable, SHA-256:
+Both emulators ran the same 9,601-byte executable, SHA-256:
 
 ```
-f8a4fe79c70161758a5a4c54a9119ef808f8ecff360e3fa5432d941805ccaca4
+8c44c6687c1fd2139b001e3677b21fd7246fedb889f0127ccc6d80d6cd54efc8
 ```
 
 The platform system tracks were freshly built from the baseline above, in
@@ -71,7 +73,7 @@ success messages.
 
 | Resource | Measurement / bound |
 | --- | --- |
-| COM size, both targets | 9,507 bytes |
+| COM size, both targets | 9,601 bytes |
 | Required address span | 0100h–C7FFh, 50,944 bytes (49.75 KiB) |
 | Standard TPA | 54,272 bytes (53 KiB) |
 | TPA margin, both targets | 3,328 bytes (3.25 KiB) |
@@ -83,9 +85,11 @@ success messages.
 
 The span is a conservative reservation including the unused gap between the
 executable and workspace; it is not a claim that every byte is live data.
-The identical fixed addresses establish the TPA bound on both targets. Stack
-high-water instrumentation was performed on the independent CPU core, not
-inside the two emulator builds.
+The identical fixed addresses establish the TPA bound on both targets. The CPU-core measurement samples SP on each instruction. The guest also scans
+a marked private stack after it closes its output, before printing completion.
+The platform evidence records unused bytes for export, native recompilation
+and compilation of host text, in that order. The lowest measured free stack
+was 482 bytes on cpmsim and 482 bytes on Model 4.
 
 ## Lossless-export refusal
 
@@ -108,12 +112,13 @@ python3 tools/test_fdf_v1_compiler.py
 python3 tools/test_fdb_v1_reader.py
 ```
 
-The focused 37-case test executes the assembled COM on the independent full
+The focused 40-case test executes the assembled COM on the independent full
 Z80 core with register-clobbering, record-level BDOS. It includes stock cross
 checks, malformed values, duplicate fields and identities, geometry and capacity
 failures, unknown optional/required extensions, collisions, open/read/make/write/
 close failures, cancellation, cleanup failure, both semantic TLVs in one format,
-and a 255-sector mixed-size list.
+a 255-sector mixed-size list, host header whitespace, CR-only text, and invalid
+control characters.
 
 For platform runs, prepare isolated current-main platform builds using the
 existing complete-system builder and the cpmsim system-tracks builder. Then:
@@ -133,6 +138,7 @@ wrapper or set `BETTERCPM_TRS80GP_DIRECT=1` from a permitted application context
 The existing unrelated `test_fdf_workflow.py` was also attempted, but its probe
 assembly fails because it leaves `INCLUDE disk/fdbread.inc` unresolved in its
 temporary directory. That live disk-format workflow is not counted as a pass.
+The same assembly failure was reproduced against the baseline platform sources.
 The shared native reader and host compiler/reader regression tests pass.
 
 ## Next stages, unchanged from specification 209

@@ -1,4 +1,5 @@
 A0>FDB HOST.FDF HOST.FDB
+FDB stack free 01EAh of 0200h
 FDB: complete.
 
 A0>
