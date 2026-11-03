@@ -126,6 +126,38 @@ expanded focused query suite and component suites above supply current coverage.
 
 ## Reproduction
 
+### Model 4 runner correction after the first Terminal attempt
+
+The 3 November Terminal run at `ui-model4-20261103-114907/shared`
+failed before utility behavior could be qualified. Captures show the first
+command overlapping `RSX LOAD M4SCRN` from STARTUP.SUB (only `GUS` reached
+the command prompt), followed by rejected B: commands. The runner had also
+constructed B: with the reserved-track system layout; configured B: requires
+the standard 800K data layout, including its sector order and OFF=0.
+
+`tools/test_ui_integration_media.py` now uses the existing FDF data-disk
+conversion and cpmtools path for B:, independently reads every payload back
+after conversion, and checks the filesystem before launch. A private A:
+STARTUP.SUB runs a blocking `UIREADY.COM` sentinel after loading the existing
+screen/terminal modules. Input begins only after that sentinel is visible.
+Captured help and version output must be present before native execution can
+pass. Native launch/capture failures receive a FAIL receipt. Utility binaries,
+core code and reference media are unchanged.
+
+Corrected Model 4 preparation and the 24-step cpmsim regression pass:
+
+```sh
+python3 tools/test_ui_integration_media.py --system ../BetterCPM-release-push/build/rc564-systems --platform model4 --prepare-only --output build/ui-integration/model4-corrected-final
+python3 tools/test_ui_integration_media.py --system ../BetterCPM-release-push/build/rc564-systems --platform cpmsim --output build/ui-integration/cpmsim-runner-regression
+```
+
+Preparation is not Model 4 execution; the corrected native campaign still
+requires a normal Terminal run. Failed captures and corrected preparation/
+cpmsim receipts are retained in
+`evidence/2026-11-03-model4-runner/receipts-and-logs.tar.gz`.
+
+### Build and regression commands
+
 Use the branch's existing reference toolchain and frozen system prerequisites.
 The broad utility builder expects the already built Model 4 resident/boot/CCP
 artifacts; a fresh empty build directory is not a complete system build.

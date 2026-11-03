@@ -1,0 +1,7 @@
+{
+  "failed_native": "FAIL: startup command overlap and incorrectly formatted B: work disk; no utility qualification",
+  "corrected_native_preparation": "PASS; execution pending",
+  "cpmsim_regression": "PASS: 24 steps, independent file readback and filesystem check",
+  "runner_sha256": "83420fdd25f0149860b0be4115f95f5ef21369a8fd9404df70cfd3c0581c002f",
+  "utility_sources_changed": false
+}
