@@ -3,6 +3,17 @@ IMPORTBUF EQU 03600H
 WORKBUF EQU 05B00H
 WORKMAX EQU 02500H
 SESSIONSTART:
+        LD HL,(6)
+        LD DE,EDITOREND
+        OR A
+        SBC HL,DE
+        JP C,MEMERR
+        LD HL,EDITORBASE
+        LD (ARENALIMIT),HL
+        LD HL,IMAGEEND
+        LD DE,EDITORBASE
+        LD BC,EDITOREND-EDITORBASE
+        LDIR
         LD A,1
         LD (SESSION),A
         CALL EMPTYWORK
@@ -23,6 +34,7 @@ MENU:   LD SP,STACKTOP
         LD (OUTOPEN),A
         LD (COMPAREOUT),A
         LD (RAWANSWER),A
+        LD (EDAFTER),A
         LD HL,HEADMSG
         CALL PUTS
         LD HL,DEFAULTNAME
@@ -46,6 +58,14 @@ SHOWCOUNT:
 SHOWSTATE: CALL PUTS
         LD HL,MENUMSG
         CALL ASKCHOICE
+        CP 'A'
+        JP Z,EDFROMDRIVE
+        CP 'B'
+        JP Z,EDFROMCAT
+        CP 'C'
+        JP Z,EDBLANK
+        CP 'E'
+        JP Z,EDRESUME
         CP 'S'
         JP Z,SAVECAT
         CP 'I'
@@ -59,8 +79,9 @@ SHOWSTATE: CALL PUTS
         CP 3
         JR Z,QUITCAT
         CP 'Q'
-        JR NZ,MENU
-QUITCAT: CALL PENDING
+        JP NZ,MENU
+QUITCAT: CALL EDEXITCHECK
+        CALL PENDING
         JP EXIT
 NEWCAT: CALL PENDING
         CALL EMPTYWORK
@@ -106,7 +127,10 @@ SRCWILD:LD A,(HL)
         XOR A
         LD (ATEOF),A
         JP COMPILE
-STAGED: CALL FITCHECK
+STAGED: LD A,(ACTION)
+        CP 2
+        JP Z,EDCATREADY
+        CALL FITCHECK
         LD A,(ACTION)
         OR A
         JP NZ,MERGEIMPORT
@@ -212,9 +236,16 @@ REFINIT:LD A,L
         POP DE
         DJNZ REFINIT
 SELECTIMPORT:
+        LD A,(ACTION)
+        CP 3
+        JR NZ,ASKIMPORTID
+        XOR A
+        LD (ANSWER),A
+        JR SELECTCHECK
+ASKIMPORTID:
         LD HL,SELECTMSG
         CALL ASK
-        LD A,(ANSWER)
+SELECTCHECK:LD A,(ANSWER)
         CP 3
         JP Z,MENU
         ; Only an empty line selects all records. A leading space in a
@@ -418,7 +449,7 @@ OBJEND: LD DE,(OBJSTART)
         LD C,L
         LD HL,(POOLPTR)
         ADD HL,BC
-        LD DE,FDFLIM
+        LD DE,EDITORBASE
         OR A
         SBC HL,DE
         JP NC,MEMERR
@@ -569,11 +600,19 @@ NAMESOK:LD A,(ACTION)
         LD A,(REPLACED)
         CALL COUNTDEC
         LD HL,REPLMSG
-        JP EXITMSG
+        CALL PUTS
+        LD A,(ACTION)
+        CP 3
+        JP NZ,MENU
+        JP EDCOMMITTED
 NOIMPORT:LD HL,NONEFOUND
         JP EXITMSG
 ; Write, close and compare every record (including EOF) before publication.
-SAVECAT:CALL DOSAVE
+SAVECAT:LD A,(EDSOURCE)
+        OR A
+        JP NZ,EDSAVE
+EDWRITECAT:CALL EDINCLUDE
+        CALL DOSAVE
         JP MENU
 DOSAVE: LD HL,DESTMSG
         CALL ASK
@@ -1057,7 +1096,8 @@ UNTITLED:DB 'Untitled',0
 COUNTMSG:DB '   Entries: ',0
 MODSTATE:DB '   Modified',13,10,0
 CLEANSTATE:DB '   Unmodified',13,10,0
-MENUMSG:DB 'F Open  N New  L List  I Import  S Save  Q Quit (or BREAK)',13,10,'Choice: ',0
+MENUMSG:DB 'A Capture drive  B Load entry  C Blank format  E Resume editor',13,10
+        DB 'F Open  N New  L List  I Import  S Save  Q Quit (or BREAK)',13,10,'Choice: ',0
 PENDINGMSG:DB 'Unsaved catalogue: S Save, D Discard, C Cancel: ',0
 OPENMSG:DB 'Open catalogue filename: ',0
 IMPORTMSG:DB 'Import into working catalogue',13,10,0

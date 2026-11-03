@@ -77,7 +77,9 @@ READBINARY:
         CALL OPENIN
         LD HL,FDFRAM
 LOADLP: LD (POS),HL
-        LD DE,FDFLIM-128
+        LD DE,(ARENALIMIT)
+        DEC D
+        LD E,128
         OR A
         SBC HL,DE
         JP NC,MEMERR
@@ -809,6 +811,7 @@ TEXTMSG:DB 'FDB: invalid definition or unsupported FDF text.',13,10,0
 LOSSMSG:DB 'FDB: cannot export this encoding losslessly.',13,10,0
 EXISTMSG:DB 'FDB: destination exists; nothing replaced.',13,10,0
 IOMSG:  DB 'FDB: file operation failed.',13,10,0
+ARENALIMIT: DW FDFLIM
 OLDSP:  DW 0
 MODE:   DB 0
 INOPEN: DB 0
@@ -1383,7 +1386,12 @@ NO_CYL: LD A,(IX+58)
         CALL POOLBYTE
 FORMATREADY:
         LD HL,(POOLPTR)
-        LD DE,0C000H-512
+        LD DE,0C000H-520  ; converter pool ceiling
+        LD A,(SESSION)
+        OR A
+        JR Z,POOLCEILING
+        LD DE,EDITORBASE-520 ; reserve worst-case IDs, mixed map, cylinder TLV
+POOLCEILING:
         OR A
         SBC HL,DE
         JP NC,MEMERR
