@@ -39,7 +39,7 @@ def compose(assembler):
     for path,digest in resident_meta['rsx']['artifacts'].items():
         if hashlib.sha256((ROOT/'build/system'/path).read_bytes()).hexdigest()!=digest:
             raise ValueError('changed RSX component: '+path)
-    fmt=select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)
+    fmt=select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT)
     boot_source=(ROOT/'src/platform/z80pack/boot.mac').read_text().replace(
         '        INCLUDE bootfmt.inc',f'ZB_TRACKS EQU {fmt.raw_tracks}\nZB_SLOTS EQU {fmt.raw_track_bytes//128}\n')
     boot_source=boot_source.replace('        DB ZB_MAP_BYTES','        DB '+','.join(map(str,fmt.raw_record_map())))

@@ -9,7 +9,7 @@ from system_layout import LAYOUT as L
 from fdf_format import select_fdf
 from build_z80pack_image import DEFAULT_FORMAT
 sim=Path(os.environ.get('BETTERCPM_ASSESSMENT_SIM','/tmp/bettercpm-assessment-part2-20261023/runtime-tools/cpmsim'))
-fmt=select_fdf(root/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)
+fmt=select_fdf(root/'metadata/DISK.FDF',DEFAULT_FORMAT)
 out=root/'qualification';out.mkdir(exist_ok=True)
 results=json.loads((out/'results.json').read_text()) if (out/'results.json').exists() else {}
 def save(): (out/'results.json').write_text(json.dumps(results,indent=2)+'\n')

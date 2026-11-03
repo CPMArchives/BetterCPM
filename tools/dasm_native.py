@@ -46,7 +46,7 @@ def campaign(platform, files, commands, output, *, system=DEFAULT_SYSTEM,
         script += ['CLS',interactive_launch]
         if interactive_followup:script += [interactive_followup]
     files['QUALIFY.SUB'] = ('\r\n'.join(script)+'\r\n\x1a').encode()
-    defs = disk_definition(select_fdf(ROOT/'third_party/montezuma/DISK.FDF', DEFAULT_FORMAT))
+    defs = disk_definition(select_fdf(ROOT/'metadata/DISK.FDF', DEFAULT_FORMAT))
     defs += '''diskdef dasm-system
  libdsk:format pcw800
  seclen 512
@@ -78,7 +78,7 @@ end
     if utility_files:
         utility_raw=output/'utilities-audit.raw'
         if native:
-            fmt=select_fdf(ROOT/'third_party/montezuma/DISK-INT.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
+            fmt=select_fdf(ROOT/'metadata/DISK.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
             utility_raw.write_bytes(dmk_to_raw(ub,fmt))
         else:utility_raw.write_bytes(ub)
         utility_definition='bettercpm-mm-80t-ds-data' if native else 'bettercpm-default'

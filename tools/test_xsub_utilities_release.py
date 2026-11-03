@@ -27,7 +27,7 @@ def main():
     for target in ('z80pack','trs80gp'):
         w=a.output/target;w.mkdir();report=json.loads((a.system/target/'report.json').read_text());source=a.system/target/report['image'];before=source.read_bytes()
         utility=next(a.images.glob('*'+target+('*.dsk' if target=='z80pack' else '*.dmk')));utility_before=utility.read_bytes()
-        defs=disk_definition(select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT))+'''diskdef xsub-system
+        defs=disk_definition(select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT))+'''diskdef xsub-system
  libdsk:format pcw800
  seclen 512
  tracks 160

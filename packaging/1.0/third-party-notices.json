@@ -8,7 +8,7 @@
       "utilities-model4",
       "source"
     ],
-    "notice": "Montezuma Micro DISK.FDF and the 16 disk-format definitions recovered from CONFIG.COM — distribution rights undetermined. The maintainer accepts these data for BetterCP/M 1.0 in source and compiled form. The Source and nested Utilities kits include the catalogue inputs. DISK.FDB on each System disk contains 91 entries from the external file and all 16 CONFIG-derived entries. No rightsholder grant has been verified. Montezuma utility binaries and disassemblies are excluded from the packages and their nested source kits."
+    "notice": "Montezuma Micro DISK.FDF and the 16 disk-format definitions recovered from CONFIG.COM — distribution rights undetermined. The maintainer accepts these data for BetterCP/M 1.0 in source and compiled form. The Source and nested Utilities kits carry the editable BetterCP/M FDF v1 catalogue. The original Montezuma DISK.FDF is excluded. The release catalogue preserves the 91 external and 16 CONFIG compatibility entries, uses independent definitions for MMF017 and MMI008, and adds the native BetterCP/M 780K System format. No rightsholder grant has been verified. Montezuma utility binaries and disassemblies are excluded from the packages and their nested source kits."
   },
   {
     "work": "z80pack and the cpmsim support kit",

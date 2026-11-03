@@ -606,8 +606,7 @@ cmd_convert()
     local output="$2"
     local root="$HOME/projects/git/BetterCPM"
     local converter="$root/tools/convert_fdf_image.py"
-    local external_fdf="$root/third_party/montezuma/DISK.FDF"
-    local internal_fdf="$root/third_party/montezuma/DISK-INT.FDF"
+    local catalogue="$root/metadata/DISK.FDF"
     local direction size fdf format cylinders
 
     if [ ! -f "$input" ]; then
@@ -628,11 +627,11 @@ cmd_convert()
             size=$(wc -c < "$input" | tr -d ' ')
             case "$size" in
                 368640)
-                    fdf="$external_fdf"
+                    fdf="$catalogue"
                     format="California Computer Systems (40T, DS, DD, 332K)"
                     ;;
                 819200)
-                    fdf="$internal_fdf"
+                    fdf="$catalogue"
                     format="Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)"
                     ;;
                 *)
@@ -653,11 +652,11 @@ cmd_convert()
             cylinders=$(od -An -tu1 -j1 -N1 "$input" | tr -d '[:space:]')
             case "$cylinders" in
                 40)
-                    fdf="$external_fdf"
+                    fdf="$catalogue"
                     format="California Computer Systems (40T, DS, DD, 332K)"
                     ;;
                 80)
-                    fdf="$internal_fdf"
+                    fdf="$catalogue"
                     format="Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)"
                     ;;
                 *)

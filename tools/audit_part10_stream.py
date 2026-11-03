@@ -6,7 +6,7 @@ p=argparse.ArgumentParser(description=__doc__);p.add_argument('baseline',type=Pa
 sys.path.insert(0,str(a.baseline.resolve()/'tools'))
 from fdf_format import select_fdf
 from build_z80pack_image import DEFAULT_FORMAT
-fmt=select_fdf(a.baseline/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)
+fmt=select_fdf(a.baseline/'metadata/DISK.FDF',DEFAULT_FORMAT)
 def readraw(image,start,count):
  b=image.read_bytes();out=bytearray()
  for rec in range(start,start+count):

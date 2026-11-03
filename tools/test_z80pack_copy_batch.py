@@ -26,7 +26,7 @@ def main():
     cpm('cpmcp', a, ROOT / 'build/utilities/COPY.COM', '0:COPY.COM')
     from fdf_format import select_fdf
     from test_z80pack_native_build import build_binding_program
-    fmt = select_fdf(ROOT / 'third_party/montezuma/DISK-INT.FDF',
+    fmt = select_fdf(ROOT / 'metadata/DISK.FDF',
                      'Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
     setup = build_binding_program(report)
     cpm('cpmcp', a, setup, '0:SETBUILD.COM')

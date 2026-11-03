@@ -19,7 +19,7 @@ def main():
     from fdf_format import select_fdf
     from build_z80pack_image import DEFAULT_FORMAT
     from system_layout import LAYOUT
-    fmt=select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)
+    fmt=select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT)
     data=bytearray(image.read_bytes());record=build('',system_base=LAYOUT['SYSTEM'])
     for i in range(2):
         track,within=divmod(i+1,fmt.spt);at=track*fmt.raw_track_bytes+fmt.raw_record_map()[within]*128

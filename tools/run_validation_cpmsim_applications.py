@@ -94,7 +94,7 @@ def main():
             if mode=='quit':assert b'case.bak' not in listing
             else:assert get(w,d,'b',7,'CASE.BAK').split(b'\x1a')[0]==(b'NEW'+old[:-1] if mode=='head' else old[:-1])
             finish(w,d,'ed-'+mode,'Real editor entry; user-7 text, backup/work-file lifecycle and user-0 sentinel independently verified')
-        fmt=select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)
+        fmt=select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT)
         def offset(record):
             track,within=divmod(record,fmt.spt);return track*fmt.raw_track_bytes+fmt.raw_record_map()[within]*128
         offsets=[offset(1),offset(2)]

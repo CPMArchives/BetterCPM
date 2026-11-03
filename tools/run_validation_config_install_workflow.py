@@ -24,7 +24,7 @@ def main():
   text=f" ORG 100H\n LD A,(3)\n CP {value}\n JR NZ,BAD\n LD DE,OK\n JR PRINT\nBAD: LD DE,FAIL\nPRINT: LD C,9\n CALL 5\n RET\nOK: DB 'LIVE IOBYTE {value:02X} PASS',13,10,'$'\nFAIL: DB 'IOBYTE CHECK FAIL',13,10,'$'\n END\n";(w/f'io{value:02x}.asm').write_text(text);code=assemble(Path.home()/'bin/z80asm',text,w/f'IO{value:02X}.COM',w/f'io{value:02x}.lst',0x100)
   for image in (A,C):put(image,0,f'IO{value:02X}.COM',code)
  sentinel=b'INSTALLED WORKFLOW SENTINEL\r\n\x1a';put(C,7,'KEEP.TXT',sentinel)
- fmt=select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT);reserved=fmt.reserved_records*128
+ fmt=select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT);reserved=fmt.reserved_records*128
  def offset(i):
   tr,within=divmod(i,fmt.spt);return tr*fmt.raw_track_bytes+fmt.raw_record_map()[within]*128
  def payload(data):return b''.join(data[offset(i):offset(i)+128] for i in range(160))

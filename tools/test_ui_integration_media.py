@@ -107,8 +107,8 @@ def main():
         for name,data in system_files.items():add_file(raw,name,data)
         (w/'UIQUAL.SUB').write_bytes(script)
         (w/'a.dmk').write_bytes(make_dmk(raw))
-        data_format=select_fdf(ROOT/'third_party/montezuma/DISK-INT.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
-        definitions=disk_definition(select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT))
+        data_format=select_fdf(ROOT/'metadata/DISK.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
+        definitions=disk_definition(select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT))
         definitions+='diskdef ui-system\n libdsk:format pcw800\n seclen 512\n tracks 160\n sectrk 10\n blocksize 2048\n maxdir 128\n skew 1\n boottrk 4\n os 2.2\nend\n'
         (w/'diskdefs').write_text(definitions)
         system_preflight=w/'a-preflight.raw';system_preflight.write_bytes(extract_raw((w/'a.dmk').read_bytes()))
@@ -143,7 +143,7 @@ def main():
         runner='import json,subprocess\nfrom pathlib import Path\nw=Path(__file__).resolve().parent\nsubprocess.run(json.loads((w/"invocation.json").read_text()),cwd=w,check=True)\n'
         (w/'run_model4.py').write_text(runner)
     else:
-        definitions=disk_definition(select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT))
+        definitions=disk_definition(select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT))
         disks=w/'disks';disks.mkdir();(disks/'drivea.dsk').write_bytes(original)
         (disks/'driveb.dsk').write_bytes(original)
     (w/'diskdefs').write_text(definitions)
@@ -210,7 +210,7 @@ def main():
         boundary=FILESYSTEM_FIRST_SECTOR*SECTOR_SIZE
         assert extract_raw(private_system)[:boundary]==extract_raw(original)[:boundary]
     else:
-        fmt=select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)
+        fmt=select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT)
         boundary=fmt.reserved_records*128
         assert private_system[:boundary]==original[:boundary]
     if batchio:

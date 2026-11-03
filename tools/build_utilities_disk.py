@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+from build_qualified_cpmsim import project_revision
 import sys
 import tempfile
 import zipfile
@@ -99,10 +100,10 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
     output.mkdir(parents=True,exist_ok=True)
     for target in ['z80pack','trs80gp']:
         native=target=='trs80gp'
-        fmt=select_fdf(ROOT/'third_party/montezuma'/('DISK-INT.FDF' if native else 'DISK.FDF'), 'Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)' if native else DEFAULT_FORMAT)
+        fmt=select_fdf(ROOT/'metadata/DISK.FDF', 'Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)' if native else DEFAULT_FORMAT)
         definition='bettercpm-mm-80t-ds-data' if native else 'bettercpm-default'
         with tempfile.TemporaryDirectory(prefix='bettercpm-utilities-',dir='/private/tmp') as temp:
-            work=Path(temp);(work/'diskdefs').write_text(disk_definition(select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)))
+            work=Path(temp);(work/'diskdefs').write_text(disk_definition(select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT)))
             raw=work/'utilities.dsk';raw.write_bytes(bytes([0xE5])*fmt.image_bytes)
             def run(*args):
                 result=subprocess.run(args,cwd=work,capture_output=True)
@@ -208,8 +209,7 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
         source_state=artifacts/'build-state.json'
         if source_state.is_file():report['source']=json.loads(source_state.read_text())['source']
         else:
-            provenance=subprocess.run(['git','-C',str(artifacts),'rev-parse','HEAD'],capture_output=True,text=True)
-            report['source']={'revision':provenance.stdout.strip() if provenance.returncode==0 else None}
+            report['source']={'revision':project_revision(artifacts)}
         report['release_record']=disk_record(report,data,root=artifacts)
     for name,data,report in reports:
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)

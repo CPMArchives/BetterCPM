@@ -51,8 +51,8 @@ def read_file(raw, fmt, user, name):
 
 
 def main():
-    fmt = select_fdf(ROOT/'third_party/montezuma/DISK-INT.FDF', FORMAT)
-    definitions = disk_definition(select_fdf(ROOT/'third_party/montezuma/DISK.FDF', DEFAULT_FORMAT))
+    fmt = select_fdf(ROOT/'metadata/DISK.FDF', FORMAT)
+    definitions = disk_definition(select_fdf(ROOT/'metadata/DISK.FDF', DEFAULT_FORMAT))
     # This first file fills the directory allocation words which LibDsk's
     # boot probe wrongly interprets as geometry. Each later open probes again.
     values = {'BIG.BIN': (bytes(range(256))*274)[:70001].ljust(70016, b'\x1a'),

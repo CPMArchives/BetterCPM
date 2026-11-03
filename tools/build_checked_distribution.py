@@ -35,7 +35,7 @@ def components(reuse):
               'fdf_catalog','ed','svctest','stattst','z80pack_bye')
     for name in builders:
         subprocess.run([sys.executable,str(ROOT/'tools'/f'build_{name}.py')],cwd=ROOT,check=True)
-    out=ROOT/'build/z80pack';fmt=select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)
+    out=ROOT/'build/z80pack';fmt=select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT)
     payload=(out/'system-package/system-tracks.bin').read_bytes()
     raw=bytearray(b'\xe5'*fmt.image_bytes)
     for record in range(160):

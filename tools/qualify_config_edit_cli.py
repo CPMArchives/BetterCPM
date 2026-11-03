@@ -15,7 +15,7 @@ def main():
     p=argparse.ArgumentParser();p.add_argument('--diskdefs',type=Path,required=True);a=p.parse_args()
     parent=ROOT/'build/config-edit-cli';parent.mkdir(parents=True,exist_ok=True)
     work=Path(tempfile.mkdtemp(prefix='run-',dir=parent));probe=state_probe(work)
-    fmt=select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)
+    fmt=select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT)
     def offset(n):
         track,i=divmod(n,fmt.spt);return track*fmt.raw_track_bytes+fmt.raw_record_map()[i]*128
     template=ROOT/'build/z80pack/disks/library/BetterCPM-Distribution-z80pack-332K.dsk'

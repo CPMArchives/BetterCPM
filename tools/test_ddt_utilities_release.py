@@ -80,7 +80,7 @@ def model4(w,system,utility):
     assert b.read_bytes()==before,'Utilities changed'
     # Convert only private images for independent cpmtools readback/checking.
     araw=w/'a.raw';araw.write_bytes(extract_raw(a.read_bytes()))
-    fmt=select_fdf(ROOT/'third_party/montezuma/DISK-INT.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
+    fmt=select_fdf(ROOT/'metadata/DISK.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)')
     braw=w/'b.raw';braw.write_bytes(dmk_to_raw(b.read_bytes(),fmt))
     command(w,'cpmcp','-f','ddt-system',araw,'0:TINY.COM',w/'TINY-after.COM')
     assert (w/'TINY-after.COM').read_bytes()[:len(TINY)]==TINY
@@ -92,7 +92,7 @@ def main():
     global SHA
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--system',type=Path,required=True);p.add_argument('--artifacts',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim');p.add_argument('--platforms',nargs='+',choices=['z80pack','trs80gp'],default=['z80pack','trs80gp']);args=p.parse_args()
     w=args.output.resolve();w.mkdir(parents=True,exist_ok=False)
-    defs=disk_definition(select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT))+'''diskdef ddt-system
+    defs=disk_definition(select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT))+'''diskdef ddt-system
  libdsk:format pcw800
  seclen 512
  tracks 160

@@ -15,5 +15,11 @@
   "python_syntax": "PASS",
   "diff_whitespace": "PASS",
   "freeze": "HOLD",
-  "final_candidate_acceptance": "NOT ACCEPTED; correction review and rebuild required"
+  "final_candidate_acceptance": "NOT ACCEPTED; correction review and rebuild required",
+  "integration_main": "064c003db9951d17e858be10c155e1299d2164b0",
+  "integration_delta_checks": [
+    "PASS 33 host regressions",
+    "PASS deterministic 108-entry FDB packaging and lossless decompilation round trip",
+    "PASS CCS 332K, MM 800K and inverted raw/DMK conversions"
+  ]
 }

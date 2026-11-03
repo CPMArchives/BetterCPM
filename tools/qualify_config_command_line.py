@@ -19,7 +19,7 @@ def main():
     parent=ROOT/'build/config-command-line';parent.mkdir(parents=True,exist_ok=True)
     work=Path(tempfile.mkdtemp(prefix='run-',dir=parent));results=[]
     template=ROOT/'build/z80pack/disks/library/BetterCPM-Distribution-z80pack-332K.dsk'
-    fmt=select_fdf(ROOT/'third_party/montezuma/DISK.FDF',DEFAULT_FORMAT)
+    fmt=select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT)
     def offset(record):
         track,within=divmod(record,fmt.spt)
         return track*fmt.raw_track_bytes+fmt.raw_record_map()[within]*128
