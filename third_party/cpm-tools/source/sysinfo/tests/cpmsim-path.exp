@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Locate cpmsim without tying the tests to one developer's home directory.
+if {[info exists env(CPMSIM)] && $env(CPMSIM) ne ""} {
+    set cpmsim $env(CPMSIM)
+} else {
+    set cpmsim [auto_execok cpmsim]
+    if {$cpmsim eq ""} {
+        set candidate [file normalize [file join ~ z80pack cpmsim cpmsim]]
+        if {[file executable $candidate]} { set cpmsim $candidate }
+    }
+}
+if {$cpmsim eq ""} {
+    puts stderr "cpmsim not found; set CPMSIM or add cpmsim to PATH"
+    exit 2
+}

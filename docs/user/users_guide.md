@@ -1,5 +1,7 @@
 # BetterCP/M 1.0 User's Guide
 
+Package references: this guide accompanies each System download. Installation instructions and release notes are local. Utilities, architecture, programmer and source-code references require the matching separate Utilities, Documentation or Source download unless included locally.
+
 ## Contents
 
 [Part I — Using BetterCP/M](#part-i)
@@ -9767,7 +9769,7 @@ The activation command is:
 XSUB
 ```
 
-Place it before the program to be automated. `XSUB.COM` belongs to the **Utilities Disk**, not the current System Disk. Its protected companion, `BATCHIO.RSX`, must be in A0, along with the matched-build `R3PACK.RSX` manager runtime. If your utility media lacks BATCHIO, obtain the matching companion before using XSUB. The current distribution manifest assigns XSUB to the Utilities Disk but does not separately specify where BATCHIO is packaged.
+Place it before the program to be automated. `XSUB.COM` belongs to the **Utilities Disk**, not the current System Disk. Its protected companion, `BATCHIO.RSX`, must be in A0, along with the matched-build `R3PACK.RSX` manager runtime. The primary Utilities Disk supplies both XSUB.COM and BATCHIO.RSX. Copy its matched BATCHIO.RSX to writable A0 before using XSUB; loading it from a Utilities drive is not an alternative to the runtime’s fixed-A0 lookup. Keep it matched to the System Disk’s R3PACK.RSX.
 
 Before running the example, make `XSUB.COM`, `ED.COM`, `TYPE.COM`, and `SUBMIT.COM` available on the command search path and `BATCHIO.RSX` and `R3PACK.RSX` available in A0. Keep A0 writable for the shared queue, and use a writable working drive/user where `XDEMO.TXT` does not already exist.
 

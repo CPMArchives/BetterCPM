@@ -14,6 +14,8 @@ def companions(root):
     files={n.decode():(root/n.decode()).read_bytes() for n in names if n}
     plan=json.loads((root/'metadata/component-inputs.json').read_text())['components']['utility:TED']
     required=set(plan['files'])|{'tools/ted_distribution.py','src/distribution/TED.TXT','src/distribution/TEDCOPY.TXT'}
+    from cpm_tools_source import verify as verify_cpm_tools_source
+    required |= verify_cpm_tools_source(root)
     if not required<=files.keys():raise ValueError('TED source companion requires tracked implementation files')
     record=json.loads((root/'build/utilities/TED-build-report.json').read_text())
     if record['artifact']['sha256']!=hashlib.sha256((root/'build/utilities/TED.COM').read_bytes()).hexdigest():

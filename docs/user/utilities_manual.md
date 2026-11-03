@@ -1,5 +1,7 @@
 # BetterCP/M Utilities Manual
 
+Package references: ZSM4 and LINK operator guides accompany both platform Utilities downloads. Engineering, architecture and source-code links refer to the matching Documentation or Source download unless explicitly supplied locally; they are not additional installed disk members.
+
 This manual explains how to use the programs supplied on the BetterCP/M Utilities Disk. For the command prompt, drive and user areas, file management, configuration, and the System Disk commands, see the [BetterCP/M User’s Guide](users_guide.md).
 
 The Utilities Disk is distributed separately from the System Disk, with platform-specific primary and companion images in the current six-package release-candidate layout. This manual covers the selected utilities, including NOAH, SEARCH, COMPARE, CRCKSUM, MD5SUM, PATCH, DUMP, DDT, TED, DASM/DSYM/DLINK, compression tools and ZSM4/LINK. Candidate membership is specified by the [distribution manifest](../releases/DISTRIBUTION-MANIFEST.md); no 1.0 release has yet been accepted or published.

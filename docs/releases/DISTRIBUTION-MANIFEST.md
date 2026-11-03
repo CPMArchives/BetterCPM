@@ -44,8 +44,10 @@ change the disk membership below.
 - R3PACK.RSX: required RSX-manager runtime container.
 - BYE.COM: cpmsim-only simulator exit command with confirmation, `/Y`, `/VER` and `/HELP`; [command reference](../user/BYE.md).
 - ZPRTC.RSX: cpmsim clock provider only.
-- ADM3A.RSX: MM-style ADM-3A monitor provider for Model 4 only.
-- ADMTST.COM: ADM-3A visual, cursor, bell and keyboard test utility, Model 4 only.
+- ADM3A.RSX and ADMTST.COM: portable ADM-3A personality and its diagnostic on both targets; load the matching screen backend first.
+- VT52.RSX / VT52TST.COM and ANSI.RSX / ANSITST.COM: portable personalities and diagnostics on both targets.
+- M4SCRN.RSX: Model 4 screen backend. ANSISCRN.RSX: cpmsim ANSI-host screen backend.
+- MOUNT.COM, R.COM and W.COM: cpmsim-only guest tools built with the selected patched runtime; not Model 4 programs.
 - FREHDCLK.RSX: Model 4/FreHD clock provider only; requires FreHD hardware/emulation.
 
 ## Utilities Disk
@@ -88,7 +90,7 @@ change the disk membership below.
   Candidate companion disks include COMPARE.COM and COMPARE.TXT. Remaining Model 4
   validation is waived for finalization and deferred to a combined manual campaign.
 
-- XSUB.COM
+- XSUB.COM and BATCHIO.RSX: primary Utilities Disk members. For XSUB, copy the matched BATCHIO.RSX to writable A0, where the runtime looks it up; keep it matched to the System Disk’s R3PACK.RSX.
 - DUMP.COM: enhanced read-only hex/ASCII viewer with `/P`, required `/40`, `/FROM=`, exact DU access, interactive Find/Go To, sealed DRI `/BARE`, and visually styled `/VER`; [engineering specification](../engineering/DUMP%20Specification.md).
 - TED.COM: selected full-screen editor adaptation of Hector Peraza's TED, with
   WordStar-compatible non-document editing/file commands, recoverable saving,
@@ -123,7 +125,7 @@ change the disk membership below.
   the disk image alone is not the
   complete toolchain distribution. See [toolchain qualification](../engineering/Utilities%20Toolchain%20Qualification.md).
 - DDT.COM: initial DRI-compatible debugger adaptation with shared line editing and `/VER`; [engineering specification](../engineering/DDT%20Specification.md). Exact historical reproduction is retained separately as the verification baseline. Model 4 real-screen/physical-keyboard, native/cross and BetterCP/M cpmsim qualification pass; [Model 4 evidence](../engineering/DDT%20Model%204%20Qualification.md).
-- Noah’s ARK (`NOAH.COM` with `NOAH.OVL`): selected unified archive utility, targeting CP/M `.ARK` and `.LBR` containers. The [engineering specification](../engineering/NOAH%20Specification.md) behavioral baseline is complete; implementation has begun with development-only LBR LIST/TEST/extraction with shared selectors and overwrite prompts; the complete interface remains post-1.0 work. This foundation is not yet included on disk.
+- Noah’s ARK (`NOAH.COM` with matched `NOAH.OVL`): command-line archive utility supplied on the historical-name NOAH companion volume. The companion contains exactly NOAH.COM, NOAH.OVL, NOAH.TXT, PATCH.COM, PATCH.TXT, COMPARE.COM and COMPARE.TXT. The interactive browser remains deferred; inclusion does not accept a changed executable or media pair. See the [engineering specification](../engineering/NOAH%20Specification.md) for the implemented command scope and retained limits.
 - SQ.COM and USQ.COM: standalone Z80 squeeze/unsqueeze commands using the
   common codec ABI, two-pass SQ input, optional destination drive and temporary
   output that is published only after successful processing and closes.
@@ -238,8 +240,9 @@ membership. Both representations must be updated together for approved changes.
 
 Both distribution images save `SUBMIT STARTUP` in their existing BCST startup
 record. `A0:STARTUP.SUB` supplies the cold-boot sign-on through `:VER /BANNER`
-without permanent BIOS code. The Model 4 script then runs `RSX LOAD ADM3A`;
-the cpmsim script currently contains only the banner command. Warm boot does not rerun the cold-start command.
+without permanent BIOS code. The Model 4 script loads M4SCRN, then ADM3A,
+clears the display and prints the banner. The cpmsim script contains only the
+banner command. Warm boot does not rerun the cold-start command.
 Users may edit the script or change/disable the saved command through CONFIG.
 A missing script reports the ordinary SUBMIT error and returns to the prompt.
 No ECHO command is supplied; ECHO.RSX is a diagnostic extension, not a shell

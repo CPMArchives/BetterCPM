@@ -1,0 +1,702 @@
+; SPDX-License-Identifier: GPL-2.0-or-later
+;
+;***********************************************************************
+;*                                                                     *
+;*                    B D O S P R O B E   --   DEV4                  *
+;*                                                                     *
+;*                  BDOS BEHAVIOR PROBE HARNESS                       *
+;*                                                                     *
+;***********************************************************************
+;
+; Version 0.1.0-dev4, 31 August 2026
+;
+;       ZSM4 BDOSPRB=BDOSPRB
+;       LINK BDOSPRB[A]
+;
+; Usage:
+;
+;       BDOSPRB
+;       BDOSPRB /CPM
+;
+; BDOSPROBE records the register-level behavior of selected BDOS calls.
+; The CP/M command name is BDOSPRB because a CP/M filename has no more
+; than eight characters.  Dev4 adds the first guarded state probe.  /SELECT
+; obtains the current drive, selects that same drive, then checks that the
+; current drive, login vector and read-only vector are unchanged.
+;
+; The result-capture routine saves A, BC, DE, HL, flags and SP immediately
+; after BDOS returns.  Only A and HL are documented results of function 12;
+; the other values are displayed as observations, not promises made by CP/M.
+;
+; Revision history:
+;   dev1    first result-capture harness and /CPM version probe
+;   dev2    observational /DISK, /MEM and /CONSOLE probe groups
+;   dev3    function 32 query-only /USER probe with state check
+;   dev4    guarded select-current-drive probe with before/after checks
+;
+; Programmer's notebook:
+;   Save HL before using it to copy the other registers.  Save AF before
+;   calculating SP, since DAD SP changes the condition flags.  PUSH/POP is
+;   used to copy BC, DE and AF so the generated instructions remain usable
+;   on an 8080 as well as a Z80.
+;
+;***********************************************************************
+
+	.z80                    ; Zilog spelling, 8080 opcodes only
+	cseg
+
+BDOS    EQU     0005H
+FPRINT  EQU     9
+FVER    EQU     12
+
+START:  LD      SP,STACKTOP
+        CALL    GETARG
+        JP      C,BADARG
+        LD      A,(MODE)
+        CP      1
+        JP      Z,SHOWHELP
+        CP      2
+        JP      Z,SHOWINFO
+        CP      3
+        JP      Z,SHOWVER
+        CP      5
+        JP      Z,DODISK
+        CP      6
+        JP      Z,DOMEM
+        CP      7
+        JP      Z,DOCONS
+        CP      8
+        JP      Z,DOUSER
+        CP      9
+        JP      Z,DOSELECT
+        LD      DE,BANNER
+        CALL    PRINT
+        CALL    PROBE12
+        CALL    REPORT12
+        JP      0000H
+
+; Accept no operand and one exact option.  Words are folded to upper
+; case so old CCPs and terminals which supply lower case remain convenient.
+GETARG: XOR     A
+        LD      (MODE),A
+        LD      A,(0080H)
+        LD      B,A
+        LD      HL,0081H
+GALP:   LD      A,B
+        OR      A
+        JP      Z,GAGOOD
+        LD      A,(HL)
+        INC     HL
+        DEC     B
+        CP      ' '
+        JP      Z,GALP
+        LD      DE,TOKBUF
+        LD      C,0
+GACOPY: CP      'a'
+        JP      C,GASTOR
+        CP      'z'+1
+        JP      NC,GASTOR
+        SUB     20H
+GASTOR: LD      (DE),A
+        INC     DE
+        INC     C
+        LD      A,C
+        CP      15
+        JP      NC,GABAD
+        LD      A,B
+        OR      A
+        JP      Z,GAWORD
+        LD      A,(HL)
+        CP      ' '
+        JP      Z,GAWORD
+        INC     HL
+        DEC     B
+        JP      GACOPY
+GAWORD: XOR     A
+        LD      (DE),A
+        LD      A,(MODE)
+        OR      A
+        JP      NZ,GABAD
+        LD      DE,SCPM
+        CALL    ARGIS
+        JP      Z,GASET0
+        LD      DE,SDISK
+        CALL    ARGIS
+        LD      A,5
+        JP      Z,GASET
+        LD      DE,SMEM
+        CALL    ARGIS
+        LD      A,6
+        JP      Z,GASET
+        LD      DE,SCONS
+        CALL    ARGIS
+        LD      A,7
+        JP      Z,GASET
+        LD      DE,SUSER
+        CALL    ARGIS
+        LD      A,8
+        JP      Z,GASET
+        LD      DE,SSELECT
+        CALL    ARGIS
+        LD      A,9
+        JP      Z,GASET
+        LD      DE,SH
+        CALL    ARGIS
+        LD      A,1
+        JP      Z,GASET
+        LD      DE,SHELP
+        CALL    ARGIS
+        LD      A,1
+        JP      Z,GASET
+        LD      DE,SINFO
+        CALL    ARGIS
+        LD      A,2
+        JP      Z,GASET
+        LD      DE,SVER
+        CALL    ARGIS
+        LD      A,3
+        JP      Z,GASET
+        LD      DE,SVERSION
+        CALL    ARGIS
+        LD      A,3
+        JP      NZ,GABAD
+GASET:  LD      (MODE),A
+        JP      GATRAIL
+GASET0: LD      A,4             ; remember that an option was consumed
+        LD      (MODE),A
+GATRAIL:LD     A,B
+        OR      A
+        JP      Z,GAGOOD
+        LD      A,(HL)
+        INC     HL
+        DEC     B
+        CP      ' '
+        JP      Z,GATRAIL
+GABAD:  SCF
+        RET
+GAGOOD: OR      A
+        RET
+
+ARGIS:  LD      HL,TOKBUF
+ARGIL:  LD      A,(DE)
+        CP      (HL)
+        RET     NZ
+        OR      A
+        RET     Z
+        INC     DE
+        INC     HL
+        JP      ARGIL
+
+; Call BDOS and freeze the returned machine state.  The stored SP is the
+; balanced post-call value; it is measured only after AF has been preserved.
+PROBE12:LD      A,FVER
+        JP      PROBE
+
+; A common entry keeps every probe's register snapshot comparable.  DE is
+; supplied by the caller even when the documented function ignores it.
+PROBE:  LD      DE,0000H
+PROBEDE:LD      (CALLNO),A
+        PUSH    DE              ; copy DE without a Z80-only direct store
+        POP     HL
+        LD      (CALLDE),HL
+        PUSH    HL
+        POP     DE
+        LD      C,A
+        CALL    BDOS
+        LD      (RETA),A
+        LD      (RETHL),HL
+        PUSH    BC
+        POP     HL
+        LD      (RETBC),HL
+        PUSH    DE
+        POP     HL
+        LD      (RETDE),HL
+        PUSH    AF
+        POP     HL
+        LD      (RETAF),HL       ; H is A, L is the flag byte
+        LD      HL,0
+        ADD     HL,SP
+        LD      (RETSP),HL
+        RET
+
+DODISK: LD      DE,BANNER
+        CALL    PRINT
+        LD      A,24
+        CALL    PROBE
+        LD      DE,H24
+        CALL    REPORTRAW
+        LD      DE,M24
+        CALL    PRINT
+        LD      HL,(RETHL)
+        CALL    HEX16
+        LD      DE,HSUFF
+        CALL    PRINT
+        LD      A,25
+        CALL    PROBE
+        LD      DE,H25
+        CALL    REPORTRAW
+        LD      DE,M25
+        CALL    PRINT
+        LD      A,(RETA)
+        ADD     A,'A'
+        CALL    PCHAR
+        LD      DE,CRLF
+        CALL    PRINT
+        LD      A,29
+        CALL    PROBE
+        LD      DE,H29
+        CALL    REPORTRAW
+        LD      DE,M29
+        CALL    PRINT
+        LD      HL,(RETHL)
+        CALL    HEX16
+        LD      DE,HSUFF
+        CALL    PRINT
+        JP      0000H
+
+DOMEM:  LD      DE,BANNER
+        CALL    PRINT
+        LD      A,27
+        CALL    PROBE
+        LD      DE,H27
+        CALL    REPORTRAW
+        LD      DE,M27
+        CALL    PRINT
+        LD      HL,(RETHL)
+        CALL    HEX16
+        LD      DE,HSUFF
+        CALL    PRINT
+        LD      A,31
+        CALL    PROBE
+        LD      DE,H31
+        CALL    REPORTRAW
+        LD      DE,M31
+        CALL    PRINT
+        LD      HL,(RETHL)
+        CALL    HEX16
+        LD      DE,HSUFF
+        CALL    PRINT
+        JP      0000H
+
+DOCONS: LD      DE,BANNER
+        CALL    PRINT
+        LD      A,11
+        CALL    PROBE
+        LD      DE,H11
+        CALL    REPORTRAW
+        LD      DE,M11N
+        LD      A,(RETA)
+        OR      A
+        JP      Z,DCMSG
+        LD      DE,M11Y
+DCMSG:  CALL    PRINT
+        JP      0000H
+
+; E=FFH selects the documented query form of function 32.  Two queries make
+; the no-change claim testable without ever exercising the set-user form.
+DOUSER: LD      DE,BANNER
+        CALL    PRINT
+        LD      A,32
+        LD      DE,00FFH
+        CALL    PROBEDE
+        LD      A,(RETA)
+        LD      (USER1),A
+        LD      A,32
+        LD      DE,00FFH
+        CALL    PROBEDE
+        LD      DE,H32
+        CALL    REPORTRAW
+        LD      DE,M32
+        CALL    PRINT
+        LD      A,(RETA)
+        CALL    USERDEC
+        LD      DE,CRLF
+        CALL    PRINT
+        LD      A,(USER1)
+        LD      B,A
+        LD      A,(RETA)
+        CP      B
+        LD      DE,M32OK
+        JP      Z,DUOUT
+        LD      DE,M32BAD
+DUOUT:  CALL    PRINT
+        JP      0000H
+
+; dev4 - exercise a reversible call without changing to a different drive
+; Function 25 supplies the only drive number passed to function 14.  Login
+; and read-only vectors are sampled on both sides so the unchanged-state
+; claim is based on documented public state rather than an assumed result.
+DOSELECT:
+        LD      DE,BANNER
+        CALL    PRINT
+        LD      A,25
+        CALL    PROBE
+        LD      A,(RETA)
+        LD      (DRVBEF),A
+        LD      A,24
+        CALL    PROBE
+        LD      HL,(RETHL)
+        LD      (LOGBEF),HL
+        LD      A,29
+        CALL    PROBE
+        LD      HL,(RETHL)
+        LD      (ROBEF),HL
+
+        LD      A,(DRVBEF)
+        LD      E,A
+        LD      D,0
+        LD      A,14
+        CALL    PROBEDE
+        LD      DE,H14
+        CALL    REPORTRAW
+
+        LD      A,25
+        CALL    PROBE
+        LD      A,(RETA)
+        LD      (DRVAFT),A
+        LD      A,24
+        CALL    PROBE
+        LD      HL,(RETHL)
+        LD      (LOGAFT),HL
+        LD      A,29
+        CALL    PROBE
+        LD      HL,(RETHL)
+        LD      (ROAFT),HL
+
+        LD      DE,M14
+        CALL    PRINT
+        LD      A,(DRVBEF)
+        ADD     A,'A'
+        CALL    PCHAR
+        LD      DE,MAFTER
+        CALL    PRINT
+        LD      A,(DRVAFT)
+        ADD     A,'A'
+        CALL    PCHAR
+        LD      DE,MLOGIN
+        CALL    PRINT
+        LD      HL,(LOGBEF)
+        CALL    HEX16
+        LD      DE,MAFTER
+        CALL    PRINT
+        LD      HL,(LOGAFT)
+        CALL    HEX16
+        LD      DE,MRO
+        CALL    PRINT
+        LD      HL,(ROBEF)
+        CALL    HEX16
+        LD      DE,MAFTER
+        CALL    PRINT
+        LD      HL,(ROAFT)
+        CALL    HEX16
+        LD      DE,CRLF
+        CALL    PRINT
+
+        LD      A,(DRVBEF)
+        LD      B,A
+        LD      A,(DRVAFT)
+        CP      B
+        JP      NZ,DSBAD
+        LD      HL,(LOGAFT)
+        EX      DE,HL
+        LD      HL,(LOGBEF)
+        LD      A,H
+        CP      D
+        JP      NZ,DSBAD
+        LD      A,L
+        CP      E
+        JP      NZ,DSBAD
+        LD      HL,(ROAFT)
+        EX      DE,HL
+        LD      HL,(ROBEF)
+        LD      A,H
+        CP      D
+        JP      NZ,DSBAD
+        LD      A,L
+        CP      E
+        JP      NZ,DSBAD
+        LD      DE,M14OK
+        JP      DSOUT
+DSBAD:  LD      DE,M14BAD
+DSOUT:  CALL    PRINT
+        JP      0000H
+
+; Common raw report.  This intentionally prints more than the documented
+; result so two BDOS implementations can be compared without claiming that
+; incidental register contents are portable.
+REPORTRAW:
+        CALL    PRINT
+        LD      DE,INC
+        CALL    PRINT
+        LD      A,(CALLNO)
+        CALL    HEX8
+        LD      DE,INDE
+        CALL    PRINT
+        LD      HL,(CALLDE)
+        CALL    HEX16
+        LD      DE,HSUFF
+        CALL    PRINT
+        LD      DE,RETLAB
+        CALL    PRINT
+        LD      DE,RA
+        CALL    PRINT
+        LD      A,(RETA)
+        CALL    HEX8
+        LD      DE,HSUFF
+        CALL    PRINT
+        LD      DE,RBC
+        CALL    PRINT
+        LD      HL,(RETBC)
+        CALL    HEX16
+        LD      DE,HSUFF
+        CALL    PRINT
+        LD      DE,RDE
+        CALL    PRINT
+        LD      HL,(RETDE)
+        CALL    HEX16
+        LD      DE,HSUFF
+        CALL    PRINT
+        LD      DE,RHL
+        CALL    PRINT
+        LD      HL,(RETHL)
+        CALL    HEX16
+        LD      DE,HSUFF
+        CALL    PRINT
+        LD      DE,RFL
+        CALL    PRINT
+        LD      HL,(RETAF)
+        LD      A,L
+        CALL    HEX8
+        LD      DE,HSUFF
+        CALL    PRINT
+        LD      DE,RSP
+        CALL    PRINT
+        LD      HL,(RETSP)
+        CALL    HEX16
+        LD      DE,HSUFF
+        JP      PRINT
+
+REPORT12:
+        LD      DE,RPTHEAD
+        CALL    PRINT
+        LD      DE,RA
+        CALL    PRINT
+        LD      A,(RETA)
+        CALL    HEX8
+        LD      DE,HSUFF
+        CALL    PRINT
+        LD      DE,RBC
+        CALL    PRINT
+        LD      HL,(RETBC)
+        CALL    HEX16
+        LD      DE,HSUFF
+        CALL    PRINT
+        LD      DE,RDE
+        CALL    PRINT
+        LD      HL,(RETDE)
+        CALL    HEX16
+        LD      DE,HSUFF
+        CALL    PRINT
+        LD      DE,RHL
+        CALL    PRINT
+        LD      HL,(RETHL)
+        CALL    HEX16
+        LD      DE,HSUFF
+        CALL    PRINT
+        LD      DE,RFL
+        CALL    PRINT
+        LD      HL,(RETAF)
+        LD      A,L
+        CALL    HEX8
+        LD      DE,HSUFF
+        CALL    PRINT
+        LD      DE,RSP
+        CALL    PRINT
+        LD      HL,(RETSP)
+        CALL    HEX16
+        LD      DE,HSUFF
+        CALL    PRINT
+        LD      DE,INTERP
+        CALL    PRINT
+        LD      HL,(RETHL)
+        LD      A,H
+        OR      A
+        JP      NZ,NONCPM
+        LD      A,L
+        PUSH    AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        AND     0FH
+        CALL    DIGIT
+        LD      A,'.'
+        CALL    PCHAR
+        POP     AF
+        AND     0FH
+        CALL    DIGIT
+        LD      DE,CRLF
+        JP      PRINT
+NONCPM: LD      DE,NONCPMT
+        JP      PRINT
+
+; User areas are 0 through 15, so a two-digit decimal routine is sufficient.
+USERDEC:CP      10
+        JP      C,DIGIT
+        SUB     10
+        PUSH    AF
+        LD      A,'1'
+        CALL    PCHAR
+        POP     AF
+        JP      DIGIT
+
+DIGIT:  ADD     A,'0'
+        CP      '9'+1
+        JP      C,PCHAR
+        ADD     A,7
+PCHAR:  PUSH    BC
+        PUSH    DE
+        LD      E,A
+        LD      C,2
+        CALL    BDOS
+        POP     DE
+        POP     BC
+        RET
+
+; dev1 - patch preserve the low byte while BDOS prints the high byte
+; The first version trusted function 2 to leave HL alone.  That happened on
+; one path but not in 8080 simulation, making a saved 0022H print as 0000H.
+HEX16:  PUSH    HL
+        LD      A,H
+        CALL    HEX8
+        POP     HL
+        LD      A,L
+HEX8:   PUSH    AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        AND     0FH
+        CALL    HEXNIB
+        POP     AF
+        AND     0FH
+HEXNIB: ADD     A,'0'
+        CP      '9'+1
+        JP      C,PCHAR
+        ADD     A,7
+        JP      PCHAR
+
+PRINT:  LD      C,FPRINT
+        JP      BDOS
+
+SHOWHELP:
+        LD      DE,HELPTXT
+        CALL    PRINT
+        JP      0000H
+SHOWINFO:
+        LD      DE,INFOTXT
+        CALL    PRINT
+        JP      0000H
+SHOWVER:
+        LD      DE,VERTXT
+        CALL    PRINT
+        JP      0000H
+BADARG: LD      DE,BADTXT
+        CALL    PRINT
+        JP      0000H
+
+MODE:   DB      0
+CALLNO: DB      0
+CALLDE: DW      0
+USER1:  DB      0
+DRVBEF: DB      0
+DRVAFT: DB      0
+LOGBEF: DW      0
+LOGAFT: DW      0
+ROBEF:  DW      0
+ROAFT:  DW      0
+RETA:   DB      0
+RETHL:  DW      0
+RETBC:  DW      0
+RETDE:  DW      0
+RETAF:  DW      0
+RETSP:  DW      0
+TOKBUF: DS      16
+
+SCPM:   DB      '/CPM',0
+SDISK:  DB      '/DISK',0
+SMEM:   DB      '/MEM',0
+SCONS:  DB      '/CONSOLE',0
+SUSER:  DB      '/USER',0
+SSELECT:DB     '/SELECT',0
+SH:     DB      '/H',0
+SHELP:  DB      '/HELP',0
+SINFO:  DB      '/INFO',0
+SVER:   DB      '/VER',0
+SVERSION:DB    '/VERSION',0
+
+BANNER: DB      13,10,'BDOSPROBE 0.1.0-dev4',13,10,'$'
+H11:    DB      13,10,'BDOS Function 11 - Console Status','$'
+H14:    DB      13,10,'BDOS Function 14 - Select Disk','$'
+H24:    DB      13,10,'BDOS Function 24 - Return Login Vector','$'
+H25:    DB      13,10,'BDOS Function 25 - Return Current Disk','$'
+H27:    DB      13,10,'BDOS Function 27 - Get Allocation Vector Address','$'
+H29:    DB      13,10,'BDOS Function 29 - Get Read-Only Vector','$'
+H31:    DB      13,10,'BDOS Function 31 - Get DPB Address','$'
+H32:    DB      13,10,'BDOS Function 32 - Get User Number','$'
+INC:    DB      13,10,'Input:',13,10,'  C:     $'
+INDE:   DB      'H',13,10,'  DE:    $'
+RETLAB: DB      13,10,'Return:',13,10,'$'
+M11N:   DB      13,10,'Interpretation:',13,10,'  No console character ready.',13,10,'$'
+M11Y:   DB      13,10,'Interpretation:',13,10,'  Console character ready.',13,10,'$'
+M24:    DB      13,10,'Interpretation:',13,10,'  Login vector: $'
+M25:    DB      13,10,'Interpretation:',13,10,'  Current drive: $'
+M27:    DB      13,10,'Interpretation:',13,10,'  Allocation vector address: $'
+M29:    DB      13,10,'Interpretation:',13,10,'  Read-only vector: $'
+M31:    DB      13,10,'Interpretation:',13,10,'  DPB address: $'
+M32:    DB      13,10,'Interpretation:',13,10,'  Current user: $'
+M32OK:  DB      '  Query left user number unchanged.',13,10,'$'
+M32BAD: DB      '  WARNING: user number changed between queries.',13,10,'$'
+M14:    DB      13,10,'State check:',13,10,'  Drive before: $'
+MAFTER: DB      '  after: $'
+MLOGIN: DB      13,10,'  Login vector before: $'
+MRO:    DB      13,10,'  Read-only vector before: $'
+M14OK:  DB      '  Same-drive selection left public state unchanged.',13,10,'$'
+M14BAD: DB      '  WARNING: public disk state changed.',13,10,'$'
+RPTHEAD:DB      13,10,'BDOS Function 12 - Return Version Number'
+        DB      13,10,13,10,'Input:',13,10
+        DB      '  C:     0CH',13,10
+        DB      '  DE:    0000H',13,10
+        DB      13,10,'Return:',13,10,'$'
+RA:     DB      '  A:     $'
+RBC:    DB      '  BC:    $'
+RDE:    DB      '  DE:    $'
+RHL:    DB      '  HL:    $'
+RFL:    DB      '  Flags: $'
+RSP:    DB      '  SP:    $'
+HSUFF:  DB      'H',13,10,'$'
+INTERP: DB      13,10,'Interpretation:',13,10,'  CP/M $'
+NONCPMT:DB     'Nonzero system-type byte; see raw HL.',13,10,'$'
+HELPTXT:DB     13,10,'BDOSPROBE - BDOS behavior probe harness',13,10
+        DB      'CP/M command name: BDOSPRB',13,10,13,10
+        DB      'BDOSPRB             Run the CP/M version probe',13,10
+        DB      'BDOSPRB /CPM        CP/M version',13,10
+        DB      'BDOSPRB /DISK       Disk state vectors',13,10
+        DB      'BDOSPRB /MEM        Allocation and DPB addresses',13,10
+        DB      'BDOSPRB /CONSOLE    Console status',13,10
+        DB      'BDOSPRB /USER       Current user (query only)',13,10
+        DB      'BDOSPRB /SELECT     Select current drive; verify state',13,10
+        DB      'BDOSPRB /H[ELP]     Command help',13,10
+        DB      'BDOSPRB /INFO       Build and safety information',13,10
+        DB      'BDOSPRB /VER[SION]  Version',13,10,'$'
+INFOTXT:DB     13,10,'BDOSPROBE dev4 adds guarded same-drive selection.'
+        DB      13,10,'A, BC, DE, HL, flags and SP are captured after return.'
+        DB      13,10,'Current drive and vectors are checked before and after.'
+        DB      13,10,'Built with ZSM4 and Digital Research LINK.',13,10,'$'
+VERTXT: DB      13,10,'BDOSPROBE 0.1.0-dev4',13,10,'$'
+BADTXT: DB      13,10,'BDOSPRB: invalid command. Use BDOSPRB /HELP.',13,10,'$'
+CRLF:   DB      13,10,'$'
+
+        DS      96
+STACKTOP:
+        END     START
