@@ -2,13 +2,15 @@
 """Reconstruct cpmsim from pinned Git objects, never a caller's working tree."""
 import argparse
 import hashlib
+import io
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import platform
 import re
 import shutil
 import subprocess
+import tarfile
 
 ROOT = Path(__file__).resolve().parents[1]
 PIN = ROOT/'third_party/z80pack/upstream.json'
@@ -36,17 +38,52 @@ def project_revision(root=ROOT):
     return revision
 
 
+def offline_inputs(commit):
+    manifest = json.loads((PIN.parent/'offline-inputs.json').read_text())
+    if manifest['commit'] != commit:
+        raise ValueError('offline inventory does not match upstream pin')
+    return manifest['files']
+
+
+def source_archive(repository, commit, files):
+    """Archive only approved paths from committed objects at the full pin."""
+    resolved = command(['git', '-C', repository, 'rev-parse', commit + '^{commit}']).decode().strip()
+    if resolved != commit:
+        raise ValueError('pinned commit unavailable')
+    return command(['git', '-C', repository, 'archive', '--format=tar', commit, '--', *sorted(files)])
+
+
+def verified_sources(payload, expected):
+    sources = {}
+    with tarfile.open(fileobj=io.BytesIO(payload), mode='r:') as archive:
+        for member in archive:
+            if member.isdir():
+                continue
+            path = PurePosixPath(member.name)
+            if (not member.isfile() or path.is_absolute() or '..' in path.parts
+                    or member.name not in expected or member.name in sources):
+                raise ValueError('unexpected offline source entry: ' + member.name)
+            data = archive.extractfile(member).read()
+            if hashlib.sha256(data).hexdigest() != expected[member.name]:
+                raise ValueError('offline source checksum differs: ' + member.name)
+            sources[member.name] = data
+    if sources.keys() != expected.keys():
+        raise ValueError('offline source archive is incomplete')
+    return sources
+
+
 def build(repository, output, profile):
     pin=json.loads(PIN.read_text());output=output.resolve();output.mkdir(parents=True,exist_ok=False)
     source=output/'z80pack';source.mkdir()
-    # Resolve and verify the exact commit before asking Git to archive it.
-    commit=command(['git','-C',repository,'rev-parse',pin['commit']+'^{commit}']).decode().strip()
-    if commit!=pin['commit']:raise ValueError('pinned commit unavailable')
-    archive=output/'source.tar'
-    with archive.open('wb') as stream:
-        subprocess.run(['git','-C',str(repository),'archive',commit,'cpmsim','z80core','iodevices','cpmtools','z80asm','z80sim/srcsim/simmem.h','z80sim/srcsim/simport.h','LICENSE'],stdout=stream,check=True)
-    archive_hash=sha(archive)
-    command(['tar','-xf',archive,'-C',source]);archive.unlink()
+    expected = offline_inputs(pin['commit'])
+    repository = Path(repository)
+    payload = (repository.read_bytes() if repository.is_file()
+               else source_archive(repository, pin['commit'], expected))
+    archive_hash = hashlib.sha256(payload).hexdigest()
+    for name, data in verified_sources(payload, expected).items():
+        path = source/name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
     # git apply otherwise discovers a surrounding BetterCP/M checkout when
     # output is under build/, and silently skips paths outside that prefix.
     # Apply to this standalone archive, independent of caller Git state.
@@ -96,7 +133,7 @@ def build(repository, output, profile):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--source',type=Path,required=True,help='local Git object repository; working tree is ignored')
+    p.add_argument('--source',type=Path,required=True,help='packaged source tar or local Git repository containing the pinned commit')
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--profile',choices=('runtime','qualification'),required=True)
     a=p.parse_args();build(a.source,a.output,a.profile)

@@ -35,7 +35,14 @@ requirement or part of these compression runs.
 
 Prerequisites: Python 3, Git, tar, make, a C99 compiler, and on macOS codesign.
 Qualification tests also require Expect, cpmtools and the BetterCP/M assembler.
-The supplied Git repository is only an object source; it may be on another
+Release users can pass the packaged cpmsim source tar directly to either
+build profile. The inventory in `offline-inputs.json` records the pinned
+filenames and SHA-256 values for the simulator, its I/O devices, five host
+tools, the assembler, guest transfer tools, and upstream notices. The MOUNT
+source is supplied by the pinned patch series. The packager selects those
+files from the commit and omits Git history and guest disk images.
+
+When building from a local Git repository, it is only an object source; it may be on another
 branch or contain working edits. A missing pinned commit or mismatched patch
 fails. No network fetch, checkout mutation or installed binary copy occurs.
 

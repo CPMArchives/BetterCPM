@@ -6,7 +6,8 @@ import tempfile
 import unittest
 import zipfile
 from build_qualified_cpmsim import project_revision
-from package_release_candidates import checked_name, encoded, read_report, sha, write_package, upstream_bundle, utilities_members, project_license_files
+from build_qualified_cpmsim import source_archive, verified_sources
+from package_release_candidates import checked_name, encoded, read_report, sha, write_package, utilities_members, project_license_files
 
 
 class ReleaseCandidateTests(unittest.TestCase):
@@ -40,11 +41,12 @@ class ReleaseCandidateTests(unittest.TestCase):
             utilities_members('cpmsim',{'one.dsk':b'x'},{'one.dsk':'cpmsim'},
                               {'one.dsk':{}},{'platforms':{'z80pack':{}}})
 
-    def test_offline_bundle_restores_exact_unreferenced_pin(self):
+    def test_offline_archive_uses_pinned_files_and_checks_membership(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);repo=root/'upstream';repo.mkdir()
             subprocess.run(['git','init','-q',str(repo)],check=True)
             (repo/'source.c').write_text('pinned source\n')
+            (repo/'historical.dsk').write_bytes(b'unrelated media')
             subprocess.run(['git','-C',str(repo),'add','.'],check=True)
             subprocess.run(['git','-C',str(repo),'-c','user.name=Test','-c',
                             'user.email=test@example.com','commit','-qm','pin'],check=True)
@@ -53,13 +55,13 @@ class ReleaseCandidateTests(unittest.TestCase):
             subprocess.run(['git','-C',str(repo),'-c','user.name=Test','-c',
                             'user.email=test@example.com','commit','-qam','later'],check=True)
             refs=subprocess.check_output(['git','-C',str(repo),'show-ref'])
-            bundle=root/'source.bundle';upstream_bundle(repo,pin,bundle)
-            self.assertEqual(refs,subprocess.check_output(['git','-C',str(repo),'show-ref']))
-            restored=root/'offline';subprocess.run(['git','init','-q',str(restored)],check=True)
-            subprocess.run(['git','-C',str(restored),'fetch',str(bundle),
-                            'refs/heads/bettercpm-pinned'],check=True,capture_output=True)
-            self.assertEqual(subprocess.check_output(['git','-C',str(restored),'show',
-                             pin+':source.c']),b'pinned source\n')
+            expected = {'source.c': sha(b'pinned source\n')}
+            payload = source_archive(repo, pin, expected)
+            self.assertEqual(verified_sources(payload, expected), {'source.c': b'pinned source\n'})
+            self.assertEqual(refs, subprocess.check_output(['git', '-C', str(repo), 'show-ref']))
+            for wrong in ({}, {'source.c': sha(b'changed')}, {**expected, 'missing': sha(b'x')}):
+                with self.assertRaises(ValueError):
+                    verified_sources(payload, wrong)
 
     def test_rejects_image_drift_and_wrong_commit(self):
         with tempfile.TemporaryDirectory() as tmp:

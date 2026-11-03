@@ -9,8 +9,8 @@ import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import subprocess
-import tempfile
 import zipfile
+from build_qualified_cpmsim import offline_inputs, source_archive, verified_sources
 from release_source import source_files as selected_source_files, forbidden_digests, verify_members
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -90,19 +90,6 @@ def source_files():
     return selected_source_files(ROOT)
 
 
-def upstream_bundle(repository, commit, destination):
-    """Bundle an exact commit without adding a ref to the caller's repository."""
-    with tempfile.TemporaryDirectory(prefix='bcpm-bundle-source-') as tmp:
-        private=Path(tmp)/'source.git'
-        subprocess.run(['git','clone','--bare','--shared',str(repository),str(private)],
-                       check=True,capture_output=True)
-        subprocess.run(['git','-C',str(private),'update-ref','refs/heads/bettercpm-pinned',commit],check=True)
-        subprocess.run(['git','-C',str(private),'bundle','create',str(destination),
-                        'refs/heads/bettercpm-pinned'],check=True)
-        subprocess.run(['git','-C',str(private),'bundle','verify',str(destination)],
-                       check=True,capture_output=True)
-
-
 def utilities_members(platform, sums, images, reports, inventory):
     """Keep matching disk images/receipts and the complete shared source kit."""
     target={'cpmsim':'z80pack','Model4':'trs80gp'}[platform]
@@ -173,17 +160,20 @@ def assemble(args):
             or runtime.get('upstream')!=pin
             or runtime.get('builder_sha256')!=sha(tracked['tools/build_qualified_cpmsim.py'])):
         raise ValueError('runtime reconstruction receipt differs from candidate source')
-    with tempfile.TemporaryDirectory(prefix='bcpm-upstream-bundle-') as tmp:
-        bundle=Path(tmp)/'z80pack-pinned.bundle'
-        upstream_bundle(args.upstream,pin['commit'],bundle)
-        upstream=bundle.read_bytes()
-    upstream_name='z80pack-'+pin['commit']+'.bundle'
-    restore=('Pinned upstream source for offline emulator reconstruction\n\n'
-             'From this directory run:\n  git init z80pack-upstream\n'
-             f'  git -C z80pack-upstream fetch ../{upstream_name} refs/heads/bettercpm-pinned\n'
-             f'  git -C z80pack-upstream checkout --detach {pin["commit"]}\n'
-             'Then pass that repository to tools/build_qualified_cpmsim.py --source.\n'
-             'Use --profile runtime for ordinary operation. Keep the build environment.json.\n').encode()
+    expected = offline_inputs(pin['commit'])
+    upstream = source_archive(args.upstream, pin['commit'], expected)
+    verified_sources(upstream, expected)
+    if sha(upstream) != runtime['source_archive_sha256']:
+        raise ValueError('offline sources differ from runtime build receipt')
+    upstream_name = 'z80pack-cpmsim-' + pin['commit'] + '.tar'
+    restore = ('Pinned cpmsim build sources for offline reconstruction\n\n'
+               'Use a C compiler, make, Git (for applying patches), and Python 3. '
+               'On macOS the build also needs codesign.\n'
+               'From the directory containing tools/ run:\n'
+               f'  python3 tools/build_qualified_cpmsim.py --source <path-to-dependencies>/{upstream_name} '
+               '--output build/cpmsim-runtime --profile runtime\n'
+               'Use dependencies/ in the System host kit or ../dependencies/ in the Source kit. '
+               'The builder verifies every file against third_party/z80pack/offline-inputs.json.\n').encode()
     host={n:tracked[n] for n in tracked if n.startswith('third_party/z80pack/')}
     host['tools/build_qualified_cpmsim.py']=tracked['tools/build_qualified_cpmsim.py']
     host['docs/platform/CPMSIM-INSTALLATION.md']=tracked['docs/platform/CPMSIM-INSTALLATION.md']

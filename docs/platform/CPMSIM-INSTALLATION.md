@@ -34,25 +34,22 @@ below; its `dependencies/README.txt` describes offline restoration. The full
 Source download provides the same inputs under its documented source root.
 No Utilities download is needed to build the runtime or boot the System disk.
 
-From the root of the matching BetterCP/M source package:
+The cpmsim System ZIP contains the complete host kit in `host/BetterCPM/`.
+From that directory, build the runtime with the packaged tar as input:
 
 ```sh
-git clone https://github.com/udo-munk/z80pack.git z80pack-upstream
-git -C z80pack-upstream cat-file -e 91fd28eb04e675c2127df88ed3f40675e15282e2^{commit}
-python3 tools/build_qualified_cpmsim.py --source z80pack-upstream \
+python3 tools/build_qualified_cpmsim.py \
+  --source dependencies/z80pack-cpmsim-91fd28eb04e675c2127df88ed3f40675e15282e2.tar \
   --output build/cpmsim-runtime --profile runtime
 ```
 
-An extracted source package carries SOURCE-IDENTITY.json so the builder can
-record its source commit without a .git directory. For offline reconstruction,
-restore the supplied pinned upstream Git bundle as described in the package
-README, then pass that repository to --source.
-
-The output directory must be new. The builder extracts committed files at the
-pin, checks patch hashes, applies patches in order and builds a private tree.
-It ignores working edits and existing installed binaries. It does not fetch
-missing commits; fetch the pin first if a shallow clone lacks it. Do not apply
-the patches again to its generated tree.
+For the Source ZIP, run the same command from `source/BetterCPM/` with
+`../dependencies/` in place of `dependencies/`. Use a new output directory.
+Both kits contain the same upstream files, notices and matching BetterCP/M
+patches. Git is used locally to apply patches. The builder verifies the file
+inventory and hashes before compiling. An existing local upstream Git
+repository containing the pinned commit can also be passed to `--source`.
+The extracted kit records the BetterCP/M revision from SOURCE-IDENTITY.json.
 
 The executable is `build/cpmsim-runtime/z80pack/cpmsim/cpmsim`. Keep
 `build/cpmsim-runtime/environment.json`: it records source, patches, commands,
