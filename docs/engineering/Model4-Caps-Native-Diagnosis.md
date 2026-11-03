@@ -1,7 +1,8 @@
 # Model 4 CAPS native diagnosis
 
-Status: one native single-press sequence and the maintainer's TED mixed-case
-typing/save/reopen check pass; earlier host-key observations remain unresolved,
+Status: one native single-press sequence, the maintainer's TED mixed-case
+typing/save/reopen check, and three SEARCH case-sensitive input checks pass;
+earlier host-key observations remain unresolved,
 2026-11-03. This is a
 follow-up to `Model4-Lowercase-First-Draft.md`. Production BIOS source and
 its 757-byte allocation remain unchanged from `37fa57a`.
@@ -137,6 +138,26 @@ The test overwrote the original lowercase `apple` on the first line. Follow-up
 SEARCH checks must use the edited contents: `aBcDeF` should match the first and
 fourth lines; `Apple` and `APPLE` should each match only their respective line;
 `abcdef` and `ABCDEF` should not match. Use the default case-sensitive mode.
+
+## Maintainer SEARCH case-sensitive input checks
+
+The supplied screenshots show the following commands and results on the edited
+CASETEST.TXT. Each command searched one file and matched one file, with zero
+hex matches:
+
+| Quoted pattern | Text matches | Reported lines |
+|---|---:|---|
+| `aBcDeF` | 2 | 1, 4 |
+| `Apple` | 1 | 2 |
+| `APPLE` | 1 | 3 |
+
+All three results match the edited fixture. In particular, `Apple` and `APPLE`
+select different lines, demonstrating that these typed patterns retained their
+case through the CCP and SEARCH invocation. The receipt is
+`evidence/2026-11-03-model4-caps/native-search-case.json`. The screenshots also
+provide a second application view of the first line saved from TED. This is a
+bounded manual application check; the earlier quick-tap CAPS question, native
+modifier/overlap regressions, and new-candidate conformance remain pending.
 
 ## Native handoff
 

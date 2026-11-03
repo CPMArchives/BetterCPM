@@ -1,0 +1,47 @@
+{
+  "status": "PASS_FOR_CAPTURED_MANUAL_SCENARIOS",
+  "date": "2026-11-03",
+  "target": "trs80gp Model 4 on macOS",
+  "workflow_bios_source_commit": "37fa57a1310f771227115fd269ef224e411ace1d",
+  "running_bios_identity_independently_verified_for_this_result": false,
+  "file": "CASETEST.TXT, after the TED overwrite/save/reopen check",
+  "evidence_basis": "Two maintainer-supplied screenshots of commands and SEARCH output in this conversation.",
+  "results": [
+    {
+      "command": "search \"aBcDeF\" casetest.txt",
+      "expected_lines": [1, 4],
+      "observed_lines": [1, 4],
+      "files_searched": 1,
+      "files_matched": 1,
+      "text_matches": 2,
+      "hex_matches": 0,
+      "total_matches": 2
+    },
+    {
+      "command": "search \"Apple\" casetest.txt",
+      "expected_lines": [2],
+      "observed_lines": [2],
+      "files_searched": 1,
+      "files_matched": 1,
+      "text_matches": 1,
+      "hex_matches": 0,
+      "total_matches": 1
+    },
+    {
+      "command": "search \"APPLE\" casetest.txt",
+      "expected_lines": [3],
+      "observed_lines": [3],
+      "files_searched": 1,
+      "files_matched": 1,
+      "text_matches": 1,
+      "hex_matches": 0,
+      "total_matches": 1
+    }
+  ],
+  "interpretation": "Mixed-case and uppercase patterns retain case through the command path; Apple and APPLE select their distinct fixture lines.",
+  "limits": [
+    "This receipt transcribes the supplied screens; it is not an independent byte-level media extraction.",
+    "No result is claimed for the optional abcdef or ABCDEF negative searches.",
+    "Quick-tap CAPS, native modifier/overlap regressions and new-candidate release conformance remain pending."
+  ]
+}
