@@ -11,6 +11,7 @@ from pathlib import Path, PurePosixPath
 import subprocess
 import tempfile
 import zipfile
+from release_source import source_files as selected_source_files, forbidden_digests, verify_members
 
 ROOT = Path(__file__).resolve().parents[1]
 PENDING = ['Manual Model 4 runtime campaign', 'Fresh-package installation on both platforms',
@@ -86,15 +87,7 @@ def project_license_files(tracked):
 
 
 def source_files():
-    names=[n.decode() for n in git('ls-files','-z').split(b'\0') if n]
-    # Preserve symlinked source fragments as their resolved bytes, rejecting
-    # references that escape the tracked source tree.
-    result={}
-    for name in names:
-        p=ROOT/name
-        p.resolve().relative_to(ROOT)
-        result[name]=p.read_bytes()
-    return result
+    return selected_source_files(ROOT)
 
 
 def upstream_bundle(repository, commit, destination):
@@ -133,6 +126,28 @@ def utilities_members(platform, sums, images, reports, inventory):
                   'independent_inventory':proof}
 
 
+def package_license_files(tracked, package_id):
+    """Attach the first-party grants and notices for this independent download."""
+    notices = json.loads(tracked['packaging/1.0/third-party-notices.json'])
+    selected = [row for row in notices if package_id in row['packages']]
+    if not selected:
+        raise ValueError('missing package notice inventory: ' + package_id)
+    sections = [
+        'BetterCP/M 1.0 — ' + package_id,
+        'Original BetterCP/M software and original code examples: GPL-2.0-or-later (licenses/BetterCPM/LICENSE and COPYING).',
+        'Original BetterCP/M documentation prose and illustrations: '
+        'CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). '
+        'Retain named credits and indicate changes. See licenses/BetterCPM/CC-BY-4.0.txt.',
+        'Third-party works retain their own terms. Keep the applicable license '
+        'texts, provenance and corresponding-source companions with each download.',
+    ]
+    for row in selected:
+        sections.append(row['work'] + '\n' + row['notice'])
+    files = project_license_files(tracked)
+    files['THIRD-PARTY-NOTICES.txt'] = ('\n\n'.join(sections) + '\n').encode('utf-8')
+    return files
+
+
 def assemble(args):
     if git('status','--porcelain','--untracked-files=no').strip():
         raise ValueError('candidate assembly requires clean tracked source')
@@ -144,6 +159,8 @@ def assemble(args):
     from cpm_tools_source import verify as verify_cpm_tools_source
     cpm_source_paths=verify_cpm_tools_source(ROOT)
     tracked=source_files()
+    forbidden=forbidden_digests(ROOT)
+    inspected=set()
     if not cpm_source_paths <= tracked.keys():
         raise ValueError('CP/M Tools source companion is not completely tracked')
     identity=encoded({'source_commit':commit,'status':'CANDIDATE; NOT ACCEPTED'})
@@ -207,7 +224,7 @@ def assemble(args):
     packages=[]
     for asset in layout['assets']:
         id=asset['id'];files=dict(common);evidence={}
-        files.update(project_license_files(tracked))
+        files.update(package_license_files(tracked, id))
         template=tracked[asset['readme_template']].decode()
         template=template.replace('ASSEMBLY TEMPLATE — not a completed or accepted release package.\nRemove this notice only after the release acceptance checks pass.',
                                   'CANDIDATE — assembled for review; NOT ACCEPTED FOR RELEASE.')
@@ -275,6 +292,7 @@ def assemble(args):
         for name,data in tracked.items():
             if name.startswith('third_party/') and any(x in Path(name).name.lower() for x in ('license','permission','provenance','copying','notice')):
                 files['licenses/'+name]=data
+        verify_members(files, forbidden, inspected)
         record={'schema':1,'package':id,'version':'1.0','source_commit':commit,
                 'status':'CANDIDATE; NOT ACCEPTED','accepted_commit':None,'tag':None,
                 'platforms':asset['platforms'],'pending':PENDING,'evidence':evidence,

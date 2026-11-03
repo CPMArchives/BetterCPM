@@ -8,11 +8,9 @@ Montezuma Micro CP/M boot disk `MMCPM.dmk`.
 - Extraction: 512-byte sectors in Montezuma logical skew order
 
 The binary is retained as third-party software and is not part of BetterCP/M's
-original source. Specific Montezuma redistribution permission has not been
-established. The Digital Research CP/M permission does not by itself demonstrate
-rights to independently authored Montezuma additions. This material is not
-relicensed by BetterCP/M's GPL declaration. See the
-[permission investigation](../../docs/engineering/Montezuma-Permission-Review-2026-11-03.md).
+original source. The retained [DRI CP/M permission](../dri-link/LICENSE)
+covers CP/M and its derivatives. We have no record establishing that its grantor
+controlled the rights to Montezuma's independently contributed MDIR utility.
 
 ## Disk format catalogue
 
@@ -22,7 +20,63 @@ third-party reference data, not original BetterCP/M source.
 
 SHA-256: `9635fc0e93838f28c96aa274033fae1c8eb747db97fe4b2bd04337e39a286d66`.
 
-CONFIG reads the text catalogue at run time. No diskdefs conversion is used.
+The release build compiles the migrated host catalogue, `metadata/DISK.FDF`,
+to `DISK.FDB`. The migration draws on 96 external definitions and 16 internal
+CONFIG definitions. Five external definitions are excluded. The resulting
+107-descriptor, 8,320-byte file is present on both reviewed System disks
+(SHA-256 `4dea7bd989580fc13f61e79d47e92466a440799c41b002f4caba65ec8f893c03`).
+The guest reads the binary catalogue. The raw catalogue and internal definitions still travel in the Source and
+nested Utilities source kits. The 1.0 package selection now omits the
+original utilities, disassembly listings and the document quoting the BIOS. See
+[the migration record](../../docs/engineering/185%20Qualified%20FDF%20v1%20Catalogue%20Migration.md)
+and [the media record](../../docs/engineering/186%20FDB%20Build%20and%20Media%20Packaging.md).
+
+### Redistribution review for 1.0
+
+**Montezuma Micro DISK.FDF and the 16 disk-format definitions recovered from CONFIG.COM — distribution rights undetermined.**
+
+The maintainer accepts these data for 1.0 because they describe functional
+disk parameters. Preserve the notice and provenance with the external file,
+the internal definitions in `DISK-INT.FDF` and `metadata/mm-builtin-formats.json`,
+the migrated catalogue and the compiled `DISK.FDB`. No rightsholder grant has
+been verified. The project licenses do not cover these historical data.
+Montezuma utility binaries and disassemblies remain excluded, including in
+nested source archives.
+
+The retained 2001/2022 Digital Research correspondence does not establish a
+grant of Montezuma's separate contributions. The supplied 2005 MMCPM232
+disassembly README describes unsuccessful attempts to reach the original
+author and expresses doubt about that archive's authorization.
+
+[Computer News 80, archived by the Computer History Museum](https://archive.computerhistory.org/resources/access/text/2019/12/102794144-05-03-acc.pdf)
+vol. 3, no. 11, p. 3, reports that Montezuma Micro president John Lancione
+and CN80 agreed to exclusive CN80 distribution of the Model 4 CP/M system. This is a research lead about historical distribution. It establishes
+neither present ownership nor downstream permission for this project.
+
+Package freeze remains on hold pending the remaining release checks.
+
+### Customer update service and format decisions
+
+The March 1985 issue of [80 Micro](https://colorcomputerarchive.com/repo/Documents/Magazines/80%20Micro/1985/80%20Micro%20-%208503%20-%20March%201985.pdf)
+describes a customer sending Montezuma a disk and format information and
+receiving the disk back with an updated definition. The [TRS-80 Archives
+index](https://electrickery.hosting.philpem.me.uk/comp/trs80-4p/trs80Archives_cpm/index.html)
+lists DISK.FDF on cpm2, cpm15 and cpm16. Neither source states permission to
+republish this particular catalogue or a compiled edition. Matching editions
+and a notice from an authorized distributor or rights holder remain open.
+
+The [format decision list](../../packaging/1.0/montezuma-formats.tsv) names all
+112 historical entries by stable ID. The external file has 96 entries. The compiled catalogue uses
+91 of them. Five rejected entries remain in the historical file and require
+no runtime replacement. The 16 internal records have a different origin.
+
+The [independent format trial](../../docs/engineering/evidence/2026-11-03-release-formats/README.md)
+identified the actual release media as CCS 332K (MMF017), 800K data (MMI008)
+and BetterCP/M's own 780K System layout. Historical MMI012 has 790K of
+allocation space and puts the directory 10 KiB earlier than the release
+System. The independent definitions are review inputs. The shipping build
+and its catalogue still depend on historical material. Research-only tests that
+exercise original Montezuma binaries require a separate, privately supplied reference copy.
 
 ## DUP 2.01 working disassembly
 
@@ -49,3 +103,7 @@ not reassemblable source. Hashes are in `CONFIG-extraction-manifest.json`.
 See [CONFIG analysis](../../docs/engineering/MM-CONFIG-REVERSE-ENGINEERING.md)
 for the A–D restriction, BIOS table evidence, provenance and limitations.
 These are third-party reference materials, not original BetterCP/M code.
+
+## Agreed project license boundary
+
+Original BetterCP/M software and reusable code examples use GPL-2.0-or-later; original documentation prose and illustrations use CC BY 4.0. Neither grant relicenses the historical materials in this directory. See [project licensing](../../docs/LICENSING.md) and the [permission investigation](../../docs/engineering/Montezuma-Permission-Review-2026-11-03.md). Both sources of format data carry the notice above.
