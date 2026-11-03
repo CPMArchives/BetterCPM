@@ -168,6 +168,21 @@ def main():
     assert m.files == original
     run(edit + 'O\r\rDISK.FDB\rY\rQ\rD\r', failures={'rename':2})
     assert m.files[dest]==stock and m.files[src]==imported
+    # Substrings cannot continue from an ID into its description.
+    run('L\r'+entries[0].ident+' '+entries[0].description[:1]+'\rQ\r')
+    assert 'No matching formats.' in m.console
+    run('L\rnot a format\rQ\r')
+    assert 'No matching formats.' in m.console
+    run('L\r\r\x03Q\r')
+    assert m.files == original
+    # Export uses the recovery protocol for both encodings and leaves dirty
+    # work available for a normal save after an output failure.
+    for ext in ('FDB', 'FDF'):
+        for op in ('make', 'write', 'close_output'):
+            run(edit + 'O\rTEST109\rNEW.'+ext+'\rY\r' + save + 'Q\r',
+                failures={op:1})
+            assert m.files[dest] == expected and m.files[src] == imported
+            assert key('NEW.'+ext) not in m.files
     for reserved in (temp, backup):
         run(edit + save + 'Q\rD\r', {**original, reserved:b'KEEP'})
         assert m.files == {**original, reserved:b'KEEP'}
