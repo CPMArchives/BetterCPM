@@ -238,13 +238,12 @@ def assemble(args):
             files['images/'+('BetterCPM-Work-332K.dsk' if platform=='cpmsim' else 'BetterCPM-Work-800K.dmk')]=work
             guide='CPMSIM-INSTALLATION.md' if platform=='cpmsim' else 'MODEL4-INSTALLATION.md'
             files['docs/platform/'+guide]=tracked['docs/platform/'+guide]
-            if platform=='Model4':
-                files['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']=tracked['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']
             if platform=='cpmsim':
                 files['third_party/z80pack/README.md']=tracked['third_party/z80pack/README.md']
             files['docs/user/users_guide.md']=tracked['docs/user/users_guide.md']
             files['docs/user/FDB.md']=tracked['docs/user/FDB.md']
             files['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']=tracked['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']
+            files['docs/engineering/BCPM780-Installation-Qualification.md']=tracked['docs/engineering/BCPM780-Installation-Qualification.md']
             files['docs/engineering/Model 4 Release Checklist.md']=tracked['docs/engineering/Model 4 Release Checklist.md']
             files['docs/releases/RELEASE-NOTES-1.0.md']=tracked['docs/releases/RELEASE-NOTES-1.0.md']
             evidence={'system':report}
@@ -265,6 +264,7 @@ def assemble(args):
             files.update(selected)
             files['docs/user/utilities_manual.md']=tracked['docs/user/utilities_manual.md']
             files['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']=tracked['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']
+            files['docs/engineering/BCPM780-Installation-Qualification.md']=tracked['docs/engineering/BCPM780-Installation-Qualification.md']
             for guide in ('FDB.md','ZSM4.md','LINK.md','SQ.md','USQ.md','CR.md','UNCR.md','LZH.md','UNLZH.md'):
                 files['docs/user/'+guide]=tracked['docs/user/'+guide]
             files['docs/engineering/Model 4 Release Checklist.md']=tracked['docs/engineering/Model 4 Release Checklist.md']

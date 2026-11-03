@@ -52,7 +52,7 @@ logical records through the public API, changes DSM on a captured format,
 confirms application to D, C and B, then compares complete records and the
 entire system disk against their expected contents.
 
-The qualified COM is 18,623 bytes, SHA-256
+The original editor milestone COM was 18,623 bytes, SHA-256
 `c3b99233c5c87f7e49243fc4982ccf631ca9ac8778bd0e5363e7ecf7708380a4`.
 The interactive session spans 0100h through D0F2h (53,235 bytes), leaving
 1,037 bytes of the standard 53 KiB TPA. This includes both catalogue snapshots,

@@ -1,5 +1,6 @@
 ; Native FDB converter and catalogue workbench, engineering specification 209.
         ASEG
+FDBRTON EQU 1
         ORG 100H
         JP START
 BDOS    EQU 5
