@@ -33,9 +33,10 @@ explicit source identity without requiring a BetterCP/M .git directory.
 ## Remaining acceptance work
 
 Fresh-package installation passed on both emulators for the six-package
-candidate built at `35c56a03`. Documentation remains incomplete. Verify the
-user-facing installation walkthrough, correct the manuals and release guidance,
-and reconcile final conformance and attribution with the exact packages. Preserve results against exact hashes. The maintainer must accept
+candidate built at `35c56a03`. Known manual corrections and checks of the installation walkthrough can
+proceed during stabilization. Complete the remaining qualification and lock the
+release contents, behavior and test results first. Then finalize the manuals,
+installation guides, notices and release notes against that locked baseline. Preserve results against exact hashes. The maintainer must accept
 the candidate before tagging and publishing the tested final files.
 
 ## Recorded compatibility and residual-risk dispositions
