@@ -731,6 +731,10 @@ FDBCURLOOP:
         LD A,(FINDIDX)
         CALL FDBBIND
         JR C,FDBCURNEXT
+        LD A,(CURB+19)
+        BIT 5,A
+        CALL Z,FDBRUNTIME             ; retain raw cylinder bootstrap names too
+        JR C,FDBCURNEXT
         LD HL,CURB+1
         LD DE,BIND+1
         LD B,63

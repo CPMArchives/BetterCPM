@@ -43,7 +43,8 @@ CURB:   DS 64
 FINDIDX:DB 0
 CUSTOM: DB 0
 UNDEF:  DB 0
-PUTC:   RET
+PUTC:   OUT (254),A
+        RET
 PUTS:   RET
 FDFRAM  EQU 04000H
 FDFLIM  EQU 07F80H
@@ -224,6 +225,19 @@ FDFLIM  EQU 07F80H
         # The catalogue bytes and a second conversion are both unchanged.
         assert bytes(cpu.mem[FDFRAM:FDFRAM + len(payload)]) == payload
         assert runtime(normalized) == (normalized, False)
+        # Name lookup recognizes both bootstrap and runtime representations.
+        for active in (cylinder_binding, normalized):
+            cpu.mem[names["CURB"]:names["CURB"] + 64] = active
+            printed = []
+            cpu.port_write = lambda port, value: printed.append(value)
+            cpu.run(names["FDBCURNAME"], limit=3_000_000)
+            assert bytes(printed) == catalogue.descriptors[index].format.description.ljust(32).encode()
+        altered = bytearray(normalized)
+        altered[6] ^= 1
+        cpu.mem[names["CURB"]:names["CURB"] + 64] = altered
+        printed.clear()
+        cpu.run(names["FDBCURNAME"], limit=3_000_000)
+        assert not printed  # Custom, never a false catalogue name.
         for offset, value in ((1, 0), (1, 79), (14, 0x8000),
                               (19, 0xA0), (19, 0xE1), (19, 0xE2),
                               (19, 0xE4), (19, 0xE8)):

@@ -3083,7 +3083,7 @@ STEDITMSG:DB 'Command: ',0
 STTESTING:DB 13,10,'Testing pending startup command...',13,10,0
 STTESTNONE:DB 'There is no pending startup command to test.',13,10,0
 STTEST126:DB 'A 126-byte command can run at cold boot but cannot use Test now.',13,10,0
-STTESTSUB:DB 'Active A0:$$$.SUB prevents test.',13,10,0
+STTESTSUB:DB 'A0:$$$.SUB prevents test.',13,10,0
 STTESTBAD:DB 'Unable to create the one-command test stream on A:.',13,10,0
 STMAGIC:DB 'BCST',1,0,16
 STHEADER:DB 'BCST',1,0,16,0,0,126,0,1,0,0

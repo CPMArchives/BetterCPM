@@ -2,7 +2,9 @@
 
 CONFIG's menu and named command-line assignment, and FDB's editor Apply action,
 convert a temporary cylinder-unit binding to surface-track units before asking
-BIOS to validate and commit it. The catalogue descriptor and working editor
+BIOS to validate and commit it. Name lookup compares the corresponding runtime representation while retaining
+recognition of an unchanged bootstrap cylinder binding. An altered allocation
+record still displays Custom. The catalogue descriptor and working editor
 retain their original cylinder semantics. BIOS capability checks are unchanged.
 
 A representable two-sided, alternating, forward, default-ID cylinder definition
