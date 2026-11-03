@@ -4,6 +4,29 @@ BDOS EQU 5
         .PHASE 0100H
 START:
         CALL UV_CHECK
+        ; Queries have already returned; these commands accept no operands.
+        LD      A,(0080H)
+        CP      128
+        JR      NC,ARG_BAD
+        OR      A
+        JR      Z,ARG_OK
+        LD      B,A
+        LD      HL,0081H
+ARG_SCAN:
+        LD      A,(HL)
+        CP      ' '
+        JR      Z,ARG_NEXT
+        CP      9
+        JR      NZ,ARG_BAD
+ARG_NEXT:
+        INC     HL
+        DJNZ    ARG_SCAN
+        JR      ARG_OK
+ARG_BAD:
+        LD      DE,ARG_MSG
+        LD      C,9
+        JP      BDOS
+ARG_OK:
         LD DE,LOOKUP
         LD C,182
         CALL BDOS
@@ -109,6 +132,8 @@ PAGE2:
 WAIT: DB 13,10,'Press a key to continue.',13,10,0
 DONE: DB 'VT52 monitor exercise complete.',13,10,0
 NONE: DB 'No MCON provider loaded. Load VT52.RSX.',13,10,0
+ARG_MSG: DB 'Invalid usage.',13,10,'Use VT52TST /HELP.',13,10,'$'
+
 ; @utility-version VT52TST@
         .DEPHASE
         END

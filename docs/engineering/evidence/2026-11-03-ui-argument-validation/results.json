@@ -1,0 +1,204 @@
+{
+  "date": "2026-11-03",
+  "merged_pr": 571,
+  "merged_main": "bd4df2cd9f0a7a2edfa12112a8c02151eea5b90d",
+  "host": "PASS",
+  "cpmsim": "PASS",
+  "model4": "PREPARED_ONLY_NOT_EXECUTED",
+  "historical_unlzh": "NOT_RUN_MISSING_AUTHENTICATED_FIXTURES",
+  "source_sha256": {
+    "src/utilities/admtst.mac": "fcfc275b32cf7a747e9f784a17853f84a95247c92981df600ac57f639284ca66",
+    "src/utilities/ansitst.mac": "dc3e99befe060bc26af39ee1cce1860d8c56de52ae9feac614e90a2a6bebcfba",
+    "src/utilities/vt52tst.mac": "28bf947d79460c6872eb134d982cfe0090934aca49e8bff69f1f3f988db60bf0",
+    "src/utilities/xsub.mac": "74a25c48a2ed6d1a0c44bbf915ed7f43d0f591abb05a0ef0adae69373faf00b0",
+    "tools/test_utility_finalization.py": "630d8f3e4cf4a82baf11d4f2e064ed6af6a494012d4942b6498a47928cc11d19",
+    "tools/test_ui_integration_media.py": "f07068c4b5d66801f524ca526b9401c040ed9a66ad71c4b45e890bf50c318d48",
+    "tools/test_ui_integration_schedule.py": "23b6c6773a3fd472c7ee799d2d922360f397e3a6d14c3fd8f1d27f550868507d",
+    "tools/test_utility_versions.py": "ad880a8755ba259fb1bd8acd3585e908a19da889661a65e586814c1f82cb1bbb",
+    "tools/test_ed_invocation.py": "b7e1cd147eea9a9027c4b9489c5e5bf15aa757657fcb2963ff6c240d09fdbce4",
+    "tools/test_sysgen_command_line.py": "3de07ba2985e15ecf2ca8b1049c1613f531477dc9858d6c826ddefd837e5c157",
+    "tools/test_unlzh_com.py": "452d67af786b5e9ae1f49818641604713c73d2a7bd8159fac816e4f0659b790d"
+  },
+  "baseline": {
+    "ADMTST": {
+      "bytes": 1973,
+      "sha256": "206ddb44c30f926e9facb89d9e9d6bd5709111cf3b8f8f72606156a9c6fe4b8e"
+    },
+    "ANSITST": {
+      "bytes": 1042,
+      "sha256": "8e3379a5d6ff2f04441c8edc7628451f40b8408ba380ec54ddfadd6eebe176e0"
+    },
+    "VT52TST": {
+      "bytes": 1337,
+      "sha256": "5595372338896e7b7ababb9d6a1297e6cdea49ca1fd647758e89fdae1f6204ac"
+    },
+    "XSUB": {
+      "bytes": 698,
+      "sha256": "a0eeb53a9850f80b848f0298ab1a621ee6604a44e0b0eda2d337ae0300af1ec1"
+    },
+    "ADM3A.RSX": {
+      "bytes": 1028,
+      "sha256": "b4bdae27acc1d9e155178558921b457e5f0a61727f8be3114e17e35757454ef9"
+    },
+    "ANSI.RSX": {
+      "bytes": 2002,
+      "sha256": "79b7fe071575d416aeebe08b01f97ed3ce3b1bc9cd0c8928c6e759d2cad76d30"
+    },
+    "VT52.RSX": {
+      "bytes": 1095,
+      "sha256": "abbf8661158de109e954df214d0023fc9157524fd2c8c9cf1d617bf936dd496d"
+    },
+    "BATCHIO.RSX": {
+      "bytes": 1029,
+      "sha256": "0347270c05d040e0c7b82d73402803e26baa6a7977880d2764f0700fc1dc5ee0"
+    }
+  },
+  "current": {
+    "ADMTST": {
+      "bytes": 2045,
+      "sha256": "cc587c6b133b25b65f67a544b3e6ab3dcb8ab1dfc029f5e83ea7c68139bf9654"
+    },
+    "ANSITST": {
+      "bytes": 1115,
+      "sha256": "c86ed522c239ce531a64cf85768f27eaa1496cffdcf7a798ba1c95e874a6236c"
+    },
+    "VT52TST": {
+      "bytes": 1410,
+      "sha256": "b1953940dd2069c2ad79b58d01464402778483e52c987bcaf3a2ca416bbbf1b0"
+    },
+    "XSUB": {
+      "bytes": 768,
+      "sha256": "f4c0cb3aada979e04b78515d22c88d1f19d1e402dff899b53e8f027d57e11ed7"
+    },
+    "ADM3A.RSX": {
+      "bytes": 1028,
+      "sha256": "b4bdae27acc1d9e155178558921b457e5f0a61727f8be3114e17e35757454ef9"
+    },
+    "ANSI.RSX": {
+      "bytes": 2002,
+      "sha256": "79b7fe071575d416aeebe08b01f97ed3ce3b1bc9cd0c8928c6e759d2cad76d30"
+    },
+    "VT52.RSX": {
+      "bytes": 1095,
+      "sha256": "abbf8661158de109e954df214d0023fc9157524fd2c8c9cf1d617bf936dd496d"
+    },
+    "BATCHIO.RSX": {
+      "bytes": 1029,
+      "sha256": "0347270c05d040e0c7b82d73402803e26baa6a7977880d2764f0700fc1dc5ee0"
+    }
+  },
+  "host_final_commands": [
+    {
+      "command": "python3 tools/test_utility_versions.py",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 tools/test_sysgen_command_line.py",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 tools/test_ed_invocation.py",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 tools/test_dup_command_line.py",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 tools/test_config_command_line.py",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 tools/test_dir_options.py",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 tools/test_pip_parser.py",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 tools/test_utility_finalization.py",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 tools/test_ui_integration_schedule.py",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 tools/test_utility_ui_inventory.py",
+      "exit_code": 0
+    }
+  ],
+  "cpmsim_receipt": {
+    "status": "PASS",
+    "platform": "cpmsim",
+    "system_sha256": "7894b31ef007f0c6f723da92faa088a70a00375cd4776b2bea2ec8b2461c0820",
+    "binaries": {
+      "ADMTST": {
+        "bytes": 2045,
+        "sha256": "cc587c6b133b25b65f67a544b3e6ab3dcb8ab1dfc029f5e83ea7c68139bf9654"
+      },
+      "ANSITST": {
+        "bytes": 1115,
+        "sha256": "c86ed522c239ce531a64cf85768f27eaa1496cffdcf7a798ba1c95e874a6236c"
+      },
+      "VT52TST": {
+        "bytes": 1410,
+        "sha256": "b1953940dd2069c2ad79b58d01464402778483e52c987bcaf3a2ca416bbbf1b0"
+      },
+      "XSUB": {
+        "bytes": 768,
+        "sha256": "f4c0cb3aada979e04b78515d22c88d1f19d1e402dff899b53e8f027d57e11ed7"
+      }
+    },
+    "steps": 22,
+    "scope": "diagnostic/XSUB query precedence and invalid arguments; valid XSUB installation and RSX LIST; independent payload/companion readback and filesystem checks",
+    "batchio_sha256": "0347270c05d040e0c7b82d73402803e26baa6a7977880d2764f0700fc1dc5ee0",
+    "unchanged_inputs": true,
+    "unchanged_system_area": true,
+    "filesystem": "PASS",
+    "invalid_arguments": "PASS",
+    "normal_xsub_installation": "PASS",
+    "companion_unchanged": true
+  },
+  "model4_prepared_receipt": {
+    "status": "PREPARED",
+    "platform": "model4",
+    "system_sha256": "4105ff45e411e25c0f3cd6024b970ddc231e6287086a553933e1fb577aaf2467",
+    "binaries": {
+      "ADMTST": {
+        "bytes": 2045,
+        "sha256": "cc587c6b133b25b65f67a544b3e6ab3dcb8ab1dfc029f5e83ea7c68139bf9654"
+      },
+      "ANSITST": {
+        "bytes": 1115,
+        "sha256": "c86ed522c239ce531a64cf85768f27eaa1496cffdcf7a798ba1c95e874a6236c"
+      },
+      "VT52TST": {
+        "bytes": 1410,
+        "sha256": "b1953940dd2069c2ad79b58d01464402778483e52c987bcaf3a2ca416bbbf1b0"
+      },
+      "XSUB": {
+        "bytes": 768,
+        "sha256": "f4c0cb3aada979e04b78515d22c88d1f19d1e402dff899b53e8f027d57e11ed7"
+      }
+    },
+    "steps": 22,
+    "scope": "diagnostic/XSUB query precedence and invalid arguments; valid XSUB installation and RSX LIST; independent payload/companion readback and filesystem checks",
+    "batchio_sha256": "0347270c05d040e0c7b82d73402803e26baa6a7977880d2764f0700fc1dc5ee0",
+    "work_format": "Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)",
+    "media_preflight": "PASS",
+    "command_transport": "SUBMIT UIQUAL with unique blocking completion markers",
+    "command_script_sha256": "ead86e3348c1ca002a063c064f62b1bbf9ae81921e50ce0e3ae10f7eaaafab2e"
+  },
+  "limitations": [
+    "Six development-only operational-tail matrix entries remain Outstanding.",
+    "Model 4 must execute the four current follow-up payloads.",
+    "Historical UNLZH archives absent; synthetic-only 75-case campaign is a separate pass."
+  ],
+  "earlier_failures": [
+    "Stale ED/SYSGEN full-identification expectations; corrected final runs pass.",
+    "Monolithic version fixture had a false low TPA ceiling and incomplete output collection; corrected 314 checks pass.",
+    "Default UNLZH historical run cannot access required authenticated fixtures."
+  ]
+}

@@ -22,6 +22,13 @@ def execute(name, tail, queries=True):
         elif c.c==6 and queries and c.e!=255:output.append(c.e)
         elif c.c==0 and not queries:c.pc=0xffff
         elif c.c==2:output.append(c.e)
+        elif c.c==25 and not queries:c.a=0
+        elif c.c==32 and not queries:
+            assert c.e in (0,255),(name,tail,'unexpected user change',c.e)
+            c.a=0
+        elif c.c==14 and not queries:
+            assert c.e==0,(name,tail,'unexpected drive change',c.e)
+            c.a=0
         elif c.c in (176,177) and not queries:
             requests.append(bytes(c.mem[c.de:c.de+18]));c.a=0
         else:raise AssertionError((name,tail,'Unexpected BDOS service',c.c))
@@ -61,6 +68,35 @@ def main():
             assert expected,(name,operation)
             for tail in (operation.lower()+' hello',operation+'\thello  '):
                 _,actual=execute(name,tail,False);assert actual==expected,(name,tail);count+=1
-    print(f'PASS: {len(names)} help screens, {count} alias/precedence and manager parser checks; {version_count} version queries; command tails preserved')
+    noargs_count=0
+    for name in ('ADMTST','ANSITST','VT52TST','XSUB'):
+        expected=f'Invalid usage.\r\nUse {name} /HELP.\r\n'
+        for tail in ('/BOGUS','JUNK','/HELPER','/VERIFY','/HELP/VER','/VER=1','BAD\tTAIL','X'*127):
+            actual,requests=execute(name,tail,False)
+            assert actual==expected and not requests,(name,tail,actual,requests)
+            noargs_count+=1
+        for tail in ('',' ','\t',' \t ',' '*127,'\t'*127):
+            if name=='XSUB':
+                _,requests=execute(name,tail,False)
+                assert [request[1] for request in requests]==[3,1],(name,tail,requests)
+            else:
+                # Stop at the first provider lookup. A valid empty invocation
+                # must retain its original diagnostic flow, not print usage.
+                try:execute(name,tail,False)
+                except AssertionError as error:
+                    assert error.args==((name,tail,'Unexpected BDOS service',182),),error
+                else:raise AssertionError((name,tail,'diagnostic did not reach provider lookup'))
+            noargs_count+=1
+    malformed_count=0
+    for name,tails,expected in (
+        ('ERA',('/BOGUS','B32:*.TXT','Q:FILE','*.TXT EXTRA EXTRA'), '\r\nInvalid filespec or option.\r\n'),
+        ('ERA',('/D',), '\r\nNO FILE\r\n'),
+        ('USER',('','-1','32','A','1 2','/BOGUS'), '\r\n?\r\n'),
+        ('VER',('/BOGUS','/VV','/V EXTRA','FILE'), '\r\n?\r\n')):
+        for tail in tails:
+            actual,requests=execute(name,tail,False)
+            assert actual==expected and not requests,(name,tail,actual,requests)
+            malformed_count+=1
+    print(f'PASS: {len(names)} help screens, {count} alias/precedence and manager parser checks; {version_count} version queries; {noargs_count} no-operand rejection/default-path checks; {malformed_count} ERA/USER/VER malformed tails without file I/O; command tails preserved')
 
 if __name__=='__main__':main()

@@ -1,6 +1,6 @@
 # Shared UI integration inventory
 
-Review date: 3 November 2026. Implementation branch:
+Review date: 3 November 2026. Initial implementation branch:
 `stabilization/shared-ui-conformance`, based on
 `fb062255d3ea465cf8ba6a9b77ac0f4a4aac5c32`.
 
@@ -9,6 +9,15 @@ Its 15 subsequent commits change documentation only; no utility/shared UI source
 changed relative to this baseline. The only open PR found was #570, the distinct
 post-1.0 functional-commonality audit. The Model 4 lowercase branch is independent
 BIOS work and is not incorporated here. No shared-library work is overwritten.
+
+Subsequent checkpoint: #571 merged at
+`bd4df2cd9f0a7a2edfa12112a8c02151eea5b90d`. The separate
+`stabilization/ui-argument-validation` follow-up preserves four no-operand fixes
+found during the remaining parser review. All four affected paths build and pass
+host/cpmsim checks; their Model 4 gate remains pending. The matrix closes 28
+bounded malformed-tail entries, documents five existing language/host exceptions,
+and retains six development-only O entries. See the
+[follow-up record](UI-Argument-Validation-Followup.md) for exact evidence and limits.
 
 ## Authorities and existing work
 

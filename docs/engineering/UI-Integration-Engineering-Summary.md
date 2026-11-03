@@ -1,12 +1,13 @@
 # Shared UI integration engineering summary
 
-3 November 2026. **Draft; workstream completion and merge acceptance remain
-open.** Clear, compatible work is implemented and tested. TED's confirmation
-correction is approved and implemented; the matrix's outstanding verification
-cells remain open. Both bounded native TED campaigns pass on the current
-payload. The bounded native
-CRCKSUM/MD5SUM/DASM campaign now passes. No core, BIOS, resident RCP or historical third-party
-reference source was changed. No new utility feature/library was introduced.
+3 November 2026. PR #571 is merged at
+`bd4df2cd9f0a7a2edfa12112a8c02151eea5b90d`. Its bounded current-payload
+Model 4 gates pass. The [argument-validation follow-up](UI-Argument-Validation-Followup.md)
+fixes four discovered no-operand gaps and closes 28 malformed-tail evidence cells;
+its host/build/cpmsim gates pass, but its Model 4 gate remains pending.
+Six development-only operational-tail entries remain explicitly outstanding.
+No core, BIOS, resident RCP or historical third-party reference source was changed.
+No new utility feature/library was introduced. Overall completion is not yet claimed.
 
 ## Reviewable implementation
 
@@ -122,9 +123,11 @@ All counts below describe bounded tests, not universal qualification.
 Original failed trials are retained separately from final passes. In particular,
 the first real-media Ctrl-C failure is not relabeled as a pass. Source-level
 models which return a cooked Ctrl-C cannot establish real-BDOS cancellation.
-The old monolithic `test_utility_versions.py` main still has a known incompatible
-query/output assumption and fails; it is not a claimed passing suite. The
-expanded focused query suite and component suites above supply current coverage.
+The follow-up corrects the old monolithic query fixture: page zero now has a
+real JP BDOS gateway so guarded programs see a valid TPA ceiling, and the existing
+console collector handles both string and character output. All 314 checks now
+pass. ED/SYSGEN expectations use the canonical full identification block. Earlier
+fixture failures are retained separately in the follow-up archive.
 
 ## Reproduction
 
@@ -281,9 +284,10 @@ python3 tools/test_ui_integration_media.py --system "$SYSTEMS" --platform model4
 2. The changed-payload Model 4 gates now pass: checksum/DASM and both TED
    campaigns, with captured-screen and independent file/backup checks. Whole
    release packaging/conformance remains a separate acceptance boundary.
-3. Close remaining per-utility malformed/combination verification cells before
-   claiming complete suite-wide conformance. Broader release conformance and
-   packaged release acceptance remain separate.
+3. The follow-up closes the released-command malformed-tail review with bounded
+   tests or documented existing language/host exceptions. Six development-only
+   entries remain O. The four changed follow-up executables still require their
+   Model 4 execution gate. Broader release packaging acceptance remains separate.
 
 This branch is suitable for engineering review as a draft. It is not presented
 as satisfying the assignment's complete-and-ready-to-merge criterion.
