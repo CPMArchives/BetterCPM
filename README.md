@@ -56,6 +56,13 @@ The default memory configuration accepts a maximum record-aligned 53 KiB `.COM` 
 Subsystems are versioned independently. See [`specifications/SUBSYSTEM-VERSIONING.md`](specifications/SUBSYSTEM-VERSIONING.md) and the authoritative assignments in [`metadata/subsystem-versions.tsv`](metadata/subsystem-versions.tsv).
 Utility `/VER` output and independent build counters are defined in [`specifications/UTILITY-VERSIONING.md`](specifications/UTILITY-VERSIONING.md), with assignments in [`metadata/utility-versions.tsv`](metadata/utility-versions.tsv).
 
+## Future platforms
+
+The [Platform Roadmap](docs/PLATFORM_ROADMAP.md) records existing baselines,
+provisional P0–P3 priorities, and planned or exploratory ports. It distinguishes
+bounded emulator validation, preliminary boot reports, and physical-hardware
+status; all current testing is emulator-based.
+
 ## BetterCP/M 1.0
 
 The architecture for BetterCP/M 1.0 is frozen, and the retained OS feature implementation is complete. The remaining release work covers documentation, package reconstruction and installation checks, rights/source audits, and final acceptance against the established contracts. Testing may identify corrections; it does not imply another planned OS feature implementation stage.
