@@ -1,5 +1,7 @@
 # BetterCP/M Utilities Manual
 
+License: original prose/illustrations are CC BY 4.0; original reusable code examples are GPL-2.0-or-later. Third-party material retains its own terms. See [licensing and example boundaries](../LICENSING.md).
+
 Package references: ZSM4 and LINK operator guides accompany both platform Utilities downloads. Engineering, architecture and source-code links refer to the matching Documentation or Source download unless explicitly supplied locally; they are not additional installed disk members.
 
 This manual explains how to use the programs supplied on the BetterCP/M Utilities Disk. For the command prompt, drive and user areas, file management, configuration, and the System Disk commands, see the [BetterCP/M User’s Guide](users_guide.md).

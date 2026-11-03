@@ -227,3 +227,7 @@ Host filenames preserve case and refer to files in the emulator working
 directory; R/W do not accept host paths or wildcards. Quote names containing
 spaces. A long host source name requires an explicit CP/M 8.3 destination.
 MOUNT, R and W are omitted from Model 4 media and general utility manuals.
+
+P2DOS.RSX is supplied in A0 for optional compatibility with Functions 200/201.
+Load the platform’s native clock provider before `RSX LOAD P2DOS`; startup
+loads neither. T104C3/T104Z8 are deferred and are not supplied in the 1.0 RC.

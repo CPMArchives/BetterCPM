@@ -77,6 +77,14 @@ def write_package(path, root_name, files, record):
     return {'filename':path.name,'sha256':sha(path.read_bytes()),'size_bytes':path.stat().st_size}
 
 
+def project_license_files(tracked):
+    files={'licenses/BetterCPM/'+name:tracked[name]
+           for name in ('LICENSE','COPYING','NOTICE')}
+    files['licenses/BetterCPM/CC-BY-4.0.txt']=tracked['LICENSES/CC-BY-4.0.txt']
+    files['docs/LICENSING.md']=tracked['docs/LICENSING.md']
+    return files
+
+
 def source_files():
     names=[n.decode() for n in git('ls-files','-z').split(b'\0') if n]
     # Preserve symlinked source fragments as their resolved bytes, rejecting
@@ -163,6 +171,10 @@ def assemble(args):
     host['tools/build_qualified_cpmsim.py']=tracked['tools/build_qualified_cpmsim.py']
     host['docs/platform/CPMSIM-INSTALLATION.md']=tracked['docs/platform/CPMSIM-INSTALLATION.md']
     host.update(common)
+    for name in ('LICENSE','COPYING','NOTICE'):
+        host[name]=tracked[name]
+    host['LICENSES/CC-BY-4.0.txt']=tracked['LICENSES/CC-BY-4.0.txt']
+    host['docs/LICENSING.md']=tracked['docs/LICENSING.md']
     host['dependencies/'+upstream_name]=upstream
     host['dependencies/README.txt']=restore
     util=args.utilities.resolve()
@@ -195,6 +207,7 @@ def assemble(args):
     packages=[]
     for asset in layout['assets']:
         id=asset['id'];files=dict(common);evidence={}
+        files.update(project_license_files(tracked))
         template=tracked[asset['readme_template']].decode()
         template=template.replace('ASSEMBLY TEMPLATE — not a completed or accepted release package.\nRemove this notice only after the release acceptance checks pass.',
                                   'CANDIDATE — assembled for review; NOT ACCEPTED FOR RELEASE.')

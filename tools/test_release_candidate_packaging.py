@@ -6,7 +6,7 @@ import tempfile
 import unittest
 import zipfile
 from build_qualified_cpmsim import project_revision
-from package_release_candidates import checked_name, encoded, read_report, sha, write_package, upstream_bundle, utilities_members
+from package_release_candidates import checked_name, encoded, read_report, sha, write_package, upstream_bundle, utilities_members, project_license_files
 
 
 class ReleaseCandidateTests(unittest.TestCase):
@@ -90,6 +90,23 @@ class ReleaseCandidateTests(unittest.TestCase):
                 self.assertIn(sha(b'payload').encode(),z.read('candidate/SHA256SUMS.txt'))
                 self.assertNotIn(b'SHA256SUMS.txt',z.read('candidate/SHA256SUMS.txt'))
             with self.assertRaises(ValueError):write_package(p,'candidate',{},record)
+
+    def test_project_terms_survive_independent_archive_readback(self):
+        root=Path(__file__).resolve().parents[1]
+        tracked={n:(root/n).read_bytes() for n in ('LICENSE','COPYING','NOTICE','LICENSES/CC-BY-4.0.txt','docs/LICENSING.md')}
+        files=project_license_files(tracked)
+        for asset in json.loads((root/'metadata/release-assets.json').read_text())['assets']:
+            with self.subTest(asset=asset['id']),tempfile.TemporaryDirectory() as tmp:
+                path=Path(tmp)/'candidate.zip'
+                write_package(path,'candidate',files,{'status':'CANDIDATE'})
+                with zipfile.ZipFile(path) as z:
+                    for name,data in tracked.items():
+                        target={'LICENSES/CC-BY-4.0.txt':'licenses/BetterCPM/CC-BY-4.0.txt',
+                                'docs/LICENSING.md':'docs/LICENSING.md'}.get(name,'licenses/BetterCPM/'+name)
+                        self.assertEqual(z.read('candidate/'+target),data)
+        self.assertIn(b'CC-BY-4.0',tracked['LICENSE'])
+        self.assertIn(b'GPL-2.0-or-later',tracked['docs/LICENSING.md'])
+        with self.assertRaises(KeyError):project_license_files({'LICENSE':b'incomplete'})
 
     def test_rejects_escaping_names(self):
         for name in ('../outside','/absolute','nested/../../outside','a\\b'):

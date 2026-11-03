@@ -1,0 +1,27 @@
+BetterCP/M original-work license split
+
+Original software: GPL-2.0-or-later
+----------------------------------
+Original BetterCP/M source code, build tools, tests and reusable source-code
+examples (including examples embedded in manuals) are licensed under the GNU
+General Public License, version 2 or (at your option) any later version.
+COPYING contains the complete GNU GPL version 2 text and warranty disclaimer.
+
+Original documentation: CC-BY-4.0
+--------------------------------
+Original documentation prose and illustrations are licensed under Creative
+Commons Attribution 4.0 International. LICENSES/CC-BY-4.0.txt contains the terms;
+https://creativecommons.org/licenses/by/4.0/ provides the license description.
+Retain supplied attribution/license notices and indicate changes as required.
+The documentation grant does not replace the GPL terms for reusable code.
+
+Scope and separate works
+------------------------
+These grants cover only rights controlled by the respective contributors.
+Existing copyright, attribution and permission notices remain in effect.
+Third-party, derived and historical material, quotations and underlying works
+in screenshots keep their applicable terms; no ownership or permission for them
+is asserted by this declaration. Legal/license texts retain their own terms.
+See NOTICE and docs/LICENSING.md for the material boundaries and reuse guidance.
+Montezuma redistribution permission remains unresolved; neither project license
+settles that issue. Package freeze and release acceptance remain on hold.
