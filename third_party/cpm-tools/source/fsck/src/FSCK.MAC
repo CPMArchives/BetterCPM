@@ -1,0 +1,1018 @@
+; SPDX-License-Identifier: GPL-2.0-or-later
+;
+;***********************************************************************
+;*                                                                     *
+;*                      F S C K   --   DEV1                            *
+;*                                                                     *
+;*          READ-ONLY FILESYSTEM CHECKER FOR CP/M 2.2                  *
+;*                                                                     *
+;***********************************************************************
+;
+; Version 0.1.0-dev1, 31 August 2026
+;
+; Assemble with ZSM4 and Digital Research LINK:
+;
+;       ZSM4 FSCK=FSCK
+;       LINK FSCK[A]
+;
+; The optional drive may be written in the usual CP/M fashion:
+;
+;       FSCK             check the default drive
+;       FSCK B:          check drive B
+;
+; FSCK reads directory sectors through the standard BIOS but never writes a
+; sector.  It obtains the selected drive's DPH and DPB, examines every raw
+; directory entry, and restores the original drive before returning to CCP.
+;
+; Revision history:
+;   dev1    raw directory scan; entry, record-count and allocation checks
+;
+; Operator's summary:
+;   FSCK [drive:] scans the raw directory and prints concise totals.
+;   FSCK [drive:] /V (also /VERBOSE) prints each active entry and finding.
+;   Dev1 checks user numbers, record counts, allocation ranges, directory-
+;   block references and duplicate block ownership.  It does not yet check
+;   complete extent sequences or reconcile every allocation-vector bit.
+;   No code path calls the BIOS WRITE entry.  See TOOLS.DOC for the complete
+;   command description, result meanings, limitations and build procedure.
+;
+; Programmer's notebook:
+;   This program deliberately uses only the 8080 instruction set although
+;   ZSM4 notation is used.  It should consequently run on an 8080 CP/M as
+;   well as on the Z80 machines for which it was first assembled.
+;
+;   SELDSK is the ninth entry following BOOT in the standard BIOS jump
+;   table.  The WBOOT vector at 0001H points to BIOS+3, hence adding 24 to
+;   its target produces the SELDSK entry address.  BIOSJMP is filled in once
+;   at start-up; this is the customary CP/M method of making an indirect
+;   subroutine call without relying on a Z80-only instruction.  The disk
+;   access and number-printing routines began in DISKINFO dev3; keeping their
+;   calling conventions alike is the first step toward a common library.
+;
+;***********************************************************************
+
+	.z80                    ; Zilog spelling, 8080 opcodes only
+	cseg
+
+BDOS    EQU     0005H
+;
+; dev1 - patch page-zero warm boot vector address
+;
+;WBOOTV EQU     0002H          ; first cut began one byte too late
+WBOOTV  EQU     0001H          ; operand of page-zero JMP at 0000H
+
+; BDOS function numbers used here.
+FPRINT  EQU     9
+FSELDSK EQU     14
+FCURDSK EQU     25
+FGETALV EQU     27
+FGETDPB EQU     31
+
+START:  LD      SP,STACKTOP     ; CCP stack contents are not an interface
+        LD      C,FCURDSK
+        CALL    BDOS
+        LD      (OLDDRV),A
+        LD      (NEWDRV),A
+        CALL    GETARGS
+        JP      C,BADDRV
+        LD      A,(MODE)
+        CP      5
+        JP      Z,SHOWHELP
+        CP      6
+        JP      Z,SHOWINFO
+        CP      7
+        JP      Z,SHOWVER
+        LD      A,(NEWDRV)
+        LD      E,A
+        LD      C,FSELDSK
+        CALL    BDOS            ; log drive and make its DPB current
+
+        LD      C,FGETDPB
+        CALL    BDOS
+        LD      (DPBPTR),HL
+        LD      A,H
+        OR      L
+        JP      Z,NODRIVE
+
+        CALL    GETDPH
+        LD      (DPHPTR),HL
+        LD      A,H
+        OR      L
+        JP      Z,NODRIVE
+        CALL    SAVEDPH
+        CALL    SAVEDPB
+        CALL    CALCULATE
+        CALL    REPORT
+        JP      EXIT
+
+; Copy and fold each command-tail word, then classify it exactly.  A report
+; selector and drive may appear in either order.  Abbreviations and repeated
+; operands are rejected; old CCPs differed too much to trust their FCB here.
+GETARGS:XOR     A
+        LD      (MODE),A
+        LD      (DRVSET),A
+        LD      A,(0080H)
+        LD      B,A
+        LD      HL,0081H
+GANEXT:LD      A,B
+        OR      A
+        JP      Z,GADONE
+        LD      A,(HL)
+        INC     HL
+        DEC     B
+        CP      ' '
+        JP      Z,GANEXT
+        LD      DE,ARGBUF
+        LD      C,0
+GACOPY:CP      'a'
+        JP      C,GASTORE
+        CP      'z'+1
+        JP      NC,GASTORE
+        SUB     20H
+GASTORE:LD     (DE),A
+        INC     DE
+        INC     C
+        LD      A,C
+        CP      15
+        JP      NC,GABAD
+        LD      A,B
+        OR      A
+        JP      Z,GAWORD
+        LD      A,(HL)
+        CP      ' '
+        JP      Z,GAWORD
+        INC     HL
+        DEC     B
+        JP      GACOPY
+GAWORD:XOR     A
+        LD      (DE),A
+        CALL    ARGWORD
+        JP      C,GABAD
+        JP      GANEXT
+GADONE:LD      A,(MODE)        ; informational selectors stand alone
+        CP      5
+        JP      C,GAGOOD
+        LD      A,(DRVSET)
+        OR      A
+        JP      NZ,GABAD
+GAGOOD:OR      A
+        RET
+GABAD: SCF
+        RET
+
+ARGWORD:
+        LD      A,(ARGBUF)
+        CP      '/'
+        JP      Z,GAOPTION
+        LD      A,(DRVSET)
+        OR      A
+        JP      NZ,GABAD
+        LD      A,(ARGBUF+1)
+        CP      ':'
+        JP      NZ,GABAD
+        LD      A,(ARGBUF+2)
+        OR      A
+        JP      NZ,GABAD
+        LD      A,(ARGBUF)
+        CP      'A'
+        JP      C,GABAD
+        CP      'P'+1
+        JP      NC,GABAD
+        SUB     'A'
+        LD      (NEWDRV),A
+        LD      A,1
+        LD      (DRVSET),A
+        OR      A
+        RET
+GAOPTION:
+        LD      A,(MODE)
+        OR      A
+        JP      NZ,GABAD
+        LD      DE,SV
+        CALL    ARGIS
+        LD      A,1
+        JP      Z,GASET
+        LD      DE,SVERBOSE
+        CALL    ARGIS
+        LD      A,1
+        JP      Z,GASET
+        LD      DE,SH
+        CALL    ARGIS
+        LD      A,5
+        JP      Z,GASET
+        LD      DE,SHELP
+        CALL    ARGIS
+        LD      A,5
+        JP      Z,GASET
+        LD      DE,SINFO
+        CALL    ARGIS
+        LD      A,6
+        JP      Z,GASET
+        LD      DE,SVER
+        CALL    ARGIS
+        LD      A,7
+        JP      Z,GASET
+        LD      DE,SVERSION
+        CALL    ARGIS
+        LD      A,7
+        JP      NZ,GABAD
+GASET: LD      (MODE),A
+        OR      A
+        RET
+
+; Compare the copied argument with the zero-terminated selector at DE.
+ARGIS: PUSH    HL
+        PUSH    DE
+        LD      HL,ARGBUF
+GACMP: LD      A,(DE)
+        CP      (HL)
+        JP      NZ,GACMPNO
+        OR      A
+        JP      Z,GACMPYES
+        INC     DE
+        INC     HL
+        JP      GACMP
+GACMPNO:
+        POP     DE
+        POP     HL
+        OR      1               ; return not equal
+        RET
+GACMPYES:
+        POP     DE
+        POP     HL
+        XOR     A               ; return equal
+        RET
+
+; Construct and call the standard BIOS SELDSK entry.  E=0 requests an
+; ordinary selection rather than the CP/M 3 first-select convention.
+GETDPH:LD      HL,(WBOOTV)
+        LD      DE,24
+        ADD     HL,DE
+        LD      (BIOSJMP+1),HL
+        LD      A,(NEWDRV)
+        LD      C,A
+        LD      E,0
+        CALL    BIOSJMP
+        RET
+BIOSJMP:
+        JP      0000H           ; operand supplied by GETDPH
+
+; Save the documented DPH words before another system call can disturb the
+; three scratch words in the middle of the header.
+SAVEDPH:
+        LD      DE,DPHBUF
+        LD      BC,16
+SDLOOP:LD      A,(HL)
+        LD      (DE),A
+        INC     HL
+        INC     DE
+        DEC     BC
+        LD      A,B
+        OR      C
+        JP      NZ,SDLOOP
+        RET
+
+; The CP/M 2.2 DPB is fifteen bytes long.  Keep a private copy so the report
+; remains stable while BDOS is used for console output.
+SAVEDPB:
+        LD      HL,(DPBPTR)
+        LD      DE,DPBBUF
+        LD      BC,15
+SPLOOP:LD      A,(HL)
+        LD      (DE),A
+        INC     HL
+        INC     DE
+        DEC     BC
+        LD      A,B
+        OR      C
+        JP      NZ,SPLOOP
+        RET
+
+; Work out the values most often wanted at the console.  Sizes are retained
+; in KiB; a normal CP/M 2.2 disk fits comfortably in sixteen bits.
+CALCULATE:
+        LD      A,(DPBBUF+2)    ; BSH: block bytes = 128 shl BSH
+        CP      3
+        JP      C,CALBAD
+        SUB     3               ; KiB per block = 1 shl (BSH-3)
+        LD      B,A
+        LD      HL,1
+CBKLP: LD      A,B
+        OR      A
+        JP      Z,CBKDONE
+        ADD     HL,HL
+        DEC     B
+        JP      CBKLP
+CBKDONE:
+        LD      (BLKKB),HL
+
+        LD      HL,(DPBBUF+5)   ; DSM is highest allocation block number
+        INC     HL
+        LD      (TOTBLK),HL
+        CALL    MULBLK
+        LD      (TOTKB),HL
+
+        CALL    DIRCOUNT        ; directory reservation from AL0 and AL1
+        LD      (DIRBLK),HL
+        CALL    MULBLK
+        LD      (DIRKB),HL
+;
+; dev2 - patch subtract directory blocks, not directory K-bytes
+;
+;       EX      DE,HL           ; dev1 worked only with 1K blocks
+        LD      HL,(DIRBLK)
+        EX      DE,HL
+        LD      HL,(TOTBLK)
+        CALL    SUBDE
+        LD      (DATBLK),HL
+
+        LD      HL,(DPBBUF+7)   ; DRM is highest directory entry number
+        INC     HL
+        LD      (DIRENT),HL
+
+        LD      A,(DPBBUF+4)    ; one directory extent holds EXM+1 extents
+        INC     A
+        LD      L,A
+        LD      H,0
+        LD      (EXTPER),HL
+        ADD     HL,HL           ; multiply by 16 KiB
+        ADD     HL,HL
+        ADD     HL,HL
+        ADD     HL,HL
+        LD      (EXTKB),HL
+
+        CALL    COUNTALV
+        RET
+CALBAD:LD      HL,0
+        LD      (BLKKB),HL
+        LD      (TOTKB),HL
+        LD      (DIRKB),HL
+        RET
+
+; Multiply HL by the power-of-two allocation block size in KiB.
+MULBLK:PUSH    BC
+        LD      A,(DPBBUF+2)
+        SUB     3
+        LD      B,A
+MBLOOP:LD      A,B
+        OR      A
+        JP      Z,MBDONE
+        ADD     HL,HL
+        DEC     B
+        JP      MBLOOP
+MBDONE:POP     BC
+        RET
+
+; Count the one bits in AL0/AL1.  CP/M records directory blocks from the
+; high bit of AL0 toward the low bit of AL1.
+DIRCOUNT:
+        LD      DE,0
+        LD      HL,DPBBUF+9
+        LD      B,2
+DCBYTE:LD      A,(HL)
+        LD      C,8
+DCBIT: RLCA
+        JP      NC,DCNEXT
+        INC     DE
+DCNEXT:DEC     C
+        JP      NZ,DCBIT
+        INC     HL
+        DEC     B
+        JP      NZ,DCBYTE
+        EX      DE,HL
+        RET
+
+; Count meaningful bits in the allocation vector.  Padding beyond DSM is
+; ignored.  The returned totals include directory blocks, as BDOS does.
+COUNTALV:
+        LD      HL,(DPHBUF+14)
+        LD      A,H
+        OR      L
+        JP      Z,ALVNONE
+        LD      HL,(TOTBLK)
+        EX      DE,HL
+        LD      HL,(DPHBUF+14)
+        LD      BC,0
+        LD      A,80H
+        LD      (BITMSK),A
+ALVLOOP:
+        LD      A,D
+        OR      E
+        JP      Z,ALVDONE
+        LD      A,(BITMSK)
+        LD      (BITTMP),A
+        LD      A,(HL)
+        PUSH    HL
+        LD      HL,BITTMP
+        AND     (HL)
+        POP     HL
+        JP      Z,ALVFREE
+        INC     BC
+ALVFREE:
+        DEC     DE
+        LD      A,(BITMSK)
+        RRCA
+        LD      (BITMSK),A
+        CP      80H
+        JP      NZ,ALVLOOP
+        INC     HL
+        JP      ALVLOOP
+ALVDONE:
+        PUSH    BC
+        POP     HL
+        LD      (USEDBLK),HL
+        EX      DE,HL
+        LD      HL,(TOTBLK)
+        CALL    SUBDE
+        LD      (FREEBLK),HL
+        LD      A,1
+        LD      (ALVOK),A
+        RET
+ALVNONE:
+        XOR     A
+        LD      (ALVOK),A
+        RET
+
+; Sixteen-bit subtraction written as two 8080 byte operations.  A direct
+; SBC HL,DE was used in the first desk calculation, but that instruction is
+; Z80-only and FSCK has no need to exclude an otherwise serviceable 8080.
+; Entry: HL=minuend, DE=subtrahend.  Exit: HL=difference.
+SUBDE:  LD      A,L
+        SUB     E
+        LD      L,A
+        LD      A,H
+        SBC     A,D
+        LD      H,A
+        RET
+
+REPORT:LD      DE,TITLE
+        CALL    PRINT
+        LD      A,(NEWDRV)
+        ADD     A,'A'
+        CALL    PCHAR
+        LD      DE,COLON
+        CALL    PRINT
+        LD      HL,0
+        LD      (ACTCT),HL
+        LD      (DELCT),HL
+        LD      (WARNCT),HL
+        LD      (FAILCT),HL
+        LD      HL,BITMAP
+        LD      BC,256
+RCLR:  LD      (HL),0
+        INC     HL
+        DEC     BC
+        LD      A,B
+        OR      C
+        JP      NZ,RCLR
+        CALL    SETBIOS
+        LD      DE,SCANMSG
+        CALL    PRINT
+        CALL    SCANDIR
+        LD      DE,SUMENT
+        CALL    PRINT
+        LD      HL,(ACTCT)
+        CALL    PDEC16
+        LD      DE,SUMDEL
+        CALL    PRINT
+        LD      HL,(DELCT)
+        CALL    PDEC16
+        LD      DE,SUMWARN
+        CALL    PRINT
+        LD      HL,(WARNCT)
+        CALL    PDEC16
+        LD      DE,SUMFAIL
+        CALL    PRINT
+        LD      HL,(FAILCT)
+        CALL    PDEC16
+        CALL    PCRLF
+        LD      HL,(FAILCT)
+        LD      A,H
+        OR      L
+        LD      DE,GOODMSG
+        JP      Z,REND
+        LD      DE,BADFSMSG
+REND:   JP      PRINT
+
+; Build calls to the documented BIOS disk entries.  WBOOT points to entry
+; one, so the offsets below are three bytes times entry-number minus one.
+SETBIOS:LD     HL,(WBOOTV)
+        LD      DE,27
+        ADD     HL,DE
+        LD      (JTRK+1),HL
+        LD      HL,(WBOOTV)
+        LD      DE,30
+        ADD     HL,DE
+        LD      (JSEC+1),HL
+        LD      HL,(WBOOTV)
+        LD      DE,33
+        ADD     HL,DE
+        LD      (JDMA+1),HL
+        LD      HL,(WBOOTV)
+        LD      DE,36
+        ADD     HL,DE
+        LD      (JREAD+1),HL
+        LD      HL,(WBOOTV)
+        LD      DE,45
+        ADD     HL,DE
+        LD      (JXLT+1),HL
+        RET
+JTRK:  JP      0000H
+JSEC:  JP      0000H
+JDMA:  JP      0000H
+JREAD: JP      0000H
+JXLT:  JP      0000H
+
+; Read the directory as 128-byte logical records.  Four raw entries are
+; inspected in each record, including erased and malformed entries which a
+; BDOS search would conceal from a diagnostic program.
+SCANDIR:LD     HL,(DIRENT)
+        LD      DE,3
+        ADD     HL,DE
+        OR      A
+        LD      A,H
+        RRA
+        LD      H,A
+        LD      A,L
+        RRA
+        LD      L,A
+        OR      A
+        LD      A,H
+        RRA
+        LD      H,A
+        LD      A,L
+        RRA
+        LD      L,A
+        LD      (RECCNT),HL
+        LD      HL,0
+        LD      (RECNO),HL
+        LD      (ENTRYNO),HL
+SDREC: LD      HL,(RECCNT)
+        LD      A,H
+        OR      L
+        RET     Z
+        CALL    READREC
+        OR      A
+        JP      NZ,SDREADERR
+        LD      HL,DIRBUF
+        LD      B,4
+SDENT: PUSH    BC
+        PUSH    HL
+        CALL    DOENTRY
+        POP     HL
+        LD      DE,32
+        ADD     HL,DE
+        POP     BC
+        PUSH    HL
+        LD      DE,1
+        LD      HL,(ENTRYNO)
+        ADD     HL,DE
+        LD      (ENTRYNO),HL
+        POP     HL
+        DEC     B
+        JP      NZ,SDENT
+        LD      HL,(RECNO)
+        INC     HL
+        LD      (RECNO),HL
+        LD      HL,(RECCNT)
+        DEC     HL
+        LD      (RECCNT),HL
+        JP      SDREC
+SDREADERR:
+        CALL    INCFAIL
+        LD      DE,READERR
+        JP      PRINT
+
+READREC:LD     HL,(DPBBUF+13)
+        LD      (CURTRK),HL
+        LD      HL,(DPBBUF)
+        EX      DE,HL
+        LD      HL,(RECNO)
+RRDIV: PUSH    HL
+        CALL    SUBDE
+        JP      C,RRREM
+        POP     AF              ; discard saved dividend
+        PUSH    HL
+        LD      HL,(CURTRK)
+        INC     HL
+        LD      (CURTRK),HL
+        POP     HL
+        JP      RRDIV
+RRREM: POP     HL
+        LD      B,H
+        LD      C,L
+        PUSH    BC
+        LD      HL,(CURTRK)
+        LD      B,H
+        LD      C,L
+        CALL    JTRK
+        POP     BC
+        LD      HL,(DPHBUF)
+        EX      DE,HL
+        CALL    JXLT
+        LD      B,H
+        LD      C,L
+        CALL    JSEC
+        LD      BC,DIRBUF
+        CALL    JDMA
+        CALL    JREAD
+        RET
+
+DOENTRY:LD     A,(HL)
+        CP      0E5H
+        JP      Z,DELETED
+        PUSH    HL
+        CALL    INCACT
+        LD      A,(MODE)
+        OR      A
+        CALL    NZ,VENTRY
+        POP     HL
+        LD      A,(HL)
+        CP      16
+        CALL    NC,WARNUSER
+        PUSH    HL
+        LD      DE,15
+        ADD     HL,DE
+        LD      A,(HL)
+        CP      129
+        CALL    NC,BADRC
+        POP     HL
+        LD      DE,16
+        ADD     HL,DE
+        LD      A,(DPBBUF+6)
+        OR      A
+        JP      NZ,DEWORD
+        LD      B,16
+DEBYTE:LD      A,(HL)
+        INC     HL
+        OR      A
+        CALL    NZ,CHECKA
+        DEC     B
+        JP      NZ,DEBYTE
+        RET
+DEWORD:LD      B,8
+DEWLP: LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        INC     HL
+        LD      A,D
+        OR      E
+        CALL    NZ,CHECKDE
+        DEC     B
+        JP      NZ,DEWLP
+        RET
+DELETED:CALL   INCDEL
+        RET
+
+CHECKA:LD      E,A
+        LD      D,0
+CHECKDE:PUSH   BC
+        PUSH    HL
+        EX      DE,HL
+        LD      (TMPBLK),HL
+        LD      HL,(DIRBLK)
+        EX      DE,HL
+        LD      HL,(TMPBLK)
+        CALL    CMPLT
+        CALL    C,BADDIRBLK
+        LD      HL,(TOTBLK)
+        EX      DE,HL
+        LD      HL,(TMPBLK)
+        CALL    CMPLT
+        JP      NC,CDOUT
+        LD      HL,(TMPBLK)
+        CALL    MARKBLK
+        POP     HL
+        POP     BC
+        RET
+CDOUT:  CALL    BADBLOCK
+        POP     HL
+        POP     BC
+        RET
+
+; Carry is set when unsigned HL is less than DE.
+CMPLT: LD      A,H
+        CP      D
+        RET     C
+        RET     NZ
+        LD      A,L
+        CP      E
+        RET
+
+MARKBLK:PUSH   HL
+        LD      A,L
+        AND     7
+        LD      (MASKIX),A
+        POP     HL
+        LD      B,3
+MBR:   OR      A
+        LD      A,H
+        RRA
+        LD      H,A
+        LD      A,L
+        RRA
+        LD      L,A
+        DEC     B
+        JP      NZ,MBR
+        LD      DE,BITMAP
+        ADD     HL,DE
+        PUSH    HL
+        LD      HL,MASKTAB
+        LD      A,(MASKIX)
+        LD      E,A
+        LD      D,0
+        ADD     HL,DE
+        LD      A,(HL)
+        LD      C,A
+        POP     HL
+        AND     (HL)
+        JP      NZ,DUPBLOCK
+        LD      A,(HL)
+        OR      C
+        LD      (HL),A
+        RET
+DUPBLOCK:CALL  INCFAIL
+        LD      A,(MODE)
+        OR      A
+        RET     Z
+        LD      DE,DUPMSG
+        JP      PRINT
+
+VENTRY:LD      DE,ENTRYMSG
+        CALL    PRINT
+        LD      HL,(ENTRYNO)
+        CALL    PDEC16
+        JP      PCRLF
+WARNUSER:CALL  INCWARN
+        LD      A,(MODE)
+        OR      A
+        RET     Z
+        LD      DE,USERMSG
+        JP      PRINT
+BADRC:  CALL    INCFAIL
+        LD      A,(MODE)
+        OR      A
+        RET     Z
+        LD      DE,RCMSG
+        JP      PRINT
+BADDIRBLK:CALL INCFAIL
+        LD      A,(MODE)
+        OR      A
+        RET     Z
+        LD      DE,DIRBLKMSG
+        JP      PRINT
+BADBLOCK:CALL  INCFAIL
+        LD      A,(MODE)
+        OR      A
+        RET     Z
+        LD      DE,BLKMSG
+        JP      PRINT
+
+INCACT:LD      HL,(ACTCT)
+        INC     HL
+        LD      (ACTCT),HL
+        RET
+INCDEL:LD      HL,(DELCT)
+        INC     HL
+        LD      (DELCT),HL
+        RET
+INCWARN:LD     HL,(WARNCT)
+        INC     HL
+        LD      (WARNCT),HL
+        RET
+INCFAIL:LD     HL,(FAILCT)
+        INC     HL
+        LD      (FAILCT),HL
+        RET
+
+; Print labelled numeric fields.  Word fields are shown in hex and decimal;
+; byte fields use two hex digits and an unsigned decimal value.
+;
+; dev1 - patch preserve the word while function 9 prints its label
+;
+;PWORD: CALL    PRINT           ; first cut trusted BDOS to preserve HL
+PWORD:  PUSH    HL
+        CALL    PRINT
+        POP     HL
+        PUSH    HL
+        CALL    PHEX16
+        LD      DE,HEXEQL
+        CALL    PRINT
+        POP     HL
+        CALL    PDEC16
+        JP      PNUMEND
+PBYTE:  PUSH    AF
+        CALL    PRINT
+        POP     AF
+        PUSH    AF
+        CALL    PHEX8
+        LD      DE,HEXEQL
+        CALL    PRINT
+        POP     AF
+        LD      L,A
+        LD      H,0
+        CALL    PDEC16
+        JP      PNUMEND
+PDECVAL:
+        PUSH    HL
+        CALL    PRINT
+        POP     HL
+        CALL    PDEC16
+        JP      PCRLF
+
+; A null pointer is printed as NONE, otherwise merely terminate the line.
+PNONE:  LD      A,H
+        OR      L
+        JP      NZ,PCRLF
+        LD      DE,NONE
+        JP      PRINT
+
+PRINT:  LD      C,FPRINT
+        JP      BDOS
+PCHAR:  PUSH    BC
+        PUSH    DE
+        LD      E,A
+        LD      C,2
+        CALL    BDOS
+        POP     DE
+        POP     BC
+        RET
+PCRLF: LD      DE,CRLF
+        JP      PRINT
+PNUMEND:
+        LD      DE,NUMEND
+        JP      PRINT
+
+PHEX16:PUSH    HL
+        LD      A,H
+        CALL    PHEX8
+        POP     HL
+        PUSH    HL
+        LD      A,L
+        CALL    PHEX8
+        POP     HL
+        RET
+PHEX8:  PUSH    AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        AND     0FH
+        CALL    PHNIB
+        POP     AF
+        AND     0FH
+        CALL    PHNIB
+        RET
+PHNIB: ADD     A,'0'
+        CP      '9'+1
+        JP      C,PCHAR
+        ADD     A,7
+        JP      PCHAR
+
+; Decimal conversion by decimal places.  At most nine subtractions are made
+; for each digit, which was found quicker on a small 4 MHz machine than the
+; general divide routine used in an early notebook version.
+PDEC16:XOR     A
+        LD      (DIGSEEN),A
+        LD      BC,10000
+        CALL    PDIGIT
+        LD      BC,1000
+        CALL    PDIGIT
+        LD      BC,100
+        CALL    PDIGIT
+        LD      BC,10
+        CALL    PDIGIT
+        LD      A,L
+        ADD     A,'0'
+        JP      PCHAR
+PDIGIT:LD      D,'0'
+PDLOOP:LD      A,L
+        SUB     C
+        LD      L,A
+        LD      A,H
+        SBC     A,B
+        LD      H,A
+        JP      C,PDDONE
+        INC     D
+        JP      PDLOOP
+PDDONE:ADD     HL,BC
+        LD      A,D
+        CP      '0'
+        JP      NZ,PDOUT
+        LD      A,(DIGSEEN)
+        OR      A
+        RET     Z
+        LD      A,D
+PDOUT:  PUSH    HL
+        CALL    PCHAR
+        POP     HL
+        LD      A,1
+        LD      (DIGSEEN),A
+        RET
+
+SHOWHELP:
+        LD      DE,HELPMSG
+        CALL    PRINT
+        JP      EXIT
+SHOWINFO:
+        LD      DE,INFOMSG
+        CALL    PRINT
+        JP      EXIT
+SHOWVER:
+        LD      DE,VERMSG
+        CALL    PRINT
+        JP      EXIT
+BADDRV:LD      DE,BADMSG
+        CALL    PRINT
+        JP      EXIT
+NODRIVE:
+        LD      DE,NODMSG
+        CALL    PRINT
+EXIT:   LD      A,(OLDDRV)
+        LD      E,A
+        LD      C,FSELDSK
+        CALL    BDOS
+        JP      0000H
+
+TITLE:  DB      13,10,'FSCK 0.1.0-dev1  Drive $'
+COLON:  DB      ':',13,10,'$'
+HEXEQL: DB      'H  ($'
+NUMEND: DB      ')',13,10,'$'
+CRLF:   DB      13,10,'$'
+NONE:   DB      '  NONE',13,10,'$'
+SCANMSG:DB      13,10,'Checking raw directory entries and allocation lists...',13,10,'$'
+ENTRYMSG:DB     'Entry $'
+USERMSG:DB      '  WARN: user number is outside 0-15',13,10,'$'
+RCMSG:  DB      '  ERROR: record count exceeds 128',13,10,'$'
+DIRBLKMSG:DB    '  ERROR: file refers to a directory block',13,10,'$'
+BLKMSG: DB      '  ERROR: allocation block exceeds DSM',13,10,'$'
+DUPMSG: DB      '  ERROR: allocation block is claimed twice',13,10,'$'
+READERR:DB      'ERROR: BIOS directory read failed',13,10,'$'
+SUMENT: DB      13,10,'Active entries:  $'
+SUMDEL: DB      13,10,'Deleted entries: $'
+SUMWARN:DB      13,10,'Warnings:        $'
+SUMFAIL:DB      13,10,'Errors:          $'
+GOODMSG:DB      13,10,'Filesystem is consistent.',13,10,'$'
+BADFSMSG:DB     13,10,'Filesystem errors were found.',13,10,'$'
+HELPMSG:DB      13,10,'FSCK 0.1.0-dev1',13,10,13,10
+        DB      '  FSCK [drive:]             Check the filesystem',13,10
+        DB      '  FSCK [drive:] /V          Verbose output (also /VERBOSE)',13,10
+        DB      '  FSCK /H                   Command help (also /HELP)',13,10
+        DB      '  FSCK /INFO                Show build information',13,10
+        DB      '  FSCK /VER                 Show version (also /VERSION)',13,10,'$'
+INFOMSG:DB      13,10,'FSCK 0.1.0-dev1',13,10
+        DB      'Read-only CP/M 2.2 filesystem consistency checker.',13,10
+        DB      'Built with ZSM4 and Digital Research LINK.',13,10
+        DB      '8080-compatible code; source revision 31 August 2026.',13,10,'$'
+VERMSG:DB      13,10,'FSCK 0.1.0-dev1',13,10,'$'
+BADMSG: DB      13,10,'FSCK: unknown option. Use FSCK /HELP.',13,10,'$'
+NODMSG: DB      13,10,'FSCK: selected drive is not available',13,10,'$'
+
+SV:     DB      '/V',0
+SVERBOSE:DB    '/VERBOSE',0
+SH:     DB      '/H',0
+SHELP:  DB      '/HELP',0
+SINFO:  DB      '/INFO',0
+SVER:   DB      '/VER',0
+SVERSION:DB    '/VERSION',0
+
+OLDDRV: DB      0
+NEWDRV: DB      0
+MODE:   DB      0
+DRVSET: DB      0
+ARGBUF: DS      16
+DPHPTR: DW      0
+DPBPTR: DW      0
+DPHBUF: DS      16
+DPBBUF: DS      15
+BLKKB:  DW      0
+TOTBLK: DW      0
+TOTKB:  DW      0
+DIRBLK: DW      0
+DIRKB:  DW      0
+DATBLK: DW      0
+DIRENT: DW      0
+EXTPER: DW      0
+EXTKB:  DW      0
+USEDBLK:DW      0
+FREEBLK:DW      0
+ALVOK:  DB      0
+BITMSK: DB      0
+BITTMP: DB      0
+DIGSEEN:DB      0
+ACTCT:  DW      0
+DELCT:  DW      0
+WARNCT: DW      0
+FAILCT: DW      0
+RECCNT: DW      0
+RECNO:  DW      0
+ENTRYNO:DW      0
+CURTRK: DW      0
+TMPBLK: DW      0
+MASKIX: DB      0
+MASKTAB:DB     1,2,4,8,16,32,64,128
+DIRBUF: DS      128
+BITMAP: DS      256
+        DS      128
+STACKTOP:
+        END

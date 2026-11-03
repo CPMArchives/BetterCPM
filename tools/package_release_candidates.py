@@ -133,7 +133,11 @@ def assemble(args):
     output=args.output.resolve()/'candidates'/commit
     output.mkdir(parents=True,exist_ok=False)
     # Failed candidates are preserved for inspection; never overwrite/reuse.
+    from cpm_tools_source import verify as verify_cpm_tools_source
+    cpm_source_paths=verify_cpm_tools_source(ROOT)
     tracked=source_files()
+    if not cpm_source_paths <= tracked.keys():
+        raise ValueError('CP/M Tools source companion is not completely tracked')
     identity=encoded({'source_commit':commit,'status':'CANDIDATE; NOT ACCEPTED'})
     source_manifest={n:sha(data) for n,data in sorted(tracked.items())}
     common={'SOURCE-IDENTITY.json':identity}
@@ -213,6 +217,8 @@ def assemble(args):
             files['images/'+('BetterCPM-Work-332K.dsk' if platform=='cpmsim' else 'BetterCPM-Work-800K.dmk')]=work
             guide='CPMSIM-INSTALLATION.md' if platform=='cpmsim' else 'MODEL4-INSTALLATION.md'
             files['docs/platform/'+guide]=tracked['docs/platform/'+guide]
+            if platform=='cpmsim':
+                files['third_party/z80pack/README.md']=tracked['third_party/z80pack/README.md']
             files['docs/user/users_guide.md']=tracked['docs/user/users_guide.md']
             files['docs/engineering/Model 4 Release Checklist.md']=tracked['docs/engineering/Model 4 Release Checklist.md']
             files['docs/releases/RELEASE-NOTES-1.0.md']=tracked['docs/releases/RELEASE-NOTES-1.0.md']
@@ -233,6 +239,8 @@ def assemble(args):
                                                 util_reports,inventory)
             files.update(selected)
             files['docs/user/utilities_manual.md']=tracked['docs/user/utilities_manual.md']
+            for guide in ('ZSM4.md','LINK.md'):
+                files['docs/user/'+guide]=tracked['docs/user/'+guide]
             files['docs/engineering/Model 4 Release Checklist.md']=tracked['docs/engineering/Model 4 Release Checklist.md']
         elif id=='source':
             files.update({'source/BetterCPM/'+n:d for n,d in tracked.items()})
@@ -248,6 +256,7 @@ def assemble(args):
                 if name.startswith('docs/') and Path(name).suffix.lower() in ('.md','.txt','.json','.tsv','.png','.svg'):
                     files[name]=data
             files['CONTENTS.md']=tracked['packaging/1.0/DOCUMENTATION-CONTENTS.md']
+            files['third_party/z80pack/README.md']=tracked['third_party/z80pack/README.md']
             evidence['generated_editions']='PDF/DOCX omitted pending source-to-edition reconciliation'
         # Retain tracked licensing/permission and provenance files in each ZIP.
         for name,data in tracked.items():

@@ -37,3 +37,40 @@ run fresh-package installation and platform checks, reconcile final conformance
 applicability, finish manuals/generated editions and audit source/licensing and
 attribution. Preserve results against exact hashes. The maintainer must accept
 the candidate before tagging and publishing the tested final files.
+
+## Recorded compatibility and residual-risk dispositions
+
+The qualified default RAM environments are patched cpmsim and Model 4 under
+trs80gp. Public-profile selection is still a maintainer decision; the optional
+cpmsim-legacy-checked and cpmsim-fullram variants require their own current
+qualification before promotion. Physical hardware, Model 4D/4P and additional
+platforms are outside these emulator receipts.
+
+The merged conformance record retains case-preserving command-tail behavior
+and fixed-A0 extension lookup differences (cards 0020, 0493 and 0494).
+Preserve these reported differences when interpreting stock CP/M expectations;
+do not count observations or exclusions as passing tests. Extension carriers
+needed at run time, including BATCHIO for XSUB, must be available in A0.
+
+The Model 4 keyboard campaign does not establish ordinary host Caps Lock
+quick-tap behavior; scripted matrix checks and the recorded manual observations
+have their stated, bounded scope. The pre-existing pending-input/CONST
+observation remains post-1.0 investigation unless a supported workflow fails.
+
+BCPM-AUD-003 remains explicitly deferred: a pre-corrupted history object with
+valid signature/version can contain unsafe lengths/counts and damage memory.
+No supported command sequence producing the malformed state was established.
+Reopen before release if supported input can produce it, or if the history
+writer/PDS layout changes. This is a residual-risk disposition, not a claim of
+full malformed-record validation. General BCPM-AUD-007 historical oracle cleanup
+also remains deferred; failing required current gates still need disposition.
+
+PR #583 records a passing stock protected-XIP qualification for ROM SHA-256
+cc6917780ce47ab34fbed7949abdf93a17d20eb182ab9fdcd15c8d16cd864168
+and its exact disk/overlay/emulator configuration. A changed candidate does not
+inherit that receipt automatically. BCPM-AUD-006’s stale memory/cold-history
+text was corrected in merged PR #584. Neither result accepts public packages.
+
+Clock-frontend distribution and original-work/Montezuma licensing decisions
+remain open. No new membership or licensing grant is implied by these notes.
+Package freeze remains on hold.

@@ -1,0 +1,16 @@
+*/build/*.COM
+*/build/SHA256SUMS.txt
+!diskinfo/build/DISKINFO.COM
+!diskinfo/build/SHA256SUMS.txt
+!dpbchk/build/DPBCHK.COM
+!dpbchk/build/SHA256SUMS.txt
+!fsck/build/FSCK.COM
+!fsck/build/SHA256SUMS.txt
+!diskedit/build/DISKEDIT.COM
+!diskedit/build/SHA256SUMS.txt
+!cominfo/build/COMINFO.COM
+!cominfo/build/SHA256SUMS.txt
+!bdosprobe/build/BDOSPRB.COM
+!bdosprobe/build/SHA256SUMS.txt
+*.log
+.DS_Store

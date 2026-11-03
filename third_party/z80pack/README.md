@@ -11,10 +11,12 @@ The runtime series preserves the local geometry branch's committed changes:
 1. `0001-disk-geometry.patch`: commit `a9248a9186405d11ba17250f37301b079bd57f93`.
 2. `0002-raw-fdf-backend.patch`: commit `9bf3c8ac0ee3cf9bdc8748b0bec5bdc7670f79f9`.
 
-Those are the only runtime code changes between upstream and local
+Those two patches are the original geometry changes between upstream and local
 `b7a6fa36a2ee185a73727dc5b56ac1af40679e81`; its final commit adds backend
 notes only. Local untracked files, installed binaries and object files are not
 inputs. Geometry interface version 2 on ports 18/19 is required by BetterCP/M.
+
+The complete current runtime profile is the ordered list in `upstream.json`: patches 0001, 0002, 0004, 0005, 0006 and 0007. Later sections describe the live-media, transfer and MOUNT additions. The original geometry pair alone is not the current runtime.
 
 The qualification profile additionally applies `0003-rom-qualification.patch`
 and builds with `ROM_QUALIFY=YES`. This is the existing CPU/DMA write guard,
