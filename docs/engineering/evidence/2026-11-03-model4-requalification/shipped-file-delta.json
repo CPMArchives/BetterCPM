@@ -1,0 +1,78 @@
+{
+  "trs80gp": {
+    "previous_image_sha256": "4105ff45e411e25c0f3cd6024b970ddc231e6287086a553933e1fb577aaf2467",
+    "candidate_image_sha256": "83e9ac2daa566312d5825a39d0f0ac4e3ef04cf83446aac7b493db30640edc5d",
+    "changed_shipped_files": [
+      {
+        "user": 0,
+        "name": "ADMTST.COM",
+        "old_sha256": "206ddb44c30f926e9facb89d9e9d6bd5709111cf3b8f8f72606156a9c6fe4b8e",
+        "new_sha256": "cc587c6b133b25b65f67a544b3e6ab3dcb8ab1dfc029f5e83ea7c68139bf9654"
+      },
+      {
+        "user": 0,
+        "name": "ANSITST.COM",
+        "old_sha256": "8e3379a5d6ff2f04441c8edc7628451f40b8408ba380ec54ddfadd6eebe176e0",
+        "new_sha256": "c86ed522c239ce531a64cf85768f27eaa1496cffdcf7a798ba1c95e874a6236c"
+      },
+      {
+        "user": 0,
+        "name": "CONFIG.COM",
+        "old_sha256": "972de1c4d47fa1454895a52dd7687936517aea6508f535235046229149e42f2e",
+        "new_sha256": "fb3dbea97a6140f62aca04051333ddc0b9641a376ca9d602a644070833631714"
+      },
+      {
+        "user": 0,
+        "name": "M4SCRN.RSX",
+        "old_sha256": "9c210e656b2f3e62a895236d28de9bd989d7554fef7705077485ed68c95e68cd",
+        "new_sha256": "1d88316632621b89f3a3062c85412a7a5b052e62dac031bfc632029350803edb"
+      },
+      {
+        "user": 0,
+        "name": "VT52TST.COM",
+        "old_sha256": "5595372338896e7b7ababb9d6a1297e6cdea49ca1fd647758e89fdae1f6204ac",
+        "new_sha256": "b1953940dd2069c2ad79b58d01464402778483e52c987bcaf3a2ca416bbbf1b0"
+      }
+    ],
+    "added": [],
+    "removed": []
+  },
+  "z80pack": {
+    "previous_image_sha256": "7894b31ef007f0c6f723da92faa088a70a00375cd4776b2bea2ec8b2461c0820",
+    "candidate_image_sha256": "e44e39f9dd938da9039853296867ea8b099fc93e8389dd19d138794d7569169b",
+    "changed_shipped_files": [
+      {
+        "user": 0,
+        "name": "ADMTST.COM",
+        "old_sha256": "206ddb44c30f926e9facb89d9e9d6bd5709111cf3b8f8f72606156a9c6fe4b8e",
+        "new_sha256": "cc587c6b133b25b65f67a544b3e6ab3dcb8ab1dfc029f5e83ea7c68139bf9654"
+      },
+      {
+        "user": 0,
+        "name": "ANSITST.COM",
+        "old_sha256": "8e3379a5d6ff2f04441c8edc7628451f40b8408ba380ec54ddfadd6eebe176e0",
+        "new_sha256": "c86ed522c239ce531a64cf85768f27eaa1496cffdcf7a798ba1c95e874a6236c"
+      },
+      {
+        "user": 0,
+        "name": "BYE.COM",
+        "old_sha256": "c70c04e051f0098737186e058c3640fa0156e7984bf896f919a6c028c0a98168",
+        "new_sha256": "1b19089903e6bae7a9e55e6fa23e83d7ecb880a0e2e8b6b28390d2ea3a3977a5"
+      },
+      {
+        "user": 0,
+        "name": "CONFIG.COM",
+        "old_sha256": "d2575e63b530d6d816f75d5c98630a5f47c674e36fd32245ecb07efe04dca55f",
+        "new_sha256": "993c31dbfce5ee7419c25c8bb7f40fbf896f6014570a1d4ba9194556d0fc97ad"
+      },
+      {
+        "user": 0,
+        "name": "VT52TST.COM",
+        "old_sha256": "5595372338896e7b7ababb9d6a1297e6cdea49ca1fd647758e89fdae1f6204ac",
+        "new_sha256": "b1953940dd2069c2ad79b58d01464402778483e52c987bcaf3a2ca416bbbf1b0"
+      }
+    ],
+    "added": [],
+    "removed": []
+  }
+}

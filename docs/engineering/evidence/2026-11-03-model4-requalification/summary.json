@@ -1,5 +1,5 @@
 {
-  "status": "CPMSIM_SELECTED_CHECKS_PASS_MODEL4_NATIVE_PENDING",
+  "status": "SELECTED_CPMSIM_AND_MODEL4_CHECKS_PASS_ACCEPTANCE_PENDING",
   "source_commit": "0bd7f127ebca849fe613c7a36b3cd9c1c38314a8",
   "integration_parent": "232f059a032b58a4079d394c35a81a164f393da3",
   "branch": "codex/model4-requalification",
@@ -197,13 +197,35 @@
   },
   "limits": [
     "Ordinary physical CAPS quick-tap behavior remains unconfirmed.",
-    "New Model 4 distribution conformance and native provider checks remain pending.",
     "Previous manual keyboard/application evidence used the same BIOS but a different image.",
-    "Official BIOS component revision and release acceptance remain maintainer decisions."
+    "Official BIOS component revision and release acceptance remain maintainer decisions.",
+    "269 native assertions cover the reviewed batch, not all 627 cards or every physical device."
   ],
   "unscored_attempts": [
     "systems v1 stopped on stale ROM template-source addresses.",
     "systems v2 stopped on old exact relocation-count expectations.",
     "monitor attempts v1/v2 used relative paths unsuitable for the helper working directory; final v3 used absolute paths and passed."
-  ]
+  ],
+  "model4_native_conformance": {
+    "status": "PASS_REVIEWED_NATIVE_GROUPS",
+    "passes": 269,
+    "failures": 0,
+    "errors": 0,
+    "image_sha256": "83e9ac2daa566312d5825a39d0f0ac4e3ef04cf83446aac7b493db30640edc5d",
+    "receipt": "native-model4-conformance.json"
+  },
+  "model4_native_providers": {
+    "status": "PASS",
+    "providers": [
+      "ADM3A",
+      "ANSI",
+      "VT52"
+    ],
+    "receipt": "native-model4-conformance.json"
+  },
+  "native_archive": {
+    "file": "native-qualification-evidence.tar.gz",
+    "sha256": "d361698111af870e320eaf24889a9d8907c157e8e5934b4b548ae6c50d5dc152",
+    "members": 132
+  }
 }

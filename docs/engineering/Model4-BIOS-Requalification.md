@@ -1,7 +1,7 @@
 # Model 4 BIOS requalification after merge
 
-Status: cpmsim selected checks pass; new Model 4 native execution and release
-acceptance remain pending, 2026-11-03.
+Status: selected cpmsim and new Model 4 native checks pass; release acceptance
+remains pending, 2026-11-03. No further run of this completed batch is requested.
 
 PR #574 merged the keyboard correction into main at
 `232f059a032b58a4079d394c35a81a164f393da3`, after the audit and UI fixes.
@@ -74,13 +74,30 @@ Two initial monitor invocations used unsuitable relative paths and are unscored;
 the final absolute-path invocation passed all three personalities. Earlier
 failed preparation attempts are retained as build diagnostics, not accepted media.
 
-The new Model 4 image passes host media integrity checks. Its native launcher
-preflight returns LaunchServices 1100 before starting any emulator. Native
-conformance/provider results for this distribution image are still pending.
+The new Model 4 image passes host media integrity checks. The agent-side
+launcher preflight returned LaunchServices 1100 before starting an emulator.
+The maintainer then started the combined desktop Terminal batch, which completed
+without subsequent operator input. Its eleven group summaries total **269 pass,
+zero fail and zero error**. ADM3A, VT52 and ANSI provider checks all pass,
+including their shipped-file audits, unchanged system tracks and clean
+filesystems. All results bind to the new Model 4 image hash above.
 
-## Desktop Terminal handoff
+The reviewed receipts and captures are retained in
+`evidence/2026-11-03-model4-requalification/native-qualification-evidence.tar.gz`,
+with a separate member hash manifest and `native-model4-conformance.json`.
+Both new images and the earlier candidate were rehashed after qualification;
+their original hashes are unchanged. The earlier 269 passes remain historical
+evidence; this is a distinct 269-pass run on the new image.
 
-Run from a normal macOS Terminal. Each harness uses private media. This command
+The consolidated source/contract assessment is
+`Model4-Lowercase-Final-Code-Review.md`. It records the build-matched M4SCRN
+publication requirement, component-revision decision, and a retained pending
+input/status discrepancy reproduced in both BIOS generations for separate
+post-1.0 investigation. No additional production fix is proposed here.
+
+## Completed desktop Terminal batch: reproduction reference
+
+The completed run used a normal macOS Terminal. Each harness uses private media. This command
 block runs the previously reviewed Model 4 batch and the three provider checks;
 it does not replace the frozen candidate or publish a release.
 
@@ -101,9 +118,12 @@ for monitor in ADM3A VT52 ANSI; do
 done
 ```
 
-Inspect the individual receipts and screens before counting new native passes.
-Ordinary physical host CAPS quick taps also remain an explicit manual check;
-scripted matrix input does not settle the earlier host-key behavior.
+The individual receipts and screens were inspected before counting these native
+passes. Ordinary physical host CAPS quick taps remain unconfirmed; scripted
+matrix input does not settle the earlier host-key behavior. This limitation
+does not imply a newly demonstrated production defect or require rerunning the
+completed batch. Physical-host follow-up and release acceptance remain separate
+maintainer decisions.
 
 The earlier candidate `6d6c103507ce8558700b3b8e412ac500de361226` and its evidence
 remain intact. Its Model 4 distribution hash was rechecked as

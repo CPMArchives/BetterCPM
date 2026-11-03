@@ -1,0 +1,29 @@
+{
+  "status": "REPRODUCED_IN_BOTH_PREVIOUS_AND_MERGED_BIOS",
+  "scope": "Instruction-level execution of real M4_IN and BIOCONST with only M4_SCAN replaced by a scripted scanner; not a native timing result.",
+  "procedure": [
+    "Initialize basic monitor binding and IOBYTE 55h.",
+    "Supply physical A/ASCII 41h, then physical B/ASCII 42h during CONIN.",
+    "Observe returned 41h and pending 42h.",
+    "Supply an empty matrix scan during BIOCONST and observe 00h."
+  ],
+  "results": [
+    {
+      "binary": "previous",
+      "bios_sha256": "4e98264086f5cf017d08f46fc49774fd8405b509cb97431d0db1bfade5c1b173",
+      "conin_return": 65,
+      "pending_byte": 66,
+      "const_when_matrix_empty": 0
+    },
+    {
+      "binary": "merged",
+      "bios_sha256": "c7b8150ce55ae151880de64ab38ed4f873d3080ea5589be090253a1461a8ab4c",
+      "conin_return": 65,
+      "pending_byte": 66,
+      "const_when_matrix_empty": 0
+    }
+  ],
+  "interpretation": "Retained status/pending-queue discrepancy; not introduced by the lowercase or footprint correction.",
+  "production_change_made": false,
+  "disposition": "Record for separate post-1.0 review; do not broaden this correction."
+}
