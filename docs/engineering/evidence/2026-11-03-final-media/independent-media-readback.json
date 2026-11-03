@@ -1,0 +1,98 @@
+{
+  "definitions_sha256": "a6c46f34979ca817d169c6dcc7ac44938827ffbca1b1e8e9741eaa0187dafb2c",
+  "review_fdb_sha256": "0d17c89635dcc9c6c8f55b9915665bf954715d8b77b5fe169fab477a887a4261",
+  "media": [
+    {
+      "image": "BetterCPM-Distribution-z80pack-332K.dsk",
+      "sha256": "15d268ba99a986342fc7facb85a545d5504f73eb26f8b797419eb72e63e3a463",
+      "definition": "MMF017",
+      "files_verified": 34,
+      "filesystem": "disk: 34/64 files (0.0% non-contigous), 107/166 blocks"
+    },
+    {
+      "image": "BetterCPM-Work-332K.dsk",
+      "sha256": "67c99c31d81a5c3429131e872d8f2737607dd8383587c8bb97f9355f04e0dbab",
+      "definition": "MMF017",
+      "files_verified": 0,
+      "filesystem": "disk: 0/64 files (0.0% non-contigous), 1/166 blocks"
+    },
+    {
+      "image": "BetterCPM-Distribution-trs80gp-80T-DS-System.dmk",
+      "sha256": "4e661bab569b81ac583f74aabedf41001a76b28d9721ab911e6ff0995feaf5cd",
+      "definition": "BCPM780",
+      "files_verified": 30,
+      "filesystem": "disk: 31/128 files (0.0% non-contigous), 102/390 blocks",
+      "historical_MMI012_recovers_expected_directory": false
+    },
+    {
+      "image": "BetterCPM-Work-800K.dmk",
+      "sha256": "a2bd8239531919ae078c6d2dcef650738ec77e8307993df8d3fcd74a46c29107",
+      "definition": "MMI008",
+      "files_verified": 0,
+      "filesystem": "disk: 0/128 files (0.0% non-contigous), 2/400 blocks"
+    },
+    {
+      "image": "BetterCPM-NOAH-z80pack-332K.dsk",
+      "sha256": "a5eacfe263f90433a21bec5825ff63d9feb8510aec1ae1b64f8b0da841234cce",
+      "definition": "MMF017",
+      "files_verified": 7,
+      "filesystem": "disk: 8/64 files (0.0% non-contigous), 42/166 blocks"
+    },
+    {
+      "image": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "sha256": "d175636d1393e0f3dd52ee48cad5b195ba23e699af16d821935cf2f1dcb041e6",
+      "definition": "MMF017",
+      "files_verified": 26,
+      "filesystem": "disk: 26/64 files (0.0% non-contigous), 165/166 blocks"
+    },
+    {
+      "image": "BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk",
+      "sha256": "4a3f7fc10d5f4f0ef5a5e3906e15810c4478e638ae13db0e1d70daa12102cc7f",
+      "definition": "MMI008",
+      "files_verified": 7,
+      "filesystem": "disk: 10/128 files (0.0% non-contigous), 43/400 blocks"
+    },
+    {
+      "image": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "sha256": "534766b9ec95f59f4f5f6783005605468d01a79970bf01f52f4da1c248db0bb4",
+      "definition": "MMI008",
+      "files_verified": 26,
+      "filesystem": "disk: 35/128 files (0.0% non-contigous), 166/400 blocks"
+    }
+  ],
+  "catalogue_comparison": {
+    "BetterCPM-Distribution-z80pack-332K.dsk": [
+      "MMF017",
+      "MMI012",
+      "MMI008"
+    ],
+    "BetterCPM-Distribution-trs80gp-80T-DS-System.dmk": [
+      "MMF017",
+      "MMI012",
+      "MMI008"
+    ]
+  },
+  "full_volume_probes": {
+    "MMF017": {
+      "file_bytes": 337920,
+      "sha256": "b7de20ae47039149406ba91ad98f690a117483fc30c2b51afd92d145f7d2d643",
+      "fsck": "disk: 11/64 files (0.0% non-contigous), 166/166 blocks"
+    },
+    "MMI012": {
+      "file_bytes": 804864,
+      "sha256": "2dc6f62aeb0a151affdd68beadbb46639deebcb8829ea26d2d8082d89cdf6466",
+      "fsck": "disk: 50/128 files (0.0% non-contigous), 395/395 blocks"
+    },
+    "MMI008": {
+      "file_bytes": 815104,
+      "sha256": "3b031b21465bb3d28022b0b43d66712d960563e3b44a2259f11d63088b8237ac",
+      "fsck": "disk: 50/128 files (0.0% non-contigous), 400/400 blocks"
+    },
+    "BCPM780": {
+      "file_bytes": 794624,
+      "sha256": "83f7d511cdf2b222a587c9e7135cd8c7871be2523c8bf9b9509b11faee9f1d61",
+      "fsck": "disk: 49/128 files (0.0% non-contigous), 390/390 blocks"
+    }
+  },
+  "tested_source_commit": "8921a509838e7b46dc88bb9536e36ee847e0870c"
+}

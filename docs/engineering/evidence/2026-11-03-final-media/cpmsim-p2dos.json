@@ -1,0 +1,63 @@
+{
+  "status": "PASS",
+  "input_image_sha256": "15d268ba99a986342fc7facb85a545d5504f73eb26f8b797419eb72e63e3a463",
+  "p2dos_sha256": "9c854dd4aa8afcf439ac28233a8c723cd2cc32888d2aa137ba1bf9e2c3e82a08",
+  "probe_sha256": "cb893b4517d41ef1f2d0ca66ef688eff04c635f35fb7467672810a43e34e4c41",
+  "simulator_sha256": "0f6b256cd6beea2ab7bf0eab8a9cc2a5241ed772408e811150c3f6e0f5cff4e8",
+  "simulator_mode": "ordinary RAM mode; record the selected runtime/qualification environment separately",
+  "commands": [
+    [
+      "B:CLKPROB 2",
+      "abi"
+    ],
+    [
+      "RSX LOAD ZPRTC",
+      null
+    ],
+    [
+      "RSX LOAD P2DOS",
+      null
+    ],
+    [
+      "B:CLKPROB 0",
+      "abi"
+    ],
+    [
+      "TIME",
+      null
+    ],
+    [
+      "B:CLKPROB 0",
+      "abi"
+    ],
+    [
+      "RSX UNLOAD ZPRTC",
+      null
+    ],
+    [
+      "B:CLKPROB 1",
+      "abi"
+    ],
+    [
+      "RSX LIST",
+      "resident"
+    ],
+    [
+      "RSX LOAD ZPRTC",
+      null
+    ],
+    [
+      "B:CLKPROB 0",
+      "abi"
+    ],
+    [
+      "RSX UNLOAD P2DOS",
+      null
+    ],
+    [
+      "B:CLKPROB 2",
+      "abi"
+    ]
+  ],
+  "scope": "Supplied A0 P2DOS: absent/loaded/provider-unloaded/replaced/unloaded results; GET/SET A/HL, DE/SP/IX/IY and failed-GET atomicity. Transient JP0 returns exercise warm reconstruction. Private disks only; not Model 4 runtime or public-package acceptance."
+}

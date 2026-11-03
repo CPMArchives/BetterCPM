@@ -64,7 +64,7 @@ def main():
     def invocation(image=source):
         return [str(DEFAULT_EMULATOR), '-m4', '-batch', '-turbo', '-ktx',
                 '-d0', str(image), '-d1', str(target), '-itime', '15000',
-                '-iw', ('BetterCP/M VER 1.0 (Resident' if configured else 'Type TYPE README.TXT for more'), '-id', '6000']
+                '-iw', ('VER 1.0 (' if configured else 'Type TYPE README.TXT for more'), '-id', '6000']
 
     command = invocation()
     command += key_args('IO95\r',delay=60)+['-iw','LIVE IOBYTE 95 PASS','-id','6000','-it']
@@ -132,7 +132,7 @@ def main():
     cold.mkdir()
     command = [str(DEFAULT_EMULATOR), '-m4', '-batch', '-turbo', '-ktx',
                '-d0', str(target), '-itime', '15000',
-               '-iw', 'BetterCP/M VER 1.0 (Resident', '-id', '6000']
+               '-iw', 'VER 1.0 (', '-id', '6000']
     command += key_args('IO55\r',delay=60)+['-iw','LIVE IOBYTE 55 PASS','-id','6000','-it']
     command += key_args('CONFIG /SHOW\r',delay=60)+['-iw','Saved disk-boot IOBYTE (decimal): 85','-it','-id','6000']
     command += key_args('TYPE KEEP.TXT\r',delay=60)+['-iw','PRESERVED ACROSS NAMED SYSTEM EXPORT AND INSTALL','-id','6000','-it','-ix']

@@ -1,0 +1,25 @@
+{
+  "source_commit": "8921a509838e7b46dc88bb9536e36ee847e0870c",
+  "archive_readback": "PASS all six",
+  "independent_media": "PASS eight images, 130 file instances, four full-volume probes",
+  "cpmsim_fresh_offline_runtime": "PASS",
+  "cpmsim_original_installed_settings": "FAIL, reproduced with strengthened assertion",
+  "cpmsim_private_corrected_install": "PASS, not the original candidate",
+  "model4_fresh_media": "PASS boot, geometry, both Utilities directories and independent Work copy readback",
+  "model4_original_install": "PASS, current-banner runner",
+  "model4_clock": "PASS all five lifecycle cases, unchanged supplied carriers, guest completion marker and clean exit",
+  "host_regressions": {
+    "tests": 33,
+    "status": "PASS"
+  },
+  "python_syntax": "PASS",
+  "diff_whitespace": "PASS",
+  "freeze": "HOLD",
+  "final_candidate_acceptance": "NOT ACCEPTED; correction review and rebuild required",
+  "integration_main": "064c003db9951d17e858be10c155e1299d2164b0",
+  "integration_delta_checks": [
+    "PASS 33 host regressions",
+    "PASS deterministic 108-entry FDB packaging and lossless decompilation round trip",
+    "PASS CCS 332K, MM 800K and inverted raw/DMK conversions"
+  ]
+}

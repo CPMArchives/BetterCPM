@@ -15,7 +15,7 @@ ROOT=Path(__file__).resolve().parents[1]
 def main():
  p=argparse.ArgumentParser(description=__doc__)
  for name in ('baseline','output'):p.add_argument('--'+name,type=Path,required=True)
- p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim');a=p.parse_args();w=a.output;w.mkdir(parents=True,exist_ok=False);report=json.loads((a.baseline/'report.json').read_text());original=a.baseline/report['image'];assert sha(original)==report['sha256'];disks=w/'disks';disks.mkdir();shutil.copy2(a.baseline/'diskdefs',w/'diskdefs');shutil.copy2(__file__,w/'executed-runner.py')
+ p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim');a=p.parse_args();a.baseline=a.baseline.resolve();a.simulator=a.simulator.resolve();w=a.output.resolve();w.mkdir(parents=True,exist_ok=False);report=json.loads((a.baseline/'report.json').read_text());original=a.baseline/report['image'];assert sha(original)==report['sha256'];disks=w/'disks';disks.mkdir();shutil.copy2(a.baseline/'diskdefs',w/'diskdefs');shutil.copy2(__file__,w/'executed-runner.py')
  for letter in 'abc':shutil.copy2(original,disks/f'drive{letter}.dsk')
  A,B,C=[disks/f'drive{x}.dsk' for x in 'abc'];subprocess.run(['cpmrm','-T','raw','-f','bettercpm-default',str(B),'0:*.*'],cwd=w,check=True,capture_output=True)
  def put(image,user,name,data):
@@ -36,7 +36,8 @@ def main():
  package=w/'LIB090-exported.SYS';subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(B),'0:LIB090.SYS',str(package)],cwd=w,check=True,capture_output=True);data=package.read_bytes();assert len(data)==20608 and data[:8]==b'BCSY\x01\x01\xa0\x00' and data[128:]==payload(actual)
  assert C.read_bytes()[reserved:]==beforeC[reserved:];(w/'installed.dsk').write_bytes(C.read_bytes());boot=w/'reboot';(boot/'disks').mkdir(parents=True);shutil.copy2(w/'diskdefs',boot/'diskdefs');bootimage=boot/'disks/drivea.dsk';shutil.copy2(C,bootimage)
  cold=session(a.simulator,boot/'disks',[(b'IO55\r',prompt,30),(b'CONFIG /SHOW\r',prompt,60),(b'TYPE A7:KEEP.TXT\r',prompt,30),(b'BYE /Y\r',b'System halted',30)],w/'installed-cold-boot.bin')
- assert b'BetterCP/M VER 1.0 (Resident, RCP Build ' in cold and b'LIVE IOBYTE 55 PASS' in cold and b'IOBYTE CHECK FAIL' not in cold and b'INSTALLED WORKFLOW SENTINEL' in cold;assert bootimage.read_bytes()==C.read_bytes(),'read-only installed boot changed media'
+ assert b'Saved disk-boot IOBYTE (decimal): 85' in cold and b'Boot disk does not match' not in cold
+ assert b'VER 1.0 (' in cold and b'LIVE IOBYTE 55 PASS' in cold and b'IOBYTE CHECK FAIL' not in cold and b'INSTALLED WORKFLOW SENTINEL' in cold;assert bootimage.read_bytes()==C.read_bytes(),'read-only installed boot changed media'
  shipped=audit(a.baseline,report,w,A)
  for label,image in [('package',B),('installed',C),('reboot',bootimage)]:
   fs=subprocess.run(['fsck.cpm','-T','raw','-f','bettercpm-default','-n',str(image)],cwd=w,capture_output=True,check=True);(w/(label+'-filesystem.txt')).write_bytes(fs.stdout+fs.stderr)

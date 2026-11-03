@@ -1,0 +1,24 @@
+[ D ] Step rate (ms):             6
+[ E ] Motor spin-up (1/4 sec):    2
+[ F ] Head settling time (ms):    15
+2
+[ A ] Type of drive (inches):     5
+[ B ] Number of tracks:           80
+[ C ] Number of sides:            2
+[ D ] Step rate (ms):             6
+[ E ] Motor spin-up (1/4 sec):    2
+[ F ] Head settling time (ms):    15
+3
+[ A ] Type of drive (inches):     5
+[ B ] Number of tracks:           80
+[ C ] Number of sides:            2
+[ D ] Step rate (ms):             6
+[ E ] Motor spin-up (1/4 sec):    2
+[ F ] Head settling time (ms):    15
+Saved logical-drive bindings:
+A: 0: BetterCP/M Model 4 System 780K
+B: 1: MM 80T DS DATA
+C: 2: MM 80T DS DATA
+D: 3: MM 80T DS DATA
+
+A0>

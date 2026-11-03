@@ -1,0 +1,44 @@
+[
+  {
+    "package": "system-cpmsim",
+    "sha256": "e6e37d5496e780c055a5c792d92174eaca1b560e209a05946c81b41d727ae59a",
+    "member_hashes": "PASS",
+    "members": 63,
+    "root": "BetterCPM-1.0-System-cpmsim-candidate"
+  },
+  {
+    "package": "system-model4",
+    "sha256": "298f28b60d05df9e29225936e6047bfb3317f63d15e05e362e729cbcfad1f63e",
+    "member_hashes": "PASS",
+    "members": 39,
+    "root": "BetterCPM-1.0-System-Model4-candidate"
+  },
+  {
+    "package": "utilities-cpmsim",
+    "sha256": "98d2fe6c1b4b49361a359e7e8c0272ff37683f135a7e4b76e6e2bc2dc92ec99e",
+    "member_hashes": "PASS",
+    "members": 64,
+    "root": "BetterCPM-Utilities-1.0-cpmsim-candidate"
+  },
+  {
+    "package": "utilities-model4",
+    "sha256": "d50f3efc2799c320400f7bf27689f8c9613aaedb42df982c17e669b43d2510a1",
+    "member_hashes": "PASS",
+    "members": 64,
+    "root": "BetterCPM-Utilities-1.0-Model4-candidate"
+  },
+  {
+    "package": "source",
+    "sha256": "ed1a9d41a4f66c96323439452361603011d37ce478f0f32a4eb038b5c3dd4d4c",
+    "member_hashes": "PASS",
+    "members": 2439,
+    "root": "BetterCPM-1.0-Source-candidate"
+  },
+  {
+    "package": "documentation",
+    "sha256": "703c3254b2321176694037099d46b37fb1bc94cb032afb61bc8932a31bbfe590",
+    "member_hashes": "PASS",
+    "members": 747,
+    "root": "BetterCPM-1.0-Documentation-candidate"
+  }
+]

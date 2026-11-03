@@ -1,0 +1,27 @@
+{
+  "cases": {
+    "C01": {
+      "sha256": "645fb0d62a299a0394c5bc174bf3355168a9cecd94199bdf350ba995e078b6d0",
+      "status": "PASS"
+    },
+    "C02": {
+      "sha256": "645fb0d62a299a0394c5bc174bf3355168a9cecd94199bdf350ba995e078b6d0",
+      "status": "PASS"
+    },
+    "C03": {
+      "sha256": "645fb0d62a299a0394c5bc174bf3355168a9cecd94199bdf350ba995e078b6d0",
+      "status": "PASS"
+    },
+    "C04": {
+      "sha256": "645fb0d62a299a0394c5bc174bf3355168a9cecd94199bdf350ba995e078b6d0",
+      "status": "PASS"
+    },
+    "C05": {
+      "sha256": "645fb0d62a299a0394c5bc174bf3355168a9cecd94199bdf350ba995e078b6d0",
+      "status": "PASS"
+    }
+  },
+  "orchestration": "Earlier fixed-wait attempt timed out after all cases; superseded by the clean completion-oracle run in model4-clock.json. A shorter fixed wait exited before C02 and was rejected.",
+  "source_image_sha256": "4e661bab569b81ac583f74aabedf41001a76b28d9721ab911e6ff0995feaf5cd",
+  "runner_sha256": "f278fe7625b8b3088ba29e7bebc3d1d361d63f6620b826c56aa867d939a8e452"
+}
