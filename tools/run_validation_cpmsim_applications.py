@@ -10,6 +10,7 @@ from fdf_format import select_fdf
 from build_z80pack_image import DEFAULT_FORMAT
 from startup_record import parse
 from system_layout import LAYOUT
+from utility_versions import banner
 ROOT=Path(__file__).resolve().parents[1]
 MORE=b'MORE -- ,/^R back; ./Space/^C next; </> files; ^Q quit.'
 
@@ -19,7 +20,9 @@ def main():
     for name in ('baseline','output'):p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim')
     p.add_argument('--group',choices=('all','type','lifecycle'),default='all')
-    a=p.parse_args();report=json.loads((a.baseline/'report.json').read_text())
+    a=p.parse_args()
+    a.baseline=a.baseline.resolve();a.output=a.output.resolve();a.simulator=a.simulator.resolve()
+    report=json.loads((a.baseline/'report.json').read_text())
     original=a.baseline/report['image'];assert report['target']=='z80pack' and sha(original)==report['sha256']
     a.output.mkdir(parents=True,exist_ok=True)
     results=[]
@@ -105,7 +108,7 @@ def main():
             else:
                 assert b'saved and verified' in t
                 boot=session(a.simulator,d,[(b'BYE /Y\r',b'System halted',30)],w/'cold-boot.bin')
-                assert b'BetterCP/M VER 1.0 (Resident, RCP Build ' in boot
+                assert (banner('VER',resident=True)+'\r\n').encode() in boot
             finish(w,d,label,'Declined/confirmed protected startup record; confirmed command executes on next cold boot; shipped files unchanged')
     (a.output/'application-summary.json').write_text(json.dumps(results,indent=2)+'\n')
 
