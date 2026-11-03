@@ -767,11 +767,14 @@ EXISTS: LD HL,EXISTMSG
 IOERR:  LD HL,IOMSG
 EXITMSG:
         PUSH HL
+        LD A,(SESSION)
+        OR A
+        JR Z,EXITPRINT
         LD HL,(VIEWCLEANUP)
         LD A,H
         OR L
         JP NZ,VIEWERROR
-        POP HL
+EXITPRINT:POP HL
         LD A,(EDITCHECK)
         OR A
         JP NZ,EDCHECKFAIL
@@ -813,7 +816,7 @@ FDFEXT: DB 'FDF'
 HEADER: DB 'BFDB',1,0,16,64,0,0,128,0,0,0,0,0
 USAGEMSG:DB 'Usage: FDB [source [destination]]',13,10,0
 DONEMSG:DB 'FDB: complete.',13,10,0
-MEMMSG: DB 'FDB: insufficient TPA or catalogue workspace.',13,10,0
+MEMMSG: DB 'FDB: insufficient TPA or workspace.',13,10,0
 BADMSG: DB 'FDB: invalid catalogue.',13,10,0
 TEXTMSG:DB 'FDB: invalid definition or unsupported FDF text.',13,10,0
 LOSSMSG:DB 'FDB: cannot export this encoding losslessly.',13,10,0
