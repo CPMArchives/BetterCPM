@@ -108,6 +108,23 @@ def main():
     expected[6:8]=bytes((100,0))
     assert m.drives[2]==expected
     assert m.files[out]==serialize((*entries,replace(base,ident='CAP1',description='Captured format',dsm=100)))
+    # Applying a cylinder catalogue format uses surface-track runtime units,
+    # while retaining the original format in the working catalogue/editor.
+    before_drives = dict(m.drives)
+    m.reset_masks=[]
+    console=run('B\r\rBCPM780\rS\rD\rB\rY\rQ\rQ\r',{src:stock})
+    cylinder=next(entry for entry in entries if entry.ident=='BCPM780')
+    expected=bytearray(64)
+    expected[0]=before_drives[1][0]
+    expected[1:16]=struct.pack('<HBBBHHBBHH',cylinder.spt//2,cylinder.bsh,
+        cylinder.blm,cylinder.exm,cylinder.dsm,cylinder.drm,cylinder.al0,
+        cylinder.al1,cylinder.cks,cylinder.off*2)
+    expected[16:20]=bytes((cylinder.cylinders,cylinder.psectors,
+                           cylinder.secsize.bit_length()-8,0xC0))
+    expected[20:20+cylinder.psectors]=bytes(cylinder.sector_ids)
+    assert m.drives[1]==expected, (console,m.drives[1].hex(),expected.hex())
+    assert m.drives[2]==before_drives[2] and m.drives[3]==before_drives[3]
+    assert m.files=={src:stock} and m.reset_masks==[2]
     viewfiles={src:stock,diskkey(1,'FDBVIEW.OVL'):(work/'FDBVIEW.OVL').read_bytes()}
     console=run('P\r:B\r:C\r4\rA\rQ\rQ\r', viewfiles)
     assert '<unknown> | <unknown>' in console and m.files==viewfiles

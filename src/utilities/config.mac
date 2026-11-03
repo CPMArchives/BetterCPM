@@ -520,6 +520,7 @@ PAGEPICK:CP 16                          ; format page pick
         ADD A,B
         LD (CHOSEN),A
         CALL FDBBIND
+        CALL NC,FDBRUNTIME
         JR C,FORMATBAD
   ; Check whether any configured drive can accommodate the geometry.
         XOR A
@@ -2191,7 +2192,7 @@ CF_SPHY: DB 'Saved physical-drive profiles:',13,10,0
 CF_SLOG: DB 'Saved logical-drive bindings:',13,10,0
 CF_PHY EQU 0A980H
 CF_LOG EQU 0A880H
-CF_ERROR: DB 'Cannot inspect drive configuration.',13,10,0
+CF_ERROR: DB 'Cannot inspect drives.',13,10,0
 CF_MODE: DB 0
 CF_LEFT: DB 0
 CF_PTR: DW 0
@@ -2947,6 +2948,7 @@ CL_RESOLVE:
         JR Z,CL_FMTERR
         LD A,(CL_CHOS)
         CALL FDBBIND
+        CALL NC,FDBRUNTIME
         JR C,CL_FMTERR
         LD A,(CL_PHYS)
         CALL COMPAT
@@ -3081,7 +3083,7 @@ STEDITMSG:DB 'Command: ',0
 STTESTING:DB 13,10,'Testing pending startup command...',13,10,0
 STTESTNONE:DB 'There is no pending startup command to test.',13,10,0
 STTEST126:DB 'A 126-byte command can run at cold boot but cannot use Test now.',13,10,0
-STTESTSUB:DB 'Cannot test while an A0:$$$.SUB command stream is active.',13,10,0
+STTESTSUB:DB 'Active A0:$$$.SUB prevents test.',13,10,0
 STTESTBAD:DB 'Unable to create the one-command test stream on A:.',13,10,0
 STMAGIC:DB 'BCST',1,0,16
 STHEADER:DB 'BCST',1,0,16,0,0,126,0,1,0,0

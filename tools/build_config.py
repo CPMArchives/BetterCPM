@@ -3,12 +3,12 @@ from pathlib import Path
 from system_layout import expand_layout
 from shared_ui import expand_config_ui
 ROOT=Path(__file__).resolve().parents[1]
-def expanded_source():
+def expanded_source(generated_root=None):
  text=expand_layout((ROOT/'src/utilities/config.mac').read_text())
  for name in ('sysgen','common','fdbread'):
   text=text.replace('        INCLUDE disk/'+name+'.inc',(ROOT/'src/utilities/disk'/(name+'.inc')).read_text())
  for name in ('validation','iobyte'):
-  text=text.replace('; @config-'+name+'@',(ROOT/'build/utilities'/('config-'+name+'.inc')).read_text())
+  text=text.replace('; @config-'+name+'@',((Path(generated_root) if generated_root else ROOT)/'build/utilities'/('config-'+name+'.inc')).read_text())
  text=text.replace('; @monitor-console@',(ROOT/'src/utilities/common/monitorconsole.inc').read_text())
  from system_layout import CONTEXT
  if CONTEXT:

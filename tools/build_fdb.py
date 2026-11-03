@@ -21,6 +21,8 @@ def build(assembler=Path.home()/'bin/z80asm', destination=ROOT/'build/fdb'):
     # CONFIG has a fixed reader workspace. FDB uses the same validator, with
     # a lower ceiling while its interactive editor is resident above the pool.
     validator = 'FDBVALID:' + (UTILITIES/'disk/fdbread.inc').read_text().split('FDBVALID:', 1)[1]
+    validator, runtime = validator.split('; Convert a catalogue/bootstrap', 1)
+    runtime = '; Convert a catalogue/bootstrap' + runtime
     fixed_limit = 'LD HL,FDFLIM\n'
     if validator.count(fixed_limit) != 1:
         raise ValueError('check the shared validator workspace limit')
@@ -32,6 +34,7 @@ def build(assembler=Path.home()/'bin/z80asm', destination=ROOT/'build/fdb'):
         'STACK: DS 512\nSTACKTOP:\nIMAGEEND:',
         '        .PHASE 0B900H\nEDITORBASE:',
         (UTILITIES/'disk/fdbdrive.inc').read_text(),
+        runtime,
         (UTILITIES/'disk/fdbexchange.inc').read_text(),
         (UTILITIES/'disk/fdbviewload.inc').read_text(),
         (UTILITIES/'common/monitorconsole.inc').read_text(),
