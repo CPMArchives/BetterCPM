@@ -1,0 +1,125 @@
+{
+  "status": "PASS",
+  "date": "2026-11-03",
+  "executed_by": "maintainer from normal macOS Terminal",
+  "independently_checked": "saved captures, frozen input hashes, complete logical disk comparisons, native outputs and unchanged input files",
+  "reviewed_implementation_commit": "b69664b8dae31b64b5dae86f58a80660f4037b5f",
+  "runner_sha256": "38569b0a6f2f9fbd12465d3922856e90d8c08e4c40d304618e083a977d64a762",
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "artifacts": {
+    "BDOS": "2c9efde1dded13a82849d0440e1b86b307166ee8d298455268cd0e31dafdbb0b",
+    "SYSBUILD": "8c7c781c8be6913b3c1da7e23321e213c055eb7e164e24143c7cb29b5e8e1b59",
+    "RLMBUILD": "885d9f28aaed9fdd20c457241592b25d6a83024e838182436d52054dea61d629"
+  },
+  "cases": [
+    {
+      "case": "invalid-drive",
+      "status": "PASS",
+      "a_unchanged": true,
+      "b_unchanged": true,
+      "a_before_sha256": "51bb46f5493d2531d8f57b69a337a9d457691f3e9fe724faa198f5aa060e2413",
+      "a_after_sha256": "51bb46f5493d2531d8f57b69a337a9d457691f3e9fe724faa198f5aa060e2413",
+      "b_before_sha256": "4c1c2b0c62307fc43a8b13c460f85bd54871b71607f796c5d77a7e3bbb51987c",
+      "b_after_sha256": "4c1c2b0c62307fc43a8b13c460f85bd54871b71607f796c5d77a7e3bbb51987c",
+      "witnesses": [
+        {
+          "command": "DRIVE5",
+          "expected": "AUD001 PASS: 13 invalid-drive calls rejected",
+          "capture_sha256": "87c192d0b15d9dea9dd768fc3717cb9d2d898864ebc5afb896705683ba239644"
+        }
+      ],
+      "products": {}
+    },
+    {
+      "case": "low-tpa",
+      "status": "PASS",
+      "a_unchanged": true,
+      "b_unchanged": true,
+      "a_before_sha256": "51bb46f5493d2531d8f57b69a337a9d457691f3e9fe724faa198f5aa060e2413",
+      "a_after_sha256": "51bb46f5493d2531d8f57b69a337a9d457691f3e9fe724faa198f5aa060e2413",
+      "b_before_sha256": "4c1c2b0c62307fc43a8b13c460f85bd54871b71607f796c5d77a7e3bbb51987c",
+      "b_after_sha256": "4c1c2b0c62307fc43a8b13c460f85bd54871b71607f796c5d77a7e3bbb51987c",
+      "witnesses": [
+        {
+          "command": "RSX LOAD BIGMEM",
+          "expected": "BIGMEM",
+          "capture_sha256": "540fb458586adf9aa9a1e98dfd94e97319522afa693819b55bf132e2173bc873"
+        },
+        {
+          "command": "GATE",
+          "expected": "GATE8001 PASS",
+          "capture_sha256": "90451ec173c4eb1e28b13992d6bcfbaf2f6df1da51c6d9e86b28e21a06656e6d"
+        },
+        {
+          "command": "SYSBUILD",
+          "expected": "SYSBUILD: insufficient active TPA.",
+          "capture_sha256": "66f76e6343129442b6af4a151ca58878f4a85e0ba2522a7224c8dd96e1dfb423"
+        },
+        {
+          "command": "RLMBUILD",
+          "expected": "RLMBUILD: insufficient active TPA.",
+          "capture_sha256": "ca4b894d29e5d096c712d2f92e473f325fa9210f844133d81556a471faece3ce"
+        },
+        {
+          "command": "SYSBUILD /VER",
+          "expected": "SYSBUILD 1.0",
+          "capture_sha256": "84c55e59900a4c420d8d1d9ef20418d919e258f632da230bcdd7bdc1b26217b5"
+        },
+        {
+          "command": "RLMBUILD /HELP",
+          "expected": "Display utility identification.",
+          "capture_sha256": "eab608276334ebac42f18e678d19d1eabe2ab54c6d6f4723ba3e5d743049e3c4"
+        },
+        {
+          "command": "RSX LIST",
+          "expected": "BIGMEM",
+          "capture_sha256": "aa566b8f763cdb2b2e5d43f48815a896097d671cd3df84ba6defa7466759a463"
+        },
+        {
+          "command": "GATE",
+          "expected": "GATE8001 PASS",
+          "capture_sha256": "50fe05e25a57192819256a6b6906f4a482953d6583df199b9ca13998bea62549"
+        }
+      ],
+      "products": {}
+    },
+    {
+      "case": "normal-tpa",
+      "status": "PASS",
+      "a_unchanged": true,
+      "b_unchanged": false,
+      "a_before_sha256": "51bb46f5493d2531d8f57b69a337a9d457691f3e9fe724faa198f5aa060e2413",
+      "a_after_sha256": "51bb46f5493d2531d8f57b69a337a9d457691f3e9fe724faa198f5aa060e2413",
+      "b_before_sha256": "4c1c2b0c62307fc43a8b13c460f85bd54871b71607f796c5d77a7e3bbb51987c",
+      "b_after_sha256": "a6be6bc71bc39e892cb73def91e10ef90e62f8e77e3272621364a45b1dfb2781",
+      "witnesses": [
+        {
+          "command": "B:",
+          "expected": "B0>",
+          "capture_sha256": "815efd905ad137325790e9794c2d8d10a5afce7d6f7bf3b81f037810d01c2f8c"
+        },
+        {
+          "command": "A:RLMBUILD",
+          "expected": "CCP.RLM created and verified.",
+          "capture_sha256": "7a6065ad5cb31359b7f02e838f12b72e25990a53b6e31d54a176effe55ee54b3"
+        },
+        {
+          "command": "A:SYSBUILD",
+          "expected": "SYSTEM.SYS created and verified",
+          "capture_sha256": "bb15917eb5b510c5bda558e08e18b34588e197471f4c7158c333e10fb0688ec3"
+        }
+      ],
+      "products": {
+        "CCP.RLM": {
+          "sha256": "dca005770ed6c350387ccefb9751c0e76e240bc420f88b17f4299da43b7a47b0",
+          "record_bytes": 6656
+        },
+        "SYSTEM.SYS": {
+          "sha256": "91b7624658c0a09828739a044e60e0ec8eb0dd14815eeadce5e703da637f6500",
+          "record_bytes": 20608
+        }
+      }
+    }
+  ],
+  "scope": "Targeted Model 4 runtime validation of BCPM-AUD-001/002 for these exact artifacts; not qualification of later merged keyboard/UI changes or the final release candidate."
+}

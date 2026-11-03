@@ -133,16 +133,25 @@ python3 tools/test_audit_blockers_model4.py \
   --resume --output build/blocker-validation/model4
 ```
 
-The assistant host's LaunchServices preflight returns permission-denied code
-1100, so trs80gp is deliberately not started there. The packet is prepared and
-the generated 13-operation diagnostic passes a separate native cpmsim control
-with a byte-identical disk. Neither result qualifies Model 4 runtime. The
-[preparation record](audit-blockers-20261103/model4-preparation.json) explicitly
-retains this NOT RUN status; the native run must be completed from Terminal.
+The initial assistant-host LaunchServices preflight returned permission-denied
+code 1100. The [preparation record](audit-blockers-20261103/model4-preparation.json)
+preserves that historical NOT RUN status. The maintainer subsequently ran the
+frozen packet from a normal macOS Terminal on 2026-11-03; all three Model 4
+batches passed. The saved input hashes, captures, returned prompts, complete
+logical disk comparisons and extracted outputs were independently rechecked.
 
-Model 4 runtime under trs80gp has not been requalified here; its common code
-and BIOS cross build pass. The independently active Model 4 keyboard/BIOS and
-shared UI integration branches are untouched. A separate delta audit and
-release qualification are still needed after their eventual merge. Other audit
-findings, additional platforms, checked-profile qualification and release-media
-publication remain outside this correction.
+The [runtime evidence](audit-blockers-20261103/model4-runtime.json) records the
+exact BDOS, SYSBUILD, RLMBUILD, runner and emulator hashes, command witnesses,
+disk hashes and native product checksums. All 13 invalid-drive entry points
+reject; the 8001h gateway and loaded RSX survive both builder refusals and
+queries; normal-TPA CCP.RLM and SYSTEM.SYS match the host references. A: remains
+unchanged in all three batches; B: remains unchanged in the first two, and its
+non-output input files remain unchanged in the successful-build batch.
+
+PR #572 merged as `6c09d0e9c984c123f513b431993bce0a517bd8b0`. These observations
+qualify the targeted audit-blocker behavior for the exact implementation
+artifacts from `b69664b8dae31b64b5dae86f58a80660f4037b5f`. They do not qualify
+subsequently merged Model 4 keyboard/BIOS or shared UI changes. A separate
+targeted delta audit and final release qualification remain necessary. Other
+audit findings, additional platforms, checked-profile qualification and
+release-media publication remain outside this correction.
