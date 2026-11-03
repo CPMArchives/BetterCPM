@@ -75,7 +75,9 @@ P2DOS.RSX is supplied in A0 on both System Disks, optional to load after the
 native provider; it is not loaded by default startup. Both 104/105 adapters
 (T104C3/T104Z8) are explicitly deferred from the 1.0 RC.
 
-Original BetterCP/M contributions are distributed under GPL-2.0-or-later;
-see the package’s LICENSE, COPYING and NOTICE for scope and separate terms.
+Original BetterCP/M software and reusable code examples use GPL-2.0-or-later.
+Original documentation prose and illustrations use CC BY 4.0. Each package
+carries both license texts and docs/LICENSING.md, with LICENSE and NOTICE
+defining the split and separate-work exclusions.
 This grant does not relicense third-party or historical material. Montezuma
 rights evidence remains unresolved. Package freeze remains on hold.

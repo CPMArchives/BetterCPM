@@ -1,8 +1,10 @@
 BetterCP/M licensing and attribution scope
 
-Original BetterCP/M contributions: GPL-2.0-or-later, as declared in LICENSE;
-COPYING retains the unmodified GNU GPL version 2 text. Copyright remains with
-the respective authors. No new individual author/owner attribution is invented.
+Original software, build tools, tests and reusable code examples: GPL-2.0-or-later.
+Original documentation prose and illustrations: CC BY 4.0. LICENSE describes
+the split; COPYING and LICENSES/CC-BY-4.0.txt retain the respective terms.
+Copyright remains with the respective authors. No new individual owner or
+rights transfer is asserted. See docs/LICENSING.md for embedded code examples.
 
 Separate material retains its own notices and recorded terms:
 - third_party/**, including the pinned CP/M Tools source snapshot, upstream

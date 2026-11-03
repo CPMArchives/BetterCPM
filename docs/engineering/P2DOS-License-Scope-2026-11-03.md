@@ -16,9 +16,11 @@ source and historical qualification for later work; no ABI or implementation
 is removed. Reconcile the roadmap, implementation contract and guides with
 this release-scope decision rather than rewriting historical evidence.
 
-LICENSE declares GPL-2.0-or-later for original BetterCP/M contributions,
-including original documentation, tools and tests. COPYING is the complete,
-unmodified GPLv2 text. NOTICE preserves third-party/derived/historical terms
+LICENSE declares the maintainer-selected split: GPL-2.0-or-later for original
+software, tools, tests and reusable code examples, and CC BY 4.0 for original
+documentation prose and illustrations. COPYING retains GPLv2;
+LICENSES/CC-BY-4.0.txt retains CC BY 4.0. docs/LICENSING.md explicitly marks
+embedded original reusable code examples as GPL-2.0-or-later. NOTICE preserves third-party/derived/historical terms
 and does not claim ownership or permission for those works. Each independent
 package carries these files; the complete Source and cpmsim source kit also
 retain them at their source root. No individual copyright-holder name or

@@ -78,8 +78,11 @@ def write_package(path, root_name, files, record):
 
 
 def project_license_files(tracked):
-    return {'licenses/BetterCPM/'+name:tracked[name]
-            for name in ('LICENSE','COPYING','NOTICE')}
+    files={'licenses/BetterCPM/'+name:tracked[name]
+           for name in ('LICENSE','COPYING','NOTICE')}
+    files['licenses/BetterCPM/CC-BY-4.0.txt']=tracked['LICENSES/CC-BY-4.0.txt']
+    files['docs/LICENSING.md']=tracked['docs/LICENSING.md']
+    return files
 
 
 def source_files():
@@ -170,6 +173,8 @@ def assemble(args):
     host.update(common)
     for name in ('LICENSE','COPYING','NOTICE'):
         host[name]=tracked[name]
+    host['LICENSES/CC-BY-4.0.txt']=tracked['LICENSES/CC-BY-4.0.txt']
+    host['docs/LICENSING.md']=tracked['docs/LICENSING.md']
     host['dependencies/'+upstream_name]=upstream
     host['dependencies/README.txt']=restore
     util=args.utilities.resolve()

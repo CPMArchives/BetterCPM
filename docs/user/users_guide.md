@@ -1,5 +1,7 @@
 # BetterCP/M 1.0 User's Guide
 
+License: original prose/illustrations are CC BY 4.0; original reusable code examples are GPL-2.0-or-later. Third-party material retains its own terms. See [licensing and example boundaries](../LICENSING.md).
+
 Package references: this guide accompanies each System download. Installation instructions and release notes are local. Utilities, architecture, programmer and source-code references require the matching separate Utilities, Documentation or Source download unless included locally.
 
 ## Contents

@@ -181,8 +181,11 @@ The BetterCP/M cpmsim target requires the [pinned emulator reconstruction](third
 
 ## License and separate works
 
-Original BetterCP/M code, tools, tests and documentation are licensed under
-[GPL-2.0-or-later](LICENSE); [COPYING](COPYING) contains the license text.
+Original BetterCP/M software, tools, tests and reusable code examples are
+[GPL-2.0-or-later](LICENSE); [COPYING](COPYING) contains the GPL text. Original
+documentation prose and illustrations use CC BY 4.0; the complete text is in
+[LICENSES/CC-BY-4.0.txt](LICENSES/CC-BY-4.0.txt).
+[Documentation licensing](docs/LICENSING.md) explains embedded examples and reuse.
 [NOTICE](NOTICE) identifies the scope and separately licensed/historical works.
 Third-party material keeps its own terms; the project grant does not settle
 the outstanding Montezuma permission review or accept release packages.
