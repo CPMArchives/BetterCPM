@@ -1,0 +1,47 @@
+Model 4 installation using the shipped 35c56a03 tools
+
+Use private writable copies. Keep the original release DMK intact.
+This procedure is for the supplied 80-cylinder double-sided 780K SYSTEM layout.
+
+1. Make source.dmk and target.dmk as two separate copies of
+   BetterCPM-Distribution-trs80gp-80T-DS-System.dmk. Using a System copy as the
+   destination supplies both its 20 KiB reserved area and the support files.
+   The supplied 800K Work disk uses a different layout. It is not this target.
+2. In trs80gp, mount source.dmk in physical drive 0 and target.dmk in physical
+   drive 1. Start Model 4 and wait for the A0 prompt. Physical drive 1 is being
+   used for the target rather than the normal primary Utilities disk.
+3. The source's default B: binding is the 800K data layout. Change its reserved
+   tracks and last allocation block to match the target System copy:
+
+   CONFIG /EDIT=B /OFF=4 /DSM=389
+
+   The message is "Disk configuration changed (until cold boot)."
+   B: now uses four reserved side-tracks, equivalent to the boot disk's two
+   cylinders. DIR B: must show the target's System files before proceeding.
+4. Export the source system to a named file on the target:
+
+   SYSGEN A: B:INSTALL.SYS
+
+   Wait for "Package exported and verified."
+5. Install that package on the same prepared target:
+
+   SYSGEN B:INSTALL.SYS B:
+
+   Verify the destination, then type Y at "Proceed (Y/N)?".
+   Wait for "System installed and verified."
+6. Quit trs80gp. Mount target.dmk alone in physical drive 0 and cold boot.
+   Confirm the banner, DIR A:, CONFIG /SHOW, and RSX LIST. Verify a known file
+   that existed on the target before installation.
+7. For normal combined use, quit before remounting the installed System as
+   physical 0 and Utilities as physical 1. A cold boot restores the normal
+   B: 800K data binding. The temporary edit was not saved as startup defaults.
+
+The qualification used KEEP.TXT as a preservation marker and verified all
+shipped file hashes and the target's original filesystem entries independently.
+No private binding helper was used. The final CONFIG/catalogue integration
+will need to retain or update this procedure for its supported geometry.
+
+The alternative named BCPM780 binding was rejected by the shipped CONFIG.
+The rejected command was CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT="BetterCP/M
+Model 4 System 780K". It reported "Cannot apply logical binding. Nothing
+changed." Retain that observation for the open CONFIG/catalogue workstream.

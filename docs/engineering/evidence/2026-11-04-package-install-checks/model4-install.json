@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "baseline_sha256": "4e661bab569b81ac583f74aabedf41001a76b28d9721ab911e6ff0995feaf5cd",
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "commands": [
+    "CONFIG /EDIT=B /OFF=4 /DSM=389",
+    "DIR B:",
+    "TYPE B:KEEP.TXT",
+    "SYSGEN A: B:INSTALL.SYS",
+    "SYSGEN B:INSTALL.SYS B:",
+    "Y",
+    "cold boot target in physical drive 0",
+    "TYPE KEEP.TXT",
+    "CONFIG /SHOW",
+    "RSX LIST"
+  ],
+  "cold_screens": [
+    "\nA0>:VER /BANNER\n\n - - -                                                  - - -\n|                                                            |\n|                         BetterCP/M                         |\n                         Core OS 1.0\n\n                  CP/M 2.2 Compatible System\n\n                Type TYPE README.TXT for more\n|                                                            |\n - - -                                                  - - -\n\nA0>TYPE KEEP.TXT\nSHIPPED TOOLS INSTALL PRESERVES THIS FILE\n\nA0>\n\n\n\n\n\n",
+    "[ D ] Step rate (ms):             6\n[ E ] Motor spin-up (1/4 sec):    2\n[ F ] Head settling time (ms):    15\n2\n[ A ] Type of drive (inches):     5\n[ B ] Number of tracks:           80\n[ C ] Number of sides:            2\n[ D ] Step rate (ms):             6\n[ E ] Motor spin-up (1/4 sec):    2\n[ F ] Head settling time (ms):    15\n3\n[ A ] Type of drive (inches):     5\n[ B ] Number of tracks:           80\n[ C ] Number of sides:            2\n[ D ] Step rate (ms):             6\n[ E ] Motor spin-up (1/4 sec):    2\n[ F ] Head settling time (ms):    15\nSaved logical-drive bindings:\nA: 0: Current BIOS format (not listed in format catalogue)\nB: 1: MM 80T DS DATA\nC: 2: MM 80T DS DATA\nD: 3: MM 80T DS DATA\n\nA0>",
+    "[ C ] Number of sides:            2\n[ D ] Step rate (ms):             6\n[ E ] Motor spin-up (1/4 sec):    2\n[ F ] Head settling time (ms):    15\n3\n[ A ] Type of drive (inches):     5\n[ B ] Number of tracks:           80\n[ C ] Number of sides:            2\n[ D ] Step rate (ms):             6\n[ E ] Motor spin-up (1/4 sec):    2\n[ F ] Head settling time (ms):    15\nSaved logical-drive bindings:\nA: 0: Current BIOS format (not listed in format catalogue)\nB: 1: MM 80T DS DATA\nC: 2: MM 80T DS DATA\nD: 3: MM 80T DS DATA\n\nA0>RSX LIST\n\nM4SCRN : BDOS 255\nADM3A : BDOS 255\nTPA available: 50K\n\nA0>"
+  ],
+  "scope": "Only shipped commands; private source and 780K SYSTEM target copies plus KEEP.TXT fixture.",
+  "notes": [
+    "Named BCPM780 binding rejected; documented scalar edit passed",
+    "Default startup loads M4SCRN and ADM3A; displayed TPA is 50K with these optional modules loaded",
+    "Final CONFIG/catalogue and FDB.COM integration remains open"
+  ],
+  "sha256": {
+    "field-edit/source.dmk": "47ea469f4fff7a3f7c6a7143496316c7a9d7232d36e0a005230a1a9d80e3073e",
+    "field-edit/target.dmk": "32619151aa152cc26eee734642da130f363d143155c66d0a4c08158cadf1fa81",
+    "probe/trs80-text-0.bin": "5425948e7d28c513c506ca52c8977b90b18a85d9b88fcdfeca8f48ad2d59d745",
+    "field-edit/install/invocation.json": "6b2815fb40a2adf63c5c591fcd76e14afe5bab0c77551dd7a8b8e9cec31ed523",
+    "field-edit/cold/invocation.json": "ab71c06fa51e79dcdc99d51e631e8807b5f0b313774d7473040a34797d43b561"
+  }
+}

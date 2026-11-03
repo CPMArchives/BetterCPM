@@ -1,0 +1,38 @@
+BetterCP/M 1.0 final package acceptance checks
+
+Package freeze remains on hold. Run this against a directory containing exactly
+six candidate ZIPs after FDB.COM, CONFIG.COM and DISK.FDB have been integrated.
+Use an absolute path to a BetterCP/M checkout containing the #597 lock record.
+
+python3 tools/check_release_package_lock.py /absolute/path/to/candidate-directory \
+  --repository /absolute/path/to/BetterCPM \
+  --output /absolute/path/to/package-check-results.json
+
+The checker requires Python 3 and cpmtools. It checks the six package IDs,
+consistent source identity, exact member checksums, notices and license files,
+known Montezuma exclusions including nested archives, System and Utilities
+image receipts, filesystems, individual file bytes and locked component hashes.
+It reports changed disk images and the three open integration components.
+STATIC_CHECKS_PASS is one acceptance input. Keep the freeze on hold until the
+runtime and final-review steps below are complete.
+
+Final review ledger
+
+1. Identify one complete source revision and the build tool/dependency pins.
+   Retain the six ZIP hashes, image hashes, member manifests and runtime identity.
+2. Confirm selected FDB.COM placement, its manual/source/build companions and
+   the final catalogue on each target. Verify the menu and CONFIG integration.
+   Review capacity and catalogue save/replacement space on the destination disk.
+3. Run named format binding and read a known file on both emulator targets.
+   Include the Model 4 780K SYSTEM installation walkthrough using shipped tools.
+   Check reserved-area and filesystem preservation and cold boot of the result.
+4. Compare the final image and component hashes with #597. Carry forward matching
+   results. Run affected platform, conformance and protected-ROM tests for changed
+   inputs. Record each carried-forward result and each fresh result explicitly.
+5. Extract the final Source ZIP into a clean directory. Follow its instructions
+   to reconstruct the runtime and payloads. Compare them with the final media.
+6. Review the final manuals, install guides, release notes and notices against
+   locked contents. Verify locally supplied links, component versions and source
+   companions. Keep PDF/DOCX editions out unless checked against accepted text.
+7. Retain the complete ledger and any explicit exceptions for maintainer review.
+   Package freeze and publication each require the maintainer's release decision.

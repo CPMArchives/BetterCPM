@@ -1,0 +1,117 @@
+{
+  "status": "STATIC_CHECKS_PASS",
+  "freeze": "HOLD",
+  "packages": [
+    {
+      "package": "documentation",
+      "zip": "BetterCPM-1.0-Documentation-candidate.zip",
+      "sha256": "4514353a441e5d91eaed49e7b0fb0b3a559025c7f06453272f27e70242728591",
+      "images": []
+    },
+    {
+      "package": "source",
+      "zip": "BetterCPM-1.0-Source-candidate.zip",
+      "sha256": "1bd39cf0c57af0549e40d7850fd18b9678d9c7c0a2623fae2f7ff6172c39b80f",
+      "images": []
+    },
+    {
+      "package": "system-model4",
+      "zip": "BetterCPM-1.0-System-Model4-candidate.zip",
+      "sha256": "65711242079b8541137d09673cf9ca4ddef7e4b540a410308848f4f10da75cd4",
+      "images": [
+        {
+          "name": "BetterCPM-Distribution-trs80gp-80T-DS-System.dmk",
+          "sha256": "4e661bab569b81ac583f74aabedf41001a76b28d9721ab911e6ff0995feaf5cd",
+          "files_verified": 30,
+          "filesystem": "PASS"
+        }
+      ]
+    },
+    {
+      "package": "system-cpmsim",
+      "zip": "BetterCPM-1.0-System-cpmsim-candidate.zip",
+      "sha256": "92ed649e62870828779bb88ecaf434b8add9ba2e690278abe5c25cfd4363891b",
+      "images": [
+        {
+          "name": "BetterCPM-Distribution-z80pack-332K.dsk",
+          "sha256": "6b6e9035b5e6933fd38edd21ab4f611c065b1740c5e6eb83d53f03ace940892d",
+          "files_verified": 34,
+          "filesystem": "PASS"
+        }
+      ]
+    },
+    {
+      "package": "utilities-model4",
+      "zip": "BetterCPM-Utilities-1.0-Model4-candidate.zip",
+      "sha256": "9b1f0f64633e6a9b32bd303f33fb563e8e01bb2470fca7fcffd0840bba0c2331",
+      "images": [
+        {
+          "name": "BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk",
+          "sha256": "4a3f7fc10d5f4f0ef5a5e3906e15810c4478e638ae13db0e1d70daa12102cc7f",
+          "files_verified": 7,
+          "filesystem": "PASS"
+        },
+        {
+          "name": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+          "sha256": "534766b9ec95f59f4f5f6783005605468d01a79970bf01f52f4da1c248db0bb4",
+          "files_verified": 26,
+          "filesystem": "PASS"
+        }
+      ]
+    },
+    {
+      "package": "utilities-cpmsim",
+      "zip": "BetterCPM-Utilities-1.0-cpmsim-candidate.zip",
+      "sha256": "d434f8c033146317052ca52d4766eba50605b8774c3fe91b6982b13c2dffd92e",
+      "images": [
+        {
+          "name": "BetterCPM-NOAH-z80pack-332K.dsk",
+          "sha256": "a5eacfe263f90433a21bec5825ff63d9feb8510aec1ae1b64f8b0da841234cce",
+          "files_verified": 7,
+          "filesystem": "PASS"
+        },
+        {
+          "name": "BetterCPM-Utilities-z80pack-332K.dsk",
+          "sha256": "d175636d1393e0f3dd52ee48cad5b195ba23e699af16d821935cf2f1dcb041e6",
+          "files_verified": 26,
+          "filesystem": "PASS"
+        }
+      ]
+    }
+  ],
+  "source_commits": [
+    "35c56a03f253c10d85ccb110ca34c1f368f319a1"
+  ],
+  "changed_images": [],
+  "open_integration_components": [
+    [
+      "trs80gp",
+      "CONFIG.COM",
+      "fb3dbea97a6140f62aca04051333ddc0b9641a376ca9d602a644070833631714"
+    ],
+    [
+      "trs80gp",
+      "DISK.FDB",
+      "06e2d88e30c38bebe4eaf0975a3e302086874e719109dc3898bb72a0f7ded6a5"
+    ],
+    [
+      "z80pack",
+      "CONFIG.COM",
+      "b3a1e354dc1c6daaa0af608a9b366361def776f8e7a82c04bac136ab617057b2"
+    ],
+    [
+      "z80pack",
+      "DISK.FDB",
+      "06e2d88e30c38bebe4eaf0975a3e302086874e719109dc3898bb72a0f7ded6a5"
+    ]
+  ],
+  "failures": [],
+  "remaining_gates": [
+    "Final FDB/CONFIG/catalogue integration and placement",
+    "Catalogue binding/read and installation runtime acceptance",
+    "Source rebuild from the final exported ZIP",
+    "Final documentation sign-off",
+    "Affected regressions for changed media",
+    "Maintainer package freeze approval"
+  ]
+}

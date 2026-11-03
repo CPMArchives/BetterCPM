@@ -238,6 +238,8 @@ def assemble(args):
             files['images/'+('BetterCPM-Work-332K.dsk' if platform=='cpmsim' else 'BetterCPM-Work-800K.dmk')]=work
             guide='CPMSIM-INSTALLATION.md' if platform=='cpmsim' else 'MODEL4-INSTALLATION.md'
             files['docs/platform/'+guide]=tracked['docs/platform/'+guide]
+            if platform=='Model4':
+                files['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']=tracked['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']
             if platform=='cpmsim':
                 files['third_party/z80pack/README.md']=tracked['third_party/z80pack/README.md']
             files['docs/user/users_guide.md']=tracked['docs/user/users_guide.md']
