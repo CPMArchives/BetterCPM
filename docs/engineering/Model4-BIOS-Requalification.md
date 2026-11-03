@@ -28,8 +28,8 @@ regression evidence are retained with
 The Model 4 BIOS is identical to the manually tested draft. The new distribution
 also includes the separately merged audit/UI changes, so the old application
 screens and old release conformance are not full-image acceptance for this disk.
-Official BIOS component revision assignment remains a release preparation
-decision; these source and artifact identities identify a candidate only.
+The later audit follow-up assigned BIOS 1.14 revision 002 to both recorded
+BIOS binaries. [Assignment and replay procedure](AUDIT-BLOCKER-CORRECTIONS.md#audit-follow-up-on-3-november-2026)
 
 ## ROM metadata and exact expectations
 

@@ -1,0 +1,175 @@
+{
+  "implementation_commit": "36ca7754908242d2d00891892ff5581148b6e31b",
+  "parent_commit": "3cfe33dd014e6af61b60433879e121a1aaab1d1f",
+  "byte_comparisons": {
+    "trs80gp": {
+      "binary_products_compared": 197,
+      "differences": 0,
+      "system_disk": "BetterCPM-Distribution-trs80gp-80T-DS-System.dmk",
+      "system_disk_sha256": "83e9ac2daa566312d5825a39d0f0ac4e3ef04cf83446aac7b493db30640edc5d",
+      "candidate_validation": {
+        "filesystem": "PASS",
+        "file_integrity": "PASS",
+        "config_fingerprint": "PASS",
+        "boot": "PENDING manual execution; no automated Model 4 launch attempted"
+      },
+      "bios": {
+        "bytes": 757,
+        "name": "bios.bin",
+        "sha256": "c7b8150ce55ae151880de64ab38ed4f873d3080ea5589be090253a1461a8ab4c"
+      },
+      "prior_native_run": "83e9ac2daa566312d5825a39d0f0ac4e3ef04cf83446aac7b493db30640edc5d"
+    },
+    "z80pack": {
+      "binary_products_compared": 240,
+      "differences": 0,
+      "system_disk": "BetterCPM-Distribution-z80pack-332K.dsk",
+      "system_disk_sha256": "e44e39f9dd938da9039853296867ea8b099fc93e8389dd19d138794d7569169b",
+      "candidate_validation": {
+        "filesystem": "PASS",
+        "file_integrity": "PASS",
+        "config_fingerprint": "PASS",
+        "boot": "PASS"
+      },
+      "bios": {
+        "bytes": 623,
+        "name": "bios.bin",
+        "sha256": "989ee082cfaa644cd89a4b031198dd6a01fc35fb923978fb06d9b39c569ff8c2"
+      }
+    }
+  },
+  "binary_suffixes": [
+    ".bin",
+    ".com",
+    ".cpx",
+    ".dmk",
+    ".dsk",
+    ".hex",
+    ".rlm",
+    ".rom",
+    ".rsx",
+    ".sys"
+  ],
+  "cpmsim_blockers_empty_startup": {
+    "status": "PASS",
+    "input_sha256": "50b650dc9777db08c54df0ebc7a0d69ec14a68656b728dcba97da69c822296ca",
+    "fixture_disk_sha256": "a6ea6d0d30d4f874b910503db0b75cb05e6ede6703404ce8a880969d63edcd01",
+    "after_sha256": "a6ea6d0d30d4f874b910503db0b75cb05e6ede6703404ce8a880969d63edcd01",
+    "target_retained": true,
+    "disk_unchanged": true,
+    "normal_tpa_outputs_match_host": [
+      "CCP.RLM",
+      "SYSTEM.SYS"
+    ],
+    "commands": [
+      "DRIVE5",
+      "RSX LOAD BIGMEM",
+      "STAT MEM",
+      "SYSBUILD",
+      "RLMBUILD",
+      "SYSBUILD /VER",
+      "RLMBUILD /HELP",
+      "RSX LIST",
+      "STAT MEM"
+    ],
+    "scope": "default-layout RAM cpmsim, invalid E: delete and admitted low-TPA RSX; not Model 4 runtime qualification"
+  },
+  "cpmsim_default_startup": {
+    "harness": "no-write assertion failed",
+    "boot_only_changed_bytes": 159,
+    "post_boot_disk_identical_to_post_diagnostics": true
+  },
+  "core_library_sha256": "f2bac1b44a204c5bcfc088e694dbb403dbd32484541e69f2e285e77bca80faab",
+  "valid_history": {
+    "insertions": 5000,
+    "retrievals": 11078,
+    "pds_guards_intact": true
+  },
+  "corrupt_history": [
+    {
+      "record_length": 0,
+      "header_after_init": "424801010100",
+      "core_return": 69858,
+      "changed_bytes": 6619,
+      "command_guard_changed": true,
+      "protected_guard_changed": true
+    },
+    {
+      "record_length": 128,
+      "header_after_init": "424801018100",
+      "core_return": 141,
+      "changed_bytes": 130,
+      "command_guard_changed": true,
+      "protected_guard_changed": false
+    },
+    {
+      "record_length": 255,
+      "header_after_init": "42480101b600",
+      "core_return": 268,
+      "changed_bytes": 214,
+      "command_guard_changed": true,
+      "protected_guard_changed": false
+    }
+  ],
+  "block_copy_comparison": [
+    {
+      "instruction": "LDIR",
+      "initial_bc": 0,
+      "full_core_transfers": 65536,
+      "small_model_memory_writes_excluding_entry_stack": 65536
+    },
+    {
+      "instruction": "LDIR",
+      "initial_bc": 1,
+      "full_core_transfers": 1,
+      "small_model_memory_writes_excluding_entry_stack": 1
+    },
+    {
+      "instruction": "LDIR",
+      "initial_bc": 65535,
+      "full_core_transfers": 65535,
+      "small_model_memory_writes_excluding_entry_stack": 65535
+    },
+    {
+      "instruction": "LDDR",
+      "initial_bc": 0,
+      "full_core_transfers": 65536,
+      "small_model_memory_writes_excluding_entry_stack": 65536
+    },
+    {
+      "instruction": "LDDR",
+      "initial_bc": 1,
+      "full_core_transfers": 1,
+      "small_model_memory_writes_excluding_entry_stack": 1
+    },
+    {
+      "instruction": "LDDR",
+      "initial_bc": 65535,
+      "full_core_transfers": 65535,
+      "small_model_memory_writes_excluding_entry_stack": 65535
+    }
+  ],
+  "host_script_exit_codes": {
+    "z80_block_transfer": 0,
+    "bios": 0,
+    "ccp": 0,
+    "unified_bdos": 0,
+    "history_lifecycle": 0,
+    "history_wboot": 0,
+    "native_builder_tpa": 0,
+    "crc": 0,
+    "md5sum": 0,
+    "bdos_service_inventory": 0,
+    "bdos_write_boundary": 0,
+    "component_inputs": 0,
+    "component_development": 0,
+    "component_revision": 0,
+    "release_identity": 0,
+    "build_profiles": 1
+  },
+  "parent_checked_profile_failures": [
+    "test_checked_contract_rejects_source_metadata_and_assembler_drift",
+    "test_python_assembly_and_child_process_use_the_same_context"
+  ],
+  "archive_sha256": "1d6e302507542d3e17addfdc06fc94428156ef00fb7a0f046e4df3ab71533257"
+}

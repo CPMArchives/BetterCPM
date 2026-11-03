@@ -78,28 +78,20 @@ available. This correction does not alter those unrelated test oracles.
 ## Reproduction
 
 Use an isolated checkout with z80asm Release 2.1, Python 3.11 and cpmtools.
-Retain the project's usual prerequisites and build configuration. A fresh
-checkout still needs the existing build-order bootstrap (audit finding 004):
+With the audit follow-up applied, start in a checkout with no build output.
 
 ```sh
-python3 - <<'PY'
-import sys
-from pathlib import Path
-sys.path.insert(0, 'tools')
-from build_trs80_boot import assemble, SOURCE, BUILD, BOOT_ADDRESS, STAGE1_ADDRESS
-assembler = Path.home() / 'bin/z80asm'
-assemble(assembler, SOURCE/'boot.mac', BUILD/'boot.bin', BOOT_ADDRESS)
-assemble(assembler, SOURCE/'stage1.mac', BUILD/'stage1.bin', STAGE1_ADDRESS)
-PY
-python3 tools/build_rsxselect.py
 python3 tools/build_complete_system.py
 python3 tools/test_unified_bdos.py
 python3 tools/test_native_builder_tpa.py
+python3 tools/test_z80_block_transfer.py
 python3 tools/component_registry.py --check
 ```
 
-With a fresh default-layout RAM System disk built from this checkout, its
-matching diskdefs, and the supported patched cpmsim runtime:
+For the whole-disk no-write assertions, use a fresh default-layout RAM System
+disk built from this checkout with an empty cold-start command, its matching
+diskdefs, and the supported patched cpmsim runtime. The distribution default
+runs `SUBMIT STARTUP`, which writes to A: during ordinary boot.
 
 ```sh
 python3 tools/test_audit_blockers_media.py \
@@ -155,3 +147,82 @@ subsequently merged Model 4 keyboard/BIOS or shared UI changes. A separate
 targeted delta audit and final release qualification remain necessary. Other
 audit findings, additional platforms, checked-profile qualification and
 release-media publication remain outside this correction.
+
+
+## Audit follow-up on 3 November 2026
+
+The implementation is `36ca7754908242d2d00891892ff5581148b6e31b`, based on
+`3cfe33dd014e6af61b60433879e121a1aaab1d1f` after the Model 4 requalification
+merge. These results cover the default layout on the two 1.0 platforms.
+
+**BCPM-AUD-004.** The complete builder now assembles the boot sector and RSX
+selector before the disk utilities measure their sizes. The distribution
+builder calls that same entry point. From a checkout with no `build/`,
+the direct command above produced the same 197 binary products as the parent's
+bootstrapped Model 4 build, including SYSBUILD.COM, RLMBUILD.COM, SYSTEM.SYS
+and the development DMK. The cpmsim distribution build matched all 240 binary
+products in the corresponding parent build. The comparison included COM, BIN,
+RLM, CPX, RSX, SYS, ROM, HEX, DSK and DMK files, matched by relative path.
+
+**BCPM-AUD-005.** The small runner now transfers a byte before decrementing BC
+for LDIR and LDDR. It fetches the instruction again if the copy overwrites its
+opcode. The regression failed on both zero-count instructions in the parent.
+For each direction, the updated runner and the pinned z80pack CPU core agreed
+on 65,536, 1 and 65,535 transfers for initial counts 0, 1 and FFFFh. Four
+overlap and opcode-overwrite cases also agreed on all memory bytes and BC, DE
+and HL. The small runner still does not deliver interrupts during block copies.
+
+**BCPM-AUD-003.** Defer full validation of corrupt CCP history to post-1.0.
+Manually seeded lengths 0, 128 and 255 caused out-of-bounds writes on the full
+core. In contrast, 5,000 valid insertions and 11,078 recalls agreed with the
+reference history and preserved both guards. The audit found no supported
+producer of the malformed records. The six-byte length check tried outside
+the source tree left two bytes free and did not validate record traversal,
+the used span or insertion. Reopen before release if supported input can
+produce an invalid record, or if the CCP history writer or PDS layout changes.
+BCPM-AUD-006 stays with the manuals workstream. BCPM-AUD-007 remains post-1.0.
+
+**BIOS assignment.** Guarded builds at revision 001 compared the original audit
+commit with the requalification merge. Both platform variants proposed revision
+002. Final builds from the implementation commit passed independent acceptance
+for each target at BIOS 1.14 revision 002, API 1.7. Collection now records
+the emitted cpmsim BIOS from `build/z80pack/bios.bin` and the Model 4 BIOS from
+`build/bios/bios.bin`. The former collector picked the Model 4 binary in a
+cpmsim staging directory containing both. The archive contains all six guarded
+reports and binaries, both proposals, and both final assignment records.
+[BIOS revision evidence](audit-blockers-20261103/bios-revision-002.tar.gz)
+
+To replay acceptance from the repository root, set `evidence` to a fresh
+directory, then run the following commands.
+
+```sh
+mkdir "$evidence"
+tar -xzf docs/engineering/audit-blockers-20261103/bios-revision-002.tar.gz -C "$evidence"
+for t in trs80gp z80pack; do
+  python3 tools/component_revision.py accept \
+    --reference-report "$evidence/reference/$t.json" --reference-artifact "$evidence/reference/$t.bin" \
+    --candidate-report "$evidence/candidate/$t.json" --candidate-artifact "$evidence/candidate/$t.bin" \
+    --proposal "$evidence/proposals/$t.json" \
+    --final-report "$evidence/final/$t.json" --final-artifact "$evidence/final/$t.bin" \
+    --output "$evidence/$t-replayed.json" && cmp "$evidence/$t-replayed.json" "$evidence/acceptances/$t.json" || exit 1
+done
+```
+
+**Media and tests.** Fresh System disks matched both published qualification
+hashes, distinct from the development images above. cpmsim booted its new
+disk. The byte-identical Model 4 DMK binds the earlier 269-pass native run
+to this candidate. The new run performed host file and geometry checks on the
+DMK. [Platform qualification and image hashes](Model4-BIOS-Requalification.md)
+
+The cpmsim blocker harness passed with the empty cold-start command. A:
+retained its exact bytes and the two builders produced the host reference
+outputs on B:. On the distribution's default startup image the same harness
+stopped at its no-write assertion. A boot-only control reproduced all 159
+changed bytes without invoking a diagnostic or builder.
+
+Fifteen host test scripts passed, including BIOS, CCP, BDOS, both history
+suites, builder TPA, CRC, MD5SUM, block transfers and component identity
+checks. The checked-profile suite still reports one missing import in its
+isolated fixture and one source-closure assertion failure. Both reproduced
+on the unmodified parent. Checked profiles and final release publication
+remain separate decisions. [Validation record](audit-blockers-20261103/audit-follow-up.json)
