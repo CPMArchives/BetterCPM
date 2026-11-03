@@ -1,0 +1,52 @@
+{
+  "boot_integrated": true,
+  "boundary": 57088,
+  "control_change_rejected": true,
+  "cpu_write_rejected": true,
+  "cpx_load_list_reconstruct_unload_qualified": true,
+  "dma_write_rejected": true,
+  "image_sha256": "cc6917780ce47ab34fbed7949abdf93a17d20eb182ab9fdcd15c8d16cd864168",
+  "protected_xip_qualified": true,
+  "rsx_load_list_unload_qualified": true,
+  "rsx_overlay_file_count": 18,
+  "rsx_overlay_manifest_sha256": "3189b769744c45a2ef7599dae4905a37cfb5aa068844edea29ac63f02e71a1ec",
+  "rsx_overlay_reference_count": 812,
+  "stacks": {
+    "bdos": {
+      "capacity": 40,
+      "low": 55041,
+      "margin": 12,
+      "top": 55081,
+      "used": 28
+    },
+    "loader": {
+      "capacity": 64,
+      "low": 1216,
+      "margin": 44,
+      "top": 1280,
+      "used": 20
+    },
+    "system": {
+      "capacity": 32,
+      "low": 54808,
+      "margin": 8,
+      "top": 54840,
+      "used": 24
+    }
+  },
+  "workspace": {
+    "config_overlay_bytes": 907,
+    "lifetimes": {
+      "carrier_reconstruction": "lower module block plus upper fixed-A 512-byte sector staging",
+      "config_control_overlay": "exclusive full workspace while disk I/O is idle",
+      "physical_sector_1024": "exclusive full workspace"
+    },
+    "lower_bytes": 512,
+    "maximum_physical_sector_bytes": 1024,
+    "reduction_permitted": false,
+    "upper_bytes": 512,
+    "workspace_bytes": 1024,
+    "workspace_end_exclusive": 56941,
+    "workspace_start": 55917
+  }
+}

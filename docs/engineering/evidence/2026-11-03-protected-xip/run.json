@@ -1,0 +1,32 @@
+{
+  "artifact_source": "c6245ce060bfa4259e2918cae6d4beb1f5af2926",
+  "format": "Dictaphone 6000 CP/M Rev. A (80T, DS, DD, 692K)",
+  "emulator_profile": "qualification",
+  "emulator_upstream_commit": "91fd28eb04e675c2127df88ed3f40675e15282e2",
+  "emulator_patch_set_sha256": "8465eedd52688c520d3535773fedfcfee4584a9eeca7f420bc212938f73a0cf9",
+  "command": "python3 tools/test_z80pack_rom_xip.py --image-dir build/z80pack --simulator <qualification>/z80pack/cpmsim/cpmsim",
+  "exit_code": 0,
+  "sha256": {
+    "rom_payload": "cc6917780ce47ab34fbed7949abdf93a17d20eb182ab9fdcd15c8d16cd864168",
+    "loaded_hex": "817cabdf88888a1d856edf6001ac76841d45e5cfc64738d86964f4e2b385ee09",
+    "boot_disk": "8c9384e8ac0cc406544712bd57290e8667aff5613f27855fea149dd80e53c2f1",
+    "overlay_manifest": "3189b769744c45a2ef7599dae4905a37cfb5aa068844edea29ac63f02e71a1ec",
+    "packed_overlays": "942d6633ccd09dc6096c0d479c4cc387ffec9558f48b8ad309069ddc35d7e582",
+    "qualification_emulator": "981a69da751fb9dc5a25bcbd2dc56ccf270943605f463e9c5882b5e7811ef443",
+    "corrected_boot_test": "bf830237d712cb4059e37f30812524bf0afc77af79a00f48dabe6ff05550d53a",
+    "stock_driver": "dfcff71af38393a4bdd76be88b15679f7acbe1c884c691c4c5659df334a26fcb",
+    "stock_receipt": "2d298ea247ec9679fe60e036025a7e9e11f38f6dae4b83b8ebf09295de869f82"
+  },
+  "stdout": [
+    "ROM cold entry verified under enforced DF00h protection: RAM initialized, relocated BIOS BOOT entered, relocated disk reloader reached A0>, DIR, transient execution, CPX load/list/reconstruction/unload, and dynamic RSX load/list/unload passed",
+    "ROM workspace: 1024 bytes retained; 907-byte CONFIG overlay and three lifetime classes verified",
+    "PASS: execute-in-place",
+    "PASS: cpu-write",
+    "PASS: guest-unlock",
+    "PASS: guest-boundary-change",
+    "PASS: dma-write",
+    "PASS: reset-reapplies-protection",
+    "PASS: ordinary-mode-unchanged",
+    "PASS: BetterCP/M executes in place at DF00h with locked CPU and DMA write protection"
+  ]
+}
