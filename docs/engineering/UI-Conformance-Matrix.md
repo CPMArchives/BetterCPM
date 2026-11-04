@@ -5,7 +5,8 @@ Reviewed 3 November 2026. **Not a blanket platform qualification.**
 C = Conforming in the named bounded evidence; E = intentional compatibility/context exception; N = N/A; O = Outstanding (unverified or conflicting).
 Columns separate behavior and applicability. A shared include is never itself evidence.
 Query C refers to compiled host checks; platform execution must be read separately below.
-Invalid O identifies remaining development-only review gaps; see the explicit scope below.
+Invalid O identifies remaining development-only review gaps and the resident
+command gap recorded below; see the explicit scope below.
 Exception cells retain the utility-specific specification; they do not waive data-integrity checks.
 
 | Utility | /HELP | /VER | Invalid/malformed | Editing | Escape/cancel | Q | Defaults | Confirm | Status | /40 | Basis |
@@ -38,7 +39,7 @@ Exception cells retain the utility-specific specification; they do not waive dat
 | PATCH | C | C | C | N | C | N | N | N | N | E | operation cancellation/acknowledgment; narrow report option |
 | PIP | C | C | C | E | E | E | N | E | N | N | replacement binding only; command/data language |
 | R | E | E | E | N | N | N | N | N | N | N | staged cpmsim host helper; separate query/8080 ABI; source review only |
-| RCP | E | E | E | E | E | E | E | E | E | E | frozen resident command package; transient interfaces reviewed separately; registry/development command, not current disk membership |
+| RCP | O | C | O | E | E | E | E | E | E | E | resident DIR/ERA/TYPE/REN/CLS/USER/VER/COPY/MOVE; version dispatch checked; standard help missing; resident tail review outstanding |
 | REN | C | C | C | E | E | E | N | E | N | N | compat append/choice; cooked transport boundary |
 | RESPACK | C | C | O | N | N | N | N | N | N | N | command-tail operation; no generic prompted field; registry/development command, not current disk membership |
 | RLMBUILD | C | C | O | N | N | N | N | N | N | N | command-tail operation; no generic prompted field; registry/development command, not current disk membership |
@@ -62,6 +63,70 @@ Exception cells retain the utility-specific specification; they do not waive dat
 | WARM | C | C | O | N | N | N | N | N | N | N | command-tail operation; no generic prompted field; registry/development command, not current disk membership |
 | XSUB | C | C | C | N | N | N | N | N | N | N | command-tail operation; no generic prompted field |
 | ZSM4 | E | E | E | E | E | E | E | E | E | E | unmodified selected third-party tool; original interface |
+
+## Resident command coverage correction — 4 November 2026
+
+Named utility rows above describe the transient implementations. They do not
+qualify the resident command of the same name: ordinary unqualified invocations
+can be claimed by `RCP.CPX` before a `.COM` file is loaded. Resident CLS and MOVE
+also remain relevant even though separate transient files are not distributed.
+The earlier blanket frozen-RCP exception did not establish user-visible
+conformance and cannot support a claim that all shipped command paths are done.
+
+The help contract requires exact case-insensitive `/H` and `/HELP` queries,
+help-over-version precedence and console-output-only handling before operations.
+Source review at `31dba474927be420796ab9e4cb3c75daddd6f0ab` confirms that
+`tools/utility_versions.py` injects help into transient paths, while resident
+dispatch uses `src/cpx/feature-hint.inc:RH_VERSION` and the version-only
+`UV_QUERY`. All nine resident commands need separate help acceptance checks.
+The reported revision 017 produces `NO FILE` for `ERA /HELP`, invalid-filespec
+diagnostics for TYPE/REN `/H`, and short COPY syntax for `/H`; the COPY output
+is not a standard help screen. `/VER` works and does not prove help conformance.
+
+A compiled relocated revision 016 development carrier reproduces these failure
+classes for `/H` and `/HELP`; ERA reaches BDOS state/search calls instead of a
+pure help return. This is additional host evidence, not platform qualification
+of revision 017. The historical compiled resident version checks support the
+bounded `/VER` C cell; no new help or platform pass is claimed. Resident malformed
+tail handling remains O pending its own review. Release/package freeze restricts
+production changes; it does not convert these gaps into conforming behavior.
+
+## Release disposition and 1.01 scope
+
+On 4 November 2026 the maintainer withdrew the earlier lock override for these
+issues and reaffirmed the 1.0 release/package lock. Only showstoppers warrant
+reconsidering that lock. The demonstrated help/version inconsistencies are
+accepted non-showstopper usability defects for 1.0, targeted for **1.01**.
+The maintainer also explicitly accepts the reported `:DIR *.COM` issue for
+1.0 and defers its correction to **1.01**. That invocation selects transient
+DIR; track its defect separately from resident help/version dispatch. This
+disposition records the reported invocation, not a new diagnosis or test pass.
+No resident fix, component revision change or release-artifact rebuild is
+authorized for 1.0 by this correction. Preserve the separate implementation
+candidate as deferred work; its development checks do not qualify the locked
+release or establish final 1.01 acceptance. RCP's outstanding cells remain O.
+
+The 1.01 work should provide:
+
+- Separate resident/transient identification using each implementation's actual
+  revision and a clear indication of which implementation is running.
+- Implementation-specific `/H` and `/HELP` screens. Compact resident help must
+  describe resident syntax and supported switches; transient help must describe
+  the transient implementation. A pointer to `:COMMAND /H` must explicitly label
+  its additional features rather than imply they are supported by the resident.
+- Brief local help for resident-only commands; no separate CLS.COM is required.
+- Correct the separately reported transient `:DIR *.COM` issue and verify the
+  reported invocation in the affected environment.
+- Resolve XSUB's Utilities Disk companion-location mismatch, recorded with the
+  copy-to-A0 workaround in the [1.0 errata](../releases/1.0-ERRATA.md#xsub-companion-must-be-copied-to-a0).
+  Review packaging/installation and loading alternatives before choosing a fix;
+  qualify actual batch input and reconstruction, not merely help/version output.
+- Focused query-precedence and malformed-argument review across all nine
+  resident commands, with separate resident-path acceptance checks that cannot
+  pass by loading a matching COM file.
+- Measured code/text, carrier and command-environment costs before selecting
+  the final implementation; retain CPX reclaimability and qualify affected
+  artifacts on both supported platforms after the implementation stabilizes.
 
 ## Evidence and limits
 
@@ -94,7 +159,8 @@ Their query checks pass, but operational-tail behavior is not accepted as
 conforming merely because they are outside the release. The fixed-input builders
 ignore operational tails (`START` in their respective sources); changing that
 behavior is not included in the four-utility fix. No production requirement is
-silently waived. The released-command malformed-tail review has no O cells.
+silently waived. That review concerns transient rows only. The resident RCP
+command paths have an explicit outstanding help and malformed-tail review above.
 
 ## Decisions and exceptions
 

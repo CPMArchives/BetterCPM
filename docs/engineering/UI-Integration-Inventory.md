@@ -1,5 +1,21 @@
 # Shared UI integration inventory
 
+**Coverage correction, 4 November 2026:** the transient migration and its
+qualification do not close the resident command paths. Ordinary unqualified
+DIR/ERA/TYPE/REN/CLS/USER/VER/COPY/MOVE can execute inside `RCP.CPX`, whose
+version-only query gateway lacks standard help dispatch. Treat that as
+outstanding integration, not an implicit waiver based on the RCP freeze.
+See the [matrix correction](UI-Conformance-Matrix.md#resident-command-coverage-correction--4-november-2026)
+for observed failures, source references and evidence limits.
+
+**Release disposition, 4 November 2026:** retain the 1.0 release/package lock.
+The maintainer classifies these help/version issues as non-showstopper usability
+defects and targets their correction for **1.01**. The earlier lock override is
+withdrawn for this work. See the [1.01 scope](UI-Conformance-Matrix.md#release-disposition-and-101-scope).
+This explicit release exception does not establish resident UI conformance.
+The separately reported transient `:DIR *.COM` issue also remains in 1.0,
+with correction targeted for 1.01.
+
 Review date: 3 November 2026. Initial implementation branch:
 `stabilization/shared-ui-conformance`, based on
 `fb062255d3ea465cf8ba6a9b77ac0f4a4aac5c32`.
