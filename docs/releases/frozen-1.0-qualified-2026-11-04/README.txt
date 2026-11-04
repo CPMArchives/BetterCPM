@@ -12,8 +12,9 @@ Their filenames, candidate suffixes and contents are unchanged.
 Release-identity exception: OPEN. Ordinary first-party utility identification
 still contains -dev. This freeze preserves the qualified baseline; it does not
 promote development identities to released component assignments. The static
-inventory finds such strings in 41 distinct shipped files, including embedded
-helper identities and diagnostics; it is not 41 newly executed /VER queries.
+inventory finds such strings in 41 distinct filenames across 78 target/package
+placements, including embedded helper identities and diagnostics; it is not
+41 newly executed /VER queries.
 
 The component revision policy defines -dev as relevant inputs differing from
 the recorded inputs of an assigned revision. Review the qualified first-party

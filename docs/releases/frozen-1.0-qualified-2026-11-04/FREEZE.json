@@ -50,11 +50,13 @@
   "release_identity_gate": {
     "status": "OPEN",
     "final_publishable_release": false,
-    "finding": "Development-marked identification strings remain in 41 distinct shipped files, including normal utilities. This static inventory is not 41 newly executed /VER queries.",
+    "finding": "Development-marked identification strings remain in 41 distinct filenames across 78 target/package placements, including normal utilities. This static inventory is not 41 newly executed /VER queries.",
     "policy": "Under specifications/COMPONENT-REVISION-TRACKING.md, relevant input changes append -dev until a released revision and its input baseline are assigned.",
     "audit": "development-identity-audit.json",
     "audit_sha256": "030194fc36d3e52f4b7d071bac44f131b207570789082ff9e67d73331985a73e",
-    "resolution": "Review and promote the qualified first-party component assignments, retaining independent component versions. Regenerate and qualify affected binaries and media, then record a replacement freeze. Do not patch these frozen archives or blindly strip labels from diagnostics and third-party tools."
+    "resolution": "Review and promote the qualified first-party component assignments, retaining independent component versions. Regenerate and qualify affected binaries and media, then record a replacement freeze. Do not patch these frozen archives or blindly strip labels from diagnostics and third-party tools.",
+    "distinct_filenames": 41,
+    "target_package_placements": 78
   },
   "tagging": "NOT_AUTHORIZED_NOT_PERFORMED",
   "publishing": "NOT_AUTHORIZED_NOT_PERFORMED",
