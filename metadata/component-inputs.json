@@ -597,9 +597,18 @@
         "tools/system_layout.py",
         "tools/utility_versions.py",
         "tools/version_metadata.py",
-        "tools/utility_help.py"
+        "tools/utility_help.py",
+        "metadata/release-package.json"
       ],
-      "identity_dependencies": [],
+      "identity_dependencies": [
+        "utility:RCP",
+        "utility:DIR",
+        "utility:USER",
+        "utility:CLS",
+        "utility:VER",
+        "utility:COPY",
+        "utility:MOVE"
+      ],
       "registry_fields": [
         "display_format",
         "description"
@@ -719,9 +728,18 @@
         "tools/system_layout.py",
         "tools/utility_versions.py",
         "tools/version_metadata.py",
-        "tools/utility_help.py"
+        "tools/utility_help.py",
+        "metadata/release-package.json"
       ],
-      "identity_dependencies": [],
+      "identity_dependencies": [
+        "utility:RCP",
+        "utility:DIR",
+        "utility:USER",
+        "utility:CLS",
+        "utility:VER",
+        "utility:COPY",
+        "utility:MOVE"
+      ],
       "registry_fields": [
         "display_format",
         "description"
@@ -1663,9 +1681,18 @@
         "tools/system_layout.py",
         "tools/utility_versions.py",
         "tools/version_metadata.py",
-        "tools/utility_help.py"
+        "tools/utility_help.py",
+        "metadata/release-package.json"
       ],
-      "identity_dependencies": [],
+      "identity_dependencies": [
+        "utility:RCP",
+        "utility:DIR",
+        "utility:USER",
+        "utility:CLS",
+        "utility:VER",
+        "utility:COPY",
+        "utility:MOVE"
+      ],
       "registry_fields": [
         "display_format",
         "description"
@@ -1785,9 +1812,18 @@
         "tools/system_layout.py",
         "tools/utility_versions.py",
         "tools/version_metadata.py",
-        "tools/utility_help.py"
+        "tools/utility_help.py",
+        "metadata/release-package.json"
       ],
-      "identity_dependencies": [],
+      "identity_dependencies": [
+        "utility:RCP",
+        "utility:DIR",
+        "utility:USER",
+        "utility:CLS",
+        "utility:VER",
+        "utility:COPY",
+        "utility:MOVE"
+      ],
       "registry_fields": [
         "display_format",
         "description"
@@ -1907,9 +1943,18 @@
         "tools/system_layout.py",
         "tools/utility_versions.py",
         "tools/version_metadata.py",
-        "tools/utility_help.py"
+        "tools/utility_help.py",
+        "metadata/release-package.json"
       ],
-      "identity_dependencies": [],
+      "identity_dependencies": [
+        "utility:RCP",
+        "utility:DIR",
+        "utility:USER",
+        "utility:CLS",
+        "utility:VER",
+        "utility:COPY",
+        "utility:MOVE"
+      ],
       "registry_fields": [
         "display_format",
         "description"
@@ -2000,7 +2045,8 @@
         "tools/component_registry.py",
         "tools/rsx_container.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py"
+        "tools/utility_versions.py",
+        "metadata/release-package.json"
       ],
       "identity_dependencies": [],
       "registry_fields": [
@@ -3563,9 +3609,18 @@
         "tools/system_layout.py",
         "tools/utility_versions.py",
         "tools/version_metadata.py",
-        "tools/utility_help.py"
+        "tools/utility_help.py",
+        "metadata/release-package.json"
       ],
-      "identity_dependencies": [],
+      "identity_dependencies": [
+        "utility:RCP",
+        "utility:DIR",
+        "utility:USER",
+        "utility:CLS",
+        "utility:VER",
+        "utility:COPY",
+        "utility:MOVE"
+      ],
       "registry_fields": [
         "display_format",
         "description"
@@ -5378,6 +5433,111 @@
         "tools/component_registry.py",
         "tools/utility_help.py",
         "tools/utility_versions.py"
+      ],
+      "registry_fields": [
+        "display_format",
+        "description"
+      ],
+      "identity_dependencies": []
+    },
+    "utility:R": {
+      "status": "tracked",
+      "target": "z80pack",
+      "targets": [
+        "z80pack"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "upstream_commit": "91fd28eb04e675c2127df88ed3f40675e15282e2",
+        "guest_assembler_flags": "-l -T -sn -p0 -8 -fb"
+      },
+      "files": [
+        "tools/build_qualified_cpmsim.py",
+        "tools/guest_utility_identity.py",
+        "tools/component_registry.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_development.py",
+        "third_party/z80pack/upstream.json",
+        "third_party/z80pack/offline-inputs.json",
+        "third_party/z80pack/patches/0001-disk-geometry.patch",
+        "third_party/z80pack/patches/0002-raw-fdf-backend.patch",
+        "third_party/z80pack/patches/0003-rom-qualification.patch",
+        "third_party/z80pack/patches/0004-live-media.patch",
+        "third_party/z80pack/patches/0005-host-transfer.patch",
+        "third_party/z80pack/patches/0006-guest-mount.patch",
+        "third_party/z80pack/patches/0007-mount-help.patch"
+      ],
+      "registry_fields": [
+        "display_format",
+        "description"
+      ],
+      "identity_dependencies": []
+    },
+    "utility:W": {
+      "status": "tracked",
+      "target": "z80pack",
+      "targets": [
+        "z80pack"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "upstream_commit": "91fd28eb04e675c2127df88ed3f40675e15282e2",
+        "guest_assembler_flags": "-l -T -sn -p0 -8 -fb"
+      },
+      "files": [
+        "tools/build_qualified_cpmsim.py",
+        "tools/guest_utility_identity.py",
+        "tools/component_registry.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_development.py",
+        "third_party/z80pack/upstream.json",
+        "third_party/z80pack/offline-inputs.json",
+        "third_party/z80pack/patches/0001-disk-geometry.patch",
+        "third_party/z80pack/patches/0002-raw-fdf-backend.patch",
+        "third_party/z80pack/patches/0003-rom-qualification.patch",
+        "third_party/z80pack/patches/0004-live-media.patch",
+        "third_party/z80pack/patches/0005-host-transfer.patch",
+        "third_party/z80pack/patches/0006-guest-mount.patch",
+        "third_party/z80pack/patches/0007-mount-help.patch"
+      ],
+      "registry_fields": [
+        "display_format",
+        "description"
+      ],
+      "identity_dependencies": []
+    },
+    "utility:MOUNT": {
+      "status": "tracked",
+      "target": "z80pack",
+      "targets": [
+        "z80pack"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "upstream_commit": "91fd28eb04e675c2127df88ed3f40675e15282e2",
+        "guest_assembler_flags": "-l -T -sn -p0 -8 -fb"
+      },
+      "files": [
+        "tools/build_qualified_cpmsim.py",
+        "tools/guest_utility_identity.py",
+        "tools/component_registry.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_development.py",
+        "third_party/z80pack/upstream.json",
+        "third_party/z80pack/offline-inputs.json",
+        "third_party/z80pack/patches/0001-disk-geometry.patch",
+        "third_party/z80pack/patches/0002-raw-fdf-backend.patch",
+        "third_party/z80pack/patches/0003-rom-qualification.patch",
+        "third_party/z80pack/patches/0004-live-media.patch",
+        "third_party/z80pack/patches/0005-host-transfer.patch",
+        "third_party/z80pack/patches/0006-guest-mount.patch",
+        "third_party/z80pack/patches/0007-mount-help.patch"
       ],
       "registry_fields": [
         "display_format",

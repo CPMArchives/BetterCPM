@@ -154,6 +154,13 @@ def stage_cpmsim_guest(simulator, root):
         if not data:
             raise ValueError('empty cpmsim guest tool: '+name)
         (destination/(name.upper()+'.COM')).write_bytes(data)
+    records_path=Path(simulator).resolve().parent.parent.parent/'guest-component-records.json'
+    if records_path.is_file():
+        for owner, record in json.loads(records_path.read_text()).items():
+            name=owner.split(':')[1]
+            if digest((destination/(name+'.COM')).read_bytes()) != record['artifact']['sha256']:
+                raise ValueError('staged guest identity differs: '+name)
+            (destination/(name+'-build-report.json')).write_text(json.dumps(record,indent=2,sort_keys=True)+'\n')
 
 
 def selected_files(manifest, target, root):

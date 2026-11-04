@@ -2,6 +2,6 @@
   "schema": 1,
   "name": "BetterCP/M release package",
   "version": "1.0",
-  "status": "in-progress",
-  "notes": "Six separately downloadable assets under one BetterCP/M 1.0 release; layout in docs/releases/1.0-RELEASE-PACKAGES.md and metadata/release-assets.json. Assembly and validation remain pending."
+  "status": "release-candidate; identity finalization and replacement qualification",
+  "notes": "Six 1.0 assets; frozen source54c50365 remains the qualified reference. Replacement release identities and media require their own checksums and acceptance. No tag or publication."
 }

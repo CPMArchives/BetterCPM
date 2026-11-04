@@ -41,7 +41,9 @@ def main():
     count=0
     for name in identities():
         # The codecs and NOAH require the full Z80 harness (IX/IY).
-        if name in ('RCP','SQ','USQ','CR','UNCR','LZH','UNLZH','BYE','DASM','DSYM','DLINK'):continue
+        # R/W/MOUNT are built with the pinned offline cpmsim assembler and
+        # executed by the native guest tests, rather than this transient fixture.
+        if name in ('R','W','MOUNT','RCP','SQ','USQ','CR','UNCR','LZH','UNLZH','BYE','DASM','DSYM','DLINK'):continue
         if name=='NOAH':
             print('NOAH: identity checks are in tools/test_noah.py (full Z80 core).')
             continue

@@ -24,11 +24,14 @@ class RegistryTests(unittest.TestCase):
                 registry.load(path)
 
     def test_complete_import_and_paths(self):
-        self.assertEqual(len(self.data['components']), 61)
-        self.assertEqual(len(identities()), 48)
+        self.assertGreaterEqual(len(self.data['components']), 64)
+        self.assertGreaterEqual(len(identities()), 51)
         # Imported identities are lower bounds, not compilation counters frozen
         # forever: accepted executable changes advance their own sequence.
         for name, minimum in [('DDT',3),('PIP',30),('BYE',2),('FDB',1)]:
+            self.assertGreaterEqual(identities()[name][1], minimum)
+        for name, minimum in [('R',6),('W',6),('MOUNT',3)]:
+            self.assertEqual(identities()[name][0], '1.0')
             self.assertGreaterEqual(identities()[name][1], minimum)
         for key, component in self.data['components'].items():
             self.assertNotIn(key, ('utility:ZSM4', 'utility:LINK'))

@@ -1,22 +1,26 @@
 #!/usr/bin/env python3
 """Run the assembled MOUNT.COM in real cpmsim with a minimal BDOS adapter."""
-import argparse, os, pty, select, signal, subprocess, tempfile, time
+import argparse, json, os, pty, select, signal, subprocess, tempfile, time
 from pathlib import Path
 p=argparse.ArgumentParser();p.add_argument('--source',type=Path,required=True)
 a=p.parse_args();source=a.source.resolve();sim=source/'cpmsim/cpmsim'
+from component_identity import title
+record=json.loads((source.parent/'guest-component-records.json').read_text())['utility:MOUNT']
+expected_version=title('MOUNT',record['identity']['version'],record['identity']['revision'],
+                       development=record['display_selection']['development']).encode()
 stub="        org 5000h\n        lxi sp,7000h\n        call 100h\n        mvi a,1\n        out 10\n        xra a\n        out 11\n        out 15\n        mvi a,80h\n        out 16\n        mvi a,1\n        out 12\n        xra a\n        out 13\n        mvi a,'['\n        out 1\n        in 14\n        adi '0'\n        out 1\n        lda 8000h\n        out 1\n        mvi a,']'\n        out 1\n        mvi a,'!'\n        out 1\n        mvi a,0aah\n        out 0a0h\n        mvi a,80h\n        out 0a0h\n        org 6000h\nbdos:   mov a,c\n        cpi 2\n        jz char\n        cpi 9\n        jz string\n        cpi 1\n        jz input\n        ret\nchar:   mov a,e\n        out 1\n        ret\nstring: ldax d\n        cpi '$'\n        rz\n        out 1\n        inx d\n        jmp string\ninput:  in 0\n        ora a\n        jz input\n        in 1\n        ret\n        end\n"
 with tempfile.TemporaryDirectory() as tmp:
     w=Path(tmp);(w/'disks').mkdir();(w/'Image.dsk').write_bytes(b'A'*128)
     (w/'stub.asm').write_text(stub)
     subprocess.run([str(source/'z80asm/z80asm'),'-8','-fb','-o'+str(w/'stub.bin'),str(w/'stub.asm')],check=True,capture_output=True)
-    for tail,answer,expected in [('/VER',None,b'MOUNT 1.0 (002-dev)'),('/U',None,b'Invalid syntax'),
+    for tail,answer,expected in [('/VER',None,expected_version),('/U',None,b'Invalid syntax'),
                                 ('/U [A,B,C]:',b'n',b'Operation cancelled. No changes made.'),
                                 ('/U [A,B,C]:',b'Y',b'C: unmounted'),
                                 ('B: Image.dsk',None,b'Image.dsk'),
                                 ('/HELP',None,b'Usage: MOUNT'),
                                 ('/H',None,b'Usage: MOUNT'),
                                 (' \t/h \t',None,b'Usage: MOUNT'),
-                                ('/ver',None,b'MOUNT 1.0 (002-dev)')]:
+                                ('/ver',None,expected_version)]:
         mem=bytearray(0x6100);mem[5:8]=bytes.fromhex('c30060')
         guest=(source/'cpmtools/mount.com').read_bytes();mem[0x100:0x100+len(guest)]=guest
         code=(w/'stub.bin').read_bytes();mem[0x5000:0x5000+len(code)]=code
