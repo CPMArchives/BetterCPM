@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "cases": 59,
+  "max_columns": 80,
+  "max_program_stack": 40,
+  "stack_allocation": 512,
+  "interactive_span_bytes": 53255,
+  "interactive_margin_to53KiB": 1017,
+  "converter_span_bytes": 50944,
+  "converter_margin_to53KiB": 3328,
+  "address_limit": "D107h",
+  "rows": [
+    {
+      "cases": 50,
+      "stack": 34,
+      "max_columns": 80
+    },
+    {
+      "cases": 9,
+      "stack": 40,
+      "max_columns": 80
+    }
+  ]
+}

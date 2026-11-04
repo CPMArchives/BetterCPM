@@ -4,7 +4,7 @@ from system_layout import expand_layout
 from shared_ui import expand_config_ui
 ROOT=Path(__file__).resolve().parents[1]
 def expanded_source(generated_root=None):
- text=expand_layout((ROOT/'src/utilities/config.mac').read_text())
+ text='FDBRTON EQU 1\n'+expand_layout((ROOT/'src/utilities/config.mac').read_text())
  for name in ('sysgen','common','fdbread'):
   text=text.replace('        INCLUDE disk/'+name+'.inc',(ROOT/'src/utilities/disk'/(name+'.inc')).read_text())
  for name in ('validation','iobyte'):

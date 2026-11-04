@@ -176,6 +176,28 @@
       "user": 0
     },
     {
+      "name": "FDB.COM",
+      "artifact": "build/fdb/FDB.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0,
+      "role": "Native catalogue workbench"
+    },
+    {
+      "name": "FDBVIEW.OVL",
+      "artifact": "build/fdb/FDBVIEW.OVL",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0,
+      "role": "Required matching FDB detail/comparison viewer"
+    },
+    {
       "name": "DISK.FDB",
       "artifact": "build/catalog/DISK.FDB",
       "status": "implemented",

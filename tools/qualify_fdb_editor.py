@@ -1,4 +1,5 @@
 """Exercise capture, editing and confirmed active binding apply on private media."""
+from fdb_qualification_media import stage, startup, audit
 import argparse
 import re
 import shutil
@@ -83,6 +84,7 @@ BUFFER: DS 560
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--system-image',type=Path)
     parser.add_argument('--target', choices=('z80pack','trs80gp'), required=True)
     parser.add_argument('--build-root', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
@@ -96,6 +98,7 @@ def main():
         names.append(('BYE.COM',(root/'build/z80pack-tools/BYE.COM').read_bytes()))
     raw = construct(a.target, root, out, [({'name':n,'user':0},d) for n,d in names],
                     geometry(a.target,root),'')
+    stage(a.target,raw,a.system_image,names,out)
     steps = [('STATE','A0>'), ('FDB','Choice:'), ('A','Logical drive B, C or D:'),
              ('B','Q Back:'), ('3','Q Back:'), ('E','Value:'),
              ('100','Q Back:'), ('V','Format validates.')]
@@ -110,7 +113,10 @@ def main():
                       [((k+'\r').encode(), (b'A0>_ ' if msg=='A0>' else msg.encode()), 40)
                        for k,msg in steps]+[(b'BYE /Y\r',b'System halted',15)],out/'trace')
         states=re.findall(rb'STATE ([0-9A-F]{560})',trace)
-        assert image.read_bytes()==raw.read_bytes()
+        if a.system_image:
+            audit(a.target,a.system_image,image,out)
+        else:
+            assert image.read_bytes()==raw.read_bytes()
     else:
         image=out/'test.dmk';original=make_dmk(raw.read_bytes());image.write_bytes(original)
         states=[]
@@ -118,14 +124,22 @@ def main():
             here=out/label
             here.mkdir()
             cmd=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-d0',str(image),'-id','3000','-itime','0']
-            for k,msg in commands:
+            if a.system_image:
+                cmd=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-ktx','-d0',str(image),
+                     '-id','4000','-itime','15000','-iw','Type TYPE README.TXT for more','-id','4000']
+            for k,msg in startup(a.target,a.system_image)+commands:
                 wait_for='ENDSTATE' if k=='STATE' else ('A0> ' if msg=='A0>' else msg)
-                cmd+=key_args(k+'\r')+['-iw',wait_for,'-id','3000' if msg=='A0>' else '200']
-            run(cmd+['-it','-ix'],cwd=here,check=True,timeout=300)
-            capture=next(here.glob('trs80-text-*.bin'))
-            text=screen(capture).replace('\n','')
-            states.append(re.search(r'STATE ([0-9A-F]{560}) ENDSTATE',text)[1])
-        assert image.read_bytes()==original
+                cmd+=key_args(k+'\r')+['-iw',wait_for,'-id','3000' if msg=='A0>' else '200'] + (['-it'] if a.system_image else [])
+            run(cmd+['-it','-ix'],cwd=here,check=True,timeout=900 if a.system_image else 300)
+            captures=sorted(here.glob('trs80-text-*.bin'),key=lambda p:int(p.stem.rsplit('-',1)[1]))
+            matches=[m[1] for p in captures for m in re.finditer(r'STATE ([0-9A-F]{560}) ENDSTATE',screen(p).replace('\n',''))]
+            assert matches,'missing complete public API snapshot'
+            states.append(matches[-1])
+        if a.system_image:
+            after=out/'after.raw';after.write_bytes(__import__('add_cpm_file_to_dmk').extract_raw(image.read_bytes()))
+            audit(a.target,a.system_image,after,out)
+        else:
+            assert image.read_bytes()==original
     assert len(states)==2
     before, after=[bytes.fromhex(s.decode() if isinstance(s,bytes) else s) for s in states]
     expected=bytearray(before)
@@ -135,6 +149,11 @@ def main():
         expected[offset+6:offset+8]=(100).to_bytes(2,'little')
     assert before != expected
     assert after==bytes(expected)
+    import json,hashlib
+    (out/'result.json').write_text(json.dumps({'status':'PASS','target':a.target,
+        'com_sha256':hashlib.sha256(names[0][1]).hexdigest(),
+        'scope':'B capture,DSM edit,confirmedB-D apply,physical selectors,A andcold defaults preserved',
+        'before_state':before.hex(),'after_state':after.hex()},indent=2)+'\n')
     print('PASS',a.target,'B capture, DSM edit, confirmed B-D apply, physical mappings, A and cold media preserved')
 
 if __name__=='__main__':

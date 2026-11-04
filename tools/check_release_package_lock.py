@@ -111,6 +111,14 @@ for path in sorted(a.packages.glob('*.zip')):
                         length, expected_core = reserved[target]
                         if sha(raw.read_bytes()[:length]) != expected_core:
                             failures.append('Locked reserved system area changed: ' + target)
+                    if rec['package'].startswith('system-'):
+                        members = {f['name']: f for f in receipt['included'] if f.get('user', 0) == 0}
+                        required = {'FDB.COM', 'FDBVIEW.OVL', 'CONFIG.COM', 'DISK.FDB'}
+                        assert required <= members.keys(), 'Missing integrated workbench: ' + str(sorted(required - members.keys()))
+                        # A maximum 9472-byte replacement needs five 2K blocks
+                        # beside the original, plus temporary/backup directory slots.
+                        assert receipt['free_bytes'] >= 10240, 'No catalogue replacement workspace'
+                        assert receipt['directory_entries'] + 2 <= (64 if target == 'z80pack' else 128), 'No catalogue rename workspace'
                     for f in receipt['included']:
                         dst = work / 'file'
                         subprocess.run(['cpmcp', '-T', 'raw,pcw800' if target == 'trs80gp' and rec['package'].startswith('system-') else 'raw', '-f', 'bettercpm-default', str(raw), f"{f.get('user', 0)}:{f['name']}", str(dst)], cwd=work, check=True, capture_output=True)
@@ -125,7 +133,7 @@ for path in sorted(a.packages.glob('*.zip')):
                         expected = locked.get((target, f['name']))
                         if expected and expected != actual:
                             failures.append('Locked component changed: ' + target + '/' + f['name'])
-                        if f['name'] in ('FDB.COM', 'CONFIG.COM', 'DISK.FDB'):
+                        if f['name'] in ('FDB.COM', 'FDBVIEW.OVL', 'CONFIG.COM', 'DISK.FDB'):
                             open_items.append([target, f['name'], actual])
                     report['images'].append({'name': name, 'sha256': sha(b), 'files_verified': len(receipt['included']), 'filesystem': 'PASS'})
             rows.append(report)

@@ -1764,3 +1764,11 @@ depends on active TPA and codec/source-plan requirements. Low-memory requests
 fail safely. The interactive browser, ZIP and LZH/CrLZH selectors remain deferred.
 Current qualification and media status are recorded in the
 [engineering integration record](../engineering/NOAH%20ARC%20Write%20Integration.md).
+
+## FDB — catalogue workbench
+
+FDB.COM and its matching FDBVIEW.OVL are on both System disks. See the
+[FDB command guide](FDB.md) for catalogue editing, conversion, inspection,
+B–D assignment, safe replacement and recovery. CONFIG selects the saved
+catalogue by display name. Use writable copies; active assignment does not
+change cold-boot defaults.

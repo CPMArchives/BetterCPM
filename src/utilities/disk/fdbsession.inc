@@ -1120,17 +1120,19 @@ NEWHINT:DB 'For an empty catalogue, choose N first.',13,10,0
 SOURCEMSG:DB 'Source .FDB or .FDF: ',0
 SELECTMSG:DB 'ID to import (Return for entire catalogue): ',0
 DUPMSG: DB ' exists. R Replace, U Use new ID, C Cancel: ',0
-AMBIGMSG:DB ' has a duplicate name. New description (Return cancels): ',0
+AMBIGMSG:DB ' duplicate. Description (Enter=cancel): ',0
+        DS 17,0
 AMBIGBAD:DB 'Duplicate display names. Working catalogue preserved.',13,10,0
 IDMSG: DB 'New ID (1-8 letters/digits): ',0
 NONEFOUND:DB 'No matching entries. Nothing imported.',13,10,0
 ADDMSG: DB ' added, ',0
 REPLMSG:DB ' replaced. Changes are unsaved.',13,10,0
-DESTMSG:DB 'Write .FDB or .FDF (Return for displayed default): ',0
+DESTMSG:DB 'Write .FDB/.FDF (Return for displayed default): ',0
+        DS 3,0
 WRITEMSG:DB '  Create new file (Y/N)? ',0
 REPLACEMSG:DB '  Replace entire file (Y/N)? ',0
 SAVEDMSG:DB 'Catalogue saved and verified.',13,10,0
 KEEPBACK:DB 'Published. Old catalogue retained as .BAK.',13,10,0
 RECMSG: DB 'Save stopped. Inspect this destination, its .BAK and .$$$ before retry.',13,10,0
 VERIFYMSG:DB 'Temporary file failed readback. Inspect .$$$; original preserved.',13,10,0
-NAMEMSG:DB 'Invalid filename or ID.',13,10,0
+NAMEMSG:DB 13,10,'Invalid filename or ID.',0

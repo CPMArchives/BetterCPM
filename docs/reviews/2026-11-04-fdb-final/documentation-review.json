@@ -1,0 +1,43 @@
+{
+  "status": "PASS",
+  "source_commit": "54c503652fa957798bf2d0d636f4172851195926",
+  "packages": [
+    {
+      "package": "BetterCPM-1.0-System-Model4-candidate.zip",
+      "matching_manual_files": 9,
+      "licenses_identical": true
+    },
+    {
+      "package": "BetterCPM-1.0-Documentation-candidate.zip",
+      "matching_manual_files": 781,
+      "licenses_identical": true
+    },
+    {
+      "package": "BetterCPM-Utilities-1.0-cpmsim-candidate.zip",
+      "matching_manual_files": 15,
+      "licenses_identical": true
+    },
+    {
+      "package": "BetterCPM-1.0-System-cpmsim-candidate.zip",
+      "matching_manual_files": 9,
+      "licenses_identical": true
+    },
+    {
+      "package": "BetterCPM-1.0-Source-candidate.zip",
+      "matching_manual_files": 783,
+      "licenses_identical": true
+    },
+    {
+      "package": "BetterCPM-Utilities-1.0-Model4-candidate.zip",
+      "matching_manual_files": 15,
+      "licenses_identical": true
+    }
+  ],
+  "unresolved_links": [],
+  "links_supplied_in_source_package": [],
+  "generated_editions": "PDF/DOCX excluded",
+  "FDB_guide": "placement, companion lookup,53KiB requirement,unload/restore,conversion,safe replacement,named assignment,installation reviewed",
+  "historical_engineering_records": "milestone hashes/resources retained as dated evidence; final resources in final acceptance ledger",
+  "notices": "exact package notices and nested exclusions verified by package lock checker",
+  "freeze": "HOLD"
+}

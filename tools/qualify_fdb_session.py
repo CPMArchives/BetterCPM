@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Import into the stock catalogue and replace it on private platform media."""
+from fdb_qualification_media import stage, startup, audit
 import argparse
 from dataclasses import replace
 import json
@@ -23,6 +24,7 @@ from test_sysgen_install import screen
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--system-image', type=Path, help='complete shipped System image, with adjacent report.json')
     p.add_argument('--target', choices=('z80pack', 'trs80gp'), required=True)
     p.add_argument('--build-root', type=Path, required=True)
     p.add_argument('--output', type=Path, required=True)
@@ -35,6 +37,8 @@ def main():
     p.add_argument('--config-read', action='store_true',
                    help='qualify entry 109 through CONFIG and a known file read')
     args = p.parse_args()
+    if args.system_image and args.disk_full:
+        p.error('disk-full uses its dedicated controlled allocation fixture')
     if args.config_read and (args.exchange or args.disk_full):
         p.error('CONFIG read is a separate acceptance case')
     if args.exchange and args.disk_full:
@@ -74,6 +78,7 @@ def main():
         free = capacity(files, g)['free_bytes']
         files.append(({'name':'FILL.BIN', 'user':0}, bytes(free - g['block'])))
     raw = construct(args.target, root, out, files, g, '')
+    stage(args.target,raw,args.system_image,names,out)
     steps = [('FDB', 'Choice: '), ('I', 'Source .FDB or .FDF: '),
              ('ADD.FDB', 'entire catalogue): '), ('TEST109', '1 added, 0 replaced.'),
              ('S', 'displayed default): '), ('', 'Replace entire file (Y/N)? '),
@@ -108,6 +113,7 @@ def main():
                   ('TYPE B:KNOWN.TXT', 'FDB GATE FILE READ PASS')]
     if args.disk_full:
         steps[-2:] = [('Y', 'file operation failed'), ('Q', 'C Cancel: '), ('D', 'A0>')]
+    steps = startup(args.target,args.system_image) + steps
     if args.target == 'z80pack':
         disks = out/'disks'
         disks.mkdir()
@@ -121,13 +127,16 @@ def main():
         disk.write_bytes(make_dmk(raw.read_bytes()))
         cmd = [str(DEFAULT_EMULATOR), '-m4', '-batch', '-turbo', '-d0', str(disk),
                '-id', '3000', '-itime', '0']
+        if args.system_image:
+            cmd=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-ktx','-d0',str(disk),
+                 '-id','4000','-itime','15000','-iw','Type TYPE README.TXT for more','-id','4000']
         if args.disk_full:
             # Capture the failed save while the modified session is still live.
             # Inspect its directory after shutdown, before issuing another command.
             steps = steps[:-3] + [('Y', 'FDB: file operation failed.')]
         for keys, message in steps:
-            cmd += key_args(keys+'\r') + ['-iw', ('A0> ' if message=='A0>' else message.rstrip()), '-id', '3000' if message=='A0>' else '200']
-        run(cmd + ['-id', '4000' if args.disk_full else '60', '-it', '-ix'], cwd=out, check=True, timeout=240)
+            cmd += key_args(keys+'\r') + ['-iw', ('A0> ' if message=='A0>' else message.rstrip()), '-id', '3000' if message=='A0>' else '200'] + (['-it'] if args.system_image else [])
+        run(cmd + ['-id', '4000' if args.disk_full else '60', '-it', '-ix'], cwd=out, check=True, timeout=900 if args.system_image else 240)
         if args.disk_full:
             snapshot = screen(next(out.glob('trs80-text-*.bin')))
             assert 'FDB: file operation failed.' in snapshot
@@ -135,10 +144,11 @@ def main():
             assert '109   Modified' in current_menu and current_menu.rstrip().endswith('Choice:')
         after = out/'after.raw'
         after.write_bytes(extract_raw(disk.read_bytes()))
+    audit(args.target,args.system_image,after,out,('DISK.FDB',))
     if args.config_read:
         transcript = ((out/'transcript.bin').read_bytes().decode('ascii', 'replace')
                       if args.target == 'z80pack' else
-                      screen(next(out.glob('trs80-text-*.bin'))))
+                      '\n'.join(screen(p) for p in out.glob('trs80-text-*.bin')))
         assert 'Disk configuration changed (until cold boot).' in transcript
         assert 'FDB GATE FILE READ PASS' in transcript
         assert 'Nothing changed.' not in transcript

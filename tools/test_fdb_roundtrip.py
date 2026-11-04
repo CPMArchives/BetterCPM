@@ -34,6 +34,10 @@ class FDBCommand(Command):
         self.dma,self.console,self.exception=0x80,'',None
         self.mem[:]=bytes(65536)
         self.mem[0x100:0x100+len(self.image)]=self.image
+        # CLI conversion never relocates the editor/viewer. Its high-memory
+        # cleanup word is arbitrary real-machine RAM, not initialized data.
+        cleanup=self.viewer_cleanup
+        self.mem[cleanup:cleanup+2]=b'\xff\xff'
         self.mem[5]=0xc9;self.mem[6:8]=tpa.to_bytes(2,'little')
         for at in (0x5c, 0x6c):
             self.mem[at+1:at+12] = b' ' * 11
@@ -48,6 +52,13 @@ class FDBCommand(Command):
         assert self.exception is None,(repr(self.exception),self.console,self.symbols,hex(self.reg["SP"].value),self.events[-8:])
         assert self.reg['SP'].value==0xd3fe
         assert self.dma==0x80
+        column=peak=0
+        for ch in self.console:
+            if ch in '\r\n':column=0
+            elif ch=='\b':column=max(0,column-1)
+            elif ' '<=ch<='~':column+=1;peak=max(peak,column)
+        assert peak<=80,('console exceeds80columns',peak,self.console)
+        self.max_console_width=max(getattr(self,'max_console_width',0),peak)
         low=C.c_uint.in_dll(self.lib,'minimum_sp').value
         self.stack_used=max(getattr(self,'stack_used',0),self.symbols['UC_STACK_TOP']-low)
         self.cases+=1
@@ -66,7 +77,9 @@ def machine(work, command_class=FDBCommand):
         match=re.search(rf'^([0-9a-f]{{4}}).*\b{new}:',listing,re.M|re.I)
         listing+=f'\n{match[1]} {old}: '
 
-    return command_class(C.CDLL(str(work/'core.so')),image,listing)
+    result=command_class(C.CDLL(str(work/'core.so')),image,listing)
+    result.viewer_cleanup=int(re.search(r'^([0-9a-f]{4}).*\bVIEWCLEANUP:',listing,re.M|re.I)[1],16)
+    return result
 
 def main():
     work=ROOT/'build/fdb-test';work.mkdir(parents=True,exist_ok=True)

@@ -35,6 +35,7 @@ def main() -> None:
     validator = reader[reader.index("FDBVALID:"):]
     source = """        ASEG
         ORG 0100H
+FDBRTON EQU 1
 ENTRY:  CALL FDBVALID
         RET
 FCOUNT: DB 0
