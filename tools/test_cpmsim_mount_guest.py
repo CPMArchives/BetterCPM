@@ -47,9 +47,9 @@ with tempfile.TemporaryDirectory() as tmp:
             assert b'!' in output,(tail,bytes(output))
             if tail == 'B: Image.dsk': assert b'[0A]' in output,bytes(output)
             if tail == '/U [A,B,C]:' and answer == b'Y': assert b'[5' in output,bytes(output)
-            os.waitpid(pid,0)
         finally:
             try:os.kill(pid,signal.SIGTERM)
             except ProcessLookupError:pass
+            os.waitpid(pid,0)
             os.close(terminal)
 print('PASS: real guest execution, help/version, syntax errors, A: accept/cancel and command return')

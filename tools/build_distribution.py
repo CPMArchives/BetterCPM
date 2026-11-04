@@ -317,11 +317,10 @@ def validate_files(raw, out, files, g):
 
 
 def development_identity():
-    """Default builds identify current development separately from frozen core."""
-    from version_metadata import rows
-    core=next(row['implementation_version'] for row in rows()
-              if row['component']=='BetterCP/M')
-    return f'BetterCP/M development (after core {core})'
+    """Expected VER heading, using the same automatic selection as RCP."""
+    from utility_versions import expand_versions
+    prepared=expand_versions('; @release-heading@')
+    return prepared.split("'",2)[1]
 
 
 def boot(target, image, out, root, simulator, emulator):

@@ -9,6 +9,12 @@ parser.add_argument('--baseline',type=Path,required=True)
 parser.add_argument('--simulator',type=Path,required=True)
 parser.add_argument('--output',type=Path,required=True)
 args=parser.parse_args();a=args.baseline.resolve();w=args.output.resolve()
+from component_identity import title
+records=json.loads((args.simulator.resolve().parent.parent.parent/'guest-component-records.json').read_text())
+def version(name):
+    r=records['utility:'+name]
+    return title(name,r['identity']['version'],r['identity']['revision'],
+                 development=r['display_selection']['development']).encode()
 d=w/'disks';d.mkdir(parents=True,exist_ok=False)
 image=a/json.loads((a/'report.json').read_text())['image']
 before=hashlib.sha256(image.read_bytes()).hexdigest()
@@ -22,11 +28,11 @@ cmd('MOUNT /U [A,B]:',b'[y/N] ');commands.append((b'n',b'A0>_ ',30))
 for s in ['MOUNT /L B:','DIR B:','MOUNT /U B:','MOUNT /L B:','MOUNT B: "New Image.dsk"','TYPE B:PROBE.TXT']:cmd(s)
 cmd('BYE /Y',b'System halted')
 text=session(args.simulator.resolve(),d,commands,w/'transcript.txt')
-assert b'MOUNT 1.0 (002-dev)' in text
+assert version('MOUNT') in text
 assert text.count(b'Usage: MOUNT X:') == 2
 assert b'Operation cancelled. No changes made.' in text
 assert b'B: empty' in text
-assert b'R 1.0 (005-dev)' in text and b'W 1.0 (005-dev)' in text
+assert version('R') in text and version('W') in text
 assert b'Host transfer with MOUNT' in text
 assert (w/'Output.txt').read_bytes()==(w/'Input.txt').read_bytes()
 assert b'BDOS Error' not in text and b'Disk R/O' not in text and b'Cannot open' not in text

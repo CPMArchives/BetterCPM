@@ -9,10 +9,13 @@ from build_distribution import capacity, selected_files, current_build, digest, 
 
 class DistributionGates(unittest.TestCase):
     def test_default_identity_distinguishes_development_from_frozen_core(self):
-        expected='BetterCP/M development (after core 1.0)'
-        self.assertEqual(development_identity(),expected)
+        from unittest.mock import patch
+        for development, expected in ((True,'BetterCP/M development (after core 1.0)'),
+                                      (False,'BetterCP/M 1.0')):
+            with patch('utility_versions.display_development',return_value=development):
+                self.assertEqual(development_identity(),expected)
         source=(Path(__file__).resolve().parents[1]/'src/cpx/rcp.mac').read_text()
-        self.assertIn("'"+expected+"'",source)
+        self.assertIn('BC_VERSION: ; @release-heading@',source)
 
     def test_planned_missing_is_reported(self):
         m={'system_disk':[{'name':'WHEREIS.COM','targets':['z80pack'],
