@@ -2,7 +2,7 @@
         ASEG
 FDBRTON EQU 1
         ORG 100H
-        JP START
+        JP FDBQUERY
 BDOS    EQU 5
 FDFRAM  EQU 08000H
 FDFLIM  EQU 0C800H
@@ -815,7 +815,8 @@ ENDWORD:DB 'END',0
 FDBEXT: DB 'FDB'
 FDFEXT: DB 'FDF'
 HEADER: DB 'BFDB',1,0,16,64,0,0,128,0,0,0,0,0
-USAGEMSG:DB 'Usage: FDB [source [destination]]',13,10,0
+USAGEMSG:DB 'Usage: FDB [source [destination]]',13,10
+        DB 'Use FDB /HELP for help.',13,10,0
 DONEMSG:DB 'FDB: complete.',13,10,0
 MEMMSG: DB 'FDB: insufficient TPA or workspace.',13,10,0
 BADMSG: DB 'FDB: invalid catalogue.',13,10,0

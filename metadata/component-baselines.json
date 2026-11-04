@@ -4752,6 +4752,124 @@
       "schema": 1,
       "status": "selected-input-capture"
     },
+    "utility:FDB|trs80gp|default|cross": {
+      "assigned_identity": {
+        "revision": 1,
+        "version": "1.0"
+      },
+      "fingerprint": "4635dd0519d4b36e79e6de608005bd0d039c95dee0b595b5616109740b892f88",
+      "inputs": {
+        "component": "utility:FDB",
+        "configuration": {
+          "assembler_flags": [
+            "-e32",
+            "-fb"
+          ],
+          "editor_base": 47360,
+          "origin": 256,
+          "query_arena_end": 23296,
+          "viewer_base": 42240
+        },
+        "files": {
+          "src/utilities/common/monitorconsole.inc": "bfa01ac854919893852c2f7418638765f53fe7d430f8bfca2ae536c150e56639",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/disk/fdbdrive.inc": "83d154bc29600c0ea9df0db3d02574c910c60217e6b149003fa42078a773eb51",
+          "src/utilities/disk/fdbexchange.inc": "e7c13e310e6b6c1998c4f4895d8626f4115e977084b9150a6a4646935d9d2e97",
+          "src/utilities/disk/fdbquery.inc": "bbdbdfddb84649deffaea6c8fe3816de87c510a09bab3166510f7ab0c58752bf",
+          "src/utilities/disk/fdbread.inc": "376c654ffd2f06a00dd1b28ebc79b0adf492e51cc742868c47962a43f9ba4cfb",
+          "src/utilities/disk/fdbsession.inc": "1176ae5983c7a19e9c0b205d7d8ae4966cda930a38187c9eb10e54313c2b69ee",
+          "src/utilities/disk/fdbview.inc": "efc51850be4a21dd7d70f0fa9102fdab84a9c8a2fa1df04b124f54651a54f475",
+          "src/utilities/disk/fdbviewload.inc": "8c9dc79207d3166c28fada774cc230bbc51c51667e4a9bbc04be0424cd853e3f",
+          "src/utilities/fdb.mac": "641b5b65035230848bf0c0c500f4411f842d452b78461f34e2eaee479ba5a82b",
+          "tools/build_fdb.py": "a1e0894f36c9def4f47afcce502a805daa1dbd1fc52eff714bc9dfa1815e2846",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/utility_help.py": "9462d9ef310a8f603e64ddf9b01ee0a97333f22d150de1d0e7d651723472f380",
+          "tools/utility_versions.py": "a885d8df2bf8ab2faf900eca0a54e59bc7acf802e0522ab3b9f84b0d680f0f3f"
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "Disk Format Catalogue Workbench",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "trs80gp"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "utility:FDB|z80pack|default|cross": {
+      "assigned_identity": {
+        "revision": 1,
+        "version": "1.0"
+      },
+      "fingerprint": "34d452d235e2be124628abcba397f122b395ce8bd6faf4b12b6b1a85506cb5bf",
+      "inputs": {
+        "component": "utility:FDB",
+        "configuration": {
+          "assembler_flags": [
+            "-e32",
+            "-fb"
+          ],
+          "editor_base": 47360,
+          "origin": 256,
+          "query_arena_end": 23296,
+          "viewer_base": 42240
+        },
+        "files": {
+          "src/utilities/common/monitorconsole.inc": "bfa01ac854919893852c2f7418638765f53fe7d430f8bfca2ae536c150e56639",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/disk/fdbdrive.inc": "83d154bc29600c0ea9df0db3d02574c910c60217e6b149003fa42078a773eb51",
+          "src/utilities/disk/fdbexchange.inc": "e7c13e310e6b6c1998c4f4895d8626f4115e977084b9150a6a4646935d9d2e97",
+          "src/utilities/disk/fdbquery.inc": "bbdbdfddb84649deffaea6c8fe3816de87c510a09bab3166510f7ab0c58752bf",
+          "src/utilities/disk/fdbread.inc": "376c654ffd2f06a00dd1b28ebc79b0adf492e51cc742868c47962a43f9ba4cfb",
+          "src/utilities/disk/fdbsession.inc": "1176ae5983c7a19e9c0b205d7d8ae4966cda930a38187c9eb10e54313c2b69ee",
+          "src/utilities/disk/fdbview.inc": "efc51850be4a21dd7d70f0fa9102fdab84a9c8a2fa1df04b124f54651a54f475",
+          "src/utilities/disk/fdbviewload.inc": "8c9dc79207d3166c28fada774cc230bbc51c51667e4a9bbc04be0424cd853e3f",
+          "src/utilities/fdb.mac": "641b5b65035230848bf0c0c500f4411f842d452b78461f34e2eaee479ba5a82b",
+          "tools/build_fdb.py": "a1e0894f36c9def4f47afcce502a805daa1dbd1fc52eff714bc9dfa1815e2846",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/utility_help.py": "9462d9ef310a8f603e64ddf9b01ee0a97333f22d150de1d0e7d651723472f380",
+          "tools/utility_versions.py": "a885d8df2bf8ab2faf900eca0a54e59bc7acf802e0522ab3b9f84b0d680f0f3f"
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "Disk Format Catalogue Workbench",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
     "utility:LZH|trs80gp|default|cross": {
       "assigned_identity": {
         "revision": 5,

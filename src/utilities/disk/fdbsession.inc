@@ -1121,14 +1121,12 @@ SOURCEMSG:DB 'Source .FDB or .FDF: ',0
 SELECTMSG:DB 'ID to import (Return for entire catalogue): ',0
 DUPMSG: DB ' exists. R Replace, U Use new ID, C Cancel: ',0
 AMBIGMSG:DB ' duplicate. Description (Enter=cancel): ',0
-        DS 17,0
 AMBIGBAD:DB 'Duplicate display names. Working catalogue preserved.',13,10,0
 IDMSG: DB 'New ID (1-8 letters/digits): ',0
 NONEFOUND:DB 'No matching entries. Nothing imported.',13,10,0
 ADDMSG: DB ' added, ',0
 REPLMSG:DB ' replaced. Changes are unsaved.',13,10,0
 DESTMSG:DB 'Write .FDB/.FDF (Return for displayed default): ',0
-        DS 3,0
 WRITEMSG:DB '  Create new file (Y/N)? ',0
 REPLACEMSG:DB '  Replace entire file (Y/N)? ',0
 SAVEDMSG:DB 'Catalogue saved and verified.',13,10,0

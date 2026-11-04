@@ -176,6 +176,10 @@
     ],
     "utility:MD5SUM": [
       "build/utilities/MD5SUM.COM"
+    ],
+    "utility:FDB": [
+      "build/fdb/FDB.COM",
+      "build/fdb/FDBVIEW.OVL"
     ]
   }
 }
