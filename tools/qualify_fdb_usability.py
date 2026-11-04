@@ -73,7 +73,7 @@ def main():
     original=baseline/report['image'];assert hashlib.sha256(original.read_bytes()).hexdigest()==report['sha256']
     shutil.copy2(baseline/'diskdefs',out/'diskdefs')
     raw=out/'staged.raw';raw.write_bytes(extract_raw(original.read_bytes()) if a.target=='trs80gp' else original.read_bytes())
-    probe=state_probe(out)
+    probe=state_probe(out,clear=True)
     fixtures={'DISK.BAK':b'KEEP PREEXISTING BACKUP\r\n\x1a','STATE.COM':probe,'POST.TXT':b'FDB101 UI COMPLETED\r\n\x1a',
         'FREE.TXT':b'FDB101 UNLOADED READY\r\n\x1a',
         'UNLOAD.SUB':b'CLS\r\nRSX UNLOAD ADM3A\r\nRSX UNLOAD M4SCRN\r\nRSX LIST\r\nTYPE FREE.TXT\r\n\x1a'}
@@ -90,17 +90,33 @@ def main():
     else:
         disk=out/'ui.dmk';disk.write_bytes(make_dmk(raw.read_bytes()))
         cmd=[str(DEFAULT_EMULATOR),'-m4','-batch','-turbo','-ktx','-d0',str(disk),
-             '-id','4000','-itime','15000','-iw','Type TYPE README.TXT for more','-id','4000']
-        cmd+=key_args('SUBMIT UNLOAD\r')+['-iw','FDB101 UNLOADED READY','-iw','A0> ','-id','300','-it']
+             '-id','4000','-it','-itime','15000','-iw','Type TYPE README.TXT for more','-id','4000']
+        cmd+=key_args('SUBMIT UNLOAD\r')+['-id','600','-it','-iw','FDB101 UNLOADED READY','-iw','A0> ','-id','300','-it']
+        diagnostic_indices=[0,1];capture_count=3
         for k,w in steps:
-            cmd+=key_args(k if k in ('\x03','\x1b') else k+'\r')+['-iw','A0> ' if w=='A0>' else w,'-id','180','-it']
+            cmd+=key_args(k if k in ('\x03','\x1b') else k+'\r')
+            if k=='FDB':
+                cmd+=['-id','600','-it']
+                diagnostic_indices.append(capture_count);capture_count+=1
+            cmd+=['-iw','A0> ' if w=='A0>' else w]
+            if k=='STATE' or k.startswith('TYPE '):
+                # ENDSTATE/file text precedes warm-boot completion. Wait for
+                # the empty CCP prompt before typing the next command.
+                cmd+=['-iw','A0> ']
+            # The shipped CCP can display its prompt before command-extension
+            # reload/keyboard flush completes. Use the established native
+            # qualification settling interval before sending another command.
+            settling='3000' if k=='STATE' or k.startswith('TYPE ') or w=='A0>' else '180'
+            cmd+=['-id',settling,'-it'];capture_count+=1
         cmd+=key_args('SUBMIT STARTUP\r')+['-iw','Type TYPE README.TXT for more','-iw','A0> ','-id','300','-it']
         cmd+=key_args('RSX LIST\r')+['-iw','TPA available: 50K','-iw','A0> ','-id','300','-it']
         cmd+=key_args('TYPE POST.TXT\r')+['-iw','FDB101 UI COMPLETED','-iw','A0> ','-id','300','-it','-ix']
         (out/'invocation.json').write_text(json.dumps(cmd,indent=2)+'\n')
         run(cmd,cwd=out,check=True,timeout=2400)
         frames=[screen(f) for f in sorted(out.glob('trs80-text*.bin'),key=lambda f:int(f.stem.rsplit('-',1)[1]))]
-        assert len(frames)==len(steps)+4
+        assert len(frames)==len(steps)+4+len(diagnostic_indices)
+        frames=[f for i,f in enumerate(frames) if i not in diagnostic_indices]
+        (out/'diagnostic-frame-indices.json').write_text(json.dumps(diagnostic_indices)+'\n')
         assert 'TPA available: 53K' in frames[0]
         for i,(_,want) in enumerate(steps):assert want in frames[i+1],(i,want,frames[i+1])
         assert 'M4SCRN : BDOS 255' in frames[-2] and 'ADM3A : BDOS 255' in frames[-2]
