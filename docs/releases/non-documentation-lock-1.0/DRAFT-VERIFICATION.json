@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "draft_release_id": 433495205,
+  "draft_url": "https://github.com/CPMArchives/BetterCPM/releases/tag/untagged-3daaa3e6ccaf2d42e96e",
+  "draft": true,
+  "published_at": null,
+  "all_six_zip_assets": "same IDs/sizes/digests/states; no ZIP replacement or rebuild",
+  "five_non_documentation_packages": "LOCKED unchanged",
+  "documentation_asset": "same provisional reference, not final",
+  "only_replaced_asset": "BetterCPM-1.0-RELEASE.json",
+  "new_index_asset": {
+    "id": 708304969,
+    "sha256": "sha256:80444b02948e8323053d96f9b3e3668a2429c439ea64a3e472299ba650a53b12",
+    "size": 4521
+  },
+  "draft_body": "documentation-pending banner; prose synchronization not performed",
+  "proposed_tag_name_unchanged": "v1.0",
+  "tag_target_unchanged": "2842d0eb0732683d9280a38d576c3dba423cb893",
+  "tag_refs_unchanged": true,
+  "tagging": "HOLD",
+  "publishing": "HOLD",
+  "metadata_correction": "Body-only PATCH normalized the unpublished draft tag-name field to its untagged route; the original planned v1.0 field and target were explicitly restored with draft=true. Git tag refs remained unchanged."
+}

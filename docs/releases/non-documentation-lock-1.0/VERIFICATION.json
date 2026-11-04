@@ -1,0 +1,56 @@
+{
+  "status": "PASS",
+  "date_taipei": "2026-11-04",
+  "software_source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+  "reviewed_repository_revision": "31dba474927be420796ab9e4cb3c75daddd6f0ab",
+  "packages_checked": 5,
+  "disk_images_recorded": 8,
+  "frozen_originals_and_renamed_copies": "SHA256/size identical, read-only modes verified",
+  "github_five_assets": "uploaded states, sizes andserverSHA256digests match locked originals",
+  "source_and_media_identity": "source_commit checked inside allfive; image hashes checked against embedded receipts; inventory records exact shipped file hashes",
+  "source_reference_files": {
+    "SOURCE-FILES.json": {
+      "sha256": "f6bb8b110cb3d957ddd51563b7b51737ea6cd94557f78dc042f9790fbc26644a",
+      "bytes": 282234
+    },
+    "metadata/component-registry.json": {
+      "sha256": "85a896285a7204d94b992895590341effc6c0e03ac166f079ce62cb2cb58c21f",
+      "bytes": 35280
+    },
+    "metadata/component-baselines.json": {
+      "sha256": "c2680dd451a3dc99183f0e9a8cc99c9e1312518a8755a8032734b7a93483ea88",
+      "bytes": 913856
+    },
+    "metadata/distribution.json": {
+      "sha256": "e68b731f2250b42062de5f02126b1b9ffc565cf22d1dad804f428f03e427e318",
+      "bytes": 8545
+    },
+    "metadata/release-package.json": {
+      "sha256": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
+      "bytes": 357
+    },
+    "metadata/DISK.FDF": {
+      "sha256": "adc8fe74ec0435482b574648ec476b366a1f2b826fca28a2a3f439c6d8c9573e",
+      "bytes": 51948
+    },
+    "LICENSE": {
+      "sha256": "d00a0b35a80ce1d36ef231a1e0f9d47a79556ba89b2bc64f7f12a32a239eb279",
+      "bytes": 1540
+    },
+    "COPYING": {
+      "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+      "bytes": 18092
+    },
+    "NOTICE": {
+      "sha256": "4ac316639dad252cf97d0589a27797a599d2f75a6770cc2be6ea37b6a0d83fd6",
+      "bytes": 2132
+    }
+  },
+  "draft": true,
+  "published_at": null,
+  "documentation": "completeness not asserted; old ZIP remains provisional",
+  "runtime_tests": "not repeated: immutable bytes match prior qualification",
+  "record_consistency": "PASS five checksum/index mappings, separate pending Documentation state, contents fingerprint",
+  "relative_documentation_links_checked": 14,
+  "draft_verification": "DRAFT-VERIFICATION.json"
+}

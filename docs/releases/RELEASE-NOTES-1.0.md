@@ -1,5 +1,10 @@
 # BetterCP/M 1.0
 
+> **Working draft — documentation sync pending.** Five non-documentation
+> packages are locked against the [exact baseline](non-documentation-lock-1.0/README.md).
+> These notes are not final publication approval. Complete and synchronize the
+> Documentation package before final review; tagging and publishing remain held.
+
 BetterCP/M is a CP/M 2.2-compatible operating system for patched z80pack/cpmsim
 and the TRS-80 Model 4. This release brings together the system, its utilities,
 complete matching source and manuals in six qualified downloads.
