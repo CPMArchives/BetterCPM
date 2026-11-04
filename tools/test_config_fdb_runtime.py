@@ -38,7 +38,7 @@ expect -exact "Booting..."
 prompt
 send -- "CONFIG\r"
 expect -exact "Configuration options:"
-send -- "G"
+send -- "D"
 expect -exact "Choose the letter of the drive to change:"
 send -- "B"
 expect -exact "Choose the format to be used for drive B"
