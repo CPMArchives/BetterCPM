@@ -18,6 +18,19 @@ current critical path. Items below that implement a frozen contract are engineer
 tasks, not unresolved architecture; historical or deferred designs do not
 become 1.0 requirements by appearing in this backlog.
 
+## 1.01 release corrections
+
+The locked 1.0 packages remain unchanged; only showstoppers warrant reopening
+that lock. The [release disposition](docs/engineering/UI-Conformance-Matrix.md#release-disposition-and-101-scope)
+records the accepted command UI, DIR and XSUB limitations.
+
+- [ ] Correct FDB.COM's main-menu presentation to Engineering Specification 209:
+  version heading, grouped bracketed letter choices and the bracketed choice
+  prompt, preserving the documented commands and exit behavior. The compact
+  menu remains an accepted 1.0 limitation. Preserve the local development
+  candidate for review; complete affected-platform qualification before 1.01
+  acceptance. See the [FDB erratum](docs/releases/1.0-ERRATA.md#fdb-main-menu-presentation).
+
 ## Immediate priorities
 
 
