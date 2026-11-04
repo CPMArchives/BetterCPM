@@ -1,11 +1,9 @@
 # FDB 1.01 usability implementation
 
 Branch: `feature/fdb-101-usability`, based on main `6db135a8` (PR #618).
-**Acceptance status: pending Model 4 interactive qualification.** Host tests,
-cpmsim interactive/query/round-trip and Model 4 query/round-trip pass. The Mac
-is locked; computer-use inspection of the stalled interactive emulator is
-unavailable. Timed boot diagnostics are retained, without claiming a native
-interactive pass. PR #619 remains draft until that gate passes.
+**Acceptance status: PASS on cpmsim and Model 4.** The final Model 4 replay
+completed all interactive checks without manual input, including normal-console
+restoration and a file read after restoration. PR #619 is ready for review.
 
 This implements FDU-01–10 from [the review backlog](209-usability-101.md).
 The shipped 1.0 media, six frozen ZIPs, component baselines and release records
@@ -84,24 +82,26 @@ On Model 4, interactive qualification unloads ADM3A and M4SCRN to obtain 53 KiB,
 then restores the unmodified shipped STARTUP sequence, checks both modules and
 50 KiB, and reads a file. Queries use normal startup at 50 KiB.
 
-See [partial qualification record](../reviews/2026-11-04-fdb-101/qualification.json)
+See the [qualification record](../reviews/2026-11-04-fdb-101/qualification.json)
 and [retained evidence](../reviews/2026-11-04-fdb-101/evidence.tar.gz).
-Resume the unchanged final pair on fresh private Model 4 media after unlocking
-the desktop; complete all interactive postconditions and restoration checks
-before closing the backlog or marking the PR ready. In the current workspace:
+Both platforms pass six queries, the byte-identical 108-entry round-trip,
+103 interactive steps and all binding/file/reserved-track postconditions.
+The accepted Model 4 run is `qualified-ui-model4-final`; its recorded runner
+is from `63a25d0a`. Later repository runner changes only lengthen settling
+intervals after console restoration; the accepted invocation and runner are
+retained together. No manual input was used in the accepted run.
+
+To repeat in the current workspace, use a new output directory:
 
 ```
 BETTERCPM_TRS80GP_DIRECT=1 python3 tools/qualify_fdb_usability.py \
   --target trs80gp \
   --baseline ../fdb101-qualification-20261104/qualified-queries-model4/baseline \
-  --output ../fdb101-qualification-20261104/qualified-ui-model4-unlocked
+  --output ../fdb101-qualification-20261104/qualified-ui-model4-repeat
 ```
 
-Use a new output directory for each attempt. The matching pair is fixed in the
-baseline receipt; do not replace it or rebuild any 1.0 package. After PASS,
-update the retained record/archive and this acceptance status, close FDU-01–10,
-and mark PR #619 ready. The test runner restores the shipped console sequence
-and checks the resulting 50 KiB state before success.
+The matching pair is fixed in the baseline receipt. Do not replace the frozen
+1.0 files or rebuild 1.0 packages for this development qualification.
 
 | Backlog | Focused coverage |
 | --- | --- |
@@ -129,4 +129,10 @@ initialization. The bounded diagnostic captured an empty command instead of
 FDB. The final driver clears probe screens, waits for an empty prompt and uses
 the existing native qualification settling interval before the next command.
 Extra timed launch captures are retained separately from acceptance frames.
+The unlocked diagnostic run also matched retained menu/export text during I/O;
+manual resend actions are recorded in its `manual-actions.json`, and that trial
+was stopped without acceptance. The final clean replay clears the screen before
+FDB launches and settles catalogue read/write and export confirmation waits.
+It passes without intervention. A locked-desktop blank boot capture is retained
+as an environmental diagnostic, not a functional pass or proof of its cause.
 The final native runs use fresh directories and the exact reported COM/OVL hashes.
