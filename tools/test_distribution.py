@@ -15,7 +15,7 @@ class DistributionGates(unittest.TestCase):
             with patch('utility_versions.display_development',return_value=development):
                 self.assertEqual(development_identity(),expected)
         source=(Path(__file__).resolve().parents[1]/'src/cpx/rcp.mac').read_text()
-        self.assertIn('BC_VERSION: ; @release-heading@',source)
+        self.assertRegex(source,r'BC_VERSION:\s*; @release-heading@')
 
     def test_planned_missing_is_reported(self):
         m={'system_disk':[{'name':'WHEREIS.COM','targets':['z80pack'],
