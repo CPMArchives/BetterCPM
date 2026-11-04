@@ -765,7 +765,14 @@ LOSSY:  LD HL,LOSSMSG
         JR EXITMSG
 EXISTS: LD HL,EXISTMSG
         JR EXITMSG
-IOERR:  LD HL,IOMSG
+IOERR:  LD HL,INPUT
+        LD A,(OUTOPEN)
+        OR A
+        JR Z,IOERRNAME
+        LD HL,OUTPUT
+IOERRNAME:CALL SHOWNAME
+        CALL CRLF
+        LD HL,IOMSG
 EXITMSG:
         PUSH HL
         LD A,(SESSION)
@@ -849,10 +856,12 @@ COMMENT:DB 0
 ATEOF:  DB 0
 LINEPTR:DW 0
 SEEN:   DS 26
-SIZES:  DS 255
+; Dedicated non-overlapping scratch below the relevant arena ceiling.
+SIZESCLI EQU 0C700H
+SIZESSESSION EQU 0B800H
 INBUF:  DS 128
-OUTBUF: DS 128
 LINE:   DS 1300
+OUTBUF EQU LINE+475
 BIND:   DS 64
 CURB:   DS 64
 FINDIDX:DB 0
@@ -1133,7 +1142,10 @@ SET_INVERT1: SET 2,(IX+58)
 ENUM_INVERT0: DB 'NO',0
 ENUM_INVERT1: DB 'YES',0
 PARSE_SECTOR_SIZES:
-        LD DE,SIZES
+        PUSH HL
+        CALL SIZEBUFFER
+        EX DE,HL
+        POP HL
         LD B,0
 LIST_SECTOR_SIZES:
         PUSH BC
@@ -1271,6 +1283,9 @@ SIZE128:CP 128
         XOR A
         RET
 FINALFORMAT:
+        LD HL,EDRULEBLOCK
+        LD A,3
+        CALL EDRULE
         LD HL,SEEN
         LD B,15
 REQUIRED:
@@ -1350,7 +1365,7 @@ SETEXM: LD (IX+44),B
         CP (IX+55)
         JP NZ,TEXTERR
         LD B,A
-        LD HL,SIZES
+        CALL SIZEBUFFER
         LD C,(HL)
         LD E,0
         LD D,0
@@ -1377,7 +1392,7 @@ MIXSAME:INC HL
         LD A,(IX+55)
         CALL POOLBYTE
         LD B,A
-        LD HL,SIZES
+        CALL SIZEBUFFER
 COPYMIX:LD A,(HL)
         CALL POOLBYTE
         INC HL
@@ -2048,6 +2063,9 @@ SEMEXMOK: LD B,A
         AND B
         JP NZ,TEXTERR
 ; Check topology and byte-valued track/sector IDs.
+        LD HL,EDRULEIDS
+        LD A,2
+        CALL EDRULE
         BIT 0,(IX+58)
         JR NZ,SEMTWO
         LD A,(IX+58)
@@ -2155,12 +2173,20 @@ SEMSPT: LD HL,(SURFACERECS)
         JR Z,SEMCMPSPT
         ADD HL,HL
 SEMCMPSPT:
+        PUSH HL
+        LD HL,EDSPTMSG
+        LD A,3
+        CALL EDRULE
+        POP HL
         LD E,(IX+40)
         LD D,(IX+41)
         OR A
         SBC HL,DE
         JP NZ,TEXTERR
 ; Directory allocation bitmap must reserve every directory block.
+        LD HL,EDRULEDIR
+        LD A,3
+        CALL EDRULE
         LD HL,(BLOCKRECS)
         ADD HL,HL
         ADD HL,HL
@@ -2183,6 +2209,9 @@ SEMDIRBIT:
         JP NC,TEXTERR
         DJNZ SEMDIRBIT
 ; allocated = (DSM + 1) * block records, at most 65536 records.
+        LD HL,EDRULEALLOC
+        LD A,3
+        CALL EDRULE
         LD L,(IX+45)
         LD H,(IX+46)
         LD DE,(BLOCKRECS)
@@ -2324,3 +2353,24 @@ HEXDIGIT:
 HEXDONE:JP PUTC
 STACKMSG: DB 'FDB stack free ',0
 STACKUNIT: DB 'h of 0200h',13,10,0
+
+; Text sizes survive subsequent lines. Viewer code is bounded below B800h;
+; accepted object pools end below B6F8h (session) / BDF8h (converter).
+SIZEBUFFER:LD HL,SIZESCLI
+        LD A,(SESSION)
+        OR A
+        RET Z
+        LD HL,SIZESSESSION
+        RET
+; Only an interactive validation may publish diagnostics into relocated state.
+; Natural semantic checkpoints do not need their incoming HL/A values.
+EDRULE:PUSH AF
+        LD A,(EDITCHECK)
+        OR A
+        JR NZ,EDRULESET
+        POP AF
+        RET
+EDRULESET:POP AF
+        LD (EDFAILPAGE),A
+        LD (EDCAUSE),HL
+        RET

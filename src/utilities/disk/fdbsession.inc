@@ -32,6 +32,7 @@ STARTNAMED:
         JP READSOURCE
 MENU:   LD SP,STACKTOP
         XOR A
+        LD (NAMEACTIVE),A
         LD (INOPEN),A
         LD (OUTOPEN),A
         LD (COMPAREOUT),A
@@ -59,6 +60,10 @@ SHOWCOUNT:
         JR Z,SHOWSTATE
         LD HL,MODSTATE
 SHOWSTATE: CALL PUTS
+        LD A,(EDPENDING)
+        OR A
+        LD HL,EDPENDMSG
+        CALL NZ,PUTS
         LD HL,MENUMSG
         CALL ASKCHOICE
         CP 'A'
@@ -615,7 +620,15 @@ SAVECAT:LD A,(EDSOURCE)
 EDWRITECAT:CALL EDINCLUDE
         CALL DOSAVE
         JP MENU
-DOSAVE: LD HL,DESTMSG
+DOSAVE: LD A,(DEFAULTNAME+1)
+        OR A
+        LD HL,NEEDNAMEMSG
+        JR Z,SAVEASK
+        LD HL,DEFAULTNAME
+        CALL SHOWNAME
+        CALL CRLF
+        LD HL,DESTMSG
+SAVEASK:
         CALL ASK
         LD A,(ANSWER)
         CP 3
@@ -624,7 +637,7 @@ DOSAVE: LD HL,DESTMSG
         JR NZ,SAVENAME
         LD A,(DEFAULTNAME+1)
         OR A
-        JP Z,BADNAME
+        JR Z,DOSAVE
         LD HL,DEFAULTNAME
         LD DE,DESTFCB
         LD BC,12
@@ -693,10 +706,10 @@ SAVEVALID:CALL FDBVALID
         LDIR
         LD DE,TEMPFCB
         CALL PRESENT
-        JP NZ,RECFILES
+        JP NZ,RECEXIST
         LD DE,BACKFCB
         CALL PRESENT
-        JP NZ,RECFILES
+        JP NZ,RECEXIST
         LD HL,TEMPFCB
         LD DE,OUTPUT
         CALL COPYFCB
@@ -823,12 +836,25 @@ READTEMP:LD DE,INBUF
         LD DE,INPUT
         LD C,20
         JP BDOS
-VERIFYERR:LD HL,VERIFYMSG
-        JP EXITMSG
-RECFILES:LD HL,DESTFCB
+VERIFYERR:LD HL,TEMPFCB
         CALL SHOWNAME
         CALL CRLF
-        LD HL,RECMSG
+        LD HL,VERIFYMSG
+        JP EXITMSG
+RECEXIST:LD HL,RECEXISTMSG
+        CALL PUTS
+RECFILES:LD HL,RECMSG
+        CALL PUTS
+        LD HL,DESTFCB
+        CALL SHOWNAME
+        CALL CRLF
+        LD HL,BACKFCB
+        CALL SHOWNAME
+        CALL CRLF
+        LD HL,TEMPFCB
+        CALL SHOWNAME
+        CALL CRLF
+        LD HL,EMPTYMSG
         JP EXITMSG
 ; Never rename over an existing target, including a recovery file.
 RENAMEFILE:
@@ -879,7 +905,10 @@ ASKNAME:CALL ASK
         LD A,(ANSWER)
         CP 3
         JP Z,MENU
-PARSENAME:
+PARSENAME:LD (NAMESTACK),SP
+        LD A,1
+        LD (NAMEACTIVE),A
+NAMEPARSE:
         LD HL,DESTFCB
         LD (HL),0
         LD B,11
@@ -889,7 +918,60 @@ PADNAME:INC HL
         LD HL,ANSWER
         LD A,(ANSWER+1)
         CP ':'
+        JR Z,NAMEDRIVEPREFIX
+        CP '0'
+        JR C,NAMEBASE
+        CP '9'+1
+        JR NC,NAMEBASE
+        LD A,(ANSWER+2)
+        CP ':'
+        JR Z,NAMEDU
+        LD A,(ANSWER+3)
+        CP ':'
         JR NZ,NAMEBASE
+NAMEDU:
+        LD A,(HL)
+        SUB 'A'
+        CP 16
+        JP NC,BADNAME
+        INC A
+        LD (DESTFCB),A
+        INC HL
+        LD A,(HL)
+        SUB '0'
+        LD E,A
+        INC HL
+        LD A,(HL)
+        CP ':'
+        JR Z,NAMEUSER
+        CP '0'
+        JP C,BADNAME
+        CP '9'+1
+        JP NC,BADNAME
+        SUB '0'
+        LD D,A
+        LD A,E
+        CP 1
+        JP NZ,BADNAME
+        LD A,D
+        ADD A,10
+        LD E,A
+        INC HL
+        LD A,(HL)
+        CP ':'
+        JP NZ,BADNAME
+NAMEUSER:PUSH HL
+        PUSH DE
+        LD E,255
+        LD C,32
+        CALL BDOS
+        POP DE
+        POP HL
+        CP E
+        JP NZ,BADNAME
+        INC HL
+        JR NAMEBASE
+NAMEDRIVEPREFIX:
         LD A,(HL)
         SUB 'A'
         CP 16
@@ -910,8 +992,22 @@ NAMEBASE:LD DE,DESTFCB+1
         CALL NAMEPART
         LD A,(HL)
         OR A
-        RET Z
-BADNAME:LD HL,NAMEMSG
+        JR NZ,BADNAME
+        LD (NAMEACTIVE),A
+        RET
+BADNAME:LD A,(NAMEACTIVE)
+        OR A
+        JR Z,NAMEERROR
+        LD SP,(NAMESTACK)
+        LD HL,NAMEMSG
+        CALL PUTS
+        LD HL,NAMEHINT
+        CALL ASK
+        LD A,(ANSWER)
+        CP 3
+        JP Z,MENU
+        JP NAMEPARSE
+NAMEERROR:LD HL,NAMEMSG
         JP EXITMSG
 NAMEPART:
         LD C,0
@@ -1011,14 +1107,24 @@ UPPER:  CP 'a'
         RET NC
         SUB 32
         RET
-ASKCHOICE:CALL ASK
+ASKCHOICE:PUSH HL
+        CALL ASK
+        POP HL
         LD A,(ANSWER+1)
         OR A
-        JP NZ,MENU
+        JR Z,CHOICEOK
+        PUSH HL
+        CALL BADCHOICE
+        POP HL
+        JR ASKCHOICE
+CHOICEOK:
         LD A,(ANSWER)
         RET
+BADCHOICE:LD HL,CHOICEMSG
+        JP PUTS
 ; Read directly so BREAK returns to the session and can protect dirty work.
 ASK:    CALL PUTS
+        CALL CRLF
         LD HL,ANSWER
         LD B,0
 ASKKEY: PUSH BC
@@ -1031,6 +1137,8 @@ ASKREAD:POP HL
         OR A
         JR Z,ASKKEY
         CP 3
+        JR Z,ASKBREAK
+        CP 27
         JR Z,ASKBREAK
         CP 13
         JR Z,ASKDONE
@@ -1055,11 +1163,10 @@ ASKREAD:POP HL
         JR ASKKEY
 ; Drain the rest of an overlong line before returning to the menu.
 ; Otherwise its suffix could be interpreted as an independent command.
-ASKOVER:LD B,33
+ASKOVER:LD A,7
+        CALL PUTC
         JR ASKKEY
 ASKBACK:LD A,B
-        CP 33
-        JR Z,ASKKEY
         OR A
         JR Z,ASKKEY
         DEC B
@@ -1074,9 +1181,7 @@ ASKBACK:LD A,B
 ASKBREAK:LD HL,ANSWER
         LD (HL),3
         INC HL
-ASKDONE:LD A,B
-        CP 33
-        JP Z,BADNAME
+ASKDONE:
         LD (HL),0
         JP CRLF
 SESSION:DB 0
@@ -1096,12 +1201,15 @@ DEFAULTNAME:DS 12
 DESTFCB:DS 36
 BACKFCB:DS 36
 TEMPFCB:DS 36
-SEARCHFCB:DS 36
-RENFCB: DS 36
-REFS:   DS 256
-SELECTED:DS 8
-ANSWER: DS 34
+SEARCHFCB EQU LINE+331
+RENFCB EQU LINE+367
+; Parsing finishes before interactive merge/list/input scratch becomes live.
+REFS EQU LINE
+SELECTED EQU LINE+323
+ANSWER EQU LINE+256
 RAWANSWER: DB 0
+NAMEACTIVE:DB 0
+NAMESTACK:DW 0
 DISKNAME:DB 0,'DISK    FDB'
 TEMPEXT:DB '$$$'
 BACKEXT:DB 'BAK'
@@ -1123,14 +1231,59 @@ DUPMSG: DB ' exists. R Replace, U Use new ID, C Cancel: ',0
 AMBIGMSG:DB ' duplicate. Description (Enter=cancel): ',0
 AMBIGBAD:DB 'Duplicate display names. Working catalogue preserved.',13,10,0
 IDMSG: DB 'New ID (1-8 letters/digits): ',0
-NONEFOUND:DB 'No matching entries. Nothing imported.',13,10,0
+NONEFOUND:DB 'ID not found; working data preserved.',13,10,0
 ADDMSG: DB ' added, ',0
 REPLMSG:DB ' replaced. Changes are unsaved.',13,10,0
-DESTMSG:DB 'Write .FDB/.FDF (Return for displayed default): ',0
-WRITEMSG:DB '  Create new file (Y/N)? ',0
+DESTMSG:DB 'Write file (Return uses name above): ',0
+WRITEMSG:DB '  Create (Y/N)? ',0
 REPLACEMSG:DB '  Replace entire file (Y/N)? ',0
 SAVEDMSG:DB 'Catalogue saved and verified.',13,10,0
 KEEPBACK:DB 'Published. Old catalogue retained as .BAK.',13,10,0
-RECMSG: DB 'Save stopped. Inspect this destination, its .BAK and .$$$ before retry.',13,10,0
+RECMSG: DB 'Save stopped; keep/inspect these files:',13,10,0
+RECEXISTMSG:DB 'Recovery file already exists.',13,10,0
+EMPTYMSG:DB 0
 VERIFYMSG:DB 'Temporary file failed readback. Inspect .$$$; original preserved.',13,10,0
-NAMEMSG:DB 13,10,'Invalid filename or ID.',0
+NAMEMSG:DB 'Invalid filename or ID.',13,10,0
+
+EDNUMMSG:DB 'Value (decimal or 0x hex): ',0
+EDBYTEMSG:DB 'Value 0-255 (decimal/0x): ',0
+EDWORDMSG:DB 'Value 0-65535 (decimal/0x): ',0
+EDFLAGMSG:DB 'Value 0 or 1: ',0
+
+; A=zero-based first slot, B=total; inclusive visible range and total.
+MAPRANGE:LD C,A
+        LD A,B
+        OR A
+        LD A,C
+        JR NZ,MAPRBEGIN
+        LD A,255
+MAPRBEGIN:PUSH AF
+        PUSH BC
+        INC A
+        CALL COUNTDEC
+        LD A,'-'
+        CALL PUTC
+        POP BC
+        POP AF
+        ADD A,8
+        JR C,MAPRMAX
+        CP B
+        JR C,MAPREND
+MAPRMAX:LD A,B
+MAPREND:PUSH BC
+        CALL COUNTDEC
+        LD A,'/'
+        CALL PUTC
+        POP BC
+        LD A,B
+        CALL COUNTDEC
+        JP CRLF
+
+CHOICEMSG:DB 'Invalid choice; try again.',13,10,0
+EDNUMBAD:DB 'Invalid number. ',0
+EDIDMISSING:DB 'Set I ID and N Name first.',13,10,0
+EDSPTMSG:DB 'Page 3 A SPT / expected: ',0
+EDRULEBLOCK:DB 'Page 3 B-D: BSH=3..7; BLM=2^BSH-1; check EXM.',13,10,0
+EDRULEIDS:DB 'Page 2: side/track/sector numbering or IDs invalid.',13,10,0
+EDRULEDIR:DB 'Page 3 F-H: AL bitmap must cover DRM+1 entries.',13,10,0
+EDRULEALLOC:DB 'Page 3 E/J: DSM+OFF allocation must fit geometry.',13,10,0

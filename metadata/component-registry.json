@@ -1067,7 +1067,7 @@
     },
     "utility:FDB": {
       "kind": "utility",
-      "version": "1.0",
+      "version": "1.01",
       "placement": "System",
       "roots": [
         "src/utilities/fdb.mac",
@@ -1082,7 +1082,7 @@
       "builders": [
         "tools/build_fdb.py"
       ],
-      "revision": 1,
+      "revision": 2,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "explicit selected dependency closure",

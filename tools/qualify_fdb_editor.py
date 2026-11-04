@@ -14,9 +14,9 @@ from test_sysgen_install import screen
 from test_z80pack_sysgen_install import session
 from trs80gp_launch import run
 
-def state_probe(out):
+def state_probe(out, *, clear=False):
     """Snapshot only through the public API, then return on the CCP stack."""
-    return assemble(Path.home()/'bin/z80asm', """        ASEG
+    source = """        ASEG
         ORG 100H
         LD HL,BUFFER
         LD (POS),HL
@@ -79,7 +79,13 @@ REPORT: DB 'STATE '
 BUFFER: DS 560
         DB ' ENDSTATE',13,10,'$'
         END
-""", out/'STATE.COM',out/'state.lst',0x100)
+"""
+    if clear:
+        source=source.replace('        ORG 100H\n', '        ORG 100H\n'
+            '        LD HL,(1)\n        LD DE,63\n        ADD HL,DE\n'
+            '        LD A,4\n        CALL CLEARJUMP\n')
+        source=source.replace('        END\n', 'CLEARJUMP:JP (HL)\n        END\n')
+    return assemble(Path.home()/'bin/z80asm',source,out/'STATE.COM',out/'state.lst',0x100)
 
 
 def main():

@@ -1,5 +1,11 @@
 # FDB.COM 1.01 usability backlog
 
+Implementation status: FDU-01–10 implemented on `feature/fdb-101-usability`.
+Acceptance passes on cpmsim and Model 4; PR #619 is prepared for review.
+See [behavior, memory constraints and qualification](209-usability-101-implementation.md).
+The descriptions below retain the original 1.0 review findings. The 1.0 release
+remains unchanged; 1.01 release promotion is outside this work.
+
 Reviewed 4 November 2026 against main
 `066336cdc1d28cc2d4b2b7c44e1c1756a3cd9fde`. These are deferred **1.01**
 items, not implementation changes or new 1.0 release requirements. Preserve
@@ -15,12 +21,12 @@ These probes are not new cpmsim or Model 4 native qualification.
 
 ## Navigation and input
 
-- [ ] **FDU-01 — Standard paging aliases (already recorded in PR #615).**
+- [x] **FDU-01 — Standard paging aliases (already recorded in PR #615).**
   Accept `,`/`<` for previous and `.`/`>` for next, and display
   `,< Previous   .> Next` consistently in editor/details/comparison maps.
   Retain the original backlog item's platform and state-preservation checks.
 
-- [ ] **FDU-02 — Bound map navigation and show where the user is.**
+- [x] **FDU-02 — Bound map navigation and show where the user is.**
   In details for ten-slot MMI012, two `>` commands reach a screen containing
   only `17 absent` through `24 absent`. `VMAPNEXT` limits the offset against
   255 rather than the selected map length; the editor already uses its count.
@@ -31,7 +37,7 @@ These probes are not new cpmsim or Model 4 native qualification.
   Evidence: `past-map-end.txt`; [viewer](../../src/utilities/disk/fdbview.inc),
   `VMAPNEXT`, `VMAPS`, `VMAPFETCH`.
 
-- [ ] **FDU-03 — Give local feedback instead of silently losing context.**
+- [x] **FDU-03 — Give local feedback instead of silently losing context.**
   An unsupported viewer key such as `Z` repeats the sector-map block and prompt
   without a reason; multi-character choices go directly to the main menu via
   `ASKCHOICE`. Report the invalid choice and retry the same prompt without
@@ -41,7 +47,7 @@ These probes are not new cpmsim or Model 4 native qualification.
   Evidence: `unknown-viewer-key.txt`; [session](../../src/utilities/disk/fdbsession.inc),
   `ASKCHOICE`; viewer `VIEWPROMPT`/`VPAGE`.
 
-- [ ] **FDU-04 — Make field limits, editing and overflow recovery usable.**
+- [x] **FDU-04 — Make field limits, editing and overflow recovery usable.**
   The list-filter prompt plus 32 echoed characters occupies 94 columns.
   Entering a 33rd character sets an overflow state in which Backspace/DEL no
   longer repairs the answer; Return reports `Invalid filename or ID` even for
@@ -55,7 +61,7 @@ These probes are not new cpmsim or Model 4 native qualification.
   Evidence: `overlong-filter-backspace.txt`; session `ASKOVER`/`ASKBACK`;
   [editor](../../src/utilities/disk/fdbdrive.inc), `EDNUM`/`EDEDITTEXT`.
 
-- [ ] **FDU-05 — Make displayed and accepted filenames consistent.**
+- [x] **FDU-05 — Make displayed and accepted filenames consistent.**
   The header displays `A0:DISK.FDB`, but entering that exact name at F/Open
   produces `Invalid filename or ID`: `PARSENAME` accepts a single-letter drive
   prefix, not that displayed drive/user form. Agree the intended 1.01 DU/name
@@ -66,7 +72,7 @@ These probes are not new cpmsim or Model 4 native qualification.
 
 ## Decisions and diagnostics
 
-- [ ] **FDU-06 — Explain save defaults, especially for Untitled.**
+- [x] **FDU-06 — Explain save defaults, especially for Untitled.**
   N followed by S offers `Return for displayed default` despite having no
   default; Return then produces the generic invalid-name error. Require a
   filename explicitly for Untitled. Otherwise show the complete current
@@ -75,7 +81,7 @@ These probes are not new cpmsim or Model 4 native qualification.
   preservation intact.
   Evidence: `untitled-save-default.txt`; session `DOSAVE`/`SHOWCONFIRM`.
 
-- [ ] **FDU-07 — Describe the operation and failing object accurately.**
+- [x] **FDU-07 — Describe the operation and failing object accurately.**
   D/Details with an unknown ID says `No matching entries. Nothing imported.`
   Missing FDBVIEW.OVL says only `FDB: file operation failed`; mismatched viewer
   tokens/checksums use the invalid-catalogue path. Distinguish source lookup,
@@ -88,7 +94,7 @@ These probes are not new cpmsim or Model 4 native qualification.
   `RECFILES`; [viewer loader](../../src/utilities/disk/fdbviewload.inc),
   `STARTVIEW`/`VIEWLOADED`; recovery-message wording is source-reviewed.
 
-- [ ] **FDU-08 — Make validation failures actionable.**
+- [x] **FDU-08 — Make validation failures actionable.**
   Changing MMI012's logical-track unit to cylinder and validating displays the
   maximum DSM of 389, but V reports only `Invalid working format. Correct the
   fields and validate again.` The conflicting DSM remains on another page.
@@ -99,7 +105,7 @@ These probes are not new cpmsim or Model 4 native qualification.
   do not silently rewrite user choices to make validation pass.
   Evidence: `generic-validation.txt`; editor `EDERROR`, `EDCHECKFAIL`, `EDMAKE`.
 
-- [ ] **FDU-09 — Distinguish unchanged, pending, catalogued and written state.**
+- [x] **FDU-09 — Distinguish unchanged, pending, catalogued and written state.**
   A new blank working format and the main catalogue can both display
   `Unmodified`, yet quitting asks `Working format pending: S Save...`.
   `EDDIRTY`, `EDPENDING` and catalogue `DIRTY` describe different objects/stages.
@@ -110,7 +116,7 @@ These probes are not new cpmsim or Model 4 native qualification.
   Evidence: `pending-unmodified.txt`; editor `EDSTART`, `EDSTATE`, `EDSAVE`,
   `EDEXITCHECK`; session `SHOWSTATE`.
 
-- [ ] **FDU-10 — Make drive-apply confirmation reviewable.**
+- [x] **FDU-10 — Make drive-apply confirmation reviewable.**
   Source review finds that the final confirmation names only the logical drive
   letter and says `Apply working format to this drive (Y/N)?`. Show its physical
   selector, current binding and proposed format identity/important geometry so
@@ -128,4 +134,5 @@ viewer. Verify selection/editor/catalogue state, file bytes, recovery files and
 drive bindings after invalid input, cancellation and failed operations. Keep
 displayed paging ranges and defaults consistent with actual behavior. Continue
 the existing round-trip, catalogue, editor and recoverable-save regressions.
-This backlog review itself implements none of these changes.
+The original backlog review implemented none of these changes; the linked
+implementation records the subsequent fixes and acceptance results.

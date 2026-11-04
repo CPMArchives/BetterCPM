@@ -5,14 +5,20 @@ STARTVIEW:LD (VIEWCOMPARE),A
         LD HL,VIEWFCB
         LD DE,INPUT
         CALL COPYFCB
-        CALL OPENIN
+        LD DE,INPUT
+        LD C,15
+        CALL BDOS
+        CP 255
+        JP Z,VIEWUNAVAILABLE
+        LD A,1
+        LD (INOPEN),A
         LD HL,0A500H
 VIEWLOAD:
         LD (POS),HL
-        LD DE,0B900H
+        LD DE,0B800H
         OR A
         SBC HL,DE
-        JP NC,MEMERR
+        JP NC,VIEWDAMAGED
         LD DE,(POS)
         CALL SETDMA
         LD DE,INPUT
@@ -21,7 +27,7 @@ VIEWLOAD:
         CP 1
         JR Z,VIEWLOADED
         OR A
-        JP NZ,IOERR
+        JP NZ,VIEWUNAVAILABLE
         LD HL,(POS)
         LD DE,128
         ADD HL,DE
@@ -31,12 +37,12 @@ VIEWLOADED:CALL CLOSEIN
         LD DE,VIEWTOKEN
         LD B,4
         CALL CMPFIELD
-        JP NZ,BADFDB
+        JP NZ,VIEWDAMAGED
         LD HL,(POS)
         LD DE,0A509H
         OR A
         SBC HL,DE
-        JP C,BADFDB
+        JP C,VIEWDAMAGED
         LD B,H
         LD C,L
         LD HL,0FFFFH
@@ -63,7 +69,7 @@ VCRCNEXT:DJNZ VCRCBIT
         LD DE,(0A507H)
         OR A
         SBC HL,DE
-        JP NZ,BADFDB
+        JP NZ,VIEWDAMAGED
         JP 0A500H
 VIEWCOMPARE:DB 0
 VIEWACTIVE:DB 0

@@ -17,6 +17,8 @@ from test_usq_com import Command, diskkey
 
 class FDBCommand(Command):
     def bdos(self, fn, de):
+        if fn==32 and (de & 255)==255:
+            return self.user
         if fn==6:
             self.polls+=1
             return 3 if self.polls==self.cancel_at else 0
@@ -24,10 +26,10 @@ class FDBCommand(Command):
             self.console+=chr(de&255);return 0
         return super().bdos(fn,de)
 
-    def run(self, command, files, failures=None, tpa=0xd501, cancel_at=-1):
+    def run(self, command, files, failures=None, tpa=0xd501, cancel_at=-1, drive=1, user=0):
         self.polls=0;self.cancel_at=cancel_at
         self.files=dict(files);self.original=dict(files)
-        self.drive,self.user=1,0
+        self.drive,self.user=drive,user
         self.failures=failures or {};self.late_existing=None
         self.attempts,self.opened,self.searches={},{},{}
         self.events,self.created,self.deleted,self.renamed=[],[],[],[]

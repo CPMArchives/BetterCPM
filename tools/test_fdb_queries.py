@@ -29,7 +29,8 @@ def main():
     m = machine(work, QueryCommand)
     report = json.loads((work/'FDB-build-report.json').read_text())
     dev = '-dev' if report['display_selection']['development'] else ''
-    heading = 'FDB 1.0 (001'+dev+')\r\n'
+    version_number=report['identity']['version'];revision=report['identity']['revision']
+    heading = f'FDB {version_number} ({revision:03d}{dev})\r\n'
     version = heading+'  - - -\r\n | BetterCP/M Utilities\r\n | Disk Format Catalogue Workbench\r\n'
     help_text = (heading+'  - - -\r\n | Disk Format Catalogue Workbench\r\n |\r\n'
         ' |   Usage: FDB [source [destination]]\r\n\r\n'
@@ -93,6 +94,11 @@ def main():
             dest=root/name;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(ROOT/name,dest)
         def state(target='z80pack'):
             return select('utility:FDB',Path.home()/'bin/z80asm',root=root,target=target)
+        from component_inputs import capture
+        baseline=json.loads((root/'metadata/component-baselines.json').read_text())
+        for target in ('z80pack','trs80gp'):
+            baseline['records']['utility:FDB|'+target+'|default|cross']=capture('utility:FDB',Path.home()/'bin/z80asm',root=root,target=target)
+        (root/'metadata/component-baselines.json').write_text(json.dumps(baseline))
         assert not state()['development'] and not state('trs80gp')['development']
         registry=root/'metadata/component-registry.json';data=json.loads(registry.read_text())
         data['components']['utility:TYPE']['revision']+=1;registry.write_text(json.dumps(data))
