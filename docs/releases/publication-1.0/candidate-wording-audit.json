@@ -1,0 +1,2907 @@
+{
+  "scope": "frozen reader entrypoints, current guides and package status metadata; dated engineering history is retained separately",
+  "policy": "preserve qualified ZIP bytes; external final notes/index explicitly supersede pre-qualification status wording",
+  "packages": [
+    {
+      "package": "documentation",
+      "frozen_filename": "BetterCPM-1.0-Documentation-candidate.zip",
+      "archive_root": "BetterCPM-1.0-Documentation-candidate",
+      "reviewed_paths": 11,
+      "files": [
+        {
+          "path": "README.txt",
+          "occurrences": [
+            {
+              "line": 4,
+              "text": "CANDIDATE \u2014 assembled for review; NOT ACCEPTED FOR RELEASE."
+            }
+          ]
+        },
+        {
+          "path": "RELEASE.json",
+          "occurrences": [
+            {
+              "line": 112,
+              "text": "    \"docs/engineering/149 Stage 3 Candidate Snapshot Preparation.md\": \"f54c75128f2540a902212418c5c7452e26523ccf5d7fa7fdf130325ddb56aeb0\","
+            },
+            {
+              "line": 341,
+              "text": "    \"docs/engineering/Candidate-Assembly-2026-10-28.json\": \"e148dad4145ebb0fe7db09b985a4a12cce5bd986795cff7d7d1b0f75c1b81f26\","
+            },
+            {
+              "line": 449,
+              "text": "    \"docs/engineering/NOAH Member and Candidate Accounting.md\": \"3057963944d1c0ce38932920925a6476f563650b742b96e4e57676778ea99b2a\","
+            },
+            {
+              "line": 522,
+              "text": "    \"docs/engineering/Release Candidate Assembly 2026-10-28.md\": \"7c0fc1c45b48f77d131cee29db9edbeb3a520ef2e02fa304cbd6b91b0fcfa873\","
+            },
+            {
+              "line": 551,
+              "text": "    \"docs/engineering/Shared-Library-Candidate-Report.md\": \"522e6fd71c28be3d51dcc29aae1731ea2ceebbcb91363946fdea64a265508712\","
+            },
+            {
+              "line": 610,
+              "text": "    \"docs/engineering/evidence/2026-11-02-release-conformance/candidate.json\": \"2b115c90812194c07c5e75753e2b95d03b783ff237a4b1f8abeb88534013a7fd\","
+            },
+            {
+              "line": 619,
+              "text": "    \"docs/engineering/evidence/2026-11-03-candidate-cpmsim-p2dos.json\": \"57b616499e371ff6709da5ab38de7742010c30e8ef4079300ea1c27b8fbef745\","
+            },
+            {
+              "line": 853,
+              "text": "  \"status\": \"CANDIDATE; NOT ACCEPTED\","
+            }
+          ]
+        },
+        {
+          "path": "SOURCE-IDENTITY.json",
+          "occurrences": [
+            {
+              "line": 3,
+              "text": "  \"status\": \"CANDIDATE; NOT ACCEPTED\""
+            }
+          ]
+        },
+        {
+          "path": "docs/LICENSING.md",
+          "occurrences": [
+            {
+              "line": 57,
+              "text": "Package freeze and public release acceptance remain on hold."
+            }
+          ]
+        },
+        {
+          "path": "docs/platform/CPMSIM-INSTALLATION.md",
+          "occurrences": [
+            {
+              "line": 142,
+              "text": "Check banners against the candidate manifest. Save the transcript, initial"
+            },
+            {
+              "line": 146,
+              "text": "file-operation checks before accepting a candidate."
+            }
+          ]
+        },
+        {
+          "path": "docs/platform/MODEL4-INSTALLATION.md",
+          "occurrences": [
+            {
+              "line": 3,
+              "text": "Status: release-candidate instructions; fresh-package manual verification pending."
+            },
+            {
+              "line": 5,
+              "text": "physical-hardware or emulator qualification of a newly packaged candidate."
+            }
+          ]
+        },
+        {
+          "path": "docs/platform/MODEL4-SHIPPED-INSTALLATION.txt",
+          "occurrences": [
+            {
+              "line": 42,
+              "text": "updated CONFIG into private copies of the original 35c56a03 candidate disks."
+            },
+            {
+              "line": 45,
+              "text": "this update. The package freeze remains on hold."
+            }
+          ]
+        },
+        {
+          "path": "docs/releases/RELEASE-NOTES-1.0.md",
+          "occurrences": [
+            {
+              "line": 1,
+              "text": "# BetterCP/M 1.0 \u2014 candidate release notes"
+            },
+            {
+              "line": 3,
+              "text": "**Release not yet accepted.** This document accompanies candidate packages and"
+            },
+            {
+              "line": 4,
+              "text": "must be reconciled with the accepted candidate before final publication."
+            },
+            {
+              "line": 12,
+              "text": "Utilities for Model 4, complete Source, and Documentation. All carry the same candidate"
+            },
+            {
+              "line": 31,
+              "text": "- Existing PDF/DOCX manual editions have not been reconciled against all recent Markdown changes; candidate Documentation contains editable/textual documentation instead. Engineering history retains dated evidence and earlier outcomes."
+            },
+            {
+              "line": 34,
+              "text": "The [35c56a03 technical lock and qualification record](../engineering/Qualification-Lock-35c56a03.md) identifies the qualified core, runtimes and unaffected utilities. FDB.COM, CONFIG.COM and DISK.FDB integration and native qualification were recorded through PR #605; PR #608 supplies the matching released FDB query/help pair. The maintainer has authorized replacement qualification and freeze after release identity promotion. The original 54c50365 frozen reference is preserved. Tagging and publi"
+            },
+            {
+              "line": 36,
+              "text": "## Remaining acceptance work"
+            },
+            {
+              "line": 39,
+              "text": "candidate built at `35c56a03`. Known manual corrections and checks of the installation walkthrough can"
+            },
+            {
+              "line": 43,
+              "text": "the candidate before tagging and publishing the tested final files."
+            },
+            {
+              "line": 74,
+              "text": "and its exact disk/overlay/emulator configuration. A changed candidate does not"
+            },
+            {
+              "line": 80,
+              "text": "35c56a03 cpmsim System disk passed the [P2DOS clock tests](../engineering/evidence/2026-11-03-candidate-cpmsim-p2dos.json)."
+            },
+            {
+              "line": 90,
+              "text": "source archives. The historical format parameters retain their provenance. Replacement freeze requires its exact-hash acceptance ledger; tagging and publication remain on hold."
+            }
+          ]
+        },
+        {
+          "path": "docs/user/users_guide.md",
+          "occurrences": [
+            {
+              "line": 484,
+              "text": "The separate **primary Utilities Disk** (B:) includes DDT, DUMP, XSUB/BATCHIO, compression utilities, ZSM4/LINK, DASM/DSYM/DLINK, TED, SEARCH, CRCKSUM and MD5SUM. The **companion Utilities Disk** (C:) retains the historical BetterCPM-NOAH image name and contains NOAH.COM/OVL/TXT, PATCH.COM/TXT and COMPARE.COM/TXT. Use matching NOAH executable and overlay files. D: is work media where applicable. Inclusion does not replace outstanding platform acceptance; the candidate inventory and qualification"
+            },
+            {
+              "line": 8072,
+              "text": "The operands must appear in the order shown: `/LOGICAL=`, `/PHYSICAL=`, then `/FORMAT=`. Logical targets are B\u2013D and physical indexes are 0\u20133. The quoted format must exactly match a catalogue display description, ignoring letter case and trailing space padding. It accepts 1\u201332 printable ASCII characters with at least one non-space character; quote escapes, prefixes, wildcards and row numbers are not accepted."
+            },
+            {
+              "line": 8383,
+              "text": "They are not accepted indiscriminately by every STAT operation."
+            },
+            {
+              "line": 12047,
+              "text": "A destination selector resolving to several user areas is not accepted by COPY."
+            },
+            {
+              "line": 14016,
+              "text": "The three release-media layouts are CCS 332K (cpmsim), Model 4 800K data and BetterCP/M 780K System. The complete compatibility catalogue is retained; its entries are not all runtime-qualified. Historical 790K is a separate optional compatibility layout. See [format support scope](../platform/FORMAT-SUPPORT-1.0.md). Final candidate qualification and package acceptance remain pending; package freeze is on hold."
+            }
+          ]
+        },
+        {
+          "path": "docs/user/utilities_manual.md",
+          "occurrences": [
+            {
+              "line": 9,
+              "text": "The Utilities Disk is distributed separately from the System Disk, with platform-specific primary and companion images in the current six-package release-candidate layout. This manual covers the selected utilities, including NOAH, SEARCH, COMPARE, CRCKSUM, MD5SUM, PATCH, DUMP, DDT, TED, DASM/DSYM/DLINK, compression tools and ZSM4/LINK. Candidate membership is specified by the [distribution manifest](../releases/DISTRIBUTION-MANIFEST.md); no 1.0 release has yet been accepted or published."
+            },
+            {
+              "line": 11,
+              "text": "Component-level historical qualification statements within individual chapters describe the evidence available at the time of those reviews. For current candidate-wide results and limitations, consult the [2026-11-02 conformance record](../engineering/Release-Conformance-2026-11-02.md) and [Model 4 validation record](../engineering/Deferred%20Model%204%20Validation.md). These results do not establish exhaustive qualification of every utility on both platforms."
+            },
+            {
+              "line": 75,
+              "text": "**SEARCH 1.0 (003) \u2014 included in the candidate Utilities images.** This chapter"
+            },
+            {
+              "line": 123,
+              "text": "The current release candidate preserves command-tail letter case (compatibility"
+            },
+            {
+              "line": 219,
+              "text": "**COMPARE 1.0 (005) \u2014 included on the candidate NOAH companion disk.**"
+            },
+            {
+              "line": 223,
+              "text": "Final release acceptance and fresh-package installation remain open. The [engineering specification](../engineering/COMPARE%20Specification.md)"
+            },
+            {
+              "line": 361,
+              "text": "**CRCKSUM 1.0 (011), release candidate.** CRCKSUM.COM is included in the candidate Utilities images; the BetterCP/M 1.0 release has not yet been accepted or published. Run `B0:CRCKSUM /VER` to check your copy. The [engineering specification](../engineering/CRC-Specification.md) defines the interface; the [implementation record](../engineering/CRC-Implementation.md) preserves earlier revision-specific results. The [November 2 release conformance record](../engineering/Release-Conformance-2026-11-"
+            },
+            {
+              "line": 526,
+              "text": "The first tier containing a candidate wins. If that tier contains several files, CRCKSUM reports ambiguity and asks you to select a name using `/CHECK=filename`. If none is found, it reports `No CRC list found` and continues to the next selected DU. It never searches your logged DU as a fallback. With no target operand, the logged DU is itself the target."
+            },
+            {
+              "line": 538,
+              "text": "A master can contain several entries for the same filename. CRCKSUM compares the target file with the size-compatible candidates. A file matches only if every selected value actually recorded in one candidate agrees. It never combines values from different entries to manufacture a match. A complete matching candidate verifies the file; differing alternatives are identified separately. The report identifies which algorithms were actually checked."
+            },
+            {
+              "line": 564,
+              "text": "**MD5SUM 1.0 (005) \u2014 included in the candidate Utilities images.** Run `B0:MD5SUM /VER` to check your copy. Component-specific tests and historical deferrals are documented in the [implementation notes](../engineering/MD5SUM-Implementation.md); the [November 2 release conformance record](../engineering/Release-Conformance-2026-11-02.md) does not establish exhaustive MD5SUM qualification on both platforms. Final release acceptance remains open. The [engineering specification](../engineering/MD5SU"
+            },
+            {
+              "line": 627,
+              "text": "Both forms check the same complete stored file. Uppercase digest letters and lowercase filename letters are accepted too. Lists may have CRLF or LF endings and blank lines. Tagged output such as `MD5 (TEST.DAT) = ...`, host paths, escaped filenames and other algorithms are not accepted; unsupported or malformed entries are reported, not guessed."
+            },
+            {
+              "line": 692,
+              "text": "**PATCH 1.0 (003) \u2014 included on the candidate NOAH companion disk.**"
+            },
+            {
+              "line": 698,
+              "text": "installation and final release acceptance remain open."
+            },
+            {
+              "line": 736,
+              "text": "BetterCP/M drive/user qualifier. Wildcards, DU lists and ranges are not accepted."
+            },
+            {
+              "line": 952,
+              "text": "Supply exactly one filename. Enhanced modes accept a single drive/user-qualified name such as `B7:FILE.COM`. A drive-only name such as `B:FILE.COM` uses your current user area; an unqualified name uses your current drive and user. Wildcards, file selectors, multiple files, and multiple user areas are not accepted."
+            },
+            {
+              "line": 1592,
+              "text": "`A0:FILE.TXT`, quoted names, other switches and extra operands are not accepted."
+            },
+            {
+              "line": 1762,
+              "text": "The frozen selection limit is 512 candidates; actual transaction capacity also"
+            }
+          ]
+        }
+      ],
+      "build_time_status": {
+        "status": "CANDIDATE; NOT ACCEPTED",
+        "accepted_commit": null,
+        "source_commit": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+        "tag": null,
+        "pending": [
+          "Manual Model 4 runtime campaign",
+          "Fresh-package installation on both platforms",
+          "Final conformance applicability/accounting",
+          "Manual/generated-edition reconciliation",
+          "License/attribution/source-completeness audit",
+          "Maintainer release acceptance"
+        ]
+      },
+      "interpretation": "qualified artifact source/hash supplied by final external release index and merged freeze; tag/publication not yet authorized"
+    },
+    {
+      "package": "source",
+      "frozen_filename": "BetterCPM-1.0-Source-candidate.zip",
+      "archive_root": "BetterCPM-1.0-Source-candidate",
+      "reviewed_paths": 14,
+      "files": [
+        {
+          "path": "README.txt",
+          "occurrences": [
+            {
+              "line": 4,
+              "text": "CANDIDATE \u2014 assembled for review; NOT ACCEPTED FOR RELEASE."
+            }
+          ]
+        },
+        {
+          "path": "RELEASE.json",
+          "occurrences": [
+            {
+              "line": 147,
+              "text": "    \"source/BetterCPM/docs/engineering/149 Stage 3 Candidate Snapshot Preparation.md\": \"f54c75128f2540a902212418c5c7452e26523ccf5d7fa7fdf130325ddb56aeb0\","
+            },
+            {
+              "line": 378,
+              "text": "    \"source/BetterCPM/docs/engineering/Candidate-Assembly-2026-10-28.json\": \"e148dad4145ebb0fe7db09b985a4a12cce5bd986795cff7d7d1b0f75c1b81f26\","
+            },
+            {
+              "line": 499,
+              "text": "    \"source/BetterCPM/docs/engineering/NOAH Member and Candidate Accounting.md\": \"3057963944d1c0ce38932920925a6476f563650b742b96e4e57676778ea99b2a\","
+            },
+            {
+              "line": 590,
+              "text": "    \"source/BetterCPM/docs/engineering/Release Candidate Assembly 2026-10-28.md\": \"7c0fc1c45b48f77d131cee29db9edbeb3a520ef2e02fa304cbd6b91b0fcfa873\","
+            },
+            {
+              "line": 620,
+              "text": "    \"source/BetterCPM/docs/engineering/Shared-Library-Candidate-Report.md\": \"522e6fd71c28be3d51dcc29aae1731ea2ceebbcb91363946fdea64a265508712\","
+            },
+            {
+              "line": 687,
+              "text": "    \"source/BetterCPM/docs/engineering/evidence/2026-11-02-release-conformance/candidate.json\": \"2b115c90812194c07c5e75753e2b95d03b783ff237a4b1f8abeb88534013a7fd\","
+            },
+            {
+              "line": 702,
+              "text": "    \"source/BetterCPM/docs/engineering/evidence/2026-11-03-candidate-cpmsim-p2dos.json\": \"57b616499e371ff6709da5ab38de7742010c30e8ef4079300ea1c27b8fbef745\","
+            },
+            {
+              "line": 1303,
+              "text": "    \"source/BetterCPM/src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 1788,
+              "text": "    \"source/BetterCPM/tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 1789,
+              "text": "    \"source/BetterCPM/tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 1798,
+              "text": "    \"source/BetterCPM/tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 1799,
+              "text": "    \"source/BetterCPM/tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 2270,
+              "text": "    \"source/BetterCPM/tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 2330,
+              "text": "    \"source/BetterCPM/tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 2334,
+              "text": "    \"source/BetterCPM/tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 2588,
+              "text": "  \"status\": \"CANDIDATE; NOT ACCEPTED\","
+            }
+          ]
+        },
+        {
+          "path": "SOURCE-IDENTITY.json",
+          "occurrences": [
+            {
+              "line": 3,
+              "text": "  \"status\": \"CANDIDATE; NOT ACCEPTED\""
+            }
+          ]
+        },
+        {
+          "path": "docs/LICENSING.md",
+          "occurrences": [
+            {
+              "line": 57,
+              "text": "Package freeze and public release acceptance remain on hold."
+            }
+          ]
+        },
+        {
+          "path": "source/BetterCPM/docs/LICENSING.md",
+          "occurrences": [
+            {
+              "line": 57,
+              "text": "Package freeze and public release acceptance remain on hold."
+            }
+          ]
+        },
+        {
+          "path": "source/BetterCPM/docs/platform/CPMSIM-INSTALLATION.md",
+          "occurrences": [
+            {
+              "line": 142,
+              "text": "Check banners against the candidate manifest. Save the transcript, initial"
+            },
+            {
+              "line": 146,
+              "text": "file-operation checks before accepting a candidate."
+            }
+          ]
+        },
+        {
+          "path": "source/BetterCPM/docs/platform/MODEL4-INSTALLATION.md",
+          "occurrences": [
+            {
+              "line": 3,
+              "text": "Status: release-candidate instructions; fresh-package manual verification pending."
+            },
+            {
+              "line": 5,
+              "text": "physical-hardware or emulator qualification of a newly packaged candidate."
+            }
+          ]
+        },
+        {
+          "path": "source/BetterCPM/docs/platform/MODEL4-SHIPPED-INSTALLATION.txt",
+          "occurrences": [
+            {
+              "line": 42,
+              "text": "updated CONFIG into private copies of the original 35c56a03 candidate disks."
+            },
+            {
+              "line": 45,
+              "text": "this update. The package freeze remains on hold."
+            }
+          ]
+        },
+        {
+          "path": "source/BetterCPM/docs/releases/RELEASE-NOTES-1.0.md",
+          "occurrences": [
+            {
+              "line": 1,
+              "text": "# BetterCP/M 1.0 \u2014 candidate release notes"
+            },
+            {
+              "line": 3,
+              "text": "**Release not yet accepted.** This document accompanies candidate packages and"
+            },
+            {
+              "line": 4,
+              "text": "must be reconciled with the accepted candidate before final publication."
+            },
+            {
+              "line": 12,
+              "text": "Utilities for Model 4, complete Source, and Documentation. All carry the same candidate"
+            },
+            {
+              "line": 31,
+              "text": "- Existing PDF/DOCX manual editions have not been reconciled against all recent Markdown changes; candidate Documentation contains editable/textual documentation instead. Engineering history retains dated evidence and earlier outcomes."
+            },
+            {
+              "line": 34,
+              "text": "The [35c56a03 technical lock and qualification record](../engineering/Qualification-Lock-35c56a03.md) identifies the qualified core, runtimes and unaffected utilities. FDB.COM, CONFIG.COM and DISK.FDB integration and native qualification were recorded through PR #605; PR #608 supplies the matching released FDB query/help pair. The maintainer has authorized replacement qualification and freeze after release identity promotion. The original 54c50365 frozen reference is preserved. Tagging and publi"
+            },
+            {
+              "line": 36,
+              "text": "## Remaining acceptance work"
+            },
+            {
+              "line": 39,
+              "text": "candidate built at `35c56a03`. Known manual corrections and checks of the installation walkthrough can"
+            },
+            {
+              "line": 43,
+              "text": "the candidate before tagging and publishing the tested final files."
+            },
+            {
+              "line": 74,
+              "text": "and its exact disk/overlay/emulator configuration. A changed candidate does not"
+            },
+            {
+              "line": 80,
+              "text": "35c56a03 cpmsim System disk passed the [P2DOS clock tests](../engineering/evidence/2026-11-03-candidate-cpmsim-p2dos.json)."
+            },
+            {
+              "line": 90,
+              "text": "source archives. The historical format parameters retain their provenance. Replacement freeze requires its exact-hash acceptance ledger; tagging and publication remain on hold."
+            }
+          ]
+        },
+        {
+          "path": "source/BetterCPM/docs/user/users_guide.md",
+          "occurrences": [
+            {
+              "line": 484,
+              "text": "The separate **primary Utilities Disk** (B:) includes DDT, DUMP, XSUB/BATCHIO, compression utilities, ZSM4/LINK, DASM/DSYM/DLINK, TED, SEARCH, CRCKSUM and MD5SUM. The **companion Utilities Disk** (C:) retains the historical BetterCPM-NOAH image name and contains NOAH.COM/OVL/TXT, PATCH.COM/TXT and COMPARE.COM/TXT. Use matching NOAH executable and overlay files. D: is work media where applicable. Inclusion does not replace outstanding platform acceptance; the candidate inventory and qualification"
+            },
+            {
+              "line": 8072,
+              "text": "The operands must appear in the order shown: `/LOGICAL=`, `/PHYSICAL=`, then `/FORMAT=`. Logical targets are B\u2013D and physical indexes are 0\u20133. The quoted format must exactly match a catalogue display description, ignoring letter case and trailing space padding. It accepts 1\u201332 printable ASCII characters with at least one non-space character; quote escapes, prefixes, wildcards and row numbers are not accepted."
+            },
+            {
+              "line": 8383,
+              "text": "They are not accepted indiscriminately by every STAT operation."
+            },
+            {
+              "line": 12047,
+              "text": "A destination selector resolving to several user areas is not accepted by COPY."
+            },
+            {
+              "line": 14016,
+              "text": "The three release-media layouts are CCS 332K (cpmsim), Model 4 800K data and BetterCP/M 780K System. The complete compatibility catalogue is retained; its entries are not all runtime-qualified. Historical 790K is a separate optional compatibility layout. See [format support scope](../platform/FORMAT-SUPPORT-1.0.md). Final candidate qualification and package acceptance remain pending; package freeze is on hold."
+            }
+          ]
+        },
+        {
+          "path": "source/BetterCPM/docs/user/utilities_manual.md",
+          "occurrences": [
+            {
+              "line": 9,
+              "text": "The Utilities Disk is distributed separately from the System Disk, with platform-specific primary and companion images in the current six-package release-candidate layout. This manual covers the selected utilities, including NOAH, SEARCH, COMPARE, CRCKSUM, MD5SUM, PATCH, DUMP, DDT, TED, DASM/DSYM/DLINK, compression tools and ZSM4/LINK. Candidate membership is specified by the [distribution manifest](../releases/DISTRIBUTION-MANIFEST.md); no 1.0 release has yet been accepted or published."
+            },
+            {
+              "line": 11,
+              "text": "Component-level historical qualification statements within individual chapters describe the evidence available at the time of those reviews. For current candidate-wide results and limitations, consult the [2026-11-02 conformance record](../engineering/Release-Conformance-2026-11-02.md) and [Model 4 validation record](../engineering/Deferred%20Model%204%20Validation.md). These results do not establish exhaustive qualification of every utility on both platforms."
+            },
+            {
+              "line": 75,
+              "text": "**SEARCH 1.0 (003) \u2014 included in the candidate Utilities images.** This chapter"
+            },
+            {
+              "line": 123,
+              "text": "The current release candidate preserves command-tail letter case (compatibility"
+            },
+            {
+              "line": 219,
+              "text": "**COMPARE 1.0 (005) \u2014 included on the candidate NOAH companion disk.**"
+            },
+            {
+              "line": 223,
+              "text": "Final release acceptance and fresh-package installation remain open. The [engineering specification](../engineering/COMPARE%20Specification.md)"
+            },
+            {
+              "line": 361,
+              "text": "**CRCKSUM 1.0 (011), release candidate.** CRCKSUM.COM is included in the candidate Utilities images; the BetterCP/M 1.0 release has not yet been accepted or published. Run `B0:CRCKSUM /VER` to check your copy. The [engineering specification](../engineering/CRC-Specification.md) defines the interface; the [implementation record](../engineering/CRC-Implementation.md) preserves earlier revision-specific results. The [November 2 release conformance record](../engineering/Release-Conformance-2026-11-"
+            },
+            {
+              "line": 526,
+              "text": "The first tier containing a candidate wins. If that tier contains several files, CRCKSUM reports ambiguity and asks you to select a name using `/CHECK=filename`. If none is found, it reports `No CRC list found` and continues to the next selected DU. It never searches your logged DU as a fallback. With no target operand, the logged DU is itself the target."
+            },
+            {
+              "line": 538,
+              "text": "A master can contain several entries for the same filename. CRCKSUM compares the target file with the size-compatible candidates. A file matches only if every selected value actually recorded in one candidate agrees. It never combines values from different entries to manufacture a match. A complete matching candidate verifies the file; differing alternatives are identified separately. The report identifies which algorithms were actually checked."
+            },
+            {
+              "line": 564,
+              "text": "**MD5SUM 1.0 (005) \u2014 included in the candidate Utilities images.** Run `B0:MD5SUM /VER` to check your copy. Component-specific tests and historical deferrals are documented in the [implementation notes](../engineering/MD5SUM-Implementation.md); the [November 2 release conformance record](../engineering/Release-Conformance-2026-11-02.md) does not establish exhaustive MD5SUM qualification on both platforms. Final release acceptance remains open. The [engineering specification](../engineering/MD5SU"
+            },
+            {
+              "line": 627,
+              "text": "Both forms check the same complete stored file. Uppercase digest letters and lowercase filename letters are accepted too. Lists may have CRLF or LF endings and blank lines. Tagged output such as `MD5 (TEST.DAT) = ...`, host paths, escaped filenames and other algorithms are not accepted; unsupported or malformed entries are reported, not guessed."
+            },
+            {
+              "line": 692,
+              "text": "**PATCH 1.0 (003) \u2014 included on the candidate NOAH companion disk.**"
+            },
+            {
+              "line": 698,
+              "text": "installation and final release acceptance remain open."
+            },
+            {
+              "line": 736,
+              "text": "BetterCP/M drive/user qualifier. Wildcards, DU lists and ranges are not accepted."
+            },
+            {
+              "line": 952,
+              "text": "Supply exactly one filename. Enhanced modes accept a single drive/user-qualified name such as `B7:FILE.COM`. A drive-only name such as `B:FILE.COM` uses your current user area; an unqualified name uses your current drive and user. Wildcards, file selectors, multiple files, and multiple user areas are not accepted."
+            },
+            {
+              "line": 1592,
+              "text": "`A0:FILE.TXT`, quoted names, other switches and extra operands are not accepted."
+            },
+            {
+              "line": 1762,
+              "text": "The frozen selection limit is 512 candidates; actual transaction capacity also"
+            }
+          ]
+        },
+        {
+          "path": "source/BetterCPM/metadata/release-assets.json",
+          "occurrences": [
+            {
+              "line": 5,
+              "text": "  \"status\": \"planned; assembly and acceptance pending\","
+            }
+          ]
+        },
+        {
+          "path": "source/BetterCPM/metadata/release-package.json",
+          "occurrences": [
+            {
+              "line": 5,
+              "text": "  \"status\": \"release-candidate; identity finalization and replacement qualification\","
+            }
+          ]
+        }
+      ],
+      "build_time_status": {
+        "status": "CANDIDATE; NOT ACCEPTED",
+        "accepted_commit": null,
+        "source_commit": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+        "tag": null,
+        "pending": [
+          "Manual Model 4 runtime campaign",
+          "Fresh-package installation on both platforms",
+          "Final conformance applicability/accounting",
+          "Manual/generated-edition reconciliation",
+          "License/attribution/source-completeness audit",
+          "Maintainer release acceptance"
+        ]
+      },
+      "interpretation": "qualified artifact source/hash supplied by final external release index and merged freeze; tag/publication not yet authorized"
+    },
+    {
+      "package": "system-model4",
+      "frozen_filename": "BetterCPM-1.0-System-Model4-candidate.zip",
+      "archive_root": "BetterCPM-1.0-System-Model4-candidate",
+      "reviewed_paths": 9,
+      "files": [
+        {
+          "path": "README.txt",
+          "occurrences": [
+            {
+              "line": 4,
+              "text": "CANDIDATE \u2014 assembled for review; NOT ACCEPTED FOR RELEASE."
+            }
+          ]
+        },
+        {
+          "path": "RELEASE.json",
+          "occurrences": [
+            {
+              "line": 859,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 1328,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 1329,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 1338,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 1339,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 1810,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 1870,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 1874,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 2459,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 2928,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 2929,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 2938,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 2939,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 3410,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 3470,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 3474,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 4056,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 4525,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 4526,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 4535,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 4536,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 5007,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 5067,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 5071,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 5653,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 6122,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 6123,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 6132,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 6133,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 6604,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 6664,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 6668,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 7250,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 7719,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 7720,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 7729,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 7730,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 8201,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 8261,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 8265,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 8847,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 9316,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 9317,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 9326,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 9327,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 9798,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 9858,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 9862,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 10444,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 10913,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 10914,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 10923,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 10924,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 11395,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 11455,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 11459,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 12041,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 12510,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 12511,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 12520,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 12521,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 12992,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 13052,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 13056,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 13727,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 14196,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 14197,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 14206,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 14207,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 14678,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 14738,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 14742,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 15413,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 15882,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 15883,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 15892,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 15893,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 16364,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 16424,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 16428,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 17010,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 17479,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 17480,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 17489,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 17490,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 17961,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 18021,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 18025,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 18607,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 19076,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 19077,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 19086,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 19087,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 19558,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 19618,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 19622,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 20309,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 20778,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 20779,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 20788,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 20789,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 21260,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 21320,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 21324,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 21906,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 22375,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 22376,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 22385,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 22386,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 22857,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 22917,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 22921,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 23516,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 23985,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 23986,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 23995,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 23996,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 24467,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 24527,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 24531,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 25113,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 25582,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 25583,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 25592,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 25593,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 26064,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 26124,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 26128,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 26710,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 27179,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 27180,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 27189,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 27190,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 27661,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 27721,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 27725,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 28308,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 28777,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 28778,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 28787,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 28788,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 29259,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 29319,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 29323,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 29906,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 30375,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 30376,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 30385,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 30386,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 30857,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 30917,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 30921,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 31504,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 31973,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 31974,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 31983,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 31984,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 32455,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 32515,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 32519,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 33102,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 33571,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 33572,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 33581,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 33582,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 34053,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 34113,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 34117,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 34700,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 35169,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 35170,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 35179,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 35180,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 35651,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 35711,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 35715,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 36298,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 36767,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 36768,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 36777,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 36778,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 37249,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 37309,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 37313,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 37915,
+              "text": "            \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 38384,
+              "text": "            \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 38385,
+              "text": "            \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 38394,
+              "text": "            \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 38395,
+              "text": "            \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 38866,
+              "text": "            \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 38926,
+              "text": "            \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 38930,
+              "text": "            \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 39499,
+              "text": "          \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 39968,
+              "text": "          \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 39969,
+              "text": "          \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 39978,
+              "text": "          \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 39979,
+              "text": "          \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 40450,
+              "text": "          \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 40510,
+              "text": "          \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 40514,
+              "text": "          \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 40732,
+              "text": "      \"status\": \"CANDIDATE; NOT ACCEPTED\","
+            },
+            {
+              "line": 40801,
+              "text": "  \"status\": \"CANDIDATE; NOT ACCEPTED\","
+            }
+          ]
+        },
+        {
+          "path": "SOURCE-IDENTITY.json",
+          "occurrences": [
+            {
+              "line": 3,
+              "text": "  \"status\": \"CANDIDATE; NOT ACCEPTED\""
+            }
+          ]
+        },
+        {
+          "path": "docs/LICENSING.md",
+          "occurrences": [
+            {
+              "line": 57,
+              "text": "Package freeze and public release acceptance remain on hold."
+            }
+          ]
+        },
+        {
+          "path": "docs/platform/MODEL4-INSTALLATION.md",
+          "occurrences": [
+            {
+              "line": 3,
+              "text": "Status: release-candidate instructions; fresh-package manual verification pending."
+            },
+            {
+              "line": 5,
+              "text": "physical-hardware or emulator qualification of a newly packaged candidate."
+            }
+          ]
+        },
+        {
+          "path": "docs/platform/MODEL4-SHIPPED-INSTALLATION.txt",
+          "occurrences": [
+            {
+              "line": 42,
+              "text": "updated CONFIG into private copies of the original 35c56a03 candidate disks."
+            },
+            {
+              "line": 45,
+              "text": "this update. The package freeze remains on hold."
+            }
+          ]
+        },
+        {
+          "path": "docs/releases/RELEASE-NOTES-1.0.md",
+          "occurrences": [
+            {
+              "line": 1,
+              "text": "# BetterCP/M 1.0 \u2014 candidate release notes"
+            },
+            {
+              "line": 3,
+              "text": "**Release not yet accepted.** This document accompanies candidate packages and"
+            },
+            {
+              "line": 4,
+              "text": "must be reconciled with the accepted candidate before final publication."
+            },
+            {
+              "line": 12,
+              "text": "Utilities for Model 4, complete Source, and Documentation. All carry the same candidate"
+            },
+            {
+              "line": 31,
+              "text": "- Existing PDF/DOCX manual editions have not been reconciled against all recent Markdown changes; candidate Documentation contains editable/textual documentation instead. Engineering history retains dated evidence and earlier outcomes."
+            },
+            {
+              "line": 34,
+              "text": "The [35c56a03 technical lock and qualification record](../engineering/Qualification-Lock-35c56a03.md) identifies the qualified core, runtimes and unaffected utilities. FDB.COM, CONFIG.COM and DISK.FDB integration and native qualification were recorded through PR #605; PR #608 supplies the matching released FDB query/help pair. The maintainer has authorized replacement qualification and freeze after release identity promotion. The original 54c50365 frozen reference is preserved. Tagging and publi"
+            },
+            {
+              "line": 36,
+              "text": "## Remaining acceptance work"
+            },
+            {
+              "line": 39,
+              "text": "candidate built at `35c56a03`. Known manual corrections and checks of the installation walkthrough can"
+            },
+            {
+              "line": 43,
+              "text": "the candidate before tagging and publishing the tested final files."
+            },
+            {
+              "line": 74,
+              "text": "and its exact disk/overlay/emulator configuration. A changed candidate does not"
+            },
+            {
+              "line": 80,
+              "text": "35c56a03 cpmsim System disk passed the [P2DOS clock tests](../engineering/evidence/2026-11-03-candidate-cpmsim-p2dos.json)."
+            },
+            {
+              "line": 90,
+              "text": "source archives. The historical format parameters retain their provenance. Replacement freeze requires its exact-hash acceptance ledger; tagging and publication remain on hold."
+            }
+          ]
+        },
+        {
+          "path": "docs/user/users_guide.md",
+          "occurrences": [
+            {
+              "line": 484,
+              "text": "The separate **primary Utilities Disk** (B:) includes DDT, DUMP, XSUB/BATCHIO, compression utilities, ZSM4/LINK, DASM/DSYM/DLINK, TED, SEARCH, CRCKSUM and MD5SUM. The **companion Utilities Disk** (C:) retains the historical BetterCPM-NOAH image name and contains NOAH.COM/OVL/TXT, PATCH.COM/TXT and COMPARE.COM/TXT. Use matching NOAH executable and overlay files. D: is work media where applicable. Inclusion does not replace outstanding platform acceptance; the candidate inventory and qualification"
+            },
+            {
+              "line": 8072,
+              "text": "The operands must appear in the order shown: `/LOGICAL=`, `/PHYSICAL=`, then `/FORMAT=`. Logical targets are B\u2013D and physical indexes are 0\u20133. The quoted format must exactly match a catalogue display description, ignoring letter case and trailing space padding. It accepts 1\u201332 printable ASCII characters with at least one non-space character; quote escapes, prefixes, wildcards and row numbers are not accepted."
+            },
+            {
+              "line": 8383,
+              "text": "They are not accepted indiscriminately by every STAT operation."
+            },
+            {
+              "line": 12047,
+              "text": "A destination selector resolving to several user areas is not accepted by COPY."
+            },
+            {
+              "line": 14016,
+              "text": "The three release-media layouts are CCS 332K (cpmsim), Model 4 800K data and BetterCP/M 780K System. The complete compatibility catalogue is retained; its entries are not all runtime-qualified. Historical 790K is a separate optional compatibility layout. See [format support scope](../platform/FORMAT-SUPPORT-1.0.md). Final candidate qualification and package acceptance remain pending; package freeze is on hold."
+            }
+          ]
+        }
+      ],
+      "build_time_status": {
+        "status": "CANDIDATE; NOT ACCEPTED",
+        "accepted_commit": null,
+        "source_commit": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+        "tag": null,
+        "pending": [
+          "Manual Model 4 runtime campaign",
+          "Fresh-package installation on both platforms",
+          "Final conformance applicability/accounting",
+          "Manual/generated-edition reconciliation",
+          "License/attribution/source-completeness audit",
+          "Maintainer release acceptance"
+        ]
+      },
+      "interpretation": "qualified artifact source/hash supplied by final external release index and merged freeze; tag/publication not yet authorized"
+    },
+    {
+      "package": "system-cpmsim",
+      "frozen_filename": "BetterCPM-1.0-System-cpmsim-candidate.zip",
+      "archive_root": "BetterCPM-1.0-System-cpmsim-candidate",
+      "reviewed_paths": 11,
+      "files": [
+        {
+          "path": "README.txt",
+          "occurrences": [
+            {
+              "line": 4,
+              "text": "CANDIDATE \u2014 assembled for review; NOT ACCEPTED FOR RELEASE."
+            }
+          ]
+        },
+        {
+          "path": "RELEASE.json",
+          "occurrences": [
+            {
+              "line": 16,
+              "text": "          \"SIM=/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/release-promotion-20261104/manual-aligned-candidates/runtime/z80pack/cpmsim/cpmsim\","
+            },
+            {
+              "line": 1121,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 1590,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 1591,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 1600,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 1601,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 2072,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 2132,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 2136,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 2721,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 3190,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 3191,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 3200,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 3201,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 3672,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 3732,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 3736,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 4318,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 4787,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 4788,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 4797,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 4798,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 5269,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 5329,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 5333,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 5915,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 6384,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 6385,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 6394,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 6395,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 6866,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 6926,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 6930,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 7512,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 7981,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 7982,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 7991,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 7992,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 8463,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 8523,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 8527,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 9109,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 9578,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 9579,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 9588,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 9589,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 10060,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 10120,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 10124,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 10706,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 11175,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 11176,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 11185,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 11186,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 11657,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 11717,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 11721,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 12303,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 12772,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 12773,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 12782,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 12783,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 13254,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 13314,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 13318,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 13989,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 14458,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 14459,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 14468,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 14469,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 14940,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 15000,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 15004,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 15675,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 16144,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 16145,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 16154,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 16155,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 16626,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 16686,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 16690,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 17272,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 17741,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 17742,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 17751,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 17752,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 18223,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 18283,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 18287,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 18869,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 19338,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 19339,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 19348,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 19349,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 19820,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 19880,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 19884,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 20571,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 21040,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 21041,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 21050,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 21051,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 21522,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 21582,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 21586,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 22168,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 22637,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 22638,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 22647,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 22648,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 23119,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 23179,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 23183,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 23778,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 24247,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 24248,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 24257,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 24258,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 24729,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 24789,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 24793,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 25375,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 25844,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 25845,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 25854,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 25855,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 26326,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 26386,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 26390,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 27062,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 27531,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 27532,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 27541,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 27542,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 28013,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 28073,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 28077,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 28660,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 29129,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 29130,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 29139,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 29140,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 29611,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 29671,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 29675,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 30258,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 30727,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 30728,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 30737,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 30738,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 31209,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 31269,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 31273,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 31856,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 32325,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 32326,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 32335,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 32336,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 32807,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 32867,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 32871,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 33454,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 33923,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 33924,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 33933,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 33934,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 34405,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 34465,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 34469,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 35052,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 35521,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 35522,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 35531,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 35532,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 36003,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 36063,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 36067,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 36650,
+              "text": "                \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 37119,
+              "text": "                \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 37120,
+              "text": "                \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 37129,
+              "text": "                \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 37130,
+              "text": "                \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 37601,
+              "text": "                \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 37661,
+              "text": "                \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 37665,
+              "text": "                \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 38468,
+              "text": "            \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 38937,
+              "text": "            \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 38938,
+              "text": "            \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 38947,
+              "text": "            \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 38948,
+              "text": "            \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 39419,
+              "text": "            \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 39479,
+              "text": "            \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 39483,
+              "text": "            \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 40052,
+              "text": "          \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 40521,
+              "text": "          \"tools/launch-cpmsim-candidate.command\": \"01b913010dbf350f03782fd00ed5d824289cc0512bc58d1d1074987447758c4e\","
+            },
+            {
+              "line": 40522,
+              "text": "          \"tools/launch-model4-candidate.command\": \"9c1e4b2e0f49db31aaea8639d4dc5d2004eb771cd2e377806ec0c5e5a74f0c23\","
+            },
+            {
+              "line": 40531,
+              "text": "          \"tools/package_release_candidates.py\": \"8486fc34e8694f4e64cf3707a34968bff9f82af9c94e85eaca0af2adf4853bb5\","
+            },
+            {
+              "line": 40532,
+              "text": "          \"tools/package_search_candidate.py\": \"35193a8a8abab94331d907af530c702bdc7d7b49231a41ea922f8891e90ff47c\","
+            },
+            {
+              "line": 41003,
+              "text": "          \"tools/test_native_memory_candidates.py\": \"3f6d943d3bd4667f86ed2be3202e84867601be32bddc73b54b5031160f36fb0f\","
+            },
+            {
+              "line": 41063,
+              "text": "          \"tools/test_random_same_extent_candidate.py\": \"f1e80888a23e8b1dd10cee35bb4199c3d4d23d2a837ea679b0f71e0a61ffed43\","
+            },
+            {
+              "line": 41067,
+              "text": "          \"tools/test_release_candidate_packaging.py\": \"3da0e0eae8828eac884ec6935d7e2347709e41ed4dfec1b3347d3f5cfed7fd95\","
+            },
+            {
+              "line": 41285,
+              "text": "      \"status\": \"CANDIDATE; NOT ACCEPTED\","
+            },
+            {
+              "line": 41388,
+              "text": "  \"status\": \"CANDIDATE; NOT ACCEPTED\","
+            }
+          ]
+        },
+        {
+          "path": "SOURCE-IDENTITY.json",
+          "occurrences": [
+            {
+              "line": 3,
+              "text": "  \"status\": \"CANDIDATE; NOT ACCEPTED\""
+            }
+          ]
+        },
+        {
+          "path": "docs/LICENSING.md",
+          "occurrences": [
+            {
+              "line": 57,
+              "text": "Package freeze and public release acceptance remain on hold."
+            }
+          ]
+        },
+        {
+          "path": "docs/platform/CPMSIM-INSTALLATION.md",
+          "occurrences": [
+            {
+              "line": 142,
+              "text": "Check banners against the candidate manifest. Save the transcript, initial"
+            },
+            {
+              "line": 146,
+              "text": "file-operation checks before accepting a candidate."
+            }
+          ]
+        },
+        {
+          "path": "docs/platform/MODEL4-SHIPPED-INSTALLATION.txt",
+          "occurrences": [
+            {
+              "line": 42,
+              "text": "updated CONFIG into private copies of the original 35c56a03 candidate disks."
+            },
+            {
+              "line": 45,
+              "text": "this update. The package freeze remains on hold."
+            }
+          ]
+        },
+        {
+          "path": "docs/releases/RELEASE-NOTES-1.0.md",
+          "occurrences": [
+            {
+              "line": 1,
+              "text": "# BetterCP/M 1.0 \u2014 candidate release notes"
+            },
+            {
+              "line": 3,
+              "text": "**Release not yet accepted.** This document accompanies candidate packages and"
+            },
+            {
+              "line": 4,
+              "text": "must be reconciled with the accepted candidate before final publication."
+            },
+            {
+              "line": 12,
+              "text": "Utilities for Model 4, complete Source, and Documentation. All carry the same candidate"
+            },
+            {
+              "line": 31,
+              "text": "- Existing PDF/DOCX manual editions have not been reconciled against all recent Markdown changes; candidate Documentation contains editable/textual documentation instead. Engineering history retains dated evidence and earlier outcomes."
+            },
+            {
+              "line": 34,
+              "text": "The [35c56a03 technical lock and qualification record](../engineering/Qualification-Lock-35c56a03.md) identifies the qualified core, runtimes and unaffected utilities. FDB.COM, CONFIG.COM and DISK.FDB integration and native qualification were recorded through PR #605; PR #608 supplies the matching released FDB query/help pair. The maintainer has authorized replacement qualification and freeze after release identity promotion. The original 54c50365 frozen reference is preserved. Tagging and publi"
+            },
+            {
+              "line": 36,
+              "text": "## Remaining acceptance work"
+            },
+            {
+              "line": 39,
+              "text": "candidate built at `35c56a03`. Known manual corrections and checks of the installation walkthrough can"
+            },
+            {
+              "line": 43,
+              "text": "the candidate before tagging and publishing the tested final files."
+            },
+            {
+              "line": 74,
+              "text": "and its exact disk/overlay/emulator configuration. A changed candidate does not"
+            },
+            {
+              "line": 80,
+              "text": "35c56a03 cpmsim System disk passed the [P2DOS clock tests](../engineering/evidence/2026-11-03-candidate-cpmsim-p2dos.json)."
+            },
+            {
+              "line": 90,
+              "text": "source archives. The historical format parameters retain their provenance. Replacement freeze requires its exact-hash acceptance ledger; tagging and publication remain on hold."
+            }
+          ]
+        },
+        {
+          "path": "docs/user/users_guide.md",
+          "occurrences": [
+            {
+              "line": 484,
+              "text": "The separate **primary Utilities Disk** (B:) includes DDT, DUMP, XSUB/BATCHIO, compression utilities, ZSM4/LINK, DASM/DSYM/DLINK, TED, SEARCH, CRCKSUM and MD5SUM. The **companion Utilities Disk** (C:) retains the historical BetterCPM-NOAH image name and contains NOAH.COM/OVL/TXT, PATCH.COM/TXT and COMPARE.COM/TXT. Use matching NOAH executable and overlay files. D: is work media where applicable. Inclusion does not replace outstanding platform acceptance; the candidate inventory and qualification"
+            },
+            {
+              "line": 8072,
+              "text": "The operands must appear in the order shown: `/LOGICAL=`, `/PHYSICAL=`, then `/FORMAT=`. Logical targets are B\u2013D and physical indexes are 0\u20133. The quoted format must exactly match a catalogue display description, ignoring letter case and trailing space padding. It accepts 1\u201332 printable ASCII characters with at least one non-space character; quote escapes, prefixes, wildcards and row numbers are not accepted."
+            },
+            {
+              "line": 8383,
+              "text": "They are not accepted indiscriminately by every STAT operation."
+            },
+            {
+              "line": 12047,
+              "text": "A destination selector resolving to several user areas is not accepted by COPY."
+            },
+            {
+              "line": 14016,
+              "text": "The three release-media layouts are CCS 332K (cpmsim), Model 4 800K data and BetterCP/M 780K System. The complete compatibility catalogue is retained; its entries are not all runtime-qualified. Historical 790K is a separate optional compatibility layout. See [format support scope](../platform/FORMAT-SUPPORT-1.0.md). Final candidate qualification and package acceptance remain pending; package freeze is on hold."
+            }
+          ]
+        },
+        {
+          "path": "host/BetterCPM/docs/LICENSING.md",
+          "occurrences": [
+            {
+              "line": 57,
+              "text": "Package freeze and public release acceptance remain on hold."
+            }
+          ]
+        },
+        {
+          "path": "host/BetterCPM/docs/platform/CPMSIM-INSTALLATION.md",
+          "occurrences": [
+            {
+              "line": 142,
+              "text": "Check banners against the candidate manifest. Save the transcript, initial"
+            },
+            {
+              "line": 146,
+              "text": "file-operation checks before accepting a candidate."
+            }
+          ]
+        }
+      ],
+      "build_time_status": {
+        "status": "CANDIDATE; NOT ACCEPTED",
+        "accepted_commit": null,
+        "source_commit": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+        "tag": null,
+        "pending": [
+          "Manual Model 4 runtime campaign",
+          "Fresh-package installation on both platforms",
+          "Final conformance applicability/accounting",
+          "Manual/generated-edition reconciliation",
+          "License/attribution/source-completeness audit",
+          "Maintainer release acceptance"
+        ]
+      },
+      "interpretation": "qualified artifact source/hash supplied by final external release index and merged freeze; tag/publication not yet authorized"
+    },
+    {
+      "package": "utilities-model4",
+      "frozen_filename": "BetterCPM-Utilities-1.0-Model4-candidate.zip",
+      "archive_root": "BetterCPM-Utilities-1.0-Model4-candidate",
+      "reviewed_paths": 7,
+      "files": [
+        {
+          "path": "README.txt",
+          "occurrences": [
+            {
+              "line": 4,
+              "text": "CANDIDATE \u2014 assembled for review; NOT ACCEPTED FOR RELEASE."
+            }
+          ]
+        },
+        {
+          "path": "RELEASE.json",
+          "occurrences": [
+            {
+              "line": 1660,
+              "text": "                    \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 1905,
+              "text": "  \"status\": \"CANDIDATE; NOT ACCEPTED\","
+            }
+          ]
+        },
+        {
+          "path": "SOURCE-IDENTITY.json",
+          "occurrences": [
+            {
+              "line": 3,
+              "text": "  \"status\": \"CANDIDATE; NOT ACCEPTED\""
+            }
+          ]
+        },
+        {
+          "path": "docs/LICENSING.md",
+          "occurrences": [
+            {
+              "line": 57,
+              "text": "Package freeze and public release acceptance remain on hold."
+            }
+          ]
+        },
+        {
+          "path": "docs/platform/MODEL4-SHIPPED-INSTALLATION.txt",
+          "occurrences": [
+            {
+              "line": 42,
+              "text": "updated CONFIG into private copies of the original 35c56a03 candidate disks."
+            },
+            {
+              "line": 45,
+              "text": "this update. The package freeze remains on hold."
+            }
+          ]
+        },
+        {
+          "path": "docs/user/utilities_manual.md",
+          "occurrences": [
+            {
+              "line": 9,
+              "text": "The Utilities Disk is distributed separately from the System Disk, with platform-specific primary and companion images in the current six-package release-candidate layout. This manual covers the selected utilities, including NOAH, SEARCH, COMPARE, CRCKSUM, MD5SUM, PATCH, DUMP, DDT, TED, DASM/DSYM/DLINK, compression tools and ZSM4/LINK. Candidate membership is specified by the [distribution manifest](../releases/DISTRIBUTION-MANIFEST.md); no 1.0 release has yet been accepted or published."
+            },
+            {
+              "line": 11,
+              "text": "Component-level historical qualification statements within individual chapters describe the evidence available at the time of those reviews. For current candidate-wide results and limitations, consult the [2026-11-02 conformance record](../engineering/Release-Conformance-2026-11-02.md) and [Model 4 validation record](../engineering/Deferred%20Model%204%20Validation.md). These results do not establish exhaustive qualification of every utility on both platforms."
+            },
+            {
+              "line": 75,
+              "text": "**SEARCH 1.0 (003) \u2014 included in the candidate Utilities images.** This chapter"
+            },
+            {
+              "line": 123,
+              "text": "The current release candidate preserves command-tail letter case (compatibility"
+            },
+            {
+              "line": 219,
+              "text": "**COMPARE 1.0 (005) \u2014 included on the candidate NOAH companion disk.**"
+            },
+            {
+              "line": 223,
+              "text": "Final release acceptance and fresh-package installation remain open. The [engineering specification](../engineering/COMPARE%20Specification.md)"
+            },
+            {
+              "line": 361,
+              "text": "**CRCKSUM 1.0 (011), release candidate.** CRCKSUM.COM is included in the candidate Utilities images; the BetterCP/M 1.0 release has not yet been accepted or published. Run `B0:CRCKSUM /VER` to check your copy. The [engineering specification](../engineering/CRC-Specification.md) defines the interface; the [implementation record](../engineering/CRC-Implementation.md) preserves earlier revision-specific results. The [November 2 release conformance record](../engineering/Release-Conformance-2026-11-"
+            },
+            {
+              "line": 526,
+              "text": "The first tier containing a candidate wins. If that tier contains several files, CRCKSUM reports ambiguity and asks you to select a name using `/CHECK=filename`. If none is found, it reports `No CRC list found` and continues to the next selected DU. It never searches your logged DU as a fallback. With no target operand, the logged DU is itself the target."
+            },
+            {
+              "line": 538,
+              "text": "A master can contain several entries for the same filename. CRCKSUM compares the target file with the size-compatible candidates. A file matches only if every selected value actually recorded in one candidate agrees. It never combines values from different entries to manufacture a match. A complete matching candidate verifies the file; differing alternatives are identified separately. The report identifies which algorithms were actually checked."
+            },
+            {
+              "line": 564,
+              "text": "**MD5SUM 1.0 (005) \u2014 included in the candidate Utilities images.** Run `B0:MD5SUM /VER` to check your copy. Component-specific tests and historical deferrals are documented in the [implementation notes](../engineering/MD5SUM-Implementation.md); the [November 2 release conformance record](../engineering/Release-Conformance-2026-11-02.md) does not establish exhaustive MD5SUM qualification on both platforms. Final release acceptance remains open. The [engineering specification](../engineering/MD5SU"
+            },
+            {
+              "line": 627,
+              "text": "Both forms check the same complete stored file. Uppercase digest letters and lowercase filename letters are accepted too. Lists may have CRLF or LF endings and blank lines. Tagged output such as `MD5 (TEST.DAT) = ...`, host paths, escaped filenames and other algorithms are not accepted; unsupported or malformed entries are reported, not guessed."
+            },
+            {
+              "line": 692,
+              "text": "**PATCH 1.0 (003) \u2014 included on the candidate NOAH companion disk.**"
+            },
+            {
+              "line": 698,
+              "text": "installation and final release acceptance remain open."
+            },
+            {
+              "line": 736,
+              "text": "BetterCP/M drive/user qualifier. Wildcards, DU lists and ranges are not accepted."
+            },
+            {
+              "line": 952,
+              "text": "Supply exactly one filename. Enhanced modes accept a single drive/user-qualified name such as `B7:FILE.COM`. A drive-only name such as `B:FILE.COM` uses your current user area; an unqualified name uses your current drive and user. Wildcards, file selectors, multiple files, and multiple user areas are not accepted."
+            },
+            {
+              "line": 1592,
+              "text": "`A0:FILE.TXT`, quoted names, other switches and extra operands are not accepted."
+            },
+            {
+              "line": 1762,
+              "text": "The frozen selection limit is 512 candidates; actual transaction capacity also"
+            }
+          ]
+        }
+      ],
+      "build_time_status": {
+        "status": "CANDIDATE; NOT ACCEPTED",
+        "accepted_commit": null,
+        "source_commit": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+        "tag": null,
+        "pending": [
+          "Manual Model 4 runtime campaign",
+          "Fresh-package installation on both platforms",
+          "Final conformance applicability/accounting",
+          "Manual/generated-edition reconciliation",
+          "License/attribution/source-completeness audit",
+          "Maintainer release acceptance"
+        ]
+      },
+      "interpretation": "qualified artifact source/hash supplied by final external release index and merged freeze; tag/publication not yet authorized"
+    },
+    {
+      "package": "utilities-cpmsim",
+      "frozen_filename": "BetterCPM-Utilities-1.0-cpmsim-candidate.zip",
+      "archive_root": "BetterCPM-Utilities-1.0-cpmsim-candidate",
+      "reviewed_paths": 7,
+      "files": [
+        {
+          "path": "README.txt",
+          "occurrences": [
+            {
+              "line": 4,
+              "text": "CANDIDATE \u2014 assembled for review; NOT ACCEPTED FOR RELEASE."
+            }
+          ]
+        },
+        {
+          "path": "RELEASE.json",
+          "occurrences": [
+            {
+              "line": 1660,
+              "text": "                    \"src/utilities/md5sum/candidates.inc\": \"de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516\","
+            },
+            {
+              "line": 1905,
+              "text": "  \"status\": \"CANDIDATE; NOT ACCEPTED\","
+            }
+          ]
+        },
+        {
+          "path": "SOURCE-IDENTITY.json",
+          "occurrences": [
+            {
+              "line": 3,
+              "text": "  \"status\": \"CANDIDATE; NOT ACCEPTED\""
+            }
+          ]
+        },
+        {
+          "path": "docs/LICENSING.md",
+          "occurrences": [
+            {
+              "line": 57,
+              "text": "Package freeze and public release acceptance remain on hold."
+            }
+          ]
+        },
+        {
+          "path": "docs/platform/MODEL4-SHIPPED-INSTALLATION.txt",
+          "occurrences": [
+            {
+              "line": 42,
+              "text": "updated CONFIG into private copies of the original 35c56a03 candidate disks."
+            },
+            {
+              "line": 45,
+              "text": "this update. The package freeze remains on hold."
+            }
+          ]
+        },
+        {
+          "path": "docs/user/utilities_manual.md",
+          "occurrences": [
+            {
+              "line": 9,
+              "text": "The Utilities Disk is distributed separately from the System Disk, with platform-specific primary and companion images in the current six-package release-candidate layout. This manual covers the selected utilities, including NOAH, SEARCH, COMPARE, CRCKSUM, MD5SUM, PATCH, DUMP, DDT, TED, DASM/DSYM/DLINK, compression tools and ZSM4/LINK. Candidate membership is specified by the [distribution manifest](../releases/DISTRIBUTION-MANIFEST.md); no 1.0 release has yet been accepted or published."
+            },
+            {
+              "line": 11,
+              "text": "Component-level historical qualification statements within individual chapters describe the evidence available at the time of those reviews. For current candidate-wide results and limitations, consult the [2026-11-02 conformance record](../engineering/Release-Conformance-2026-11-02.md) and [Model 4 validation record](../engineering/Deferred%20Model%204%20Validation.md). These results do not establish exhaustive qualification of every utility on both platforms."
+            },
+            {
+              "line": 75,
+              "text": "**SEARCH 1.0 (003) \u2014 included in the candidate Utilities images.** This chapter"
+            },
+            {
+              "line": 123,
+              "text": "The current release candidate preserves command-tail letter case (compatibility"
+            },
+            {
+              "line": 219,
+              "text": "**COMPARE 1.0 (005) \u2014 included on the candidate NOAH companion disk.**"
+            },
+            {
+              "line": 223,
+              "text": "Final release acceptance and fresh-package installation remain open. The [engineering specification](../engineering/COMPARE%20Specification.md)"
+            },
+            {
+              "line": 361,
+              "text": "**CRCKSUM 1.0 (011), release candidate.** CRCKSUM.COM is included in the candidate Utilities images; the BetterCP/M 1.0 release has not yet been accepted or published. Run `B0:CRCKSUM /VER` to check your copy. The [engineering specification](../engineering/CRC-Specification.md) defines the interface; the [implementation record](../engineering/CRC-Implementation.md) preserves earlier revision-specific results. The [November 2 release conformance record](../engineering/Release-Conformance-2026-11-"
+            },
+            {
+              "line": 526,
+              "text": "The first tier containing a candidate wins. If that tier contains several files, CRCKSUM reports ambiguity and asks you to select a name using `/CHECK=filename`. If none is found, it reports `No CRC list found` and continues to the next selected DU. It never searches your logged DU as a fallback. With no target operand, the logged DU is itself the target."
+            },
+            {
+              "line": 538,
+              "text": "A master can contain several entries for the same filename. CRCKSUM compares the target file with the size-compatible candidates. A file matches only if every selected value actually recorded in one candidate agrees. It never combines values from different entries to manufacture a match. A complete matching candidate verifies the file; differing alternatives are identified separately. The report identifies which algorithms were actually checked."
+            },
+            {
+              "line": 564,
+              "text": "**MD5SUM 1.0 (005) \u2014 included in the candidate Utilities images.** Run `B0:MD5SUM /VER` to check your copy. Component-specific tests and historical deferrals are documented in the [implementation notes](../engineering/MD5SUM-Implementation.md); the [November 2 release conformance record](../engineering/Release-Conformance-2026-11-02.md) does not establish exhaustive MD5SUM qualification on both platforms. Final release acceptance remains open. The [engineering specification](../engineering/MD5SU"
+            },
+            {
+              "line": 627,
+              "text": "Both forms check the same complete stored file. Uppercase digest letters and lowercase filename letters are accepted too. Lists may have CRLF or LF endings and blank lines. Tagged output such as `MD5 (TEST.DAT) = ...`, host paths, escaped filenames and other algorithms are not accepted; unsupported or malformed entries are reported, not guessed."
+            },
+            {
+              "line": 692,
+              "text": "**PATCH 1.0 (003) \u2014 included on the candidate NOAH companion disk.**"
+            },
+            {
+              "line": 698,
+              "text": "installation and final release acceptance remain open."
+            },
+            {
+              "line": 736,
+              "text": "BetterCP/M drive/user qualifier. Wildcards, DU lists and ranges are not accepted."
+            },
+            {
+              "line": 952,
+              "text": "Supply exactly one filename. Enhanced modes accept a single drive/user-qualified name such as `B7:FILE.COM`. A drive-only name such as `B:FILE.COM` uses your current user area; an unqualified name uses your current drive and user. Wildcards, file selectors, multiple files, and multiple user areas are not accepted."
+            },
+            {
+              "line": 1592,
+              "text": "`A0:FILE.TXT`, quoted names, other switches and extra operands are not accepted."
+            },
+            {
+              "line": 1762,
+              "text": "The frozen selection limit is 512 candidates; actual transaction capacity also"
+            }
+          ]
+        }
+      ],
+      "build_time_status": {
+        "status": "CANDIDATE; NOT ACCEPTED",
+        "accepted_commit": null,
+        "source_commit": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+        "tag": null,
+        "pending": [
+          "Manual Model 4 runtime campaign",
+          "Fresh-package installation on both platforms",
+          "Final conformance applicability/accounting",
+          "Manual/generated-edition reconciliation",
+          "License/attribution/source-completeness audit",
+          "Maintainer release acceptance"
+        ]
+      },
+      "interpretation": "qualified artifact source/hash supplied by final external release index and merged freeze; tag/publication not yet authorized"
+    }
+  ],
+  "categories": [
+    {
+      "category": "outer download names",
+      "decision": "remove -candidate in copies only; all six SHA256 values unchanged"
+    },
+    {
+      "category": "internal candidate roots",
+      "decision": "retain exact tested layout; explain in final release notes/index"
+    },
+    {
+      "category": "README, SOURCE-IDENTITY and RELEASE status labels",
+      "decision": "pre-qualification status superseded by exact-hash freeze accepted through merged PR609; no ZIP edits"
+    },
+    {
+      "category": "pending qualification list",
+      "decision": "closed by final qualification ledger; publication approval remains separately held"
+    },
+    {
+      "category": "tag:null",
+      "decision": "still correct; no tag exists or is created by this preflight"
+    },
+    {
+      "category": "reader-facing release notes and freeze-hold statements",
+      "decision": "external final release notes supersede only obsolete qualification status; no change to usage, license or limitation text"
+    },
+    {
+      "category": "dated engineering history, template inputs and checksum-index filenames",
+      "decision": "retain as historical/template provenance; candidate words there are not current blockers"
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "schema": 1,
+  "status": "PASS",
+  "date_taipei": "2026-11-04",
+  "source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+  "draft_release_id": 433495205,
+  "draft_url": "https://github.com/CPMArchives/BetterCPM/releases/tag/untagged-4fe70ebb8b693d00535f",
+  "draft": true,
+  "published_at": null,
+  "planned_tag_name": "v1.0",
+  "planned_tag_target": "2842d0eb0732683d9280a38d576c3dba423cb893",
+  "tag_refs_before": [],
+  "tag_refs_after": [],
+  "no_new_tags": true,
+  "no_published_releases": true,
+  "six_zip_copies": [
+    {
+      "package": "documentation",
+      "download_name": "BetterCPM-1.0-Documentation.zip",
+      "frozen_name": "BetterCPM-1.0-Documentation-candidate.zip",
+      "sha256": "7f67508d62269d358d749e40af69b82d6e73d71511d36a2a0449f699b03de48a",
+      "bytes_unchanged": true
+    },
+    {
+      "package": "source",
+      "download_name": "BetterCPM-1.0-Source.zip",
+      "frozen_name": "BetterCPM-1.0-Source-candidate.zip",
+      "sha256": "1975f95144998c33ba704f37da3246343dd6ecc82ae7e4b014b8d7af372e71ca",
+      "bytes_unchanged": true
+    },
+    {
+      "package": "system-model4",
+      "download_name": "BetterCPM-1.0-System-Model4.zip",
+      "frozen_name": "BetterCPM-1.0-System-Model4-candidate.zip",
+      "sha256": "5760ebcb361c80fa632e323a016a95fac477183527c7f6d661721958e8a44b97",
+      "bytes_unchanged": true
+    },
+    {
+      "package": "system-cpmsim",
+      "download_name": "BetterCPM-1.0-System-cpmsim.zip",
+      "frozen_name": "BetterCPM-1.0-System-cpmsim-candidate.zip",
+      "sha256": "0d6fbff549088915e85470c718b1ce05e78980e460c7429b0e0e9f7e4746c6c4",
+      "bytes_unchanged": true
+    },
+    {
+      "package": "utilities-model4",
+      "download_name": "BetterCPM-Utilities-1.0-Model4.zip",
+      "frozen_name": "BetterCPM-Utilities-1.0-Model4-candidate.zip",
+      "sha256": "7b92378db28281b1e05d6d4bd4f7f480c3224c848c4120b93ee2abfd217577c9",
+      "bytes_unchanged": true
+    },
+    {
+      "package": "utilities-cpmsim",
+      "download_name": "BetterCPM-Utilities-1.0-cpmsim.zip",
+      "frozen_name": "BetterCPM-Utilities-1.0-cpmsim-candidate.zip",
+      "sha256": "37477e6b06b13337c191e3c6d78be383ff7b14143c68d65bd0814e08ef7f5b1b",
+      "bytes_unchanged": true
+    }
+  ],
+  "all_nine_server_digests_verified": true,
+  "three_text_companions_downloaded_and_compared": true,
+  "release_body_matches_final_notes": true,
+  "asset_metadata": [
+    {
+      "id": 708140140,
+      "filename": "BetterCPM-1.0-Documentation.zip",
+      "size": 7163338,
+      "digest": "sha256:7f67508d62269d358d749e40af69b82d6e73d71511d36a2a0449f699b03de48a",
+      "state": "uploaded"
+    },
+    {
+      "id": 708139973,
+      "filename": "BetterCPM-1.0-RELEASE-NOTES.md",
+      "size": 6909,
+      "digest": "sha256:53d8a08e21fec6619b101f5000f6eb6d7f7debbde2dedd7db27202fb4588730d",
+      "state": "uploaded"
+    },
+    {
+      "id": 708139904,
+      "filename": "BetterCPM-1.0-RELEASE.json",
+      "size": 3652,
+      "digest": "sha256:a7ad1a1c8a3eefc86ef79ade6dfd214e46ae833f1c6538e1c5e44726fbc77fb4",
+      "state": "uploaded"
+    },
+    {
+      "id": 708139868,
+      "filename": "BetterCPM-1.0-SHA256SUMS.txt",
+      "size": 587,
+      "digest": "sha256:5ae3e7afc977ab3ba20d3d3c05346614358e711c6cd47bb9337963fcf084a4e9",
+      "state": "uploaded"
+    },
+    {
+      "id": 708141334,
+      "filename": "BetterCPM-1.0-Source.zip",
+      "size": 350224651,
+      "digest": "sha256:1975f95144998c33ba704f37da3246343dd6ecc82ae7e4b014b8d7af372e71ca",
+      "state": "uploaded"
+    },
+    {
+      "id": 708140089,
+      "filename": "BetterCPM-1.0-System-cpmsim.zip",
+      "size": 4463644,
+      "digest": "sha256:0d6fbff549088915e85470c718b1ce05e78980e460c7429b0e0e9f7e4746c6c4",
+      "state": "uploaded"
+    },
+    {
+      "id": 708140023,
+      "filename": "BetterCPM-1.0-System-Model4.zip",
+      "size": 4157094,
+      "digest": "sha256:5760ebcb361c80fa632e323a016a95fac477183527c7f6d661721958e8a44b97",
+      "state": "uploaded"
+    },
+    {
+      "id": 708140211,
+      "filename": "BetterCPM-Utilities-1.0-cpmsim.zip",
+      "size": 232575318,
+      "digest": "sha256:37477e6b06b13337c191e3c6d78be383ff7b14143c68d65bd0814e08ef7f5b1b",
+      "state": "uploaded"
+    },
+    {
+      "id": 708140715,
+      "filename": "BetterCPM-Utilities-1.0-Model4.zip",
+      "size": 232607745,
+      "digest": "sha256:7b92378db28281b1e05d6d4bd4f7f480c3224c848c4120b93ee2abfd217577c9",
+      "state": "uploaded"
+    }
+  ],
+  "candidate_wording": "audited; roots and build-time notices retained unchanged and explicitly superseded for qualification by final notes/index; usage/licenses/limitations unchanged"
+}

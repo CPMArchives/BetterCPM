@@ -2,8 +2,8 @@
   "schema": 1,
   "release_title": "BetterCP/M 1.0",
   "version": "1.0",
-  "status": "planned; assembly and acceptance pending",
-  "accepted_commit": null,
+  "status": "qualified frozen assets; GitHub draft prepared; tagging and publication held",
+  "accepted_commit": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
   "tag": null,
   "specification": "docs/releases/1.0-RELEASE-PACKAGES.md",
   "release_index": "BetterCPM-1.0-RELEASE.json",
@@ -18,9 +18,11 @@
         "cpmsim"
       ],
       "readme_template": "packaging/1.0/README-System-cpmsim.txt",
-      "status": "planned",
-      "sha256": null,
-      "size_bytes": null
+      "status": "qualified-frozen",
+      "sha256": "0d6fbff549088915e85470c718b1ce05e78980e460c7429b0e0e9f7e4746c6c4",
+      "size_bytes": 4463644,
+      "frozen_filename": "BetterCPM-1.0-System-cpmsim-candidate.zip",
+      "frozen_archive_root": "BetterCPM-1.0-System-cpmsim-candidate"
     },
     {
       "id": "system-model4",
@@ -31,9 +33,11 @@
         "Model4"
       ],
       "readme_template": "packaging/1.0/README-System-Model4.txt",
-      "status": "planned",
-      "sha256": null,
-      "size_bytes": null
+      "status": "qualified-frozen",
+      "sha256": "5760ebcb361c80fa632e323a016a95fac477183527c7f6d661721958e8a44b97",
+      "size_bytes": 4157094,
+      "frozen_filename": "BetterCPM-1.0-System-Model4-candidate.zip",
+      "frozen_archive_root": "BetterCPM-1.0-System-Model4-candidate"
     },
     {
       "id": "utilities-cpmsim",
@@ -44,9 +48,11 @@
         "cpmsim"
       ],
       "readme_template": "packaging/1.0/README-Utilities-cpmsim.txt",
-      "status": "planned",
-      "sha256": null,
-      "size_bytes": null
+      "status": "qualified-frozen",
+      "sha256": "37477e6b06b13337c191e3c6d78be383ff7b14143c68d65bd0814e08ef7f5b1b",
+      "size_bytes": 232575318,
+      "frozen_filename": "BetterCPM-Utilities-1.0-cpmsim-candidate.zip",
+      "frozen_archive_root": "BetterCPM-Utilities-1.0-cpmsim-candidate"
     },
     {
       "id": "utilities-model4",
@@ -57,9 +63,11 @@
         "Model4"
       ],
       "readme_template": "packaging/1.0/README-Utilities-Model4.txt",
-      "status": "planned",
-      "sha256": null,
-      "size_bytes": null
+      "status": "qualified-frozen",
+      "sha256": "7b92378db28281b1e05d6d4bd4f7f480c3224c848c4120b93ee2abfd217577c9",
+      "size_bytes": 232607745,
+      "frozen_filename": "BetterCPM-Utilities-1.0-Model4-candidate.zip",
+      "frozen_archive_root": "BetterCPM-Utilities-1.0-Model4-candidate"
     },
     {
       "id": "source",
@@ -68,9 +76,11 @@
       "archive_root": "BetterCPM-1.0-Source",
       "platforms": [],
       "readme_template": "packaging/1.0/README-Source.txt",
-      "status": "planned",
-      "sha256": null,
-      "size_bytes": null
+      "status": "qualified-frozen",
+      "sha256": "1975f95144998c33ba704f37da3246343dd6ecc82ae7e4b014b8d7af372e71ca",
+      "size_bytes": 350224651,
+      "frozen_filename": "BetterCPM-1.0-Source-candidate.zip",
+      "frozen_archive_root": "BetterCPM-1.0-Source-candidate"
     },
     {
       "id": "documentation",
@@ -79,9 +89,16 @@
       "archive_root": "BetterCPM-1.0-Documentation",
       "platforms": [],
       "readme_template": "packaging/1.0/README-Documentation.txt",
-      "status": "planned",
-      "sha256": null,
-      "size_bytes": null
+      "status": "qualified-frozen",
+      "sha256": "7f67508d62269d358d749e40af69b82d6e73d71511d36a2a0449f699b03de48a",
+      "size_bytes": 7163338,
+      "frozen_filename": "BetterCPM-1.0-Documentation-candidate.zip",
+      "frozen_archive_root": "BetterCPM-1.0-Documentation-candidate"
     }
-  ]
+  ],
+  "planned_tag": "v1.0",
+  "planned_tag_target": "2842d0eb0732683d9280a38d576c3dba423cb893",
+  "publication_index": "docs/releases/publication-1.0/BetterCPM-1.0-RELEASE.json",
+  "draft_release_id": 433495205,
+  "draft_release_url": "https://github.com/CPMArchives/BetterCPM/releases/tag/untagged-4fe70ebb8b693d00535f"
 }
