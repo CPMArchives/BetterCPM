@@ -1,0 +1,92 @@
+{
+  "status": "PASS",
+  "reviewed_PR": 607,
+  "reviewed_head_before_clarification": "9f8654849e74081e69f705dba4fc6170dd0b94c2",
+  "current_main": "1cf10c22e6108f1968a7f55b16b47f961393bbfd",
+  "candidate_source_revision": "54c503652fa957798bf2d0d636f4172851195926",
+  "scope": "Frozen reference-baseline metadata only; no changed archives, binaries, component assignments, builds, emulator runs, tags or publication",
+  "assets": [
+    {
+      "package": "documentation",
+      "filename": "BetterCPM-1.0-Documentation-candidate.zip",
+      "sha256": "99307624947a29637061965e6a3b9e8300a833aecd3425cb76ba56f00ca92096",
+      "size_bytes": 7130720,
+      "qualified_receipt_match": true,
+      "original_archive_hash_match": true,
+      "frozen_archive_hash_match": true,
+      "frozen_size_match": true,
+      "frozen_mode_read_only": true
+    },
+    {
+      "package": "source",
+      "filename": "BetterCPM-1.0-Source-candidate.zip",
+      "sha256": "3c21361e3940935e577ce4c542e4eabba20ebd8b492b882409557e296126f4de",
+      "size_bytes": 332318887,
+      "qualified_receipt_match": true,
+      "original_archive_hash_match": true,
+      "frozen_archive_hash_match": true,
+      "frozen_size_match": true,
+      "frozen_mode_read_only": true
+    },
+    {
+      "package": "system-model4",
+      "filename": "BetterCPM-1.0-System-Model4-candidate.zip",
+      "sha256": "e19daff9634c9c3f23648f3b8d1cf2c19feb59b2ce54b603eadbbce91144829e",
+      "size_bytes": 4141135,
+      "qualified_receipt_match": true,
+      "original_archive_hash_match": true,
+      "frozen_archive_hash_match": true,
+      "frozen_size_match": true,
+      "frozen_mode_read_only": true
+    },
+    {
+      "package": "system-cpmsim",
+      "filename": "BetterCPM-1.0-System-cpmsim-candidate.zip",
+      "sha256": "39453f1b7cde8b032f8216e1940593d5d06199d76b9c06ed776c490930cc36a1",
+      "size_bytes": 4341765,
+      "qualified_receipt_match": true,
+      "original_archive_hash_match": true,
+      "frozen_archive_hash_match": true,
+      "frozen_size_match": true,
+      "frozen_mode_read_only": true
+    },
+    {
+      "package": "utilities-model4",
+      "filename": "BetterCPM-Utilities-1.0-Model4-candidate.zip",
+      "sha256": "a11833bb66de6af40c6ddf797d4950974b08790e1c0c65542779c3e409ed7dc0",
+      "size_bytes": 220679574,
+      "qualified_receipt_match": true,
+      "original_archive_hash_match": true,
+      "frozen_archive_hash_match": true,
+      "frozen_size_match": true,
+      "frozen_mode_read_only": true
+    },
+    {
+      "package": "utilities-cpmsim",
+      "filename": "BetterCPM-Utilities-1.0-cpmsim-candidate.zip",
+      "sha256": "2a56de1d65281b4f34bcb93a0561e9d1d05ddcf8d428ab5aaf254eefb0d87ff2",
+      "size_bytes": 220647125,
+      "qualified_receipt_match": true,
+      "original_archive_hash_match": true,
+      "frozen_archive_hash_match": true,
+      "frozen_size_match": true,
+      "frozen_mode_read_only": true
+    }
+  ],
+  "package_lock_status": "STATIC_CHECKS_PASS",
+  "package_lock_failures": [],
+  "identity_audit": {
+    "status": "PASS",
+    "method": "Independent extraction of every System and Utilities file directly from frozen ZIP media; hash checks before static string scan",
+    "source_revision": "54c503652fa957798bf2d0d636f4172851195926",
+    "distinct_filenames": 41,
+    "target_package_placements": 78,
+    "audit_rows_exact_match": true,
+    "release_identity_gate": "OPEN",
+    "release_promotion": "HOLD"
+  },
+  "fixed_finding": "Clarified count as 41 distinct filenames across 78 target/package placements; static embedded strings are not executed /VER output",
+  "release_promotion": "HOLD until version-branding gate resolves",
+  "merge_recommendation": "Ready to merge as the immutable qualified reference record before identity/branding changes; does not authorize release promotion",
+  "validation": "Direct SHA-256/size/mode/membership comparison to original archives and merged PR605 receipts; six frozen ZIP static checks; independent extraction/hash/string scan from frozen media matches every audit row"
+}
