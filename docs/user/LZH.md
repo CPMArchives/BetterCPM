@@ -36,7 +36,7 @@ show short syntax and `Use LZH /HELP for help.`
 The help screen is:
 
 ```text
-LZH 1.0 (006-dev)
+LZH 1.0 (007)
   - - -
  | CrLZH compression
  |
@@ -54,7 +54,7 @@ opening files or starting compression/expansion. `/ver` and mixed letter case
 work too. For the current build:
 
 ```text
-LZH 1.0 (006-dev)
+LZH 1.0 (007)
   - - -
  | BetterCP/M Utilities
  | CrLZH File Compression

@@ -36,7 +36,7 @@ show short syntax and `Use USQ /HELP for help.`
 The help screen is:
 
 ```text
-USQ 1.0 (006-dev)
+USQ 1.0 (007)
   - - -
  | Squeeze expansion
  |
@@ -54,7 +54,7 @@ opening files or starting compression/expansion. `/ver` and mixed letter case
 work too. For the current build:
 
 ```text
-USQ 1.0 (006-dev)
+USQ 1.0 (007)
   - - -
  | BetterCP/M Utilities
  | Squeezed File Expansion

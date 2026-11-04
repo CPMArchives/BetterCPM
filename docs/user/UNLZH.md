@@ -37,7 +37,7 @@ show short syntax and `Use UNLZH /HELP for help.`
 The help screen is:
 
 ```text
-UNLZH 1.0 (006-dev)
+UNLZH 1.0 (007)
   - - -
  | CrLZH expansion
  |
@@ -55,7 +55,7 @@ opening files or starting compression/expansion. `/ver` and mixed letter case
 work too. For the current build:
 
 ```text
-UNLZH 1.0 (006-dev)
+UNLZH 1.0 (007)
   - - -
  | BetterCP/M Utilities
  | CrLZH File Expansion

@@ -1,12 +1,19 @@
 BetterCP/M 1.0 final package acceptance checks
 
-Package freeze remains on hold. Run this against a directory containing exactly
-six candidate ZIPs after FDB.COM, CONFIG.COM and DISK.FDB have been integrated.
+The maintainer authorized replacement qualification and freeze after identity
+promotion. Keep tagging and publication on hold. The command below checks the
+historical 35c56a03 component lock against exactly six ZIPs.
 Use an absolute path to a BetterCP/M checkout containing the #597 lock record.
 
 python3 tools/check_release_package_lock.py /absolute/path/to/candidate-directory \
   --repository /absolute/path/to/BetterCPM \
   --output /absolute/path/to/package-check-results.json
+
+Identity-promoted utilities deliberately have new hashes. The historical checker
+will reject those changes; it must not be reported as passing unchanged. Use the
+replacement acceptance ledger and explicit old/new component hashes to account
+for each promoted utility, with fresh affected execution evidence. Preserve the
+original historical pins. All undeclared component changes remain failures.
 
 The checker requires Python 3 and cpmtools. It checks the six package IDs,
 consistent source identity, exact member checksums, notices and license files,

@@ -72,7 +72,7 @@ In syntax descriptions, `file` and `offset` are placeholders to replace with you
 
 ## SEARCH file-content search
 
-**SEARCH 1.0 (002-dev) — included in the candidate Utilities images.** This chapter
+**SEARCH 1.0 (003) — included in the candidate Utilities images.** This chapter
 describes the interface supported by the recorded paired-emulator component checks; final release acceptance remains separate.
 The [engineering specification](../engineering/SEARCH%20Specification.md)
 controls the design.
@@ -216,7 +216,7 @@ archives, or replace text.
 
 ## COMPARE binary file comparison
 
-**COMPARE 1.0 (004-dev) — included on the candidate NOAH companion disk.**
+**COMPARE 1.0 (005) — included on the candidate NOAH companion disk.**
 This chapter describes the implemented interface. Earlier component-specific
 Model 4 deferrals remain in the engineering record; the November 2 native
 conformance batch is bounded evidence, not a blanket COMPARE qualification.
@@ -358,7 +358,7 @@ Handled exits close opened files and restore the caller's drive and user area.
 
 ## CRCKSUM file checksums and verification lists
 
-**CRCKSUM 1.0 (010-dev), release candidate.** CRCKSUM.COM is included in the candidate Utilities images; the BetterCP/M 1.0 release has not yet been accepted or published. Run `B0:CRCKSUM /VER` to check your copy. The [engineering specification](../engineering/CRC-Specification.md) defines the interface; the [implementation record](../engineering/CRC-Implementation.md) preserves earlier revision-specific results. The [November 2 release conformance record](../engineering/Release-Conformance-2026-11-02.md) documents bounded candidate testing, not exhaustive qualification of every utility on both platforms.
+**CRCKSUM 1.0 (011), release candidate.** CRCKSUM.COM is included in the candidate Utilities images; the BetterCP/M 1.0 release has not yet been accepted or published. Run `B0:CRCKSUM /VER` to check your copy. The [engineering specification](../engineering/CRC-Specification.md) defines the interface; the [implementation record](../engineering/CRC-Implementation.md) preserves earlier revision-specific results. The [November 2 release conformance record](../engineering/Release-Conformance-2026-11-02.md) documents bounded candidate testing, not exhaustive qualification of every utility on both platforms.
 
 CRCKSUM answers two related questions: what check values identify these files, and do the files still agree with an earlier list? It calculates eight values: the original CP/M CRCK calculation, corrected CRCK, CHEK, CRC-32, SUM8, SUM16, KERM6 and KERM12. You can display them, save a list, or check a directory against a saved reference. No input file is altered.
 
@@ -561,7 +561,7 @@ Ctrl-C cancels and reports an incomplete operation. Completed independent output
 
 ## MD5SUM file digests and verification lists
 
-**MD5SUM 1.0 (004-dev) — included in the candidate Utilities images.** Run `B0:MD5SUM /VER` to check your copy. Component-specific tests and historical deferrals are documented in the [implementation notes](../engineering/MD5SUM-Implementation.md); the [November 2 release conformance record](../engineering/Release-Conformance-2026-11-02.md) does not establish exhaustive MD5SUM qualification on both platforms. Final release acceptance remains open. The [engineering specification](../engineering/MD5SUM-Specification.md) controls the design.
+**MD5SUM 1.0 (005) — included in the candidate Utilities images.** Run `B0:MD5SUM /VER` to check your copy. Component-specific tests and historical deferrals are documented in the [implementation notes](../engineering/MD5SUM-Implementation.md); the [November 2 release conformance record](../engineering/Release-Conformance-2026-11-02.md) does not establish exhaustive MD5SUM qualification on both platforms. Final release acceptance remains open. The [engineering specification](../engineering/MD5SUM-Specification.md) controls the design.
 
 MD5SUM calculates one MD5 digest for each selected file. Save the results, and you can later check whether the files still agree with that list. Its selection, master/local output, overwrite and checking behavior follows CRCKSUM. There is only one algorithm and one saved-list format.
 
@@ -689,7 +689,7 @@ The common entry syntax permits exchange of these lists. MD5SUM does not reprodu
 
 ## PATCH verified binary file patching
 
-**PATCH 1.0 (002-dev) — included on the candidate NOAH companion disk.**
+**PATCH 1.0 (003) — included on the candidate NOAH companion disk.**
 The [engineering specification](../engineering/PATCH-Specification.md) controls
 the interface, and [implementation notes](../engineering/PATCH-Implementation.md)
 record component-specific qualification and historical limitations. The
@@ -956,7 +956,7 @@ Supply exactly one filename. Enhanced modes accept a single drive/user-qualified
 `DUMP /VER` uses the standard BetterCP/M utility identification style:
 
 ```text
-DUMP 1.0 (006)
+DUMP 1.0 (008)
   - - -
  | BetterCP/M Utilities
  | Hexadecimal File Display
@@ -1628,7 +1628,7 @@ to display that command's version and build without accessing files. Letter case
 does not matter. For example:
 
 ```text
-SQ 1.0 (006-dev)
+SQ 1.0 (007)
   - - -
  | BetterCP/M Utilities
  | Squeeze File Compression

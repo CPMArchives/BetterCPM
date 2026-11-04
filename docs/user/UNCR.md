@@ -37,7 +37,7 @@ show short syntax and `Use UNCR /HELP for help.`
 The help screen is:
 
 ```text
-UNCR 1.0 (006-dev)
+UNCR 1.0 (007)
   - - -
  | CRUNCH expansion
  |
@@ -55,7 +55,7 @@ opening files or starting compression/expansion. `/ver` and mixed letter case
 work too. For the current build:
 
 ```text
-UNCR 1.0 (006-dev)
+UNCR 1.0 (007)
   - - -
  | BetterCP/M Utilities
  | CRUNCH File Expansion

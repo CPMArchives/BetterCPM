@@ -87,4 +87,4 @@ carries both license texts and docs/LICENSING.md, with LICENSE and NOTICE
 defining the split and separate-work exclusions.
 BetterCP/M builds its 108-entry DISK.FDB from its own FDF v1 text definitions.
 All six packages exclude Montezuma Micro’s original DISK.FDF, including nested
-source archives. The historical format parameters retain their provenance. Package freeze remains on hold.
+source archives. The historical format parameters retain their provenance. Replacement freeze requires its exact-hash acceptance ledger; tagging and publication remain on hold.

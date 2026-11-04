@@ -1,6 +1,6 @@
 ## MD5SUM file digests and verification lists
 
-**MD5SUM 1.0 (004-dev)** ships on the primary Utilities disk. With that disk in B:,
+**MD5SUM 1.0 (005)** ships on the primary Utilities disk. With that disk in B:,
 run `B0:MD5SUM /VER` to check your copy or `B0:MD5SUM /H` for help.
 
 MD5SUM calculates one MD5 digest for each selected file. Save the results, and you can later check whether the files still agree with that list. Its selection, master/local output, overwrite and checking behavior follows CRCKSUM. There is only one algorithm and one saved-list format.

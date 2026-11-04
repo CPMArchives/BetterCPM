@@ -36,7 +36,7 @@ show short syntax and `Use SQ /HELP for help.`
 The help screen is:
 
 ```text
-SQ 1.0 (006-dev)
+SQ 1.0 (007)
   - - -
  | Squeeze compression
  |
@@ -54,7 +54,7 @@ opening files or starting compression/expansion. `/ver` and mixed letter case
 work too. For the current build:
 
 ```text
-SQ 1.0 (006-dev)
+SQ 1.0 (007)
   - - -
  | BetterCP/M Utilities
  | Squeeze File Compression

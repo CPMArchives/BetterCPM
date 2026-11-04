@@ -1,6 +1,6 @@
 ## PATCH verified binary file patching
 
-**PATCH 1.0 (002-dev)** ships on the NOAH companion disk. With that disk in C:,
+**PATCH 1.0 (003)** ships on the NOAH companion disk. With that disk in C:,
 run `C0:PATCH /VER` to check your copy or `C0:PATCH /H` for help.
 
 PATCH applies verified byte replacements from a patch instruction file to a
