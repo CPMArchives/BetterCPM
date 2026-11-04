@@ -1,14 +1,14 @@
 {
   "schema": 1,
   "release": "BetterCP/M 1.0",
-  "artifact_status": "QUALIFIED_FROZEN",
+  "artifact_status": "FIVE_NON_DOCUMENTATION_PACKAGES_LOCKED_DOCUMENTATION_PROVISIONAL",
   "preflight_date_taipei": "2026-11-04",
   "source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
   "reviewed_merge_revision": "2842d0eb0732683d9280a38d576c3dba423cb893",
   "planned_tag_name": "v1.0",
   "planned_tag_target": "2842d0eb0732683d9280a38d576c3dba423cb893",
   "tag_policy": "planned name only; no tag created by this preflight",
-  "publication_policy": "draft only; explicit maintainer authorization required to tag/publish",
+  "publication_policy": "HOLD: documentation incomplete; explicit later authorization required to tag/publish",
   "qualification_url": "https://github.com/CPMArchives/BetterCPM/blob/2842d0eb0732683d9280a38d576c3dba423cb893/docs/engineering/Release-Identity-Promotion-1.0.md",
   "freeze_manifest_sha256": "0eca3c4a632fe1c7fba90b3d5b1633211f32814fce81347e56baf0ac64ee7788",
   "checksum_file": "BetterCPM-1.0-SHA256SUMS.txt",
@@ -24,7 +24,8 @@
       "archive_root": "BetterCPM-1.0-Documentation-candidate",
       "sha256": "7f67508d62269d358d749e40af69b82d6e73d71511d36a2a0449f699b03de48a",
       "size_bytes": 7163338,
-      "title": "BetterCP/M 1.0 Documentation"
+      "title": "BetterCP/M 1.0 Documentation",
+      "lock_status": "PROVISIONAL_DOCUMENTATION_SYNC_OPEN"
     },
     {
       "package": "source",
@@ -33,7 +34,8 @@
       "archive_root": "BetterCPM-1.0-Source-candidate",
       "sha256": "1975f95144998c33ba704f37da3246343dd6ecc82ae7e4b014b8d7af372e71ca",
       "size_bytes": 350224651,
-      "title": "BetterCP/M 1.0 Source"
+      "title": "BetterCP/M 1.0 Source",
+      "lock_status": "LOCKED_FOR_1.0"
     },
     {
       "package": "system-model4",
@@ -42,7 +44,8 @@
       "archive_root": "BetterCPM-1.0-System-Model4-candidate",
       "sha256": "5760ebcb361c80fa632e323a016a95fac477183527c7f6d661721958e8a44b97",
       "size_bytes": 4157094,
-      "title": "BetterCP/M 1.0 System \u2014 Model 4"
+      "title": "BetterCP/M 1.0 System \u2014 Model 4",
+      "lock_status": "LOCKED_FOR_1.0"
     },
     {
       "package": "system-cpmsim",
@@ -51,7 +54,8 @@
       "archive_root": "BetterCPM-1.0-System-cpmsim-candidate",
       "sha256": "0d6fbff549088915e85470c718b1ce05e78980e460c7429b0e0e9f7e4746c6c4",
       "size_bytes": 4463644,
-      "title": "BetterCP/M 1.0 System \u2014 cpmsim"
+      "title": "BetterCP/M 1.0 System \u2014 cpmsim",
+      "lock_status": "LOCKED_FOR_1.0"
     },
     {
       "package": "utilities-model4",
@@ -60,7 +64,8 @@
       "archive_root": "BetterCPM-Utilities-1.0-Model4-candidate",
       "sha256": "7b92378db28281b1e05d6d4bd4f7f480c3224c848c4120b93ee2abfd217577c9",
       "size_bytes": 232607745,
-      "title": "BetterCP/M Utilities 1.0 \u2014 Model 4"
+      "title": "BetterCP/M Utilities 1.0 \u2014 Model 4",
+      "lock_status": "LOCKED_FOR_1.0"
     },
     {
       "package": "utilities-cpmsim",
@@ -69,7 +74,15 @@
       "archive_root": "BetterCPM-Utilities-1.0-cpmsim-candidate",
       "sha256": "37477e6b06b13337c191e3c6d78be383ff7b14143c68d65bd0814e08ef7f5b1b",
       "size_bytes": 232575318,
-      "title": "BetterCP/M Utilities 1.0 \u2014 cpmsim"
+      "title": "BetterCP/M Utilities 1.0 \u2014 cpmsim",
+      "lock_status": "LOCKED_FOR_1.0"
     }
-  ]
+  ],
+  "non_documentation_source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+  "non_documentation_lock": "docs/releases/non-documentation-lock-1.0/LOCK.json",
+  "documentation_complete": false,
+  "documentation_starting_reference": "31dba474927be420796ab9e4cb3c75daddd6f0ab",
+  "documentation_final_revision": null,
+  "release_notes_status": "provisional working text; synchronize with documentation before final release review",
+  "planned_tag_target_status": "old preflight proposal only; final alignment deferred until documentation review"
 }

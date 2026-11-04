@@ -1,0 +1,115 @@
+{
+  "schema": 1,
+  "event": "NON_DOCUMENTATION_CONTENTS_AND_BEHAVIOR_LOCKED",
+  "date_taipei": "2026-11-04",
+  "authorization": "User explicitly instructed locking non-documentation contents and behavior, preserving five frozen packages, and holding tagging/publication.",
+  "status": "LOCKED_NON_DOCUMENTATION_DOCUMENTATION_SYNC_OPEN",
+  "software_source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+  "qualification_merge_revision": "2842d0eb0732683d9280a38d576c3dba423cb893",
+  "reviewed_repository_revision": "31dba474927be420796ab9e4cb3c75daddd6f0ab",
+  "documentation_starting_reference": "31dba474927be420796ab9e4cb3c75daddd6f0ab",
+  "documentation_final_revision": null,
+  "documentation_complete": false,
+  "packages": [
+    {
+      "package": "source",
+      "filename": "BetterCPM-1.0-Source.zip",
+      "frozen_filename": "BetterCPM-1.0-Source-candidate.zip",
+      "archive_root": "BetterCPM-1.0-Source-candidate",
+      "sha256": "1975f95144998c33ba704f37da3246343dd6ecc82ae7e4b014b8d7af372e71ca",
+      "size_bytes": 350224651,
+      "title": "BetterCP/M 1.0 Source",
+      "lock_status": "LOCKED",
+      "github_asset_id": 708141334
+    },
+    {
+      "package": "system-model4",
+      "filename": "BetterCPM-1.0-System-Model4.zip",
+      "frozen_filename": "BetterCPM-1.0-System-Model4-candidate.zip",
+      "archive_root": "BetterCPM-1.0-System-Model4-candidate",
+      "sha256": "5760ebcb361c80fa632e323a016a95fac477183527c7f6d661721958e8a44b97",
+      "size_bytes": 4157094,
+      "title": "BetterCP/M 1.0 System \u2014 Model 4",
+      "lock_status": "LOCKED",
+      "github_asset_id": 708140023
+    },
+    {
+      "package": "system-cpmsim",
+      "filename": "BetterCPM-1.0-System-cpmsim.zip",
+      "frozen_filename": "BetterCPM-1.0-System-cpmsim-candidate.zip",
+      "archive_root": "BetterCPM-1.0-System-cpmsim-candidate",
+      "sha256": "0d6fbff549088915e85470c718b1ce05e78980e460c7429b0e0e9f7e4746c6c4",
+      "size_bytes": 4463644,
+      "title": "BetterCP/M 1.0 System \u2014 cpmsim",
+      "lock_status": "LOCKED",
+      "github_asset_id": 708140089
+    },
+    {
+      "package": "utilities-model4",
+      "filename": "BetterCPM-Utilities-1.0-Model4.zip",
+      "frozen_filename": "BetterCPM-Utilities-1.0-Model4-candidate.zip",
+      "archive_root": "BetterCPM-Utilities-1.0-Model4-candidate",
+      "sha256": "7b92378db28281b1e05d6d4bd4f7f480c3224c848c4120b93ee2abfd217577c9",
+      "size_bytes": 232607745,
+      "title": "BetterCP/M Utilities 1.0 \u2014 Model 4",
+      "lock_status": "LOCKED",
+      "github_asset_id": 708140715
+    },
+    {
+      "package": "utilities-cpmsim",
+      "filename": "BetterCPM-Utilities-1.0-cpmsim.zip",
+      "frozen_filename": "BetterCPM-Utilities-1.0-cpmsim-candidate.zip",
+      "archive_root": "BetterCPM-Utilities-1.0-cpmsim-candidate",
+      "sha256": "37477e6b06b13337c191e3c6d78be383ff7b14143c68d65bd0814e08ef7f5b1b",
+      "size_bytes": 232575318,
+      "title": "BetterCP/M Utilities 1.0 \u2014 cpmsim",
+      "lock_status": "LOCKED",
+      "github_asset_id": 708140211
+    }
+  ],
+  "contents": {
+    "path": "CONTENTS.json",
+    "sha256": "9253c7d2bf9646a77fb254f4f22d2e8193932994886e04b7f2b120073e66ef1e"
+  },
+  "qualification": {
+    "path": "../frozen-1.0-release-identities-2026-11-04/QUALIFICATION.json",
+    "sha256": "2458ea8300d6a0cfff47090502864feab866daf17a71e89067cab64c633911a8",
+    "reuse_rule": "prior runtime evidence applies to identical locked bytes; no new runtime qualification is claimed by this hash/preservation check",
+    "documentation_review_limit": "prior consistency, link, licensing and rebuild checks did not establish documentation completeness"
+  },
+  "locked_behaviors": {
+    "cpmsim_default": "qualified RAM System, RSX LIST reports53K with no optional modules loaded",
+    "model4_default": "startup loads M4SCRN thenADM3A; RSX LIST reports50K",
+    "FDB": "1.0 revision001 matching COM/viewer pair; interactive53K; help/version at normal Model4 startup; unloadADM3A thenM4SCRN; restore via unmodified SUBMIT STARTUP",
+    "CONFIG_and_catalogue": "both platform CONFIG binaries and108-entryDISK.FDB locked; namedBCPM780 binding/read/install behavior retained",
+    "installation": "shipped CONFIG/SYSGEN workflows, populated-file preservation and installed cold boot on both emulator targets; Model4 expected payload delta7030 E0->A0",
+    "XIP": "separately qualified current-source ROM/overlays with seven guarded controls; not a new default download",
+    "versions": "retain independent component/API/revision identities; no code, UI/help/version or format-data changes during documentation sync"
+  },
+  "deferred_or_bounded": [
+    "56Kfullram and optional checked profiles not promoted",
+    "physicalhardware/additionalmachines outside emulator qualification",
+    "existing conformance observations/exclusions retained, including case-preserving tails/fixedA0lookup",
+    "existing history-corruption AUD003 and historical-oracle AUD007 dispositions retained; not newly fixed",
+    "bounded hostCapsLock andpending-input/CONST observations;104/105adapters deferred"
+  ],
+  "documentation_policy": {
+    "rebuild_only": "documentation",
+    "preserve_five_packages_including_embedded_docs": true,
+    "source_zip_role": "immutable matching software-source snapshot; embedded manuals are historical copies, not updated by this sync",
+    "documentation_authority": "new dedicated Documentation ZIP and synchronized external notes explain/supersede stale embedded documentation copies; license terms and notices remain intact",
+    "provenance": "new Documentation ZIP must record its actual documentation revision and this locked software revision separately; do not relabel all six as rebuilt from one new source commit",
+    "future_checks": "validate five exact fixed package identities/hashes plus separately identified Documentation revision/hash; do not waive or falsely satisfy the old single-commit-six-package check",
+    "change_control": "document actual locked behavior. An actual software/content defect or requested behavior change must explicitly reopen the affected lock and undergo applicable qualification; never silently alter the five ZIPs as a documentation edit"
+  },
+  "draft_release": {
+    "id": 433495205,
+    "url": "https://github.com/CPMArchives/BetterCPM/releases/tag/untagged-4fe70ebb8b693d00535f",
+    "status": "UNPUBLISHED_PROVISIONAL_DOCUMENTATION_PENDING",
+    "existing_documentation_asset": "reference only; not final",
+    "current_proposed_target": "2842d0eb0732683d9280a38d576c3dba423cb893",
+    "tag_target_alignment": "defer until final documentation review; no target change in this step"
+  },
+  "tagging": "HOLD_NOT_AUTHORIZED",
+  "publishing": "HOLD_NOT_AUTHORIZED"
+}

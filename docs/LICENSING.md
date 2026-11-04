@@ -54,7 +54,10 @@ source tree the records are under `third_party/`.
 Both license texts and this boundary notice travel with all six package types.
 Earlier generated PDF/DOCX editions do not automatically receive corrected
 notices; reconcile any selected printable edition before distribution.
-The exact six 1.0 archives are qualified and frozen under the [PR #609 freeze record](releases/frozen-1.0-release-identities-2026-11-04/FREEZE.json).
-Tagging and publication remain on hold. Embedded pre-qualification status
-wording in those immutable archives is addressed by the [final release notes](releases/RELEASE-NOTES-1.0.md)
-and [release-wide index](releases/publication-1.0/BetterCPM-1.0-RELEASE.json); license terms and notices are unchanged.
+The five non-documentation 1.0 packages are locked under the
+[non-documentation baseline](releases/non-documentation-lock-1.0/LOCK.json).
+Documentation remains incomplete and requires synchronization before the
+Documentation package is rebuilt. Prior documentation checks established
+bounded consistency, not completeness. Tagging and publication remain on hold.
+License terms and notices are unchanged; historical copies inside the five
+frozen packages remain part of those preserved snapshots.
