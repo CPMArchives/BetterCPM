@@ -91,6 +91,39 @@ bounded `/VER` C cell; no new help or platform pass is claimed. Resident malform
 tail handling remains O pending its own review. Release/package freeze restricts
 production changes; it does not convert these gaps into conforming behavior.
 
+## Release disposition and 1.01 scope
+
+On 4 November 2026 the maintainer withdrew the earlier lock override for these
+issues and reaffirmed the 1.0 release/package lock. Only showstoppers warrant
+reconsidering that lock. The demonstrated help/version inconsistencies are
+accepted non-showstopper usability defects for 1.0, targeted for **1.01**.
+The maintainer also explicitly accepts the reported `:DIR *.COM` issue for
+1.0 and defers its correction to **1.01**. That invocation selects transient
+DIR; track its defect separately from resident help/version dispatch. This
+disposition records the reported invocation, not a new diagnosis or test pass.
+No resident fix, component revision change or release-artifact rebuild is
+authorized for 1.0 by this correction. Preserve the separate implementation
+candidate as deferred work; its development checks do not qualify the locked
+release or establish final 1.01 acceptance. RCP's outstanding cells remain O.
+
+The 1.01 work should provide:
+
+- Separate resident/transient identification using each implementation's actual
+  revision and a clear indication of which implementation is running.
+- Implementation-specific `/H` and `/HELP` screens. Compact resident help must
+  describe resident syntax and supported switches; transient help must describe
+  the transient implementation. A pointer to `:COMMAND /H` must explicitly label
+  its additional features rather than imply they are supported by the resident.
+- Brief local help for resident-only commands; no separate CLS.COM is required.
+- Correct the separately reported transient `:DIR *.COM` issue and verify the
+  reported invocation in the affected environment.
+- Focused query-precedence and malformed-argument review across all nine
+  resident commands, with separate resident-path acceptance checks that cannot
+  pass by loading a matching COM file.
+- Measured code/text, carrier and command-environment costs before selecting
+  the final implementation; retain CPX reclaimability and qualify affected
+  artifacts on both supported platforms after the implementation stabilizes.
+
 ## Evidence and limits
 
 - Query evidence: `test_utility_finalization.py` (37 screens and manager parser checks), `test_remaining_utility_help.py`, `test_codec_versions.py`, `test_z80pack_bye.py`, and dedicated CONFIG/NOAH/staged-helper checks. Staged helpers remain E until an owned-versus-host query policy is approved.
