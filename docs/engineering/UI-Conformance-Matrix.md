@@ -117,6 +117,10 @@ The 1.01 work should provide:
 - Brief local help for resident-only commands; no separate CLS.COM is required.
 - Correct the separately reported transient `:DIR *.COM` issue and verify the
   reported invocation in the affected environment.
+- Resolve XSUB's Utilities Disk companion-location mismatch, recorded with the
+  copy-to-A0 workaround in the [1.0 errata](../releases/1.0-ERRATA.md#xsub-companion-must-be-copied-to-a0).
+  Review packaging/installation and loading alternatives before choosing a fix;
+  qualify actual batch input and reconstruction, not merely help/version output.
 - Focused query-precedence and malformed-argument review across all nine
   resident commands, with separate resident-path acceptance checks that cannot
   pass by loading a matching COM file.
