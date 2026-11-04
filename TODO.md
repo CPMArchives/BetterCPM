@@ -567,8 +567,9 @@ between CONFIG and DUP remain design considerations for the formatting work.
   development carrier to multiple formats and mixed configured drives.
 - [ ] Provide system-disk, data-disk, DSDD, DSHD, 80-track, and other useful
   native presets where supported by the platform.
-- [ ] Define a semi-automatic or automatic conversion path from cpmtools
-  `diskdefs`, filtering definitions by each platform's controller abilities.
+- [ ] Evaluate a semi-automatic cpmtools `diskdefs` import against the first
+  [post-1.0 disk-format qualification candidates](#post-10-cpmtools-disk-format-qualification).
+  Record which fields the importer can derive and which require independent evidence.
 - [ ] Convert useful Montezuma Micro definitions missing from cpmtools back
   into cpmtools-compatible definitions where possible.
 - [ ] Implement platform-aware formatting, verification, and error reporting.
@@ -584,6 +585,45 @@ between CONFIG and DUP remain design considerations for the formatting work.
 - [ ] Decide whether later BetterCP/M-native disk formats need compatible
   timestamp or attribute extensions; the MM 790K format remains a development
   carrier rather than an architectural filesystem commitment.
+
+### Post-1.0 cpmtools disk-format qualification
+
+The 2026-11-04 inventory compared the 146 named definitions in cpmtools 2.24
+(139 in 2.23) with the 108 production `DISK.FDB` descriptors at `f433b918`.
+It found 22 mappings, 13 entries with conflicting details in an existing
+family, 7 possible aliases and 104 entries without an established mapping.
+The 104 count includes alternate image views and partitions of the same medium.
+See the [pinned diskdefs](https://github.com/johnsonjh/cpmtools/blob/58e11085eb713d54fcf876f7dd7c8243b09af6ca/diskdefs)
+and [BetterCP/M catalogue baseline](https://github.com/CPMArchives/BetterCPM/blob/f433b9188dd567be6c918cc7cf80f7f2c73c669a/docs/platform/FORMAT-SUPPORT-1.0.md).
+
+| Priority among the 104 unmapped names | Count | Work |
+|---|---:|---|
+| P1, qualify | 5 | Start with Amstrad `cpcsys` and `cpcdata`, then `pcw` and Ampro `amp3`/`amp5`. The Ampro names share one layout. All four candidate descriptors passed FDB serialization and read-back. Guest I/O remains open. |
+| P1, investigate | 5 | Inspect original ATON `trse`/`trsf` and Lifeboat `trs5` media to explain the 11,520-byte image prefix and verify the last block. Recover the sector IDs and order for the 8-inch MAX-80 `lobo2`/`lobo3` disks. Existing MAX-80 entries cover 5¼-inch disks. |
+| P2, follow up | 15 | Prioritize documented floppy families such as Bondwell 14, Microbee/Dreamdisk, Zenith 8-inch DD and Ampro double-sided. PCW 720K (`cf2dd`) specifies CKS 64, above the current BIOS limit of 32. |
+| P3, obtain evidence | 30 | Obtain an original disk or a concrete interchange use for Robotron/SCP/Korvet, Timex, P112 and other OEM variants. |
+| Defer | 49 | Revisit hard-sector and GCR media, virtual disks, partitions and exceptional track layouts when their adapter or BIOS support is in scope. |
+
+- [ ] Resolve two P1 conflicts outside the 104. Kaypro IV `kpiv` gives DSM
+  196 while `MMF046` gives 195. Check the OEM DPB and final block before
+  qualifying writes. Omikron `trsomsssd` has 35 tracks while `MMF063` has 40.
+- [ ] Derive candidate allocation and directory parameters from `diskdefs`.
+  Cross-check absolute sector IDs and logical order, cylinder/head traversal,
+  FM/MFM encoding, inversion, sector sizes, reserved tracks, allocation bounds,
+  directory bitmap and CKS against the OEM DPB, controller profile or original
+  media. Montezuma Super Data already has FDB entries. Five 1,024-byte sectors
+  plus one 512-byte sector give 44 records per track. The uniform cpmtools rows
+  would give 48. See the [FDB specification](docs/engineering/DISK-FORMAT-DEFINITION-SPECIFICATION.md).
+- [ ] For Model II interchange, compare ATON/Lifeboat's 8 × 1,024-byte data
+  tracks with the 16 × 512-byte tracks in the fork's `BCM2SS` and `PT2SS`.
+  Both yield SPT 64. The fork handles its FM boot track in platform code.
+  See the [Model II definitions](https://github.com/a-griff/BetterCPM/blob/e24f4b5859e9d9c5abcb044e1eaafe12d3e72c64/src/platform/trs80m2/M2DISK.FDF).
+- [ ] Use independently produced images for qualification. For the first CPC
+  pair, verify IDs 41h–49h and OFF 2 on System, C1h–C9h and OFF 0 on Data.
+  Compare guest reads of a known file across track and allocation boundaries
+  with an independent extraction. Check write-back on a copy, including the
+  final allocation block, before claiming write support. Record the platform
+  and qualify formatting or boot separately. See the [Amstrad XDPBs](https://seasip.info/Cpm/amsform.html).
 
 ## File metadata, attributes, and native clock
 
