@@ -9,6 +9,17 @@ records the missing resident `/H`/`/HELP` dispatch and outstanding tail review.
 Existing transient receipts remain bounded evidence for those transients.
 No production fix or release-package rebuild is included in this correction.
 
+**Release decision, 4 November 2026:** the maintainer withdrew the override
+for these usability defects. The 1.0 release/package lock stands; only
+showstoppers warrant reconsidering it. These help/version issues are accepted
+1.0 limitations, with correction targeted for **1.01**. See the
+[1.01 scope](UI-Conformance-Matrix.md#release-disposition-and-101-scope).
+The separate implementation candidate is deferred, not approved for 1.0.
+The reported transient `:DIR *.COM` issue is likewise accepted for 1.0 and
+targeted for correction in 1.01.
+Outstanding conformance cells remain outstanding; release acceptance is not
+a claim that those requirements are met.
+
 3 November 2026. PR #571 is merged at
 `bd4df2cd9f0a7a2edfa12112a8c02151eea5b90d`. Its bounded current-payload
 Model 4 gates pass. The [argument-validation follow-up](UI-Argument-Validation-Followup.md)
