@@ -13,9 +13,12 @@ RSX UNLOAD ADM3A
 RSX UNLOAD M4SCRN
 ```
 
-Restore them afterwards with `RSX LOAD M4SCRN` then `RSX LOAD ADM3A`, or cold
-boot. If other extensions also consume memory, unload unneeded extensions or
-use a clean boot. FDB refuses insufficient memory without changing files.
+After quitting FDB, run `SUBMIT STARTUP` with the unmodified shipped startup
+script, or cold-boot, to restore the normal console. That script loads M4SCRN
+then ADM3A as one queued sequence before clearing the screen. If your startup
+script is customized, use your normal console startup sequence. If other
+extensions also consume memory, unload unneeded extensions or use a clean
+boot. FDB refuses insufficient memory without changing files.
 
 Run `FDB` to open the working catalogue. F opens a catalogue; N starts an empty
 one. I imports one definition or an entire .FDB or .FDF. L lists entries with
