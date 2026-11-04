@@ -115,6 +115,10 @@ The 1.01 work should provide:
   the transient implementation. A pointer to `:COMMAND /H` must explicitly label
   its additional features rather than imply they are supported by the resident.
 - Brief local help for resident-only commands; no separate CLS.COM is required.
+- Correct FDB.COM's compact main menu to Engineering Specification 209's
+  version heading, grouped bracketed choices and bracketed choice prompt,
+  preserving commands and exit behavior. See the [FDB erratum](../releases/1.0-ERRATA.md#fdb-main-menu-presentation)
+  and the explicit 1.01 task in [the backlog](../../TODO.md#101-release-corrections).
 - Correct the separately reported transient `:DIR *.COM` issue and verify the
   reported invocation in the affected environment.
 - Resolve XSUB's Utilities Disk companion-location mismatch, recorded with the
