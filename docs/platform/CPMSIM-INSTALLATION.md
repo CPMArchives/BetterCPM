@@ -5,6 +5,26 @@ Stock upstream cpmsim is insufficient for the supported disk interface.
 Use the runtime build below for ordinary operation and retain its build receipt
 with the checksums of the BetterCP/M images you run.
 
+## Terminal display size
+
+Before using ANSISCRN with a terminal personality such as ANSI, set the host
+terminal to **at least 80 columns by 24 rows**. Keep that size while drawing
+menus or running full-screen applications; some applications need more rows.
+The ordinary console displaying text successfully in a smaller window does
+not establish that the loaded ANSI screen stack will do so.
+
+In macOS Terminal, set **Terminal > Settings > Profiles > Window > Window Size**
+to 80 columns and 24 rows (or larger) for new windows. Enlarge existing windows
+manually. The distributed launcher does not automatically check or enforce
+this prerequisite.
+
+If CONFIG output overlaps after loading `ANSISCRN.RSX` and `ANSI.RSX`, exit
+CONFIG with BREAK (Ctrl-C), enlarge the terminal to at least 80 by 24, and run
+CONFIG again. Resizing a menu that is already visible is not a test of the
+next redraw. This workaround keeps the qualified 1.0 binaries unchanged.
+See [the User's Guide](../user/users_guide.md#host-terminal-size-and-recovery)
+and [the 1.0 erratum](../releases/1.0-ERRATA.md#ansi-host-terminal-size).
+
 ## Sources and prerequisites
 
 Use the matching BetterCP/M source package, including

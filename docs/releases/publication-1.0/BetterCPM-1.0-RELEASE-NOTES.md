@@ -46,6 +46,13 @@ verified offline reconstruction inputs. Model 4 qualification used trs80gp.
 Physical Model 4 media transfer, Model 4D/4P and additional hardware/platforms
 remain outside these emulator receipts.
 
+For the cpmsim ANSISCRN/ANSI console stack, use a host terminal of at least
+**80 columns by 24 rows**. Smaller windows can garble newly drawn menus, as
+reported with CONFIG at 77x20. Exit the utility, enlarge the terminal, and start
+it again; resizing existing text alone does not test the next redraw. The
+qualified binaries remain unchanged. See the [terminal-size erratum](../1.0-ERRATA.md#ansi-host-terminal-size);
+smaller-window handling and a size warning/check are recorded for 1.01.
+
 ## Qualification and known limitations
 
 Both platform installation and cold-boot workflows passed with file preservation.
