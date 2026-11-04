@@ -1,0 +1,140 @@
+{
+  "status": "STATIC_CHECKS_PASS",
+  "freeze": "HOLD",
+  "packages": [
+    {
+      "package": "documentation",
+      "zip": "BetterCPM-1.0-Documentation-candidate.zip",
+      "sha256": "99307624947a29637061965e6a3b9e8300a833aecd3425cb76ba56f00ca92096",
+      "images": []
+    },
+    {
+      "package": "source",
+      "zip": "BetterCPM-1.0-Source-candidate.zip",
+      "sha256": "3c21361e3940935e577ce4c542e4eabba20ebd8b492b882409557e296126f4de",
+      "images": []
+    },
+    {
+      "package": "system-model4",
+      "zip": "BetterCPM-1.0-System-Model4-candidate.zip",
+      "sha256": "e19daff9634c9c3f23648f3b8d1cf2c19feb59b2ce54b603eadbbce91144829e",
+      "images": [
+        {
+          "name": "BetterCPM-Distribution-trs80gp-80T-DS-System.dmk",
+          "sha256": "a0c56001873c6d69ae1eb28d3c1a542583c633b21100191dcc38ff4f0ab89c7f",
+          "files_verified": 32,
+          "filesystem": "PASS"
+        }
+      ]
+    },
+    {
+      "package": "system-cpmsim",
+      "zip": "BetterCPM-1.0-System-cpmsim-candidate.zip",
+      "sha256": "39453f1b7cde8b032f8216e1940593d5d06199d76b9c06ed776c490930cc36a1",
+      "images": [
+        {
+          "name": "BetterCPM-Distribution-z80pack-332K.dsk",
+          "sha256": "2f9551e1831466a7631ad1cb0a2a57cdb74c901c9f37f466a4565b822f910e4f",
+          "files_verified": 36,
+          "filesystem": "PASS"
+        }
+      ]
+    },
+    {
+      "package": "utilities-model4",
+      "zip": "BetterCPM-Utilities-1.0-Model4-candidate.zip",
+      "sha256": "a11833bb66de6af40c6ddf797d4950974b08790e1c0c65542779c3e409ed7dc0",
+      "images": [
+        {
+          "name": "BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk",
+          "sha256": "4a3f7fc10d5f4f0ef5a5e3906e15810c4478e638ae13db0e1d70daa12102cc7f",
+          "files_verified": 7,
+          "filesystem": "PASS"
+        },
+        {
+          "name": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+          "sha256": "534766b9ec95f59f4f5f6783005605468d01a79970bf01f52f4da1c248db0bb4",
+          "files_verified": 26,
+          "filesystem": "PASS"
+        }
+      ]
+    },
+    {
+      "package": "utilities-cpmsim",
+      "zip": "BetterCPM-Utilities-1.0-cpmsim-candidate.zip",
+      "sha256": "2a56de1d65281b4f34bcb93a0561e9d1d05ddcf8d428ab5aaf254eefb0d87ff2",
+      "images": [
+        {
+          "name": "BetterCPM-NOAH-z80pack-332K.dsk",
+          "sha256": "a5eacfe263f90433a21bec5825ff63d9feb8510aec1ae1b64f8b0da841234cce",
+          "files_verified": 7,
+          "filesystem": "PASS"
+        },
+        {
+          "name": "BetterCPM-Utilities-z80pack-332K.dsk",
+          "sha256": "d175636d1393e0f3dd52ee48cad5b195ba23e699af16d821935cf2f1dcb041e6",
+          "files_verified": 26,
+          "filesystem": "PASS"
+        }
+      ]
+    }
+  ],
+  "source_commits": [
+    "54c503652fa957798bf2d0d636f4172851195926"
+  ],
+  "changed_images": [
+    "BetterCPM-Distribution-trs80gp-80T-DS-System.dmk",
+    "BetterCPM-Distribution-z80pack-332K.dsk"
+  ],
+  "open_integration_components": [
+    [
+      "trs80gp",
+      "CONFIG.COM",
+      "4b8f39baa0fa3ac2f57a580f815d49c308293a766a716038fcf96b6de225793a"
+    ],
+    [
+      "trs80gp",
+      "FDB.COM",
+      "471b29358597f0dafdfd43ae9fa3945ee36f410afdebc689ea06d5c0637b7da2"
+    ],
+    [
+      "trs80gp",
+      "FDBVIEW.OVL",
+      "29cfbc272db57ee8eb8c8b2dcc423eb9dc4346704ddd4c26e75ef282a739752c"
+    ],
+    [
+      "trs80gp",
+      "DISK.FDB",
+      "06e2d88e30c38bebe4eaf0975a3e302086874e719109dc3898bb72a0f7ded6a5"
+    ],
+    [
+      "z80pack",
+      "CONFIG.COM",
+      "29db48952a559454003b92874740cd7f15b53451f9cf9876b893f06b1820919b"
+    ],
+    [
+      "z80pack",
+      "FDB.COM",
+      "471b29358597f0dafdfd43ae9fa3945ee36f410afdebc689ea06d5c0637b7da2"
+    ],
+    [
+      "z80pack",
+      "FDBVIEW.OVL",
+      "29cfbc272db57ee8eb8c8b2dcc423eb9dc4346704ddd4c26e75ef282a739752c"
+    ],
+    [
+      "z80pack",
+      "DISK.FDB",
+      "06e2d88e30c38bebe4eaf0975a3e302086874e719109dc3898bb72a0f7ded6a5"
+    ]
+  ],
+  "failures": [],
+  "remaining_gates": [
+    "Final FDB/CONFIG/catalogue integration and placement",
+    "Catalogue binding/read and installation runtime acceptance",
+    "Source rebuild from the final exported ZIP",
+    "Final documentation sign-off",
+    "Affected regressions for changed media",
+    "Maintainer package freeze approval"
+  ]
+}

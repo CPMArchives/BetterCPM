@@ -1,0 +1,30 @@
+{
+  "reviewed_merge": "d95b30bfa91cbc3cace53c861d8964375a7afe70",
+  "product_findings": [],
+  "test_findings": [
+    {
+      "file": "tools/test_config_fdb_runtime.py",
+      "issue": "obsolete G menu selection; current CONFIG uses D",
+      "fix": "select D",
+      "validation": "PASS against final complete cpmsim System media"
+    }
+  ],
+  "fresh_checks": [
+    "converter40",
+    "session50",
+    "editor9",
+    "reader108",
+    "distribution15",
+    "candidate_packaging9",
+    "build_sequence2",
+    "catalogue_packaging",
+    "six_package_lock",
+    "exact_FDB_and_viewer_rebuild",
+    "native_cpmsim_109_named_binding_and_file_read"
+  ],
+  "acceptance_basis": "spec209-final-integration ledger plus independently audited archived native captures; exact-byte applicability explicitly scoped",
+  "model4_repeat": "PASS: current viewer/Q, 50K safe refusal, 53K operation, queued restoration, actual file read, cold boot, all32files/reserved tracks preserved",
+  "freeze": "HOLD",
+  "status": "PASS",
+  "all_spec209_gates": "PASS on both platforms under documented exact-byte applicability"
+}
