@@ -50,6 +50,12 @@ with tempfile.TemporaryDirectory() as tmp:
         finally:
             try:os.kill(pid,signal.SIGTERM)
             except ProcessLookupError:pass
-            os.waitpid(pid,0)
             os.close(terminal)
+            deadline=time.monotonic()+2
+            while time.monotonic()<deadline:
+                if os.waitpid(pid,os.WNOHANG)[0]:break
+                time.sleep(0.02)
+            else:
+                os.kill(pid,signal.SIGKILL)
+                raise AssertionError("native stub child did not exit after termination")
 print('PASS: real guest execution, help/version, syntax errors, A: accept/cancel and command return')
