@@ -94,6 +94,9 @@ def main():
         cmd+=key_args('SUBMIT UNLOAD\r')+['-id','600','-it','-iw','FDB101 UNLOADED READY','-iw','A0> ','-id','300','-it']
         diagnostic_indices=[0,1];capture_count=3
         for k,w in steps:
+            if k=='FDB':
+                # Remove prior workbench prompts before waiting for a new one.
+                cmd+=key_args('CLS\r')+['-iw','A0> ','-id','3000']
             cmd+=key_args(k if k in ('\x03','\x1b') else k+'\r')
             if k=='FDB':
                 cmd+=['-id','600','-it']
