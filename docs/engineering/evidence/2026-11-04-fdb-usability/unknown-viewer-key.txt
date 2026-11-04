@@ -1,0 +1,53 @@
+
+Working catalogue: A0:DISK.FDB   Entries: 108   Unmodified
+A Capture drive  B Load entry  C Blank format  E Resume editor
+F Open  N New  L List  I Import  D Details  P Compare
+O Export  S Save  Q Quit (or BREAK)
+Choice: D
+Source: catalogue ID, / file, @ editor, :B-:D drive: MMI012
+Format details/compare  Page 1
+MMI012  
+MM Extended 80T DS SYSTEM       
+Logical track (0 surface, 1 cylinder): 0
+Two sides (0 no, 1 yes): 1
+Recording (0 FM, 1 MFM): 1
+Inversion (0 no, 1 yes): 0
+Cylinders: 80
+Sectors per surface: 10
+Sector size code: 2
+1-4 Page, A All/differences, Q or BREAK Return: 2
+Format details/compare  Page 2
+MMI012  
+MM Extended 80T DS SYSTEM       
+Side order (0 alternating, 1 side-major): 0
+Side 1 (0 forward, 1 reverse): 0
+Track IDs (0 per-cylinder, 1 continuous): 0
+Sector IDs (0 restart, 1 continuous): 0
+Addressing flags: 3
+Sector map count: 10
+Slot ID/bytes (< previous, > next)
+1 1/512
+2 3/512
+3 5/512
+4 7/512
+5 9/512
+6 2/512
+7 4/512
+8 6/512
+1-4 Page, A All/differences, Q or BREAK Return: Z
+Slot ID/bytes (< previous, > next)
+1 1/512
+2 3/512
+3 5/512
+4 7/512
+5 9/512
+6 2/512
+7 4/512
+8 6/512
+1-4 Page, A All/differences, Q or BREAK Return: Q
+
+Working catalogue: A0:DISK.FDB   Entries: 108   Unmodified
+A Capture drive  B Load entry  C Blank format  E Resume editor
+F Open  N New  L List  I Import  D Details  P Compare
+O Export  S Save  Q Quit (or BREAK)
+Choice: Q

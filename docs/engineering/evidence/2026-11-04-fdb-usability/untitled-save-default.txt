@@ -1,0 +1,20 @@
+
+Working catalogue: A0:DISK.FDB   Entries: 108   Unmodified
+A Capture drive  B Load entry  C Blank format  E Resume editor
+F Open  N New  L List  I Import  D Details  P Compare
+O Export  S Save  Q Quit (or BREAK)
+Choice: N
+
+Working catalogue: Untitled   Entries: 0   Unmodified
+A Capture drive  B Load entry  C Blank format  E Resume editor
+F Open  N New  L List  I Import  D Details  P Compare
+O Export  S Save  Q Quit (or BREAK)
+Choice: S
+Write .FDB/.FDF (Return for displayed default): 
+
+Invalid filename or ID.
+Working catalogue: Untitled   Entries: 0   Unmodified
+A Capture drive  B Load entry  C Blank format  E Resume editor
+F Open  N New  L List  I Import  D Details  P Compare
+O Export  S Save  Q Quit (or BREAK)
+Choice: Q

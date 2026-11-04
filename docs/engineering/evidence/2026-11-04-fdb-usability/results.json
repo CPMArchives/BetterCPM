@@ -1,0 +1,68 @@
+{
+  "source_commit": "066336cdc1d28cc2d4b2b7c44e1c1756a3cd9fde",
+  "scope": "Compiled full-Z80 review probes with model BDOS; not new native-platform qualification",
+  "com_sha256": "96e2cc0a6fcb79ad9fd23db1e321342077d0bcf485fe6153c8de509b85cdac45",
+  "cases": [
+    {
+      "case": "displayed-du-filename",
+      "files_unchanged": true,
+      "transcript": "displayed-du-filename.txt",
+      "finding_assertion": null
+    },
+    {
+      "case": "missing-detail-id",
+      "files_unchanged": true,
+      "transcript": "missing-detail-id.txt",
+      "finding_assertion": null
+    },
+    {
+      "case": "unknown-viewer-key",
+      "files_unchanged": true,
+      "transcript": "unknown-viewer-key.txt",
+      "finding_assertion": null
+    },
+    {
+      "case": "past-map-end",
+      "files_unchanged": true,
+      "transcript": "past-map-end.txt",
+      "finding_assertion": null
+    },
+    {
+      "case": "overlong-filter-backspace",
+      "files_unchanged": true,
+      "transcript": "overlong-filter-backspace.txt",
+      "finding_assertion": "Console width assertion failed: 94 columns; retained as a finding, not a passing test"
+    },
+    {
+      "case": "untitled-save-default",
+      "files_unchanged": true,
+      "transcript": "untitled-save-default.txt",
+      "finding_assertion": null
+    },
+    {
+      "case": "missing-viewer",
+      "files_unchanged": true,
+      "transcript": "missing-viewer.txt",
+      "finding_assertion": null
+    },
+    {
+      "case": "pending-unmodified",
+      "files_unchanged": true,
+      "transcript": "pending-unmodified.txt",
+      "finding_assertion": null
+    },
+    {
+      "case": "generic-validation",
+      "files_unchanged": true,
+      "transcript": "generic-validation.txt",
+      "finding_assertion": null
+    }
+  ],
+  "review_status": "Findings reproduced; no implementation or native-platform qualification",
+  "failed_screen_width_assertion": {
+    "case": "overlong-filter-backspace",
+    "actual_columns": 94,
+    "limit_columns": 80,
+    "disposition": "Retained failure; scheduled for 1.01, not counted as a passing UI gate"
+  }
+}

@@ -801,6 +801,12 @@ reconciliation gate precede the corresponding implementation program.
   at page boundaries on cpmsim and Model 4, preserving page-selection controls,
   cancellation and working data. This is deferred 1.01 work only: leave 1.0
   executable code, component identities and release artifacts unchanged.
+  Track the additional reviewed findings in the
+  [FDB 1.01 usability backlog](docs/engineering/209-usability-101.md): map
+  boundaries, local input recovery, field widths, filename/default consistency,
+  actionable diagnostics/validation, pending-state clarity and drive-apply
+  confirmation. Source references and nine compiled review transcripts are
+  retained there; these findings are deferred requirements, not implemented fixes.
 
 - [ ] Prioritize Kaypro among the first post-1.0 platform ports. The maintainer
   has VirtualKaypro installed; first assess its suitability for bring-up and

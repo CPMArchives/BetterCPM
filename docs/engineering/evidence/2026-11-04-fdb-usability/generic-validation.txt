@@ -1,0 +1,53 @@
+
+Working catalogue: A0:DISK.FDB   Entries: 108   Unmodified
+A Capture drive  B Load entry  C Blank format  E Resume editor
+F Open  N New  L List  I Import  D Details  P Compare
+O Export  S Save  Q Quit (or BREAK)
+Choice: B
+Source filename (Return for working catalogue): 
+Catalogue ID: MMI012
+
+Format editor  Page 1/3  Source (drive, # catalogue, - blank): #A0:DISK.FDB
+ MMI012   MM Extended 80T DS SYSTEM          Unmodified
+A Cylinders: 80
+B Sectors per surface: 10
+C Max size (0=128 1=256 2=512 3=1024): 2
+D Double sided: 1
+E MFM recording: 1
+F Inverted: 0
+G Logical track (0=surface 1=cylinder): 0
+Raw bytes: 819200  Directory byte: 10240  Maximum DSM: 394
+1-3 Page  I ID  N Name  M Map  V Validate  S Save/apply  Q Back: G
+Value: 1
+
+Format editor  Page 1/3  Source (drive, # catalogue, - blank): #A0:DISK.FDB
+ MMI012   MM Extended 80T DS SYSTEM          Modified
+A Cylinders: 80
+B Sectors per surface: 10
+C Max size (0=128 1=256 2=512 3=1024): 2
+D Double sided: 1
+E MFM recording: 1
+F Inverted: 0
+G Logical track (0=surface 1=cylinder): *1
+Raw bytes: 819200  Directory byte: 20480  Maximum DSM: 389  ! invalid allocation
+1-3 Page  I ID  N Name  M Map  V Validate  S Save/apply  Q Back: V
+Invalid working format. Correct the fields and validate again.
+
+Format editor  Page 1/3  Source (drive, # catalogue, - blank): #A0:DISK.FDB
+ MMI012   MM Extended 80T DS SYSTEM          Modified
+A Cylinders: 80
+B Sectors per surface: 10
+C Max size (0=128 1=256 2=512 3=1024): 2
+D Double sided: 1
+E MFM recording: 1
+F Inverted: 0
+G Logical track (0=surface 1=cylinder): *1
+Raw bytes: 819200  Directory byte: 20480  Maximum DSM: 389  ! invalid allocation
+1-3 Page  I ID  N Name  M Map  V Validate  S Save/apply  Q Back: Q
+
+Working catalogue: A0:DISK.FDB   Entries: 108   Unmodified
+A Capture drive  B Load entry  C Blank format  E Resume editor
+F Open  N New  L List  I Import  D Details  P Compare
+O Export  S Save  Q Quit (or BREAK)
+Choice: Q
+Working format pending: S Save, D Discard, C Cancel: D
