@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "status": "PASS",
+  "source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+  "tested_media_sources": [
+    "93a434dda674c3479bec5579b1feec73831423d4",
+    "2e4edb69172e731fd1a2a720952c03c91bf00727"
+  ],
+  "continuity": "all eight final media are byte-identical; later source changes are host-test and manual fixes; final exported Source and standalone System host kit reproduced exact media/runtime/guest hashes",
+  "gates": [
+    {
+      "path": "relocation-functional-checks.json",
+      "sha256": "22f4583ab09e5abe3d48026e3df01e172ddee308392d4deedd88c323ea99a0c9",
+      "status": "PASS"
+    },
+    {
+      "path": "host-qualification-final.json",
+      "sha256": "8f4954335bf91f51e3c56e029cd12e0d88494a64cd67ac52ac58bafaa468f492",
+      "status": "PASS"
+    },
+    {
+      "path": "final-offline-reproduction/result.json",
+      "sha256": "e29acd931e95b91a8d5030e1bf8e41f2b9208d60865fd48367fcc9d3777eef35",
+      "status": "PASS"
+    },
+    {
+      "path": "documentation-review.json",
+      "sha256": "8ab3096f9a362e983d3db99da48ca609269cf0bbb1baecfd7def7bf240ac3bb9",
+      "status": "PASS"
+    },
+    {
+      "path": "final-package-audit-correct-path.json",
+      "sha256": "e5468317a5f936f04703d1fd07335d17899c215a1f6f46f48f1320d337ff3109",
+      "status": "STATIC_CHECKS_PASS"
+    },
+    {
+      "path": "release-identity-audit.json",
+      "sha256": "cdad1233299e65ca070fb213dcfa5798db69b8ae3a24dfec2cd3256e1ed6e835",
+      "status": "PASS"
+    },
+    {
+      "path": "core-carry-forward.json",
+      "sha256": "3b446a5d32b774935ab3151cd2b4db5f8fecf9499b016ca36d725193dd295b1e",
+      "status": "PASS"
+    },
+    {
+      "path": "xip-acceptance.json",
+      "sha256": "a6810bdbf761835a2010ca1b1787d46c131b34487186f99da832bf2036d9c632",
+      "status": "PASS"
+    },
+    {
+      "path": "offline-ROM-reproduction.json",
+      "sha256": "8d8450f93919ad0b4d7b8866a56ef6ed4d68a3f85ad3495ef478be72e3d73f36",
+      "status": "PASS"
+    },
+    {
+      "path": "native-cpmsim-queries/result.json",
+      "sha256": "9d643d76b798234ee8989a909249f529a76f8eb2a05ed5c0f09d2ce7ac1e1700",
+      "status": "PASS"
+    },
+    {
+      "path": "guest-system/result.json",
+      "sha256": "641c4d394ef6367049e2b9524ad9eba00099a0c9408ca895eb7022e7de762657",
+      "status": "PASS"
+    },
+    {
+      "path": "native-cpmsim-install/result.json",
+      "sha256": "83ba227368edb47e588aebd9456d55c5befd4c099f09aeaf002bf117c6c9a199",
+      "status": "PASS"
+    },
+    {
+      "path": "restore-focused/result.json",
+      "sha256": "8ca6b410c6c86ce1e537714346d3f9b390a7d01d65c4b9ce7a21b92da78101a9",
+      "status": "PASS"
+    },
+    {
+      "path": "install-model4/result.json",
+      "sha256": "58c6809df69ee1af84f4f1f7a49a97061cb035e84a7cc2261c12f65c16d609f2",
+      "status": "PASS"
+    },
+    {
+      "path": "native-model4-queries-chunk0/result.json",
+      "sha256": "8ac8dd834eca7fa6f2bd182f66728e3b238d8b7e97b9f93c56aab35ce8fb8bfa",
+      "status": "PASS"
+    },
+    {
+      "path": "native-model4-queries-chunk1/result.json",
+      "sha256": "62dc1f9bc38772996c9dc03e10ff691291c2c8b01b27efb1c6617e0ae951524a",
+      "status": "PASS"
+    },
+    {
+      "path": "native-model4-queries-chunk2/result.json",
+      "sha256": "6a08a9d56f8696308a6e3f437439d2d414a907c380a52359415720a6f7fe5164",
+      "status": "PASS"
+    }
+  ],
+  "native_cpmsim_queries": 129,
+  "resident_cpmsim_queries": 9,
+  "native_model4_queries": 126,
+  "static_binary_instances_without_dev": 108,
+  "promoted_historical_lock_instances": 76,
+  "FDB_pair": "qualified PR608 pair retained at 1.0 (001)",
+  "RAM_core": "both reserved areas byte-identical to35c56a03; historical conformance accounting retained for matching core, not reassigned to changed utility hashes",
+  "XIP": "new exact ROM separately passed stock protected driver and seven controls; see xip-acceptance.json",
+  "original_freeze": "all six old54c50365 archives rehashed unchanged",
+  "evidence_archive": {
+    "name": "evidence.tar.gz",
+    "sha256": "3c4fd0c0894c892acb7cbb5f739d38faf73f0970548953aba7ca16b7da07dd3b",
+    "bytes": 7723683
+  },
+  "excluded_claims": [
+    "physical hardware qualification",
+    "56K fullram promotion",
+    "new exhaustive whole-suite conformance run",
+    "tagging or publication"
+  ],
+  "trial_policy": "retained failed/incomplete harness attempts are not passes; corrected final gates listed above control acceptance"
+}
