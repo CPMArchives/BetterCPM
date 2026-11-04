@@ -9786,7 +9786,7 @@ The activation command is:
 XSUB
 ```
 
-Place it before the program to be automated. `XSUB.COM` belongs to the **Utilities Disk**, not the current System Disk. Its protected companion, `BATCHIO.RSX`, must be in A0, along with the matched-build `R3PACK.RSX` manager runtime. The primary Utilities Disk supplies both XSUB.COM and BATCHIO.RSX. Copy its matched BATCHIO.RSX to writable A0 before using XSUB; loading it from a Utilities drive is not an alternative to the runtime’s fixed-A0 lookup. Keep it matched to the System Disk’s R3PACK.RSX.
+Place it before the program to be automated. `XSUB.COM` belongs to the **Utilities Disk**, not the current System Disk. Its protected companion, `BATCHIO.RSX`, must be in A0, along with the matched-build `R3PACK.RSX` manager runtime. The primary Utilities Disk supplies both XSUB.COM and BATCHIO.RSX. Copy its matched BATCHIO.RSX to writable A0 before using XSUB; loading it from a Utilities drive is not an alternative to the runtime’s fixed-A0 lookup. Keep it matched to the System Disk’s R3PACK.RSX. See the [1.0 XSUB erratum](../releases/1.0-ERRATA.md#xsub-companion-must-be-copied-to-a0) for the copy commands and planned 1.01 correction.
 
 Before running the example, make `XSUB.COM`, `ED.COM`, `TYPE.COM`, and `SUBMIT.COM` available on the command search path and `BATCHIO.RSX` and `R3PACK.RSX` available in A0. Keep A0 writable for the shared queue, and use a writable working drive/user where `XDEMO.TXT` does not already exist.
 
