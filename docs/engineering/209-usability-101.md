@@ -1,5 +1,11 @@
 # FDB.COM 1.01 usability backlog
 
+Implementation status: FDU-01–10 implemented on `feature/fdb-101-usability`.
+Model 4 interactive acceptance is pending; PR #619 stays draft.
+See [behavior, memory constraints and qualification](209-usability-101-implementation.md).
+The descriptions below retain the original 1.0 review findings. The 1.0 release
+remains unchanged; 1.01 release promotion is outside this work.
+
 Reviewed 4 November 2026 against main
 `066336cdc1d28cc2d4b2b7c44e1c1756a3cd9fde`. These are deferred **1.01**
 items, not implementation changes or new 1.0 release requirements. Preserve
@@ -128,4 +134,5 @@ viewer. Verify selection/editor/catalogue state, file bytes, recovery files and
 drive bindings after invalid input, cancellation and failed operations. Keep
 displayed paging ranges and defaults consistent with actual behavior. Continue
 the existing round-trip, catalogue, editor and recoverable-save regressions.
-This backlog review itself implements none of these changes.
+The original backlog review implemented none of these changes; the linked
+implementation records the subsequent fixes and acceptance results.
