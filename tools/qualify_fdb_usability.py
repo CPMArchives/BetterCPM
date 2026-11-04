@@ -103,7 +103,7 @@ def main():
                 diagnostic_indices.append(capture_count);capture_count+=1
             # Screen waits can match an old menu/completion line during I/O.
             # Let the actual read/write finish before accepting that match.
-            if ('.' in k and w=='Choice:') or w in ('Catalogue saved and verified.','exported and verified.'):
+            if k.endswith(('.FDB','.FDF')) or w in ('Catalogue saved and verified.','exported and verified.'):
                 cmd+=['-id','6000']
             cmd+=['-iw','A0> ' if w=='A0>' else w]
             if k=='STATE' or k.startswith('TYPE '):
