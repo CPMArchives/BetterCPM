@@ -772,6 +772,16 @@ reconciliation gate precede the corresponding implementation program.
 
 ## Post-1.0 considerations
 
+- [ ] FDB.COM **1.01 usability fixes**: standardize sector-map paging alongside
+  the deferred FDB UI corrections. Accept both `,` and `<` for previous, and
+  both `.` and `>` for next; display the standard prompt
+  `,< Previous   .> Next` instead of advertising only shifted angle brackets.
+  Apply consistently wherever sector maps are paged, including details and
+  comparison views. Verify that each alias pair produces identical navigation
+  at page boundaries on cpmsim and Model 4, preserving page-selection controls,
+  cancellation and working data. This is deferred 1.01 work only: leave 1.0
+  executable code, component identities and release artifacts unchanged.
+
 - [ ] Prioritize Kaypro among the first post-1.0 platform ports. The maintainer
   has VirtualKaypro installed; first assess its suitability for bring-up and
   qualification rather than assuming it is sufficient. Identify the exact Kaypro
