@@ -1,0 +1,852 @@
+{
+  "source": "54c503652fa957798bf2d0d636f4172851195926",
+  "method": "Static identification strings in hash-verified packaged System artifacts and actualUtilitiesdiskfiles; no new /VER execution or code changes",
+  "development_marked_files": [
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "DIR.COM",
+      "sha256": "320c9332ffac29e3dc7b1e99fc623c44b0b1888a4f493a2c361329821bfdd9c3",
+      "development_identification_strings": [
+        "CLS 1.0 (009-dev)",
+        "CLS 1.0 (016-dev)",
+        "COPY 1.0 (010-dev)",
+        "COPY 1.0 (016-dev)",
+        "DIR 1.0 (012-dev)",
+        "DIR 1.0 (016-dev)",
+        "ERA 1.0 (016-dev)",
+        "MOVE 1.0 (002-dev)",
+        "MOVE 1.0 (016-dev)",
+        "REN 1.0 (016-dev)",
+        "TYPE 1.0 (016-dev)",
+        "USER 1.0 (008-dev)",
+        "USER 1.0 (016-dev)",
+        "VER 1.0 (010-dev)",
+        "VER 1.0 (016-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "ERA.COM",
+      "sha256": "6383bb226e92a835ac40d90066ac5a17063bb173c8c34a6e65063063fc0f7627",
+      "development_identification_strings": [
+        "ERA 1.0 (007-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "TYPE.COM",
+      "sha256": "b7bebb4956b28a4aca9b38c53e75d5320e719c286f2ce4af95e3e47973ad4dd4",
+      "development_identification_strings": [
+        "TYPE 1.0 (009-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "REN.COM",
+      "sha256": "71a3f3095ed5401068c8831244d3e852fa9ad0b499a52cb39895838c4acd0b89",
+      "development_identification_strings": [
+        "REN 1.0 (011-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "VER.COM",
+      "sha256": "3ff699507701f1dd64609f579fb85470d9476750d63af7d863ea01534a3b2a63",
+      "development_identification_strings": [
+        "CLS 1.0 (009-dev)",
+        "CLS 1.0 (016-dev)",
+        "COPY 1.0 (010-dev)",
+        "COPY 1.0 (016-dev)",
+        "DIR 1.0 (012-dev)",
+        "DIR 1.0 (016-dev)",
+        "ERA 1.0 (016-dev)",
+        "MOVE 1.0 (002-dev)",
+        "MOVE 1.0 (016-dev)",
+        "REN 1.0 (016-dev)",
+        "TYPE 1.0 (016-dev)",
+        "USER 1.0 (008-dev)",
+        "USER 1.0 (016-dev)",
+        "VER 1.0 (010-dev)",
+        "VER 1.0 (016-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "COPY.COM",
+      "sha256": "3eb0e22353a6fdf5fb2545faaeda0cdd9051a1a8e6a24b1906172d8809e4e177",
+      "development_identification_strings": [
+        "CLS 1.0 (009-dev)",
+        "CLS 1.0 (016-dev)",
+        "COPY 1.0 (010-dev)",
+        "COPY 1.0 (016-dev)",
+        "DIR 1.0 (012-dev)",
+        "DIR 1.0 (016-dev)",
+        "ERA 1.0 (016-dev)",
+        "MOVE 1.0 (002-dev)",
+        "MOVE 1.0 (016-dev)",
+        "REN 1.0 (016-dev)",
+        "TYPE 1.0 (016-dev)",
+        "USER 1.0 (008-dev)",
+        "USER 1.0 (016-dev)",
+        "VER 1.0 (010-dev)",
+        "VER 1.0 (016-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "CONFIG.COM",
+      "sha256": "29db48952a559454003b92874740cd7f15b53451f9cf9876b893f06b1820919b",
+      "development_identification_strings": [
+        "CONFIG 1.0 (018-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "DUP.COM",
+      "sha256": "361a7caf3741face4a311115f6479dd4542a23ce92ccdff2c7574b6c99f494c4",
+      "development_identification_strings": [
+        "DUP 1.0 (009-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "TIME.COM",
+      "sha256": "3f0ceb6389ff5f76569bfb4f02736520419a26ddf2cdea53ba7315d4501f7124",
+      "development_identification_strings": [
+        "TIME 1.0 (005-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "SYSGEN.COM",
+      "sha256": "a04998fd2b4928d7b2a40b8fa21b8e7d202048a7a35ced43ede753a30af6c0bd",
+      "development_identification_strings": [
+        "SYSGEN 1.0 (010-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "STAT.COM",
+      "sha256": "d0aed286dc9ec92f503594732acbd0918f62e70494b6fb2248228384ea5b562b",
+      "development_identification_strings": [
+        "STAT 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "SUBMIT.COM",
+      "sha256": "32132d15f194a1776aae882a160eddd0421a70e738146098ef46a201926dd80a",
+      "development_identification_strings": [
+        "SUBMIT 1.0 (005-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "CPX.COM",
+      "sha256": "09132ee1178ab46a68ee5159697d489ca280f589ac835c9784d018234b40c24f",
+      "development_identification_strings": [
+        "CPX 1.0 (007-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "RSX.COM",
+      "sha256": "2dd217cc3c07a4d281713e322603c730413da551e51cfbcff749b4c070acdf87",
+      "development_identification_strings": [
+        "RSX 1.0 (008-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "RCP.CPX",
+      "sha256": "2fe51c9883ca67aedf9c47f613b833c79b8552fbe6dbd1871a3160e765bf7ed4",
+      "development_identification_strings": [
+        "CLS 1.0 (016-dev)",
+        "COPY 1.0 (016-dev)",
+        "DIR 1.0 (016-dev)",
+        "ERA 1.0 (016-dev)",
+        "MOVE 1.0 (016-dev)",
+        "REN 1.0 (016-dev)",
+        "TYPE 1.0 (016-dev)",
+        "USER 1.0 (016-dev)",
+        "VER 1.0 (016-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "PIP.COM",
+      "sha256": "08f82abccb5821134ea4489eb4186e9eb388bdb7da59284b7a1f7ced059b10ff",
+      "development_identification_strings": [
+        "PIP 1.0 (031-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "ED.COM",
+      "sha256": "5ce608f179ca87a17f887beb73a755e96ab4f0a36c5410bc640bcd49e30f6c1f",
+      "development_identification_strings": [
+        "ED 1.0 (005-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "BYE.COM",
+      "sha256": "1b19089903e6bae7a9e55e6fa23e83d7ecb880a0e2e8b6b28390d2ea3a3977a5",
+      "development_identification_strings": [
+        "BYE 1.0 (004-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "ADMTST.COM",
+      "sha256": "cc587c6b133b25b65f67a544b3e6ab3dcb8ab1dfc029f5e83ea7c68139bf9654",
+      "development_identification_strings": [
+        "ADMTST 1.0 (007-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "VT52TST.COM",
+      "sha256": "b1953940dd2069c2ad79b58d01464402778483e52c987bcaf3a2ca416bbbf1b0",
+      "development_identification_strings": [
+        "VT52TST 1.0 (007-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "ANSITST.COM",
+      "sha256": "c86ed522c239ce531a64cf85768f27eaa1496cffdcf7a798ba1c95e874a6236c",
+      "development_identification_strings": [
+        "ANSITST 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "MOUNT.COM",
+      "sha256": "b7051dccd6bb13ade13f66f0612c64c925afef324faa1a642716da103ddb7262",
+      "development_identification_strings": [
+        "MOUNT 1.0 (002-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "R.COM",
+      "sha256": "5168163a5a9a9f480afb93c5089cc4b36c69320cc6184ce118b533a8f7f67c12",
+      "development_identification_strings": [
+        "R 1.0 (005-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "System",
+      "file": "W.COM",
+      "sha256": "d59f7ec81c55c18376ecc8acc53aa3235aa9aaa10744c322517d7adcd1f09d8e",
+      "development_identification_strings": [
+        "W 1.0 (005-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-NOAH-z80pack-332K.dsk",
+      "file": "PATCH.COM",
+      "sha256": "3f934f88d4df966f941c7930fa91ac044f47118a5a46ecf6af08cd67f048c320",
+      "development_identification_strings": [
+        "PATCH 1.0 (002-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-NOAH-z80pack-332K.dsk",
+      "file": "COMPARE.COM",
+      "sha256": "bf420a989c5a6f60c3c37e22e518a553192263dc2de0cb194739de994e491601",
+      "development_identification_strings": [
+        "COMPARE 1.0 (004-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "file": "DDT.COM",
+      "sha256": "b1579015fbaee973c0fac9dbd63a7c5d797f947e2500035deefa7607cc8443d7",
+      "development_identification_strings": [
+        "DDT 1.0 (004-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "file": "XSUB.COM",
+      "sha256": "f4c0cb3aada979e04b78515d22c88d1f19d1e402dff899b53e8f027d57e11ed7",
+      "development_identification_strings": [
+        "XSUB 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "file": "SQ.COM",
+      "sha256": "e459d328575a3b1a86150058c98a95101cf658fa03a01ed28393b04f7254e537",
+      "development_identification_strings": [
+        "SQ 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "file": "USQ.COM",
+      "sha256": "4f92829027e4137fb809db66260347cdb03d9fea9bba143962d898ca0225fa46",
+      "development_identification_strings": [
+        "USQ 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "file": "UNCR.COM",
+      "sha256": "63cd212374f0e10ebdb010f943b0080f9a2144ad81103de584601fe11ef49180",
+      "development_identification_strings": [
+        "UNCR 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "file": "CR.COM",
+      "sha256": "5d4477b21ebd5133540324ea4061909e239073738bf270b50937b5afcec91f6c",
+      "development_identification_strings": [
+        "CR 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "file": "UNLZH.COM",
+      "sha256": "f2db4b48031a213ce0d87f52029df8463c3d15e3aa3c6b493b9fa57b6353ecca",
+      "development_identification_strings": [
+        "UNLZH 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "file": "LZH.COM",
+      "sha256": "cb57e7c73c3cea28dc10a1c8f4612eb6ebf93318a60a903a0b3e28471b6b1647",
+      "development_identification_strings": [
+        "LZH 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "file": "DASM.COM",
+      "sha256": "e49617950226990b59f5ba1a978564684a8c58373879862796dcb45b76e3c3ba",
+      "development_identification_strings": [
+        "DASM 1.0 (004-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "file": "DSYM.COM",
+      "sha256": "81f5d4867ad35451224178eb14330860e2b3b922c1307ab46b18b8859a869852",
+      "development_identification_strings": [
+        "DSYM 1.0 (003-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "file": "DLINK.COM",
+      "sha256": "babd0ab2c8f38015c9faf1ba1a73c9ff350350433df9b0441a47190dae1b4933",
+      "development_identification_strings": [
+        "DLINK 1.0 (002-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "file": "TED.COM",
+      "sha256": "5bf8ea6bd52987225c15ff880b6b80ccadfe811472c4bb9a2362516583d87e17",
+      "development_identification_strings": [
+        "TED 1.0 (004-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "file": "SEARCH.COM",
+      "sha256": "39cdf4b2d0a0abe9e8448a63da1d366da0800542da117779fabf1e57aa992b7e",
+      "development_identification_strings": [
+        "SEARCH 1.0 (002-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "file": "CRCKSUM.COM",
+      "sha256": "eb88e97a98cdab83132c3b7e930783d54de8fd28ab74fcbf59e682ecfbc20465",
+      "development_identification_strings": [
+        "CRCKSUM 1.0 (010-dev)"
+      ]
+    },
+    {
+      "target": "z80pack",
+      "location": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "file": "MD5SUM.COM",
+      "sha256": "82ed5fb20f5064a5341dca936cc2500c5b2b85bb4244b60db39e581939e10f74",
+      "development_identification_strings": [
+        "MD5SUM 1.0 (004-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "DIR.COM",
+      "sha256": "320c9332ffac29e3dc7b1e99fc623c44b0b1888a4f493a2c361329821bfdd9c3",
+      "development_identification_strings": [
+        "CLS 1.0 (009-dev)",
+        "CLS 1.0 (016-dev)",
+        "COPY 1.0 (010-dev)",
+        "COPY 1.0 (016-dev)",
+        "DIR 1.0 (012-dev)",
+        "DIR 1.0 (016-dev)",
+        "ERA 1.0 (016-dev)",
+        "MOVE 1.0 (002-dev)",
+        "MOVE 1.0 (016-dev)",
+        "REN 1.0 (016-dev)",
+        "TYPE 1.0 (016-dev)",
+        "USER 1.0 (008-dev)",
+        "USER 1.0 (016-dev)",
+        "VER 1.0 (010-dev)",
+        "VER 1.0 (016-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "ERA.COM",
+      "sha256": "6383bb226e92a835ac40d90066ac5a17063bb173c8c34a6e65063063fc0f7627",
+      "development_identification_strings": [
+        "ERA 1.0 (007-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "TYPE.COM",
+      "sha256": "b7bebb4956b28a4aca9b38c53e75d5320e719c286f2ce4af95e3e47973ad4dd4",
+      "development_identification_strings": [
+        "TYPE 1.0 (009-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "REN.COM",
+      "sha256": "71a3f3095ed5401068c8831244d3e852fa9ad0b499a52cb39895838c4acd0b89",
+      "development_identification_strings": [
+        "REN 1.0 (011-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "VER.COM",
+      "sha256": "3ff699507701f1dd64609f579fb85470d9476750d63af7d863ea01534a3b2a63",
+      "development_identification_strings": [
+        "CLS 1.0 (009-dev)",
+        "CLS 1.0 (016-dev)",
+        "COPY 1.0 (010-dev)",
+        "COPY 1.0 (016-dev)",
+        "DIR 1.0 (012-dev)",
+        "DIR 1.0 (016-dev)",
+        "ERA 1.0 (016-dev)",
+        "MOVE 1.0 (002-dev)",
+        "MOVE 1.0 (016-dev)",
+        "REN 1.0 (016-dev)",
+        "TYPE 1.0 (016-dev)",
+        "USER 1.0 (008-dev)",
+        "USER 1.0 (016-dev)",
+        "VER 1.0 (010-dev)",
+        "VER 1.0 (016-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "COPY.COM",
+      "sha256": "3eb0e22353a6fdf5fb2545faaeda0cdd9051a1a8e6a24b1906172d8809e4e177",
+      "development_identification_strings": [
+        "CLS 1.0 (009-dev)",
+        "CLS 1.0 (016-dev)",
+        "COPY 1.0 (010-dev)",
+        "COPY 1.0 (016-dev)",
+        "DIR 1.0 (012-dev)",
+        "DIR 1.0 (016-dev)",
+        "ERA 1.0 (016-dev)",
+        "MOVE 1.0 (002-dev)",
+        "MOVE 1.0 (016-dev)",
+        "REN 1.0 (016-dev)",
+        "TYPE 1.0 (016-dev)",
+        "USER 1.0 (008-dev)",
+        "USER 1.0 (016-dev)",
+        "VER 1.0 (010-dev)",
+        "VER 1.0 (016-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "CONFIG.COM",
+      "sha256": "4b8f39baa0fa3ac2f57a580f815d49c308293a766a716038fcf96b6de225793a",
+      "development_identification_strings": [
+        "CONFIG 1.0 (018-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "DUP.COM",
+      "sha256": "361a7caf3741face4a311115f6479dd4542a23ce92ccdff2c7574b6c99f494c4",
+      "development_identification_strings": [
+        "DUP 1.0 (009-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "TIME.COM",
+      "sha256": "3f0ceb6389ff5f76569bfb4f02736520419a26ddf2cdea53ba7315d4501f7124",
+      "development_identification_strings": [
+        "TIME 1.0 (005-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "SYSGEN.COM",
+      "sha256": "a04998fd2b4928d7b2a40b8fa21b8e7d202048a7a35ced43ede753a30af6c0bd",
+      "development_identification_strings": [
+        "SYSGEN 1.0 (010-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "STAT.COM",
+      "sha256": "d0aed286dc9ec92f503594732acbd0918f62e70494b6fb2248228384ea5b562b",
+      "development_identification_strings": [
+        "STAT 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "SUBMIT.COM",
+      "sha256": "32132d15f194a1776aae882a160eddd0421a70e738146098ef46a201926dd80a",
+      "development_identification_strings": [
+        "SUBMIT 1.0 (005-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "CPX.COM",
+      "sha256": "09132ee1178ab46a68ee5159697d489ca280f589ac835c9784d018234b40c24f",
+      "development_identification_strings": [
+        "CPX 1.0 (007-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "RSX.COM",
+      "sha256": "2dd217cc3c07a4d281713e322603c730413da551e51cfbcff749b4c070acdf87",
+      "development_identification_strings": [
+        "RSX 1.0 (008-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "RCP.CPX",
+      "sha256": "2fe51c9883ca67aedf9c47f613b833c79b8552fbe6dbd1871a3160e765bf7ed4",
+      "development_identification_strings": [
+        "CLS 1.0 (016-dev)",
+        "COPY 1.0 (016-dev)",
+        "DIR 1.0 (016-dev)",
+        "ERA 1.0 (016-dev)",
+        "MOVE 1.0 (016-dev)",
+        "REN 1.0 (016-dev)",
+        "TYPE 1.0 (016-dev)",
+        "USER 1.0 (016-dev)",
+        "VER 1.0 (016-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "PIP.COM",
+      "sha256": "08f82abccb5821134ea4489eb4186e9eb388bdb7da59284b7a1f7ced059b10ff",
+      "development_identification_strings": [
+        "PIP 1.0 (031-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "ED.COM",
+      "sha256": "5ce608f179ca87a17f887beb73a755e96ab4f0a36c5410bc640bcd49e30f6c1f",
+      "development_identification_strings": [
+        "ED 1.0 (005-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "ADMTST.COM",
+      "sha256": "cc587c6b133b25b65f67a544b3e6ab3dcb8ab1dfc029f5e83ea7c68139bf9654",
+      "development_identification_strings": [
+        "ADMTST 1.0 (007-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "VT52TST.COM",
+      "sha256": "b1953940dd2069c2ad79b58d01464402778483e52c987bcaf3a2ca416bbbf1b0",
+      "development_identification_strings": [
+        "VT52TST 1.0 (007-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "System",
+      "file": "ANSITST.COM",
+      "sha256": "c86ed522c239ce531a64cf85768f27eaa1496cffdcf7a798ba1c95e874a6236c",
+      "development_identification_strings": [
+        "ANSITST 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "file": "DDT.COM",
+      "sha256": "b1579015fbaee973c0fac9dbd63a7c5d797f947e2500035deefa7607cc8443d7",
+      "development_identification_strings": [
+        "DDT 1.0 (004-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "file": "XSUB.COM",
+      "sha256": "f4c0cb3aada979e04b78515d22c88d1f19d1e402dff899b53e8f027d57e11ed7",
+      "development_identification_strings": [
+        "XSUB 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "file": "SQ.COM",
+      "sha256": "e459d328575a3b1a86150058c98a95101cf658fa03a01ed28393b04f7254e537",
+      "development_identification_strings": [
+        "SQ 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "file": "USQ.COM",
+      "sha256": "4f92829027e4137fb809db66260347cdb03d9fea9bba143962d898ca0225fa46",
+      "development_identification_strings": [
+        "USQ 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "file": "UNCR.COM",
+      "sha256": "63cd212374f0e10ebdb010f943b0080f9a2144ad81103de584601fe11ef49180",
+      "development_identification_strings": [
+        "UNCR 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "file": "CR.COM",
+      "sha256": "5d4477b21ebd5133540324ea4061909e239073738bf270b50937b5afcec91f6c",
+      "development_identification_strings": [
+        "CR 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "file": "UNLZH.COM",
+      "sha256": "f2db4b48031a213ce0d87f52029df8463c3d15e3aa3c6b493b9fa57b6353ecca",
+      "development_identification_strings": [
+        "UNLZH 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "file": "LZH.COM",
+      "sha256": "cb57e7c73c3cea28dc10a1c8f4612eb6ebf93318a60a903a0b3e28471b6b1647",
+      "development_identification_strings": [
+        "LZH 1.0 (006-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "file": "DASM.COM",
+      "sha256": "e49617950226990b59f5ba1a978564684a8c58373879862796dcb45b76e3c3ba",
+      "development_identification_strings": [
+        "DASM 1.0 (004-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "file": "DSYM.COM",
+      "sha256": "81f5d4867ad35451224178eb14330860e2b3b922c1307ab46b18b8859a869852",
+      "development_identification_strings": [
+        "DSYM 1.0 (003-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "file": "DLINK.COM",
+      "sha256": "babd0ab2c8f38015c9faf1ba1a73c9ff350350433df9b0441a47190dae1b4933",
+      "development_identification_strings": [
+        "DLINK 1.0 (002-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "file": "TED.COM",
+      "sha256": "5bf8ea6bd52987225c15ff880b6b80ccadfe811472c4bb9a2362516583d87e17",
+      "development_identification_strings": [
+        "TED 1.0 (004-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "file": "SEARCH.COM",
+      "sha256": "39cdf4b2d0a0abe9e8448a63da1d366da0800542da117779fabf1e57aa992b7e",
+      "development_identification_strings": [
+        "SEARCH 1.0 (002-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "file": "CRCKSUM.COM",
+      "sha256": "eb88e97a98cdab83132c3b7e930783d54de8fd28ab74fcbf59e682ecfbc20465",
+      "development_identification_strings": [
+        "CRCKSUM 1.0 (010-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "file": "MD5SUM.COM",
+      "sha256": "82ed5fb20f5064a5341dca936cc2500c5b2b85bb4244b60db39e581939e10f74",
+      "development_identification_strings": [
+        "MD5SUM 1.0 (004-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk",
+      "file": "PATCH.COM",
+      "sha256": "3f934f88d4df966f941c7930fa91ac044f47118a5a46ecf6af08cd67f048c320",
+      "development_identification_strings": [
+        "PATCH 1.0 (002-dev)"
+      ]
+    },
+    {
+      "target": "trs80gp",
+      "location": "BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk",
+      "file": "COMPARE.COM",
+      "sha256": "bf420a989c5a6f60c3c37e22e518a553192263dc2de0cb194739de994e491601",
+      "development_identification_strings": [
+        "COMPARE 1.0 (004-dev)"
+      ]
+    }
+  ],
+  "unique_names": [
+    "ADMTST.COM",
+    "ANSITST.COM",
+    "BYE.COM",
+    "COMPARE.COM",
+    "CONFIG.COM",
+    "COPY.COM",
+    "CPX.COM",
+    "CR.COM",
+    "CRCKSUM.COM",
+    "DASM.COM",
+    "DDT.COM",
+    "DIR.COM",
+    "DLINK.COM",
+    "DSYM.COM",
+    "DUP.COM",
+    "ED.COM",
+    "ERA.COM",
+    "LZH.COM",
+    "MD5SUM.COM",
+    "MOUNT.COM",
+    "PATCH.COM",
+    "PIP.COM",
+    "R.COM",
+    "RCP.CPX",
+    "REN.COM",
+    "RSX.COM",
+    "SEARCH.COM",
+    "SQ.COM",
+    "STAT.COM",
+    "SUBMIT.COM",
+    "SYSGEN.COM",
+    "TED.COM",
+    "TIME.COM",
+    "TYPE.COM",
+    "UNCR.COM",
+    "UNLZH.COM",
+    "USQ.COM",
+    "VER.COM",
+    "VT52TST.COM",
+    "W.COM",
+    "XSUB.COM"
+  ],
+  "release_identity_gate": "OPEN: promote qualified first-party component assignments before publication; preserve independent versions and all qualified baseline hashes"
+}

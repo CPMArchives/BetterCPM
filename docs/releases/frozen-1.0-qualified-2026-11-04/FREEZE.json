@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "event": "QUALIFIED_PACKAGE_SET_FROZEN",
+  "date_taipei": "2026-11-04",
+  "release_target": "BetterCP/M 1.0",
+  "scope": "The exact six qualified archives are frozen as a read-only reference snapshot; no archive contents or banners were changed.",
+  "source_revision": "54c503652fa957798bf2d0d636f4172851195926",
+  "reviewed_main_revision": "d95b30bfa91cbc3cace53c861d8964375a7afe70",
+  "qualification_PR": 605,
+  "qualification_merge": "d95b30bfa91cbc3cace53c861d8964375a7afe70",
+  "freeze_authorization": "The user explicitly authorized freezing the six qualified 1.0 packages in this chat.",
+  "assets": [
+    {
+      "package": "documentation",
+      "filename": "BetterCPM-1.0-Documentation-candidate.zip",
+      "sha256": "99307624947a29637061965e6a3b9e8300a833aecd3425cb76ba56f00ca92096",
+      "size_bytes": 7130720
+    },
+    {
+      "package": "source",
+      "filename": "BetterCPM-1.0-Source-candidate.zip",
+      "sha256": "3c21361e3940935e577ce4c542e4eabba20ebd8b492b882409557e296126f4de",
+      "size_bytes": 332318887
+    },
+    {
+      "package": "system-model4",
+      "filename": "BetterCPM-1.0-System-Model4-candidate.zip",
+      "sha256": "e19daff9634c9c3f23648f3b8d1cf2c19feb59b2ce54b603eadbbce91144829e",
+      "size_bytes": 4141135
+    },
+    {
+      "package": "system-cpmsim",
+      "filename": "BetterCPM-1.0-System-cpmsim-candidate.zip",
+      "sha256": "39453f1b7cde8b032f8216e1940593d5d06199d76b9c06ed776c490930cc36a1",
+      "size_bytes": 4341765
+    },
+    {
+      "package": "utilities-model4",
+      "filename": "BetterCPM-Utilities-1.0-Model4-candidate.zip",
+      "sha256": "a11833bb66de6af40c6ddf797d4950974b08790e1c0c65542779c3e409ed7dc0",
+      "size_bytes": 220679574
+    },
+    {
+      "package": "utilities-cpmsim",
+      "filename": "BetterCPM-Utilities-1.0-cpmsim-candidate.zip",
+      "sha256": "2a56de1d65281b4f34bcb93a0561e9d1d05ddcf8d428ab5aaf254eefb0d87ff2",
+      "size_bytes": 220647125
+    }
+  ],
+  "release_identity_gate": {
+    "status": "OPEN",
+    "final_publishable_release": false,
+    "finding": "Development-marked identification strings remain in 41 distinct shipped files, including normal utilities. This static inventory is not 41 newly executed /VER queries.",
+    "policy": "Under specifications/COMPONENT-REVISION-TRACKING.md, relevant input changes append -dev until a released revision and its input baseline are assigned.",
+    "audit": "development-identity-audit.json",
+    "audit_sha256": "030194fc36d3e52f4b7d071bac44f131b207570789082ff9e67d73331985a73e",
+    "resolution": "Review and promote the qualified first-party component assignments, retaining independent component versions. Regenerate and qualify affected binaries and media, then record a replacement freeze. Do not patch these frozen archives or blindly strip labels from diagnostics and third-party tools."
+  },
+  "tagging": "NOT_AUTHORIZED_NOT_PERFORMED",
+  "publishing": "NOT_AUTHORIZED_NOT_PERFORMED",
+  "candidate_names": "Retain the exact filenames, candidate suffixes and archive roots; changing archive contents changes the qualified hashes.",
+  "replacement_rule": "Any changed archive belongs to a different set with new source, hashes and applicable evidence. Preserve this frozen reference."
+}
