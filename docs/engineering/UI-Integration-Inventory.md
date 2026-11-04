@@ -1,5 +1,13 @@
 # Shared UI integration inventory
 
+**Coverage correction, 4 November 2026:** the transient migration and its
+qualification do not close the resident command paths. Ordinary unqualified
+DIR/ERA/TYPE/REN/CLS/USER/VER/COPY/MOVE can execute inside `RCP.CPX`, whose
+version-only query gateway lacks standard help dispatch. Treat that as
+outstanding integration, not an implicit waiver based on the RCP freeze.
+See the [matrix correction](UI-Conformance-Matrix.md#resident-command-coverage-correction--4-november-2026)
+for observed failures, source references and evidence limits.
+
 Review date: 3 November 2026. Initial implementation branch:
 `stabilization/shared-ui-conformance`, based on
 `fb062255d3ea465cf8ba6a9b77ac0f4a4aac5c32`.

@@ -1,5 +1,14 @@
 # Shared UI integration engineering summary
 
+**Correction, 4 November 2026:** user-visible integration is incomplete. The
+earlier closure claim conflated qualified transient `.COM` implementations with
+the resident commands normally selected by unqualified command names. RCP was
+explicitly excluded as frozen; that exclusion did not demonstrate conformance.
+The [matrix correction](UI-Conformance-Matrix.md#resident-command-coverage-correction--4-november-2026)
+records the missing resident `/H`/`/HELP` dispatch and outstanding tail review.
+Existing transient receipts remain bounded evidence for those transients.
+No production fix or release-package rebuild is included in this correction.
+
 3 November 2026. PR #571 is merged at
 `bd4df2cd9f0a7a2edfa12112a8c02151eea5b90d`. Its bounded current-payload
 Model 4 gates pass. The [argument-validation follow-up](UI-Argument-Validation-Followup.md)
@@ -284,7 +293,7 @@ python3 tools/test_ui_integration_media.py --system "$SYSTEMS" --platform model4
 2. The changed-payload Model 4 gates now pass: checksum/DASM and both TED
    campaigns, with captured-screen and independent file/backup checks. Whole
    release packaging/conformance remains a separate acceptance boundary.
-3. The follow-up closes the released-command malformed-tail review with bounded
+3. The follow-up closes the transient-command malformed-tail review with bounded
    tests or documented existing language/host exceptions. Six development-only
    entries remain O. The four changed follow-up executables now pass their
    22-phase Model 4 execution gate. Broader release packaging acceptance remains separate.
