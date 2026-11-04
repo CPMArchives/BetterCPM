@@ -2847,6 +2847,35 @@ CLS
 
 The correct backend depends on the computer or emulator.
 
+##### Host Terminal Size and Recovery
+
+For cpmsim with `ANSISCRN.RSX`, use an ANSI-capable host terminal with
+**at least 80 columns and 24 rows** before loading a terminal personality or
+starting a full-screen utility. This requirement applies when `ANSI.RSX` is
+loaded over ANSISCRN; a smaller window is not a supported 1.0 display setup.
+An application may require more space, so follow its own instructions too.
+
+A smaller window can cause newly drawn text to overlap or menus to become
+unreadable. This was observed with `CONFIG 1.0 (019)` after loading ANSISCRN
+and ANSI in a 77-column, 20-row macOS Terminal window. Shrinking a menu that
+has already been drawn can leave it readable, while exiting and starting the
+utility again at the smaller size produces garbled output.
+
+To recover, exit the affected utility normally (`BREAK`, Ctrl-C, in CONFIG),
+enlarge the host terminal to at least 80 by 24, and start the utility again.
+Unloading the screen modules or rebooting is not required for this workaround.
+The CONFIG menu also recovered at 80 by 22 in the reported test; this does not
+reduce the 80-by-24 requirement for the complete screen backend and applications.
+
+In macOS Terminal, choose **Terminal > Settings > Profiles > Window**, then
+set **Window Size** to 80 columns and 24 rows (or larger) for the profile you
+use. This sets the size of new windows; resize an existing window separately.
+See [Apple's Terminal Window settings](https://support.apple.com/guide/terminal/trmlwindw/mac).
+Do not assume that the supplied cpmsim launcher enforces this size.
+
+See the [1.0 terminal-size erratum](../releases/1.0-ERRATA.md#ansi-host-terminal-size)
+for the recorded scope and the smaller-window work planned for 1.01.
+
 The [distribution manifest](../releases/DISTRIBUTION-MANIFEST.md) identifies the platform screen backends: M4SCRN on Model 4 and ANSISCRN on cpmsim. See [Chapter 9](#chapter-9)'s procedures for loading the backend and personality.
 
 <a id="section-9-2"></a>

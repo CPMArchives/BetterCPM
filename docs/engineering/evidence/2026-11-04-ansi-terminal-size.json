@@ -1,0 +1,63 @@
+{
+  "date": "2026-11-04",
+  "timezone": "Asia/Taipei",
+  "status": "Operating requirement and verified workaround; no binary fix",
+  "qualified_source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+  "qualified_system_sha256": "9242b16825c92328450f0848da8844ef1f9fcd72570dc895b4e5a2e587e0a457",
+  "emulator_sha256": "0f6b256cd6beea2ab7bf0eab8a9cc2a5241ed772408e811150c3f6e0f5cff4e8",
+  "components": [
+    {
+      "component": "ANSI.RSX",
+      "bytes": 2002,
+      "sha256": "79b7fe071575d416aeebe08b01f97ed3ce3b1bc9cd0c8928c6e759d2cad76d30"
+    },
+    {
+      "component": "ANSISCRN.RSX",
+      "bytes": 1901,
+      "sha256": "2f5afc75a19e30fbf2b66201096970a44ab1da9750761804023a9b029f03b33e"
+    },
+    {
+      "component": "CONFIG.COM",
+      "bytes": 17232,
+      "sha256": "99384c1b8993a9389febdbc9a1f99903d6a5e8acd1a71bfcd832538bbf0355ef"
+    },
+    {
+      "component": "R3PACK.RSX",
+      "bytes": 15360,
+      "sha256": "d761fb628e00e1d661642a1b874e918969c48c564751a2a5e0f7060ed6a454ab"
+    },
+    {
+      "component": "RSX.COM",
+      "bytes": 1554,
+      "sha256": "eb18673d530aad15baf87c41cfd7af1896c1ce0e85268eece82f875ceed88860"
+    }
+  ],
+  "verification": {
+    "all_original_shipped_files_match_qualified_content": true,
+    "reserved_system_tracks_match_qualified_bytes": true,
+    "user_observations": [
+      "Original77x20 session: CONFIG fails after ANSI load",
+      "Private recorded session displays correctly",
+      "Original failing session enlarged to at least80x24: CONFIG returns to normal without unloading modules",
+      "Shrinking an already displayed CONFIG to77x20 does not immediately garble existing text",
+      "Exiting and restarting CONFIG at77x20 produces garbling again",
+      "Exiting, enlarging to80x22 and restarting CONFIG restores correct display"
+    ],
+    "automated_replay": "Exact sequence, including human-paced keys on private copies of live media, displays correctly in pyte; 77x20 replay also remained readable",
+    "simple_terminal_probes": "User Terminal passed CSI65535D and combined CR/INDEX ONE/TWO/THREE probes",
+    "cause_limit": "Geometry-sensitive redraw observed by user; low-level mechanism and exact dimension boundary unproven"
+  },
+  "release_disposition": {
+    "minimum_columns": 80,
+    "minimum_rows": 24,
+    "workaround": "Exit utility; enlarge host terminal; restart utility",
+    "config_80x22": "Reported recovery for this menu only; not a lower general requirement",
+    "packages_rebuilt": false,
+    "new_binary_qualification_claimed": false,
+    "tagging_and_publishing": "ON HOLD",
+    "follow_up": "1.01: smaller-window behavior and host-side warning/size-check review",
+    "distribution_code_changed": false,
+    "local_launcher_note": "Maintainer-local bcpm sizing customization is separate from the repository and frozen downloads"
+  },
+  "observed_system_image_sha256": "08a06d4868e378dcfa0b4a6e6d9036a6650f2f34176a9d5ac305ce32c32f4dda"
+}
