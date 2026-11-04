@@ -54,4 +54,7 @@ source tree the records are under `third_party/`.
 Both license texts and this boundary notice travel with all six package types.
 Earlier generated PDF/DOCX editions do not automatically receive corrected
 notices; reconcile any selected printable edition before distribution.
-Package freeze and public release acceptance remain on hold.
+The exact six 1.0 archives are qualified and frozen under the [PR #609 freeze record](releases/frozen-1.0-release-identities-2026-11-04/FREEZE.json).
+Tagging and publication remain on hold. Embedded pre-qualification status
+wording in those immutable archives is addressed by the [final release notes](releases/RELEASE-NOTES-1.0.md)
+and [release-wide index](releases/publication-1.0/BetterCPM-1.0-RELEASE.json); license terms and notices are unchanged.

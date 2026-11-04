@@ -1,90 +1,99 @@
-# BetterCP/M 1.0 — candidate release notes
+# BetterCP/M 1.0
 
-**Release not yet accepted.** This document accompanies candidate packages and
-must be reconciled with the accepted candidate before final publication.
+BetterCP/M is a CP/M 2.2-compatible operating system for patched z80pack/cpmsim
+and the TRS-80 Model 4. This release brings together the system, its utilities,
+complete matching source and manuals in six qualified downloads.
 
-BetterCP/M is a CP/M 2.2-compatible system with shared operating-system services
-and separate cpmsim and TRS-80 Model 4 hardware bindings. The 1.0 distribution
-includes system configuration/installation utilities, CPX/RSX extension support,
-persistent command history, terminal providers and a separate Utilities set.
+## Choose your downloads
 
-The six downloads are System for cpmsim, System for Model 4, Utilities for cpmsim,
-Utilities for Model 4, complete Source, and Documentation. All carry the same candidate
-source commit, with exact artifact hashes and evidence in RELEASE.json. Utility
-component revisions are independent of the package version. Release identity assignments are described in
-[release identities](1.0-RELEASE-IDENTITIES.md). Stable version text alone does not
-indicate final acceptance.
+| Download | Contents |
+| --- | --- |
+| `BetterCPM-1.0-System-cpmsim.zip` | cpmsim System and work disks, installation guide, and pinned offline runtime reconstruction kit. |
+| `BetterCPM-1.0-System-Model4.zip` | Model 4 System and work DMKs, installation and startup instructions. |
+| `BetterCPM-Utilities-1.0-cpmsim.zip` | cpmsim primary Utilities disk, NOAH companion disk, manuals and required source companions. |
+| `BetterCPM-Utilities-1.0-Model4.zip` | The matching Model 4 Utilities and NOAH companion DMKs, manuals and source companions. |
+| `BetterCPM-1.0-Source.zip` | Complete matching sources, native build material, tools, metadata, dependency tar and patches for offline reconstruction. |
+| `BetterCPM-1.0-Documentation.zip` | User and Utilities manuals, FDB guide, installation/build guidance and reference material in editable/text form. |
 
-Recent additions include CRCKSUM, MD5SUM, PATCH and COMPARE; the NOAH companion
-contains NOAH, PATCH and COMPARE. CRCKSUM and MD5SUM remain on the primary
-Utilities Disk. The patched-cpmsim reconstruction process now applies patches
-correctly beneath a parent Git checkout and records an extracted source ZIP's
-explicit source identity without requiring a BetterCP/M .git directory.
+System and Utilities are separate downloads. For a combined installation use
+A: System, B: primary Utilities, C: NOAH companion, D: work. Preserve the supplied
+images and run writable copies. Read the platform installation guide first.
+Use the supplied Source ZIP for the tested offline rebuild; GitHub's automatic
+source archives do not include the packaged dependency tar.
 
-## Requirements and limitations
+## Included in 1.0
 
-- cpmsim requires the pinned runtime patches and helpers. Stock upstream cpmsim is insufficient. The Source and cpmsim System packages contain a pinned cpmsim source tar for offline reconstruction; follow their dependency README and installation guide.
-- Select Model 4 DMKs or cpmsim raw images as appropriate. They are different containers and system bindings. The System images use platform-specific reserved tracks and geometry.
-- For the combined installation use A: System, B: primary Utilities, C: historical BetterCPM-NOAH companion, D: work. Utilities are separate downloads from the System packages.
-- Keep NOAH.COM and NOAH.OVL from the same package. Check individual utility requirements before use on another CP/M implementation.
-- Clock providers are optional and platform-specific. Supplied startup scripts do not automatically enable a clock. Physical Model 4 media transfer needs equipment/controller-specific validation.
-- Existing PDF/DOCX manual editions have not been reconciled against all recent Markdown changes; candidate Documentation contains editable/textual documentation instead. Engineering history retains dated evidence and earlier outcomes.
-- The Utilities packaging failure observed on the Linux host is historical evidence. New macOS assembly and independent inventory/readback checks pass; this does not establish Model 4 runtime acceptance.
+- CPX and RSX extensions, persistent command history, configuration and system installation tools.
+- FDB.COM 1.0 (001), with catalogue editing, display/compare and text/binary conversion; keep its matching FDBVIEW.OVL together with it.
+- An editable 108-entry DISK.FDB built from BetterCP/M's native FDF v1 definitions. Individual foreign formats still depend on suitable media, controller support and correct bindings; this is not a claim that all 108 formats were tested on physical hardware.
+- PIP, ED, TED, DDT, DUMP, assembler/linking and analysis tools, archive/compression tools, SEARCH, CRCKSUM, MD5SUM, PATCH and COMPARE. The NOAH companion contains NOAH, PATCH and COMPARE; keep NOAH.COM and NOAH.OVL matched.
+- Both System disks carry optional P2DOS.RSX. Startup leaves clocks and P2DOS unloaded. When needed, load the platform clock provider first: ZPRTC on cpmsim or FREHDCLK on a suitably equipped Model 4, then P2DOS.
+- Released first-party utility identities. M4SCRN remains 1.7 revision 002; utility/module/subsystem versions remain independent of the distribution version.
 
-The [35c56a03 technical lock and qualification record](../engineering/Qualification-Lock-35c56a03.md) identifies the qualified core, runtimes and unaffected utilities. FDB.COM, CONFIG.COM and DISK.FDB integration and native qualification were recorded through PR #605; PR #608 supplies the matching released FDB query/help pair. The maintainer has authorized replacement qualification and freeze after release identity promotion. The original 54c50365 frozen reference is preserved. Tagging and publication remain on hold.
+## Memory and supported environments
 
-## Remaining acceptance work
+The default cpmsim disk reports 53K TPA. Model 4 startup loads M4SCRN followed
+by ADM3A and reports 50K. Interactive FDB needs the unloaded 53K environment:
+unload ADM3A, then M4SCRN; after leaving FDB use the unmodified `SUBMIT STARTUP`
+to restore the supplied startup environment. FDB help and version queries work
+at the normal Model 4 startup allocation. Follow the FDB manual for the full
+workflow. The optional 56K fullram and checked RAM profiles are deferred beyond
+this release.
 
-Fresh-package installation passed on both emulators for the six-package
-candidate built at `35c56a03`. Known manual corrections and checks of the installation walkthrough can
-proceed during stabilization. Complete the remaining qualification and lock the
-release contents, behavior and test results first. Then finalize the manuals,
-installation guides, notices and release notes against that locked baseline. Preserve results against exact hashes. The maintainer must accept
-the candidate before tagging and publishing the tested final files.
+cpmsim needs the pinned BetterCP/M runtime patches and helpers; stock upstream
+cpmsim is insufficient. The Source and cpmsim System downloads include the
+verified offline reconstruction inputs. Model 4 qualification used trs80gp.
+Physical Model 4 media transfer, Model 4D/4P and additional hardware/platforms
+remain outside these emulator receipts.
 
-## Recorded compatibility and residual-risk dispositions
+## Qualification and known limitations
 
-The qualified default RAM environments are patched cpmsim and Model 4 under
-trs80gp. Public-profile selection is still a maintainer decision; the optional
-cpmsim-legacy-checked and cpmsim-fullram variants require their own current
-qualification before promotion. Physical hardware, Model 4D/4P and additional
-platforms are outside these emulator receipts.
+Both platform installation and cold-boot workflows passed with file preservation.
+The final Source ZIP reproduces all eight disk images, the runtime, guest tools
+and ROM/overlay artifacts. The standalone cpmsim System host kit also rebuilds
+offline. Native query checks passed: 129 transient plus nine resident cases on
+cpmsim, and 126 cases on Model 4. The Model 4 FDB memory/viewer/startup-restoration
+workflow passed. The refreshed protected-XIP ROM separately passed the stock
+driver and all seven guard controls; this does not change the default RAM downloads.
+See the [qualification and exact-hash freeze record](https://github.com/CPMArchives/BetterCPM/blob/2842d0eb0732683d9280a38d576c3dba423cb893/docs/engineering/Release-Identity-Promotion-1.0.md) for scope and evidence.
 
-The merged conformance record retains case-preserving command-tail behavior
-and fixed-A0 extension lookup differences (cards 0020, 0493 and 0494).
-Preserve these reported differences when interpreting stock CP/M expectations;
-do not count observations or exclusions as passing tests. Extension carriers
-needed at run time, including BATCHIO for XSUB, must be available in A0.
+Existing compatibility dispositions remain: command tails preserve case, some
+extension lookup uses fixed A0, and runtime carriers such as BATCHIO for XSUB
+must be available in A0. Earlier conformance observations and excluded cases
+have not been recast as new passing tests.
 
-The Model 4 keyboard campaign does not establish ordinary host Caps Lock
-quick-tap behavior; scripted matrix checks and the recorded manual observations
-have their stated, bounded scope. The pre-existing pending-input/CONST
-observation remains post-1.0 investigation unless a supported workflow fails.
+The recorded host Caps Lock and pending-input/CONST observations remain bounded
+by their original tests. A pre-corrupted history object with valid signature
+but unsafe lengths/counts can damage memory (BCPM-AUD-003); no supported command
+sequence producing that malformed state was established. Its hardening and
+general historical-oracle cleanup (BCPM-AUD-007) remain deferred. The 104/105
+clock adapters T104C3/T104Z8 are also deferred. Reconciled Markdown/text manuals
+are supplied; older PDF/DOCX editions are excluded.
 
-BCPM-AUD-003 remains explicitly deferred: a pre-corrupted history object with
-valid signature/version can contain unsafe lengths/counts and damage memory.
-No supported command sequence producing the malformed state was established.
-Reopen before release if supported input can produce it, or if the history
-writer/PDS layout changes. This is a residual-risk disposition, not a claim of
-full malformed-record validation. General BCPM-AUD-007 historical oracle cleanup
-also remains deferred; failing required current gates still need disposition.
+## Licenses and format data
 
-PR #583 records a passing stock protected-XIP qualification for ROM SHA-256
-cc6917780ce47ab34fbed7949abdf93a17d20eb182ab9fdcd15c8d16cd864168
-and its exact disk/overlay/emulator configuration. A changed candidate does not
-inherit that receipt automatically. BCPM-AUD-006’s stale memory/cold-history
-text was corrected in merged PR #584. Neither result accepts public packages.
+Original BetterCP/M software and reusable code examples use GPL-2.0-or-later;
+original manual prose and illustrations use CC BY 4.0. Third-party works retain
+their own terms. Every package carries the applicable licenses, provenance and
+THIRD-PARTY-NOTICES.txt. Montezuma Micro utilities, disassemblies and the original
+DISK.FDF are excluded, including from nested source archives. Historical format
+parameters retain the provenance and distribution-rights-undetermined notice
+in the supplied records; the project licenses do not grant rights over those data.
 
-Both System disks ship A0:P2DOS.RSX. Startup leaves it unloaded. Load ZPRTC
-on cpmsim or FREHDCLK on a FreHD-equipped Model 4, then load P2DOS. The
-35c56a03 cpmsim System disk passed the [P2DOS clock tests](../engineering/evidence/2026-11-03-candidate-cpmsim-p2dos.json).
-The matching Model 4 System image passed the [six-stage trs80gp test](../engineering/evidence/2026-11-03-model4-p2dos/README.md). Both 104/105 adapters
-(T104C3/T104Z8) are explicitly deferred from the 1.0 RC.
+## Exact files and retained build-time wording
 
-Original BetterCP/M software and reusable code examples use GPL-2.0-or-later.
-Original documentation prose and illustrations use CC BY 4.0. Each package
-carries both license texts and docs/LICENSING.md, with LICENSE and NOTICE
-defining the split and separate-work exclusions.
-BetterCP/M builds its 108-entry DISK.FDB from its own FDF v1 text definitions.
-All six packages exclude Montezuma Micro’s original DISK.FDF, including nested
-source archives. The historical format parameters retain their provenance. Replacement freeze requires its exact-hash acceptance ledger; tagging and publication remain on hold.
+The six downloads are byte-for-byte copies of the frozen archives from source
+`30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`. Their outer download names omit `-candidate`; their ZIP contents,
+internal checksums and internal `-candidate` directory names are unchanged.
+Some embedded README/status fields and release notes therefore still say
+candidate, not accepted, or freeze on hold. Those are pre-qualification build
+records, superseded for these exact files by the final freeze accepted through
+PR #609 and the release-wide index supplied alongside the downloads. Dated
+engineering history remains historical evidence. This paragraph does not
+supersede usage instructions, license terms or known limitations.
+
+`BetterCPM-1.0-SHA256SUMS.txt` lists the SHA-256 hashes under the final download
+names. `BetterCPM-1.0-RELEASE.json` maps those names to the original frozen names,
+internal roots, source revision and qualification record. The intended tag target
+is the reviewed merge `2842d0eb0732683d9280a38d576c3dba423cb893`; only qualification records differ from the
+compiled source above. A draft release does not itself authorize tagging or publication.
