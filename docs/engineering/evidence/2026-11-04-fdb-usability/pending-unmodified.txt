@@ -1,0 +1,25 @@
+
+Working catalogue: A0:DISK.FDB   Entries: 108   Unmodified
+A Capture drive  B Load entry  C Blank format  E Resume editor
+F Open  N New  L List  I Import  D Details  P Compare
+O Export  S Save  Q Quit (or BREAK)
+Choice: C
+
+Format editor  Page 1/3  Source (drive, # catalogue, - blank): -
+ <unset> <unset>   Unmodified
+A Cylinders: 0
+B Sectors per surface: 0
+C Max size (0=128 1=256 2=512 3=1024): 0
+D Double sided: 0
+E MFM recording: 0
+F Inverted: 0
+G Logical track (0=surface 1=cylinder): 0
+Raw bytes: 0  Directory byte: 0  Maximum DSM:   ! invalid allocation
+1-3 Page  I ID  N Name  M Map  V Validate  S Save/apply  Q Back: Q
+
+Working catalogue: A0:DISK.FDB   Entries: 108   Unmodified
+A Capture drive  B Load entry  C Blank format  E Resume editor
+F Open  N New  L List  I Import  D Details  P Compare
+O Export  S Save  Q Quit (or BREAK)
+Choice: Q
+Working format pending: S Save, D Discard, C Cancel: D
