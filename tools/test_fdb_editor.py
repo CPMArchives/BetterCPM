@@ -57,7 +57,7 @@ def main():
     console=run('B\r\rMMI012\rG\r1\rV\r3\rA\r80\rE\r389\rV\rQ\rQ\rD\r',{src:stock})
     assert 'Directory byte: 10240' in console and 'Maximum DSM: 394' in console,console
     assert 'Directory byte: 20480' in console and 'Maximum DSM: 389' in console,console
-    assert 'Invalid working format' in console and 'Format validates.' in console, console
+    assert 'Page 3 E DSM / allowed maximum' in console and 'Format validates.' in console, console
     assert '! invalid allocation' in console
     assert m.files=={src:stock}
     # Reverting an edit clears the indicator and permits a clean exit.
@@ -100,7 +100,7 @@ def main():
     m.drives={n:bytes([n])+template for n in (1,2,3)}
     m.reset_masks=[]
     console=run('A\rB\rI\rcap1\rN\rCaptured format\r3\rE\r100\rS\rD\rA\r'
-                'E\rS\rD\rD\rN\rS\rD\rC\rY\rS\rK\rS\rW\rOUT.FDB\rY\rQ\r',{src:stock})
+                '\x03E\rS\rD\rD\rN\rS\rD\rC\rY\rS\rK\rS\rW\rOUT.FDB\rY\rQ\r',{src:stock})
     assert '<unset> <unset>' in console
     assert m.reset_masks==[4]
     assert m.drives[1]==b'\x01'+template and m.drives[3]==b'\x03'+template

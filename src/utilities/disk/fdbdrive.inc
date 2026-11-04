@@ -82,15 +82,20 @@ EDDRIVEASK:
         CALL ASKCHOICE
         SUB 'A'
         CP 1
-        JP C,MENU
+        JR C,EDDRIVEBAD
         CP 4
-        JP NC,MENU
+        JR NC,EDDRIVEBAD
         RET
+EDDRIVEBAD:LD A,(ANSWER)
+        CP 3
+        JP Z,MENU
+        CALL BADCHOICE
+        JR EDDRIVEASK
 EDFROMDRIVE:
         CALL EDDISCARD
         CALL EDDRIVEASK
         CALL EDCAPTURE
-        JP C,EDERROR
+        JP C,EDBINDERROR
         CALL EDCLEARID
         CALL EDEXPAND
         LD A,(EDLOGICAL)
@@ -139,6 +144,9 @@ EDUSEWORK:
 EDCATREADY:
         LD HL,EDCATMSG
         CALL ASK
+        LD A,(ANSWER)
+        CP 3
+        JP Z,MENU
         LD HL,FDFRAM+128
         LD A,(FDFRAM+8)
         LD B,A
@@ -249,7 +257,9 @@ EDNEXT: POP BC
         ADD HL,DE
         DEC B
         JP NZ,EDSEARCH
-        JP EDERROR
+        LD HL,NONEFOUND
+        CALL PUTS
+        JP EDCATREADY
 EDCLEARID:
         LD HL,EDIDENT
         LD B,40
@@ -273,12 +283,21 @@ EDSCREEN:
         LD A,(0)
         CP 0C3H
         CALL Z,UI_CLEAR
+        LD A,(EDWHYMAX)
+        CP 2
+        LD HL,EDNUMBAD
+        CALL Z,PUTS
         LD HL,(EDNOTICE)
         LD A,H
         OR L
         CALL NZ,PUTS
+        LD A,(EDWHYMAX)
+        CP 1
+        CALL Z,EDSHOWDSM
         LD HL,0
         LD (EDNOTICE),HL
+        LD A,0
+        LD (EDWHYMAX),A
         LD HL,EDTITLE
         CALL PUTS
         LD A,(EDPAGE)
@@ -306,11 +325,15 @@ EDHEADERID:CALL CRLF
         CALL EDMARKTEXT
         LD B,32
         CALL EDFIXED
-        LD HL,CLEANSTATE
         LD A,(EDDIRTY)
         OR A
-        JR Z,EDSTATE
         LD HL,MODSTATE
+        JR NZ,EDSTATE
+        LD HL,CLEANSTATE
+        LD A,(EDPENDING)
+        OR A
+        JR Z,EDSTATE
+        LD HL,EDPENDMSG
 EDSTATE:CALL PUTS
         CALL EDTABLE
         LD A,'A'
@@ -401,7 +424,11 @@ EDCOMMAND:
         JP Z,EDSAVE
         CP '>'
         JP Z,EDMAPNEXT
+        CP '.'
+        JP Z,EDMAPNEXT
         CP '<'
+        JP Z,EDMAPPREV
+        CP ','
         JP Z,EDMAPPREV
         CP 'I'
         JR NZ,EDNOTID
@@ -415,12 +442,12 @@ EDNOTID:
         CP 'M'
         JP Z,EDMAP
         SUB 'A'
-        JP C,EDSCREEN
+        JP C,EDBADKEY
         LD B,A
         CALL EDTABLE
 EDPICK: LD A,(IY+0)
         CP 255
-        JP Z,EDSCREEN
+        JP Z,EDBADKEY
         LD A,B
         OR A
         JR Z,EDCHOSEN
@@ -430,9 +457,10 @@ EDPICK: LD A,(IY+0)
 EDCHOSEN:
         LD A,(IY+0)
         CP 255
-        JP Z,EDSCREEN
+        JP Z,EDBADKEY
+        CALL EDPROMPT
         PUSH IY
-        CALL EDNUM
+        CALL EDFIELDNUM
         POP IY
         PUSH DE
         CALL EDADDR
@@ -442,10 +470,10 @@ EDCHOSEN:
         JR C,EDSTDSET
         LD A,D
         OR A
-        JP NZ,EDERROR
+        JP NZ,EDFIELDERROR
         LD A,E
         CP 2
-        JP NC,EDERROR
+        JP NC,EDFIELDERROR
         CALL EDBITMASK
         LD B,A
         CPL
@@ -463,7 +491,7 @@ EDSTDSET:LD A,(IY+1)
         JR Z,EDSETWORD
         LD A,D
         OR A
-        JP NZ,EDERROR
+        JP NZ,EDFIELDERROR
         LD (HL),E
         JR EDMOD
 EDSETWORD:LD (HL),E
@@ -514,13 +542,33 @@ EDTABLE:LD A,(EDPAGE)
         RET Z
         LD IY,EDDPB
         RET
+EDFIELDNUM:LD HL,EDFLAGMSG
+        LD A,(IY+1)
+        CP 3
+        JR NC,EDNUMBER
+        LD HL,EDBYTEMSG
+        CP 2
+        JR NZ,EDNUMBER
+        LD HL,EDWORDMSG
+        JR EDNUMBER
 EDNUM:  LD HL,EDNUMMSG
+EDNUMBER:LD (EDCAUSE),HL
+        LD A,(EDPAGE)
+        LD (EDFAILPAGE),A
         CALL ASK
         LD A,(ANSWER)
         CP 3
         JP Z,EDSCREENRESET
+        LD A,2
+        LD (EDWHYMAX),A
+        DEC A
+        LD (EDITCHECK),A
         LD HL,ANSWER
-        JP SCALAR
+        CALL SCALAR
+        XOR A
+        LD (EDITCHECK),A
+        LD (EDWHYMAX),A
+        RET
 EDSCREENRESET:
         LD SP,STACKTOP
         JP EDSCREEN
@@ -713,20 +761,35 @@ EDREM:  ADD HL,DE
         LD A,C
         ADD A,'0'
         JP PUTC
-EDERROR:LD HL,EDBAD
+EDBADKEY:CALL BADCHOICE
+        JP EDSCREEN
+EDFIELDERROR:LD A,2
+        LD (EDWHYMAX),A
+        LD HL,(EDCAUSE)
+        JR EDLOCALERROR
+EDBINDERROR:LD HL,EDBAD
+        JR EDLOCALERROR
+EDIDENTITYERROR:LD HL,EDIDMISSING
+        JR EDLOCALERROR
+EDERROR:LD HL,EDINVALIDMSG
+EDLOCALERROR:XOR A
+        LD (EDITCHECK),A
+        LD (EDNOTICE),HL
+        LD A,(EDSOURCE)
+        OR A
+        JP NZ,EDSCREEN
         JP EXITMSG
 EDDRIVEMSG:DB 'Logical drive B, C or D: ',0
 EDCATMSG:DB 'Catalogue ID: ',0
-EDDISMSG:DB 'Discard edited working format (Y/N)? ',0
+EDDISMSG:DB 'Discard pending working format (Y/N)? ',0
 EDTITLE:DB 13,10,'Format editor  Page ',0
-EDSRCMSG:DB '/3  Source (drive, # catalogue, - blank): ',0
+EDSRCMSG:DB '/3 Source (drive/#file/-blank): ',0
 EDOPTS: DB '1-3 Page  I ID  N Name  M Map  V Validate  S Save/apply  Q Back: ',0
-EDNUMMSG:DB 'Value: ',0
-EDTXTMSG:DB 'New value: ',0
+EDTXTMSG:DB 'Text (ID <=8, name <=32; ^C cancels): ',0
 EDSLOTMSG:DB 'Slot 1-255. ',0
 EDSECTMSG:DB 'Sector ID 0-255. ',0
 EDSIZEQ:DB 'Size code 0-3 (128/256/512/1024). ',0
-EDBAD:  DB 'Invalid selection, binding or field.',13,10,0
+EDBAD:  DB 'Drive binding unavailable/incompatible.',13,10,0
 EDSOURCE:DB 0
 EDDIRTY:DB 0
 EDPAGE: DB 0
@@ -819,14 +882,19 @@ EDSAVE: LD HL,EDACTIONS
         CP 'D'
         JR Z,EDAPPLY
         CP 'K'
-        JP NZ,EDSCREEN
+        JR Z,EDPUTCAT
+        CP 'Q'
+        JP Z,EDSCREEN
+        CP 3
+        JP Z,EDSCREEN
+        JP EDBADKEY
 EDPUTCAT:
         LD A,(EDIDENT)
         CP ' '
-        JP Z,EDERROR
+        JP Z,EDIDENTITYERROR
         LD A,(EDIDENT+8)
         CP ' '
-        JP Z,EDERROR
+        JP Z,EDIDENTITYERROR
         CALL EDMAKE
         LD A,1
         LD A,3
@@ -836,18 +904,22 @@ EDAPPLY:CALL EDMAKE
         XOR A
         CALL FDBBIND
         CALL NC,FDBRUNTIME
-        JP C,EDERROR
+        JP C,EDBINDERROR
         CALL EDDRIVEASK
         LD (EDTARGET),A
+        CALL EDGETDEST
+        JP C,EDBINDERROR
+        LD A,(EDTARGET)
         ADD A,'A'
         CALL PUTC
+        CALL EDAPPLYSUMMARY
         LD HL,EDCONFIRM
         CALL ASKCHOICE
         CP 'Y'
         JP NZ,EDSCREEN
         LD A,(EDTARGET)
         CALL EDSETDRIVE
-        JP C,EDERROR
+        JP C,EDBINDERROR
         LD HL,EDAPPLIED
         LD (EDNOTICE),HL
         JP EDSCREEN
@@ -855,6 +927,30 @@ EDAPPLY:CALL EDMAKE
 ; checks as import. Identity placeholders exist only for drive validation.
 EDMAKE: LD A,1
         LD (EDITCHECK),A
+        LD A,(EDPAGE)
+        LD (EDFAILPAGE),A
+        LD HL,EDINVALIDMSG
+        LD (EDCAUSE),HL
+        CALL EDLAYOUT
+        LD HL,(EDITBIND+1)
+        LD DE,(EDLRECS)
+        OR A
+        SBC HL,DE
+        JR NZ,EDLIMITSFAIL
+        LD HL,(EDITBIND+6)
+        LD DE,(EDMAXDSM)
+        OR A
+        SBC HL,DE
+        JR C,EDMAKEDATA
+        JR Z,EDMAKEDATA
+EDLIMITSFAIL:LD A,1
+        LD (EDWHYMAX),A
+        LD A,3
+        LD (EDFAILPAGE),A
+        LD HL,EDDSMMSG
+        LD (EDCAUSE),HL
+        JP EDCHECKFAIL
+EDMAKEDATA:
         LD HL,FDFRAM
         LD DE,FDFRAM+1
         LD BC,191
@@ -926,7 +1022,10 @@ EDGOTFLAGS:LD (IX+58),E
         LD C,A
         LD B,0
         LD HL,EDCODES
-        LD DE,SIZES
+        PUSH HL
+        CALL SIZEBUFFER
+        EX DE,HL
+        POP HL
         LDIR
 EDPACK: LD HL,SEEN
         LD B,25
@@ -937,9 +1036,11 @@ EDSEEN: LD (HL),1
         LD A,1
         LD (FCOUNT),A
         CALL PACKCAT
+; The editor generated all offsets/counts. Diagnose its field relationships
+; before the structural validator collapses them to a generic failure.
+        CALL SEMANTICS
         CALL FDBVALID
         JP C,EDERROR
-        CALL SEMANTICS
         XOR A
         LD (EDITCHECK),A
         RET
@@ -953,13 +1054,20 @@ EDCHECKFAIL:
         LD SP,STACKTOP
         XOR A
         LD (EDITCHECK),A
-        LD HL,EDINVALIDMSG
+        LD A,(EDFAILPAGE)
+        LD (EDPAGE),A
+        LD HL,(EDCAUSE)
         LD (EDNOTICE),HL
         JP EDSCREEN
-EDINVALIDMSG:DB 'Invalid working format. Correct the fields and validate again.',13,10,0
+EDINVALIDMSG:DB 'Invalid format: check geometry, map and DPB rules.',13,10,0
+EDCAUSE:DW 0
+EDFAILPAGE:DB 1
+EDWHYMAX:DB 0
+EDMAXDSM:DW 0FFFFH
+EDDSMMSG:DB 'Page 3 E DSM / allowed maximum: ',0
 EDNOTICE:DW 0
 EDTARGET:DB 0
-EDACTIONS:DB 'D Apply to drive, K Put in catalogue, W Write catalogue, other Cancel: ',0
+EDACTIONS:DB 'D Apply active drive, K Add to RAM, W Write file, Q Back: ',0
 EDCONFIRM:DB ': Apply working format to this drive (Y/N)? ',0
 EDAPPLIED:DB 'Active drive binding updated.',13,10,0
 EDOKMSG:DB 'Format validates.',13,10,0
@@ -1002,6 +1110,10 @@ EDMAPPREV:
 EDMAPSHOW:
         LD HL,EDMAPTITLE
         CALL PUTS
+        LD A,(EDITBIND+17)
+        LD B,A
+        LD A,(EDMAPSTART)
+        CALL MAPRANGE
         LD A,(EDMAPSTART)
         LD E,A
         LD D,0
@@ -1063,6 +1175,8 @@ EDSLOTLIM:AND 3
         RET
 ; Use effective physical records per logical track even while SPT is stale.
 EDLAYOUT:
+        LD HL,0FFFFH
+        LD (EDMAXDSM),HL
         LD BC,0
         LD DE,0
 EDRECLP:LD A,(EDITBIND+17)
@@ -1147,6 +1261,7 @@ EDMAXDONE:
         OR E
         JR Z,EDNOBLOCK
         DEC HL
+        LD (EDMAXDSM),HL
         PUSH HL
         CALL EDPRINT
         POP HL
@@ -1188,7 +1303,7 @@ EDOFFMSG:DB '  Directory byte: ',0
 EDMAXMSG:DB '  Maximum DSM: ',0
 EDWARN:DB '  ! invalid allocation',13,10,0
 EDFILEEND:DB 0
-EDMAPTITLE:DB 'Slot ID Bytes  (< previous, > next)',13,10,0
+EDMAPTITLE:DB 'Slot ID Bytes: ,< Previous   .> Next  ',0
 EDLRECS:DW 0
 EDTRACKS:DW 0
 EDMAPSTART:DB 0
@@ -1250,11 +1365,86 @@ EDCOMMITTED:
         JP Z,EXIT
         JP MENU
 EDFILE: DS 12
-EDTEMPFILE: DS 12
+EDTEMPFILE EQU OUTPUT
 EDAFTER:DB 0
 EDPENDING:DB 0
 EDBASEPEND: DB 0
-EDINCMSG:DB 'Include working format before saving (Y/N, other cancels)? ',0
-EDQUITMSG:DB 'Working format pending: S Save, D Discard, C Cancel: ',0
+EDINCMSG:DB 'Add editor to RAM catalogue before write (Y/N)? ',0
+EDQUITMSG:DB 'Editor pending: S Catalogue+write, D Discard, C Cancel: ',0
 
 EDUNSET:DB ' <unset>',0
+
+
+EDPROMPT:LD L,(IY+2)
+        LD H,(IY+3)
+        CALL PUTS
+        CALL EDADDR
+        LD E,(HL)
+        LD D,0
+        LD A,(IY+1)
+        CP 3
+        JR C,EDPROMPTWORD
+        CALL EDBITMASK
+        AND (HL)
+        LD DE,0
+        JR Z,EDPROMPTBYTE
+        INC E
+        JR EDPROMPTBYTE
+EDPROMPTWORD:
+        CP 2
+        JR NZ,EDPROMPTBYTE
+        INC HL
+        LD D,(HL)
+EDPROMPTBYTE:EX DE,HL
+        CALL EDPRINT
+        JP CRLF
+VIEWUNAVAILABLE:LD HL,VIEWMISSMSG
+        JP EXITMSG
+VIEWDAMAGED:LD HL,VIEWBADMSG
+        JP EXITMSG
+VIEWMISSMSG:DB 'FDBVIEW.OVL unavailable. Copy the matching FDB pair.',13,10,0
+VIEWBADMSG:DB 'FDBVIEW.OVL mismatched/damaged. Copy matching FDB pair.',13,10,0
+EDSHOWDSM:LD HL,(EDITBIND+6)
+        CALL EDPRINT
+        LD A,'/'
+        CALL PUTC
+        LD HL,(EDMAXDSM)
+        CALL EDPRINT
+        CALL CRLF
+        LD HL,EDSPTMSG
+        CALL PUTS
+        LD HL,(EDITBIND+1)
+        CALL EDPRINT
+        LD A,'/'
+        CALL PUTC
+        LD HL,(EDLRECS)
+        CALL EDPRINT
+        JP CRLF
+EDAPPLYSUMMARY:LD HL,EDPHYSMSG
+        CALL PUTS
+        LD A,(EDREQUEST+1)
+        CALL COUNTDEC
+        LD HL,EDCURMSG
+        CALL PUTS
+        LD HL,(EDREQUEST+2)
+        CALL EDPRINT
+        LD A,'/'
+        CALL PUTC
+        LD HL,(BIND+1)
+        CALL EDPRINT
+        CALL CRLF
+        LD HL,EDIDENT
+        LD B,40
+        CALL EDFIXED
+        CALL CRLF
+        LD HL,EDACTIVEMSG
+        JP PUTS
+EDPHYSMSG:DB ' Physical ',0
+EDCURMSG:DB ' SPT current/new ',0
+EDACTIVEMSG:DB 'Active binding only; no formatting or cold-default writes.',13,10,0
+
+
+
+NEEDNAMEMSG:DB 'Filename required (.FDB/.FDF): ',0
+NAMEHINT:DB 'File: [A:-P: or current DU:]NAME.EXT; ^C cancels.',0
+EDPENDMSG:DB 'Editor pending: not yet in catalogue.',13,10,0

@@ -22,6 +22,9 @@ def main():
     p.add_argument('--simulator',type=Path)
     p.add_argument('--output',type=Path,required=True)
     a=p.parse_args();out=a.output.resolve();out.mkdir(parents=True)
+    identity=json.loads((a.binary_dir/'FDB-build-report.json').read_text())
+    dev='-dev' if identity['display_selection']['development'] else ''
+    heading=f"FDB {identity['identity']['version']} ({identity['identity']['revision']:03d}{dev})"
     baseline=out/'baseline';baseline.mkdir()
     original=a.system_image.resolve();payload=original.read_bytes()
     report=json.loads((original.parent/'report.json').read_text())
@@ -54,7 +57,7 @@ def main():
             [((k+'\r').encode(),b'A0>_ ',60) for k,_ in steps]+
             [(b'BYE /Y\r',b'System halted',30)],out/'transcript.bin')
         text=trace.decode('ascii','replace')
-        assert text.count('FDB 1.0 (001)')==6
+        assert text.count(heading)==6
         assert text.count(' | BetterCP/M Utilities')==2
         assert text.count('     /H /HELP    Display this help.')==4
         assert text.count('     FDB                   Open DISK.FDB in the workbench.')==4
@@ -74,7 +77,7 @@ def main():
         frames=[screen(f) for f in sorted(out.glob('trs80-text*.bin'),key=lambda f:int(f.stem.rsplit('-',1)[1]))]
         assert len(frames)==9 and 'TPA available: 50K' in frames[0]
         for i in range(6):
-            assert 'FDB 1.0 (001)' in frames[i+1]
+            assert heading in frames[i+1]
             assert (' | BetterCP/M Utilities' in frames[i+1]) == (i in (0,5))
             assert ('     /H /HELP    Display this help.' in frames[i+1]) == (i not in (0,5))
             if i not in (0,5):

@@ -111,15 +111,17 @@ def assemble(assembler, destination):
     links = 'WORKBUF EQU 05B00H\nBDOS EQU 5\nIMPORTBUF EQU 03600H\nFDFRAM EQU 08000H\n' + ''.join(f'{label} EQU 0{value:04X}H\n' for label,value in symbols.items() if label not in labels)
     with tempfile.TemporaryDirectory(prefix='fdb-view-') as temp:
         source = Path(temp)/'view.mac'
-        source.write_text('        ASEG\n        ORG 0A500H\n'+links+'EDITBIND EQU CURB\n'+'        JP VIEWENTRY\n        DB '+','.join(map(str,token))+'\n        DW 0\n'+view+'\n        END\n')
+        source.write_text('        ASEG\n        ORG 0A500H\n'+links+'EDITBIND EQU CURB\nANSWER EQU LINE+256\n'+'        JP VIEWENTRY\n        DB '+','.join(map(str,token))+'\n        DW 0\n'+view+'\n        END\n')
         subprocess.run([str(assembler),'-e32','-fb',f'-o{destination / "FDBVIEW.OVL"}',f'-l{destination / "view.lst"}',str(source)],check=True)
     overlay = (destination/'FDBVIEW.OVL').read_bytes()
     if overlay[:0xa500] == bytes(0xa500):
         overlay=overlay[0xa500:]
-    if len(overlay)>0x1400:
-        raise ValueError('FDB viewer exceeds its overlay arena')
+    if len(overlay)>0x1300:
+        raise ValueError('FDB viewer exceeds the arena below sector-size scratch')
     overlay = bytearray(overlay)
     overlay.extend(bytes((-len(overlay)) % 128))
+    if len(overlay) >= 0x1300:
+        raise ValueError('FDB viewer must leave its final EOF-read record below B800h')
     overlay[7:9] = binascii.crc_hqx(overlay[9:], 0xffff).to_bytes(2,'little')
     (destination/'FDBVIEW.OVL').write_bytes(overlay)
     return image

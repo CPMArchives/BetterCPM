@@ -67,7 +67,7 @@ def main():
     damaged = bytearray((work/'FDBVIEW.OVL').read_bytes())
     damaged[-1] ^= 1
     run('D\rQ\r', {**original,key('FDBVIEW.OVL'):bytes(damaged)})
-    assert 'invalid catalogue' in m.console
+    assert 'FDBVIEW.OVL mismatched/damaged' in m.console
     comparison = replace(next(e for e in entries if e.ident=='MMI012'), ident='CYLTEST', logical_track='CYLINDER',
                          spt=next(e for e in entries if e.ident=='MMI012').spt*2, dsm=389)
     viewfiles={**original, key('FDBVIEW.OVL'):(work/'FDBVIEW.OVL').read_bytes(),
@@ -137,7 +137,7 @@ def main():
     # leak out of an overlong field into a menu command.
     run(edit + 'S\r\rYNO\rQ\rDISAGREE\r' + save + 'Q\r')
     assert m.files[dest] == expected and len(m.renamed) == 2
-    run(edit + 'S\r' + 'X'*33 + 'Q\r' + save + 'Q\r')
+    run(edit + 'S\r' + 'X'*33 + 'Q\r\x03' + save + 'Q\r')
     assert m.files[dest] == expected
     # The next save can be retried in the same session after a write failure.
     run(edit + save + save + 'Q\r', failures={'write':2})

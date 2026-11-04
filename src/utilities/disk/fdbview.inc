@@ -160,13 +160,18 @@ VIEWPROMPT:
         CALL Z,VMAPS
         LD HL,VIEWHELP
         CALL ASKCHOICE
+VIEWKEY:
         CP 3
         JP Z,MENU
         CP 'Q'
         JP Z,MENU
         CP '>'
         JP Z,VMAPNEXT
+        CP '.'
+        JP Z,VMAPNEXT
         CP '<'
+        JP Z,VMAPPREV
+        CP ','
         JP Z,VMAPPREV
         CP 'A'
         JR NZ,VPAGE
@@ -176,10 +181,14 @@ VIEWPROMPT:
         JP VIEWSCREEN
 VPAGE:  SUB '1'
         CP 4
-        JR NC,VIEWPROMPT
+        JR NC,VIEWBADKEY
         INC A
         LD (VIEWPAGE),A
         JP VIEWSCREEN
+VIEWBADKEY:CALL BADCHOICE
+        LD HL,VIEWHELP
+        CALL ASKCHOICE
+        JP VIEWKEY
 VPRINTVAL:
         LD A,(VIEWWIDTH)
         CP 4
@@ -315,7 +324,11 @@ VSEARCHSTART:
 VSEARCH:
         LD A,(VIEWREMAIN)
         OR A
-        JP Z,NOIMPORT
+        JR NZ,VSEARCHFOUND
+        LD HL,VNOTFOUND
+        CALL PUTS
+        JP VSELECT
+VSEARCHFOUND:
         PUSH IX
         POP HL
         LD DE,ANSWER
@@ -682,11 +695,13 @@ VRAWTXT:DB 'Raw capacity bytes: ',0
 VDIRTXT:DB 'Directory byte offset: ',0
 VBLOCKTXT:DB 'Allocation block bytes: ',0
 
-VMAPNEXT:LD A,(VIEWMAPSTART)
+VMAPNEXT:CALL VMAPCOUNT
+        LD B,A
+        LD A,(VIEWMAPSTART)
         ADD A,8
         JP C,VIEWSCREEN
-        CP 255
-        JP Z,VIEWSCREEN
+        CP B
+        JP NC,VIEWSCREEN
         LD (VIEWMAPSTART),A
         JP VIEWSCREEN
 VMAPPREV:LD A,(VIEWMAPSTART)
@@ -694,8 +709,26 @@ VMAPPREV:LD A,(VIEWMAPSTART)
         JP C,VIEWSCREEN
         LD (VIEWMAPSTART),A
         JP VIEWSCREEN
+VMAPCOUNT:LD A,(VIEWLEFT+55)
+        LD B,A
+        LD A,(VIEWCOMPARE)
+        OR A
+        LD A,B
+        RET Z
+        LD A,(VIEWRIGHT+55)
+        CP B
+        RET NC
+        LD A,B
+        RET
 VMAPS:  LD HL,VMAPTITLE
         CALL PUTS
+        CALL VMAPCOUNT
+        LD (VIEWMAPTOTAL),A
+        LD B,A
+        LD A,(VIEWMAPSTART)
+        CALL MAPRANGE
+        XOR A
+        LD (VIEWMAPSHOWN),A
         LD A,(VIEWMAPSTART)
         LD (VIEWMAPSLOT),A
         LD B,8
@@ -717,6 +750,14 @@ VMAPROW:PUSH BC
         JR Z,VMAPADVANCE
 VMAPSHOWROW:
         LD A,(VIEWMAPSLOT)
+        LD B,A
+        LD A,(VIEWMAPTOTAL)
+        CP B
+        JR Z,VMAPSTOP
+        XOR A
+        INC A
+        LD (VIEWMAPSHOWN),A
+        LD A,(VIEWMAPSLOT)
         INC A
         CALL COUNTDEC
         LD A,' '
@@ -735,9 +776,15 @@ VMAPADVANCE:
         LD HL,VIEWMAPSLOT
         INC (HL)
         POP BC
-        RET Z
+        JR Z,VMAPFINISH
         DJNZ VMAPROW
-        RET
+VMAPFINISH:LD A,(VIEWMAPSHOWN)
+        OR A
+        RET NZ
+        LD HL,VMAPEMPTY
+        JP PUTS
+VMAPSTOP:POP BC
+        JR VMAPFINISH
 VMAPVALUE:
         LD A,(VIEWMAPSLOT)
         CP (IX+55)
@@ -764,9 +811,12 @@ VMAPSIZE:LD A,C
         JP EDPRINT
 VMAPABSENT:LD HL,VMAPNONE
         JP PUTS
+VIEWMAPTOTAL:DB 0
+VIEWMAPSHOWN:DB 0
 VIEWMAPSTART:DB 0
 VIEWMAPSLOT:DB 0
-VMAPTITLE:DB 'Slot ID/bytes (< previous, > next)',13,10,0
+VMAPTITLE:DB 'Slot ID/bytes: ,< Previous   .> Next  ',0
+VMAPEMPTY:DB 'No map differences in this range.',13,10,0
 VMAPNONE:DB 'absent',0
 
 VEDITOR:
@@ -899,3 +949,4 @@ VSTRIDETXT:DB 'FDB descriptor bytes: ',0
 
 VMODEALL:DB '  All values',0
 VMODEDIFF:DB '  Differences only',0
+VNOTFOUND:DB 'ID not found; select a source again.',13,10,0

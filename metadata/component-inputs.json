@@ -5412,7 +5412,10 @@
         ],
         "editor_base": 47360,
         "viewer_base": 42240,
-        "query_arena_end": 23296
+        "query_arena_end": 23296,
+        "sector_sizes_session": 47104,
+        "sector_sizes_converter": 50944,
+        "viewer_max_bytes": 4736
       },
       "files": [
         "src/utilities/common/monitorconsole.inc",
