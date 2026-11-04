@@ -115,8 +115,8 @@ def main():
             # qualification settling interval before sending another command.
             settling='3000' if k=='STATE' or k.startswith('TYPE ') or w=='A0>' else '180'
             cmd+=['-id',settling,'-it'];capture_count+=1
-        cmd+=key_args('SUBMIT STARTUP\r')+['-iw','Type TYPE README.TXT for more','-iw','A0> ','-id','300','-it']
-        cmd+=key_args('RSX LIST\r')+['-iw','TPA available: 50K','-iw','A0> ','-id','300','-it']
+        cmd+=key_args('SUBMIT STARTUP\r')+['-iw','Type TYPE README.TXT for more','-iw','A0> ','-id','3000','-it']
+        cmd+=key_args('RSX LIST\r')+['-iw','TPA available: 50K','-iw','A0> ','-id','3000','-it']
         cmd+=key_args('TYPE POST.TXT\r')+['-iw','FDB101 UI COMPLETED','-iw','A0> ','-id','300','-it','-ix']
         (out/'invocation.json').write_text(json.dumps(cmd,indent=2)+'\n')
         run(cmd,cwd=out,check=True,timeout=2400)
