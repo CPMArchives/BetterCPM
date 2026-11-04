@@ -1,0 +1,54 @@
+{
+  "status": "PASS",
+  "source_root": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/final-fdb-acceptance-20261104/review-candidates/fresh-extracted/BetterCPM-1.0-Source-candidate/source/BetterCPM",
+  "source_commit": "54c503652fa957798bf2d0d636f4172851195926",
+  "media": [
+    {
+      "target": "z80pack",
+      "name": "BetterCPM-Distribution-z80pack-332K.dsk",
+      "sha256": "2f9551e1831466a7631ad1cb0a2a57cdb74c901c9f37f466a4565b822f910e4f",
+      "match": true
+    },
+    {
+      "target": "z80pack",
+      "name": "work-image",
+      "sha256": "67c99c31d81a5c3429131e872d8f2737607dd8383587c8bb97f9355f04e0dbab",
+      "match": true
+    },
+    {
+      "target": "trs80gp",
+      "name": "BetterCPM-Distribution-trs80gp-80T-DS-System.dmk",
+      "sha256": "a0c56001873c6d69ae1eb28d3c1a542583c633b21100191dcc38ff4f0ab89c7f",
+      "match": true
+    },
+    {
+      "target": "trs80gp",
+      "name": "work-image",
+      "sha256": "a2bd8239531919ae078c6d2dcef650738ec77e8307993df8d3fcd74a46c29107",
+      "match": true
+    },
+    {
+      "name": "BetterCPM-NOAH-z80pack-332K.dsk",
+      "sha256": "a5eacfe263f90433a21bec5825ff63d9feb8510aec1ae1b64f8b0da841234cce",
+      "match": true
+    },
+    {
+      "name": "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+      "sha256": "534766b9ec95f59f4f5f6783005605468d01a79970bf01f52f4da1c248db0bb4",
+      "match": true
+    },
+    {
+      "name": "BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk",
+      "sha256": "4a3f7fc10d5f4f0ef5a5e3906e15810c4478e638ae13db0e1d70daa12102cc7f",
+      "match": true
+    },
+    {
+      "name": "BetterCPM-Utilities-z80pack-332K.dsk",
+      "sha256": "d175636d1393e0f3dd52ee48cad5b195ba23e699af16d821935cf2f1dcb041e6",
+      "match": true
+    }
+  ],
+  "runtime_executables": "byte identity",
+  "guest_tools": "byte identity",
+  "all_system_components": "byte identity"
+}

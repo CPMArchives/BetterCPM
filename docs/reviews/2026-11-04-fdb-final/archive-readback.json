@@ -1,0 +1,50 @@
+[
+  {
+    "package": "documentation",
+    "sha256": "99307624947a29637061965e6a3b9e8300a833aecd3425cb76ba56f00ca92096",
+    "zip": "BetterCPM-1.0-Documentation-candidate.zip",
+    "root": "BetterCPM-1.0-Documentation-candidate",
+    "members": 813,
+    "status": "PASS"
+  },
+  {
+    "package": "source",
+    "sha256": "3c21361e3940935e577ce4c542e4eabba20ebd8b492b882409557e296126f4de",
+    "zip": "BetterCPM-1.0-Source-candidate.zip",
+    "root": "BetterCPM-1.0-Source-candidate",
+    "members": 2542,
+    "status": "PASS"
+  },
+  {
+    "package": "system-model4",
+    "sha256": "e19daff9634c9c3f23648f3b8d1cf2c19feb59b2ce54b603eadbbce91144829e",
+    "zip": "BetterCPM-1.0-System-Model4-candidate.zip",
+    "root": "BetterCPM-1.0-System-Model4-candidate",
+    "members": 43,
+    "status": "PASS"
+  },
+  {
+    "package": "system-cpmsim",
+    "sha256": "39453f1b7cde8b032f8216e1940593d5d06199d76b9c06ed776c490930cc36a1",
+    "zip": "BetterCPM-1.0-System-cpmsim-candidate.zip",
+    "root": "BetterCPM-1.0-System-cpmsim-candidate",
+    "members": 69,
+    "status": "PASS"
+  },
+  {
+    "package": "utilities-model4",
+    "sha256": "a11833bb66de6af40c6ddf797d4950974b08790e1c0c65542779c3e409ed7dc0",
+    "zip": "BetterCPM-Utilities-1.0-Model4-candidate.zip",
+    "root": "BetterCPM-Utilities-1.0-Model4-candidate",
+    "members": 74,
+    "status": "PASS"
+  },
+  {
+    "package": "utilities-cpmsim",
+    "sha256": "2a56de1d65281b4f34bcb93a0561e9d1d05ddcf8d428ab5aaf254eefb0d87ff2",
+    "zip": "BetterCPM-Utilities-1.0-cpmsim-candidate.zip",
+    "root": "BetterCPM-Utilities-1.0-cpmsim-candidate",
+    "members": 74,
+    "status": "PASS"
+  }
+]
