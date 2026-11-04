@@ -9,12 +9,52 @@ import subprocess
 import tempfile
 
 from checked_carriers import selected_contract
+from component_build import recorded_build, selected_display
+from component_registry import identity, load
+from component_identity import identification, title
+from utility_help import query_source
 
 ROOT = Path(__file__).resolve().parents[1]
 UTILITIES = ROOT/'src/utilities'
 
 
-def build(assembler=Path.home()/'bin/z80asm', destination=ROOT/'build/fdb'):
+def query_texts():
+    version, revision = identity('utility:FDB')
+    development = selected_display('utility:FDB')['development']
+    purpose = load()['components']['utility:FDB']['description']
+    version_text = identification('FDB', version, revision, purpose,
+                                  development=development)
+    help_text = (title('FDB', version, revision, development=development)
+        + '\r\n  - - -\r\n | '+purpose+'\r\n |\r\n'
+        ' |   Usage: FDB [source [destination]]\r\n\r\n'
+        '   Forms:\r\n'
+        '     FDB                   Open DISK.FDB in the workbench.\r\n'
+        '     FDB file.FDB          Open a named catalogue in the workbench.\r\n'
+        '     FDB in.FDB out.FDF    Export a catalogue as FDF text.\r\n'
+        '     FDB in.FDF out.FDB    Compile FDF text to a catalogue.\r\n\r\n'
+        '   Options:\r\n'
+        '     /H /HELP    Display this help.\r\n'
+        '     /VER        Display utility identification.\r\n')
+    assert len(help_text.splitlines()) <= 23
+    assert max(map(len, help_text.splitlines())) <= 79
+    return version_text, help_text
+
+
+def query_source_text():
+    source = (UTILITIES/'disk/fdbquery.inc').read_text()
+    text = ''
+    for label, screen in zip(('FDBQVER', 'FDBQHELP'), query_texts()):
+        text += label+':\n'+''.join("        DB '"+line+"',13,10\n"
+            if line else '        DB 13,10\n' for line in screen.splitlines())
+        text += "        DB '$'\n"
+    version = (UTILITIES/'common/version.inc').read_text()
+    version = version[version.index('\nUV_QUERY:')+1:]
+    return source.replace('; @fdb-query-text@', text).replace(
+        '; @fdb-query-matchers@', version+'\n'+query_source(ROOT))
+
+
+@recorded_build('utility:FDB')
+def assemble(assembler, destination):
     selected_contract(assembler)
     destination = Path(destination).resolve()
     destination.mkdir(parents=True, exist_ok=True)
@@ -38,7 +78,9 @@ def build(assembler=Path.home()/'bin/z80asm', destination=ROOT/'build/fdb'):
         (UTILITIES/'disk/fdbexchange.inc').read_text(),
         (UTILITIES/'disk/fdbviewload.inc').read_text(),
         (UTILITIES/'common/monitorconsole.inc').read_text(),
-        'EDITOREND:\n        .DEPHASE\n        END\n',
+        'EDITOREND:\n        .DEPHASE\n',
+        query_source_text(),
+        'QUERYEND:\n        END\n',
     ])
     token = zlib.crc32(source.encode()).to_bytes(4,'little')
     source = source.replace('VIEWTOKEN:DB 0,0,0,0', 'VIEWTOKEN:DB '+','.join(map(str,token)))
@@ -58,6 +100,8 @@ def build(assembler=Path.home()/'bin/z80asm', destination=ROOT/'build/fdb'):
         return int(re.search(rf'^([0-9a-f]{{4}}).*?\b{label}:', layout, re.M | re.I)[1], 16)
     if address('IMAGEEND') > 0x3600 or address('EDITOREND') > 0xd400:
         raise ValueError('FDB editor exceeds the session memory layout')
+    if not 0x3600 <= address('FDBQUERY') < address('QUERYEND') <= 0x5b00:
+        raise ValueError('FDB entry-only queries exceed the reusable import arena')
     # Compile the read-only viewer against this exact resident symbol table.
     symbols = {}
     for value, label in re.findall(r'^([0-9a-f]{4}).*?\b([A-Z][A-Z0-9_]*):', layout, re.M|re.I):
@@ -78,6 +122,21 @@ def build(assembler=Path.home()/'bin/z80asm', destination=ROOT/'build/fdb'):
     overlay.extend(bytes((-len(overlay)) % 128))
     overlay[7:9] = binascii.crc_hqx(overlay[9:], 0xffff).to_bytes(2,'little')
     (destination/'FDBVIEW.OVL').write_bytes(overlay)
+    return image
+
+
+def build(assembler=Path.home()/'bin/z80asm', destination=ROOT/'build/fdb', *,
+          target='z80pack', identity_state='auto'):
+    image = assemble(assembler, destination, target=target, identity_state=identity_state)
+    # The matching viewer is an internal artifact of the same component.
+    import json, hashlib
+    destination = Path(destination)
+    path = destination/'FDB-build-report.json'
+    report = json.loads(path.read_text())
+    overlay = (destination/'FDBVIEW.OVL').read_bytes()
+    report['companions'] = [{'name':'FDBVIEW.OVL', 'bytes':len(overlay),
+                             'sha256':hashlib.sha256(overlay).hexdigest()}]
+    path.write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
     return image
 
 

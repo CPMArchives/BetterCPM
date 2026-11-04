@@ -5,6 +5,26 @@ with CONFIG.COM and the 108-entry DISK.FDB. Copy both FDB files into the same
 drive and user area when using a work disk. The viewer must match the COM;
 missing or damaged viewers are refused without changing pending work.
 
+`FDB /VER` displays the component identity and compact BetterCP/M Utilities
+identification. `FDB /H` and `FDB /HELP` display the same short help screen.
+These exact tokens are case-insensitive, accept space or TAB separators, and
+ignore other arguments. Help takes precedence over `/VER`. Queries return
+without opening a catalogue, changing drives/users, or setting up the console;
+they also work in the normal Model 4 50 KiB configuration. Longer tokens such
+as `/VERIFY` and `/HELPER` are not queries.
+
+The help screen lists the positional command forms as well as the switches:
+
+| Command | Action |
+| --- | --- |
+| `FDB` | Open DISK.FDB in the workbench. |
+| `FDB file.FDB` | Open a named catalogue in the workbench. |
+| `FDB in.FDB out.FDF` | Export a catalogue as FDF text. |
+| `FDB in.FDF out.FDB` | Compile FDF text to a catalogue. |
+
+Listing, comparison, editing, drive application, and selective import/export
+are interactive workbench operations.
+
 The interactive workbench needs the standard 53 KiB TPA. On Model 4, the
 normal startup loads screen personalities; before starting FDB, release them:
 

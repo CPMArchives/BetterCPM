@@ -5339,6 +5339,51 @@
         "tools/build_native_patch.py",
         "tools/build_native_trs80.py"
       ]
+    },
+    "utility:FDB": {
+      "status": "tracked-explicit",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "origin": 256,
+        "assembler_flags": [
+          "-e32",
+          "-fb"
+        ],
+        "editor_base": 47360,
+        "viewer_base": 42240,
+        "query_arena_end": 23296
+      },
+      "files": [
+        "src/utilities/common/monitorconsole.inc",
+        "src/utilities/common/version.inc",
+        "src/utilities/disk/fdbdrive.inc",
+        "src/utilities/disk/fdbexchange.inc",
+        "src/utilities/disk/fdbquery.inc",
+        "src/utilities/disk/fdbread.inc",
+        "src/utilities/disk/fdbsession.inc",
+        "src/utilities/disk/fdbview.inc",
+        "src/utilities/disk/fdbviewload.inc",
+        "src/utilities/fdb.mac",
+        "tools/build_fdb.py",
+        "tools/component_build.py",
+        "tools/component_development.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_registry.py",
+        "tools/utility_help.py",
+        "tools/utility_versions.py"
+      ],
+      "registry_fields": [
+        "display_format",
+        "description"
+      ],
+      "identity_dependencies": []
     }
   }
 }

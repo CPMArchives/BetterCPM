@@ -1064,6 +1064,30 @@
       "placement": "Utilities",
       "display_format": "numeric",
       "description": "Verified Binary Patching"
+    },
+    "utility:FDB": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/fdb.mac",
+        "src/utilities/disk/fdbsession.inc",
+        "src/utilities/disk/fdbquery.inc",
+        "src/utilities/disk/fdbread.inc",
+        "src/utilities/disk/fdbdrive.inc",
+        "src/utilities/disk/fdbexchange.inc",
+        "src/utilities/disk/fdbviewload.inc",
+        "src/utilities/disk/fdbview.inc"
+      ],
+      "builders": [
+        "tools/build_fdb.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "explicit selected dependency closure",
+      "display_format": "numeric",
+      "description": "Disk Format Catalogue Workbench"
     }
   },
   "legacy_utility_order": [
@@ -1113,7 +1137,8 @@
     "SEARCH",
     "CRCKSUM",
     "MD5SUM",
-    "PATCH"
+    "PATCH",
+    "FDB"
   ],
   "legacy_subsystem_rows": [
     {

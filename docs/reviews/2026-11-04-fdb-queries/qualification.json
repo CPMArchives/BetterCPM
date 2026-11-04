@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "source_commit": "d8bf93f9c9b4248ae0dacf4a5f6a79dd10440341",
+  "identity": "FDB 1.0 (001)",
+  "display_selection": "auto, matching initial per-target input baselines; no assigned-mode override",
+  "component": "utility:FDB",
+  "artifacts": [
+    {
+      "name": "FDB.COM",
+      "bytes": 20585,
+      "sha256": "96e2cc0a6fcb79ad9fd23db1e321342077d0bcf485fe6153c8de509b85cdac45"
+    },
+    {
+      "name": "FDBVIEW.OVL",
+      "bytes": 4608,
+      "sha256": "622452b900982936c16c0cea7bbbf6da25d0e25ba8e04b2e473f3ccfbd5fc0d9"
+    }
+  ],
+  "native_results": [
+    {
+      "status": "PASS",
+      "target": "z80pack",
+      "com_sha256": "96e2cc0a6fcb79ad9fd23db1e321342077d0bcf485fe6153c8de509b85cdac45",
+      "queries": 6,
+      "native_conversion_roundtrip": "108 entries byte-identical; host cross-check PASS",
+      "preservation": "All shipped files and reserved tracks unchanged from explicit new-pair fixture",
+      "model4_default_50K": false
+    },
+    {
+      "status": "PASS",
+      "target": "trs80gp",
+      "com_sha256": "96e2cc0a6fcb79ad9fd23db1e321342077d0bcf485fe6153c8de509b85cdac45",
+      "queries": 6,
+      "native_conversion_roundtrip": "108 entries byte-identical; host cross-check PASS",
+      "preservation": "All shipped files and reserved tracks unchanged from explicit new-pair fixture",
+      "model4_default_50K": true
+    }
+  ],
+  "help_lines": 15,
+  "help_max_columns": 67,
+  "query_cases": 47,
+  "short_syntax_cases": 2,
+  "query_stack_bytes": 24,
+  "stack_allocation": 512,
+  "resident_image_end": "35FCh",
+  "interactive_end": "D107h",
+  "entry_only_query_range": "4E03h..5169h",
+  "converter_cases": 40,
+  "session_cases": 50,
+  "editor_cases": 9,
+  "registry_tests": 9,
+  "input_tests": 13,
+  "development_tests": 8,
+  "identity_tests": 8,
+  "revision_tests": 14,
+  "distribution_tests": 15,
+  "build_sequence_tests": 2,
+  "emulators": {
+    "cpmsim_sha256": "0f6b256cd6beea2ab7bf0eab8a9cc2a5241ed772408e811150c3f6e0f5cff4e8",
+    "trs80gp_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f"
+  },
+  "release_promotion": "HOLD",
+  "frozen_archives": "unchanged; only private new-pair fixtures used",
+  "reproduction": "Post-commit rebuilds for both targets exactly match the native-tested COM and overlay; remaining evidence commit changes no selected inputs"
+}
