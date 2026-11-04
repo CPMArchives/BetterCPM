@@ -772,6 +772,19 @@ reconciliation gate precede the corresponding implementation program.
 
 ## Post-1.0 considerations
 
+- [ ] RSX.COM **1.01 usability fixes**: replace the undifferentiated
+  `RSX module or profile error` with an actionable diagnostic when the manager
+  can establish the cause. For `RSX LOAD ANSI` with no screen backend loaded,
+  identify the missing backend dependency and direct the user to load
+  `ANSISCRN` on cpmsim or `M4SCRN` on Model 4 first. Distinguish missing
+  dependencies, conflicting personalities, unavailable carrier/runtime files,
+  invalid module/profile data and insufficient memory where reliably reported;
+  retain a generic fallback for unknown causes rather than guessing. Review
+  available manager status detail before choosing the implementation. Verify
+  the reported no-RSX/53K case and successful backend-then-ANSI loading on both
+  platforms; failed loads must preserve the active profile. Deferred 1.01 work
+  only: leave 1.0 executable code, interfaces, identities and artifacts unchanged.
+
 - [ ] FDB.COM **1.01 usability fixes**: standardize sector-map paging alongside
   the deferred FDB UI corrections. Accept both `,` and `<` for previous, and
   both `.` and `>` for next; display the standard prompt
