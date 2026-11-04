@@ -40,6 +40,12 @@ def main():
     from test_utility_finalization import execute
     count=0
     for name in identities():
+        if name=='FDB':
+            # FDB's entry-only query arena uses IX/IY. Execute its stricter
+            # full-core ABI/query suite instead of the small BIOS CPU model.
+            from test_fdb_queries import main as fdb_queries
+            fdb_queries()
+            continue
         # The codecs and NOAH require the full Z80 harness (IX/IY).
         # R/W/MOUNT are built with the pinned offline cpmsim assembler and
         # executed by the native guest tests, rather than this transient fixture.
