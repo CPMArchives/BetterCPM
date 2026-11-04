@@ -97,9 +97,20 @@ def build(repository, output, profile):
         if sha(patch)!=entry['sha256']:raise ValueError('patch digest mismatch: '+name)
         command(['git','apply','--check',patch],cwd=source,env=patch_env)
         command(['git','apply',patch],cwd=source,env=patch_env);applied.append(entry)
-    # The archive cannot carry ignored local executables/objects. Hash all inputs.
-    source_hashes={str(p.relative_to(source)):sha(p) for p in sorted(source.rglob('*')) if p.is_file()}
     compiler=shutil.which('cc');make=shutil.which('make')
+    guest_env=dict(os.environ)
+    for name in ('CFLAGS','CPPFLAGS','LDFLAGS','MAKEFLAGS','CPMSIM_ROM_START','CPMSIM_STACK_TRACE'):
+        guest_env.pop(name,None)
+    # Prepare project-owned guest banners with the actual pinned cross assembler.
+    # No release-display override is used; baselines select assigned vs -dev.
+    with (output/'guest-assembler-build.log').open('wb') as log:
+        subprocess.run([make,'CC='+compiler,'all'],cwd=source/'z80asm',env=guest_env,
+                       stdout=log,stderr=subprocess.STDOUT,check=True)
+    from guest_utility_identity import prepare, finish
+    guest_assembler=source/'z80asm/z80asm'
+    guest_records=prepare(source,guest_assembler)
+    source_hashes={str(p.relative_to(source)):sha(p) for p in sorted(source.rglob('*'))
+                   if p.is_file() and p.suffix not in ('.o',) and p != guest_assembler}
     flags=['CC='+compiler,'INFOPANEL=NO','WANT_SDL=NO','MODE=RELEASE','DEBUG=',
            'SIM='+str(source/'cpmsim/cpmsim'),'ROM_QUALIFY='+('YES' if profile=='qualification' else 'NO')]
     env=dict(os.environ)
@@ -112,6 +123,8 @@ def build(repository, output, profile):
     guest_build=[make,'CC='+compiler,'r.com','w.com','mount.com']
     with (output/'cpmtools-build.log').open('wb') as log:
         subprocess.run(guest_build,cwd=source/'cpmtools',env=env,stdout=log,stderr=subprocess.STDOUT,check=True)
+    guest_records=finish(guest_records,source,guest_assembler)
+    (output/'guest-component-records.json').write_text(json.dumps(guest_records,indent=2,sort_keys=True)+'\n')
     builds.append(guest_build)
     guest_binaries=[source/'cpmtools'/n for n in ('r.com','w.com','mount.com')]
     binaries=[source/'cpmsim/cpmsim',*(source/'cpmsim/srctools'/n for n in ('cpmrecv','cpmsend','mkdskimg','bin2hex','ptp2bin'))]

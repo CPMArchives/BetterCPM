@@ -85,11 +85,9 @@ print('DIR populated/empty DU, units, alignment and RSX LIST presentation: PASS'
 # Execute the release-identification paths, rather than trusting binary hashes
 # or the legacy TSV projection as evidence that revisions reached the binaries.
 from component_registry import utility_identities
-from test_utility_versions import runner, output
+from test_utility_versions import runner, output, expected_identification
 from test_crc import execute
-expected_revisions={'DIR':11,'RSX':6,'CRCKSUM':8,'COMPARE':3}
-for name,revision in expected_revisions.items():
-    assert utility_identities()[name]==('1.0',revision)
+for name in ('DIR','RSX','CRCKSUM','COMPARE'):
     if name in ('DIR','RSX'):
         c=runner((ROOT/'build/utilities'/(name+'.COM')).read_bytes())
         c.mem[128]=4;c.mem[129:133]=b'/VER'
@@ -100,6 +98,6 @@ for name,revision in expected_revisions.items():
         text=compare_query(tail='/VER')['text']
     else:
         text=execute(tail='/VER',program=name)['text']
-    assert text.startswith(f'{name} 1.0 ({revision:03}-dev)\r\n'),(name,text)
+    assert text == expected_identification(name),(name,text)
     print(text.splitlines()[0])
 print('Packaged-component revision query paths: PASS')

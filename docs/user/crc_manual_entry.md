@@ -1,6 +1,6 @@
 ## CRCKSUM file checksums and verification lists
 
-**CRCKSUM 1.0 (010-dev)** ships on the primary Utilities disk. With that disk in B:,
+**CRCKSUM 1.0 (011)** ships on the primary Utilities disk. With that disk in B:,
 run `B0:CRCKSUM /VER` to check your copy or `B0:CRCKSUM /H` for help.
 
 CRCKSUM answers two related questions: what check values identify these files, and do the files still agree with an earlier list? It calculates eight values: the original CP/M CRCK calculation, corrected CRCK, CHEK, CRC-32, SUM8, SUM16, KERM6 and KERM12. You can display them, save a list, or check a directory against a saved reference. No input file is altered.

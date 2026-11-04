@@ -154,6 +154,13 @@ def stage_cpmsim_guest(simulator, root):
         if not data:
             raise ValueError('empty cpmsim guest tool: '+name)
         (destination/(name.upper()+'.COM')).write_bytes(data)
+    records_path=Path(simulator).resolve().parent.parent.parent/'guest-component-records.json'
+    if records_path.is_file():
+        for owner, record in json.loads(records_path.read_text()).items():
+            name=owner.split(':')[1]
+            if digest((destination/(name+'.COM')).read_bytes()) != record['artifact']['sha256']:
+                raise ValueError('staged guest identity differs: '+name)
+            (destination/(name+'-build-report.json')).write_text(json.dumps(record,indent=2,sort_keys=True)+'\n')
 
 
 def selected_files(manifest, target, root):
@@ -310,11 +317,10 @@ def validate_files(raw, out, files, g):
 
 
 def development_identity():
-    """Default builds identify current development separately from frozen core."""
-    from version_metadata import rows
-    core=next(row['implementation_version'] for row in rows()
-              if row['component']=='BetterCP/M')
-    return f'BetterCP/M development (after core {core})'
+    """Expected VER heading, using the same automatic selection as RCP."""
+    from utility_versions import expand_versions
+    prepared=expand_versions('; @release-heading@')
+    return prepared.split("'",2)[1]
 
 
 def boot(target, image, out, root, simulator, emulator):

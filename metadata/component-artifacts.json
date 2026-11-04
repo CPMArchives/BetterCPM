@@ -120,8 +120,12 @@
       "build/bdos/bdos.bin"
     ],
     "subsystem:BIOS": {
-      "trs80gp": ["build/bios/bios.bin"],
-      "z80pack": ["build/z80pack/bios.bin"]
+      "trs80gp": [
+        "build/bios/bios.bin"
+      ],
+      "z80pack": [
+        "build/z80pack/bios.bin"
+      ]
     },
     "subsystem:CCP": [
       "build/ccp/ccp.rlm"
@@ -180,6 +184,21 @@
     "utility:FDB": [
       "build/fdb/FDB.COM",
       "build/fdb/FDBVIEW.OVL"
-    ]
+    ],
+    "utility:R": {
+      "z80pack": [
+        "staged-host-tools/R.COM"
+      ]
+    },
+    "utility:W": {
+      "z80pack": [
+        "staged-host-tools/W.COM"
+      ]
+    },
+    "utility:MOUNT": {
+      "z80pack": [
+        "staged-host-tools/MOUNT.COM"
+      ]
+    }
   }
 }

@@ -213,7 +213,7 @@ and its boot sequence when you intend to boot the replacement disk.
 
 The cpmsim System disk also includes R.COM and W.COM in user 0.
 `R` reads a host file into CP/M; `W` writes a CP/M file to the host.
-Both report version `1.0 (005-dev)` and support `/VER`, `/H`, and `/HELP`.
+Both report version `1.0 (006)` and support `/VER`, `/H`, and `/HELP`.
 
 ```text
 R "My assembly source.asm" B3:SOURCE.ASM

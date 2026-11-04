@@ -11,8 +11,9 @@ persistent command history, terminal providers and a separate Utilities set.
 The six downloads are System for cpmsim, System for Model 4, Utilities for cpmsim,
 Utilities for Model 4, complete Source, and Documentation. All carry the same candidate
 source commit, with exact artifact hashes and evidence in RELEASE.json. Utility
-component revisions are independent of the package version. Candidate names and
-existing -dev banners do not indicate final acceptance.
+component revisions are independent of the package version. Release identity assignments are described in
+[release identities](1.0-RELEASE-IDENTITIES.md). Stable version text alone does not
+indicate final acceptance.
 
 Recent additions include CRCKSUM, MD5SUM, PATCH and COMPARE; the NOAH companion
 contains NOAH, PATCH and COMPARE. CRCKSUM and MD5SUM remain on the primary
@@ -30,7 +31,7 @@ explicit source identity without requiring a BetterCP/M .git directory.
 - Existing PDF/DOCX manual editions have not been reconciled against all recent Markdown changes; candidate Documentation contains editable/textual documentation instead. Engineering history retains dated evidence and earlier outcomes.
 - The Utilities packaging failure observed on the Linux host is historical evidence. New macOS assembly and independent inventory/readback checks pass; this does not establish Model 4 runtime acceptance.
 
-The [35c56a03 technical lock and qualification record](../engineering/Qualification-Lock-35c56a03.md) identifies the qualified core, runtimes and unaffected utilities. FDB.COM, CONFIG.COM and DISK.FDB remain open for 1.0 integration. The package freeze remains on hold.
+The [35c56a03 technical lock and qualification record](../engineering/Qualification-Lock-35c56a03.md) identifies the qualified core, runtimes and unaffected utilities. FDB.COM, CONFIG.COM and DISK.FDB integration and native qualification were recorded through PR #605; PR #608 supplies the matching released FDB query/help pair. The maintainer has authorized replacement qualification and freeze after release identity promotion. The original 54c50365 frozen reference is preserved. Tagging and publication remain on hold.
 
 ## Remaining acceptance work
 
@@ -86,4 +87,4 @@ carries both license texts and docs/LICENSING.md, with LICENSE and NOTICE
 defining the split and separate-work exclusions.
 BetterCP/M builds its 108-entry DISK.FDB from its own FDF v1 text definitions.
 All six packages exclude Montezuma Micro’s original DISK.FDF, including nested
-source archives. The historical format parameters retain their provenance. Package freeze remains on hold.
+source archives. The historical format parameters retain their provenance. Replacement freeze requires its exact-hash acceptance ledger; tagging and publication remain on hold.

@@ -177,6 +177,15 @@ def assemble(args):
                'The builder verifies every file against third_party/z80pack/offline-inputs.json.\n').encode()
     host={n:tracked[n] for n in tracked if n.startswith('third_party/z80pack/')}
     host['tools/build_qualified_cpmsim.py']=tracked['tools/build_qualified_cpmsim.py']
+    # The offline guest labels use registry/input guards too. Include their
+    # complete selected-input closure, rather than a builder that imports
+    # helpers absent from this independently downloadable System host kit.
+    for name in ('component-registry.json','component-inputs.json','component-baselines.json'):
+        host['metadata/'+name]=tracked['metadata/'+name]
+    plans=json.loads(tracked['metadata/component-inputs.json'])['components']
+    for owner in ('utility:R','utility:W','utility:MOUNT'):
+        for name in plans[owner]['files']:
+            host[name]=tracked[name]
     host['docs/platform/CPMSIM-INSTALLATION.md']=tracked['docs/platform/CPMSIM-INSTALLATION.md']
     host.update(common)
     for name in ('LICENSE','COPYING','NOTICE'):

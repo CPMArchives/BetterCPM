@@ -39,6 +39,15 @@ def strings(name, resident=False, label='UV_TEXT'):
     return f"{label}:\n        DB '{banner(name, resident)}',13,10,'$'\n"
 
 def expand_versions(text):
+    if '; @release-heading@' in text:
+        import json
+        version = json.loads((ROOT/'metadata/release-package.json').read_text())['version']
+        old = 'BetterCP/M development (after core 1.0)'
+        heading = old if display_development('utility:RCP') else 'BetterCP/M '+version
+        if len(heading) > len(old):
+            raise ValueError('distribution heading exceeds its fixed field')
+        text = text.replace('; @release-heading@',
+            "DB 13,10,'"+heading+"',13,10,'$'\n        DS "+str(len(old)-len(heading))+',0')
     text = re.sub(r'; @utility-title ([A-Z][A-Z0-9]*)@',
                   lambda m: "TITLE: DB '" + banner(m[1]) + "',0", text)
     query = (ROOT / 'src/utilities/common/version.inc').read_text()

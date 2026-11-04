@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "event": "QUALIFIED_REPLACEMENT_PACKAGE_SET_FROZEN",
+  "created_utc": "2026-11-04T03:06:02.679552+00:00",
+  "release_target": "BetterCP/M 1.0",
+  "source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+  "review_PR": 609,
+  "review_url": "https://github.com/CPMArchives/BetterCPM/pull/609",
+  "review_state": "source/evidence PR requires maintainer review and merge; no automatic merge",
+  "source_revision_policy": "These are exact archives from the recorded source commit; later evidence-only commits do not relabel their source. Any changed archive requires a new qualification/freeze.",
+  "freeze_authorization": "User Go on release identities, replacement rebuild/qualification and replacement freeze; no tag or publication.",
+  "assets": [
+    {
+      "package": "documentation",
+      "filename": "BetterCPM-1.0-Documentation-candidate.zip",
+      "sha256": "7f67508d62269d358d749e40af69b82d6e73d71511d36a2a0449f699b03de48a",
+      "size_bytes": 7163338
+    },
+    {
+      "package": "source",
+      "filename": "BetterCPM-1.0-Source-candidate.zip",
+      "sha256": "1975f95144998c33ba704f37da3246343dd6ecc82ae7e4b014b8d7af372e71ca",
+      "size_bytes": 350224651
+    },
+    {
+      "package": "system-model4",
+      "filename": "BetterCPM-1.0-System-Model4-candidate.zip",
+      "sha256": "5760ebcb361c80fa632e323a016a95fac477183527c7f6d661721958e8a44b97",
+      "size_bytes": 4157094
+    },
+    {
+      "package": "system-cpmsim",
+      "filename": "BetterCPM-1.0-System-cpmsim-candidate.zip",
+      "sha256": "0d6fbff549088915e85470c718b1ce05e78980e460c7429b0e0e9f7e4746c6c4",
+      "size_bytes": 4463644
+    },
+    {
+      "package": "utilities-model4",
+      "filename": "BetterCPM-Utilities-1.0-Model4-candidate.zip",
+      "sha256": "7b92378db28281b1e05d6d4bd4f7f480c3224c848c4120b93ee2abfd217577c9",
+      "size_bytes": 232607745
+    },
+    {
+      "package": "utilities-cpmsim",
+      "filename": "BetterCPM-Utilities-1.0-cpmsim-candidate.zip",
+      "sha256": "37477e6b06b13337c191e3c6d78be383ff7b14143c68d65bd0814e08ef7f5b1b",
+      "size_bytes": 232575318
+    }
+  ],
+  "supersedes_for_release_identity": "54c503652fa957798bf2d0d636f4172851195926",
+  "old_reference_policy": "original54c50365 frozen set preserved byte-for-byte",
+  "release_identity_gate": {
+    "status": "CLOSED for these exact archives",
+    "utility_display": "normal released numeric revisions, no -dev in executed shipped queries or108decoded binary instances",
+    "build_policy": "automatic selected-input comparison retained; no forced assigned-display override"
+  },
+  "qualification": {
+    "path": "QUALIFICATION.json",
+    "sha256": "2458ea8300d6a0cfff47090502864feab866daf17a71e89067cab64c633911a8"
+  },
+  "candidate_names": "exact candidate filenames and archive roots retained; freeze seals tested bytes; release publication remains separate",
+  "tagging": "NOT_AUTHORIZED_NOT_PERFORMED",
+  "publishing": "NOT_AUTHORIZED_NOT_PERFORMED"
+}

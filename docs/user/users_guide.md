@@ -5206,7 +5206,7 @@ identifies the transient DIR utility.
 A version display might resemble:
 
 ```text
-DIR 1.0 (012-dev)
+DIR 1.0 (013)
 ```
 
 The exact build number depends on the installed utility.
@@ -5236,7 +5236,7 @@ The **build number** identifies a particular revision of the executable.
 For example:
 
 ```text
-DIR 1.0 (012-dev)
+DIR 1.0 (013)
 ```
 
 identifies the transient DIR 1.0 development build 012.
