@@ -136,6 +136,8 @@ def package_license_files(tracked, package_id):
 
 
 def assemble(args):
+    if (ROOT / 'docs/releases/non-documentation-lock-1.0/LOCK.json').exists():
+        raise ValueError('Five 1.0 packages are locked; use build_documentation.py. Do not rebuild the six-package set during documentation sync.')
     if git('status','--porcelain','--untracked-files=no').strip():
         raise ValueError('candidate assembly requires clean tracked source')
     commit=git('rev-parse','HEAD').decode().strip()

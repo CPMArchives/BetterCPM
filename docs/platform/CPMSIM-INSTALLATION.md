@@ -1,5 +1,8 @@
 # Installing BetterCP/M on z80pack / cpmsim
 
+This is the reconciled operating guide for the [locked cpmsim System](../releases/non-documentation-lock-1.0/README.md), with separate documentation provenance. Earlier embedded copies remain unchanged. See the [four-manual index](../README.md), [Source Build guide](../SOURCE-BUILD.md), [Command Reference](../user/command_reference.md) and [errata](../releases/1.0-ERRATA.md).
+
+
 BetterCP/M requires a patched cpmsim with geometry interface version 2.
 Stock upstream cpmsim is insufficient for the supported disk interface.
 Use the runtime build below for ordinary operation and retain its build receipt
@@ -87,7 +90,7 @@ for engineering qualification.
 
 Extract the platform package into a new directory. Verify its published
 checksums, preserve the originals and run writable copies in a new session.
-The accepted package must supply these images and matching format definitions:
+The locked System/optional Utilities packages supply these images and matching format definitions:
 
 | Drive | Image / role |
 | --- | --- |
@@ -118,23 +121,7 @@ Use the freshly built executable and its helpers. A cpmrecv execution error
 means the helper/PATH setup is incomplete. `tools/bcpm` contains maintainer-specific
 paths and is not a portable installer for a fresh package.
 
-If you already have a configured `bcpm` installation, you can select the
-extracted writable copies explicitly:
-
-```sh
-bcpm mount a /path/to/system-copy.dsk
-bcpm mount b /path/to/primary-utilities-copy.dsk
-bcpm mount c /path/to/companion-utilities-copy.dsk
-bcpm mount d /path/to/work-copy.dsk
-bcpm z /usecurrent
-```
-
-`mount` accepts A–D in either case, with an optional colon (`A:` also works).
-`z /usecurrent` leaves all current drive assignments unchanged and does not
-require locally built distribution images. A: must be present and configured
-images must resolve to regular files. Plain `bcpm z` retains automatic selection
-of the built System/Utilities images on A–C, leaving D: as configured. Close the
-emulator before changing its mounts.
+The optional maintainer `bcpm` launcher is not needed for this fresh-package procedure. Its local mount settings do not change the supplied ZIP or establish a portable installer. Use the reconstructed runtime invocation above.
 
 At the guest prompt, the System-only smoke checks are:
 
@@ -159,11 +146,10 @@ C0:COMPARE /VER
 Finish either session with `BYE /Y`. The optional checks are not prerequisites
 for booting or using the independent System package.
 
-Check banners against the candidate manifest. Save the transcript, initial
+Check banners against the locked delivered inventory, not current development metadata. Save the transcript, initial
 image hashes and emulator environment.json. The cpmsim startup script runs
 `:VER /BANNER`; no terminal personality or clock provider is loaded automatically.
-BYE exits to the host shell. Complete the release checklist's fresh-install and
-file-operation checks before accepting a candidate.
+BYE exits to the host shell. Recorded final package installation/reconstruction receipts apply to the matching locked hashes; repeating user checks here does not replace or expand that evidence.
 
 ## Required release-package contents
 
@@ -243,8 +229,15 @@ W B3:SOURCE.ASM "My updated assembly source.asm"
 Host filenames preserve case and refer to files in the emulator working
 directory; R/W do not accept host paths or wildcards. Quote names containing
 spaces. A long host source name requires an explicit CP/M 8.3 destination.
-MOUNT, R and W are omitted from Model 4 media and general utility manuals.
+MOUNT, R and W are omitted from Model 4 media. Their entries now appear in the consolidated Command and Utilities Reference.
 
 P2DOS.RSX is supplied in A0 for optional compatibility with Functions 200/201.
 Load the platform’s native clock provider before `RSX LOAD P2DOS`; startup
-loads neither. T104C3/T104Z8 are deferred and are not supplied in the 1.0 RC.
+loads neither. T104C3/T104Z8 are deferred and are not supplied in locked 1.0.
+
+
+## Extension prerequisites and matching components
+
+The primary Utilities disk supplies XSUB.COM and BATCHIO.RSX. From A0 on a writable System copy with Utilities in B, run `COPY B:BATCHIO.RSX A:BATCHIO.RSX`, then `B0:XSUB`. Keep matching A0:R3PACK.RSX. Queries do not prove activation; [the 1.0 erratum](../releases/1.0-ERRATA.md#xsub-companion-must-be-copied-to-a0) is unchanged.
+
+Keep FDB.COM 1.0 (001) and its matching viewer together. Interactive work needs the unloaded 53K environment. If optional personalities/backends are loaded, unload personality before backend and restore your normal startup after FDB. Current development FDB 1.01 and deferred 56K/checked profiles are not substitutes for the locked image.

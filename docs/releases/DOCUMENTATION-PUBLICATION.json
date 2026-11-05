@@ -1,0 +1,62 @@
+{
+  "schema": 2,
+  "release": "BetterCP/M 1.0",
+  "status": "PRE_BUILD_TEMPLATE_SEE_EXTERNAL_ACCEPTANCE_RECEIPT",
+  "software_source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+  "qualification_merge_revision": "2842d0eb0732683d9280a38d576c3dba423cb893",
+  "locked_packages": [
+    {
+      "package": "source",
+      "filename": "BetterCPM-1.0-Source.zip",
+      "archive_root": "BetterCPM-1.0-Source-candidate",
+      "size_bytes": 350224651,
+      "sha256": "1975f95144998c33ba704f37da3246343dd6ecc82ae7e4b014b8d7af372e71ca"
+    },
+    {
+      "package": "system-model4",
+      "filename": "BetterCPM-1.0-System-Model4.zip",
+      "archive_root": "BetterCPM-1.0-System-Model4-candidate",
+      "size_bytes": 4157094,
+      "sha256": "5760ebcb361c80fa632e323a016a95fac477183527c7f6d661721958e8a44b97"
+    },
+    {
+      "package": "system-cpmsim",
+      "filename": "BetterCPM-1.0-System-cpmsim.zip",
+      "archive_root": "BetterCPM-1.0-System-cpmsim-candidate",
+      "size_bytes": 4463644,
+      "sha256": "0d6fbff549088915e85470c718b1ce05e78980e460c7429b0e0e9f7e4746c6c4"
+    },
+    {
+      "package": "utilities-model4",
+      "filename": "BetterCPM-Utilities-1.0-Model4.zip",
+      "archive_root": "BetterCPM-Utilities-1.0-Model4-candidate",
+      "size_bytes": 232607745,
+      "sha256": "7b92378db28281b1e05d6d4bd4f7f480c3224c848c4120b93ee2abfd217577c9"
+    },
+    {
+      "package": "utilities-cpmsim",
+      "filename": "BetterCPM-Utilities-1.0-cpmsim.zip",
+      "archive_root": "BetterCPM-Utilities-1.0-cpmsim-candidate",
+      "size_bytes": 232575318,
+      "sha256": "37477e6b06b13337c191e3c6d78be383ff7b14143c68d65bd0814e08ef7f5b1b"
+    }
+  ],
+  "documentation": {
+    "filename": "BetterCPM-1.0-Documentation.zip",
+    "documentation_revision": null,
+    "sha256": null,
+    "size_bytes": null,
+    "status": "NEW_BUILD_AND_STEP5_REVIEW_PENDING",
+    "formats": [
+      "Markdown",
+      "plain text",
+      "editable example source"
+    ],
+    "selection": "packaging/1.0/documentation-selection.json"
+  },
+  "old_documentation_asset": "provisional historical reference; not the newly reconciled publication",
+  "source_policy": "five old archives keep their exact embedded docs/source identities; new Documentation has its own actual revision",
+  "tagging": "HOLD_NOT_AUTHORIZED",
+  "publication": "HOLD_NOT_AUTHORIZED",
+  "new_programmer_porting_expansion": "separate from 1.0 software release blockers"
+}

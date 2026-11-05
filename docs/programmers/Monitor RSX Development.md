@@ -1,5 +1,8 @@
 # Developing monitor RSXs
 
+> **Locked 1.0 reading note:** Start with [terminal/provider development](programmers_guide.md#terminal-and-clock-providers) and the [final MCON/SCRN/SCX summary](BETTERCPM-API.md#mcon-scrn-and-scx). Later production portable-ANSI/full-control admission supersedes earlier conversion-pending checkpoints below. The legacy MCON 1.0 template is not a portable MCON 1.1/1.2 template.
+
+
 BetterCP/M 1.0 uses a bounded monitor-provider interface to add terminal
 personalities that the basic console does not implement. ADM-3A (Montezuma
 Micro behavior on Model 4), VT52 and an ANSI/VT100-compatible subset are the

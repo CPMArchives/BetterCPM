@@ -1,14 +1,14 @@
 # BetterCP/M
 
-BetterCP/M is a compact, maintainable CP/M-compatible operating system for Z80-class computers. The core OS version is **BetterCP/M 1.0**. The **1.0 release package remains in progress**. Core and utility feature implementation is complete; documentation reconciliation, fresh-package installation, licensing/source audits, and final release acceptance remain open.
+BetterCP/M is a compact, maintainable CP/M-compatible operating system for Z80-class computers. The core OS version is **BetterCP/M 1.0**. The five Source/System/Utilities packages are **locked for 1.0**. The four-manual documentation collection and supporting guidance have been reconciled; final Documentation acceptance is recorded separately for the exact built ZIP; tagging and publication remain held. See the [documentation index](docs/README.md) and [separate documentation provenance](docs/releases/DOCUMENTATION-PUBLICATION.md).
 
 The project begins with CP/M 2.2 as its compatibility baseline while redesigning the operating system around explicit interfaces, documented state, reproducible builds, portable hardware boundaries, and independently testable subsystems. The objective is not simply to reproduce Digital Research CP/M source code, but to provide a clean and well-specified CP/M environment that remains practical on small 8-bit systems.
 
-BetterCP/M has reached the **1.0 OS implementation milestone**: architecture Stages 1 through 8 and retained OS implementation Items 1 through 6 are complete. Utility feature work is complete and six candidate downloads have been assembled. Documentation, fresh-package installation, licensing/source completeness and final publication acceptance remain. This is a development milestone, not the declaration of a qualified 1.0 release.
+BetterCP/M has reached the **1.0 OS implementation milestone**. Final exact-artifact qualification and reconstruction receipts govern the five locked packages. Documentation review is a separate workstream; nothing here declares a published release or broadens emulator results into physical-hardware qualification.
 
 The finalized visual design is defined in the [BetterCP/M Visual Identity standard](specifications/VISUAL-IDENTITY.md).
 
-The [BetterCP/M Utilities Manual](docs/user/utilities_manual.md) provides operating instructions for Utilities Disk programs, including DUMP and the initial DDT debugger adaptation.
+The [Command and Utilities Reference](docs/user/command_reference.md) covers System Disk commands, resident commands, and primary/companion Utilities programs.
 
 ## Goals
 
@@ -65,14 +65,14 @@ status; all current testing is emulator-based.
 
 ## BetterCP/M 1.0
 
-The architecture for BetterCP/M 1.0 is frozen, and the retained OS feature implementation is complete. The remaining release work covers documentation, package reconstruction and installation checks, rights/source audits, and final acceptance against the established contracts. Testing may identify corrections; it does not imply another planned OS feature implementation stage.
+The architecture and five non-documentation package identities are frozen. The reconciled Documentation package has its own revision and still needs final assembly/review. A defect requiring different software must explicitly reopen the affected lock and undergo applicable qualification; documentation work does not silently change the bytes.
 
 The two required 1.0 platforms are:
 
 - TRS-80 Model 4 / `trs80gp`;
 - z80pack / `cpmsim`.
 
-Both platforms already boot BetterCP/M. The current candidate has recorded bounded cpmsim and Model 4 validation; fresh-package installation and final release acceptance remain open.
+Both platforms have exact-artifact qualification, installation and file-preservation receipts under the lock. Tagging/publication and final documentation review remain held.
 
 The 1.0 system includes the normalized disk-state and FDF/FDB architecture, CONFIG/DUP/SYSGEN installation path, bounded persistent command history, CPX and RSX extension facilities, ordinary CP/M read-only/system/archive file attributes, and the native BetterCP/M clock-service architecture.
 
@@ -92,8 +92,7 @@ The authoritative scope and implementation sequence are defined by the [`BetterC
 The planned BetterCP/M 1.0 release has six downloads: System for cpmsim, System
 for Model 4, Utilities for cpmsim, Utilities for Model 4, Source and Documentation. See the
 [release-package layout](docs/releases/1.0-RELEASE-PACKAGES.md) for contents,
-source/patch requirements and outstanding acceptance checks. These are planned
-assets, not a published or accepted release.
+source/patch requirements and outstanding acceptance checks. Five assets are locked; the new Documentation identity is separate and provisional. The release remains unpublished.
 
 ## Building BetterCP/M
 
@@ -134,7 +133,7 @@ The source/build disk can be generated with:
 python3 tools/build_source_disk.py
 ```
 
-Detailed build, native-development, system-generation, and testing procedures belong to the BetterCP/M build/development documentation rather than this project overview. Current development information is available in [`docs/programmers/BUILD-DISK.md`](docs/programmers/BUILD-DISK.md) and the engineering record while that documentation is being consolidated.
+Start complete reconstruction with the [Source Build and Reconstruction Guide](docs/SOURCE-BUILD.md). Current development information is available in [`docs/programmers/BUILD-DISK.md`](docs/programmers/BUILD-DISK.md) and the engineering record with their staged-history reading notes.
 
 ## Documentation
 
@@ -155,14 +154,16 @@ The project record documents architectural decisions, implementation milestones,
 
 Historical documents are retained when they provide useful design or implementation history. Their historical presence does not override later architecture specifications or the frozen 1.0 contracts.
 
-The published BetterCP/M documentation is organized into four families:
+The target published documentation has four principal manuals:
 
-1. **User Documentation** — operating, configuring, installing, and maintaining BetterCP/M.
-2. **Programmer Documentation** — writing software, CPXs, RSXs, and other programs against supported BetterCP/M interfaces.
-3. **Technical Manuals** — authoritative descriptions of the operating system architecture and technical subsystems.
-4. **Build & Development Guide** — building, modifying, testing, generating, and porting BetterCP/M.
+1. **[User's Guide](docs/user/users_guide.md)** — task-oriented operation followed by seven conceptual chapters.
+2. **[Command and Utilities Reference](docs/user/command_reference.md)** — functional sections with alphabetized, independently usable resident/transient entries.
+3. **[Programmer's Guide](docs/programmers/programmers_guide.md)** — application and extension development with linked CP/M 2.2 and BetterCP/M API references, worked examples and explicit stability boundaries.
+4. **[Practical Porting Guide](docs/porting/practical_porting_guide.md)** — staged assessment, build, boot, BIOS/disk/memory integration, installation and qualification. Further hardware examples remain separate expansion.
 
-These manuals are being developed from the reconciled project and engineering record.
+Installation guides, source reconstruction guidance, release information, licensing and engineering records support these manuals. The former [Utilities Manual](docs/user/utilities_manual.md) and standalone command paths are locators into the consolidated reference.
+
+The [non-documentation lock](docs/releases/non-documentation-lock-1.0/README.md) fixes five Source/System/Utilities packages and their software. The Documentation package has its own revision. Completing new programmer/porting material does not automatically become another 1.0 release prerequisite.
 
 ## Compatibility and testing
 
@@ -170,7 +171,7 @@ BetterCP/M compatibility is defined by documented behavioral requirements rather
 
 The system is tested with the separately maintained [**CP/M 2.2 Compatibility Suite**](https://github.com/CPMArchives/cpm-2.2-compatibility-suite), together with subsystem regression tests, platform tests, native/cross-build comparisons, and physical-system qualification procedures.
 
-Historical milestone results in the engineering record document what a particular build demonstrated at that point in development. The [2026-11-02 release conformance record](docs/engineering/Release-Conformance-2026-11-02.md) accounts for 627 cpmsim cards with explicit exclusions and three compatibility-profile differences (0020, 0493, 0494); it does not report 627 passes. The reviewed Model 4 batch reported 269 passes with zero failures/errors, not universal two-platform qualification. The tested candidate is `6d6c103507ce8558700b3b8e412ac500de361226`; merged PR #565 added evidence and harness changes without changing production binaries. Final package acceptance and fresh-package installation remain open.
+Historical milestone results retain their exact builds and scope. The November 2 card accounting and Model 4 batch are not universal two-platform passes. Later exact-package installation, native query, offline reproduction and protected-XIP receipts are summarized in the [working release notes](docs/releases/RELEASE-NOTES-1.0.md) and [five-package lock](docs/releases/non-documentation-lock-1.0/README.md). New documentation checks do not rerun those trials. No physical hardware qualification or publication is implied.
 
 ## Related projects
 

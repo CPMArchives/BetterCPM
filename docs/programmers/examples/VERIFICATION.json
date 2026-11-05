@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "date_taipei": "2026-11-05",
+  "software_baseline": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+  "scope": "Documentation examples only; cross-assembly and CPX alternate-origin byte reproduction. No release artifacts rebuilt or replaced.",
+  "assembler": {
+    "name": "z80asm",
+    "version": "2.1",
+    "sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+  },
+  "conversion": "Replace CSEG plus .PHASE origin with ASEG plus ORG origin; remove .DEPHASE. Preserve all other source bytes.",
+  "command": "z80asm -fb -o<private-output.bin> <converted-source.asm>",
+  "examples": [
+    {
+      "example": "PING.MAC",
+      "bytes": 49,
+      "sha256": "2cdf393bc2bb5ab1b3766c508fa33e369a6dd3da78d15568d4b1fa373dfa4abe",
+      "source_sha256": "ef28b50a430529f08fff4c1e47bcc529c230bade2b03a0f4b3255f6a91d3f251"
+    },
+    {
+      "example": "HELLO.MAC",
+      "bytes": 175,
+      "sha256": "29e0045ebd4e939b42bb632ca6071a95b33cf880d5c996aa99f5c6cf819c1f92",
+      "source_sha256": "288cb821afa3f69c28059c5419451d8de71b1aad5659b7d3e3bf18221a86dc14"
+    },
+    {
+      "example": "TIMEQ.MAC",
+      "bytes": 472,
+      "sha256": "e8eb1837cd682bcd06b0b5e4256a5814276c9bcc8afdd6fd815fd3921f8535cc",
+      "source_sha256": "09abee3dbe5eadf17c03de968fb5422713d325d8a30202d8726ea212b2c5672d"
+    },
+    {
+      "example": "RECORDS.MAC",
+      "bytes": 790,
+      "sha256": "81cac0ba3ec1910c31c79104e5f4d66b3e8f9526b9cc233372cebf220ff63735",
+      "source_sha256": "90febd5bcae37abaa22463d5632358136c161d4a96c849b5c88222a98b0808c3"
+    }
+  ],
+  "cpx_relocation": {
+    "payload_bytes": 49,
+    "origins": [
+      "8000h",
+      "8101h"
+    ],
+    "relocation_offsets": [
+      2,
+      14,
+      27
+    ],
+    "alternate_image_reproduction": "pass",
+    "scope": "cross-assembly/two-origin byte comparison; not native execution"
+  },
+  "native_ZSM4_LINK": "not_run",
+  "BDOS_emulator_execution": "not_run",
+  "physical_hardware": "not_run",
+  "release_qualification": "not_claimed"
+}

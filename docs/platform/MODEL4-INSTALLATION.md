@@ -1,8 +1,8 @@
 # Installing BetterCP/M on a TRS-80 Model 4
 
-Status: release-candidate instructions; fresh-package manual verification pending.
-These instructions describe the supplied Model 4 media. They do not establish
-physical-hardware or emulator qualification of a newly packaged candidate.
+These reconciled instructions describe the [five-package locked 1.0 baseline](../releases/non-documentation-lock-1.0/README.md). Installation, populated-file preservation and cold boot have recorded qualification for the exact emulator artifacts. This edit claims no new runtime/hardware trial. Physical media transfer and additional machines remain separately scoped.
+
+[Documentation index](../README.md) · [User's Guide](../user/users_guide.md) · [Command Reference](../user/command_reference.md) · [current errata](../releases/1.0-ERRATA.md). Updated documentation is separate from the historical manuals embedded in the unchanged ZIPs.
 
 ## Prepare the media
 
@@ -59,8 +59,7 @@ RSX LIST
 When Utilities are installed, inspect DIR B: and DIR C:, then run B0:DUMP /VER,
 B0:CRCKSUM /VER, B0:MD5SUM /VER, C0:NOAH /VER, C0:PATCH /VER and
 C0:COMPARE /VER. Compare the actual banners and files with RELEASE.json.
-Confirm return to the original drive/user after each query. These smoke checks
-do not replace the bounded recorded validation campaign or fresh-package acceptance checks.
+Confirm return to the original drive/user after each query. These are user installation checks, not a new release qualification campaign. Exact identities come from the lock, not a current development build.
 
 ## Work disks, installation and validation
 
@@ -69,7 +68,7 @@ CONFIG defaults or STARTUP.SUB. TYPE A0:STARTUP.SUB shows the startup script.
 For the verified 780K System-copy installation procedure, follow
 [the shipped-tool walkthrough](MODEL4-SHIPPED-INSTALLATION.txt).
 For copying/installing system tracks to compatible prepared media, consult the
-User's Guide DUP/SYSGEN procedures; copying ordinary directory files alone does
+[Command Reference DUP](../user/command_reference.md#dup) and [SYSGEN](../user/command_reference.md#sysgen) procedures; copying ordinary directory files alone does
 not install a bootable system. Do not format a disk containing wanted data.
 
 On physical hardware, DMK is an emulator container and must first be transferred
@@ -77,12 +76,14 @@ using equipment/software appropriate to the actual media and controller.
 Do not assume a generic raw-image write transfers DMK correctly. Physical
 installation and hardware-specific transfer steps require their own validation.
 
-Record package/image/component hashes, trs80gp version, drive setup, commands,
-expected results and actual outcomes for the fresh-package test. Work from the
-[Model 4 release checklist](../engineering/Model%204%20Release%20Checklist.md).
-Preserve earlier blocked/deferred records and append actual results. Do not
-retry the automated LaunchServices path merely to execute these manual checks.
+For a new installation investigation, record package/image/component hashes, trs80gp version, drive setup, commands and actual outcomes. Preserve historical checklists/results as dated evidence rather than treating every earlier pending item as still open. The exact-hash lock and its qualification links identify completed release checks.
+
+Keep FDB.COM 1.0 (001) and FDBVIEW.OVL matched. Interactive FDB requires 53K: unload ADM3A, then M4SCRN; after exit restore the unmodified SUBMIT STARTUP or cold boot. Queries work at the normal 50K allocation. The 1.01 development workbench is not supplied.
+
+XSUB.COM and BATCHIO.RSX are on primary Utilities. From A0 on a writable System copy with Utilities in B, copy `B:BATCHIO.RSX` to `A:BATCHIO.RSX` before `B0:XSUB`; retain matching A0:R3PACK.RSX. [XSUB erratum](../releases/1.0-ERRATA.md#xsub-companion-must-be-copied-to-a0).
 
 P2DOS.RSX is supplied in A0 for optional compatibility with Functions 200/201.
 Load the platform’s native clock provider before `RSX LOAD P2DOS`; startup
-loads neither. T104C3/T104Z8 are deferred and are not supplied in the 1.0 RC.
+loads neither. T104C3/T104Z8 are deferred and are not supplied in locked 1.0.
+
+When replacing mounted images, finish writes, fully quit trs80gp, remount the intended copies and cold boot. A warm boot does not start a replacement machine image.

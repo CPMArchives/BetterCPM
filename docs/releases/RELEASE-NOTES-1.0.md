@@ -1,13 +1,13 @@
 # BetterCP/M 1.0
 
-> **Working draft — documentation sync pending.** Five non-documentation
+> **Unpublished release notes — consult the separate final documentation acceptance receipt.** Five non-documentation
 > packages are locked against the [exact baseline](non-documentation-lock-1.0/README.md).
-> These notes are not final publication approval. Complete and synchronize the
-> Documentation package before final review; tagging and publishing remain held.
+> These notes are not final publication approval. The four manuals and supporting documents are reconciled; assemble and verify the
+> separately versioned Documentation package before final review; tagging and publishing remain held.
 
 BetterCP/M is a CP/M 2.2-compatible operating system for patched z80pack/cpmsim
 and the TRS-80 Model 4. This release brings together the system, its utilities,
-complete matching source and manuals in six qualified downloads.
+complete matching source and manuals in six downloads: five locked qualified archives plus a separately revised Documentation ZIP awaiting final review.
 
 ## Choose your downloads
 
@@ -18,7 +18,7 @@ complete matching source and manuals in six qualified downloads.
 | `BetterCPM-Utilities-1.0-cpmsim.zip` | cpmsim primary Utilities disk, NOAH companion disk, manuals and required source companions. |
 | `BetterCPM-Utilities-1.0-Model4.zip` | The matching Model 4 Utilities and NOAH companion DMKs, manuals and source companions. |
 | `BetterCPM-1.0-Source.zip` | Complete matching sources, native build material, tools, metadata, dependency tar and patches for offline reconstruction. |
-| `BetterCPM-1.0-Documentation.zip` | User and Utilities manuals, FDB guide, installation/build guidance and reference material in editable/text form. |
+| `BetterCPM-1.0-Documentation.zip` | Four principal manuals with API chapters, original examples, installation/build guidance, licensing and technical references in Markdown/text form. |
 
 System and Utilities are separate downloads. For a combined installation use
 A: System, B: primary Utilities, C: NOAH companion, D: work. Preserve the supplied
@@ -72,8 +72,7 @@ by their original tests. A pre-corrupted history object with valid signature
 but unsafe lengths/counts can damage memory (BCPM-AUD-003); no supported command
 sequence producing that malformed state was established. Its hardening and
 general historical-oracle cleanup (BCPM-AUD-007) remain deferred. The 104/105
-clock adapters T104C3/T104Z8 are also deferred. Reconciled Markdown/text manuals
-are supplied; older PDF/DOCX editions are excluded.
+clock adapters T104C3/T104Z8 are also deferred. The documentation publication format is Markdown/text; older PDF/DOCX editions are excluded. New programmer/porting examples have their own evidence ledger and do not add software release requirements.
 
 ## Licenses and format data
 
@@ -87,7 +86,7 @@ in the supplied records; the project licenses do not grant rights over those dat
 
 ## Exact files and retained build-time wording
 
-The six downloads are byte-for-byte copies of the frozen archives from source
+The five Source/System/Utilities downloads are byte-for-byte copies of the frozen archives from source
 `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`. Their outer download names omit `-candidate`; their ZIP contents,
 internal checksums and internal `-candidate` directory names are unchanged.
 Some embedded README/status fields and release notes therefore still say
@@ -97,8 +96,14 @@ PR #609 and the release-wide index supplied alongside the downloads. Dated
 engineering history remains historical evidence. This paragraph does not
 supersede usage instructions, license terms or known limitations.
 
-`BetterCPM-1.0-SHA256SUMS.txt` lists the SHA-256 hashes under the final download
-names. `BetterCPM-1.0-RELEASE.json` maps those names to the original frozen names,
-internal roots, source revision and qualification record. The intended tag target
+The existing draft checksum/index snapshots identify the earlier provisional Documentation ZIP. After final review, `BetterCPM-1.0-SHA256SUMS.txt` must retain all five locked hashes and add the actual new Documentation hash under its final download name. `BetterCPM-1.0-RELEASE.json` maps those names to the original frozen names,
+internal roots, source revision and qualification record. The old preflight tag target proposal
 is the reviewed merge `2842d0eb0732683d9280a38d576c3dba423cb893`; only qualification records differ from the
-compiled source above. A draft release does not itself authorize tagging or publication.
+compiled source above. Final target alignment remains deferred until documentation review; this proposal is not a new target selection or tagging/publication authorization.
+
+
+## Revised documentation provenance
+
+The new Documentation ZIP records its actual documentation commit separately from locked software source `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`. It does not claim all six downloads were rebuilt together. Source and embedded manuals in the five archives stay unchanged; the dedicated updated collection explains obsolete status/navigation without overriding license terms or known limitations. [Four-manual index](../README.md), [publication plan](DOCUMENTATION-PUBLICATION.json) and [format/verification procedure](DOCUMENTATION-PUBLICATION.md).
+
+The final Documentation commit/hash/size are recorded in the companion acceptance receipt and local accepted-download index after actual assembly and Step 5 checks; the pre-build publication-plan template intentionally leaves them unset. No tag-target alignment, tagging or publication is performed by this reconciliation. Further Programmer's/Porting Guide expansion remains separate from the locked 1.0 software scope.

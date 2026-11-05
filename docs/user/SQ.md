@@ -1,117 +1,37 @@
 # SQ — Squeeze one file
 
-[Utilities Manual](utilities_manual.md#compression-utilities) · [USQ](USQ.md)
+License: original prose/illustrations are CC BY 4.0; original reusable code examples are GPL-2.0-or-later. Third-party material retains its own terms. See [licensing and example boundaries](../LICENSING.md).
 
-SQ writes a squeezed file while keeping the original. It reads the source
-twice, first to analyze it and then to produce the compressed stream. Keep the
-source unchanged until SQ finishes. Use USQ to restore it.
+The canonical released 1.0 operating reference is [SQ](command_reference.md#sq). This locator preserves the previous document path without maintaining a second command description.
 
-## Syntax
+<a id="sq--squeeze-one-file"></a>
 
-```text
-SQ [drive:]file [destination-drive:]
-SQ /H
-SQ /HELP
-SQ /VER
-```
+[SQ — Squeeze one file](command_reference.md#sq)
 
-Give one exact 8.3 source name and an optional destination drive such as `B:`.
-Both use your current user area. Output defaults to the logged drive, not the
-source or command's drive. Wildcards, paths, explicit user/DU file operands,
-output filenames and other switches are not accepted. `/HELP` and `/VER` ignore other arguments. See the
-[shared command rules](utilities_manual.md#shared-compression-command-rules)
-for program lookup, filename syntax and drive defaults.
+<a id="syntax"></a>
 
-## Help
+[Syntax](command_reference.md#sq)
 
-`SQ /HELP` displays a compact purpose/Usage corner followed by an unframed
-Options list, then returns without accessing files. Examples, defaults and
-restrictions are described below. Letter case and surrounding spaces or TABs
-do not matter.
-An exact `/H` or `/HELP` token anywhere in the command ignores other arguments and
-shows help. If `/VER` is also present, help takes precedence in either order.
-Longer tokens such as `/HELPER` are syntax errors. Empty or malformed commands
-show short syntax and `Use SQ /HELP for help.`
+<a id="help"></a>
 
-The help screen is:
+[Help](command_reference.md#sq)
 
-```text
-SQ 1.0 (007)
-  - - -
- | Squeeze compression
- |
- |   Usage: SQ [drive:]file [destination-drive:]
+<a id="version-identification"></a>
 
-   Options:
-     /H /HELP    Display this help.
-     /VER        Display utility identification.
-```
+[Version identification](command_reference.md#sq)
 
-## Version identification
+<a id="output-name-and-supported-files"></a>
 
-`SQ /VER` shows the utility identity and returns to the command prompt without
-opening files or starting compression/expansion. `/ver` and mixed letter case
-work too. For the current build:
+[Output name and supported files](command_reference.md#sq)
 
-```text
-SQ 1.0 (007)
-  - - -
- | BetterCP/M Utilities
- | Squeeze File Compression
-```
+<a id="example"></a>
 
-Version and build numbers come from the standard utility metadata. The build
-counter advances with published executable changes; it does not reset at a new
-version. An exact `/VER` token anywhere in the command shows identification and ignores
-other arguments, unless `/H` or `/HELP` is also present, in which case help is shown.
-Normal file
-processing does not print this identification banner.
+[Example](command_reference.md#sq)
 
-## Output name and supported files
+<a id="completion-and-messages"></a>
 
-| Source | Output |
-| --- | --- |
-| `REPORT.TXT` | `REPORT.TQT` |
-| `CODE.ABC` | `CODE.AQC` |
-| `SHORT.A` or `SHORT.AB` | `SHORT.AQ` |
-| `NOEXT` | `NOEXT.QQQ` |
+[Completion and messages](command_reference.md#sq)
 
-SQ replaces the middle extension character with Q. A name already containing Q
-in that slot, such as `REPORT.TQT`, is refused even if you choose another drive.
-The stored original name has no drive or padding spaces.
+<a id="related-documentation"></a>
 
-## Example
-
-```text
-SQ A:REPORT.TXT B:
-USQ B:REPORT.TQT C:
-```
-
-These commands leave `A:REPORT.TXT` and `B:REPORT.TQT` in place and restore
-`C:REPORT.TXT`. C: must not already contain that name in your current user area.
-
-## Completion and messages
-
-Success prints `SQ: complete.` and returns to the prompt. Source files stay
-in place; existing outputs are refused. Processing uses a temporary on the
-destination drive. See [file handling and recovery](utilities_manual.md#compression-file-handling-and-recovery)
-for record padding, free space, read/write/close/rename errors and interrupted
-operations. A final file is published only after successful processing and closes.
-
-| Message | Meaning/recovery |
-| --- | --- |
-| `SQ: input name already squeezed.` | The middle extension character is Q. Check that you selected the original source. |
-| `SQ: cannot reopen input for second pass.` | The close/reopen needed for pass two failed. Check source media and accessibility. |
-| `SQ: input changed between passes.` | SQ detected different input. Keep a stable source and run again. No final compressed file is published. |
-| `SQ: encoding failed.` | An encoding/configuration/capacity failure occurred; retain the source. |
-
-SQ's pass comparison is not a guarantee against every possible source change.
-It stores every CP/M record byte; it does not stop at text `1Ah`. Squeezed output
-is compatible with the supported SQ format but is not promised to match an old
-encoder byte for byte.
-
-## Related documentation
-
-- [USQ command](USQ.md)
-- [Common operating rules](utilities_manual.md#compression-utilities)
-- In the Documentation ZIP, see `docs/engineering/SQ-USQ Specification.md`.
+[Related documentation](command_reference.md#sq)

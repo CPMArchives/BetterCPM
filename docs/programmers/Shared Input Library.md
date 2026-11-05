@@ -1,5 +1,8 @@
 # Shared Input Library
 
+> **Locked 1.0 reading note:** This detailed source-level reference supports [library integration](programmers_guide.md#reuse-input-and-archive-libraries). Historical consumer build numbers below are not current release identities. Preserve each consumer’s documented input behavior; new examples do not authorize changes to locked utility keys or prompts.
+
+
 BetterCP/M provides build-time Z80 assembly modules for single-line editing,
 text prompts, choices and confirmations. Reuse them when adding utility prompts
 instead of introducing another keyboard editor. They require no resident service,

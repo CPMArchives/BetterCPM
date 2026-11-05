@@ -1,31 +1,20 @@
-# BetterCP/M 1.0 candidate documentation
+# BetterCP/M 1.0 documentation
 
-Start with your platform's installation guide. These are candidate documents;
-see the release notes for outstanding validation and editorial work.
+Start with [the documentation index](docs/README.md) and your platform installation guide. These are reconciled documents with separate software/documentation provenance; final package review remains pending.
 
-| Purpose | Start here |
+| Purpose | Publication |
 | --- | --- |
-| Install/run cpmsim | [Patched cpmsim installation](docs/platform/CPMSIM-INSTALLATION.md) |
-| Install/run Model 4 | [Model 4 installation](docs/platform/MODEL4-INSTALLATION.md) |
-| Operate the system | [User's Guide](docs/user/users_guide.md) |
-| Use Utilities | [Utilities Manual](docs/user/utilities_manual.md) |
-| Understand downloads and disks | [Package layout](docs/releases/1.0-RELEASE-PACKAGES.md), [disk manifest](docs/releases/DISTRIBUTION-MANIFEST.md) |
-| Read release limits | [Candidate release notes](docs/releases/RELEASE-NOTES-1.0.md) |
-| Build system images | [Distribution build](docs/releases/DISTRIBUTION-BUILD.md) |
-| Build under CP/M | [Native build disk](docs/programmers/BUILD-DISK.md) |
-| Program extensions | [RSX/CPX Programmer's Guide](docs/programmers/RSX%20and%20CPX%20Programmer%27s%20Guide.md) |
-| Study the architecture | [Architecture documents](docs/architecture/) |
-| Review historical evidence | [Engineering records](docs/engineering/) |
-| Review Model 4 validation history | [Manual checklist](docs/engineering/Model%204%20Release%20Checklist.md) |
+| Everyday tasks and seven conceptual chapters | [User's Guide](docs/user/users_guide.md) |
+| Command syntax, examples and errors | [Command and Utilities Reference](docs/user/command_reference.md) |
+| Applications, extensions and APIs | [Programmer's Guide](docs/programmers/programmers_guide.md), [CP/M API](docs/programmers/CPM22-API.md), [BetterCP/M API](docs/programmers/BETTERCPM-API.md) |
+| Hardware adaptation and qualification | [Practical Porting Guide](docs/porting/practical_porting_guide.md) |
+| Install cpmsim / Model 4 | [cpmsim](docs/platform/CPMSIM-INSTALLATION.md), [Model 4](docs/platform/MODEL4-INSTALLATION.md) |
+| Reconstruct software or use native build media | [Source Build Guide](docs/SOURCE-BUILD.md) |
+| Exact release inventory, limitations, workarounds | [Manifest](docs/releases/DISTRIBUTION-MANIFEST.md), [release notes](docs/releases/RELEASE-NOTES-1.0.md), [errata](docs/releases/1.0-ERRATA.md) |
+| Publication formats and identity | [Documentation publication](docs/releases/DOCUMENTATION-PUBLICATION.md), [plan](docs/releases/DOCUMENTATION-PUBLICATION.json), SOURCE-IDENTITY.json and RELEASE.json |
+| Rights, attribution, example licensing and source companions | [Licensing](docs/LICENSING.md), [inventory](docs/LICENSING-INVENTORY.md), [GPL](licenses/BetterCPM/COPYING), [CC BY 4.0](licenses/BetterCPM/CC-BY-4.0.txt), THIRD-PARTY-NOTICES.txt |
+| Expansion/evidence limits | [Programmer/porting ledger](docs/programmers/REFERENCE-STATUS.md) |
 
-## Licenses and attribution
+The five [locked packages](docs/releases/non-documentation-lock-1.0/README.md) keep their embedded documentation unchanged. This collection explains obsolete guidance without overriding licenses or known limitations. It does not claim all six downloads were rebuilt together. New programmer/porting expansion and native example trials are separate from locked 1.0 software blockers.
 
-- [Original software and manual licensing](docs/LICENSING.md), [GPL text](licenses/BetterCPM/COPYING), [CC BY 4.0 text](licenses/BetterCPM/CC-BY-4.0.txt)
-- [Third-party notices](THIRD-PARTY-NOTICES.txt), [LINK permission](licenses/third_party/dri-link/permission.html), [LINK provenance](licenses/third_party/dri-link/provenance.json)
-- [ZSM4 provenance](licenses/third_party/zsm4/provenance.json), [TED license](licenses/third_party/ted/LICENSE), [DASM provenance](licenses/third_party/dasm/provenance.json), [z80pack license](licenses/third_party/z80pack/LICENSE)
-
-PDF/DOCX editions are withheld from this candidate Documentation package pending
-comparison with current editable sources. File/code links outside this package
-refer to the matching Source download; do not treat a broken external-source
-link as an additional installed component. Historical engineering outcomes are
-not current acceptance of different binaries.
+Markdown/text and editable example sources are selected. Older PDF/DOCX, backup and development FDB editions are excluded. Focused technical references remain local where selected; omitted source/history links are pinned repository URLs. They do not identify additional installed disk components. Existing engineering results apply only to their recorded artifacts.

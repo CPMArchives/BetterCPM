@@ -1,118 +1,37 @@
 # UNLZH — Restore a CP/M CrLZH file
 
-[Utilities Manual](utilities_manual.md#compression-utilities) · [LZH](LZH.md)
+License: original prose/illustrations are CC BY 4.0; original reusable code examples are GPL-2.0-or-later. Third-party material retains its own terms. See [licensing and example boundaries](../LICENSING.md).
 
-UNLZH restores the supported old `10h` and new `20h` CP/M CrLZH variants with
-additive checksums. It detects the variant from the header; no switch is needed.
-The compressed input remains in place, and output is published only after its
-checksum and file closes succeed.
+The canonical released 1.0 operating reference is [UNLZH](command_reference.md#unlzh). This locator preserves the previous document path without maintaining a second command description.
 
-## Syntax
+<a id="unlzh--restore-a-cpm-crlzh-file"></a>
 
-```text
-UNLZH [drive:]file [destination-drive:]
-UNLZH /H
-UNLZH /HELP
-UNLZH /VER
-```
+[UNLZH — Restore a CP/M CrLZH file](command_reference.md#unlzh)
 
-Give one exact 8.3 source name and an optional destination drive such as `B:`.
-Both use your current user area. Output defaults to the logged drive, not the
-source or command's drive. Wildcards, paths, explicit user/DU file operands,
-output filenames and other switches are not accepted. `/HELP` and `/VER` ignore other arguments. See the
-[shared command rules](utilities_manual.md#shared-compression-command-rules)
-for program lookup, filename syntax and drive defaults.
+<a id="syntax"></a>
 
-## Help
+[Syntax](command_reference.md#unlzh)
 
-`UNLZH /HELP` displays a compact purpose/Usage corner followed by an unframed
-Options list, then returns without accessing files. Examples, defaults and
-restrictions are described below. Letter case and surrounding spaces or TABs
-do not matter.
-An exact `/H` or `/HELP` token anywhere in the command ignores other arguments and
-shows help. If `/VER` is also present, help takes precedence in either order.
-Longer tokens such as `/HELPER` are syntax errors. Empty or malformed commands
-show short syntax and `Use UNLZH /HELP for help.`
+<a id="help"></a>
 
-The help screen is:
+[Help](command_reference.md#unlzh)
 
-```text
-UNLZH 1.0 (007)
-  - - -
- | CrLZH expansion
- |
- |   Usage: UNLZH [drive:]file [destination-drive:]
+<a id="version-identification"></a>
 
-   Options:
-     /H /HELP    Display this help.
-     /VER        Display utility identification.
-```
+[Version identification](command_reference.md#unlzh)
 
-## Version identification
+<a id="output-name-and-supported-files"></a>
 
-`UNLZH /VER` shows the utility identity and returns to the command prompt without
-opening files or starting compression/expansion. `/ver` and mixed letter case
-work too. For the current build:
+[Output name and supported files](command_reference.md#unlzh)
 
-```text
-UNLZH 1.0 (007)
-  - - -
- | BetterCP/M Utilities
- | CrLZH File Expansion
-```
+<a id="example"></a>
 
-Version and build numbers come from the standard utility metadata. The build
-counter advances with published executable changes; it does not reset at a new
-version. An exact `/VER` token anywhere in the command shows identification and ignores
-other arguments, unless `/H` or `/HELP` is also present, in which case help is shown.
-Normal file
-processing does not print this identification banner.
+[Example](command_reference.md#unlzh)
 
-## Output name and supported files
+<a id="completion-and-messages"></a>
 
-The restored name comes from the header. `REPORT.TYT` may restore as
-`REPORT.TXT`; changing the input's extension does not change that stored name.
-Input need not have Y in its extension, but must contain the supported CrLZH
-format. Ordinary LHA/`.LZH` archives are a different format and are not supported.
+[Completion and messages](command_reference.md#unlzh)
 
-UNLZH accepts trailing blanks in historical three-slot extensions and ignores
-later header metadata. It validates the resulting plain 8.3 name, refusing paths,
-drive/user prefixes, wildcards and high-bit filename characters. It does not
-restore metadata as attributes or timestamps, or offer an output-name override.
-Some historical files have high-bit header names and are therefore refused even
-when their compressed data is valid.
+<a id="related-documentation"></a>
 
-## Example
-
-```text
-UNLZH B:REPORT.TYT C:
-```
-
-This keeps `B:REPORT.TYT` and restores its original name on C: in your current
-user area. While logged onto A:, `UNLZH B:REPORT.TYT` instead restores on A:.
-An existing original name is never replaced.
-
-## Completion and messages
-
-Success prints `UNLZH: complete.` and returns to the prompt. Source files stay
-in place; existing outputs are refused. Processing uses a temporary on the
-destination drive. See [file handling and recovery](utilities_manual.md#compression-file-handling-and-recovery)
-for record padding, free space, read/write/close/rename errors and interrupted
-operations. A final file is published only after successful processing and closes.
-
-| Message | Meaning/recovery |
-| --- | --- |
-| `UNLZH: unsupported CrLZH variant.` | Revision or checking mode is unsupported. Only `10h`/`20h` with additive checking are accepted. |
-| `UNLZH: header exceeds 127 bytes.` | The stored name/metadata exceeds the supported bound. |
-| `UNLZH: invalid or truncated CrLZH file.` | Wrong format, malformed encoded data or premature end. Check the format or obtain another copy. |
-| `UNLZH: checksum mismatch.` | Restored content failed verification; no final output is published. |
-
-UNLZH does not browse an archive or decode squeezed/CRUNCH files. Use USQ or
-UNCR for those formats. `1Ah`, binary bytes and overlapping compressed matches
-are restored without text conversion.
-
-## Related documentation
-
-- [LZH command](LZH.md)
-- [Common operating rules](utilities_manual.md#compression-utilities)
-- In the Documentation ZIP, see `docs/engineering/LZH-UNLZH Specification.md`.
+[Related documentation](command_reference.md#unlzh)
