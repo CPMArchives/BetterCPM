@@ -679,7 +679,7 @@ and [BetterCP/M catalogue baseline](https://github.com/CPMArchives/BetterCPM/blo
 
 | Priority among the 104 unmapped names | Count | Work |
 |---|---:|---|
-| P1, qualify | 5 | Start with Amstrad `cpcsys` and `cpcdata`, then `pcw` and Ampro `amp3`/`amp5`. The Ampro names share one layout. All four candidate descriptors passed FDB serialization and read-back. Guest I/O remains open. |
+| P1, qualify | 5 | Amstrad `cpcsys` and `cpcdata` passed cpmsim file interchange and last-block writes on four archived disks. Both are in the [supplemental catalogue](metadata/supplemental/README.md). Model 4 guest I/O is open. Next up are `pcw` and the shared Ampro `amp3`/`amp5` layout. |
 | P1, investigate | 5 | Inspect original ATON `trse`/`trsf` and Lifeboat `trs5` media to explain the 11,520-byte image prefix and verify the last block. Recover the sector IDs and order for the 8-inch MAX-80 `lobo2`/`lobo3` disks. Existing MAX-80 entries cover 5¼-inch disks. |
 | P2, follow up | 15 | Prioritize documented floppy families such as Bondwell 14, Microbee/Dreamdisk, Zenith 8-inch DD and Ampro double-sided. PCW 720K (`cf2dd`) specifies CKS 64, above the current BIOS limit of 32. |
 | P3, obtain evidence | 30 | Obtain an original disk or a concrete interchange use for Robotron/SCP/Korvet, Timex, P112 and other OEM variants. |
@@ -688,6 +688,7 @@ and [BetterCP/M catalogue baseline](https://github.com/CPMArchives/BetterCPM/blo
 - [ ] Resolve two P1 conflicts outside the 104. Kaypro IV `kpiv` gives DSM
   196 while `MMF046` gives 195. Check the OEM DPB and final block before
   qualifying writes. Omikron `trsomsssd` has 35 tracks while `MMF063` has 40.
+- [ ] For each new supplemental entry, seek a nonempty original disk image online, pin its source and digest, and test preserved files and final-block writes on copies. Record the result per backend and identify any synthetic-only case. Keep the source and compiled supplemental FDB together.
 - [ ] Derive candidate allocation and directory parameters from `diskdefs`.
   Cross-check absolute sector IDs and logical order, cylinder/head traversal,
   FM/MFM encoding, inversion, sector sizes, reserved tracks, allocation bounds,
