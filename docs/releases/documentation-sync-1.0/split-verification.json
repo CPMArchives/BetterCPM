@@ -1,0 +1,65 @@
+{
+  "status": "SPLIT_IDENTITIES_STATIC_CHECKS_PASS",
+  "locked_packages": [
+    {
+      "package": "source",
+      "filename": "BetterCPM-1.0-Source.zip",
+      "sha256": "1975f95144998c33ba704f37da3246343dd6ecc82ae7e4b014b8d7af372e71ca",
+      "size_bytes": 350224651,
+      "verification": "EXACT_LOCK_MATCH"
+    },
+    {
+      "package": "system-model4",
+      "filename": "BetterCPM-1.0-System-Model4.zip",
+      "sha256": "5760ebcb361c80fa632e323a016a95fac477183527c7f6d661721958e8a44b97",
+      "size_bytes": 4157094,
+      "verification": "EXACT_LOCK_MATCH"
+    },
+    {
+      "package": "system-cpmsim",
+      "filename": "BetterCPM-1.0-System-cpmsim.zip",
+      "sha256": "0d6fbff549088915e85470c718b1ce05e78980e460c7429b0e0e9f7e4746c6c4",
+      "size_bytes": 4463644,
+      "verification": "EXACT_LOCK_MATCH"
+    },
+    {
+      "package": "utilities-model4",
+      "filename": "BetterCPM-Utilities-1.0-Model4.zip",
+      "sha256": "7b92378db28281b1e05d6d4bd4f7f480c3224c848c4120b93ee2abfd217577c9",
+      "size_bytes": 232607745,
+      "verification": "EXACT_LOCK_MATCH"
+    },
+    {
+      "package": "utilities-cpmsim",
+      "filename": "BetterCPM-Utilities-1.0-cpmsim.zip",
+      "sha256": "37477e6b06b13337c191e3c6d78be383ff7b14143c68d65bd0814e08ef7f5b1b",
+      "size_bytes": 232575318,
+      "verification": "EXACT_LOCK_MATCH"
+    }
+  ],
+  "documentation": {
+    "package": "documentation",
+    "filename": "BetterCPM-1.0-Documentation.zip",
+    "sha256": "8c184db835c90a2c60372b4f5a2bb93029fa4e772d849c6cdf1c44835e781fa9",
+    "size_bytes": 553662,
+    "documentation_revision": "549378120a8220cf546deb9c7602cfb3f73b6b0e",
+    "documentation_source": {
+      "base_commit": "549378120a8220cf546deb9c7602cfb3f73b6b0e",
+      "kind": "commit",
+      "manifest_sha256": "ee541f86b89475c3b78f1118737e0f8484b6588435fc2ae47bef5c381fed82a4",
+      "revision": "549378120a8220cf546deb9c7602cfb3f73b6b0e"
+    },
+    "files_verified": 122,
+    "local_links_verified": 1003,
+    "status": "DOCUMENTATION_STATIC_CHECKS_PASS",
+    "publication": "HOLD"
+  },
+  "runtime_qualification": "NOT_REPEATED; retained evidence applies only to identical locked bytes",
+  "remaining": [
+    "Final content/example/license/format review",
+    "Actual release index/checksum update after accepted Documentation build"
+  ],
+  "publication": "HOLD",
+  "tagging": "HOLD",
+  "failures": []
+}

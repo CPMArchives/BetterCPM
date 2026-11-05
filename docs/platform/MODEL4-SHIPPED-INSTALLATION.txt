@@ -36,14 +36,8 @@ This procedure is for the supplied 80-cylinder double-sided 780K SYSTEM layout.
    physical 0 and Utilities as physical 1. A cold boot restores the normal
    B: 800K data binding. The temporary assignment was not saved as startup defaults.
 
-The qualification used KEEP.TXT as a preservation marker and verified all
-shipped file hashes and the target's original filesystem entries independently.
-No private binding helper was used. The independent qualification inserts only
-updated CONFIG into private copies of the original 35c56a03 candidate disks.
-See ../engineering/BCPM780-Installation-Qualification.md for exact hashes and
-results. Rebuild and verify final packages before treating them as containing
-this update. The package freeze remains on hold.
+The qualification used KEEP.TXT as a preservation marker and verified the target filesystem and files. The named-binding behavior is included in the five locked packages, source 30b24a021cc3a90eb725cc3d1760dfe0dc31daa8, with qualification accepted through merge 2842d0eb0732683d9280a38d576c3dba423cb893. See ../releases/non-documentation-lock-1.0/README.md and its exact inventories/qualification references. This documentation edit performs no new install trial.
 
-Historical 35c56a03 CONFIG rejected the named command. Its previously verified
-workaround was CONFIG /EDIT=B /OFF=4 /DSM=389. The runtime normalization fix
-removes the need for that workaround; it does not change the on-disk layout.
+The installed Model 4 payload has the recorded bootstrap-binding difference at offset 7030 (E0 to A0). It is not a blanket waiver for other differences. The temporary B assignment is not saved as the normal B DATA default.
+
+Historical 35c56a03 CONFIG rejected the named command and used /EDIT=B /OFF=4 /DSM=389 as a workaround. That historical workaround is not the locked release installation procedure. Current CONFIG performs the accepted normalization without changing the on-disk layout.

@@ -1,5 +1,8 @@
 # BetterCP/M RSX and CPX Programmer's Guide
 
+> **Locked 1.0 reading note:** Selector migration and production reconstruction are complete. Use [the current guide](programmers_guide.md) and [final interface reference](BETTERCPM-API.md) for 176/177/182, eight-byte CPX headers, lifecycle and corrected metadata validation. Earlier pending/open-stage passages below are retained historical development context; focused final contracts and the release lock control on conflict.
+
+
 Status: Working architecture guide; Stage-6 selector migration remains an
 implementation task
 Date: 2026-09-25

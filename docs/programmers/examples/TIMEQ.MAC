@@ -1,0 +1,69 @@
+; SPDX-License-Identifier: GPL-2.0-or-later
+; Native TIME client; never requests SET and does not require P2DOS.
+BDOS    EQU     0005H
+        CSEG
+        .PHASE  0100H
+START:  LD      SP,STKTOP
+        LD      DE,LOOKUP
+        LD      C,182
+        CALL    BDOS
+        OR      A
+        JR      NZ,NOSERVICE
+        LD      DE,TREQ
+        CALL    INDIRECT
+        OR      A
+        JR      NZ,READFAIL
+        LD      HL,TREQ+4
+        LD      B,5
+PRINT:  PUSH    BC
+        PUSH    HL
+        LD      A,(HL)
+        CALL    HEXBYTE
+        LD      E,' '
+        LD      C,2
+        CALL    BDOS
+        POP     HL
+        POP     BC
+        INC     HL
+        DJNZ    PRINT
+        LD      DE,NEWLINE
+        JR      SAY
+NOSERVICE:
+        LD      DE,ABSENT
+        JR      SAY
+READFAIL:
+        LD      DE,FAILED
+SAY:    LD      C,9
+        CALL    BDOS
+        JP      0000H
+INDIRECT:
+        JP      (HL)
+HEXBYTE:
+        PUSH    AF
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        CALL    NIBBLE
+        POP     AF
+NIBBLE: AND     0FH
+        ADD     A,'0'
+        CP      '9'+1
+        JR      C,PUT
+        ADD     A,7
+PUT:    LD      E,A
+        LD      C,2
+        JP      BDOS
+LOOKUP: DB      1,20,0,0,'TIME',1,0
+        DW      0,0
+        DB      0,0
+        DW      0
+        DB      0,0
+TREQ:   DB      1,10,0,0,0,0,0,0,0,0
+NEWLINE: DB     13,10,'$'
+ABSENT: DB      'TIME service unavailable or incompatible.',13,10,'$'
+FAILED: DB      'TIME provider could not read a valid clock.',13,10,'$'
+        DS      256
+STKTOP:
+        .DEPHASE
+        END

@@ -1,0 +1,34 @@
+; SPDX-License-Identifier: GPL-2.0-or-later
+; CPX payload example; requires a BCPX v1 carrier, not a .COM rename.
+BDOS    EQU     0005H
+CPXBASE EQU     08000H
+        CSEG
+        .PHASE  CPXBASE
+NEXT:   DW      0
+ENTRY:  DW      COMMAND
+INIT:   DW      0
+SHUT:   DW      0
+COMMAND:
+        LD      A,B
+        CP      4
+        JR      NZ,DECLINE
+        LD      HL,KEY
+        LD      B,4
+MATCH:  LD      A,(DE)
+        CP      (HL)
+        JR      NZ,DECLINE
+        INC     DE
+        INC     HL
+        DJNZ    MATCH
+        LD      DE,MESSAGE
+        LD      C,9
+        CALL    BDOS
+        SCF
+        RET
+DECLINE:
+        OR      A
+        RET
+KEY:    DB      'PING'
+MESSAGE: DB     'PONG',13,10,'$'
+        .DEPHASE
+        END

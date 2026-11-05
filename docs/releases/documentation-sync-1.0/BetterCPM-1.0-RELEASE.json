@@ -1,0 +1,100 @@
+{
+  "schema": 2,
+  "release": "BetterCP/M 1.0",
+  "artifact_status": "FIVE_LOCKED_QUALIFIED_PLUS_ACCEPTED_DOCUMENTATION_DRAFT_ONLY",
+  "preflight_date_taipei": "2026-11-04",
+  "source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+  "reviewed_merge_revision": "2842d0eb0732683d9280a38d576c3dba423cb893",
+  "planned_tag_name": "v1.0",
+  "planned_tag_target": "2842d0eb0732683d9280a38d576c3dba423cb893",
+  "tag_policy": "existing draft name/target retained; no Git tag created or moved; target alignment held",
+  "publication_policy": "draft remains unpublished; tagging/publication not authorized",
+  "qualification_url": "https://github.com/CPMArchives/BetterCPM/blob/2842d0eb0732683d9280a38d576c3dba423cb893/docs/engineering/Release-Identity-Promotion-1.0.md",
+  "freeze_manifest_sha256": "0eca3c4a632fe1c7fba90b3d5b1633211f32814fce81347e56baf0ac64ee7788",
+  "checksum_file": "BetterCPM-1.0-SHA256SUMS.txt",
+  "checksum_scope": "five unchanged locked ZIPs plus separately accepted Documentation ZIP",
+  "release_notes": "BetterCPM-1.0-RELEASE-NOTES.md",
+  "release_notes_sha256": "0a6e95f497a59e4644ac149cef42717c588f5d93ab0f0af5084a43cc7c1ebea6",
+  "archive_policy": "five software archives unchanged byte-for-byte; Documentation independently built and accepted, with its own root/source identity",
+  "assets": [
+    {
+      "package": "documentation",
+      "filename": "BetterCPM-1.0-Documentation.zip",
+      "archive_root": "BetterCPM-1.0-Documentation",
+      "sha256": "8c184db835c90a2c60372b4f5a2bb93029fa4e772d849c6cdf1c44835e781fa9",
+      "size_bytes": 553662,
+      "title": "BetterCP/M 1.0 Documentation",
+      "documentation_revision": "549378120a8220cf546deb9c7602cfb3f73b6b0e",
+      "acceptance_status": "ACCEPTED_FOR_LOCKED_1_0_DOCUMENTATION_SCOPE"
+    },
+    {
+      "package": "source",
+      "filename": "BetterCPM-1.0-Source.zip",
+      "frozen_filename": "BetterCPM-1.0-Source-candidate.zip",
+      "archive_root": "BetterCPM-1.0-Source-candidate",
+      "sha256": "1975f95144998c33ba704f37da3246343dd6ecc82ae7e4b014b8d7af372e71ca",
+      "size_bytes": 350224651,
+      "title": "BetterCP/M 1.0 Source",
+      "lock_status": "LOCKED_FOR_1.0"
+    },
+    {
+      "package": "system-model4",
+      "filename": "BetterCPM-1.0-System-Model4.zip",
+      "frozen_filename": "BetterCPM-1.0-System-Model4-candidate.zip",
+      "archive_root": "BetterCPM-1.0-System-Model4-candidate",
+      "sha256": "5760ebcb361c80fa632e323a016a95fac477183527c7f6d661721958e8a44b97",
+      "size_bytes": 4157094,
+      "title": "BetterCP/M 1.0 System \u2014 Model 4",
+      "lock_status": "LOCKED_FOR_1.0"
+    },
+    {
+      "package": "system-cpmsim",
+      "filename": "BetterCPM-1.0-System-cpmsim.zip",
+      "frozen_filename": "BetterCPM-1.0-System-cpmsim-candidate.zip",
+      "archive_root": "BetterCPM-1.0-System-cpmsim-candidate",
+      "sha256": "0d6fbff549088915e85470c718b1ce05e78980e460c7429b0e0e9f7e4746c6c4",
+      "size_bytes": 4463644,
+      "title": "BetterCP/M 1.0 System \u2014 cpmsim",
+      "lock_status": "LOCKED_FOR_1.0"
+    },
+    {
+      "package": "utilities-model4",
+      "filename": "BetterCPM-Utilities-1.0-Model4.zip",
+      "frozen_filename": "BetterCPM-Utilities-1.0-Model4-candidate.zip",
+      "archive_root": "BetterCPM-Utilities-1.0-Model4-candidate",
+      "sha256": "7b92378db28281b1e05d6d4bd4f7f480c3224c848c4120b93ee2abfd217577c9",
+      "size_bytes": 232607745,
+      "title": "BetterCP/M Utilities 1.0 \u2014 Model 4",
+      "lock_status": "LOCKED_FOR_1.0"
+    },
+    {
+      "package": "utilities-cpmsim",
+      "filename": "BetterCPM-Utilities-1.0-cpmsim.zip",
+      "frozen_filename": "BetterCPM-Utilities-1.0-cpmsim-candidate.zip",
+      "archive_root": "BetterCPM-Utilities-1.0-cpmsim-candidate",
+      "sha256": "37477e6b06b13337c191e3c6d78be383ff7b14143c68d65bd0814e08ef7f5b1b",
+      "size_bytes": 232575318,
+      "title": "BetterCP/M Utilities 1.0 \u2014 cpmsim",
+      "lock_status": "LOCKED_FOR_1.0"
+    }
+  ],
+  "non_documentation_source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+  "non_documentation_lock": "docs/releases/non-documentation-lock-1.0/LOCK.json",
+  "documentation_complete": false,
+  "documentation_starting_reference": "31dba474927be420796ab9e4cb3c75daddd6f0ab",
+  "documentation_final_revision": null,
+  "release_notes_status": "provisional working text; synchronize with documentation before final release review",
+  "planned_tag_target_status": "old preflight proposal only; final alignment deferred until documentation review",
+  "documentation_sync_date_taipei": "2026-11-05",
+  "software_source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+  "qualification_merge_revision": "2842d0eb0732683d9280a38d576c3dba423cb893",
+  "documentation_revision": "549378120a8220cf546deb9c7602cfb3f73b6b0e",
+  "documentation_acceptance": {
+    "status": "ACCEPTED_FOR_LOCKED_1_0_DOCUMENTATION_SCOPE",
+    "receipt_path": "docs/releases/documentation-sync-1.0/ACCEPTANCE.json",
+    "receipt_sha256": "5a1c02f25f01308f52fffa580765eac7fb4f2e4d7c25300001043719e309cecb",
+    "runtime_qualification": "not repeated; only matching locked bytes inherit bounded existing evidence",
+    "expansion": "new programmer/porting expansion and native execution of new examples are separate from 1.0 blockers"
+  },
+  "freeze_manifest_scope": "Historical six-package freeze record; only its five software rows remain current. New Documentation identity/acceptance are recorded separately here."
+}

@@ -1,14 +1,6 @@
-# BetterCP/M 1.0 publication preflight
+# Earlier BetterCP/M 1.0 publication preflight
 
-> **Current status correction:** The five non-documentation packages are locked.
-> Documentation is incomplete and still needs synchronization. The old
-> Documentation ZIP and release-note text are provisional references. Prior
-> consistency checks did not establish documentation completeness. See the
-> [non-documentation lock](../non-documentation-lock-1.0/README.md).
-> Tagging, publication and final tag-target alignment remain on hold.
-> The sections below record the earlier #610 preflight snapshot. The draft
-> banner and index have since been updated; see the current
-> [draft-preservation receipt](../non-documentation-lock-1.0/DRAFT-VERIFICATION.json).
+**Historical preflight snapshot.** The JSON/checksum/notes/receipt files in this directory describe the earlier draft, including its provisional old Documentation ZIP. They are retained byte-for-byte as evidence; they are not the new documentation identity. Use the [current publication plan](../DOCUMENTATION-PUBLICATION.json), [procedure](../DOCUMENTATION-PUBLICATION.md) and [working notes](../RELEASE-NOTES-1.0.md). Final documentation commit/hash/size are unset until assembly/review. Preserve the five locked rows, and update the actual release-wide index/checksums only after Step 5 checks. No tag or upload occurs in this reconciliation.
 
 Prepared 4 November 2026, Taipei. **Draft only; tagging and publication remain
 on hold.** This preflight changes no frozen archive contents or compiled code.

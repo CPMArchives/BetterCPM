@@ -1,6 +1,6 @@
 # Disk-format support for 1.0
 
-Package freeze is on hold. This document defines the qualification target; it does not accept final packages.
+The five non-documentation packages are [locked](../releases/non-documentation-lock-1.0/README.md). The following is their bounded format scope, not a claim of universal physical interchange. Documentation review and publication remain separate.
 
 | Release-media layout | Catalogue ID | Independent basis | Use |
 |---|---|---|---|
@@ -14,7 +14,7 @@ The independent CCS parameters come from [the vendor manual](https://bitsavers.o
 
 ## Supported release media and compatibility catalogue
 
-The three layouts above are the release-media qualification scope for 1.0. Recorded trials cover emulator images, not physical controllers or universal disk interchange. The [Model 4 P2DOS trial](../engineering/evidence/2026-11-03-model4-p2dos/README.md) qualifies the clock lifecycle for the System image identified there. Final candidates still require matching image hashes and fresh-package installation checks.
+The three layouts above are the release-media qualification scope for 1.0. Recorded trials cover emulator images, not physical controllers or universal disk interchange. The [Model 4 P2DOS trial](../engineering/evidence/2026-11-03-model4-p2dos/README.md) qualifies the clock lifecycle for the System image identified there. The final lock and qualification receipts identify matching delivered images and completed installation checks; earlier component trials retain their own hashes/scope.
 
 The full historical compatibility catalogue remains available. Catalogue admission means a structurally valid descriptor, not successful runtime testing of each format on every controller. Five previously rejected historical records remain excluded for their recorded validity errors; this change removes no admitted format.
 

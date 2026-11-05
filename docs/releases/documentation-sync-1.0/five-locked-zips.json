@@ -1,0 +1,75 @@
+{
+  "status": "FIVE_ACTUAL_LOCKED_ZIPS_VERIFIED",
+  "software_source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+  "qualification_merge_revision": "2842d0eb0732683d9280a38d576c3dba423cb893",
+  "packages": [
+    {
+      "package": "source",
+      "filename": "BetterCPM-1.0-Source.zip",
+      "sha256": "1975f95144998c33ba704f37da3246343dd6ecc82ae7e4b014b8d7af372e71ca",
+      "size_bytes": 350224651,
+      "verification": "EXACT_LOCK_MATCH",
+      "zip_crc": "PASS",
+      "members": 2572,
+      "archive_root": "BetterCPM-1.0-Source-candidate",
+      "internal_checksums_verified": 2571,
+      "software_source_record": "MATCH",
+      "embedded_candidate_status": "PRESERVED_UNCHANGED"
+    },
+    {
+      "package": "system-model4",
+      "filename": "BetterCPM-1.0-System-Model4.zip",
+      "sha256": "5760ebcb361c80fa632e323a016a95fac477183527c7f6d661721958e8a44b97",
+      "size_bytes": 4157094,
+      "verification": "EXACT_LOCK_MATCH",
+      "zip_crc": "PASS",
+      "members": 43,
+      "archive_root": "BetterCPM-1.0-System-Model4-candidate",
+      "internal_checksums_verified": 42,
+      "software_source_record": "MATCH",
+      "embedded_candidate_status": "PRESERVED_UNCHANGED"
+    },
+    {
+      "package": "system-cpmsim",
+      "filename": "BetterCPM-1.0-System-cpmsim.zip",
+      "sha256": "0d6fbff549088915e85470c718b1ce05e78980e460c7429b0e0e9f7e4746c6c4",
+      "size_bytes": 4463644,
+      "verification": "EXACT_LOCK_MATCH",
+      "zip_crc": "PASS",
+      "members": 77,
+      "archive_root": "BetterCPM-1.0-System-cpmsim-candidate",
+      "internal_checksums_verified": 76,
+      "software_source_record": "MATCH",
+      "embedded_candidate_status": "PRESERVED_UNCHANGED"
+    },
+    {
+      "package": "utilities-model4",
+      "filename": "BetterCPM-Utilities-1.0-Model4.zip",
+      "sha256": "7b92378db28281b1e05d6d4bd4f7f480c3224c848c4120b93ee2abfd217577c9",
+      "size_bytes": 232607745,
+      "verification": "EXACT_LOCK_MATCH",
+      "zip_crc": "PASS",
+      "members": 74,
+      "archive_root": "BetterCPM-Utilities-1.0-Model4-candidate",
+      "internal_checksums_verified": 73,
+      "software_source_record": "MATCH",
+      "embedded_candidate_status": "PRESERVED_UNCHANGED"
+    },
+    {
+      "package": "utilities-cpmsim",
+      "filename": "BetterCPM-Utilities-1.0-cpmsim.zip",
+      "sha256": "37477e6b06b13337c191e3c6d78be383ff7b14143c68d65bd0814e08ef7f5b1b",
+      "size_bytes": 232575318,
+      "verification": "EXACT_LOCK_MATCH",
+      "zip_crc": "PASS",
+      "members": 74,
+      "archive_root": "BetterCPM-Utilities-1.0-cpmsim-candidate",
+      "internal_checksums_verified": 73,
+      "software_source_record": "MATCH",
+      "embedded_candidate_status": "PRESERVED_UNCHANGED"
+    }
+  ],
+  "runtime_qualification": "NOT_REPEATED; existing bounded receipts retained",
+  "tagging": "HOLD",
+  "publication": "HOLD"
+}

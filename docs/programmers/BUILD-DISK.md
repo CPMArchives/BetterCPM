@@ -1,5 +1,8 @@
 # BetterCP/M build disk
 
+> **Locked 1.0 reading note:** Use the [Programmer’s Guide](programmers_guide.md#choose-an-interface-and-build-a-program) for application builds and [porting build/install stages](../porting/practical_porting_guide.md#reproduce-the-supported-baseline) with the matching Source-package recipe for coherent system reconstruction. Do not mix generated link-symbol snapshots or treat older build sequences below as an additional release gate.
+
+
 `tools/build_source_disk.py` creates a self-hosting build disk and companion
 complete-source volumes. The build disk contains the canonical native source set,
 generated link-symbol snapshot, ZSM4, Digital Research LINK, `SUBMIT`,

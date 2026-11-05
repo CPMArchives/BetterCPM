@@ -1,6 +1,9 @@
-# Building the current BetterCP/M System Disks
+# Building the BetterCP/M System Disks
 
-The authoritative [manifest in progress](DISTRIBUTION-MANIFEST.md) selects disk
+Start with the [Source Build and Reconstruction Guide](../SOURCE-BUILD.md). For release reconstruction use the unchanged matching Source ZIP and locked software revision, not a later documentation/development checkout. This detailed builder reference does not authorize replacing the five archives. New documentation-only packaging has a [separate procedure](DOCUMENTATION-PUBLICATION.md).
+
+
+The authoritative [locked delivered inventory](DISTRIBUTION-MANIFEST.md) selects disk
 membership. `metadata/distribution.json` records its System Disk projection,
 implementation status, target applicability, and user area. Both System disks carry PIP.COM. Use `:DIR /WHEREIS filename` to locate a file.
 TED is on the primary Utilities Disk.
@@ -96,9 +99,7 @@ then use `RSX LOAD P2DOS` for the optional Functions 200/201 interface.
 The 104/105 clock adapters remain deferred. Both System disks include
 README.TXT. The full manuals accompany the host packages.
 
-These are distributions of the current implemented state. They are not final
-1.0 release candidates and do not replace the remaining conformance campaign
-or the cpmsim reproducibility requirement.
+New outputs are private reconstruction/development artifacts. The exact five-package lock, final qualification and offline reconstruction receipts govern delivered 1.0; a fresh local build neither inherits those results automatically nor replaces the frozen set.
 
 
 Distribution cold boot runs `SUBMIT STARTUP`. The selected `STARTUP.SUB` is an
@@ -115,7 +116,7 @@ existing `VER: Use :VER.` feature hint. The script explicitly invokes
 leaves BIOS and BDOS sizes unchanged and preserves the RCP rounded allocation.
 
 
-### ED integration and cpmsim base media
+### ED integration and cpmsim base media (implementation background)
 
 ED is built by `tools/build_ed.py` as `build/utilities/ED.COM`. The development
 alias `build/ed-development/EDDEV.COM` has identical bytes; native ED qualification
@@ -132,7 +133,7 @@ installed by isolated ED campaigns and by the distribution builder.
 
 ## CONFIG compatibility fingerprint
 
-CONFIG Build 005 replaces the external SYSGEN.DAT reference with embedded
+Historically CONFIG Build 005 replaced the external SYSGEN.DAT reference with embedded
 20-byte layout/geometry/CRC-32 records. Neither System Disk needs SYSGEN.DAT.
 The ordinary common build generates its Model 4 record from the freshly built
 resident image. After assembling its platform resident image, the cpmsim builder

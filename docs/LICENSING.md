@@ -56,8 +56,12 @@ Earlier generated PDF/DOCX editions do not automatically receive corrected
 notices; reconcile any selected printable edition before distribution.
 The five non-documentation 1.0 packages are locked under the
 [non-documentation baseline](releases/non-documentation-lock-1.0/LOCK.json).
-Documentation remains incomplete and requires synchronization before the
-Documentation package is rebuilt. Prior documentation checks established
+The four manuals and supporting prose are reconciled; final selection/assembly checks remain before the separately revised Documentation package is accepted. Prior documentation checks established
 bounded consistency, not completeness. Tagging and publication remain on hold.
 License terms and notices are unchanged; historical copies inside the five
 frozen packages remain part of those preserved snapshots.
+
+
+## Reconciled collection and package inventory
+
+The [licensing/source inventory](LICENSING-INVENTORY.md) records component roles and existing terms. The new Documentation selection conveys original manuals/examples plus legal/provenance text, not a general historical scan/software archive. Its actual revision differs from the locked software source. First-party license texts and selected third-party records are copied verbatim; no license, permission, or corresponding-source obligation is removed by consolidation. Frozen embedded licenses/manuals remain unchanged. Older preflight records and candidate wording retain their historical role; they do not certify the completeness of this revised collection.

@@ -1,0 +1,118 @@
+; SPDX-License-Identifier: GPL-2.0-or-later
+; Creates a fresh DEMO.DAT in the current DU. Never deletes it.
+; Run on disposable work media with that name unused.
+BDOS    EQU     0005H
+        CSEG
+        .PHASE  0100H
+START:  LD      SP,STKTOP
+        XOR     A
+        LD      (OWNED),A
+        CALL    INITFCB
+        LD      DE,FCB
+        LD      C,15
+        CALL    BDOS
+        CP      0FFH
+        JR      Z,CREATE
+        LD      DE,FCB
+        LD      C,16
+        CALL    BDOS
+        LD      DE,EXISTS
+        JP      REPORT
+CREATE: CALL    INITFCB
+        LD      DE,BUFFER
+        LD      C,26
+        CALL    BDOS
+        LD      DE,FCB
+        LD      C,22
+        CALL    BDOS
+        CP      0FFH
+        JP      Z,FAILED
+        LD      A,1
+        LD      (OWNED),A
+        LD      HL,BUFFER
+        LD      B,128
+        XOR     A
+FILL:   LD      (HL),A
+        INC     HL
+        INC     A
+        DJNZ    FILL
+        LD      DE,FCB
+        LD      C,21
+        CALL    BDOS
+        OR      A
+        JP      NZ,FAILED
+        CALL    CLOSEIT
+        CP      0FFH
+        JP      Z,FAILED
+        CALL    INITFCB
+        LD      DE,FCB
+        LD      C,15
+        CALL    BDOS
+        CP      0FFH
+        JP      Z,FAILED
+        LD      A,1
+        LD      (OWNED),A
+        LD      HL,BUFFER
+        LD      B,128
+CLEAR:  LD      (HL),0FFH
+        INC     HL
+        DJNZ    CLEAR
+        LD      DE,FCB
+        LD      C,20
+        CALL    BDOS
+        OR      A
+        JP      NZ,FAILED
+        CALL    CLOSEIT
+        CP      0FFH
+        JP      Z,FAILED
+        LD      HL,BUFFER
+        LD      B,128
+        LD      C,0
+CHECK:  LD      A,(HL)
+        CP      C
+        JP      NZ,FAILED
+        INC     HL
+        INC     C
+        DJNZ    CHECK
+        LD      DE,GOOD
+        JP      REPORT
+FAILED: LD      A,(OWNED)
+        OR      A
+        CALL    NZ,CLOSEIT
+        LD      DE,BAD
+REPORT: PUSH    DE
+        LD      DE,0080H
+        LD      C,26
+        CALL    BDOS
+        POP     DE
+        LD      C,9
+        CALL    BDOS
+        JP      0000H
+CLOSEIT:
+        LD      DE,FCB
+        LD      C,16
+        CALL    BDOS
+        PUSH    AF
+        XOR     A
+        LD      (OWNED),A
+        POP     AF
+        RET
+INITFCB:
+        LD      HL,FCB+12
+        LD      B,24
+        XOR     A
+ZERO:   LD      (HL),A
+        INC     HL
+        DJNZ    ZERO
+        RET
+OWNED:  DB      0
+FCB:    DB      0,'DEMO    ','DAT'
+        DS      24
+BUFFER: DS      128
+GOOD:   DB      'One binary record written, closed and verified.',13,10,'$'
+EXISTS: DB      'DEMO.DAT exists; nothing replaced.',13,10,'$'
+BAD:    DB      'Record operation failed; retain DEMO.DAT for inspection.',13,10,'$'
+        DS      256
+STKTOP:
+        .DEPHASE
+        END

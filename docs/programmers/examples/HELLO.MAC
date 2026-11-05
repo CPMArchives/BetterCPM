@@ -1,0 +1,15 @@
+; SPDX-License-Identifier: GPL-2.0-or-later
+; Documentation example; not a selected release disk component.
+BDOS    EQU     0005H
+        CSEG
+        .PHASE  0100H
+START:  LD      SP,STKTOP
+        LD      DE,MESSAGE
+        LD      C,9
+        CALL    BDOS
+        JP      0000H
+MESSAGE: DB     'Hello from a CP/M application.',13,10,'$'
+        DS      128
+STKTOP:
+        .DEPHASE
+        END
