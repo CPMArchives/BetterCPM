@@ -183,6 +183,49 @@ is supplied through loadable CPXs rather than added to the core CCP.
   should include the current drive/user (`DU:`), named directory, and current
   date/time while preserving a compact CP/M-style default.
 
+### Multiple-command-line (MCL) support
+
+- [ ] **Post-1.0 investigation.** Assess ZCPR3-style sequential command lines
+  at the CCP prompt. For example, in `A0>ASM HELLO;LOAD HELLO;HELLO`,
+  each command must run in order even if its predecessor overwrites the full
+  TPA and returns through WBOOT. MCL must be useful with no scripting language
+  installed.
+  - Determine where the CCP splits the line and how each command follows
+    normal core, CPX and transient dispatch. Preserve existing command tails,
+    including the literal semicolon in `SEARCH "A;B" *.TXT`.
+  - Evaluate bounded storage for pending commands against the
+    [completed-command queue design](specifications/COMMAND-INPUT-SYSTEM.md#line-editing-and-completed-commands).
+    A PDS queue would require a later allocation. The [1.0 PDS](docs/architecture/29%20Bounded%201.0%20PDS.txt)
+    reserves all 192 bytes for history. Measure protected bytes and the effect
+    on the default 53 KiB TPA.
+  - Specify what happens to the remainder on an unknown command, load failure
+    or operator abort. Check ordering with SUBMIT's `A0:$$$.SUB` queue and
+    XSUB so that `BATCHIO.RSX` cannot consume a pending command as program input.
+
+### Enhanced command automation and scripting
+
+- [ ] **Post-1.0 investigation.** Compare Z-System and ZEX automation with the
+  [proposed SUBMIT.CPX and FLOW.CPX design](specifications/BATCH-FLOW-CONTROL.md#modules).
+  Evaluate conditional execution (including `IF...THEN` alongside the proposed
+  `IF`/`ELSE`/`ENDIF`), `GOTO`, variables, loops, nested scripts and
+  command-completion status. Specify how a script handles a legacy `.COM`
+  that supplies no status. The CPX handled/declined flag answers only whether
+  a CPX accepted a command.
+  - Evaluate a division in which the CCP sequences commands, loadable CPXs
+    supply flow logic, and RSXs provide services that must remain active during
+    a transient, such as console-input interception. Review CCP dispatch, the
+    [CPX and RSX interfaces](#cpx-and-rsx-production-interfaces) and the
+    [qualified SUBMIT/XSUB and BATCHIO paths](docs/engineering/129%20Stock-Compatible%20SUBMIT%20and%20XSUB.md)
+    before recommending changes. Preserve CP/M 2.2 batch and program-input behavior.
+  - Could a transient interpreter save its script position, parameters,
+    variables, loop and nesting state, and last command status, then reload and
+    resume after another `.COM` runs? Compare a bounded PDS record with the
+    existing disk-backed continuation. Account for WBOOT, nesting and abort
+    without retaining pointers into reclaimed memory. The [PDS ownership rules](docs/architecture/18%20Persistent%20Data%20Segment.txt)
+    normally place optional feature state in its RSX. Identify which state
+    must outlive its module and whether [later 1.x PDS generalization](#later-1x-pds-generalization)
+    could support it.
+
 ### 1.0 bounded history and PDS
 
 The packed, multi-command history buffer in the PDS is implemented, as are
@@ -507,18 +550,32 @@ directory utility unless it provides genuine additional value.
   interface before promising third-party binary compatibility.
 - [x] Keep the qualified CP/M-compatible SUBMIT/XSUB and `BATCHIO.RSX` path as
   the 1.0 batch facility. Treat `SUBMIT.CPX`, `FLOW.CPX`, and the extended
-  language in `specifications/BATCH-FLOW-CONTROL.md` as later 1.x work.
+  language in `specifications/BATCH-FLOW-CONTROL.md` as later 1.x work. See the
+  [command automation investigation](#enhanced-command-automation-and-scripting).
 - [ ] After 1.0, implement the persistent command-input system specified in
   `specifications/COMMAND-INPUT-SYSTEM.md`: expand the one-byte output-time
   pending key into a BDOS type-ahead ring, add a completed-command queue, and
   integrate multiple commands, history, batch sources, and scripted input
-  without conflating their distinct state.
+  without conflating their distinct state. See the
+  [MCL investigation](#multiple-command-line-mcl-support) for single-line parsing and continuation.
 - [ ] Maybe: on platforms with bank-switched memory, provide a `BANKMEM.RSX`
   exposing portable extended-BDOS query, allocation, and inter-bank transfer
   services over a small hardware-specific BIOS/HAL interface. This is an
   optional-module possibility, not a requirement for ordinary 64K targets.
 
 ## Post-1.0 Developer Platform
+
+- [ ] **Pluggable scripting languages — exploratory post-1.0 investigation.**
+  Could a third party provide a language such as REXX using documented
+  BetterCP/M interfaces? Compare a complete resident interpreter, a transient
+  interpreter using shared services, and a hybrid with a language-specific
+  helper such as `REXX.RSX`. For each, identify who preserves execution state
+  across external commands, which interfaces a third-party author needs, and
+  the resident bytes and TPA cost with and without the language loaded.
+  Assess CP/M 2.2 compatibility and whether existing CPX, RSX and PDS
+  mechanisms suffice. Justify any resident growth against a measured need.
+  [Command automation](#enhanced-command-automation-and-scripting) supplies
+  the use cases. Language, residency and execution model remain open.
 
 - [ ] Apply `docs/architecture/26 Developer Platform Direction.txt` as a
   future-compatibility review when freezing the remaining 1.0 interfaces;
