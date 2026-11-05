@@ -1,0 +1,30 @@
+[
+  {
+    "filename": "464DDI1_1.DSK",
+    "format": "CPCSYS",
+    "url": "https://raw.githubusercontent.com/GrantMeStrength/Amstrad-CPC-CP-M-and-Logo/5d52c8dd25c0efda4dbb8f9f52b6f64b403e8163/CPM/CPC464_DDI1_System_Disks_(EN)/464DDI1_1.DSK",
+    "sha256": "96d869f8c9531bdb6bfe5a2a8863190e74fedc52f679ec706973e23768e24a14",
+    "files": 26
+  },
+  {
+    "filename": "664EN_2.DSK",
+    "format": "CPCSYS",
+    "url": "https://raw.githubusercontent.com/GrantMeStrength/Amstrad-CPC-CP-M-and-Logo/5d52c8dd25c0efda4dbb8f9f52b6f64b403e8163/CPM/CPC664_System_Disks_(EN)/664EN_2.DSK",
+    "sha256": "2151b07af03e32c4e9b1e377821ba13dd59fdbcf99df30b735a18d61d4c6be26",
+    "files": 3
+  },
+  {
+    "filename": "6128SP_3.DSK",
+    "format": "CPCDATA",
+    "url": "https://raw.githubusercontent.com/GrantMeStrength/Amstrad-CPC-CP-M-and-Logo/5d52c8dd25c0efda4dbb8f9f52b6f64b403e8163/CPM/CPC6128_System_Disks_(SP)/6128SP_3.DSK",
+    "sha256": "867f734dcaeda033e05076bfded7539a37833da6be64fd37b9ef67aa4ba8e98a",
+    "files": 17
+  },
+  {
+    "filename": "cpcBoosterClient.dsk",
+    "format": "CPCDATA",
+    "url": "https://raw.githubusercontent.com/lronaldo/cpctelera/b3f48a1b49dc9d99b73c75f98cefaf9c1e60dc31/cpctelera/tools/arkosTracker-1.0/tools/cpcBoosterClient.dsk",
+    "sha256": "424ae1250014e660ee338751e3dc749cfc0346de9b4b7c30a867a07cc1a90f8e",
+    "files": 1
+  }
+]
