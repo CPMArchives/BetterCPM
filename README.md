@@ -65,7 +65,7 @@ status; all current testing is emulator-based.
 
 ## BetterCP/M 1.0
 
-[BetterCP/M 1.0](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.0) is published as six ZIP downloads. The five Source/System/Utilities archives retain their qualified, locked bytes; the accepted Documentation ZIP was built separately. Tag `v1.0` identifies qualified software merge `2842d0eb0732683d9280a38d576c3dba423cb893`, while the Documentation archive records commit `549378120a8220cf546deb9c7602cfb3f73b6b0e`.
+[BetterCP/M 1.0](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.0) is published as seven ZIP downloads: two System packages, two Utilities packages, packaged Source, Documentation and optional Qualification Evidence. Packaging corrections preserve source and disk-image bytes while updating layouts, instructions and archive hashes; the accepted Documentation ZIP was built separately. Tag `v1.0` identifies qualified software merge `2842d0eb0732683d9280a38d576c3dba423cb893`, while the Documentation archive records commit `549378120a8220cf546deb9c7602cfb3f73b6b0e`.
 
 The two released 1.0 platforms are:
 
@@ -89,20 +89,27 @@ The authoritative scope and implementation sequence are defined by the [`BetterC
 
 ## Release downloads
 
-Get the six packages from the [published v1.0 release](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.0):
+Get the seven ZIP packages from the [published v1.0 release](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.0):
+
+**For the released build, download [BetterCPM-1.0-Source.zip](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-Source.zip).** This is the prepared Source package with matching source, native build material and the pinned dependency tar needed for offline reconstruction.
+
+GitHub also adds **“Source code (zip)”** and **“Source code (tar.gz)”** automatically at the bottom of the release assets. Those are repository snapshots at tag `v1.0`, not the packaged Source download. They omit the packaged dependency tar and subsequent packaging/layout corrections. Use the named `BetterCPM-1.0-Source.zip` for released-source reconstruction; the automatic snapshots serve repository browsing.
 
 | Package | Download and purpose |
 | --- | --- |
-| System — cpmsim | [BetterCPM-1.0-System-cpmsim.zip](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-System-cpmsim.zip) — System/work disks and the pinned offline runtime reconstruction kit. |
-| System — Model 4 | [BetterCPM-1.0-System-Model4.zip](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-System-Model4.zip) — bootable System and work DMKs with startup instructions. |
-| Utilities — cpmsim | [BetterCPM-Utilities-1.0-cpmsim.zip](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-Utilities-1.0-cpmsim.zip) — primary Utilities and NOAH companion disks, manuals and source companions. |
-| Utilities — Model 4 | [BetterCPM-Utilities-1.0-Model4.zip](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-Utilities-1.0-Model4.zip) — matching Utilities and NOAH companion DMKs, manuals and source companions. |
-| Source | [BetterCPM-1.0-Source.zip](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-Source.zip) — complete matching source, native build material, tools, dependency tar and patches for offline reconstruction. |
-| Documentation | [BetterCPM-1.0-Documentation.zip](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-Documentation.zip) — four manuals, API chapters, examples and supporting guidance in Markdown/text form. |
+| System — cpmsim | [BetterCPM-1.0-System-cpmsim.zip](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-System-cpmsim.zip) — System/work disks, platform instructions and the pinned offline runtime reconstruction kit. |
+| System — Model 4 | [BetterCPM-1.0-System-Model4.zip](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-System-Model4.zip) — Bootable System and work DMKs with platform instructions. |
+| Utilities — cpmsim | [BetterCPM-Utilities-1.0-cpmsim.zip](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-Utilities-1.0-cpmsim.zip) — Primary Utilities and NOAH companion disks, manuals and instructions for obtaining matching source separately. |
+| Utilities — Model 4 | [BetterCPM-Utilities-1.0-Model4.zip](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-Utilities-1.0-Model4.zip) — Matching Utilities and NOAH companion DMKs, manuals and instructions for obtaining matching source separately. |
+| Packaged Source | [BetterCPM-1.0-Source.zip](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-Source.zip) — Complete matching source in one consolidated tree, native build material, tools, pinned dependency tar and patches for offline reconstruction. |
+| Documentation | [BetterCPM-1.0-Documentation.zip](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-Documentation.zip) — Four manuals, API chapters, examples and supporting guidance in Markdown/text form. |
+| Qualification Evidence (optional) | [BetterCPM-1.0-Qualification-Evidence.zip](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-Qualification-Evidence.zip) — Historical qualification archives, engineering receipts and review records; restoration instructions are in the packaged Source ZIP. |
 
-Verify the ZIPs against [BetterCPM-1.0-SHA256SUMS.txt](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-SHA256SUMS.txt). The release also supplies [release notes](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-RELEASE-NOTES.md) and an [exact-file index](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-RELEASE.json). Use the supplied Source ZIP for the tested offline rebuild: GitHub's automatic source archives omit the packaged dependency tar.
+Verify all seven ZIPs against [BetterCPM-1.0-SHA256SUMS.txt](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-SHA256SUMS.txt). The [release notes](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-RELEASE-NOTES.md) and [exact-file index](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-RELEASE.json) record current packaging identities and retained provenance.
 
-Some embedded records and repository release-planning documents retain pre-publication “candidate” or “hold” wording. The published release establishes publication status for these exact assets; it does not override usage instructions, licenses, known limitations or qualification boundaries. The five software ZIPs retain their internal `-candidate` directory names and checksums. See the [package layout](docs/releases/1.0-RELEASE-PACKAGES.md), [software lock](docs/releases/non-documentation-lock-1.0/README.md) and [separate documentation provenance](docs/releases/DOCUMENTATION-PUBLICATION.md) for the retained history.
+Packaging corrections preserve the software source and disk-image bytes while changing ZIP layouts and hashes. All ZIP root folders now match their filenames without `.zip`; System and Utilities images use `images/cpmsim/` or `images/Model4/`. Utilities corresponding source is offered through the separate packaged Source ZIP. Its shared source tree is consolidated, its ZSM4 source archive is retained once, and optional historical evidence is a separate ZIP. Software and utility versions remain unchanged.
+
+Some embedded source/build records retain historical “candidate” or “hold” wording. The published release establishes publication status; historical records do not override current download identities, usage instructions, licenses, known limitations or qualification boundaries. The original software lock records pre-correction archive identities, not current ZIP hashes.
 
 ## Quick start
 
@@ -226,7 +233,7 @@ The published Documentation collection has four principal manuals:
 
 Installation guides, source reconstruction guidance, release information, licensing and engineering records support these manuals. The former [Utilities Manual](docs/user/utilities_manual.md) and standalone command paths are locators into the consolidated reference.
 
-The [non-documentation lock](docs/releases/non-documentation-lock-1.0/README.md) fixes five Source/System/Utilities packages and their software. The accepted Documentation package has its own revision and provenance. Further programmer/porting expansion remains separate from the released 1.0 software baseline.
+The [non-documentation lock](docs/releases/non-documentation-lock-1.0/README.md) records the original five Source/System/Utilities archives and qualified software. Current packaging identities are recorded in the release index linked above. The accepted Documentation package has its own revision and provenance. Further programmer/porting expansion remains separate from the released 1.0 software baseline.
 
 ## Compatibility and testing
 
