@@ -104,6 +104,59 @@
         "COPY C:FILL.BIN B:RETURN.BIN",
         "TYPE CPCEND.TXT"
       ]
+    },
+    "6128SP_3.DSK": {
+      "status": "pass",
+      "raw_sha256": "558b2aaca0259df73f98acb30ae116034115954e59323ce9a1eb7d5570c10d8f",
+      "formatted_cylinders": 40,
+      "rotation": [
+        193,
+        198,
+        194,
+        199,
+        195,
+        200,
+        196,
+        201,
+        197
+      ],
+      "original_files": {
+        "amsdos.com": "ea93a7139b64dc6ed53f93f34eb3509beed3d101ce915a51be7ca8b74c7f48ba",
+        "assign.sys": "9430e9eb5f5f45cda23e7a80c8be49a78f8510d5127c1abcc974628b64409b9d",
+        "ddfxlr7.prl": "01dc869b20016c51794cc688b7085aee46e2282c092f6c47baf1b72caeb4370a",
+        "ddmode0.prl": "7c0c1d1942bfa2244aa9e02df3bcf6dc49dc4629efbee55592a40b777f830f59",
+        "ddmode1.prl": "4d48be2bb9e777d95fa495686005a9f5f8bd59615e2422157666605a1eacdae7",
+        "ddmode2.prl": "68976b8302c9ae7b9c2a9b2cbea08f5556520c551347aa739af4d2917680d1b0",
+        "drivers.gsx": "f4c74a3c19496adafab1a3b23fc9c4b586fba8ce21c59f3137d9a8150d0ba52c",
+        "gengraf.com": "9b2fbe4cd207ff4d2ba950da56dea97529ee04fd44c9bb1bbafb45d477e9abd2",
+        "gsx.sys": "f78266e9d460c9be0d1ea7b7f01756e005ff1552f871980f67f25c6e253ef1e2",
+        "help.com": "72ad0bd4330ce2643d8d9f678494233455ad802de5ceae181ae48f712738a06b",
+        "help.hlp": "68728ec9f2faf9eff159c505a9dfbde51582b773477a8bc669fe25877d67f250",
+        "keys.ccp": "bab20c50ae9cedbe660532ee7be50e6830668e1f791ca3824e1312a6897b9483",
+        "keys.drl": "f1fe5c6a481db053e645a781de94a70e188bfc1733a7d9b1e4554e6ea4492768",
+        "logo3.com": "8e5f22112889aa0c0b4a7333117e721f263442149705b1260f4677a4c32a180f",
+        "logo3.sub": "5e5406615eb2d4694f07f42096338f4362da4a2db8b74ec0d6046c6aab316a38",
+        "setkeys.com": "7ab367e4f5600fe409936beadfa3cc4e574257377c76ded08f8b823d11bd912c",
+        "submit.com": "2e09418547c7176625ce530a56200475eeab5254dad1d4209e4be3e107d9a32c"
+      },
+      "fill_bytes": 8192,
+      "fill_sha256": "9ed2281992cf62ea66317fc6e75e071c9f4895720e7b4ed37f5534c7ea6eb5c6",
+      "highest_block_written": 179,
+      "written_edsk_sha256": "dbc530a1233d12af4d5b0cd89e1b1c81df236029c542d69f39e0a27398a8f99b",
+      "reserved_bytes_preserved": 0,
+      "guest_commands": [
+        "RSX LOAD M4SCRN",
+        "RSX LOAD ADM3A",
+        "CLS",
+        "B:",
+        "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"Amstrad CPC Data\"",
+        "A:",
+        "DIR C:",
+        "COPY C:*.* B:",
+        "COPY B:PROBE.BIN C:FILL.BIN",
+        "COPY C:FILL.BIN B:RETURN.BIN",
+        "TYPE CPCEND.TXT"
+      ]
     }
   }
 }

@@ -5,7 +5,7 @@ Use [SUPPDISK.FDF](SUPPDISK.FDF) as the editable source and [SUPPDISK.FDB](SUPPD
 | ID | CONFIG display name | Qualified for | Pending |
 |---|---|---|---|
 | CPCSYS | Amstrad CPC System | cpmsim and trs80gp (CPC464 disk 1 and CPC664 disk 2) file reads and writes through allocation block 170 | physical media |
-| CPCDATA | Amstrad CPC Data | cpmsim file reads and writes through allocation block 179 | Model 4 guest I/O, physical media |
+| CPCDATA | Amstrad CPC Data | cpmsim and trs80gp (CPC6128 disk 3) file reads and writes through allocation block 179 | Model 4 Booster disk, physical media |
 
 To use the supplement on cpmsim, put a copy of `SUPPDISK.FDB` on a separate work disk under the guest name `DISK.FDB`. Keep the production catalogue on system drive A. With that work disk in C and a CPC raw image in physical drive 1, run the following. Select `Amstrad CPC Data` in the CONFIG command for a Data disk.
 
