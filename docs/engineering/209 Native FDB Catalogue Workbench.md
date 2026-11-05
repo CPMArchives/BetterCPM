@@ -17,7 +17,7 @@ format assigned to an active logical drive. FDB provides catalogue management
 and can apply a validated working definition to a drive for testing. Reuse
 CONFIG's field editor, input conventions, and binding validation where
 practical. The first implementation does not require a redesign of CONFIG.
-See the [CONFIG guide](../user/users_guide.md#editing-disk-format-definitions)
+See the [CONFIG guide](../manuals/Users-Guide.md#editing-disk-format-definitions)
 and [1.0 format support](../platform/FORMAT-SUPPORT-1.0.md).
 
 ## 2. Session model

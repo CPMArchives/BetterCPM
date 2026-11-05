@@ -2,9 +2,9 @@
 
 Original prose/illustrations are CC BY 4.0; original reusable examples are GPL-2.0-or-later. Third-party works retain their terms. See [licensing and example boundaries](../LICENSING.md).
 
-This guide is for programmers writing CP/M applications, BetterCP/M command extensions and resident services. It assumes familiarity with Z80 assembly, registers, memory and ordinary CP/M operation. For command syntax use the [Command and Utilities Reference](../user/command_reference.md); for hardware adaptation use the [Practical Porting Guide](../porting/practical_porting_guide.md).
+This guide is for programmers writing CP/M applications, BetterCP/M command extensions and resident services. It assumes familiarity with Z80 assembly, registers, memory and ordinary CP/M operation. For command syntax use the [Command and Utilities Reference](Command-and-Utilities-Reference.md); for hardware adaptation use the [Practical Porting Guide](Practical-Porting-Guide.md).
 
-The software baseline is locked source `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`, qualified through merge `2842d0eb0732683d9280a38d576c3dba423cb893`. These new chapters and examples are documentation expansion with their own revision; they neither modify the five locked archives nor create additional 1.0 release blockers. The [reference status ledger](REFERENCE-STATUS.md) separates implemented contracts, retained history, provisional interfaces and further writing. Examples are outside release disk membership.
+The software baseline is locked source `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`, qualified through merge `2842d0eb0732683d9280a38d576c3dba423cb893`. These new chapters and examples are documentation expansion with their own revision; they neither modify the five locked archives nor create additional 1.0 release blockers. The [reference status ledger](../programmers/REFERENCE-STATUS.md) separates implemented contracts, retained history, provisional interfaces and further writing. Examples are outside release disk membership.
 
 ## Contents
 
@@ -34,7 +34,7 @@ Start with the narrowest interface that meets the program's purpose:
 | Add a terminal protocol | MCON personality | Parse into typed backend operations; no hardware assumption in a portable personality. |
 | Add a controller/display/boot target | Platform/BIOS support | Follow the porting guide and qualify a separate target. |
 
-The native toolchain supplies ZSM4 4.7 and Digital Research LINK 1.3. Keep sources and outputs on writable work media. With primary Utilities in B, change to your chosen work DU before building the [HELLO.MAC example](examples/HELLO.MAC):
+The native toolchain supplies ZSM4 4.7 and Digital Research LINK 1.3. Keep sources and outputs on writable work media. With primary Utilities in B, change to your chosen work DU before building the [HELLO.MAC example](../programmers/examples/HELLO.MAC):
 
 ```text
 D0:
@@ -43,7 +43,7 @@ B0:LINK HELLO[A]
 HELLO
 ```
 
-Require `Errors: 0`, no undefined symbols and a successful linker report. A COM file can exist after a failed link; its presence is not success. Includes follow ZSM4's output-drive rules. These examples use CSEG with `.PHASE 0100H` for CP/M execution addresses, following the in-tree native style. Do not replace that with an unexamined ORG that creates a leading 256-byte gap. See [ZSM4](../user/command_reference.md#zsm4), [LINK](../user/command_reference.md#link) and [native build material](BUILD-DISK.md).
+Require `Errors: 0`, no undefined symbols and a successful linker report. A COM file can exist after a failed link; its presence is not success. Includes follow ZSM4's output-drive rules. These examples use CSEG with `.PHASE 0100H` for CP/M execution addresses, following the in-tree native style. Do not replace that with an unexamined ORG that creates a leading 256-byte gap. See [ZSM4](Command-and-Utilities-Reference.md#zsm4), [LINK](Command-and-Utilities-Reference.md#link) and [native build material](../programmers/BUILD-DISK.md).
 
 Cross-development can assemble the same source after the established ASEG/ORG conversion and should reproduce the declared executable interval. Native/cross equality does not prove execution. CP/M rounds output to 128-byte records; record padding is distinct from a source program's logical end and may be interpreted differently by tools. Keep every required byte, buffer and stack below the active ceiling, including uninitialized reservations represented in the load/run model.
 
@@ -67,7 +67,7 @@ For a full-screen application, declare the expected terminal personality and scr
 
 ## Create, read and close files
 
-The [RECORDS.MAC example](examples/RECORDS.MAC) creates one exact fresh `DEMO.DAT` in the caller's current DU, writes a known record, closes it, reopens and verifies the bytes. Run it on disposable work media with that name unused. It deliberately refuses a successfully opened pre-existing file; it does not erase or replace one.
+The [RECORDS.MAC example](../programmers/examples/RECORDS.MAC) creates one exact fresh `DEMO.DAT` in the caller's current DU, writes a known record, closes it, reopens and verifies the bytes. Run it on disposable work media with that name unused. It deliberately refuses a successfully opened pre-existing file; it does not erase or replace one.
 
 The sequence is:
 
@@ -108,15 +108,15 @@ The API part is split into two linked reference chapters so the common calling/s
 
 | Reference | Coverage |
 | --- | --- |
-| [CP/M 2.2 API](CPM22-API.md) | Page zero, FCB/DMA, BDOS 0–40 including 37/40 and reserved 38/39, all 17 BIOS vectors, IOBYTE, DPH/DPB, errors and BetterCP/M differences. |
-| [BetterCP/M API](BETTERCPM-API.md) | Selectors 176–183, reserved/test boundaries, version/profile/disk/service request structures, TIME/P2DOS, carrier and monitor lifecycles, private BIOS/PDS boundaries. |
-| [Reference status](REFERENCE-STATUS.md) | Stability, retained-document conflicts, evidence limits and expansion backlog. |
+| [CP/M 2.2 API](../programmers/CPM22-API.md) | Page zero, FCB/DMA, BDOS 0–40 including 37/40 and reserved 38/39, all 17 BIOS vectors, IOBYTE, DPH/DPB, errors and BetterCP/M differences. |
+| [BetterCP/M API](../programmers/BETTERCPM-API.md) | Selectors 176–183, reserved/test boundaries, version/profile/disk/service request structures, TIME/P2DOS, carrier and monitor lifecycles, private BIOS/PDS boundaries. |
+| [Reference status](../programmers/REFERENCE-STATUS.md) | Stability, retained-document conflicts, evidence limits and expansion backlog. |
 
 A register-level summary is not permission to bypass ownership. The per-interface source and focused contracts supply integration details such as controller write-track streams, SCX rendition records and archive callbacks. Links to those contracts are explicit reference continuations, not a claim that every chronological paragraph is current.
 
 ## Develop a CPX
 
-Use a CPX for a command that runs in the prompt environment. [PING.MAC](examples/PING.MAC) is a small worked handler with an eight-byte live header. It recognizes exactly PING, prints one reply and returns carry set; it returns carry clear for every other command. It preserves the input buffer and SP/IX/IY. Its scratch registers may change. Matching the length prevents PINGMORE from becoming PING accidentally.
+Use a CPX for a command that runs in the prompt environment. [PING.MAC](../programmers/examples/PING.MAC) is a small worked handler with an eight-byte live header. It recognizes exactly PING, prints one reply and returns carry set; it returns carry clear for every other command. It preserves the input buffer and SP/IX/IY. Its scratch registers may change. Matching the length prevents PINGMORE from becoming PING accidentally.
 
 The source is linked at 8000h solely to generate relocation data, not to choose its runtime address. Build a second image at 8101h, derive/validate every changed absolute word and use `tools/build_cpx_module.py`'s `relocation_offsets` and `make_module` with name PING, version (0,1), commands [PING], entry_offset=8 and absent lifecycle offsets FFFFh. The builder requires matching tooling modules from the Source snapshot. Do not package an unconverted raw binary by renaming it .CPX.
 
@@ -124,7 +124,7 @@ The existing `tools/build_hello_cpx.py` demonstrates the complete source convers
 
 On disposable work/System media, copy the carrier to A0, confirm profile capacity with `CPX LIST`, load it, run PING and an unrelated command, run a transient and invoke PING again. Remove it and verify the command disappears. Test invalid/missing carrier and initialization failure separately. Ordinary CPX code does not remain protected during a transient; never store indispensable state only in the live PING image.
 
-For lifecycle-enabled modules, initialize in configured order with HL=base and A=0 success, preserving SP/IX/IY. Shutdown is called in reverse before transient reclamation and cannot veto it. Do not confuse removal of a configured package with shutdown of each reclaimable instance. See the [carrier/lifecycle reference](BETTERCPM-API.md#carrier-formats-and-lifetime).
+For lifecycle-enabled modules, initialize in configured order with HL=base and A=0 success, preserving SP/IX/IY. Shutdown is called in reverse before transient reclamation and cannot veto it. Do not confuse removal of a configured package with shutdown of each reclaimable instance. See the [carrier/lifecycle reference](../programmers/BETTERCPM-API.md#carrier-formats-and-lifetime).
 
 ## Develop an RSX
 
@@ -142,7 +142,7 @@ To qualify a new provider, test load, call, unknown-call chaining, duplicate rej
 
 ## Discover and call a service
 
-The [TIMEQ.MAC example](examples/TIMEQ.MAC) makes a 20-byte Function-182 LOOKUP for TIME ABI 1.0, then invokes its entry with a ten-byte native request. It distinguishes absent/incompatible service from failed GET and prints the five returned bytes as hexadecimal. The hour/minute/second bytes are packed BCD, so valid BCD bytes have a familiar decimal appearance without performing calendar conversion. The day count remains hexadecimal low/high bytes, not a Gregorian date string.
+The [TIMEQ.MAC example](../programmers/examples/TIMEQ.MAC) makes a 20-byte Function-182 LOOKUP for TIME ABI 1.0, then invokes its entry with a ten-byte native request. It distinguishes absent/incompatible service from failed GET and prints the five returned bytes as hexadecimal. The hour/minute/second bytes are packed BCD, so valid BCD bytes have a familiar decimal appearance without performing calendar conversion. The day count remains hexadecimal low/high bytes, not a Gregorian date string.
 
 The indirect call helper uses `JP (HL)` after an ordinary CALL, so the service RET returns to the application's caller. Test A explicitly; do not assume carry. A successful LOOKUP does not prove SET capability; require bit 0001h if you intend SET. The returned pointer is used immediately and not saved for another process or resident-layout generation.
 
@@ -156,7 +156,7 @@ For a terminal personality, choose the application's incoming protocol first. Pa
 
 Callbacks are non-reentrant and must not call BDOS, load overlays, allocate, change profiles or recurse through routed console output. Return status without consuming input. Keep incomplete sequences and replies bounded; command return resets parser continuation while retaining normal display/modes and keyboard semantics. Load backend first and unload personality first. A private host MCON 1.0 table template is not portable scaffolding merely after changing one capability bit.
 
-Use [monitor development](Monitor%20RSX%20Development.md) for editable examples and the [final MCON/SCRN/SCX summary](BETTERCPM-API.md#mcon-scrn-and-scx) for version relationships. Provider/operation versions are different identities. A fixed-grid renderer and SCX delayed-wrap renderer must resynchronize explicitly. A synthetic callback test does not prove terminal rendering, audio, keyboard mappings or original application compatibility.
+Use [monitor development](../programmers/Monitor%20RSX%20Development.md) for editable examples and the [final MCON/SCRN/SCX summary](../programmers/BETTERCPM-API.md#mcon-scrn-and-scx) for version relationships. Provider/operation versions are different identities. A fixed-grid renderer and SCX delayed-wrap renderer must resynchronize explicitly. A synthetic callback test does not prove terminal rendering, audio, keyboard mappings or original application compatibility.
 
 For a clock provider, advertise TIME and translate hardware into one coherent validated five-byte sample. Bound retries across rollover and reject torn/invalid data. Preserve caller output on failed sampling as defined by the service. Optional SET capability requires full-record validation and a verified hardware update; a read-only implementation omits the bit and returns SET_UNSUPPORTED. Keep Gregorian formatting in transient consumers and historical selector translation in optional frontends. No clock module should impersonate another whole operating system or add timestamp semantics implicitly.
 
@@ -181,7 +181,7 @@ The standard engine requires EDITBUF, EDITLEN, EDITCUR, EDITSTART, EDITMAX and E
 
 The standard controller's accepted candidate returns HL pointer and **B byte length**, not BC. Empty accepted input is distinct from cancellation. A separate default is read-only and is not copied into EDITBUF. Validation should inspect without modifying the candidate or application state; normalize into owned application storage when committing. No automatic keyboard flush occurs, so a choice consumes only its chosen byte, not a queued Enter.
 
-Use `tools/shared_ui.py` source selection, preserving include order/flags. Pick standard, words, text-controller and choice-controller components according to need. Render through hooks rather than hard-code another utility's screen. [Shared Input Library](Shared%20Input%20Library.md) contains the complete hooks, return contracts and compatibility consumer bindings. ED, Function 10 and CCP editing remain distinct interfaces.
+Use `tools/shared_ui.py` source selection, preserving include order/flags. Pick standard, words, text-controller and choice-controller components according to need. Render through hooks rather than hard-code another utility's screen. [Shared Input Library](../programmers/Shared%20Input%20Library.md) contains the complete hooks, return contracts and compatibility consumer bindings. ED, Function 10 and CCP editing remain distinct interfaces.
 
 ### Archives
 
@@ -189,7 +189,7 @@ Archive parsing separates exact-byte callbacks, directory/member interpretation,
 
 The initial reusable LBR reader uses caller-owned context and READ callbacks with exact transfer accounting. OPEN validates the directory envelope, NEXT selects members, READ consumes bounded member data and CLOSE ends state without owning a caller's external stream. Its CP/M adapter owns its own FCB/DMA workspace and must be closed even after a partially successful open. Restore DMA after use. Public entries preserve IX/IY/alternate registers/SP under that library's contract; general registers are scratch unless returned.
 
-[Archive Read Library](Archive%20Read%20Library.md) is explicitly the initial implementation record, not a complete final NOAH API. The current [archive includes](../../src/archive/) and focused [NOAH specification](../engineering/NOAH%20Specification.md) define later reader/writer/codec interfaces. Treat them as source-level/provisional reuse with matching includes, not a new stable binary SDK. The documentation expansion does not require freezing every internal archive interface for 1.0.
+[Archive Read Library](../programmers/Archive%20Read%20Library.md) is explicitly the initial implementation record, not a complete final NOAH API. The current [archive includes](../../src/archive) and focused [NOAH specification](../engineering/NOAH%20Specification.md) define later reader/writer/codec interfaces. Treat them as source-level/provisional reuse with matching includes, not a new stable binary SDK. The documentation expansion does not require freezing every internal archive interface for 1.0.
 
 ## Diagnose and qualify your program
 
@@ -206,4 +206,4 @@ First separate failure layers: command lookup, operand parsing, file/record serv
 
 Use DDT for controlled 8080 tracing, DASM for Z80 analysis and STAT MEM for the current memory map. A debugger's own resident footprint changes available debuggee memory. Do not infer the logical end of a binary by stripping 00h/1Ah/FFh; they can be instructions/data. When reproducing compatibility problems, compare equivalent environments and separate documented API behavior from undocumented hardware/private-address assumptions.
 
-The examples' source/build checks are recorded in [REFERENCE-STATUS.md](REFERENCE-STATUS.md). They are not new release-wide emulator or hardware qualification. Further tutorial breadth, complete archive SDK stabilization and a portable terminal starter are explicit expansion work, not hidden 1.0 blockers.
+The examples' source/build checks are recorded in [REFERENCE-STATUS.md](../programmers/REFERENCE-STATUS.md). They are not new release-wide emulator or hardware qualification. Further tutorial breadth, complete archive SDK stabilization and a portable terminal starter are explicit expansion work, not hidden 1.0 blockers.

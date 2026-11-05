@@ -562,7 +562,7 @@ failed and preserved in every mode. SUBMIT alone does not select `/B`: native
 qualification proves a SUBMIT file can pause at COPY's collision prompt.
 
 User documentation now covers current transient options in section 4.6 and
-COPY batch operation in section 5.7 of `docs/user/users_guide.md`. The target
+COPY batch operation in section 5.7 of `docs/manuals/Users-Guide.md`. The target
 specification records `/B`. No exported DOCX/PDF regeneration is included.
 
 COPY.COM is 6,220 bytes; CPX and OS code are unchanged. Native and host builds

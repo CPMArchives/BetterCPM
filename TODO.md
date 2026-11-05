@@ -491,7 +491,7 @@ redistributable existing utility; an unchecked item does not by itself block
   Keep the finalized implied-corner `/VER` display. Defer command-line `/FIND=`;
   retain interactive `F` in the viewer design and revisit command-line search
   only for a concrete invocation/SUBMIT use case with defined result behavior.
-  See the [settled review decisions](docs/engineering/DUMP%20Specification.md#enhanced-viewer-proposal--settled-review-decisions).
+  See the [settled review decisions](docs/engineering/DUMP%20Specification.md#15-remaining-review-details).
 - [x] Implement `SUBMIT.COM`.
 - [x] Implement `XSUB.COM`.
 - [ ] Implement `ED.COM`.

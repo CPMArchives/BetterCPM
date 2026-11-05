@@ -2,7 +2,7 @@
 
 These reconciled instructions describe the [five-package locked 1.0 baseline](../releases/non-documentation-lock-1.0/README.md). Installation, populated-file preservation and cold boot have recorded qualification for the exact emulator artifacts. This edit claims no new runtime/hardware trial. Physical media transfer and additional machines remain separately scoped.
 
-[Documentation index](../README.md) · [User's Guide](../user/users_guide.md) · [Command Reference](../user/command_reference.md) · [current errata](../releases/1.0-ERRATA.md). Updated documentation is separate from the historical manuals embedded in the unchanged ZIPs.
+[Documentation index](../README.md) · [User's Guide](../manuals/Users-Guide.md) · [Command Reference](../manuals/Command-and-Utilities-Reference.md) · [current errata](../releases/1.0-ERRATA.md). Updated documentation is separate from the historical manuals embedded in the unchanged ZIPs.
 
 ## Prepare the media
 
@@ -68,7 +68,7 @@ CONFIG defaults or STARTUP.SUB. TYPE A0:STARTUP.SUB shows the startup script.
 For the verified 780K System-copy installation procedure, follow
 [the shipped-tool walkthrough](MODEL4-SHIPPED-INSTALLATION.txt).
 For copying/installing system tracks to compatible prepared media, consult the
-[Command Reference DUP](../user/command_reference.md#dup) and [SYSGEN](../user/command_reference.md#sysgen) procedures; copying ordinary directory files alone does
+[Command Reference DUP](../manuals/Command-and-Utilities-Reference.md#dup) and [SYSGEN](../manuals/Command-and-Utilities-Reference.md#sysgen) procedures; copying ordinary directory files alone does
 not install a bootable system. Do not format a disk containing wanted data.
 
 On physical hardware, DMK is an emulator container and must first be transferred

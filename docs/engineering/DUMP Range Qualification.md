@@ -2,7 +2,7 @@
 
 DUMP 1.0 (006) implements the exact-byte `/FROM=` and maximum-count `/LEN=`
 contract in [DUMP Specification](DUMP%20Specification.md), Section 6.1.
-The Utilities Manual and `docs/user/DUMP.md` describe the same behavior.
+The Utilities Manual and `docs/manuals/Command-and-Utilities-Reference.md#dump` describe the same behavior.
 This record supersedes older DUMP evidence only for this candidate; historical
 Build 001/002 records and frozen System/Utilities releases remain unchanged.
 

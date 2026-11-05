@@ -8,7 +8,7 @@ The released 1.0 baseline has qualified installation and reconstruction receipts
 
 The finalized visual design is defined in the [BetterCP/M Visual Identity standard](specifications/VISUAL-IDENTITY.md).
 
-The [Command and Utilities Reference](docs/user/command_reference.md) covers System Disk commands, resident commands, and primary/companion Utilities programs.
+The [Command and Utilities Reference](docs/manuals/Command-and-Utilities-Reference.md) covers System Disk commands, resident commands, and primary/companion Utilities programs.
 
 ## Goals
 
@@ -160,7 +160,7 @@ DIR A:
 DIR D:
 ```
 
-With Utilities installed, also inspect `DIR B:` and `DIR C:`. Continue with the [User's Guide](docs/user/users_guide.md) and [Command and Utilities Reference](docs/user/command_reference.md). Read the [1.0 errata](docs/releases/1.0-ERRATA.md), including the A0 companion requirement for XSUB and the ANSI terminal-size requirement. Use the platform guide for FDB's memory requirements and system installation; copying directory files alone does not install a bootable system.
+With Utilities installed, also inspect `DIR B:` and `DIR C:`. Continue with the [User's Guide](docs/manuals/Users-Guide.md) and [Command and Utilities Reference](docs/manuals/Command-and-Utilities-Reference.md). Read the [1.0 errata](docs/releases/1.0-ERRATA.md), including the A0 companion requirement for XSUB and the ANSI terminal-size requirement. Use the platform guide for FDB's memory requirements and system installation; copying directory files alone does not install a bootable system.
 
 ## Building BetterCP/M
 
@@ -226,12 +226,12 @@ Historical documents are retained when they provide useful design or implementat
 
 The published Documentation collection has four principal manuals:
 
-1. **[User's Guide](docs/user/users_guide.md)** — task-oriented operation followed by seven conceptual chapters.
-2. **[Command and Utilities Reference](docs/user/command_reference.md)** — functional sections with alphabetized, independently usable resident/transient entries.
-3. **[Programmer's Guide](docs/programmers/programmers_guide.md)** — application and extension development with linked CP/M 2.2 and BetterCP/M API references, worked examples and explicit stability boundaries.
-4. **[Practical Porting Guide](docs/porting/practical_porting_guide.md)** — staged assessment, build, boot, BIOS/disk/memory integration, installation and qualification. Further hardware examples remain separate expansion.
+1. **[User's Guide](docs/manuals/Users-Guide.md)** — task-oriented operation followed by seven conceptual chapters.
+2. **[Command and Utilities Reference](docs/manuals/Command-and-Utilities-Reference.md)** — functional sections with alphabetized, independently usable resident/transient entries.
+3. **[Programmer's Guide](docs/manuals/Programmers-Guide.md)** — application and extension development with linked CP/M 2.2 and BetterCP/M API references, worked examples and explicit stability boundaries.
+4. **[Practical Porting Guide](docs/manuals/Practical-Porting-Guide.md)** — staged assessment, build, boot, BIOS/disk/memory integration, installation and qualification. Further hardware examples remain separate expansion.
 
-Installation guides, source reconstruction guidance, release information, licensing and engineering records support these manuals. The former [Utilities Manual](docs/user/utilities_manual.md) and standalone command paths are locators into the consolidated reference.
+Installation guides, source reconstruction guidance, release information, licensing and engineering records support these manuals. The Command and Utilities Reference is the sole command/utility manual. Obsolete Utilities and standalone-command locator files have been removed; current links go directly to the maintained entries.
 
 The [non-documentation lock](docs/releases/non-documentation-lock-1.0/README.md) records the original five Source/System/Utilities archives and qualified software. Current packaging identities are recorded in the release index linked above. The accepted Documentation package has its own revision and provenance. Further programmer/porting expansion remains separate from the released 1.0 software baseline.
 

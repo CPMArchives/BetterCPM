@@ -1,23 +1,19 @@
-# Documentation acceptance and release boundary
+# Documentation acceptance and software boundary
 
-Acceptance is a local documentation decision. It does not authorize uploading assets, aligning a tag target, tagging or publishing. The five-package [lock](non-documentation-lock-1.0/LOCK.json) and its historical status fields remain unchanged.
+Acceptance identifies the actual built Documentation ZIP and its actual independent source commit. It does not reinterpret the software tag, original software source or bounded qualification evidence. The five current software packages and separate Qualification Evidence ZIP must retain their recorded asset IDs, sizes and hashes.
 
-## Required acceptance record
+## Required checks
 
-Keep a companion acceptance record outside the Documentation ZIP. It identifies the actual documentation commit, the built ZIP's SHA-256 and size, all five fixed package identities, the checks performed, their results and the limits below. Keeping the final receipt outside avoids a self-referential archive hash or a fictitious commit identity.
+1. Audit controlled repository documentation links after removing obsolete files: no links to retired manual paths or locators, and no broken local file targets/anchors.
+2. Inspect the extracted reader layout: one README and four clearly named complete manuals at the top level; supporting publications, legal records and provenance remain accessible. No obsolete command locators, old backup, development manual, rendered obsolete editions, build tools or historical packaging folders.
+3. Build from an actual independently recorded documentation commit. Verify every selected source input and every generated member against that commit, including intentional relative-link remapping. Check all local package targets/anchors, pinned repository target paths, required manuals and verbatim legal records. Recomputed internal checksums must not conceal changed prose or false source identities.
+4. Rebuild the same commit into a second new directory and require byte-identical ZIPs. Preserve the existing example cross-assembly evidence and explicit unexecuted native/runtime limits; no new software qualification is claimed.
+5. Verify all current non-documentation asset IDs/sizes/hashes before and after the Documentation update. Update only Documentation and its external index/checksum/notes; preserve the tag ref, software target and all software/evidence assets.
 
-The ZIP's `DOCUMENTATION_CANDIDATE_NOT_ACCEPTED` build status records its state when assembled. Acceptance of those exact bytes is conveyed by the companion receipt; do not repack the accepted ZIP to change that field. Likewise the publication-plan JSON is a pre-build template, not the final asset index. Produce a separate accepted six-download index and checksum list after verification; retain earlier preflight records as history.
+## Receipt and limits
 
-## Checks
+Keep the final acceptance receipt outside the ZIP to avoid a circular ZIP hash or fictitious commit. It records the documentation commit, ZIP hash/size, link/layout/license/provenance checks, repeat-build result and unchanged software/evidence identities. Provenance/MANIFEST.json records the selected input/member hashes; Provenance/SOURCE-IDENTITY.json records independent source identities.
 
-1. Verify the five actual Source/System/Utilities ZIP sizes and SHA-256 hashes against the unchanged canonical lock. Check ZIP integrity, existing internal member checksum lists and software-source records without writing the archives.
-2. Review all four manual entry points, task/concept organization, command reference structure, API coverage, installation/build instructions, licensing boundaries and release identities. Distinguish historical technical records from current contracts.
-3. Build Documentation from a real, separately identified local commit. Check selected membership, local links/anchors, pinned external target paths, notices copied verbatim, and absence of withheld formats, development FDB, binaries/media and nested archives. Verify packaged source-derived bytes against that actual commit, including intentional link rewriting.
-4. Reproduce the recorded cross-assembly checks for the four example sources and the CPX two-origin relocation comparison. Preserve the explicit absence of native/runtime qualification; do not silently turn unexecuted expansion examples into release software gates.
-5. Run the split-provenance checker with the five real ZIPs and the committed Documentation ZIP. Rebuild the same Documentation commit into a separate new directory and compare output bytes. Record the final hashes/sizes and publication hold.
+Existing errata, licensing qualifications, compatibility observations, excluded/deferred profiles and emulator-only evidence retain their scope. Native/runtime execution of new tutorial examples, additional hardware, new rendered editions and further programmer/porting expansion remain independent work; they do not become new 1.0 software blockers.
 
-## Acceptance limits
-
-Acceptance covers the reconciled Markdown/plain-text collection and editable examples at the recorded evidence level. It does not certify a new PDF/DOCX/HTML edition, perform physical-hardware qualification, rerun software emulator campaigns, resolve undetermined historical rights, or promote broader programmer/porting expansion to a 1.0 blocker. Existing errata and bounded observations remain visible. A genuine binary/content change requires explicitly reopening the affected software lock and applicable qualification.
-
-The [publication procedure](DOCUMENTATION-PUBLICATION.md), [reference-status ledger](../programmers/REFERENCE-STATUS.md) and [licensing inventory](../LICENSING-INVENTORY.md) supply the detailed boundaries. A content or verification failure must be corrected and rebuilt before acceptance; a missing check must be reported as missing.
+See the [publication procedure](DOCUMENTATION-PUBLICATION.md), [reference-status ledger](../programmers/REFERENCE-STATUS.md) and [licensing inventory](../LICENSING-INVENTORY.md).

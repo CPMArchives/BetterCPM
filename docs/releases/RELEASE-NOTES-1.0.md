@@ -1,13 +1,11 @@
 # BetterCP/M 1.0
 
-> **Unpublished release notes — consult the separate final documentation acceptance receipt.** Five non-documentation
-> packages are locked against the [exact baseline](non-documentation-lock-1.0/README.md).
-> These notes are not final publication approval. The four manuals and supporting documents are reconciled; assemble and verify the
-> separately versioned Documentation package before final review; tagging and publishing remain held.
+> **Published BetterCP/M 1.0.** Software source, qualification and independently revised documentation have separate provenance. See the current release index and checksums alongside the published downloads.
+
 
 BetterCP/M is a CP/M 2.2-compatible operating system for patched z80pack/cpmsim
 and the TRS-80 Model 4. This release brings together the system, its utilities,
-complete matching source and manuals in six downloads: five locked qualified archives plus a separately revised Documentation ZIP awaiting final review.
+complete matching source and manuals in six downloads: five locked qualified archives plus a separately revised Documentation ZIP.
 
 ## Choose your downloads
 
@@ -96,14 +94,15 @@ PR #609 and the release-wide index supplied alongside the downloads. Dated
 engineering history remains historical evidence. This paragraph does not
 supersede usage instructions, license terms or known limitations.
 
-The existing draft checksum/index snapshots identify the earlier provisional Documentation ZIP. After final review, `BetterCPM-1.0-SHA256SUMS.txt` must retain all five locked hashes and add the actual new Documentation hash under its final download name. `BetterCPM-1.0-RELEASE.json` maps those names to the original frozen names,
-internal roots, source revision and qualification record. The old preflight tag target proposal
-is the reviewed merge `2842d0eb0732683d9280a38d576c3dba423cb893`; only qualification records differ from the
-compiled source above. Final target alignment remains deferred until documentation review; this proposal is not a new target selection or tagging/publication authorization.
+The current `BetterCPM-1.0-SHA256SUMS.txt` and `BetterCPM-1.0-RELEASE.json` identify all seven published ZIPs: the five software packages, Documentation and separate Qualification Evidence. The original software freeze records describe historical outer packaging. Later packaging-only corrections did not change executable/source-code or disk-image bytes. This documentation cleanup preserves every current non-documentation asset ID, size and hash.
+
+The published `v1.0` tag points to qualification merge `2842d0eb0732683d9280a38d576c3dba423cb893`, whose software matches source `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`. Newer main includes post-1.0 development and must not be treated as the locked software source. GitHub’s automatic source archives are not substitutes for the independent packaged Source ZIP.
 
 
 ## Revised documentation provenance
 
-The new Documentation ZIP records its actual documentation commit separately from locked software source `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`. It does not claim all six downloads were rebuilt together. Source and embedded manuals in the five archives stay unchanged; the dedicated updated collection explains obsolete status/navigation without overriding license terms or known limitations. [Four-manual index](../README.md), [publication plan](DOCUMENTATION-PUBLICATION.json) and [format/verification procedure](DOCUMENTATION-PUBLICATION.md).
+The new Documentation ZIP records its actual documentation commit separately from locked software source `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`. It does not claim all six downloads were rebuilt together. Source and embedded manuals in the five archives stay unchanged; the dedicated updated collection explains obsolete status/navigation without overriding license terms or known limitations. [Four-manual index](../README.md), [current release index](https://github.com/CPMArchives/BetterCPM/releases/download/v1.0/BetterCPM-1.0-RELEASE.json) and [format/verification procedure](DOCUMENTATION-PUBLICATION.md).
 
-The final Documentation commit/hash/size are recorded in the companion acceptance receipt and local accepted-download index after actual assembly and Step 5 checks; the pre-build publication-plan template intentionally leaves them unset. No tag-target alignment, tagging or publication is performed by this reconciliation. Further Programmer's/Porting Guide expansion remains separate from the locked 1.0 software scope.
+The Documentation ZIP’s actual commit and input/member hashes are recorded under Provenance, independently of software source and the tag. The external release index and checksum list record the final ZIP hash and size. README is the Documentation Index and links the four manuals and all supporting publications directly. Obsolete Utilities/individual-command locators and the old backup guide have been removed; no duplicate command manual is maintained.
+
+The five current software packages and separate qualification-evidence asset are unchanged. The tag is unchanged. Further programmer/porting expansion and native execution of new tutorial examples remain separate from the locked 1.0 scope.

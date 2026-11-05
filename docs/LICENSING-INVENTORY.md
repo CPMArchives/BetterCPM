@@ -18,9 +18,9 @@ This inventory reconciles existing project records with package roles. It record
 
 ## Delivery rules for the documentation revision
 
-The explicit [documentation selection](../packaging/1.0/documentation-selection.json) includes the four manuals, supporting references, original example source/check records, both first-party license texts, NOTICE and selected legal/provenance text under `licenses/third_party/`. It excludes obsolete rendered editions, backup/development manuals, binaries, disk images, nested source tarballs and historical evidence archives. The five locked packages already carry their independent source/notice material and must not be repacked to synchronize this prose.
+The explicit [documentation selection](../packaging/1.0/documentation-selection.json) includes the four manuals, supporting references, original example source/check records, both first-party license texts, NOTICE and selected legal/provenance text under `Licenses/third_party/`. It excludes obsolete rendered editions, backup/development manuals, binaries, disk images, nested source tarballs and historical evidence archives. The five locked packages already carry their independent source/notice material and must not be repacked to synchronize this prose.
 
-Every Documentation ZIP needs README, CONTENTS, THIRD-PARTY-NOTICES, licensing index, immutable lock reference, separate source identity, release record and complete per-member checksums. Legal records are copied verbatim; link rewriting in manual prose is not permission to alter a license or grant. Links to matching software/source do not imply another installed component.
+Every Documentation ZIP needs one starting README, four clearly named manuals, selected legal records and supporting references, plus separate documentation/software identity and complete per-member checksums under Provenance. Legal records are copied verbatim; link rewriting in manual prose is not permission to alter a license or grant. Links to matching software/source do not imply another installed component.
 
 ## Audit boundary
 

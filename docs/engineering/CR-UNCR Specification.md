@@ -12,7 +12,7 @@ assembly definitions. These documents do not add unimplemented command options.
 [CR definitions](../../src/codec/cr.inc), [CR code](../../src/codec/cr.mac),
 [UNCR definitions](../../src/codec/uncr.inc), [UNCR code](../../src/codec/uncr.mac).
 Commands: [cr.mac](../../src/utilities/cr.mac), [uncr.mac](../../src/utilities/uncr.mac).
-User pages: [CR](../user/CR.md), [UNCR](../user/UNCR.md).
+User pages: [CR](../manuals/Command-and-Utilities-Reference.md#cr), [UNCR](../manuals/Command-and-Utilities-Reference.md#uncr).
 
 `CR_INIT` validates READ/WRITE, allocation and the caller's NUL-terminated
 `CR_NAME`, initializes state and enters READY without I/O. `CR_RUN` reads once,

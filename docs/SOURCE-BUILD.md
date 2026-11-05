@@ -51,7 +51,7 @@ Keep the original artifacts separate from reconstruction outputs. Compare all ei
 
 ## Native application and system builds
 
-For ordinary applications, follow the [Programmer's Guide](programmers/programmers_guide.md) and native [ZSM4/LINK reference](user/command_reference.md#zsm4). For the coherent native OS workflow, from the source root use:
+For ordinary applications, follow the [Programmer's Guide](manuals/Programmers-Guide.md) and native [ZSM4/LINK reference](manuals/Command-and-Utilities-Reference.md#zsm4). For the coherent native OS workflow, from the source root use:
 
 ```sh
 bash tools/start_native_build.sh --prepare-only /path/to/new-native-session
@@ -75,4 +75,4 @@ Use current Markdown/text originals. Older rendered User/Architecture PDF/DOCX f
 
 ## Reconstruction record
 
-Keep source/package/checksum identities, actual tool versions and hashes, patch/input locks, commands, work-directory choices, generated maps, file/image comparisons and execution scope. Preserve failed outputs for diagnosis without falling back to old binaries. Further new-target development belongs to the [Porting Guide](porting/practical_porting_guide.md) and has its own qualification; it does not expand the locked 1.0 platform list.
+Keep source/package/checksum identities, actual tool versions and hashes, patch/input locks, commands, work-directory choices, generated maps, file/image comparisons and execution scope. Preserve failed outputs for diagnosis without falling back to old binaries. Further new-target development belongs to the [Porting Guide](manuals/Practical-Porting-Guide.md) and has its own qualification; it does not expand the locked 1.0 platform list.

@@ -251,7 +251,7 @@ def assemble(args):
             files['docs/platform/'+guide]=tracked['docs/platform/'+guide]
             if platform=='cpmsim':
                 files['third_party/z80pack/README.md']=tracked['third_party/z80pack/README.md']
-            files['docs/user/users_guide.md']=tracked['docs/user/users_guide.md']
+            files['docs/manuals/Users-Guide.md']=tracked['docs/manuals/Users-Guide.md']
             files['docs/user/FDB.md']=tracked['docs/user/FDB.md']
             files['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']=tracked['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']
             files['docs/engineering/BCPM780-Installation-Qualification.md']=tracked['docs/engineering/BCPM780-Installation-Qualification.md']
@@ -273,7 +273,7 @@ def assemble(args):
             selected,evidence=utilities_members(asset['platforms'][0],sums,images,
                                                 util_reports,inventory)
             files.update(selected)
-            files['docs/user/utilities_manual.md']=tracked['docs/user/utilities_manual.md']
+            files['docs/manuals/Command-and-Utilities-Reference.md']=tracked['docs/manuals/Command-and-Utilities-Reference.md']
             files['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']=tracked['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']
             files['docs/engineering/BCPM780-Installation-Qualification.md']=tracked['docs/engineering/BCPM780-Installation-Qualification.md']
             for guide in ('FDB.md','ZSM4.md','LINK.md','SQ.md','USQ.md','CR.md','UNCR.md','LZH.md','UNLZH.md'):

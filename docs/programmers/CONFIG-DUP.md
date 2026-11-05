@@ -1,6 +1,6 @@
 # CONFIG.COM, DUP.COM and SYSGEN.COM
 
-> **Locked 1.0 reading note:** User commands are maintained in the [Command and Utilities Reference](../user/command_reference.md#configuration-disks-and-installation). For porting use [disk integration](../porting/practical_porting_guide.md#disk-integration) and [media installation](../porting/practical_porting_guide.md#generate-and-install-media). Frozen completion/export descriptions supersede earlier increments; old timings/versions remain historical evidence.
+> **Locked 1.0 reading note:** User commands are maintained in the [Command and Utilities Reference](../manuals/Command-and-Utilities-Reference.md#configuration-disks-and-installation). For porting use [disk integration](../manuals/Practical-Porting-Guide.md#disk-integration) and [media installation](../manuals/Practical-Porting-Guide.md#generate-and-install-media). Frozen completion/export descriptions supersede earlier increments; old timings/versions remain historical evidence.
 
 
 The consolidated engineering contracts are [CONFIG](../engineering/CONFIG%20Specification.md),

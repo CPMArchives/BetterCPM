@@ -179,8 +179,8 @@ context without becoming writes. Do not reinterpret it as padding, insertion or
 a chained edit against earlier replacements.
 
 The Utilities manual entry is maintained in
-[patch_manual_entry.md](../user/patch_manual_entry.md) and embedded in the
-[Utilities manual](../user/utilities_manual.md#patch-verified-binary-file-patching).
+[patch_manual_entry.md](../manuals/Command-and-Utilities-Reference.md#patch) and embedded in the
+[Utilities manual](../manuals/Command-and-Utilities-Reference.md#patch).
 The approved source document was supplied as
 `BetterCPM_PATCH_Engineering_Specification_v1.0(1).md`.
 

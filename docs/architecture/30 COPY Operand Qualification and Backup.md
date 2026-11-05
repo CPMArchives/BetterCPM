@@ -93,5 +93,5 @@ handoff is still a separate implementation and qualification item.
 The complete amendment, resolved decisions and implementation sequence are in
 [COPY Specification](../engineering/COPY%20Specification.md#operand-qualified-attributes-and-backup-amendment--accepted-2026-10-09).
 Implementation evidence belongs in [COPY Utility](../engineering/COPY%20Utility.md).
-The [user guide](../user/users_guide.md) contains a planned-feature explanation
+The [user guide](../manuals/Users-Guide.md) contains a planned-feature explanation
 that must remain marked unimplemented until native qualification passes.

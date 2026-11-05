@@ -1,6 +1,6 @@
 # CP/M 2.2 programming interface reference
 
-This is the CP/M interface part of the [BetterCP/M Programmer's Guide](programmers_guide.md). It covers all standard BDOS selectors 0–40, including reserved 38/39, all 17 BIOS vectors, page zero, FCBs, DMA and disk parameter structures. The [BetterCP/M-specific reference](BETTERCPM-API.md) covers extensions separately. This is documentation of locked software source `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`, not a declaration that every historical implementation behaved identically.
+This is the CP/M interface part of the [BetterCP/M Programmer's Guide](../manuals/Programmers-Guide.md). It covers all standard BDOS selectors 0–40, including reserved 38/39, all 17 BIOS vectors, page zero, FCBs, DMA and disk parameter structures. The [BetterCP/M-specific reference](BETTERCPM-API.md) covers extensions separately. This is documentation of locked software source `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`, not a declaration that every historical implementation behaved identically.
 
 Original prose is CC BY 4.0; original reusable code examples are GPL-2.0-or-later. Third-party material retains its terms. See [licensing](../LICENSING.md).
 
@@ -182,7 +182,7 @@ Private vectors begin after +48 and are **not additional CP/M 2.2 vectors**. Bet
 
 The DPB is 15 bytes: SPT word at +0; BSH +2; BLM +3; EXM +4; DSM word +5; DRM word +7; AL0 +9; AL1 +10; CKS word +11; OFF word +13. Words are little-endian. DSM and DRM are last indexes, not counts. AL0/AL1 reserve directory blocks. Allocation block bytes are `128 * 2^BSH`; BLM must be consistent with BSH. EXM and allocation-map entry width depend on capacity/block geometry. CSV uses CKS bytes; ALV needs enough bits for DSM+1 blocks.
 
-SPT/OFF are logical filesystem units, not universally physical sector counts and cylinders. For the locked runtime binding, normal formats use side-track logical units; BCPM780 catalogue cylinder units are normalized through the accepted binding path. Do not repair an apparent factor-of-two discrepancy by editing a DPB behind its owner. See the [porting disk chapter](../porting/practical_porting_guide.md#disk-integration).
+SPT/OFF are logical filesystem units, not universally physical sector counts and cylinders. For the locked runtime binding, normal formats use side-track logical units; BCPM780 catalogue cylinder units are normalized through the accepted binding path. Do not repair an apparent factor-of-two discrepancy by editing a DPB behind its owner. See the [porting disk chapter](../manuals/Practical-Porting-Guide.md#disk-integration).
 
 Pointers returned by Functions 27/31 or a DPH are borrowed. Locked allocation/check workspaces are shared and reconstructed on context changes. Copy descriptive fields when needed; allocate through file services. Directly altering a returned bitmap/DPB bypasses validation and can corrupt other users of the disk.
 

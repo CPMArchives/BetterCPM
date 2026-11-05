@@ -6,10 +6,10 @@ Start with the installation guide for your platform, then use the manuals below.
 
 | Need | Manual |
 | --- | --- |
-| Perform everyday tasks and understand BetterCP/M | [User's Guide](user/users_guide.md): practical Part I, seven conceptual chapters in Part II. |
-| Look up a command or utility | [Command and Utilities Reference](user/command_reference.md): functional sections, alphabetized entries, separate resident/transient forms. |
-| Write applications, CPXs, RSXs or service clients | [Programmer's Guide](programmers/programmers_guide.md), with [CP/M 2.2 API](programmers/CPM22-API.md), [BetterCP/M API](programmers/BETTERCPM-API.md), and [coverage/evidence ledger](programmers/REFERENCE-STATUS.md). |
-| Adapt BetterCP/M to hardware | [Practical Porting Guide](porting/practical_porting_guide.md): staged bring-up, technical contracts, installation and qualification. |
+| Perform everyday tasks and understand BetterCP/M | [User's Guide](manuals/Users-Guide.md): practical Part I, seven conceptual chapters in Part II. |
+| Look up a command or utility | [Command and Utilities Reference](manuals/Command-and-Utilities-Reference.md): functional sections, alphabetized entries, separate resident/transient forms. |
+| Write applications, CPXs, RSXs or service clients | [Programmer's Guide](manuals/Programmers-Guide.md), with [CP/M 2.2 API](programmers/CPM22-API.md), [BetterCP/M API](programmers/BETTERCPM-API.md), and [coverage/evidence ledger](programmers/REFERENCE-STATUS.md). |
+| Adapt BetterCP/M to hardware | [Practical Porting Guide](manuals/Practical-Porting-Guide.md): staged bring-up, technical contracts, installation and qualification. |
 
 ## Supporting publications
 
@@ -25,4 +25,4 @@ The [non-documentation lock](releases/non-documentation-lock-1.0/README.md) fixe
 
 Architecture specifications remain technical contracts; dated engineering records remain evidence for their exact inputs. Historical surveys, stage-pending language and the earlier six-package preflight are not current completeness sign-off. The compact Documentation selection includes focused references; omitted source/history links lead to pinned repository records. Complete source and corresponding-source archives remain in the unchanged matching downloads.
 
-The old Utilities Manual and standalone command paths are locators to the consolidated reference. Old backup, development FDB 1.01 and PDF/DOCX editions are not current 1.0 manuals. Further programmer/porting expansion and native execution of new documentation examples remain explicitly separate from 1.0 software requirements.
+The Command and Utilities Reference is the sole command/utility manual. Obsolete Utilities and standalone-command locators have been removed and their internal links updated. Old backup, development FDB 1.01 and PDF/DOCX editions are not current 1.0 manuals. Further programmer/porting expansion and native execution of new documentation examples remain explicitly separate from 1.0 software requirements.

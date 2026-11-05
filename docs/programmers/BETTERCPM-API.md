@@ -1,6 +1,6 @@
 # BetterCP/M 1.0 interface reference
 
-This is the BetterCP/M-specific API part of the [Programmer's Guide](programmers_guide.md). The [CP/M 2.2 reference](CPM22-API.md) defines the compatibility baseline. Here, a selector assignment means an implemented service boundary; it does not promote every private implementation detail to a stable third-party ABI. Observe the stability and caller-precondition notes below.
+This is the BetterCP/M-specific API part of the [Programmer's Guide](../manuals/Programmers-Guide.md). The [CP/M 2.2 reference](CPM22-API.md) defines the compatibility baseline. Here, a selector assignment means an implemented service boundary; it does not promote every private implementation detail to a stable third-party ABI. Observe the stability and caller-precondition notes below.
 
 Original prose is CC BY 4.0; original reusable code examples are GPL-2.0-or-later. See [licensing](../LICENSING.md).
 
@@ -294,7 +294,7 @@ The full assigned SCX operation mask is 00FFh. Fixed-cell operation 7's clamped 
 
 SCX discovery's twelve bytes are `SCX` at +0 (3), major/minor +3/+4, length +5, rows/columns +6/+7, operation-mask word +8, rendition mask +10 and color mask +11. Zero host rows/columns mean host-managed geometry, not detected dimensions. The nine-byte rendition record is flags +0; foreground kind +1 and three color bytes +2; background kind +5 and three color bytes +6. Kind 0=default, 1=palette index, 2=RGB. Flag bits 0–7 are bold/faint/italic/underline/blink/reverse/conceal/strike. Check actual masks: Model 4 advertises reverse/conceal (60h), no color; the host backend encodes FFh styles and color mask7, whose visible effect still depends on the endpoint. The backend copies/validates the record before changing state. Invalid operations/arguments return FFh; successful SCX controls return zero. General registers/flags are scratch and the stack must remain balanced.
 +
-+This summary locates the complete [screen backend contract](../engineering/Unloadable%20Screen%20Backend%20ABI.md), including SCX descriptor, rendition/color records, validation, cursor/wrap/margin semantics and preservation limits. Its historical checkpoints are superseded by the final full-control admission section. Personality/backend development is covered in the [guide](programmers_guide.md#terminal-and-clock-providers), not a general TCAP interface. ANSISCRN requires a host terminal at least 80×24 with normal full-screen scrolling; the frozen launcher does not enforce it.
++This summary locates the complete [screen backend contract](../engineering/Unloadable%20Screen%20Backend%20ABI.md), including SCX descriptor, rendition/color records, validation, cursor/wrap/margin semantics and preservation limits. Its historical checkpoints are superseded by the final full-control admission section. Personality/backend development is covered in the [guide](../manuals/Programmers-Guide.md#terminal-and-clock-providers), not a general TCAP interface. ANSISCRN requires a host terminal at least 80×24 with normal full-screen scrolling; the frozen launcher does not enforce it.
 
 <a id="bios-private-boundary"></a>
 
