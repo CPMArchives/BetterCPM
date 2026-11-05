@@ -12,6 +12,10 @@ The authoritative ordering of design and implementation work is the
 [BetterCP/M 1.0 roadmap](docs/releases/1.0-ROADMAP.md). This backlog supplies
 the detailed tasks but does not replace or reorder that roadmap.
 
+For post-1.0 proposals and backlog triage, use the [BetterCP/M vision and
+post-1.0 direction](docs/architecture/32%20BetterCPM%20Vision%20and%20Post-1.0%20Direction.md)
+as a guide; backlog inclusion alone does not make a candidate a commitment.
+
 
 Architecture is frozen through Stage 8. The implementation program is now the
 current critical path. Items below that implement a frozen contract are engineering
