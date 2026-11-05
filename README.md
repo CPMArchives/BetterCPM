@@ -145,6 +145,7 @@ The project record documents architectural decisions, implementation milestones,
 - [`docs/releases/1.0-ROADMAP.md`](docs/releases/1.0-ROADMAP.md) — authoritative 1.0 scope and work sequence;
 - [`docs/releases/1.0-IMPLEMENTATION-CONTRACTS.md`](docs/releases/1.0-IMPLEMENTATION-CONTRACTS.md) — retained 1.0 implementation contracts;
 - [`docs/architecture/`](docs/architecture/) — architectural specifications and design record;
+- [`docs/architecture/32 BetterCPM Vision and Post-1.0 Direction.md`](docs/architecture/32%20BetterCPM%20Vision%20and%20Post-1.0%20Direction.md) — project-level direction for evaluating post-1.0 evolution;
 - [`docs/engineering/`](docs/engineering/) — implementation and qualification record;
 - [`docs/programmers/`](docs/programmers/) — current programming and development interfaces;
 - [Shared input library](docs/programmers/Shared%20Input%20Library.md) — reusable utility editors, prompts, choices and integration contracts;
