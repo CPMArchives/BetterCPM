@@ -80,11 +80,11 @@
   ],
   "non_documentation_source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
   "non_documentation_lock": "docs/releases/non-documentation-lock-1.0/LOCK.json",
-  "documentation_complete": false,
+  "documentation_complete": true,
   "documentation_starting_reference": "31dba474927be420796ab9e4cb3c75daddd6f0ab",
-  "documentation_final_revision": null,
-  "release_notes_status": "provisional working text; synchronize with documentation before final release review",
-  "planned_tag_target_status": "old preflight proposal only; final alignment deferred until documentation review",
+  "documentation_final_revision": "549378120a8220cf546deb9c7602cfb3f73b6b0e",
+  "release_notes_status": "accepted documentation; synchronized unpublished draft notes",
+  "planned_tag_target_status": "recommended qualified software anchor; final authorization to tag/publish still required",
   "documentation_sync_date_taipei": "2026-11-05",
   "software_source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
   "qualification_merge_revision": "2842d0eb0732683d9280a38d576c3dba423cb893",
@@ -96,5 +96,6 @@
     "runtime_qualification": "not repeated; only matching locked bytes inherit bounded existing evidence",
     "expansion": "new programmer/porting expansion and native execution of new examples are separate from 1.0 blockers"
   },
-  "freeze_manifest_scope": "Historical six-package freeze record; only its five software rows remain current. New Documentation identity/acceptance are recorded separately here."
+  "freeze_manifest_scope": "Historical six-package freeze record; only its five software rows remain current. New Documentation identity/acceptance are recorded separately here.",
+  "tag_target_recommendation_reason": "The qualified software tree matches locked source; later main/doc-merge trees inherit post-1.0 FDB development and current main adds a separate CPC catalogue. Documentation retains its independently accepted revision."
 }
