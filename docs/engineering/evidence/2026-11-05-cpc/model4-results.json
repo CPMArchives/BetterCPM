@@ -65,6 +65,45 @@
         "COPY C:FILL.BIN B:RETURN.BIN",
         "TYPE CPCEND.TXT"
       ]
+    },
+    "664EN_2.DSK": {
+      "status": "pass",
+      "raw_sha256": "a5525f43cd1606a7c8444074fd837f3b2fd3f582615c2ec687ac49451a67dd1c",
+      "formatted_cylinders": 40,
+      "rotation": [
+        65,
+        70,
+        66,
+        71,
+        67,
+        72,
+        68,
+        73,
+        69
+      ],
+      "original_files": {
+        "amsdos.com": "cd56b6c6e817c6190cabf652724b052938d264e442a6667bdc8266a09cd4b233",
+        "logo.com": "5750969463f16fa61afae6fe444264b1e966852346aa68ac56307edaba7b17de",
+        "setup.com": "b358a14e45899b38b2daeb1ac3ddaaa0e265987dca83a42e12e494d072d9f2bd"
+      },
+      "fill_bytes": 131072,
+      "fill_sha256": "83af4e8f74025fc4c4ca441c35f8a79a94ce0187903445d2ac64c092bc1a6924",
+      "highest_block_written": 170,
+      "written_edsk_sha256": "7124a8b478e102e058e89bdf3931ef923d9f6e6add469e4ab37b58703b822364",
+      "reserved_bytes_preserved": 9216,
+      "guest_commands": [
+        "RSX LOAD M4SCRN",
+        "RSX LOAD ADM3A",
+        "CLS",
+        "B:",
+        "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"Amstrad CPC System\"",
+        "A:",
+        "DIR C:",
+        "COPY C:*.* B:",
+        "COPY B:PROBE.BIN C:FILL.BIN",
+        "COPY C:FILL.BIN B:RETURN.BIN",
+        "TYPE CPCEND.TXT"
+      ]
     }
   }
 }
