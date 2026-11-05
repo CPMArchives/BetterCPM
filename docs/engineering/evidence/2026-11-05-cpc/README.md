@@ -1,6 +1,6 @@
 # Amstrad CPC System and Data interchange
 
-Both supplemental definitions passed file interchange under the patched cpmsim using BetterCP/M System media. The guest read 47 files from four independently published, nonempty disk images. Each disk accepted a write through its highest allocation block and the guest copied the entire file back to another drive. The Model 4 DMKs passed host-side sector and file preparation. Guest I/O on trs80gp and interchange on physical equipment remain open.
+Both supplemental definitions passed file interchange under the patched cpmsim using BetterCP/M System media. The guest read 47 files from four independently published, nonempty disk images. Each disk accepted a write through its highest allocation block and the guest copied the entire file back to another drive. On trs80gp, CPCSYS passed on CPC464 DDI-1 disk 1. All 26 original files and the 50 KiB write/read-back probe matched. The guest wrote through block 170 and preserved the 9,216 reserved bytes. The repacked EDSK has the same SHA-256 as the cpmsim output. Model 4 coverage for the other three images and physical interchange remain open. [Completed Model 4 results](model4-results.json)
 
 | Definition | Sector IDs | Reserved tracks | DSM | Directory starts at | Space available for files on a blank disk |
 |---|---|---:|---:|---:|---:|

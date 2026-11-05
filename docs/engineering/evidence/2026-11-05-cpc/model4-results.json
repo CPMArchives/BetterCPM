@@ -1,0 +1,70 @@
+{
+  "target": "trs80gp",
+  "fdb_sha256": "7b21f92d6195a21ee85301c18d94d020d435543c5c226fbde055eed6bdaf41b2",
+  "system_sha256": "303fcd2e6d495d32d743d8caa1eb8b987be3df09904f2f24d8d01d07b8987f55",
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "samples": {
+    "464DDI1_1.DSK": {
+      "status": "pass",
+      "raw_sha256": "f9df7ee8a8c13ddc556d60866bee8924417045428a25d38d6040434a47f7c344",
+      "formatted_cylinders": 40,
+      "rotation": [
+        65,
+        70,
+        66,
+        71,
+        67,
+        72,
+        68,
+        73,
+        69
+      ],
+      "original_files": {
+        "amsdos.com": "cd56b6c6e817c6190cabf652724b052938d264e442a6667bdc8266a09cd4b233",
+        "asm.com": "1ee7db36b127de3182d70b897a568f5dafd461cbd21ef25c48900d8a7b7c011b",
+        "bootgen.com": "9c69078fdf1389a9213a5bb02cbf801c444115966928cc1a49e18fb2c31cd70f",
+        "chkdisc.com": "8a533bbab3c1945f7de744f238edf5197407bec56f785c642414ccf6d7abb7cd",
+        "cload.com": "4b9ba4f8c70d89255fed0071d6eb26131de4c66a9b80fe5b6d9d060954149470",
+        "copydisc.com": "fc1acc89507a5768d53cf2df503a03263cfc551d1cd36250b0142aedf081b8a5",
+        "csave.com": "d90c786de7dd30708a3dd4fec02e72397cb8ca36dc0f13f5ded19909d47c21ac",
+        "ddt.com": "4eac26d7010c5154741026c755cab51310cfbec04aecd80bc1514a2c786a402c",
+        "discchk.com": "5aad2c6b062530a459e5a7ce15bd038fc0f161b3389ca3b874bf57a140d0d764",
+        "disccopy.com": "985709957f2e9f3d58c240a4a226218271f2f485c138a2b08c2d65fd2bb8f110",
+        "dump.asm": "0ed417f983049ddc351823ed33bed6477d523331254960db21778fe035bb8495",
+        "dump.com": "9a99911c0fe0aaec22fdec61b1b2b03dd012ea12d20cc17f21c6f6d9c5399fe3",
+        "ed.com": "0397b96b6d48ba92a0b41cdf974bf8ad31e4d49783f1ff7eed9e701b6a8870db",
+        "ex1.bas": "9ea196498fa7a68d64b708a286d97a9c34f1670ab3c2eb478dbecee8d17c93be",
+        "ex2.bas": "03340930698bb8fe1f34d99c8c27db7e93cdeab4f1b6c9cb38592c085d38feeb",
+        "filecopy.com": "d27eb39f453a74d27394dee50a48ffe66bc19bcc580245b3ed563ab46c61f87b",
+        "format.com": "bbbb249a79a44ffbddf971fa68e2b03a122c8725e9e794841f24814498a0f6cb",
+        "load.com": "c885d061a5dcb3830ab1c29a13e34d3c0560cc3faf569bc55b195c0330a9cbd6",
+        "movcpm.com": "ca1c371785812555b1cae7cfa41f5c813dcf561059519050123c194088d92025",
+        "pip.com": "f3084c67365b60bb48bb4a2e7f3a5a6067908a48a0c00b5b79b0cc34e2984e66",
+        "rointime.dem": "9afb10255ba0581f0940b3cd7fed28880dabb023123dcd30dcbf72bc922176ca",
+        "setup.com": "b358a14e45899b38b2daeb1ac3ddaaa0e265987dca83a42e12e494d072d9f2bd",
+        "stat.com": "614d0b1d66466177e5b2bf585251d53d1e24eda34ada136b4ae178ab5944dc73",
+        "submit.com": "e466b44f7ba5313eabd9b574e647c0fe85e953b0f24aa7214afa494ccea5e618",
+        "sysgen.com": "b4faae18bdcdc5d117fe76e23ca46be2cda0258cfa354bd3d4740ce6469c1503",
+        "xsub.com": "817a16b595ea6de8df0dd5e808f89a49e85dea546673283d759d01e960598bed"
+      },
+      "fill_bytes": 51200,
+      "fill_sha256": "96d951077465bba73196da5efd1a9d7617b9f17eb6cdb7e4985b70639f9429ff",
+      "highest_block_written": 170,
+      "written_edsk_sha256": "2914c9a2932d0443ecb450eb4311632224e64c41017a7ba212afb418f67afebf",
+      "reserved_bytes_preserved": 9216,
+      "guest_commands": [
+        "RSX LOAD M4SCRN",
+        "RSX LOAD ADM3A",
+        "CLS",
+        "B:",
+        "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"Amstrad CPC System\"",
+        "A:",
+        "DIR C:",
+        "COPY C:*.* B:",
+        "COPY B:PROBE.BIN C:FILL.BIN",
+        "COPY C:FILL.BIN B:RETURN.BIN",
+        "TYPE CPCEND.TXT"
+      ]
+    }
+  }
+}
