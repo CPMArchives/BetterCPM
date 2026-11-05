@@ -1,0 +1,102 @@
+{
+  "status": "PASS",
+  "task_chapters": 12,
+  "conceptual_chapters": [
+    [
+      "13",
+      "Organization"
+    ],
+    [
+      "14",
+      "Memory and Execution"
+    ],
+    [
+      "15",
+      "Command Environment"
+    ],
+    [
+      "16",
+      "Files/Drives/Disks"
+    ],
+    [
+      "17",
+      "Console/Terminals/I/O"
+    ],
+    [
+      "18",
+      "Extensions"
+    ],
+    [
+      "19",
+      "Portability"
+    ]
+  ],
+  "appendices": 8,
+  "command_entries": 61,
+  "entry_fields": [
+    "Description",
+    "General Form",
+    "Quick Reference",
+    "Detailed Reference",
+    "Examples",
+    "Errors/Troubleshooting",
+    "See Also"
+  ],
+  "functional_sections_alphabetical": true,
+  "CPM22_selectors": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40
+  ],
+  "BIOS_vectors": 17,
+  "BetterCPM_selectors": [
+    176,
+    177,
+    178,
+    179,
+    180,
+    181,
+    182,
+    183
+  ],
+  "unresolved_placeholders": 0,
+  "content_review": "Task/reference separation, installation/build workflows, locked identities, history precedence, errata, attribution and expansion limits reviewed; native example execution and new publication formats remain outside acceptance scope."
+}

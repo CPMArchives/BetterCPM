@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "status": "ACCEPTED_FOR_LOCKED_1_0_DOCUMENTATION_SCOPE",
+  "date_local": "2026-11-05",
+  "documentation": {
+    "package": "documentation",
+    "filename": "BetterCPM-1.0-Documentation.zip",
+    "sha256": "8c184db835c90a2c60372b4f5a2bb93029fa4e772d849c6cdf1c44835e781fa9",
+    "size_bytes": 553662,
+    "documentation_revision": "549378120a8220cf546deb9c7602cfb3f73b6b0e",
+    "documentation_source": {
+      "base_commit": "549378120a8220cf546deb9c7602cfb3f73b6b0e",
+      "kind": "commit",
+      "manifest_sha256": "ee541f86b89475c3b78f1118737e0f8484b6588435fc2ae47bef5c381fed82a4",
+      "revision": "549378120a8220cf546deb9c7602cfb3f73b6b0e"
+    },
+    "files_verified": 122,
+    "local_links_verified": 1003,
+    "status": "DOCUMENTATION_STATIC_CHECKS_PASS",
+    "publication": "HOLD"
+  },
+  "software_source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+  "qualification_merge_revision": "2842d0eb0732683d9280a38d576c3dba423cb893",
+  "five_actual_locked_zips": "PASS: exact sizes/SHA-256, ZIP CRC, complete internal checksum membership, all 2835 member digests and source identities; rehashed after review",
+  "checks": {
+    "manual_review": "manual-review.json",
+    "example_cross_assembly": "examples-check.json",
+    "locked_zip_evidence": "five-locked-zips.json",
+    "split_provenance": "split-verification.json",
+    "pinned_external_targets": "external-targets.json",
+    "unit_tests_passed": 9,
+    "deterministic_rebuild": "PASS: two independent builds from the actual documentation commit are byte-identical",
+    "notices": "PASS: selected legal records copied verbatim and checked against actual commit",
+    "withheld_content": "PASS: no PDF/DOCX, backup/development FDB manual, binary/media or nested archives",
+    "release_scope": "five packages and canonical lock unchanged; existing errata and bounded observations retained"
+  },
+  "remaining_1_0_documentation_blockers": [],
+  "separate_expansion": [
+    "Native ZSM4/LINK and emulator execution of new examples not run",
+    "Physical hardware and additional targets not qualified",
+    "Printable/export editions deferred",
+    "Further programmer/porting breadth and provisional SDK stabilization remain independent"
+  ],
+  "build_status_note": "ZIP retains pre-acceptance DOCUMENTATION_CANDIDATE_NOT_ACCEPTED record. This external receipt accepts these exact bytes; no repacking or circular embedded acceptance hash.",
+  "publication_plan_note": "Included plan is a pre-build template; ACCEPTED-DOWNLOADS.json records actual final separate identities. Frozen lock historical documentation_complete=false is preserved, not current acceptance status.",
+  "tagging": "NOT_PERFORMED_HOLD",
+  "publication": "NOT_PERFORMED_HOLD",
+  "tag_target_alignment": "NOT_CHANGED",
+  "runtime_qualification": "NOT_REPEATED; inherited only for identical locked bytes"
+}
