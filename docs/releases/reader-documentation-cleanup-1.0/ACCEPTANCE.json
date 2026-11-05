@@ -1,0 +1,86 @@
+{
+  "status": "PASS",
+  "documentation": {
+    "package": "documentation",
+    "filename": "BetterCPM-1.0-Documentation.zip",
+    "sha256": "62bde1db3b48597ea986f70f19572db649fe7928362336c757dc3ce959083e90",
+    "size_bytes": 516698,
+    "documentation_revision": "466d25b6cadd37d32372b874472737ee4b40fe5a",
+    "software_source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+    "files_verified": 96,
+    "local_links_verified": 697,
+    "status": "DOCUMENTATION_VERIFIED"
+  },
+  "deterministic_rebuild": true,
+  "four_top_level_manuals": [
+    "Users-Guide.md",
+    "Command-and-Utilities-Reference.md",
+    "Programmers-Guide.md",
+    "Practical-Porting-Guide.md"
+  ],
+  "all_agreed_supporting_publications_present": true,
+  "complete_command_entries": 61,
+  "seven_conceptual_chapters": true,
+  "appendices": 8,
+  "no_obsolete_locators_or_packaging_clutter": true,
+  "pinned_repository_targets_verified": 76,
+  "tests_passed": 10,
+  "controlled_repository_links": {
+    "status": "PASS",
+    "revision": "466d25b6cadd37d32372b874472737ee4b40fe5a",
+    "links_checked": 1780,
+    "errors": []
+  },
+  "non_documentation_packages": {
+    "schema": 1,
+    "software_source_revision": "30b24a021cc3a90eb725cc3d1760dfe0dc31daa8",
+    "qualification_merge_revision": "2842d0eb0732683d9280a38d576c3dba423cb893",
+    "tag": "v1.0",
+    "packaging_revision": "navigation-status-correction-2026-11-06",
+    "packages": [
+      {
+        "package": "source",
+        "filename": "BetterCPM-1.0-Source.zip",
+        "size_bytes": 14906970,
+        "sha256": "b1f34533283529db6fe7117438027f21116b7984cfc7f37f56f4b5ac10b3ad35",
+        "github_asset_id": 714825407
+      },
+      {
+        "package": "system-model4",
+        "filename": "BetterCPM-1.0-System-Model4.zip",
+        "size_bytes": 6214778,
+        "sha256": "acdaa16d415e98f48ab0d4d2069a8f90f8ca59f75df5b2d247045b98dc0ef447",
+        "github_asset_id": 714825940
+      },
+      {
+        "package": "system-cpmsim",
+        "filename": "BetterCPM-1.0-System-cpmsim.zip",
+        "size_bytes": 6543231,
+        "sha256": "c22435acf3ee7333700b1971a320c49c835e518d36ccc7faea4e7b1d7fb2f899",
+        "github_asset_id": 714825758
+      },
+      {
+        "package": "utilities-model4",
+        "filename": "BetterCPM-Utilities-1.0-Model4.zip",
+        "size_bytes": 456361,
+        "sha256": "26a581d84e9bda77a84add3dd8184fb72199391737b8523bfd1f4a50e95e929d",
+        "github_asset_id": 714826198
+      },
+      {
+        "package": "utilities-cpmsim",
+        "filename": "BetterCPM-Utilities-1.0-cpmsim.zip",
+        "size_bytes": 423907,
+        "sha256": "3373db7e2f99a2a6740bbf7e07d27cfe4a1fb5a18042a09e42e16c1d5683755c",
+        "github_asset_id": 714826100
+      },
+      {
+        "package": "qualification-evidence",
+        "filename": "BetterCPM-1.0-Qualification-Evidence.zip",
+        "size_bytes": 105246019,
+        "sha256": "5bcbde07bd7ac49dcf146472c2cc446090cb12751dfb7609e0fb2fa3c21a600f",
+        "github_asset_id": 714823846
+      }
+    ],
+    "scope": "Current published five software ZIPs and separate qualification evidence, preserved byte-for-byte by documentation-only cleanup. Original freeze records remain historical."
+  }
+}

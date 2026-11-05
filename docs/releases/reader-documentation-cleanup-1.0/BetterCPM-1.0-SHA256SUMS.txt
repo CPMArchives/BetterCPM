@@ -1,0 +1,7 @@
+62bde1db3b48597ea986f70f19572db649fe7928362336c757dc3ce959083e90  BetterCPM-1.0-Documentation.zip
+b1f34533283529db6fe7117438027f21116b7984cfc7f37f56f4b5ac10b3ad35  BetterCPM-1.0-Source.zip
+acdaa16d415e98f48ab0d4d2069a8f90f8ca59f75df5b2d247045b98dc0ef447  BetterCPM-1.0-System-Model4.zip
+c22435acf3ee7333700b1971a320c49c835e518d36ccc7faea4e7b1d7fb2f899  BetterCPM-1.0-System-cpmsim.zip
+26a581d84e9bda77a84add3dd8184fb72199391737b8523bfd1f4a50e95e929d  BetterCPM-Utilities-1.0-Model4.zip
+3373db7e2f99a2a6740bbf7e07d27cfe4a1fb5a18042a09e42e16c1d5683755c  BetterCPM-Utilities-1.0-cpmsim.zip
+5bcbde07bd7ac49dcf146472c2cc446090cb12751dfb7609e0fb2fa3c21a600f  BetterCPM-1.0-Qualification-Evidence.zip
