@@ -1,13 +1,16 @@
 """Check four pinned CPC EDSKs against BetterCP/M on disposable media."""
 from argparse import ArgumentParser
+from contextlib import contextmanager
 from dataclasses import replace
 from hashlib import sha256
 import json
 from pathlib import Path
 import re
 import shutil
+import signal
 import subprocess
 import sys
+import time
 from urllib.request import urlopen
 
 HERE = Path(__file__).resolve().parent
@@ -27,6 +30,39 @@ SUPPLEMENT = ROOT / 'metadata/supplemental/SUPPDISK.FDF'
 DATABASE = SUPPLEMENT.with_suffix('.FDB')
 RELEASE = ROOT / 'metadata/release-formats.fdf'
 SAMPLES = json.loads((HERE / 'samples.json').read_text())
+
+
+@contextmanager
+def watch_model4(disks, *, interval=30, idle_limit=600):
+    """On this POSIX runner, interrupt a stalled guest inside the emulator cleanup scope."""
+    stamps = [disk.stat().st_mtime_ns for disk in disks]
+    started = last_write = time.monotonic()
+
+    def report(signum, frame):
+        nonlocal last_write
+        now = time.monotonic()
+        changed = []
+        for i, disk in enumerate(disks):
+            stamp = disk.stat().st_mtime_ns
+            if stamp != stamps[i]:
+                changed.append('ABC'[i])
+                stamps[i] = stamp
+        if changed:
+            last_write = now
+            detail = 'writes on ' + ', '.join(changed)
+        else:
+            detail = f'{now-last_write:.0f}s since last observed disk write'
+        print(f'  {disks[0].parent.name}: {int(now-started)//60}m elapsed, {detail}', flush=True)
+        if now - last_write >= idle_limit:
+            raise TimeoutError(f'No disk writes for {idle_limit}s; private DMKs remain in {disks[0].parent}')
+
+    old_handler = signal.signal(signal.SIGALRM, report)
+    signal.setitimer(signal.ITIMER_REAL, interval, interval)
+    try:
+        yield
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, old_handler)
 
 
 def digest(data):
@@ -150,9 +186,13 @@ def run_sample(args, spec, work, formats):
         assert dmk_to_raw(drive2.read_bytes(), fmt) == original
         if args.target == 'prepare-model4':
             return {'status': 'prepared', 'guest_commands': commands}
-        run_trs80gp([args.simulator, '-m4', '-batch', '-turbo', '-d0', drive0,
-                     '-d1', drive1, '-d2', drive2, '-itime', '120000',
-                     '-iw', 'CPC batch ended', '-id', '500', '-it', '-ix'], cwd=work, timeout=240)
+        print(f"Running {spec['filename']}: {len(expected)} original files, "
+              f"{len(probe)//1024} KiB to write and read back.", flush=True)
+        with watch_model4((drive0, drive1, drive2)):
+            run_trs80gp([args.simulator, '-m4', '-batch', '-turbo', '-na', '-d0', drive0,
+                         '-d1', drive1, '-d2', drive2, '-itime', '0',
+                         '-iw', 'CPC batch ended', '-id', '500', '-it', '-ix'],
+                        cwd=work, timeout=24*60*60)
         candidate.write_bytes(dmk_to_raw(drive2.read_bytes(), fmt))
         scratch.write_bytes(dmk_to_raw(drive1.read_bytes(), scratch_fmt))
         returned = scratch
@@ -224,7 +264,9 @@ def main():
     by_id = {f.ident:f for f in formats}
     for spec in SAMPLES:
         key = spec['filename']
-        report['samples'][key] = run_sample(args, spec, args.output/Path(key).stem, by_id)
+        work = args.output/Path(key).stem
+        report['samples'][key] = run_sample(args, spec, work, by_id)
+        (work/'sample-result.json').write_text(json.dumps(report['samples'][key], indent=2)+'\n')
         print(key, report['samples'][key]['status'], flush=True)
     (args.output/'results.json').write_text(json.dumps(report, indent=2)+'\n')
 
