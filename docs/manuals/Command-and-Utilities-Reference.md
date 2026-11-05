@@ -2,7 +2,7 @@
 
 License: original prose/illustrations are CC BY 4.0; original reusable code examples are GPL-2.0-or-later. Third-party material retains its own terms. See [licensing and example boundaries](../LICENSING.md).
 
-This reference describes the locked BetterCP/M 1.0 software, not every buildable component on current main. [User's Guide](users_guide.md) supplies operating procedures and conceptual explanations. The [release lock](../releases/non-documentation-lock-1.0/README.md) fixes the five Source/System/Utilities packages at software source `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`; this manuscript has a separate documentation revision. No new execution qualification is claimed by restructuring it.
+This reference describes the locked BetterCP/M 1.0 software, not every buildable component on current main. [User's Guide](Users-Guide.md) supplies operating procedures and conceptual explanations. The [release lock](../releases/non-documentation-lock-1.0/README.md) fixes the five Source/System/Utilities packages at software source `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`; this manuscript has a separate documentation revision. No new execution qualification is claimed by restructuring it.
 
 The normal combined arrangement is A: System, B: primary Utilities, C: Companion Utilities, D: work. Examples assume user zero unless stated otherwise. Keep original media unchanged and operate on writable copies. System and Utilities are separate downloads. Program availability comes from the locked [delivered contents](../releases/non-documentation-lock-1.0/CONTENTS.json), not a development build directory. Qualified installation and execution evidence is emulator-based; physical transfer and additional platforms have separate requirements.
 
@@ -211,7 +211,7 @@ A0>COPY B[-]:*.DOC[$RW+!$SYS] C4:
 
 This selects writable, non-system `.DOC` files from drive B's user areas.
 
-Attribute expressions use the same conventions described in [Chapter 4](users_guide.md#chapter-4) and [DIR RESIDENT](#dir-resident).
+Attribute expressions use the same conventions described in [Chapter 4](Users-Guide.md#chapter-4) and [DIR RESIDENT](#dir-resident).
 
 They determine which files are selected; they do not automatically change the attributes of the source files.
 
@@ -3815,7 +3815,7 @@ Display file sizes for selected user areas:
 A0>STAT B[3,5]:*.DAT $S
 ```
 
-For further information about drive/user specifications and file attributes, see [Chapter 4](users_guide.md#chapter-4).
+For further information about drive/user specifications and file attributes, see [Chapter 4](Users-Guide.md#chapter-4).
 
 #### Errors/Troubleshooting
 
@@ -3948,7 +3948,7 @@ The visible result is normally a cleared screen with the cursor positioned at th
 
 The underlying method may differ between supported computers and terminal environments.
 
-For more information about terminal support, see [Chapter 9](users_guide.md#chapter-9).
+For more information about terminal support, see [Chapter 9](Users-Guide.md#chapter-9).
 
 #### Errors/Troubleshooting
 
@@ -4008,7 +4008,7 @@ The visible result is normally a cleared screen with the cursor positioned at th
 
 The underlying method may differ between supported computers and terminal environments.
 
-For more information about terminal support, see [Chapter 9](users_guide.md#chapter-9).
+For more information about terminal support, see [Chapter 9](Users-Guide.md#chapter-9).
 
 #### Errors/Troubleshooting
 
@@ -4978,7 +4978,7 @@ BetterCP/M supports user areas 0 through 31, extending the traditional CP/M 2.2 
 
 USER is a resident command. There is no separate transient `USER.COM`.
 
-For more information about drives and user areas, see [Chapter 4](users_guide.md#chapter-4).
+For more information about drives and user areas, see [Chapter 4](Users-Guide.md#chapter-4).
 
 #### Examples
 
@@ -5584,7 +5584,7 @@ BetterCP/M 1.0 does not use CONFIG to manage resident extensions, terminal perso
 
 Those facilities are managed through their respective commands and extensions.
 
-For an introduction to configuration procedures, see [Chapter 7](users_guide.md#chapter-7).
+For an introduction to configuration procedures, see [Chapter 7](Users-Guide.md#chapter-7).
 
 #### Examples
 
@@ -6084,7 +6084,7 @@ If resident extensions have reduced the available TPA below this requirement, DU
 
 You may be able to recover the required memory by unloading resident extensions that are no longer needed.
 
-For information about managing extensions, see [Chapter 8](users_guide.md#chapter-8).
+For information about managing extensions, see [Chapter 8](Users-Guide.md#chapter-8).
 
 
 ##### Version Information
@@ -6130,7 +6130,7 @@ Display version information:
 A0>DUP /VER
 ```
 
-For an introduction to disk formats, system disks, and backup procedures, see [Chapter 10](users_guide.md#chapter-10), *Working with Disks*.
+For an introduction to disk formats, system disks, and backup procedures, see [Chapter 10](Users-Guide.md#chapter-10), *Working with Disks*.
 
 #### Errors/Troubleshooting
 
@@ -6833,7 +6833,7 @@ For ordinary system maintenance, DUP and SYSGEN provide the facilities needed to
 
 SYSBUILD is primarily intended for developers and system builders preparing new operating-system images.
 
-For an introduction to disk preparation, installation, and backup procedures, see [Chapter 10](users_guide.md#chapter-10), *Working with Disks*.
+For an introduction to disk preparation, installation, and backup procedures, see [Chapter 10](Users-Guide.md#chapter-10), *Working with Disks*.
 
 #### Examples
 
@@ -7161,7 +7161,7 @@ A0>:DIR
 
 This bypasses resident command lookup.
 
-For more information about command search and execution, see [Chapter 5](users_guide.md#chapter-5).
+For more information about command search and execution, see [Chapter 5](Users-Guide.md#chapter-5).
 
 
 ##### Unloading a CPX
@@ -7229,7 +7229,7 @@ Request a transient utility rather than a resident command:
 A0>:DIR /WHEREIS ED.COM
 ```
 
-For an introduction to CPXs and their relationship to the command environment, see [Chapter 8](users_guide.md#chapter-8), *Resident Extensions*.
+For an introduction to CPXs and their relationship to the command environment, see [Chapter 8](Users-Guide.md#chapter-8), *Resident Extensions*.
 
 #### Errors/Troubleshooting
 
@@ -7281,7 +7281,7 @@ Unload dependent extensions before removing their supporting components.
 
 Resident extensions reduce the memory available to transient programs.
 
-For additional information, see [Chapter 8](users_guide.md#chapter-8), *Resident Extensions*, and [Chapter 17](users_guide.md#chapter-17), *Batch and Extension Commands*.
+For additional information, see [Chapter 8](Users-Guide.md#chapter-8), *Resident Extensions*, and [Chapter 17](#batch-processing-and-extensions), *Batch and Extension Commands*.
 
 ##### Recovering from an Unusable CPX
 
@@ -7356,7 +7356,7 @@ BetterCP/M uses RSXs for several purposes, including terminal emulation, clock s
 
 The RSX utility allows you to manage these extensions without rebuilding the operating system.
 
-Normal carrier loading reads `A0:name.RSX`, regardless of the current drive/user. Keep the matched-build `R3PACK.RSX` runtime container in A0 too; it is required by the manager, not an extension to load with `RSX LOAD`. See [Section 8.2](users_guide.md#section-8-2) for installation details.
+Normal carrier loading reads `A0:name.RSX`, regardless of the current drive/user. Keep the matched-build `R3PACK.RSX` runtime container in A0 too; it is required by the manager, not an extension to load with `RSX LOAD`. See [Section 8.2](Users-Guide.md#chapter-8--manage-extensions-and-program-memory) for installation details.
 
 
 ##### Syntax
@@ -7515,7 +7515,7 @@ To verify the new environment, run the corresponding terminal test utility:
 A0>VT52TST
 ```
 
-For further information about terminal personalities, see [Chapter 9](users_guide.md#chapter-9), *Terminal Support*.
+For further information about terminal personalities, see [Chapter 9](Users-Guide.md#chapter-9), *Terminal Support*.
 
 
 ##### Clock Providers
@@ -7546,7 +7546,7 @@ You can identify the active provider with:
 A0>TIME /PROVIDER
 ```
 
-For more information, see [Chapter 11](users_guide.md#chapter-11), *Date and Time*, and [TIME](#time), *TIME*.
+For more information, see [Chapter 11](Users-Guide.md#chapter-11), *Date and Time*, and [TIME](#time), *TIME*.
 
 
 ##### P2DOS Clock Compatibility
@@ -7634,7 +7634,7 @@ When the application terminates and control returns to the command processor, th
 
 There is ordinarily no need to reload it after every program.
 
-A cold boot starts a new session. Use the supplied script and editing procedure in [Section 7.3](users_guide.md#section-7-3) to arrange automatic loading; normal carrier placement and dependencies are described in [Section 8.2](users_guide.md#section-8-2).
+A cold boot starts a new session. Use the supplied script and editing procedure in [Section 7.3](Users-Guide.md#chapter-7--inspect-change-and-save-configuration) to arrange automatic loading; normal carrier placement and dependencies are described in [Section 8.2](Users-Guide.md#chapter-8--manage-extensions-and-program-memory).
 
 
 #### Examples
@@ -7695,7 +7695,7 @@ A0>RSX UNLOAD VT52
 A0>RSX UNLOAD M4SCRN
 ```
 
-For an introduction to resident extensions and their use, see [Chapter 8](users_guide.md#chapter-8), *Resident Extensions*.
+For an introduction to resident extensions and their use, see [Chapter 8](Users-Guide.md#chapter-8), *Resident Extensions*.
 
 For detailed information about developing RSXs, consult the [BetterCP/M RSX and CPX Programmer's Guide](../programmers/RSX%20and%20CPX%20Programmer%27s%20Guide.md).
 
@@ -7749,7 +7749,7 @@ Unload dependent extensions before removing their supporting components.
 
 Resident extensions reduce the memory available to transient programs.
 
-For additional information, see [Chapter 8](users_guide.md#chapter-8), *Resident Extensions*, and [Chapter 17](users_guide.md#chapter-17), *Batch and Extension Commands*.
+For additional information, see [Chapter 8](Users-Guide.md#chapter-8), *Resident Extensions*, and [Chapter 17](#batch-processing-and-extensions), *Batch and Extension Commands*.
 
 ##### Extension Errors
 
@@ -7920,7 +7920,7 @@ The resulting command would be:
 
 Parameter substitution is textual. SUBMIT does not interpret filenames or options while performing the substitution.
 
-For a literal dollar sign in the `.SUB` source, write `$$`. For example, write `[$$ARC]` so the executed command receives `[$ARC]`. A bare `$ARC` causes `Parameter Error`. See [Chapter 6](users_guide.md#chapter-6), *Literal Dollar Signs in Command Files*, for a complete backup example.
+For a literal dollar sign in the `.SUB` source, write `$$`. For example, write `[$$ARC]` so the executed command receives `[$ARC]`. A bare `$ARC` causes `Parameter Error`. See [Chapter 6](Users-Guide.md#chapter-6), *Literal Dollar Signs in Command Files*, for a complete backup example.
 
 The resulting command is interpreted by the command processor or utility that executes it.
 
@@ -7982,11 +7982,11 @@ SUBMIT STARTUP
 
 This executes `STARTUP.SUB`.
 
-[Section 7.3](users_guide.md#section-7-3) lists the supplied scripts in order. cpmsim displays the banner only; Model 4 already loads M4SCRN and ADM3A, clears the screen, then displays the banner. Edit `A0:STARTUP.SUB` to customize that sequence.
+[Section 7.3](Users-Guide.md#chapter-7--inspect-change-and-save-configuration) lists the supplied scripts in order. cpmsim displays the banner only; Model 4 already loads M4SCRN and ADM3A, clears the screen, then displays the banner. Edit `A0:STARTUP.SUB` to customize that sequence.
 
 The startup command is executed during a cold boot, not during an ordinary warm boot.
 
-For information about configuring startup behavior, see [Chapter 7](users_guide.md#chapter-7).
+For information about configuring startup behavior, see [Chapter 7](Users-Guide.md#chapter-7).
 
 
 #### Examples
@@ -8009,7 +8009,7 @@ Execute a command file with two parameters:
 A0>SUBMIT COPYFILE REPORT.TXT B:REPORT.TXT
 ```
 
-For an introduction to batch processing, see [Chapter 6](users_guide.md#chapter-6).
+For an introduction to batch processing, see [Chapter 6](Users-Guide.md#chapter-6).
 
 #### Errors/Troubleshooting
 
@@ -8179,7 +8179,7 @@ It does not guarantee automation of programs that communicate directly with keyb
 
 For ordinary command sequences that do not require input to running programs, SUBMIT alone is sufficient.
 
-For an introduction to XSUB and batch processing, see [Chapter 6](users_guide.md#chapter-6).
+For an introduction to XSUB and batch processing, see [Chapter 6](Users-Guide.md#chapter-6).
 
 #### Examples
 
@@ -8358,7 +8358,7 @@ Because the supplied providers are read-only, P2DOS-compatible requests to set t
 
 The P2DOS extension is not required for ordinary use of TIME.
 
-For additional information about clock providers and their capabilities, see [Chapter 11](users_guide.md#chapter-11).
+For additional information about clock providers and their capabilities, see [Chapter 11](Users-Guide.md#chapter-11).
 
 #### Examples
 
@@ -8987,7 +8987,7 @@ LINK output=module[,module...][A]
 
 #### Detailed Reference
 
-[Utilities Manual](utilities_manual.md#native-assembler-and-linker) · [ZSM4](ZSM4.md)
+[Command and Utilities Reference](#zsm4) · [ZSM4](#zsm4)
 
 The Utilities Disk carries unmodified Digital Research LINK 1.3. It combines
 relocatable objects such as ZSM4's `.REL` output into a CP/M `.COM` program.
@@ -9295,7 +9295,7 @@ ZSM4 output=source
 
 #### Detailed Reference
 
-[Utilities Manual](utilities_manual.md#native-assembler-and-linker) · [LINK](LINK.md)
+[Command and Utilities Reference](#zsm4) · [LINK](#link)
 
 The Utilities Disk carries unmodified ZSM4 4.7 for Z80-compatible CP/M systems.
 It reads assembly source and produces Microsoft/DRI-format relocatable objects.
@@ -9374,7 +9374,7 @@ CR [drive:]file [destination-drive:]
 
 #### Detailed Reference
 
-[Utilities Manual](utilities_manual.md#compression-utilities) · [UNCR](UNCR.md)
+[Command and Utilities Reference](#archives-and-compression) · [UNCR](#uncr)
 
 CR writes a CRUNCH 2.x-format file in one input pass while keeping the source.
 Use UNCR to restore it. It writes the supported significant revision `20h`
@@ -9393,7 +9393,7 @@ Give one exact 8.3 source name and an optional destination drive such as `B:`.
 Both use your current user area. Output defaults to the logged drive, not the
 source or command's drive. Wildcards, paths, explicit user/DU file operands,
 output filenames and other switches are not accepted. `/HELP` and `/VER` ignore other arguments. See the
-[shared command rules](utilities_manual.md#shared-compression-command-rules)
+[shared command rules](#archives-and-compression)
 for program lookup, filename syntax and drive defaults.
 
 ##### Help
@@ -9468,7 +9468,7 @@ This leaves the original on A:, the crunched file on B: and the restored
 
 Success prints `CR: complete.` and returns to the prompt. Source files stay
 in place; existing outputs are refused. Processing uses a temporary on the
-destination drive. See [file handling and recovery](utilities_manual.md#compression-file-handling-and-recovery)
+destination drive. See [file handling and recovery](#archives-and-compression)
 for record padding, free space, read/write/close/rename errors and interrupted
 operations. A final file is published only after successful processing and closes.
 
@@ -9484,8 +9484,8 @@ including `1Ah`, are preserved for restoration.
 
 ##### Related documentation
 
-- [UNCR command](UNCR.md)
-- [Common operating rules](utilities_manual.md#compression-utilities)
+- [UNCR command](#uncr)
+- [Common operating rules](#archives-and-compression)
 - In the Documentation ZIP, see `docs/engineering/CR-UNCR Specification.md`.
 
 #### Examples
@@ -9527,7 +9527,7 @@ LZH [drive:]file [destination-drive:]
 
 #### Detailed Reference
 
-[Utilities Manual](utilities_manual.md#compression-utilities) · [UNLZH](UNLZH.md)
+[Command and Utilities Reference](#archives-and-compression) · [UNLZH](#unlzh)
 
 LZH writes a CP/M CrLZH file in one input pass while keeping the original.
 Use UNLZH to restore it. LZH emits the newer `20h` CrLZH variant with additive
@@ -9546,7 +9546,7 @@ Give one exact 8.3 source name and an optional destination drive such as `B:`.
 Both use your current user area. Output defaults to the logged drive, not the
 source or command's drive. Wildcards, paths, explicit user/DU file operands,
 output filenames and other switches are not accepted. `/HELP` and `/VER` ignore other arguments. See the
-[shared command rules](utilities_manual.md#shared-compression-command-rules)
+[shared command rules](#archives-and-compression)
 for program lookup, filename syntax and drive defaults.
 
 ##### Help
@@ -9625,7 +9625,7 @@ contain the restored name.
 
 Success prints `LZH: complete.` and returns to the prompt. Source files stay
 in place; existing outputs are refused. Processing uses a temporary on the
-destination drive. See [file handling and recovery](utilities_manual.md#compression-file-handling-and-recovery)
+destination drive. See [file handling and recovery](#archives-and-compression)
 for record padding, free space, read/write/close/rename errors and interrupted
 operations. A final file is published only after successful processing and closes.
 
@@ -9640,8 +9640,8 @@ all input-record bytes, including `1Ah`; no text conversion is performed.
 
 ##### Related documentation
 
-- [UNLZH command](UNLZH.md)
-- [Common operating rules](utilities_manual.md#compression-utilities)
+- [UNLZH command](#unlzh)
+- [Common operating rules](#archives-and-compression)
 - In the Documentation ZIP, see `docs/engineering/LZH-UNLZH Specification.md`.
 
 #### Examples
@@ -9796,7 +9796,7 @@ SQ [drive:]file [destination-drive:]
 
 #### Detailed Reference
 
-[Utilities Manual](utilities_manual.md#compression-utilities) · [USQ](USQ.md)
+[Command and Utilities Reference](#archives-and-compression) · [USQ](#usq)
 
 SQ writes a squeezed file while keeping the original. It reads the source
 twice, first to analyze it and then to produce the compressed stream. Keep the
@@ -9815,7 +9815,7 @@ Give one exact 8.3 source name and an optional destination drive such as `B:`.
 Both use your current user area. Output defaults to the logged drive, not the
 source or command's drive. Wildcards, paths, explicit user/DU file operands,
 output filenames and other switches are not accepted. `/HELP` and `/VER` ignore other arguments. See the
-[shared command rules](utilities_manual.md#shared-compression-command-rules)
+[shared command rules](#archives-and-compression)
 for program lookup, filename syntax and drive defaults.
 
 ##### Help
@@ -9888,7 +9888,7 @@ These commands leave `A:REPORT.TXT` and `B:REPORT.TQT` in place and restore
 
 Success prints `SQ: complete.` and returns to the prompt. Source files stay
 in place; existing outputs are refused. Processing uses a temporary on the
-destination drive. See [file handling and recovery](utilities_manual.md#compression-file-handling-and-recovery)
+destination drive. See [file handling and recovery](#archives-and-compression)
 for record padding, free space, read/write/close/rename errors and interrupted
 operations. A final file is published only after successful processing and closes.
 
@@ -9906,8 +9906,8 @@ encoder byte for byte.
 
 ##### Related documentation
 
-- [USQ command](USQ.md)
-- [Common operating rules](utilities_manual.md#compression-utilities)
+- [USQ command](#usq)
+- [Common operating rules](#archives-and-compression)
 - In the Documentation ZIP, see `docs/engineering/SQ-USQ Specification.md`.
 
 #### Examples
@@ -9949,7 +9949,7 @@ UNCR [drive:]file [destination-drive:]
 
 #### Detailed Reference
 
-[Utilities Manual](utilities_manual.md#compression-utilities) · [CR](CR.md)
+[Command and Utilities Reference](#archives-and-compression) · [CR](#cr)
 
 UNCR restores supported CRUNCH significant revision `20h` files and verifies
 their additive checksum. It keeps the compressed input. Both files written by
@@ -9969,7 +9969,7 @@ Give one exact 8.3 source name and an optional destination drive such as `B:`.
 Both use your current user area. Output defaults to the logged drive, not the
 source or command's drive. Wildcards, paths, explicit user/DU file operands,
 output filenames and other switches are not accepted. `/HELP` and `/VER` ignore other arguments. See the
-[shared command rules](utilities_manual.md#shared-compression-command-rules)
+[shared command rules](#archives-and-compression)
 for program lookup, filename syntax and drive defaults.
 
 ##### Help
@@ -10041,7 +10041,7 @@ of the input's B: prefix. An existing restored name is never replaced.
 
 Success prints `UNCR: complete.` and returns to the prompt. Source files stay
 in place; existing outputs are refused. Processing uses a temporary on the
-destination drive. See [file handling and recovery](utilities_manual.md#compression-file-handling-and-recovery)
+destination drive. See [file handling and recovery](#archives-and-compression)
 for record padding, free space, read/write/close/rename errors and interrupted
 operations. A final file is published only after successful processing and closes.
 
@@ -10057,8 +10057,8 @@ Z-style extension is only a convention; it does not prove that a file is support
 
 ##### Related documentation
 
-- [CR command](CR.md)
-- [Common operating rules](utilities_manual.md#compression-utilities)
+- [CR command](#cr)
+- [Common operating rules](#archives-and-compression)
 - In the Documentation ZIP, see `docs/engineering/CR-UNCR Specification.md`.
 
 #### Examples
@@ -10100,7 +10100,7 @@ UNLZH [drive:]file [destination-drive:]
 
 #### Detailed Reference
 
-[Utilities Manual](utilities_manual.md#compression-utilities) · [LZH](LZH.md)
+[Command and Utilities Reference](#archives-and-compression) · [LZH](#lzh)
 
 UNLZH restores the supported old `10h` and new `20h` CP/M CrLZH variants with
 additive checksums. It detects the variant from the header; no switch is needed.
@@ -10120,7 +10120,7 @@ Give one exact 8.3 source name and an optional destination drive such as `B:`.
 Both use your current user area. Output defaults to the logged drive, not the
 source or command's drive. Wildcards, paths, explicit user/DU file operands,
 output filenames and other switches are not accepted. `/HELP` and `/VER` ignore other arguments. See the
-[shared command rules](utilities_manual.md#shared-compression-command-rules)
+[shared command rules](#archives-and-compression)
 for program lookup, filename syntax and drive defaults.
 
 ##### Help
@@ -10194,7 +10194,7 @@ An existing original name is never replaced.
 
 Success prints `UNLZH: complete.` and returns to the prompt. Source files stay
 in place; existing outputs are refused. Processing uses a temporary on the
-destination drive. See [file handling and recovery](utilities_manual.md#compression-file-handling-and-recovery)
+destination drive. See [file handling and recovery](#archives-and-compression)
 for record padding, free space, read/write/close/rename errors and interrupted
 operations. A final file is published only after successful processing and closes.
 
@@ -10211,8 +10211,8 @@ are restored without text conversion.
 
 ##### Related documentation
 
-- [LZH command](LZH.md)
-- [Common operating rules](utilities_manual.md#compression-utilities)
+- [LZH command](#lzh)
+- [Common operating rules](#archives-and-compression)
 - In the Documentation ZIP, see `docs/engineering/LZH-UNLZH Specification.md`.
 
 #### Examples
@@ -10254,7 +10254,7 @@ USQ [drive:]file [destination-drive:]
 
 #### Detailed Reference
 
-[Utilities Manual](utilities_manual.md#compression-utilities) · [SQ](SQ.md)
+[Command and Utilities Reference](#archives-and-compression) · [SQ](#sq)
 
 USQ restores one squeezed file and checks its stored additive checksum before
 publishing the result. It leaves the compressed file in place. The restored
@@ -10273,7 +10273,7 @@ Give one exact 8.3 source name and an optional destination drive such as `B:`.
 Both use your current user area. Output defaults to the logged drive, not the
 source or command's drive. Wildcards, paths, explicit user/DU file operands,
 output filenames and other switches are not accepted. `/HELP` and `/VER` ignore other arguments. See the
-[shared command rules](utilities_manual.md#shared-compression-command-rules)
+[shared command rules](#archives-and-compression)
 for program lookup, filename syntax and drive defaults.
 
 ##### Help
@@ -10344,7 +10344,7 @@ logged onto A:, `USQ B:REPORT.TQT` instead selects A: as the destination.
 
 Success prints `USQ: complete.` and returns to the prompt. Source files stay
 in place; existing outputs are refused. Processing uses a temporary on the
-destination drive. See [file handling and recovery](utilities_manual.md#compression-file-handling-and-recovery)
+destination drive. See [file handling and recovery](#archives-and-compression)
 for record padding, free space, read/write/close/rename errors and interrupted
 operations. A final file is published only after successful processing and closes.
 
@@ -10360,8 +10360,8 @@ valid compressed data can still be refused because of their stored filename.
 
 ##### Related documentation
 
-- [SQ command](SQ.md)
-- [Common operating rules](utilities_manual.md#compression-utilities)
+- [SQ command](#sq)
+- [Common operating rules](#archives-and-compression)
 - In the Documentation ZIP, see `docs/engineering/SQ-USQ Specification.md`.
 
 #### Examples
@@ -10412,7 +10412,7 @@ Run `ADMTST` and follow its displayed screen/input exercises. Compare cursor mov
 
 On Model 4 the supplied startup already loads M4SCRN and ADM3A. For another personality, unload ADM3A first. On cpmsim load ANSISCRN before the personality. Do not unload a backend while its personality remains active.
 
-See the [terminal tasks](users_guide.md#chapter-9) and [monitor development reference](../programmers/Monitor%20RSX%20Development.md) for the test boundaries.
+See the [terminal tasks](Users-Guide.md#chapter-9) and [monitor development reference](../programmers/Monitor%20RSX%20Development.md) for the test boundaries.
 
 #### Examples
 
@@ -10457,7 +10457,7 @@ Run `ANSITST` and follow its displayed screen/input exercises. Compare cursor mo
 
 On Model 4 the supplied startup already loads M4SCRN and ADM3A. For another personality, unload ADM3A first. On cpmsim load ANSISCRN before the personality. Do not unload a backend while its personality remains active.
 
-See the [terminal tasks](users_guide.md#chapter-9) and [monitor development reference](../programmers/Monitor%20RSX%20Development.md) for the test boundaries.
+See the [terminal tasks](Users-Guide.md#chapter-9) and [monitor development reference](../programmers/Monitor%20RSX%20Development.md) for the test boundaries.
 
 #### Examples
 
@@ -10653,7 +10653,7 @@ Run `VT52TST` and follow its displayed screen/input exercises. Compare cursor mo
 
 On Model 4 the supplied startup already loads M4SCRN and ADM3A. For another personality, unload ADM3A first. On cpmsim load ANSISCRN before the personality. Do not unload a backend while its personality remains active.
 
-See the [terminal tasks](users_guide.md#chapter-9) and [monitor development reference](../programmers/Monitor%20RSX%20Development.md) for the test boundaries.
+See the [terminal tasks](Users-Guide.md#chapter-9) and [monitor development reference](../programmers/Monitor%20RSX%20Development.md) for the test boundaries.
 
 #### Examples
 
@@ -10757,7 +10757,7 @@ These extensions are particularly useful when working with large collections of 
 
 This appendix describes BetterCP/M's file specifications, wildcard conventions, drive/user selectors, and file attributes. It also explains how these facilities are used by commands such as DIR, ERA, REN, COPY, MOVE, TYPE, and STAT.
 
-For an introduction to working with files, see [Chapter 4](users_guide.md#chapter-4), *Working with Drives and Files*. For the exact syntax accepted by individual utilities, consult the command entries in this reference.
+For an introduction to working with files, see [Chapter 4](Users-Guide.md#chapter-4), *Working with Drives and Files*. For the exact syntax accepted by individual utilities, consult the command entries in this reference.
 
 ##### D.1 File Names and File Types
 
@@ -11151,7 +11151,7 @@ Compound selectors allow locations on different drives to be combined.
 For example:
 
 ```text
-[A0,B3]:*.DOC
+[A0,B3]:../user/%2A.DOC
 ```
 
 selects `.DOC` files from A0 and B3.
@@ -11583,7 +11583,7 @@ For detailed command behavior, consult:
 
 - [File commands](#files-directories-and-transfers) — File and Directory Commands
 - [Disk/configuration commands](#configuration-disks-and-installation) — System Utilities
-- [Appendix E](users_guide.md#appendix-e) — BetterCP/M and CP/M 2.2 Compatibility Notes
+- [Appendix E](Users-Guide.md#appendix-e) — BetterCP/M and CP/M 2.2 Compatibility Notes
 
 <a id="system-messages"></a>
 
@@ -11599,7 +11599,7 @@ The messages are grouped by subject rather than alphabetically. Related messages
 
 **Messages shown in quotation marks or code blocks are intended to reproduce documented BetterCP/M wording.** Where a utility may produce several related messages, the description explains the condition without implying that every variation has identical wording.
 
-For general troubleshooting procedures, see [Chapter 12](users_guide.md#chapter-12), *Troubleshooting*. For command-specific restrictions and recovery options, consult the command entries in this reference.
+For general troubleshooting procedures, see [Chapter 12](Users-Guide.md#chapter-12), *Troubleshooting*. For command-specific restrictions and recovery options, consult the command entries in this reference.
 
 ##### F.1 Command Processor Messages
 
@@ -12041,147 +12041,10 @@ For disk-related problems, record the drive assignments and disk format.
 
 When reporting a compatibility problem, identify the application, BetterCP/M version, and computer or emulator.
 
-See [Appendix E](users_guide.md#appendix-e) for additional guidance on compatibility reporting.
+See [Appendix E](Users-Guide.md#appendix-e) for additional guidance on compatibility reporting.
 
 <a id="command-summary"></a>
 
 ## Command locator
 
 Commands are indexed by function above. Each entry contains its own syntax and invocation examples. For memory commands, P is an alias for PEEK. User/drive navigation such as B3: is performed directly by the CCP.
-
-
-## Earlier reference links
-
-These anchors locate material moved from the former User's Guide command chapters.
-
-<a id="section-14-1"></a>
-
-[section-14-1](#dir-resident)
-
-<a id="section-14-2"></a>
-
-[section-14-2](#era-resident)
-
-<a id="section-14-3"></a>
-
-[section-14-3](#ren-resident)
-
-<a id="section-14-4"></a>
-
-[section-14-4](#type-resident)
-
-<a id="section-14-5"></a>
-
-[section-14-5](#copy-resident)
-
-<a id="section-14-6"></a>
-
-[section-14-6](#move-resident)
-
-<a id="section-15-4"></a>
-
-[section-15-4](#save)
-
-<a id="section-15-5"></a>
-
-[section-15-5](#get)
-
-<a id="section-15-6"></a>
-
-[section-15-6](#go)
-
-<a id="section-15-7"></a>
-
-[section-15-7](#jump)
-
-<a id="section-15-8"></a>
-
-[section-15-8](#peek)
-
-<a id="section-15-9"></a>
-
-[section-15-9](#poke)
-
-<a id="section-15-1"></a>
-
-[section-15-1](#user-resident)
-
-<a id="section-15-2"></a>
-
-[section-15-2](#cls-resident)
-
-<a id="section-15-3"></a>
-
-[section-15-3](#ver-resident)
-
-<a id="section-16-1"></a>
-
-[section-16-1](#config)
-
-<a id="section-16-2"></a>
-
-[section-16-2](#stat)
-
-<a id="section-16-3"></a>
-
-[section-16-3](#time)
-
-<a id="section-16-4"></a>
-
-[section-16-4](#dup)
-
-<a id="section-16-5"></a>
-
-[section-16-5](#sysgen)
-
-<a id="section-17-1"></a>
-
-[section-17-1](#submit)
-
-<a id="section-17-2"></a>
-
-[section-17-2](#xsub)
-
-<a id="section-17-3"></a>
-
-[section-17-3](#cpx)
-
-<a id="section-17-4"></a>
-
-[section-17-4](#rsx)
-
-<a id="chapter-13"></a>
-
-[chapter-13](#notation)
-
-<a id="chapter-14"></a>
-
-[chapter-14](#files-directories-and-transfers)
-
-<a id="chapter-15"></a>
-
-[chapter-15](#command-environment-and-execution)
-
-<a id="chapter-16"></a>
-
-[chapter-16](#configuration-disks-and-installation)
-
-<a id="chapter-17"></a>
-
-[chapter-17](#batch-processing-and-extensions)
-
-<a id="section-13-1"></a>
-
-[section-13-1](#notation)
-
-<a id="section-13-2"></a>
-
-[section-13-2](#notation)
-
-<a id="section-13-3"></a>
-
-[section-13-3](#query-conventions)
-
-<a id="section-13-4"></a>
-
-[section-13-4](#query-conventions)

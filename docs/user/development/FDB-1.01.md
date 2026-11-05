@@ -1,6 +1,6 @@
 # FDB 1.01 development workbench — outside the locked 1.0 manuals
 
-For released FDB 1.0 (001), use the [Command and Utilities Reference](../command_reference.md#fdb). These retained development instructions are not a replacement for the locked release entry.
+For released FDB 1.0 (001), use the [Command and Utilities Reference](../../manuals/Command-and-Utilities-Reference.md#fdb). These retained development instructions are not a replacement for the locked release entry.
 
 This guide describes the 1.01 development workbench. Released 1.0 media and
 packages remain unchanged. The development identity is `FDB 1.01 (002-dev)`;

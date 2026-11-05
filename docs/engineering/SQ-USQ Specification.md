@@ -12,7 +12,7 @@ assembly definitions. These documents do not add unimplemented command options.
 [SQ definitions](../../src/codec/sq.inc), [SQ code](../../src/codec/sq.mac),
 [USQ definitions](../../src/codec/usq.inc), [USQ code](../../src/codec/usq.mac).
 Commands: [sq.mac](../../src/utilities/sq.mac), [usq.mac](../../src/utilities/usq.mac).
-User pages: [SQ](../user/SQ.md), [USQ](../user/USQ.md).
+User pages: [SQ](../manuals/Command-and-Utilities-Reference.md#sq), [USQ](../manuals/Command-and-Utilities-Reference.md#usq).
 
 | Entry | Required phase/capabilities | Result |
 | --- | --- | --- |

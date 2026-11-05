@@ -1,6 +1,6 @@
 # Installing BetterCP/M on z80pack / cpmsim
 
-This is the reconciled operating guide for the [locked cpmsim System](../releases/non-documentation-lock-1.0/README.md), with separate documentation provenance. Earlier embedded copies remain unchanged. See the [four-manual index](../README.md), [Source Build guide](../SOURCE-BUILD.md), [Command Reference](../user/command_reference.md) and [errata](../releases/1.0-ERRATA.md).
+This is the reconciled operating guide for the [locked cpmsim System](../releases/non-documentation-lock-1.0/README.md), with separate documentation provenance. Earlier embedded copies remain unchanged. See the [four-manual index](../README.md), [Source Build guide](../SOURCE-BUILD.md), [Command Reference](../manuals/Command-and-Utilities-Reference.md) and [errata](../releases/1.0-ERRATA.md).
 
 
 BetterCP/M requires a patched cpmsim with geometry interface version 2.
@@ -25,7 +25,7 @@ If CONFIG output overlaps after loading `ANSISCRN.RSX` and `ANSI.RSX`, exit
 CONFIG with BREAK (Ctrl-C), enlarge the terminal to at least 80 by 24, and run
 CONFIG again. Resizing a menu that is already visible is not a test of the
 next redraw. This workaround keeps the qualified 1.0 binaries unchanged.
-See [the User's Guide](../user/users_guide.md#host-terminal-size-and-recovery)
+See [the User's Guide](../manuals/Users-Guide.md#host-terminal-size-and-recovery)
 and [the 1.0 erratum](../releases/1.0-ERRATA.md#ansi-host-terminal-size).
 
 ## Sources and prerequisites

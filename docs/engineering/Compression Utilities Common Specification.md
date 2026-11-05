@@ -28,7 +28,7 @@ passes separately on cpmsim and Model 4 for the recorded images.
 
 Related specifications: [SQ/USQ](SQ-USQ%20Specification.md),
 [CR/UNCR](CR-UNCR%20Specification.md), [LZH/UNLZH](LZH-UNLZH%20Specification.md).
-Operating instructions: [Utilities Manual](../user/utilities_manual.md#compression-utilities).
+Operating instructions: [Utilities Manual](../manuals/Command-and-Utilities-Reference.md#archives-and-compression).
 
 ## Source and macro structure
 

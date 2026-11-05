@@ -1,14 +1,13 @@
-"""GPL-2.0-or-later. Synthetic packaging fixtures; no real release writes."""
-import copy
+"""GPL-2.0-or-later. Reader layout, link migration and actual-source provenance regression tests."""
 import json
 import subprocess
 import tempfile
 import unittest
 import zipfile
 from pathlib import Path
-from release_documentation import (LOCK_PATH, SELECTION_PATH, ROOT_NAME, FINAL_NAME,
-                                  assemble, encoded, sha, load_lock, locked_files,
-                                  verify_documentation)
+from release_documentation import (MANUALS, MANIFEST, IDENTITY, SUMS, ROOT_NAME, FINAL_NAME,
+                                  SELECTION_PATH, SOFTWARE_PATH, assemble, encoded, sha,
+                                  verify_documentation, verify_software)
 
 
 class DocumentationRelease(unittest.TestCase):
@@ -18,136 +17,114 @@ class DocumentationRelease(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.repo = self.root / 'repo'
         self.repo.mkdir()
+        subprocess.run(['git', 'init', '-q', str(self.repo)], check=True)
         self.packages = self.root / 'packages'
         self.packages.mkdir()
         rows = []
-        for i, name in enumerate(('source', 'system-model4', 'system-cpmsim', 'utilities-model4', 'utilities-cpmsim')):
-            payload = ('synthetic locked fixture ' + str(i)).encode()
-            filename = name + '.zip'
-            (self.packages / filename).write_bytes(payload)
-            rows.append({'package': name, 'filename': filename, 'sha256': sha(payload), 'size_bytes': len(payload)})
-        self.lock = {'software_source_revision': '1' * 40, 'qualification_merge_revision': '2' * 40, 'packages': rows}
-        files = {
-            LOCK_PATH: encoded(self.lock),
-            'LICENSE': b'fixture first-party terms\n', 'COPYING': b'fixture GPL text\n',
-            'NOTICE': b'fixture attribution\n', 'LICENSES/CC-BY-4.0.txt': b'fixture CC text\n',
-            'docs/LICENSING.md': b'# Licensing\n', 'docs/LICENSING-INVENTORY.md': b'# Inventory\n',
-            'packaging/1.0/DOCUMENTATION-CONTENTS.md': b'# Contents\n[User](docs/user/users_guide.md)\n',
-            'packaging/1.0/README-Documentation.txt': b'Synthetic fixture only\n'}
-        manuals = ['docs/user/users_guide.md', 'docs/user/command_reference.md',
-                   'docs/programmers/programmers_guide.md', 'docs/porting/practical_porting_guide.md']
-        for name in manuals:
-            files[name] = b'# Guide\n[Local](#guide)\n[Source](../../src/example.mac)\n'
-        selected = manuals + ['docs/LICENSING.md', 'docs/LICENSING-INVENTORY.md', LOCK_PATH]
-        files[SELECTION_PATH] = encoded({'files': selected, 'manuals': manuals, 'license_records': [], 'publication_tools': []})
-        for n, data in files.items():
+        for name in ('source', 'system-model4', 'system-cpmsim', 'utilities-model4', 'utilities-cpmsim', 'evidence'):
+            data = name.encode()
+            (self.packages / (name + '.zip')).write_bytes(data)
+            rows.append({'package': name, 'filename': name + '.zip', 'size_bytes': len(data), 'sha256': sha(data)})
+        self.baseline = {'software_source_revision': '1' * 40, 'qualification_merge_revision': '2' * 40, 'packages': rows}
+        manuals = ['docs/manuals/' + n for n in MANUALS]
+        files = {SELECTION_PATH: encoded({'manuals': manuals, 'references': ['docs/programmers/API.md'], 'license_records': []}),
+                 SOFTWARE_PATH: encoded(self.baseline), 'docs/programmers/API.md': b'# API\n[User](../manuals/Users-Guide.md#guide)\n',
+                 'packaging/1.0/README-Documentation.md': b'# Start\n[User](../../docs/manuals/Users-Guide.md#guide)\n',
+                 'LICENSE': b'fixture license\n', 'COPYING': b'fixture GPL\n', 'NOTICE': b'fixture credit\n', 'LICENSES/CC-BY-4.0.txt': b'fixture CC\n'}
+        for n in manuals:
+            files[n] = b'# Guide\n[API](../programmers/API.md#api)\n[Commands](Command-and-Utilities-Reference.md#guide)\n[Source](../../src/example.mac)\n'
+        for n, d in files.items():
             p = self.repo / n
             p.parent.mkdir(parents=True, exist_ok=True)
-            p.write_bytes(data)
-        for args in (['init', '-q'], ['add', '.'], ['-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'Synthetic documentation fixture']):
-            subprocess.run(['git', '-C', str(self.repo), *args], check=True, capture_output=True)
-        self.revision = subprocess.check_output(['git', '-C', str(self.repo), 'rev-parse', 'HEAD']).decode().strip()
-        self.lock, self.raw = load_lock(self.repo)
+            p.write_bytes(d)
+        self.commit()
 
-    def build(self, preview=False):
-        p = self.packages / ('documentation-review.zip' if preview else FINAL_NAME)
-        result = assemble(self.repo, p, preview=preview, revision=None if preview else self.revision)
-        return p, result
+    def commit(self):
+        for args in (['add', '.'], ['-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'Fixture', '--allow-empty']):
+            subprocess.run(['git', '-C', str(self.repo), *args], check=True, capture_output=True)
+        self.rev = subprocess.check_output(['git', '-C', str(self.repo), 'rev-parse', 'HEAD']).decode().strip()
+
+    def build(self, folder='first', preview=False):
+        path = self.root / folder / ('layout-review.zip' if preview else FINAL_NAME)
+        result = assemble(self.repo, path, preview=preview, revision=None if preview else self.rev)
+        return path, result
 
     def mutate(self, path, change, restamp=False):
         with zipfile.ZipFile(path) as z:
             files = {n.split('/', 1)[1]: z.read(n) for n in z.namelist()}
         change(files)
         if restamp:
-            rec = json.loads(files['RELEASE.json'])
-            rec['files'] = {n: sha(d) for n, d in files.items() if n not in ('RELEASE.json', 'SHA256SUMS.txt')}
-            files['RELEASE.json'] = encoded(rec)
-            files['SHA256SUMS.txt'] = ''.join(sha(d) + '  ' + n + '\n' for n, d in sorted(files.items()) if n != 'SHA256SUMS.txt').encode()
-        new = self.root / 'mutated.zip'
+            files[SUMS] = ''.join(sha(d) + '  ' + n + '\n' for n, d in sorted(files.items()) if n != SUMS).encode()
+        new = self.root / 'changed.zip'
         with zipfile.ZipFile(new, 'w') as z:
             for n, d in files.items():
                 z.writestr(ROOT_NAME + '/' + n, d)
         return new
 
-    def test_committed_split_collection_and_cli(self):
-        before = {p.name: p.read_bytes() for p in self.packages.iterdir()}
+    def test_four_manual_layout_and_remapped_links(self):
         path, result = self.build()
-        self.assertEqual(result['documentation_revision'], self.revision)
-        self.assertEqual(len(locked_files(self.packages, self.lock)), 5)
-        report = self.root / 'report.json'
-        proc = subprocess.run(['python3', str(Path(__file__).with_name('check_release_package_lock.py')),
-                               str(self.packages), '--repository', str(self.repo), '--output', str(report)], capture_output=True)
-        self.assertEqual(proc.returncode, 0, proc.stderr)
-        self.assertEqual(json.loads(report.read_text())['status'], 'SPLIT_IDENTITIES_STATIC_CHECKS_PASS')
-        self.assertTrue(all((self.packages / n).read_bytes() == d for n, d in before.items()))
+        self.assertEqual(result['documentation_revision'], self.rev)
         with zipfile.ZipFile(path) as z:
-            guide = z.read(ROOT_NAME + '/docs/user/users_guide.md').decode()
-            self.assertIn('/blob/' + '1' * 40 + '/src/example.mac', guide)
-            self.assertEqual(z.read(ROOT_NAME + '/licenses/BetterCPM/NOTICE'), b'fixture attribution\n')
+            files = {n.split('/', 1)[1]: z.read(n) for n in z.namelist()}
+        self.assertEqual({n for n in files if '/' not in n}, {'README.md', *MANUALS})
+        self.assertIn(b'(Supporting-Reference/programmers/API.md#api)', files['Users-Guide.md'])
+        self.assertIn(b'(../../Users-Guide.md#guide)', files['Supporting-Reference/programmers/API.md'])
+        self.assertIn(b'/blob/' + b'1' * 40 + b'/src/example.mac', files['Users-Guide.md'])
+        self.assertEqual(files['Licenses/BetterCPM/NOTICE'], b'fixture credit\n')
+        self.assertFalse(any('locator' in n or 'utilities_manual' in n for n in files))
 
-    def test_preview_cannot_satisfy_final(self):
-        path, result = self.build(True)
-        self.assertIsNone(result['documentation_revision'])
+    def test_reproducible_and_ignores_uncommitted_changes(self):
+        first, _ = self.build()
+        (self.repo / 'docs/manuals/Users-Guide.md').write_text('uncommitted')
+        second, _ = self.build('second')
+        self.assertEqual(first.read_bytes(), second.read_bytes())
+
+    def test_preview_not_final(self):
+        path, _ = self.build(preview=True)
         with self.assertRaisesRegex(ValueError, 'Preview'):
-            verify_documentation(path, self.lock, self.raw, repo=self.repo)
-        with self.assertRaisesRegex(ValueError, 'Preview requires'):
-            assemble(self.repo, self.root / FINAL_NAME, preview=True)
+            verify_documentation(path, repo=self.repo)
 
-    def test_missing_and_same_size_changed_locked_file(self):
-        p = self.packages / self.lock['packages'][0]['filename']
-        data = p.read_bytes()
-        p.write_bytes(bytes([data[0] ^ 1]) + data[1:])
-        with self.assertRaisesRegex(ValueError, 'identity changed'):
-            locked_files(self.packages, self.lock)
-        p.unlink()
-        with self.assertRaisesRegex(ValueError, 'Missing'):
-            locked_files(self.packages, self.lock)
+    def test_restamped_prose_cannot_forge_commit(self):
+        path, _ = self.build()
+        new = self.mutate(path, lambda f: f.update({'Users-Guide.md': b'false prose'}), restamp=True)
+        with self.assertRaisesRegex(ValueError, 'actual documentation source'):
+            verify_documentation(new, repo=self.repo)
 
-    def test_tampered_member(self):
-        path, _ = self.build(True)
-        new = self.mutate(path, lambda f: f.update({'docs/user/users_guide.md': b'changed'}))
-        with self.assertRaisesRegex(ValueError, 'checksum'):
-            verify_documentation(new, self.lock, self.raw, allow_preview=True)
-
-    def test_unsafe_archive_member(self):
-        path, _ = self.build(True)
+    def test_unsafe_path(self):
+        path, _ = self.build()
         new = self.mutate(path, lambda f: f.update({'../escape': b'x'}))
         with self.assertRaisesRegex(ValueError, 'Unsafe'):
-            verify_documentation(new, self.lock, self.raw, allow_preview=True)
+            verify_documentation(new, repo=self.repo)
 
-    def test_missing_notice_even_with_new_checksums(self):
-        path, _ = self.build(True)
-        new = self.mutate(path, lambda f: f.pop('licenses/BetterCPM/NOTICE'), restamp=True)
-        with self.assertRaisesRegex(ValueError, 'Missing required'):
-            verify_documentation(new, self.lock, self.raw, allow_preview=True)
-
-    def test_false_commit_with_self_consistent_checksums(self):
-        path, _ = self.build(True)
-        def change(files):
-            for name in ('RELEASE.json', 'SOURCE-IDENTITY.json'):
-                j = json.loads(files[name])
-                j['documentation_revision'] = '3' * 40
-                j['documentation_source']['kind'] = 'commit'
-                j['documentation_source']['revision'] = '3' * 40
-                if name == 'RELEASE.json':
-                    j['status'] = 'DOCUMENTATION_CANDIDATE_NOT_ACCEPTED'
-                files[name] = encoded(j)
-        new = self.mutate(path, change, restamp=True)
-        with self.assertRaises(subprocess.CalledProcessError):
-            verify_documentation(new, self.lock, self.raw, repo=self.repo)
-
-    def test_restamped_prose_must_match_actual_commit(self):
+    def test_missing_notice(self):
         path, _ = self.build()
-        new = self.mutate(path, lambda f: f.update({'docs/user/users_guide.md': b'# Guide\nFalse instructions\n'}), restamp=True)
-        with self.assertRaisesRegex(ValueError, 'differs from actual commit'):
-            verify_documentation(new, self.lock, self.raw, repo=self.repo)
+        new = self.mutate(path, lambda f: f.pop('Licenses/BetterCPM/NOTICE'), restamp=True)
+        with self.assertRaisesRegex(ValueError, 'actual documentation source'):
+            verify_documentation(new, repo=self.repo)
 
-    def test_output_never_overwritten(self):
-        path, _ = self.build(True)
-        data = path.read_bytes()
+    def test_broken_local_anchor(self):
+        p = self.repo / 'docs/manuals/Users-Guide.md'
+        p.write_text('# Guide\n[Broken](../programmers/API.md#absent)\n')
+        self.commit()
+        with self.assertRaisesRegex(ValueError, 'anchor'):
+            self.build()
+
+    def test_no_overwrite(self):
+        path, _ = self.build()
         with self.assertRaisesRegex(ValueError, 'already exists'):
-            assemble(self.repo, path, preview=True)
-        self.assertEqual(path.read_bytes(), data)
+            assemble(self.repo, path, revision=self.rev)
+
+    def test_changed_same_size_software_rejected(self):
+        verify_software(self.packages, self.baseline)
+        p = self.packages / 'source.zip'
+        p.write_bytes(b'X' * p.stat().st_size)
+        with self.assertRaisesRegex(ValueError, 'identity mismatch'):
+            verify_software(self.packages, self.baseline)
+
+    def test_missing_software_rejected(self):
+        (self.packages / 'source.zip').unlink()
+        with self.assertRaisesRegex(ValueError, 'identity mismatch'):
+            verify_software(self.packages, self.baseline)
 
 
 if __name__ == '__main__':

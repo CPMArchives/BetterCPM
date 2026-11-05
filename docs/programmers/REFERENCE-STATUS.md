@@ -1,6 +1,6 @@
 # Programmer and porting reference status
 
-This ledger accompanies the [Programmer's Guide](programmers_guide.md) and [Practical Porting Guide](../porting/practical_porting_guide.md). It records the documentation expansion separately from software release acceptance. Original prose is CC BY 4.0; original reusable examples are GPL-2.0-or-later. See [licensing](../LICENSING.md).
+This ledger accompanies the [Programmer's Guide](../manuals/Programmers-Guide.md) and [Practical Porting Guide](../manuals/Practical-Porting-Guide.md). It records the documentation expansion separately from software release acceptance. Original prose is CC BY 4.0; original reusable examples are GPL-2.0-or-later. See [licensing](../LICENSING.md).
 
 ## Baseline and authority
 

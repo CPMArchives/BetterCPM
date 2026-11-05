@@ -2,7 +2,7 @@
 
 License: original prose/illustrations are CC BY 4.0; original reusable code examples are GPL-2.0-or-later. Third-party material retains its own terms. See [licensing and example boundaries](../LICENSING.md).
 
-This guide assumes that you can operate a computer and are familiar with CP/M drives, user areas, 8.3 filenames and COM programs. Part I concentrates on useful BetterCP/M tasks. Part II explains the system behind those tasks. Look up complete syntax, switches and diagnostics in the separate [Command and Utilities Reference](command_reference.md).
+This guide assumes that you can operate a computer and are familiar with CP/M drives, user areas, 8.3 filenames and COM programs. Part I concentrates on useful BetterCP/M tasks. Part II explains the system behind those tasks. Look up complete syntax, switches and diagnostics in the separate [Command and Utilities Reference](Command-and-Utilities-Reference.md).
 
 The instructions describe the [locked 1.0 software](../releases/non-documentation-lock-1.0/README.md), source `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`. Current development features are not automatically release features. Five Source/System/Utilities archives remain unchanged, including their embedded documentation; this reconciled guide belongs to the separately revised Documentation collection. Final documentation/package approval and publication are separate from the software lock.
 
@@ -36,10 +36,6 @@ The instructions describe the [locked 1.0 software](../releases/non-documentatio
 ## Part I — Using BetterCP/M
 
 <a id="chapter-1"></a>
-<a id="section-1-4"></a>
-<a id="section-1-3"></a>
-<a id="section-1-2"></a>
-<a id="section-1-1"></a>
 
 ### Chapter 1 — Start with BetterCP/M's distinctives
 
@@ -57,16 +53,9 @@ BetterCP/M preserves the CP/M 2.2 application environment while improving everyd
 
 Ordinary CP/M programs use the familiar BDOS/BIOS interfaces. Programs that patch private OS addresses, assume a particular terminal or address hardware directly may require adaptation. [Appendix E](#appendix-e) describes the compatibility boundary and how to investigate a problem.
 
-The four-manual collection consists of this User's Guide, the [Command and Utilities Reference](command_reference.md), the [Programmer's Guide](../programmers/programmers_guide.md) covering applications/extensions/APIs, and the [Practical Porting Guide](../porting/practical_porting_guide.md). Existing programmer and architecture references remain available behind those guides; the [coverage/evidence ledger](../programmers/REFERENCE-STATUS.md) records their stability and expansion boundaries. Their new expansion does not add software or platforms to the 1.0 release boundary.
+The four-manual collection consists of this User's Guide, the [Command and Utilities Reference](Command-and-Utilities-Reference.md), the [Programmer's Guide](Programmers-Guide.md) covering applications/extensions/APIs, and the [Practical Porting Guide](Practical-Porting-Guide.md). Existing programmer and architecture references remain available behind those guides; the [coverage/evidence ledger](../programmers/REFERENCE-STATUS.md) records their stability and expansion boundaries. Their new expansion does not add software or platforms to the 1.0 release boundary.
 
 <a id="chapter-2"></a>
-<a id="section-2-7"></a>
-<a id="section-2-6"></a>
-<a id="section-2-5"></a>
-<a id="section-2-4"></a>
-<a id="section-2-3"></a>
-<a id="section-2-2"></a>
-<a id="section-2-1"></a>
 
 ### Chapter 2 — Choose and prepare a working environment
 
@@ -86,12 +75,6 @@ Without Utilities, B/C can hold compatible work media. Follow the platform guide
 The Source download supplies the matching offline reconstruction and native build material. An automatic GitHub source archive is not a substitute for the packaged dependency tar. The dedicated Documentation download supplies the reconciled manuals; old instructions embedded in the locked five archives remain historical snapshots.
 
 <a id="chapter-3"></a>
-<a id="section-3-6"></a>
-<a id="section-3-5"></a>
-<a id="section-3-4"></a>
-<a id="section-3-3"></a>
-<a id="section-3-2"></a>
-<a id="section-3-1"></a>
 
 ### Chapter 3 — Boot and check your first session
 
@@ -110,18 +93,11 @@ cpmsim startup displays the banner without loading a terminal personality or clo
 
 The unloaded default environment reports 53K TPA. Model 4's normal loaded startup reports 50K. This is a program-memory difference, not missing machine RAM. [Chapter 8](#chapter-8) explains how to recover the unloaded environment for FDB or another large program.
 
-If Utilities are mounted normally, `B0:DUMP A0:README.TXT` inspects a System file without changing the working drive. For a first ordinary text display, use `TYPE A0:README.TXT`. Consult the [command reference](command_reference.md) for exact options.
+If Utilities are mounted normally, `B0:DUMP A0:README.TXT` inspects a System file without changing the working drive. For a first ordinary text display, use `TYPE A0:README.TXT`. Consult the [command reference](Command-and-Utilities-Reference.md) for exact options.
 
 Save files and finish disk operations before stopping the emulator. cpmsim's `BYE` asks before exiting; `BYE /Y` exits immediately. Model 4 uses its emulator controls. Ctrl-C performs a warm boot/command return where supported; it is not a cold machine reset or a general save command.
 
 <a id="chapter-4"></a>
-<a id="section-4-7"></a>
-<a id="section-4-6"></a>
-<a id="section-4-5"></a>
-<a id="section-4-4"></a>
-<a id="section-4-3"></a>
-<a id="section-4-2"></a>
-<a id="section-4-1"></a>
 
 ### Chapter 4 — Find and manage files
 
@@ -146,19 +122,11 @@ REN D0:REPORT.TXT REPORT.BAK
 MOVE D0:REPORT.BAK D3:
 ```
 
-REN keeps files in their original DU; its template cannot select a new location. MOVE creates and closes the destination before deleting the source and refuses an existing destination. It is not an all-or-nothing multi-file transaction. COPY retains the source. Use transient `:COPY` for its batch/verification/replacement facilities rather than passing unsupported switches to resident COPY. See [COPY](command_reference.md#copy-transient), [MOVE](command_reference.md#move-resident) and [ERA](command_reference.md#era-transient) before performing a bulk operation.
+REN keeps files in their original DU; its template cannot select a new location. MOVE creates and closes the destination before deleting the source and refuses an existing destination. It is not an all-or-nothing multi-file transaction. COPY retains the source. Use transient `:COPY` for its batch/verification/replacement facilities rather than passing unsupported switches to resident COPY. See [COPY](Command-and-Utilities-Reference.md#copy-transient), [MOVE](Command-and-Utilities-Reference.md#move-resident) and [ERA](Command-and-Utilities-Reference.md#era-transient) before performing a bulk operation.
 
-To copy using historical destination-first syntax, use [PIP](command_reference.md#pip), for example `PIP D:=A:*.COM`. Its bracket parameters are not COPY's attribute syntax. Use STAT to distinguish allocation space from file record length and directory-entry capacity.
+To copy using historical destination-first syntax, use [PIP](Command-and-Utilities-Reference.md#pip), for example `PIP D:=A:*.COM`. Its bracket parameters are not COPY's attribute syntax. Use STAT to distinguish allocation space from file record length and directory-entry capacity.
 
 <a id="chapter-5"></a>
-<a id="section-5-8"></a>
-<a id="section-5-7"></a>
-<a id="section-5-6"></a>
-<a id="section-5-5"></a>
-<a id="section-5-4"></a>
-<a id="section-5-3"></a>
-<a id="section-5-2"></a>
-<a id="section-5-1"></a>
 
 ### Chapter 5 — Edit, recall and run commands
 
@@ -176,15 +144,9 @@ The first uses resident DIR if RCP is loaded. The second selects DIR.COM. Unsupp
 
 Unqualified transients are searched in the current DU, then A0. A qualified invocation such as `B0:DUMP` searches only B0. The program's file operands retain their own defaults; finding a program in A0 does not move your work there. Carrier loading by CPX/RSX is a different mechanism and uses A0.
 
-For help, use the command's documented query. BetterCP/M-owned utilities generally supply `/H`, `/HELP` and `/VER`; ZSM4 and LINK retain their original interfaces. Quoted SEARCH patterns and PIP bracket strings remain data even when they contain apparent query tokens. Read the [query conventions](command_reference.md#query-conventions) instead of assuming every program parses switches alike.
+For help, use the command's documented query. BetterCP/M-owned utilities generally supply `/H`, `/HELP` and `/VER`; ZSM4 and LINK retain their original interfaces. Quoted SEARCH patterns and PIP bracket strings remain data even when they contain apparent query tokens. Read the [query conventions](Command-and-Utilities-Reference.md#query-conventions) instead of assuming every program parses switches alike.
 
 <a id="chapter-6"></a>
-<a id="section-6-6"></a>
-<a id="section-6-5"></a>
-<a id="section-6-4"></a>
-<a id="section-6-3"></a>
-<a id="section-6-2"></a>
-<a id="section-6-1"></a>
 
 ### Chapter 6 — Automate a repeated task
 
@@ -195,21 +157,15 @@ DIR $1
 STAT
 ```
 
-Run `SUBMIT D0:LISTING D0:*.TXT`. SUBMIT substitutes its parameters and queues the resulting commands. Use explicit transient names and supported noninteractive options when a script requires them; an interactive question can still stop unattended progress. The [SUBMIT entry](command_reference.md#submit) defines parameter substitution, limits and cancellation.
+Run `SUBMIT D0:LISTING D0:*.TXT`. SUBMIT substitutes its parameters and queues the resulting commands. Use explicit transient names and supported noninteractive options when a script requires them; an interactive question can still stop unattended progress. The [SUBMIT entry](Command-and-Utilities-Reference.md#submit) defines parameter substitution, limits and cancellation.
 
 Keep A0 writable. SUBMIT and XSUB use `A0:$$$.SUB` even when the script lives elsewhere and commands change the working DU. Do not treat a same-named file in another user as the authoritative queue. Ordinary command/program warm returns are part of batch execution, not necessarily cancellation.
 
-XSUB feeds submitted lines to compatible programs using buffered console-input services. It is not a universal keyboard emulator and does not cover programs reading raw hardware or other input paths. The primary Utilities disk supplies XSUB.COM and BATCHIO.RSX; the locked loader searches A0 for the carrier. From A0 on a writable System copy with Utilities in B, run `COPY B:BATCHIO.RSX A:BATCHIO.RSX`, then `B0:XSUB`. Keep the matching R3PACK.RSX on A0. Help/version queries do not prove activation. This is the [1.0 workaround](../releases/1.0-ERRATA.md#xsub-companion-must-be-copied-to-a0), not a loader change. Follow the [XSUB reference](command_reference.md#xsub) before supplying input to an application.
+XSUB feeds submitted lines to compatible programs using buffered console-input services. It is not a universal keyboard emulator and does not cover programs reading raw hardware or other input paths. The primary Utilities disk supplies XSUB.COM and BATCHIO.RSX; the locked loader searches A0 for the carrier. From A0 on a writable System copy with Utilities in B, run `COPY B:BATCHIO.RSX A:BATCHIO.RSX`, then `B0:XSUB`. Keep the matching R3PACK.RSX on A0. Help/version queries do not prove activation. This is the [1.0 workaround](../releases/1.0-ERRATA.md#xsub-companion-must-be-copied-to-a0), not a loader change. Follow the [XSUB reference](Command-and-Utilities-Reference.md#xsub) before supplying input to an application.
 
 The supplied STARTUP.SUB is itself a practical batch example. Keep an unchanged copy before customizing it, especially if you use `SUBMIT STARTUP` to restore the Model 4 console after unloading modules. Extended flow-control scripting remains outside 1.0.
 
 <a id="chapter-7"></a>
-<a id="section-7-6"></a>
-<a id="section-7-5"></a>
-<a id="section-7-4"></a>
-<a id="section-7-3"></a>
-<a id="section-7-2"></a>
-<a id="section-7-1"></a>
 
 ### Chapter 7 — Inspect, change and save configuration
 
@@ -225,17 +181,11 @@ For an actual disk task:
 4. Perform the task on writable work media.
 5. Save defaults only if that is the configuration you want at cold boot.
 
-For Model 4 System installation, use the exact [named BCPM780 procedure](../platform/MODEL4-SHIPPED-INSTALLATION.txt), also described in the [SYSGEN entry](command_reference.md#sysgen). Do not substitute historical 790K or an ordinary 800K Work disk.
+For Model 4 System installation, use the exact [named BCPM780 procedure](../platform/MODEL4-SHIPPED-INSTALLATION.txt), also described in the [SYSGEN entry](Command-and-Utilities-Reference.md#sysgen). Do not substitute historical 790K or an ordinary 800K Work disk.
 
-Startup-script edits, extension load/unload operations, terminal selection and clock-provider loading have their own tools and lifetimes. CONFIG does not manage all of them. Use the [complete CONFIG reference](command_reference.md#config) for menu/input controls, command-line forms, save choices and recovery.
+Startup-script edits, extension load/unload operations, terminal selection and clock-provider loading have their own tools and lifetimes. CONFIG does not manage all of them. Use the [complete CONFIG reference](Command-and-Utilities-Reference.md#config) for menu/input controls, command-line forms, save choices and recovery.
 
 <a id="chapter-8"></a>
-<a id="section-8-6"></a>
-<a id="section-8-5"></a>
-<a id="section-8-4"></a>
-<a id="section-8-3"></a>
-<a id="section-8-2"></a>
-<a id="section-8-1"></a>
 
 ### Chapter 8 — Manage extensions and program memory
 
@@ -265,12 +215,6 @@ After quitting FDB, use the unmodified `SUBMIT STARTUP` or cold boot to restore 
 
 <a id="chapter-9"></a>
 <a id="host-terminal-size-and-recovery"></a>
-<a id="section-9-6"></a>
-<a id="section-9-5"></a>
-<a id="section-9-4"></a>
-<a id="section-9-3"></a>
-<a id="section-9-2"></a>
-<a id="section-9-1"></a>
 
 ### Chapter 9 — Match a terminal personality to an application
 
@@ -291,18 +235,12 @@ RSX LIST
 
 M4SCRN is already loaded. On cpmsim with a suitable ANSI host terminal, load ANSISCRN before ANSI. Keep the host window at least 80 columns by 24 rows with a normal full-screen scrolling region; the distributed launcher does not enforce it. If a menu is garbled after a resize, exit normally, enlarge the window and restart the utility to redraw. Use VT52 instead when the application's terminal installation expects VT52. ADM3A, VT52 and ANSI have dedicated ADMTST, VT52TST and ANSITST exercises. Visual, keyboard and audible checks are separate observations.
 
-TED requires an 80-by-24 backend and ANSI personality and does not load them itself. Use its [reference entry](command_reference.md#ted) before starting. ANSI provides a defined VT100-compatible subset, not every VT100 facility. A general terminal-capability database and arbitrary application hardware access are outside this mechanism.
+TED requires an 80-by-24 backend and ANSI personality and does not load them itself. Use its [reference entry](Command-and-Utilities-Reference.md#ted) before starting. ANSI provides a defined VT100-compatible subset, not every VT100 facility. A general terminal-capability database and arbitrary application hardware access are outside this mechanism.
 
 If output is misplaced, check application terminal selection, loaded personality, backend and host dimensions before changing escape codes. Restore the unmodified startup environment after experimentation; do not unload a backend still in use by a personality.
 
 <a id="chapter-10"></a>
 <a id="editing-disk-format-definitions"></a>
-<a id="section-10-6"></a>
-<a id="section-10-5"></a>
-<a id="section-10-4"></a>
-<a id="section-10-3"></a>
-<a id="section-10-2"></a>
-<a id="section-10-1"></a>
 
 ### Chapter 10 — Back up and maintain disks
 
@@ -317,23 +255,17 @@ Choose the operation by what you need to preserve:
 | Compose SYSTEM.SYS from assembled products | SYSBUILD in the source/build workflow |
 | Inspect/edit a format catalogue | FDB; catalogue changes are not formatting or installation |
 
-Back up source images before formatting or installation. DUP FORMAT destroys the destination contents. DUP copy needs two drives; it does not implement repeated source/destination swapping in one drive. Physical drive 0 is protected from destination formatting/copying. DUP checks are not a general filesystem repair tool. Read the [DUP entry](command_reference.md#dup) for actual verification and error scope.
+Back up source images before formatting or installation. DUP FORMAT destroys the destination contents. DUP copy needs two drives; it does not implement repeated source/destination swapping in one drive. Physical drive 0 is protected from destination formatting/copying. DUP checks are not a general filesystem repair tool. Read the [DUP entry](Command-and-Utilities-Reference.md#dup) for actual verification and error scope.
 
 SYSGEN can save an installed system to a named package, such as `SYSGEN A: D:BACKUP.SYS`. That package contains the installed system and saved configuration, not unsaved live settings or ordinary file backups. Installing a validated package writes the system area while preserving ordinary destination files when the qualified compatible-layout procedure is followed.
 
 For Model 4, temporarily replace normal B: Utilities with the prepared System-format target and follow [the installation guide](../platform/MODEL4-INSTALLATION.md). A release System copy has the BCPM780 reserved area; an 800K DATA Work disk does not. Fully quit/remount and cold boot the destination before validating it.
 
-Locked FDB shows `Working catalogue:` and `Choice:` with letter choices; the newer grouped/bracketed menu presentation belongs to the 1.01 work. Use Q or BREAK to exit as displayed. FDB edits the 108-entry DISK.FDB catalogue and can apply a validated definition to B–D. Editor work, RAM catalogue edits, saved catalogue and active drive assignment are separate states. Applying a drive neither formats it nor saves cold-boot defaults. Use [FDB](command_reference.md#fdb) for its 53K workflow, text conversion, viewer and recoverable-save rules.
+Locked FDB shows `Working catalogue:` and `Choice:` with letter choices; the newer grouped/bracketed menu presentation belongs to the 1.01 work. Use Q or BREAK to exit as displayed. FDB edits the 108-entry DISK.FDB catalogue and can apply a validated definition to B–D. Editor work, RAM catalogue edits, saved catalogue and active drive assignment are separate states. Applying a drive neither formats it nor saves cold-boot defaults. Use [FDB](Command-and-Utilities-Reference.md#fdb) for its 53K workflow, text conversion, viewer and recoverable-save rules.
 
 Catalogue admission means structural validity, not successful interchange on every physical controller. The release-media layouts are CCS 332K, Model 4 800K DATA and BetterCP/M 780K System. Optional historical MMI012 790K is different from BCPM780. Preserve format provenance and rights notices when redistributing catalogues.
 
 <a id="chapter-11"></a>
-<a id="section-11-6"></a>
-<a id="section-11-5"></a>
-<a id="section-11-4"></a>
-<a id="section-11-3"></a>
-<a id="section-11-2"></a>
-<a id="section-11-1"></a>
 
 ### Chapter 11 — Read the clock
 
@@ -349,15 +281,9 @@ Use FREHDCLK instead of ZPRTC on the appropriate Model 4 setup. Both supplied pr
 
 For an application requiring P2DOS-compatible Functions 200/201, load the native provider first, then `RSX LOAD P2DOS`. P2DOS.RSX is supplied in A0 on both System disks but is optional to load. It does not create a hardware clock or make a read-only provider writable. The 104/105 adapters are deferred.
 
-If TIME fails, distinguish no loaded provider, unsupported SET and a failed/invalid hardware sample. See [TIME](command_reference.md#time) and [RSX](command_reference.md#rsx). Clocks do not imply filesystem timestamp support in 1.0.
+If TIME fails, distinguish no loaded provider, unsupported SET and a failed/invalid hardware sample. See [TIME](Command-and-Utilities-Reference.md#time) and [RSX](Command-and-Utilities-Reference.md#rsx). Clocks do not imply filesystem timestamp support in 1.0.
 
 <a id="chapter-12"></a>
-<a id="section-12-6"></a>
-<a id="section-12-5"></a>
-<a id="section-12-4"></a>
-<a id="section-12-3"></a>
-<a id="section-12-2"></a>
-<a id="section-12-1"></a>
 
 ### Chapter 12 — Recover from common problems
 
@@ -365,17 +291,17 @@ Start with a nonmutating inspection. Preserve original media, exact error text, 
 
 | Symptom | First checks | Next reference |
 | --- | --- | --- |
-| `?` or a missing command | Program name, current DU/A0, qualified program location, RCP availability | [Command lookup](#understanding-command-environment), [shared messages](command_reference.md#system-messages) |
-| Resident option rejected | Use the explicitly selected transient if its file is supplied | [Command reference](command_reference.md) |
-| `CPX?` on return | CPX profile versus actual A0 carrier; remove rejected optional name or replace its matched file | [CPX](command_reference.md#cpx) |
+| `?` or a missing command | Program name, current DU/A0, qualified program location, RCP availability | [Command lookup](#understanding-command-environment), [shared messages](Command-and-Utilities-Reference.md#system-messages) |
+| Resident option rejected | Use the explicitly selected transient if its file is supplied | [Command reference](Command-and-Utilities-Reference.md) |
+| `CPX?` on return | CPX profile versus actual A0 carrier; remove rejected optional name or replace its matched file | [CPX](Command-and-Utilities-Reference.md#cpx) |
 | A large program refuses to start | STAT MEM and protected RSX allocations | [Chapter 8](#chapter-8) |
-| FDB fails at normal Model 4 startup | Matching viewer; unload ADM3A then M4SCRN; restore afterward | [FDB](command_reference.md#fdb) |
+| FDB fails at normal Model 4 startup | Matching viewer; unload ADM3A then M4SCRN; restore afterward | [FDB](Command-and-Utilities-Reference.md#fdb) |
 | Full-screen output is wrong | Application terminal choice, personality/backend order, host dimensions | [Chapter 9](#chapter-9) |
-| Disk unavailable or wrong directory | Attachment, physical capabilities, logical binding, inserted format | [CONFIG](command_reference.md#config) |
-| Disk full despite free data space | Directory-entry limit as well as allocation blocks | [STAT](command_reference.md#stat) |
+| Disk unavailable or wrong directory | Attachment, physical capabilities, logical binding, inserted format | [CONFIG](Command-and-Utilities-Reference.md#config) |
+| Disk full despite free data space | Directory-entry limit as well as allocation blocks | [STAT](Command-and-Utilities-Reference.md#stat) |
 | A setting vanishes at cold boot | Active versus saved state and the selected save operation | [Chapter 7](#chapter-7) |
-| XSUB reports Xsub Load Error | Matching BATCHIO.RSX must be copied from Utilities to writable A0 | [XSUB](command_reference.md#xsub) |
-| Clock unavailable | Native provider first, hardware/emulator availability | [TIME](command_reference.md#time) |
+| XSUB reports Xsub Load Error | Matching BATCHIO.RSX must be copied from Utilities to writable A0 | [XSUB](Command-and-Utilities-Reference.md#xsub) |
+| Clock unavailable | Native provider first, hardware/emulator availability | [TIME](Command-and-Utilities-Reference.md#time) |
 
 Complete open-file work before media changes. There is no background media-change detector that makes arbitrary replacement safe. Reconfiguration, aliases and cached disk context require the documented reset rules. A software read-only state is different from hardware write protection.
 
@@ -417,7 +343,7 @@ Ordinary COM programs begin at 0100h in the Transient Program Area. Page zero re
 
 The unloaded release baseline has a maximum complete-record COM image of 54,272 bytes, or 53 KiB. Model 4 startup's backend/personality reduces reported TPA to 50K. STAT MEM distinguishes the live map and the maximum loadable image. CPX code occupies command memory but can be overwritten and restored; RSX allocation remains unavailable while applications run.
 
-SAVE belongs in the CCP because loading another transient would destroy the memory image it saves. GET loads without execution; GO establishes ordinary entry at 0100h, while JUMP transfers to a chosen address under its documented contract. Use their [reference entries](command_reference.md#get) for exact operands and entry-state differences.
+SAVE belongs in the CCP because loading another transient would destroy the memory image it saves. GET loads without execution; GO establishes ordinary entry at 0100h, while JUMP transfers to a chosen address under its documented contract. Use their [reference entries](Command-and-Utilities-Reference.md#get) for exact operands and entry-state differences.
 
 The bounded PDS contains the fixed 192-byte HISTORY object only. It is not a general allocator for all persistent subsystem state. ROM/XIP ownership has separate technical qualification and does not replace the default RAM downloads; 56K fullram and checked profiles remain deferred.
 
@@ -473,7 +399,7 @@ Load order is explicit profile order. The managers validate carriers and reconst
 
 Service discovery and service operation are separate contracts. The native clock illustrates this: a hardware provider publishes TIME service; TIME.COM is a client; optional P2DOS translates historical Functions 200/201 to that native service. Loading the frontend alone does not supply hardware, and a read-only provider cannot satisfy clock-setting requests.
 
-Carrier formats and ABIs are independent of the distribution number. Production RSXs use BRSX v2; BRSX v1 is history. CPX carriers use BCPX v1. Public private-namespace services occupy assigned Functions 176–183; reserved/test selectors are not extra application APIs. The [Programmer's Guide](../programmers/programmers_guide.md) consolidates current calling contracts from the existing [extension reference](../programmers/RSX%20and%20CPX%20Programmer%27s%20Guide.md) and focused specifications.
+Carrier formats and ABIs are independent of the distribution number. Production RSXs use BRSX v2; BRSX v1 is history. CPX carriers use BCPX v1. Public private-namespace services occupy assigned Functions 176–183; reserved/test selectors are not extra application APIs. The [Programmer's Guide](Programmers-Guide.md) consolidates current calling contracts from the existing [extension reference](../programmers/RSX%20and%20CPX%20Programmer%27s%20Guide.md) and focused specifications.
 
 User-facing extension management remains bounded: fixed A0 carrier lookup, configured profile limits, explicit terminal dependencies and supported warm lifetime. Named directories, PATH, general PDS allocation and a general dependency framework are not implied by the mechanism.
 
@@ -487,42 +413,31 @@ The BIOS boundary keeps much of the system hardware-independent. Disk formats st
 
 The two locked release targets are patched cpmsim and Model 4 under trs80gp. Their receipts do not establish physical Model 4 transfer, Model 4D/4P support, arbitrary controllers, or another Z80-family machine. ROM/XIP evidence is separately scoped. A platform-roadmap entry is not release qualification.
 
-For rebuilding supplied targets, start with [distribution construction](../releases/DISTRIBUTION-BUILD.md), [native build media](../programmers/BUILD-DISK.md) and matching Source-package instructions. For adaptation, start with [Hardware Abstraction](../architecture/08%20Hardware%20Abstraction.txt) and the [baseline platform specification](../platform/Baseline%20Platform%20Specification.txt). The [Practical Porting Guide](../porting/practical_porting_guide.md) covers assessment, bring-up, BIOS/disk/memory integration, media generation and qualification; it does not add a new 1.0 port requirement.
+For rebuilding supplied targets, start with [distribution construction](../releases/DISTRIBUTION-BUILD.md), [native build media](../programmers/BUILD-DISK.md) and matching Source-package instructions. For adaptation, start with [Hardware Abstraction](../architecture/08%20Hardware%20Abstraction.txt) and the [baseline platform specification](../platform/Baseline%20Platform%20Specification.txt). The [Practical Porting Guide](Practical-Porting-Guide.md) covers assessment, bring-up, BIOS/disk/memory integration, media generation and qualification; it does not add a new 1.0 port requirement.
 
 <a id="appendices"></a>
 
 ## Appendices
 
 <a id="appendix-a"></a>
-<a id="section-a-6"></a>
-<a id="section-a-5"></a>
-<a id="section-a-4"></a>
-<a id="section-a-3"></a>
-<a id="section-a-2"></a>
-<a id="section-a-1"></a>
 
 ### Appendix A — Task and command locator
 
 | Task | Reference |
 | --- | --- |
-| List or find files | [DIR resident](command_reference.md#dir-resident), [DIR transient](command_reference.md#dir-transient) |
-| Copy, move, rename or erase | [COPY](command_reference.md#copy-transient), [MOVE](command_reference.md#move-resident), [REN](command_reference.md#ren-transient), [ERA](command_reference.md#era-transient), [PIP](command_reference.md#pip) |
-| Inspect bytes, search, compare or verify | [DUMP](command_reference.md#dump), [SEARCH](command_reference.md#search), [COMPARE](command_reference.md#compare), [CRCKSUM](command_reference.md#crcksum), [MD5SUM](command_reference.md#md5sum) |
-| Edit text | [ED](command_reference.md#ed), [TED](command_reference.md#ted) |
-| Configure or maintain disks | [CONFIG](command_reference.md#config), [FDB](command_reference.md#fdb), [DUP](command_reference.md#dup), [SYSGEN](command_reference.md#sysgen) |
-| Manage memory or extensions | [STAT](command_reference.md#stat), [CPX](command_reference.md#cpx), [RSX](command_reference.md#rsx) |
-| Automate commands | [SUBMIT](command_reference.md#submit), [XSUB](command_reference.md#xsub) |
-| Archive or compress | [NOAH](command_reference.md#noah), [compression entries](command_reference.md#archives-and-compression) |
-| Develop or inspect a program | [development tools](command_reference.md#editing-and-development-tools), [memory commands](command_reference.md#command-environment-and-execution) |
+| List or find files | [DIR resident](Command-and-Utilities-Reference.md#dir-resident), [DIR transient](Command-and-Utilities-Reference.md#dir-transient) |
+| Copy, move, rename or erase | [COPY](Command-and-Utilities-Reference.md#copy-transient), [MOVE](Command-and-Utilities-Reference.md#move-resident), [REN](Command-and-Utilities-Reference.md#ren-transient), [ERA](Command-and-Utilities-Reference.md#era-transient), [PIP](Command-and-Utilities-Reference.md#pip) |
+| Inspect bytes, search, compare or verify | [DUMP](Command-and-Utilities-Reference.md#dump), [SEARCH](Command-and-Utilities-Reference.md#search), [COMPARE](Command-and-Utilities-Reference.md#compare), [CRCKSUM](Command-and-Utilities-Reference.md#crcksum), [MD5SUM](Command-and-Utilities-Reference.md#md5sum) |
+| Edit text | [ED](Command-and-Utilities-Reference.md#ed), [TED](Command-and-Utilities-Reference.md#ted) |
+| Configure or maintain disks | [CONFIG](Command-and-Utilities-Reference.md#config), [FDB](Command-and-Utilities-Reference.md#fdb), [DUP](Command-and-Utilities-Reference.md#dup), [SYSGEN](Command-and-Utilities-Reference.md#sysgen) |
+| Manage memory or extensions | [STAT](Command-and-Utilities-Reference.md#stat), [CPX](Command-and-Utilities-Reference.md#cpx), [RSX](Command-and-Utilities-Reference.md#rsx) |
+| Automate commands | [SUBMIT](Command-and-Utilities-Reference.md#submit), [XSUB](Command-and-Utilities-Reference.md#xsub) |
+| Archive or compress | [NOAH](Command-and-Utilities-Reference.md#noah), [compression entries](Command-and-Utilities-Reference.md#archives-and-compression) |
+| Develop or inspect a program | [development tools](Command-and-Utilities-Reference.md#editing-and-development-tools), [memory commands](Command-and-Utilities-Reference.md#command-environment-and-execution) |
 
 Complete syntax is maintained in those entries rather than repeated here. A PEEK invocation can use its alias P. Program availability and package location are stated in each entry.
 
 <a id="appendix-b"></a>
-<a id="section-b-5"></a>
-<a id="section-b-4"></a>
-<a id="section-b-3"></a>
-<a id="section-b-2"></a>
-<a id="section-b-1"></a>
 
 ### Appendix B — Command-Line Editing Keys
 
@@ -674,7 +589,7 @@ Consequently, the behavior of physical cursor keys can vary between platforms.
 
 ##### WordStar Conventions
 
-Some command-editor controls follow WordStar conventions, but Ctrl-E/X keep CP/M continuation/discard behavior. Use the complete editor table in [Section B.5](#section-b-5). [Section C.4](#section-c-4) describes traditional application-level WordStar controls.
+Some command-editor controls follow WordStar conventions, but Ctrl-E/X keep CP/M continuation/discard behavior. Use the complete editor table in [Section B.5](#appendix-b--command-line-editing-keys). [Section C.4](#appendix-c--control-characters-and-keyboard-conventions) describes traditional application-level WordStar controls.
 
 #### B.4 Keyboard Differences Between Platforms
 
@@ -747,13 +662,6 @@ Ctrl-S moves the cursor at the prompt. During cooked console output it pauses sc
 For the control characters used by CP/M programs and terminal devices, see [Appendix C](#appendix-c), *Control Characters and Keyboard Conventions*.
 
 <a id="appendix-c"></a>
-<a id="section-c-7"></a>
-<a id="section-c-6"></a>
-<a id="section-c-5"></a>
-<a id="section-c-4"></a>
-<a id="section-c-3"></a>
-<a id="section-c-2"></a>
-<a id="section-c-1"></a>
 
 ### Appendix C — Control Characters and Keyboard Conventions
 
@@ -764,29 +672,12 @@ On the original Model 4, BREAK supplies ETX and CLEAR supplies Escape. Host emul
 Console echo/flow control and application terminal parsing are separate. BDOS cooked output may expand TAB; direct byte output and a terminal personality have different responsibilities. For exact interactive keys use the command's reference entry and for CP/M calling semantics use programmer documentation.
 
 <a id="appendix-d"></a>
-<a id="section-d-8"></a>
-<a id="section-d-7"></a>
-<a id="section-d-6"></a>
-<a id="section-d-5"></a>
-<a id="section-d-4"></a>
-<a id="section-d-3"></a>
-<a id="section-d-2"></a>
-<a id="section-d-1"></a>
 
 ### Appendix D — File Attributes and File Specifications
 
-The canonical detailed notation and per-command selection matrix now live in [File specifications and attributes](command_reference.md#file-specifications). Use a simple DU such as B3: for a location; use selector lists/ranges or attribute predicates only when the command supports them. A template for REN is not a destination DU; compression commands accept drive-only file operands; CPX/RSX accept carrier stems. These distinctions prevent a familiar-looking qualifier from selecting an unintended file or being rejected.
+The canonical detailed notation and per-command selection matrix now live in [File specifications and attributes](Command-and-Utilities-Reference.md#file-specifications). Use a simple DU such as B3: for a location; use selector lists/ranges or attribute predicates only when the command supports them. A template for REN is not a destination DU; compression commands accept drive-only file operands; CPX/RSX accept carrier stems. These distinctions prevent a familiar-looking qualifier from selecting an unintended file or being rejected.
 
 <a id="appendix-e"></a>
-<a id="section-e-9"></a>
-<a id="section-e-8"></a>
-<a id="section-e-7"></a>
-<a id="section-e-6"></a>
-<a id="section-e-5"></a>
-<a id="section-e-4"></a>
-<a id="section-e-3"></a>
-<a id="section-e-2"></a>
-<a id="section-e-1"></a>
 
 ### Appendix E — BetterCP/M and CP/M 2.2 Compatibility Notes
 
@@ -916,7 +807,7 @@ Some enhanced utilities also support compound selectors:
 
 ```text
 B[-]:*.COM
-[A0,B3]:*.DOC
+[A0,B3]:../user/%2A.DOC
 ```
 
 These forms are BetterCP/M command extensions.
@@ -1275,20 +1166,10 @@ Those documents are intended primarily for developers, system maintainers, and u
 For the programming interfaces themselves, consult the [BetterCP/M RSX and CPX Programmer's Guide](../programmers/RSX%20and%20CPX%20Programmer%27s%20Guide.md) and the original Digital Research CP/M 2.2 documentation.
 
 <a id="appendix-f"></a>
-<a id="section-f-10"></a>
-<a id="section-f-9"></a>
-<a id="section-f-8"></a>
-<a id="section-f-7"></a>
-<a id="section-f-6"></a>
-<a id="section-f-5"></a>
-<a id="section-f-4"></a>
-<a id="section-f-3"></a>
-<a id="section-f-2"></a>
-<a id="section-f-1"></a>
 
 ### Appendix F — System Messages and Error Reference
 
-The complete [shared message reference](command_reference.md#system-messages) is now maintained with the Command and Utilities Reference. Each command entry also explains its own errors and recovery. [Chapter 12](#chapter-12) provides symptom-oriented starting points. Preserve exact error wording, versions, locations and any reported recovery filenames when reporting a problem.
+The complete [shared message reference](Command-and-Utilities-Reference.md#system-messages) is now maintained with the Command and Utilities Reference. Each command entry also explains its own errors and recovery. [Chapter 12](#chapter-12) provides symptom-oriented starting points. Preserve exact error wording, versions, locations and any reported recovery filenames when reporting a problem.
 
 <a id="appendix-g"></a>
 
@@ -1564,12 +1445,6 @@ An 8-bit microprocessor developed by Zilog and widely used in CP/M computers. It
 A collection of Z80 emulation tools, including cpmsim. BetterCP/M supports z80pack environments and provides a clock provider through `ZPRTC.RSX`.
 
 <a id="appendix-h"></a>
-<a id="section-h-6"></a>
-<a id="section-h-5"></a>
-<a id="section-h-4"></a>
-<a id="section-h-3"></a>
-<a id="section-h-2"></a>
-<a id="section-h-1"></a>
 
 ### Appendix H — Further Reading and Technical Documentation
 
@@ -1577,152 +1452,15 @@ A collection of Z80 emulation tools, including cpmsim. BetterCP/M supports z80pa
 | --- | --- |
 | Operate BetterCP/M | This guide, Part I |
 | Understand its behavior | This guide, Part II |
-| Look up a command | [Command and Utilities Reference](command_reference.md) |
+| Look up a command | [Command and Utilities Reference](Command-and-Utilities-Reference.md) |
 | Install a supplied platform | [cpmsim](../platform/CPMSIM-INSTALLATION.md), [Model 4](../platform/MODEL4-INSTALLATION.md) |
-| Write extensions | [Programmer's Guide](../programmers/programmers_guide.md) with API chapters, examples and existing [monitor development](../programmers/Monitor%20RSX%20Development.md) detail |
+| Write extensions | [Programmer's Guide](Programmers-Guide.md) with API chapters, examples and existing [monitor development](../programmers/Monitor%20RSX%20Development.md) detail |
 | Rebuild from source | [Distribution build](../releases/DISTRIBUTION-BUILD.md), [native build disk](../programmers/BUILD-DISK.md), matching Source download |
-| Adapt the OS | [Practical Porting Guide](../porting/practical_porting_guide.md), [Hardware Abstraction](../architecture/08%20Hardware%20Abstraction.txt) and [platform references](../platform/) |
+| Adapt the OS | [Practical Porting Guide](Practical-Porting-Guide.md), [Hardware Abstraction](../architecture/08%20Hardware%20Abstraction.txt) and [platform references](../platform) |
 | Check exact released files and limits | [Non-documentation lock](../releases/non-documentation-lock-1.0/README.md), [release notes](../releases/RELEASE-NOTES-1.0.md) |
-| Study design/evidence | [Architecture](../architecture/), [engineering history](../engineering/), [compatibility material](../compatibility/) |
+| Study design/evidence | [Architecture](../architecture), [engineering history](../engineering), [compatibility material](../compatibility) |
 | Reuse or redistribute | [Licensing](../LICENSING.md) and supplied third-party notices/source companions |
 
 The four manuals have different coverage and evidence levels; the [programmer/porting status ledger](../programmers/REFERENCE-STATUS.md) identifies further expansion without adding software release requirements. Architecture specifications and dated engineering records remain technical references. On a conflict, check the locked artifacts, later focused contracts and exact qualification scope rather than treating an older milestone as current status. Source/specification links may require the matching Documentation or Source download when this guide is read from a System package.
 
 Original Digital Research CP/M 2.2 operating, interface, alteration, ED, ASM and DDT manuals provide historical background. Ensure an Interface Guide includes the addendum for BDOS Functions 37 and 40. Manufacturer manuals explain their particular hardware and conventions; they do not establish BetterCP/M behavior. Consult the [BetterCP/M repository](https://github.com/CPMArchives/BetterCPM) and [Digital Research archive](http://www.cpm.z80.de/drilib.html) with the version and target machine in mind.
-
-
-## Moved command-reference links
-
-The former command chapters now live in the separate Command and Utilities Reference. Earlier bookmarks are retained here as locators.
-
-<a id="section-14-1"></a>
-
-[section-14-1 — open the reference](command_reference.md#dir-resident)
-
-<a id="section-14-2"></a>
-
-[section-14-2 — open the reference](command_reference.md#era-resident)
-
-<a id="section-14-3"></a>
-
-[section-14-3 — open the reference](command_reference.md#ren-resident)
-
-<a id="section-14-4"></a>
-
-[section-14-4 — open the reference](command_reference.md#type-resident)
-
-<a id="section-14-5"></a>
-
-[section-14-5 — open the reference](command_reference.md#copy-resident)
-
-<a id="section-14-6"></a>
-
-[section-14-6 — open the reference](command_reference.md#move-resident)
-
-<a id="section-15-4"></a>
-
-[section-15-4 — open the reference](command_reference.md#save)
-
-<a id="section-15-5"></a>
-
-[section-15-5 — open the reference](command_reference.md#get)
-
-<a id="section-15-6"></a>
-
-[section-15-6 — open the reference](command_reference.md#go)
-
-<a id="section-15-7"></a>
-
-[section-15-7 — open the reference](command_reference.md#jump)
-
-<a id="section-15-8"></a>
-
-[section-15-8 — open the reference](command_reference.md#peek)
-
-<a id="section-15-9"></a>
-
-[section-15-9 — open the reference](command_reference.md#poke)
-
-<a id="section-15-1"></a>
-
-[section-15-1 — open the reference](command_reference.md#user-resident)
-
-<a id="section-15-2"></a>
-
-[section-15-2 — open the reference](command_reference.md#cls-resident)
-
-<a id="section-15-3"></a>
-
-[section-15-3 — open the reference](command_reference.md#ver-resident)
-
-<a id="section-16-1"></a>
-
-[section-16-1 — open the reference](command_reference.md#config)
-
-<a id="section-16-2"></a>
-
-[section-16-2 — open the reference](command_reference.md#stat)
-
-<a id="section-16-3"></a>
-
-[section-16-3 — open the reference](command_reference.md#time)
-
-<a id="section-16-4"></a>
-
-[section-16-4 — open the reference](command_reference.md#dup)
-
-<a id="section-16-5"></a>
-
-[section-16-5 — open the reference](command_reference.md#sysgen)
-
-<a id="section-17-1"></a>
-
-[section-17-1 — open the reference](command_reference.md#submit)
-
-<a id="section-17-2"></a>
-
-[section-17-2 — open the reference](command_reference.md#xsub)
-
-<a id="section-17-3"></a>
-
-[section-17-3 — open the reference](command_reference.md#cpx)
-
-<a id="section-17-4"></a>
-
-[section-17-4 — open the reference](command_reference.md#rsx)
-
-<a id="chapter-13"></a>
-
-[chapter-13 — open the reference](command_reference.md#notation)
-
-<a id="chapter-14"></a>
-
-[chapter-14 — open the reference](command_reference.md#files-directories-and-transfers)
-
-<a id="chapter-15"></a>
-
-[chapter-15 — open the reference](command_reference.md#command-environment-and-execution)
-
-<a id="chapter-16"></a>
-
-[chapter-16 — open the reference](command_reference.md#configuration-disks-and-installation)
-
-<a id="chapter-17"></a>
-
-[chapter-17 — open the reference](command_reference.md#batch-processing-and-extensions)
-
-<a id="section-13-1"></a>
-
-[section-13-1 — open the reference](command_reference.md#notation)
-
-<a id="section-13-2"></a>
-
-[section-13-2 — open the reference](command_reference.md#notation)
-
-<a id="section-13-3"></a>
-
-[section-13-3 — open the reference](command_reference.md#query-conventions)
-
-<a id="section-13-4"></a>
-
-[section-13-4 — open the reference](command_reference.md#query-conventions)

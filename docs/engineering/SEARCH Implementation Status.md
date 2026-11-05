@@ -6,7 +6,7 @@ Assigned-byte and paired Utilities checks pass; see the
 [candidate qualification](SEARCH%20Qualification.md) remains distinct. Whole
 Utilities release publication is separate. The
 [engineering specification](SEARCH%20Specification.md) controls the behavior;
-the [manual](../user/utilities_manual.md#search-file-content-search) describes
+the [manual](../manuals/Command-and-Utilities-Reference.md#search) describes
 the implemented interface.
 
 ## Implemented command

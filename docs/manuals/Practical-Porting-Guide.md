@@ -2,7 +2,7 @@
 
 Original prose/illustrations are CC BY 4.0; original reusable examples are GPL-2.0-or-later. Third-party material retains its terms. See [licensing](../LICENSING.md).
 
-This guide takes a system programmer from target assessment through first boot, disk and memory integration, optional services, media installation and qualification. Technical reference appears where it supports a porting task. It assumes Z80 programming and CP/M familiarity. For application programming and complete API coverage use the [Programmer's Guide](../programmers/programmers_guide.md).
+This guide takes a system programmer from target assessment through first boot, disk and memory integration, optional services, media installation and qualification. Technical reference appears where it supports a porting task. It assumes Z80 programming and CP/M familiarity. For application programming and complete API coverage use the [Programmer's Guide](Programmers-Guide.md).
 
 **Release boundary:** the existing 1.0 software and five Source/System/Utilities archives are locked at source `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`, with qualification accepted through `2842d0eb0732683d9280a38d576c3dba423cb893`. This guide neither changes those bytes nor adds a new qualified platform. New-target implementation, additional examples and further porting-manual expansion are separate workstreams and do not automatically become 1.0 release blockers. Follow the [lock](../releases/non-documentation-lock-1.0/README.md) before replacing any released artifact.
 
@@ -287,7 +287,7 @@ The technical details needed for a port are indexed here rather than repeated as
 - [Disk ABI, service registry, carrier and monitor reference](../programmers/BETTERCPM-API.md).
 - [ROM/RAM ownership](../architecture/27%20ROM%20and%20RAM%20Ownership.txt), [bounded PDS](../architecture/29%20Bounded%201.0%20PDS.txt) and matching generated source map.
 - [FDF/FDB definition](../engineering/DISK-FORMAT-DEFINITION-SPECIFICATION.md), [format support scope](../platform/FORMAT-SUPPORT-1.0.md), exact locked inventories and provenance.
-- [Current command operation](../user/command_reference.md), particularly CONFIG, DUP, FDB, SYSGEN and STAT.
+- [Current command operation](Command-and-Utilities-Reference.md), particularly CONFIG, DUP, FDB, SYSGEN and STAT.
 - [Reference status ledger](../programmers/REFERENCE-STATUS.md), which identifies stale staged material and future expansion explicitly.
 
 Historical specifications preserve decisions and dated observations. Focused final contracts and the lock control on conflict. Extending this practical narrative with more hardware examples, a complete new-target template or controller-specific diagrams is documentation/development work for its own scope; it is not a hidden condition of announcing locked 1.0.

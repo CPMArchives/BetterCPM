@@ -1,6 +1,6 @@
 # Runtime disk configuration, ABI version 5
 
-> **Locked 1.0 reading note:** The [current ABI-5 reference](BETTERCPM-API.md#function-181) and [practical disk integration](../porting/practical_porting_guide.md#disk-integration) reconcile this September record. Old subsystem identities, 790K-default wording, partial saved-state status and CONFIG H menu labels below are historical. Locked Model 4 System is BCPM780 with implemented named normalization and CONFIG/SYSGEN persistence. The versioned field layouts remain useful; the lock controls supplied modules and qualification.
+> **Locked 1.0 reading note:** The [current ABI-5 reference](BETTERCPM-API.md#function-181) and [practical disk integration](../manuals/Practical-Porting-Guide.md#disk-integration) reconcile this September record. Old subsystem identities, 790K-default wording, partial saved-state status and CONFIG H menu labels below are historical. Locked Model 4 System is BCPM780 with implemented named normalization and CONFIG/SYSGEN persistence. The versioned field layouts remain useful; the lock controls supplied modules and qualification.
 
 
 Updated September 7, 2026. BIOS implementation 1.9/API 1.5; BDOS

@@ -1,60 +1,54 @@
-# Documentation publication and provenance
+# Documentation publication and separate provenance
 
-The dedicated Documentation ZIP is the only 1.0 package open for rebuilding. The five Source/System/Utilities ZIPs and their embedded manuals, licenses, roots, checksums and source identities remain unchanged under the [lock](non-documentation-lock-1.0/README.md). This procedure prepares reviewable documentation; it does not authorize tag changes, draft uploads or publication.
+The reader collection has four canonical source manuals in [docs/manuals](../manuals/Users-Guide.md). Each is selected once and appears at the ZIP root with the same clear filename. Obsolete Utilities/standalone-command locators and the old User’s Guide backup have been removed, and controlled internal links now address the canonical manuals and command entries directly.
 
-## Publication formats
+## Reader layout
 
-The selected 1.0 format is Markdown plus plain-text supporting material and editable example sources. The four principal entry points are [User's Guide](../user/users_guide.md), [Command Reference](../user/command_reference.md), [Programmer's Guide](../programmers/programmers_guide.md) and [Practical Porting Guide](../porting/practical_porting_guide.md). Linked API chapters and detailed technical records support them. [Documentation index](../README.md).
-
-Old User/Architecture PDF/DOCX files are withheld. They do not track the reconciled editable sources. No new printable edition is claimed in this step; any later PDF/DOCX/HTML publication must be generated from the selected revision, carry the same attribution/example boundaries, and have its contents, tables, pagination and links visually reviewed. Adding printable editions is a deliberate format decision, not an automatic missing-content blocker.
-
-The explicit [selection manifest](../../packaging/1.0/documentation-selection.json) replaces indiscriminate collection of all textual docs. It excludes the old backup, FDB 1.01 development guide, binary/media fixtures, source archives and historical evidence bundles. Original engineering history remains in the matching repository/Source context. A selected manual's link to an omitted source/history path is rewritten in the ZIP to the pinned software-source URL, not left as a broken relative path. Local selected paths stay local.
-
-## Separate identities
-
-| Field | Meaning |
-| --- | --- |
-| `software_source_revision` | Fixed `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`. |
-| `qualification_merge_revision` | Fixed `2842d0eb0732683d9280a38d576c3dba423cb893`. |
-| `documentation_revision` | Actual reviewed documentation commit for a committed build; never reuse the software revision to disguise new prose. |
-| `documentation_source` | Commit identity and selected input manifest, or an explicitly labelled working-tree review snapshot with null final revision. |
-| `locked_packages` | Five unchanged filenames, sizes and SHA-256 values copied from LOCK.json. |
-| Documentation ZIP hash | Computed from its own final bytes, separate from the five pinned hashes. |
-
-An uncommitted authoring preview is named distinctly and records its base commit, selected input hashes and snapshot digest. It is not the final-named accepted Documentation ZIP, cannot satisfy a final review, and never invents a final revision. A committed build reads the selected files from the specified actual commit, not mixed working-tree files. The documentation revision must be distinct from the locked software revision for this new collection.
-
-## Build a documentation-only review
-
-Use the new documentation tools from the reviewed documentation checkout, not the older tools embedded in the frozen Source ZIP. They use Python's standard library and touch only an explicitly new documentation output. The legacy six-candidate assembler is not the documentation-sync route.
-
-```sh
-python3 tools/build_documentation.py --repository . \
-  --preview --output /path/to/new-documentation-review.zip
+```text
+BetterCPM-1.0-Documentation/
+  README.md
+  Users-Guide.md
+  Command-and-Utilities-Reference.md
+  Programmers-Guide.md
+  Practical-Porting-Guide.md
+  Supporting-Reference/
+  Licenses/
+  Provenance/
 ```
 
-Preview output must have a distinct review filename. For a committed candidate, after recording/reviewing the actual documentation commit:
+README is the single starting page. Supporting-Reference contains the linked API chapters, examples, installation/build instructions, architecture contracts and other selected technical references. It contains no competing Utilities manual or individual command locator. Licenses retains selected original terms/credits verbatim. Provenance contains source identity, explicit selection, unchanged current software/evidence package identities, a member/input manifest and checksums. There are no source-tree navigation wrappers, packaged build tools or PACKAGING-HISTORY copies in this reader collection. Earlier package bytes and evidence remain in the repository/history and release audit records, rather than cluttering the manuals.
+
+The selected format is Markdown/text and editable example sources. PDF/DOCX editions remain excluded until intentionally regenerated and visually reviewed.
+
+## Software and documentation identities
+
+Software source remains `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`; the published `v1.0` tag points to qualification merge `2842d0eb0732683d9280a38d576c3dba423cb893`. The five current published software packages and separate qualification-evidence ZIP retain their exact asset IDs, sizes and SHA-256 values under [software-packages-1.0.json](../../packaging/1.0/software-packages-1.0.json). That baseline distinguishes the later packaging-only correction from the original historical five-archive freeze. Do not relabel or rebuild any software package during this documentation cleanup.
+
+The Documentation ZIP records its own actual full Git commit. It is not the software source or tag commit. Each selected source input and generated package member is hashed; legal records are copied verbatim and relative links are remapped from canonical repository paths to actual package destinations. Omitted source/history citations use explicit pinned repository revisions; verify those paths before publication. A working preview has a null final revision and cannot satisfy final verification.
+
+## Build and verify
+
+From the reviewed documentation checkout, with a NEW output path:
 
 ```sh
-python3 tools/build_documentation.py --repository . \
-  --revision DOCUMENTATION_COMMIT \
-  --output /path/to/new-candidate/BetterCPM-1.0-Documentation.zip
+python3 tools/build_documentation.py --repository . --preview --output /path/to/layout-review.zip
+python3 tools/build_documentation.py --repository . --revision DOCUMENTATION_COMMIT --output /path/to/new/BetterCPM-1.0-Documentation.zip
 ```
 
-Replace DOCUMENTATION_COMMIT with the full real 40-character commit. The builder rejects the software commit as a substitute. The output path must not exist. Generated RELEASE.json/SOURCE-IDENTITY.json describe only the documentation revision and locked software baseline. SHA256SUMS covers every other member including both records; it does not hash itself. Legal/provenance text remains verbatim. Publication-tool copies in the ZIP allow read-only verification without pretending the frozen Source kit includes them.
+Use the real full 40-character documentation commit. Committed builds read actual Git object bytes, ignoring unrelated working-tree changes. The output must not already exist. A second build of the same commit must reproduce identical ZIP bytes.
 
-## Verify the split collection
+The documentation verifier reconstructs selected input bytes and intentional link transformations from that actual commit, then compares every member, including selection, provenance and legal records. It rejects altered content even when internal checksums have been recomputed. It checks all local Markdown/text file targets and anchors, not only checksums. The package’s complete checksum list is `Provenance/SHA256SUMS.txt`; it covers every member except itself. There is no circular embedded ZIP hash.
 
-Place copies or read-only paths to the five exact locked downloads alongside the new Documentation ZIP; do not rename internal archive roots or rebuild them. Run:
+For a combined read-only check with copies of the unchanged software/evidence ZIPs:
 
 ```sh
-python3 tools/check_release_package_lock.py /path/to/six-downloads \
-  --repository . --output /path/to/new-verification.json
+python3 tools/check_release_package_lock.py /path/to/published-zip-copies --repository . --documentation /path/to/BetterCPM-1.0-Documentation.zip --output /path/to/new-verification.json
 ```
 
-The checker verifies the declared committed documentation inputs against their actual Git object bytes and streams hashes/sizes of the five files against the canonical lock, verifies documentation ZIP names/member checksums/licenses/selection and separate provenance, and reports static identity checks. A mutation to one locked archive is a failure even if a new checksum list claims it is valid. It does not demand one new source commit for all six, and does not reinterpret old candidate labels as changed behavior. Missing packages fail; no test waiver is inferred. `--allow-preview` is for explicitly labelled authoring checks and cannot yield final acceptance.
+The current baseline is selected from the independently identified Documentation ZIP and verified against its actual source commit. Original frozen lock/qualification records remain historical evidence; they are not silently rewritten to claim unchanged outer packaging after a later packaging-only correction.
 
-After final documentation review, use the new ZIP's actual hash/size and documentation commit in the release index and checksum list. Preserve the five locked rows exactly. Existing draft index/hash/receipt files under `publication-1.0/` describe the earlier preflight and provisional old Documentation ZIP; they are historical snapshots, not the new build's provenance. The [publication plan](DOCUMENTATION-PUBLICATION.json) leaves the new final revision/hash unset until actual build/verification. Do not claim that six packages were rebuilt from one new commit.
+## Acceptance and release update
 
-## Final review and companion receipt
+Review the extracted reader layout as well as contents, links, licenses, source identity and deterministic reproduction. The [acceptance boundary](DOCUMENTATION-ACCEPTANCE.md) and [example/reference evidence ledger](../programmers/REFERENCE-STATUS.md) retain software scope and unexecuted-example limits. Further programmer/porting expansion does not become a 1.0 software blocker.
 
-Step 4 reconciles support documents, selection, formats and tooling. Step 5 performs final content/example/link/license checks on the actual assembled ZIP under the [acceptance protocol](DOCUMENTATION-ACCEPTANCE.md). Its external receipt identifies the accepted bytes without rewriting the ZIP’s pre-acceptance build status or creating a self-referential hash. New programmer/porting writing and unexecuted native examples retain the [coverage/evidence boundary](../programmers/REFERENCE-STATUS.md), without becoming extra software blockers. Existing qualification applies only to matching locked bytes; these static checks do not rerun emulator or physical-hardware trials. Tag-target alignment, tagging and publication remain held until separately authorized after review.
+Only after checking the actual candidate, replace the published Documentation asset and synchronize its external index/checksum/notes. Preserve every other asset ID/hash, all software/source/media, the existing tag ref and software target. Record the new Documentation commit/hash/size separately from prior Documentation editions and original software identities. Do not rebuild the five software packages or move the tag to make the documentation revision look shared.

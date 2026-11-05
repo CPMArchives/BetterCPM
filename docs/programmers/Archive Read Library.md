@@ -1,6 +1,6 @@
 # Archive read library — initial LBR implementation
 
-> **Locked 1.0 reading note:** This is retained initial-increment documentation. Start with [archive reuse and its stability boundary](programmers_guide.md#reuse-input-and-archive-libraries) and current matching source includes. Earlier NOAH scope/availability and pending-writer statements below are historical, not current release inventory or a complete stable archive API.
+> **Locked 1.0 reading note:** This is retained initial-increment documentation. Start with [archive reuse and its stability boundary](../manuals/Programmers-Guide.md#reuse-input-and-archive-libraries) and current matching source includes. Earlier NOAH scope/availability and pending-writer statements below are historical, not current release inventory or a complete stable archive API.
 
 
 This records the first NOAH implementation increment, not the complete archive API

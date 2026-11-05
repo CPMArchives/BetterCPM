@@ -12,7 +12,7 @@ assembly definitions. These documents do not add unimplemented command options.
 [LZH definitions](../../src/codec/lzh.inc), [LZH code](../../src/codec/lzh.mac),
 [UNLZH definitions](../../src/codec/unlzh.inc), [UNLZH code](../../src/codec/unlzh.mac).
 Commands: [lzh.mac](../../src/utilities/lzh.mac), [unlzh.mac](../../src/utilities/unlzh.mac).
-User pages: [LZH](../user/LZH.md), [UNLZH](../user/UNLZH.md).
+User pages: [LZH](../manuals/Command-and-Utilities-Reference.md#lzh), [UNLZH](../manuals/Command-and-Utilities-Reference.md#unlzh).
 
 `LZH_INIT` validates READ/WRITE, context and bounded `LZH_NAME`, initializes the
 ring, tree and match chains, then enters READY without I/O. `LZH_RUN` performs
