@@ -2,7 +2,7 @@
 
 PCW passed read/write interchange on the patched cpmsim with the release System image identified in the receipt. BetterCP/M recovered all 24 original files, wrote and read back an 8 KiB probe through allocation block 174, and preserved the reserved track and the 512-byte tail beyond the last allocation block. Independent cpmtools/libdsk extraction from the repacked Extended DSK recovered every original file and the complete probe.
 
-Model 4 media passed host preparation. Guest I/O on trs80gp and physical-media interchange remain open.
+The Model 4 guest trial on trs80gp also passed: all 24 original files and the 8 KiB probe were recovered, the write reached block 174, and the reserved area and unallocated tail were preserved. The written EDSK SHA-256 is identical to the cpmsim result. [Model 4 receipt](model4-results.json). Physical-media interchange remains untested.
 
 ## Independent source
 

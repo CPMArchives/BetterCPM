@@ -1,0 +1,22 @@
+diskdef m2ss
+ seclen 1024
+ tracks 75
+ sectrk 8
+ blocksize 2048
+ maxdir 128
+ skew 3
+ boottrk 0
+ offset 11520
+ os 2.2
+end
+diskdef m2ds
+ seclen 1024
+ tracks 152
+ sectrk 8
+ blocksize 2048
+ maxdir 192
+ skew 3
+ boottrk 0
+ offset 11520
+ os 2.2
+end

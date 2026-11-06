@@ -1,0 +1,38 @@
+diskdef trse
+  seclen 1024
+  tracks 77
+  sectrk 8
+  blocksize 2048
+  maxdir 128
+  datarate DD
+  fm NO
+  skew 3
+  boottrk 0
+  offset 11520
+  os 2.2
+end
+
+diskdef trsf
+  seclen 1024
+  tracks 154
+  sides alt
+  sectrk 8
+  blocksize 2048
+  maxdir 192
+  skew 3
+  boottrk 0
+  offset 11520
+  os 2.2
+end
+
+diskdef trs5
+  seclen 1024
+  tracks 75
+  sectrk 8
+  blocksize 2048
+  maxdir 128
+  skew 3
+  boottrk 0
+  os 2.2
+  offset 11520
+end

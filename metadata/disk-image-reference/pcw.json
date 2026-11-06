@@ -53,21 +53,22 @@
       },
       "qualification": {
         "cpmsim": "pass",
-        "trs80gp": "prepared; guest I/O pending",
+        "trs80gp": "pass",
         "physical_media": "untested",
         "probe_bytes": 8192,
         "highest_block_written": 174,
         "reserved_bytes_preserved": 4608,
-        "unallocated_tail_bytes_preserved": 512
+        "unallocated_tail_bytes_preserved": 512,
+        "written_edsk_sha256_both_backends": "2cfcc2bd510af52e3aad777a7c7a01897c8472a5bb64ab36bf6b381f79061945"
       }
     }
   ],
   "archive": {
     "filename": "BetterCPM-PCW-Reference-Images-2026-11-06.zip",
-    "size_bytes": 341894,
-    "sha256": "28fef90b0b37589d7c1712182a0cfff1511bbe4bbddfb4fa916753036ce8e66e",
+    "size_bytes": 344181,
+    "sha256": "571c4507bfe80ce075f427ac220ef74e39451b9ad47d80b22ac1f8583d859d42",
     "access": "Maintainer-held reference archive",
     "library_file_id": "libfile_0c9cdef1c46c8191990896a7be9a7d77"
   },
-  "evidence_commit": "8910de03e8c2a49d7e266299329b7a2069a1743b"
+  "evidence_commit": "c778229309606652904a03613640e0a933970c40"
 }
