@@ -1,3 +1,4 @@
+        INCLUDE layout.inc
 ; Phase-3 fresh/STATELESS snapshot constructor.
 ;
 ; DE -> request:
@@ -309,6 +310,7 @@ RN_HEADER:
         LD      (HL),E
         INC     HL
         LD      (HL),D
+        ; @resident-capsule-snapshot@
         LD      HL,(RN_REQ)
         LD      DE,22
         ADD     HL,DE

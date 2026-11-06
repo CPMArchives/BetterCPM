@@ -15,8 +15,8 @@
 ; caller-owned RAM rather than in the phase that produced them.
 
 RCBASE          EQU     LY_RSX
-FLOPEN          EQU     LY_FILE
-FLNEXT          EQU     LY_FILE+3
+FLOPEN          EQU     LY_RSX-0400H
+FLNEXT          EQU     LY_RSX-0400H+3
 CFGB            EQU     LY_CFG
 
         CSEG
@@ -26,7 +26,10 @@ RC_ENTRY:
         EX      DE,HL
         LD      A,(HL)
         CP      2
+        JR      Z,RC_VERSION
+        CP      3
         JP      NZ,RC_BAD
+RC_VERSION:
         INC     HL
         LD      A,(HL)
         CP      1
@@ -70,6 +73,32 @@ RC_ENTRY:
         SBC     HL,DE
         JP      NC,RC_BAD
 
+        LD A,(LY_RSTA)
+        OR A
+        JR NZ,RCC_READY
+        LD HL,RCC_NAME
+        LD A,1
+        CALL LY_FILE
+        JP NZ,RC_BAD
+        LD HL,LY_RSX-0400H
+        CALL LY_FILE+3
+        JP NZ,RC_BAD
+        CALL LY_FILE+3
+        JP NZ,RC_BAD
+        IF BP_CHECKED EQ 1
+        LD HL,LY_RSX-0400H+1000
+        LD DE,LY_CID
+        CALL LY_CCMP
+        JP NZ,RC_BAD
+        LD DE,LY_RSX-0400H
+        LD BC,1024
+        CALL LY_CCRC
+        LD DE,BP_CACHE_CRC
+        OR A
+        SBC HL,DE
+        JP NZ,RC_BAD
+        ENDIF
+RCC_READY:
 ; Read the fixed 512-byte header after proving that complete transfer fits.
         LD      HL,(RC_LOW)
         LD      (RC_DEST),HL
@@ -78,9 +107,52 @@ RC_ENTRY:
         LD      HL,(RC_REQ)
         LD      DE,4
         ADD     HL,DE
-        LD      A,1
-        CALL    FLOPEN
-        JP      NZ,RC_BAD
+        PUSH HL
+        LD HL,(RC_REQ)
+        LD A,(HL)
+        LD BC,0
+        CP 3
+        JR NZ,RC_OLDSOURCE
+        LD DE,18
+        ADD HL,DE
+        LD C,(HL)
+        INC HL
+        LD B,(HL)
+RC_OLDSOURCE:
+        POP HL
+        LD A,2
+        CALL FLOPEN
+        JR Z,RCC_OPEN
+        LD HL,(RC_REQ)
+        LD A,(HL)
+        CP 3
+        JP NZ,RC_BAD
+        INC HL
+        INC HL
+        LD A,(HL)
+        CP 1
+        JP NZ,RC_BAD
+        LD HL,(RC_REQ)
+        LD DE,4
+        ADD HL,DE
+        LD BC,0
+        LD A,2
+        CALL FLOPEN
+        JP NZ,RC_BAD
+RCC_OPEN:
+        LD HL,(RC_REQ)
+        LD A,(HL)
+        CP 3
+        JR NZ,RCC_BEGIN
+        PUSH HL
+        CALL LY_RSX-0400H+15
+        POP HL
+        LD DE,18
+        ADD HL,DE
+        LD (HL),C
+        INC HL
+        LD (HL),B
+RCC_BEGIN:
         CALL    RC_NEXT
         JP      NZ,RC_BAD
 
@@ -259,6 +331,10 @@ RC_SPACE:
         CP      1
         JP      NZ,RC_BAD
 
+        LD HL,(RC_LOW)
+        LD DE,(RC_FACTS)
+        CALL LY_RSX-0400H+9
+        JP NZ,RC_BAD
   ; Pass the public request and normalized candidate facts through caller-owned
   ; memory before the profile phase replaces this coordinator.
         LD      HL,(RC_FACTS)
@@ -419,6 +495,7 @@ RC_BAD:
         RET
 
 RC_MAGIC:       DB      'B','R','S','X'
+RCC_NAME: DB 'R3CACHE '
 RC_BMET:        DB      'B','M','E','T'
 RC_NCARR:       DB      R3CARR_RECORD
 RC_NMETA:       DB      R3META_RECORD

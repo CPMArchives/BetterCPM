@@ -134,7 +134,9 @@
       "build/system/extensions.bin"
     ],
     "subsystem:RSX": [
-      "build/system/R3PACK.RSX"
+      "build/system/R3PACK.RSX",
+      "build/system/R3CACHE.RSX",
+      "build/system/rsxloader.bin"
     ],
     "module:ZPRTC": [
       "build/rsx/ZPRTC.RSX"

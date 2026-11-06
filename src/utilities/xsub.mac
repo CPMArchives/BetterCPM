@@ -26,24 +26,52 @@ RSXFUNC         EQU     177
 
 XS_START:                               ; enter XSUB installer
         CALL    UV_CHECK                ; standalone utility identity
-        ; Queries have already returned; these commands accept no operands.
-        LD      A,(0080H)
-        CP      128
-        JR      NC,ARG_BAD
-        OR      A
-        JR      Z,ARG_OK
-        LD      B,A
-        LD      HL,0081H
-ARG_SCAN:
-        LD      A,(HL)
-        CP      ' '
-        JR      Z,ARG_NEXT
-        CP      9
-        JR      NZ,ARG_BAD
-ARG_NEXT:
-        INC     HL
-        DJNZ    ARG_SCAN
-        JR      ARG_OK
+        CALL SD_INIT
+        LD A,(0080H)
+        CP 128
+        JR NC,ARG_BAD
+        LD B,A
+        LD HL,0081H
+XS_SKIP:
+        LD A,B
+        OR A
+        JR Z,XS_SOURCE
+        LD A,(HL)
+        CP ' '
+        JR Z,XS_SPACE
+        CP 9
+        JR NZ,XS_PARSE
+XS_SPACE:
+        INC HL
+        DJNZ XS_SKIP
+        JR XS_SOURCE
+XS_PARSE:
+        CALL SD_PARSE
+        JR NZ,ARG_BAD
+        LD A,(SD_EXPLICIT)
+        OR A
+        JR Z,ARG_BAD
+XS_TRAIL:
+        LD A,B
+        OR A
+        JR Z,XS_SOURCE
+        LD A,(HL)
+        CP ' '
+        JR Z,XS_TNEXT
+        CP 9
+        JR NZ,ARG_BAD
+XS_TNEXT:
+        INC HL
+        DJNZ XS_TRAIL
+XS_SOURCE:
+        LD A,(SD_DRIVE)
+        LD (XS_REQUEST+18),A
+        LD A,(SD_USER)
+        LD (XS_REQUEST+19),A
+        LD A,(SD_EXPLICIT)
+        XOR 1
+        LD (XS_REQUEST+2),A
+        JR ARG_OK
 ARG_BAD:
         LD      DE,ARG_MSG
         LD      C,9
@@ -116,10 +144,12 @@ XS_WHIGH:                               ; bound scratch below TPA and stack
 ; Request, Messages, and Stack
 ; -------------------------------------------------------------------------------
 
-XS_REQUEST:     DB      2,3,0,0,'BATCHIO ',0,0,0,0,0,0 ; Function-177 request
+XS_REQUEST:     DB      3,3,0,0,'BATCHIO ',0,0,0,0,0,0,0,0 ; Function-177 request
 XS_ALREADY:     DB      13,10,'Xsub Already Present','$' ; already-active message
 XS_LOADERR:     DB      13,10,'Xsub Load Error','$' ; load-failure message
 ARG_MSG: DB 'Invalid usage.',13,10,'Use XSUB /HELP.',13,10,'$'
+
+; @rsx-source-parser@
 
 XS_END:                                 ; end of caller-owned program image
 ; @utility-version XSUB@

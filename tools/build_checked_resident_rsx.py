@@ -29,6 +29,9 @@ def build_rsx_components(contract: dict, assembler: Path, output: Path) -> dict:
     def build(stem, filename, origin_symbol, address):
         return assemble(assembler, constants+source(filename, origin_symbol, address),
                         output/(stem+'.bin'), output/(stem+'.lst'), address)
+    cache = build('r3cache','r3cache.mac','CBBASE',L['RSX']-1024)
+    cache = bind_slot(cache.ljust(1024,b'\0'),identity)
+    constants += f'BP_CACHE_CRC EQU 0{binascii.crc_hqx(cache,0xFFFF):04X}H\n'
     specs = [
         ('R3PLAN','r3plan','rsxplan.mac','RPBASE',L['CONFIG']),
         ('R3SLOTS','r3slots','rsxslots.mac','SUBASE',L['CONFIG']),
@@ -45,7 +48,7 @@ def build_rsx_components(contract: dict, assembler: Path, output: Path) -> dict:
         ('R3COMIT','r3commit','r3comit.mac','RCBASE',L['RSX']),
     ]
     gateway = bytes((0xC3, L['BDOS']&255, L['BDOS']>>8))
-    images = {};sizes = {}
+    images = {'R3CACHE.RSX':cache};sizes = {'R3CACHE':len(cache)}
     for name, stem, filename, symbol, address in specs:
         code = build(stem, filename, symbol, address)
         limit = 1024 if address == L['CONFIG'] else 1012
@@ -100,6 +103,7 @@ def main():
     def run(name,*args):
         subprocess.run([sys.executable,str(ROOT/'tools'/name),'--assembler',str(assembler),*args],
                        cwd=ROOT,check=True)
+    run('build_bdos.py')
     run('build_rsxresolver.py')
     rsx = build_rsx_components(contract,assembler,ROOT/'build/system')
     run('build_checked_command_loader.py')

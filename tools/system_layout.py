@@ -39,6 +39,8 @@ def expand_layout(text: str) -> str:
     text = re.sub(r'^\s*INCLUDE\s+private-utility\.inc\s*$',
                   lambda _: (ROOT/'src/utilities/common/private-utility.inc').read_text(),
                   text, flags=re.MULTILINE | re.IGNORECASE)
+    if '; @rsx-source-parser@' in text:
+        text = text.replace('; @rsx-source-parser@', (ROOT/'src/utilities/common/rsxsource.inc').read_text(encoding='ascii'))
     if '; @bounded-filespec@' in text:
         text = text.replace('; @bounded-filespec@',
             (ROOT / 'src/utilities/common/filespec.inc').read_text(encoding='ascii'))

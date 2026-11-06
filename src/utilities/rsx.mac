@@ -25,6 +25,7 @@ RSXFUNC         EQU     177
 
 START:                                  ; enter BRSX manager utility
         CALL    UV_CHECK                ; standalone utility identity
+        CALL SD_INIT
         CALL    UT_NORMALIZE
 
 RS_SKIP:                                ; skip leading command-tail spaces
@@ -240,7 +241,26 @@ RS_NPOS:                                ; position name parser
         SUB     E
         JR      C,RS_NBAD
         JR      Z,RS_NBAD
-        LD      C,A
+        LD B,A
+        CALL SD_PARSE
+        JP NZ,RS_NBAD
+        LD A,(SD_EXPLICIT)
+        OR A
+        JR Z,RS_DEFAULT
+        LD A,(RS_OP)
+        CP 1
+        JP NZ,RS_NBAD
+RS_DEFAULT:
+        LD A,3
+        LD (RS_REQ),A
+        LD A,(SD_EXPLICIT)
+        XOR 1
+        LD (RS_REQ+2),A
+        LD A,(SD_DRIVE)
+        LD (RS_REQ+18),A
+        LD A,(SD_USER)
+        LD (RS_REQ+19),A
+        LD C,B
         LD      DE,RS_REQ+4
         XOR     A
         LD      (RS_NCOUNT),A
@@ -477,10 +497,10 @@ RS_NCOUNT:     DB      0                ; parsed name length
 RS_DREM:       DB      0                ; decimal remainder
 RS_TENS:       DB      0                ; decimal tens scratch
 RS_UNITV:      DB      0                ; decimal units scratch
-RS_REQ:        DB      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ; Function-177 request block
+RS_REQ:        DS 20 ; version-3 source-qualified request
 
         INCLUDE rsxvers.inc
-RS_END:                                ; first free byte after transient image
+; source parser and query text are included below
 
 ; Normalize a private command-tail copy; preserve the caller's page zero.
 UT_NORMALIZE:
@@ -527,7 +547,10 @@ UT_TAIL:
         DB 0
         ENDM
 
+; @rsx-source-parser@
+
 ; @utility-version RSX@
 
+RS_END:
         .DEPHASE
         END     START
