@@ -331,5 +331,14 @@
       "probe_bytes": 227328,
       "highest_block_written_and_read": 174
     }
-  ]
+  ],
+  "evidence_commit": "4d6a9c372a01fd5f0bbc42e54e03e338e4cd6137",
+  "archive": {
+    "filename": "BetterCPM-Bondwell14-Reference-Images-2026-11-06.zip",
+    "size_bytes": 4040897,
+    "sha256": "5de6499ed6d17b1ebed55f03903be16c732eb2e11dd935ac1769e7f664ec4631",
+    "access": "Maintainer-held reference archive",
+    "library_file_id": "libfile_f4fd2f4484508191b7c5aeb40ecdf393",
+    "library_version": 0
+  }
 }
