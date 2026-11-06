@@ -1,20 +1,25 @@
 # Bondwell 14 qualification
 
-**BW14 passes cpmsim RAM file interchange with the existing FDF.RSX mapper.**
-Nine independent workers recovered all 152 original files, filled each disk
-through allocation block 174, and read the probe back through BetterCP/M.
-The longest worker took 29.704 seconds. No BIOS, BDOS, CONFIG or mapper source
-changes were needed. The supplemental catalogue now has seven entries; the
-production 108-entry catalogue is unchanged.
+**BW14 passes file interchange on cpmsim RAM and trs80gp Model 4 with
+FDF.RSX loaded first.** Each backend recovered all 152 original files across
+nine disks, filled each disk through allocation block 174, and read the probe
+back through BetterCP/M. Every resulting canonical raw image and repacked
+CopyQM image is byte-for-byte identical between the two backends.
 
-Model 4 media and its parallel runner are prepared, including physical DMK
-round trips. The first user-launched batch failed at DIR with Bad Sector and
-was interrupted. The corrected load order has not yet passed on Model 4; no
-Model 4 pass is claimed. This session's read-only
-LaunchServices lookup returned 1100 (BOOTSTRAP_NOT_PRIVILEGED), so automated
-launch here remains unavailable; the failed batch was launched by the user. ROM, physical media, historical booting and formatting remain
-untested. This evidence concerns file interchange, not execution of Bondwell
-CP/M 3 or its applications under BetterCP/M.
+The nine cpmsim workers ran in parallel; the longest took 29.704 seconds.
+The nine Model 4 workers also ran in parallel and the aggregate result completed
+at **2026-11-07 04:48:17 Taiwan time (UTC+8)**. The user switched all sessions
+from Turbo to Haste during the run; the exact transition time was not recorded,
+so the log is not a controlled comparison of emulator speed modes.
+
+The first Model 4 batch failed at DIR with Bad Sector and was interrupted.
+Its target sector payloads were unchanged. The corrected FDF-first startup
+passed the complete rerun; the load-order reproduction is retained below.
+No BIOS, BDOS, CONFIG or mapper source changes were needed. The supplemental
+catalogue has seven entries; the production 108-entry catalogue is unchanged.
+ROM, physical media, historical booting and formatting remain untested. This
+qualification concerns file interchange, not execution of Bondwell CP/M 3 or
+its applications under BetterCP/M.
 
 | Original | Files | Probe bytes | Highest block written/read |
 |---|---:|---:|---:|
@@ -29,7 +34,8 @@ CP/M 3 or its applications under BetterCP/M.
 | WSTAR2.IMG | 9 | 227,328 | 174 |
 
 [Sources](sources.json) · [Host checks and inventories](checks.json) ·
-[cpmsim results](cpmsim-results.json) · [Model 4 preparation](model4-preparation.json)
+[cpmsim results](cpmsim-results.json) · [Model 4 results](model4-results.json) ·
+[Model 4 log](model4-console.log.gz) · [Preparation](model4-preparation.json)
 
 ## Original evidence and geometry
 
@@ -156,5 +162,5 @@ macOS Terminal. Its defaults point to this project's prepared dependencies;
 and `BW14_JOBS` override them. It prepares fresh private disks and starts nine
 workers. It prints the result directory; each successful disk writes its own
 result.json and the aggregate is written only after all pass. No duration is
-predicted from the much faster cpmsim result. The Model 4 runner remains
-unqualified until that guest batch completes.
+predicted from the much faster cpmsim result. The completed Model 4 receipt
+above records the successful FDF-first run.
