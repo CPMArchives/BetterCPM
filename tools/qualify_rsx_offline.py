@@ -40,7 +40,8 @@ def audit_outputs(w, native):
         text=b'\n'.join(bytes(c&127 for c in f.read_bytes()[:1920]) for f in sorted(w.glob('trs80-text*')))
     else:
         text=(w/'transcript.bin').read_bytes()
-    for error in (b'RSX module or profile error',b'STATEFUL LOOKUP FAILED',b'INPUT FAILED',b'Invalid usage.'):
+    assert b'CACHE ERROR CHAIN PASS' in text,'missing native error-probe pass marker'
+    for error in (b'RSX module or profile error',b'STATEFUL LOOKUP FAILED',b'INPUT FAILED',b'CACHE ERROR CHAIN FAILED',b'Invalid usage.'):
         assert error not in text,error
     return {'carrier_removal':'PASS: B0 HELLO/BATCHIO and B3 STATEFUL absent',
             'unexpected_diagnostics':'none'}
@@ -54,7 +55,7 @@ def main():
     p.add_argument('--work-disk',type=Path)
     p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim')
     a=p.parse_args();w=a.output.resolve();w.mkdir(parents=True,exist_ok=False)
-    tracked=[ROOT/p for p in ('build/system/R3PACK.RSX','build/system/R3CACHE.RSX','build/system/rsxloader.bin','build/utilities/RSX.COM','build/utilities/XSUB.COM')]
+    tracked=[ROOT/p for p in ('build/system/R3PACK.RSX','build/system/R3CACHE.RSX','build/system/rsxloader.bin','build/system/fileloader.bin','build/utilities/RSX.COM','build/utilities/XSUB.COM')]
     artifacts={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in tracked}
     original=a.system.resolve().read_bytes();utilities=a.utilities.resolve().read_bytes()
     native=a.target=='trs80gp'
@@ -76,6 +77,24 @@ def main():
             track,within=divmod(76+i,fmt.spt)
             at=track*fmt.raw_track_bytes+mapping[within]*128
             payload[at:at+128]=block[i*128:(i+1)*128]
+    # Matched stream reset preserves the sequential FCB's random-record bytes,
+    # which carry the transient worker trampoline. Patch this resident component
+    # as well as the raw selector; never qualify a mixed old/new System.
+    stream=(ROOT/'build/system/fileloader.bin').read_bytes()
+    resident_offset=LAYOUT['FILE']-LAYOUT['SYSTEM']
+    if native:
+        start=SYSTEM_FIRST_LOGICAL_INDEX*512+resident_offset
+        old=bytes(payload[start:start+len(stream)])
+        assert sum(a!=b for a,b in zip(old,stream))<=1,'unexpected resident stream baseline'
+        payload[start:start+len(stream)]=stream
+    else:
+        old=bytearray()
+        for i,value in enumerate(stream):
+            logical=8*128+resident_offset+i
+            record,byte=divmod(logical,128);track,within=divmod(record,fmt.spt)
+            at=track*fmt.raw_track_bytes+mapping[within]*128+byte
+            old.append(payload[at]);payload[at]=value
+        assert sum(a!=b for a,b in zip(old,stream))<=1,'unexpected resident stream baseline'
     raw.write_bytes(payload)
     defs=('diskdef bettercpm-default\n seclen 512\n tracks 160\n sectrk 10\n blocksize 2048\n maxdir 128\n skew 1\n boottrk 4\n os 2.2\nend\n' if native else disk_definition(select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT)))
     (w/'diskdefs').write_text(defs)
@@ -92,10 +111,10 @@ def main():
         cmd('cpmcp','-T','raw','-f',definition(disk),disk,path,f'{user}:{name}')
     for name in ('DDT.COM','DUMP.COM','UNCR.COM'):
         remove(data,0,name)
-    steps=['RSX LOAD B0:HELLO','RSX LOAD B3:STATEFUL','STATTST I','STATTST M',
+    steps=['RSX LOAD B0:HELLO','RSX UNLOAD HELLO']*(1 if native else 6)+['RSX LOAD B0:HELLO','RSX LOAD B3:STATEFUL','STATTST I','STATTST M','CACHERR',
            'ERA B0:HELLO.RSX','ERA B3:STATEFUL.RSX','RSX UNLOAD HELLO','STATTST C',
            'RSX UNLOAD STATEFUL','SUBMIT UBATCH']
-    batch=b'B:XSUB B0:\r\nA:INPUT\r\nBATCHFULL\r\nERA B:BATCHIO.RSX\r\nA:MARK RSXOFFLINE\r\n\x1a'
+    batch=b'B:XSUB B0:\r\nA:INPUT\r\nBATCHFULL\r\nERA B:BATCHIO.RSX\r\nA:MARK RSXOFFLINE\r\nRSX UNLOAD BATCHIO\r\nRSX LIST\r\n\x1a'
     for n,path in [('R3PACK.RSX','build/system/R3PACK.RSX'),('R3CACHE.RSX','build/system/R3CACHE.RSX'),
                    ('RSX.COM','build/utilities/RSX.COM'),('STATTST.COM','build/utilities/STATTST.COM')]:
         put(raw,0,n,(ROOT/path).read_bytes())
@@ -103,12 +122,16 @@ def main():
                         ('HELLO.RSX','build/rsx/HELLO.RSX',0),('STATEFUL.RSX','build/rsx/STATEFUL.RSX',3)]:
         put(data,user,n,(ROOT/path).read_bytes())
     for n in ('HELLO.RSX','STATEFUL.RSX','BATCHIO.RSX'):remove(raw,0,n)
+    from build_ccp import assemble
+    probe=assemble(Path.home()/'bin/z80asm',(ROOT/'tools/rsx_cache_error_probe.mac').read_text(),
+        w/'CACHERR.COM',w/'CACHERR.lst',0x100)
+    put(raw,0,'CACHERR.COM',probe)
     put(raw,0,'UBATCH.SUB',batch);put(raw,0,'INPUT.COM',input_probe(w));put(raw,0,'MARK.COM',marker(w))
     if not native:
         disks=w/'disks';disks.mkdir();shutil.copy2(raw,disks/'drivea.dsk');shutil.copy2(data,disks/'driveb.dsk')
         commands=[]
         for s in steps:
-            expected=b'STATEFUL CHECK PASS' if s=='STATTST C' else b'MARK: RSXOFFLINE' if s=='SUBMIT UBATCH' else b'A0>_ '
+            expected=b'CACHE ERROR CHAIN PASS' if s=='CACHERR' else b'STATEFUL CHECK PASS' if s=='STATTST C' else b'No RSXs loaded' if s=='SUBMIT UBATCH' else b'A0>_ '
             commands.append(((s+'\r').encode(),expected,15))
         text=session(a.simulator.resolve(),disks,commands,w/'transcript.bin')
         assert b'INPUT OK' in text and b'INPUT FAILED' not in text
@@ -122,14 +145,21 @@ def main():
         for n,source in enumerate((a.companion,a.work_disk),2):
             copy=w/f'drive{n}.dmk';shutil.copy2(source.resolve(),copy);extra+=['-d'+str(n),str(copy)]
         args=[str(DEFAULT_EMULATOR),'-m4','-frehd','-batch','-turbo','-na','-ktx','-d0',str(disk),'-d1',str(other),
-              *extra,'-itime','60000','-id','4000','-it','-iw','STATEFUL CHECK PASS','-id','200','-it',
-              '-iw','INPUT OK','-id','200','-it','-iw','MARK: RSXOFFLINE','-id','500','-it','-ix']
+              *extra,'-itime','60000','-id','4000','-it','-iw','CACHE ERROR CHAIN PASS','-id','200','-it','-iw','STATEFUL CHECK PASS','-id','200','-it',
+              '-iw','INPUT OK','-id','200','-it','-iw','MARK: RSXOFFLINE','-iw','No RSXs loaded','-id','500','-it','-ix']
         (w/'invocation.json').write_text(json.dumps(args,indent=2)+'\n')
-        run(args,cwd=w,timeout=480)
+        run(args,cwd=w,timeout=600)
         screens=b'\n'.join(bytes(c&127 for c in f.read_bytes()[:1920]) for f in sorted(w.glob('trs80-text*')))
         assert b'STATEFUL CHECK PASS' in screens and b'INPUT OK' in screens and b'MARK: RSXOFFLINE' in screens
         raw.write_bytes(extract_raw(disk.read_bytes()));data.write_bytes(dmk_to_raw(other.read_bytes(),data_fmt))
+    listing=cmd('cpmls','-f',definition(raw),raw).stdout.decode()
+    import re
+    cache_names=re.findall(r'\$\$RSX0[0-4]\.RSC',listing,re.I)
+    assert len(cache_names)==0,listing
     audit=audit_outputs(w,native)
+    audit['bounded_cache_files']=cache_names
+    audit['cache_reuse_cycles']=1 if native else 6
+    audit['native_returning_error_probe']='PASS: removed STATEFUL cache, set change rejected, live service intact, cache restored'
     assert artifacts=={str(p.relative_to(ROOT)):sha(p.read_bytes()) for p in tracked},'artifacts changed during qualification'
     assert b'$$$' not in cmd('cpmls','-f',definition(raw),raw).stdout
     for disk in (raw,data):cmd('fsck.cpm','-T','raw','-f',definition(disk),'-n',disk)

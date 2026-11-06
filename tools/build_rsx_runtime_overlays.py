@@ -22,10 +22,10 @@ def source(name: str, symbol: str, address: int) -> str:
     if not count:
         raise ValueError(f'{name}: missing link-origin symbol {symbol}')
     text = text.replace('; @resident-capsule-snapshot@',
-        'LD DE,(RN_REQ)\n        CALL LY_RSX-0400H+12\n        OR A\n        JP NZ,RN_BAD')
+        'LD DE,(RN_REQ)\n        CALL LY_FCB+33\n        DB 12\n        OR A\n        JP NZ,RN_BAD')
     if name == 'rsxmover.mac':
         old = '        LD      DE,(RM_SIZE)\n        OR      A\n        SBC     HL,DE\n        JR      NC,RM_RSKIP'
-        new = '        LD      BC,(RM_NEW)\n        CALL    LY_RSX-0400H+18\n        JR      NC,RM_RSKIP'
+        new = '        LD      BC,(RM_NEW)\n        CALL LY_FCB+33\n        DB 18\n        JR      NC,RM_RSKIP'
         if text.count(old) != 1:
             raise ValueError('production mover pointer-bound anchor changed')
         text = '        INCLUDE layout.inc\n'+text.replace(old, new)
@@ -63,10 +63,8 @@ def main() -> None:
     cfg = LAYOUT["CONFIG"]
     rsx = LAYOUT["RSX"]
 
-    cache = build(args.assembler, "r3cache", "r3cache.mac", "CBBASE", rsx-1024)
-    if len(cache) > 1024:
-        raise ValueError(f'carrier cache exceeds optional allocation: {len(cache)}')
-    (BUILD/'R3CACHE.RSX').write_bytes(cache.ljust(1024, b'\0'))
+    from rsx_disk_cache import build_worker
+    build_worker(args.assembler, BUILD)
     entry = build(args.assembler, "r3entry", "r3entry.mac", "RVBASE", rsx)
     entry_source = (ROOT / "src/system/r3entry.mac").read_text(encoding="ascii")
     helper = entry_source[entry_source.index("RI_ENTRY:"):entry_source.index("RI_END:")]

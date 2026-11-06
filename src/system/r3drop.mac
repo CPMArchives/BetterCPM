@@ -10,8 +10,6 @@
 ; ********************************************************************************
 
 RDBASE          EQU     LY_RSX
-FLOPEN          EQU     LY_RSX-0400H
-FLNEXT          EQU     LY_RSX-0400H+3
 CFGB            EQU     LY_CFG
 RSTCOUNT        EQU     LY_RSTA
 RSTABLE         EQU     LY_RSTA+1
@@ -198,10 +196,12 @@ RD_SCAN:                                ; collect old and prospective vectors
         CALL    RD_TABPTR
         LD      (RD_NAME),HL
         LD      A,1
-        CALL    FLOPEN
+        CALL LY_FCB+33
+        DB 0
         JP      NZ,RD_BAD
         LD      HL,(RD_CURSOR)
-        CALL    FLNEXT
+        CALL LY_FCB+33
+        DB 3
         JP      NZ,RD_BAD
         CALL    RD_HEADER
         JP      NZ,RD_BAD
@@ -239,7 +239,7 @@ RD_NEXT:                                ; advance the retained-profile scan
 
 RD_PLANIT:                              ; invoke the authoritative planner
         LD      HL,(RD_PREQ)
-        LD      DE,LY_RSX-0400H
+        LD      DE,LY_RSX
         CALL    RD_PUTDE
         LD      DE,(RD_HIGH)
         CALL    RD_PUTDE

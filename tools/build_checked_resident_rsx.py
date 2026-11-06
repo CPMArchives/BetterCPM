@@ -29,9 +29,6 @@ def build_rsx_components(contract: dict, assembler: Path, output: Path) -> dict:
     def build(stem, filename, origin_symbol, address):
         return assemble(assembler, constants+source(filename, origin_symbol, address),
                         output/(stem+'.bin'), output/(stem+'.lst'), address)
-    cache = build('r3cache','r3cache.mac','CBBASE',L['RSX']-1024)
-    cache = bind_slot(cache.ljust(1024,b'\0'),identity)
-    constants += f'BP_CACHE_CRC EQU 0{binascii.crc_hqx(cache,0xFFFF):04X}H\n'
     specs = [
         ('R3PLAN','r3plan','rsxplan.mac','RPBASE',L['CONFIG']),
         ('R3SLOTS','r3slots','rsxslots.mac','SUBASE',L['CONFIG']),
@@ -48,7 +45,7 @@ def build_rsx_components(contract: dict, assembler: Path, output: Path) -> dict:
         ('R3COMIT','r3commit','r3comit.mac','RCBASE',L['RSX']),
     ]
     gateway = bytes((0xC3, L['BDOS']&255, L['BDOS']>>8))
-    images = {'R3CACHE.RSX':cache};sizes = {'R3CACHE':len(cache)}
+    images = {};sizes = {}
     for name, stem, filename, symbol, address in specs:
         code = build(stem, filename, symbol, address)
         limit = 1024 if address == L['CONFIG'] else 1012
@@ -74,12 +71,23 @@ def build_rsx_components(contract: dict, assembler: Path, output: Path) -> dict:
     images['R3RESOL.RSX'] = resolver.ljust(1021,b'\0')+gateway
     package = pack_slots(images, identity)
     constants = assembly_constants(contract, binascii.crc_hqx(package[:512],0xFFFF))
+    from rsx_disk_cache import build_worker
+    cache,cache_bytes,relocations=build_worker(assembler,output,constants)
+    cache=cache[:8]+identity+cache[24:]
+    images['R3CACHE.RSX']=cache
+    sizes['R3CACHE']=cache_bytes
+    constants += f'BP_CACHE_CRC EQU 0{binascii.crc_hqx(cache,0xFFFF):04X}H\n'
     entry = build('r3entry','r3entry.mac','RVBASE',L['CONFIG'])
     text = (ROOT/'src/system/r3entry.mac').read_text(encoding='ascii')
     helper = text[text.index('RI_ENTRY:'):text.index('RI_END:')]
     reader = assemble(assembler, constants+'        INCLUDE layout.inc\n        INCLUDE profile.inc\n'
                       '        ASEG\n        ORG 0\n'+helper+'        END\n',
                       output/'rsxio.bin',output/'rsxio.lst',0)
+    import re
+    listing=(output/'r3entry.lst').read_text()
+    position=lambda label:int(re.search(r'^([0-9a-f]{4}).*\b'+label+':',listing,re.M|re.I)[1],16)
+    if position('PX_END')-position('PX_CODE')>512:
+        raise ValueError('checked scratch stager overlaps its private state')
     if len(entry)>1000 or len(reader)>512:
         raise ValueError('checked entry/reader overlaps private binding or scratch')
     images['R3ENTRY.RSX'] = bind_slot(entry.ljust(1021,b'\0')+gateway,identity)

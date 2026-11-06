@@ -15,8 +15,6 @@
 ; caller-owned RAM rather than in the phase that produced them.
 
 RCBASE          EQU     LY_RSX
-FLOPEN          EQU     LY_RSX-0400H
-FLNEXT          EQU     LY_RSX-0400H+3
 CFGB            EQU     LY_CFG
 
         CSEG
@@ -73,31 +71,6 @@ RC_VERSION:
         SBC     HL,DE
         JP      NC,RC_BAD
 
-        LD A,(LY_RSTA)
-        OR A
-        JR NZ,RCC_READY
-        LD HL,RCC_NAME
-        LD A,1
-        CALL LY_FILE
-        JP NZ,RC_BAD
-        LD HL,LY_RSX-0400H
-        CALL LY_FILE+3
-        JP NZ,RC_BAD
-        CALL LY_FILE+3
-        JP NZ,RC_BAD
-        IF BP_CHECKED EQ 1
-        LD HL,LY_RSX-0400H+1000
-        LD DE,LY_CID
-        CALL LY_CCMP
-        JP NZ,RC_BAD
-        LD DE,LY_RSX-0400H
-        LD BC,1024
-        CALL LY_CCRC
-        LD DE,BP_CACHE_CRC
-        OR A
-        SBC HL,DE
-        JP NZ,RC_BAD
-        ENDIF
 RCC_READY:
 ; Read the fixed 512-byte header after proving that complete transfer fits.
         LD      HL,(RC_LOW)
@@ -121,7 +94,8 @@ RCC_READY:
 RC_OLDSOURCE:
         POP HL
         LD A,2
-        CALL FLOPEN
+        CALL LY_FCB+33
+        DB 0
         JR Z,RCC_OPEN
         LD HL,(RC_REQ)
         LD A,(HL)
@@ -137,7 +111,8 @@ RC_OLDSOURCE:
         ADD HL,DE
         LD BC,0
         LD A,2
-        CALL FLOPEN
+        CALL LY_FCB+33
+        DB 0
         JP NZ,RC_BAD
 RCC_OPEN:
         LD HL,(RC_REQ)
@@ -145,7 +120,8 @@ RCC_OPEN:
         CP 3
         JR NZ,RCC_BEGIN
         PUSH HL
-        CALL LY_RSX-0400H+15
+        CALL LY_FCB+33
+        DB 15
         POP HL
         LD DE,18
         ADD HL,DE
@@ -333,7 +309,8 @@ RC_SPACE:
 
         LD HL,(RC_LOW)
         LD DE,(RC_FACTS)
-        CALL LY_RSX-0400H+9
+        CALL LY_FCB+33
+        DB 9
         JP NZ,RC_BAD
   ; Pass the public request and normalized candidate facts through caller-owned
   ; memory before the profile phase replaces this coordinator.
@@ -386,7 +363,8 @@ RC_FILL:
 
 RC_NEXT:
         LD      HL,(RC_DEST)
-        CALL    FLNEXT
+        CALL LY_FCB+33
+        DB 3
         RET     NZ
         LD      (RC_DEST),HL
 RC_OK:

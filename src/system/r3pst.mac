@@ -90,11 +90,9 @@ RT_CONT:                                ; restore prefetched resolver after comm
         OR      A
         RET     NZ
         LD      HL,(RT_IMAGE)
-        LD      DE,LY_RSX
-        LD      BC,03F4H
-        LDIR                            ; preserve the active manager return stack
-        XOR     A
-        RET
+        CALL LY_FCB+33
+        DB 30                         ; scratch cleanup and resolver restoration
+        RET                           ; discarded by the scratch continuation
 
         DS      RTBASE+0067H-$
 RT_IMAGE:       DW      0               ; prefetched resolver address

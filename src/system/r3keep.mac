@@ -12,8 +12,6 @@
 ; ********************************************************************************
 
 KEBASE          EQU     LY_RSX
-FLOPEN          EQU     LY_RSX-0400H
-FLNEXT          EQU     LY_RSX-0400H+3
 CFGB            EQU     LY_CFG
 RSTABLE         EQU     LY_RSTA+1
 
@@ -93,7 +91,8 @@ KE_NAME_BASE:
         JP      NZ,KE_BAD
         LD      HL,(KE_NAME)
         LD      A,1
-        CALL    FLOPEN
+        CALL LY_FCB+33
+        DB 0
         JP      NZ,KE_BAD
         CALL    KE_NEXT
         JP      NZ,KE_BAD
@@ -169,6 +168,10 @@ KE_HAVE_LEN:                            ; transfer through exact carrier end
         LD      (KE_NEED),HL
         CALL    KE_FILL
         JP      NZ,KE_BAD
+
+        CALL LY_FCB+33
+        DB 24
+        JP NZ,KE_BAD
 
 ; ================================================================================
 ; =                         Complete Carrier Validation                          =
@@ -304,7 +307,8 @@ KE_FILLED:
 
 KE_NEXT:                                ; read one 512-byte carrier record
         LD      HL,(KE_DEST)
-        CALL    FLNEXT
+        CALL LY_FCB+33
+        DB 3
         RET     NZ
         LD      (KE_DEST),HL
         RET

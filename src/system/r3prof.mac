@@ -12,8 +12,6 @@
 ; ********************************************************************************
 
 PFBASE          EQU     LY_RSX
-FLOPEN          EQU     LY_RSX-0400H
-FLNEXT          EQU     LY_RSX-0400H+3
 CFGB            EQU     LY_CFG
 RSTCOUNT        EQU     LY_RSTA
 RSTABLE         EQU     LY_RSTA+1
@@ -141,10 +139,12 @@ PF_SCAN:                                ; scan next retained profile member
         JP      Z,PF_BAD
         LD      HL,(PF_NAME)
         LD      A,1
-        CALL    FLOPEN
+        CALL LY_FCB+33
+        DB 0
         JP      NZ,PF_BAD
         LD      HL,(PF_SCRATCH)
-        CALL    FLNEXT
+        CALL LY_FCB+33
+        DB 3
         JP      NZ,PF_BAD
         CALL    PF_HEADER
         JP      NZ,PF_BAD
@@ -197,7 +197,7 @@ PF_CANDIDATE:                           ; append validated candidate facts
 
 PF_BUILD:                               ; construct planner request
         LD      HL,(PF_PREQ)
-        LD      DE,LY_RSX-0400H
+        LD      DE,LY_RSX
         LD      (HL),E
         INC     HL
         LD      (HL),D
@@ -403,7 +403,8 @@ PF_RELOCWORDS:                          ; static list and count
         LD      (HL),0CCH               ; completion marker
         INC HL
         LD DE,(PF_REQ)
-        CALL LY_RSX-0400H+21
+        CALL LY_FCB+33
+        DB 21
         LD (HL),C
         INC HL
         LD (HL),B

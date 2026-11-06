@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "date_taipei": "2026-11-06",
+  "platform_receipts": [
+    "cpmsim.json",
+    "model4.json"
+  ],
+  "same_qualified_default_artifacts": true,
+  "rebuilt_final_sources_match_receipts": true,
+  "resident_extra_per_provider": 256,
+  "resident_batchio_total": 1792,
+  "unloaded_tpa_change": 0,
+  "additional_default_disk_code_data": 853,
+  "default_entry_bytes": 766,
+  "checked_entry_bytes": 994,
+  "scratch_worker_bytes": 1468,
+  "temporary_staged_bytes": 2560,
+  "header_relocation_words": 200,
+  "checks": {
+    "disk_cache_transactions": "PASS (29 returning I/O failures, 3 precommit cleanup errors, postcommit deferred delete, header corruption, retries, workspaces and reclamation)",
+    "checked_scratch_stage": "PASS (destructive CFG reads, 5 staging failures, CRC rejection; controlled authentication stubs)",
+    "snapshot": "PASS",
+    "mover": "PASS",
+    "all_15_container_slots": "PASS",
+    "source_CLI": "PASS",
+    "worker_relocation": "PASS",
+    "shifted_layout_worker_external_relocation": "PASS (30 words)",
+    "component_input_tests": "PASS (13 tests)",
+    "component_registry_tests": "PASS (9 tests)",
+    "registry_projections": "PASS"
+  },
+  "not_claimed": [
+    "native checked-profile qualification",
+    "native ROM qualification",
+    "fatal non-returning BDOS error recovery",
+    "power-failure atomicity"
+  ],
+  "merged": false
+}

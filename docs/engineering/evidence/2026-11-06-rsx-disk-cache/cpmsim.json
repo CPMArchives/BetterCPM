@@ -1,0 +1,48 @@
+{
+  "status": "PASS",
+  "target": "z80pack",
+  "system_sha256": "08a06d4868e378dcfa0b4a6e6d9036a6650f2f34176a9d5ac305ce32c32f4dda",
+  "utilities_sha256": "b59d0b3d33a8a7aabf1551c4ea555327fff0f699f3f08490fde67da344ac8527",
+  "steps": [
+    "RSX LOAD B0:HELLO",
+    "RSX UNLOAD HELLO",
+    "RSX LOAD B0:HELLO",
+    "RSX UNLOAD HELLO",
+    "RSX LOAD B0:HELLO",
+    "RSX UNLOAD HELLO",
+    "RSX LOAD B0:HELLO",
+    "RSX UNLOAD HELLO",
+    "RSX LOAD B0:HELLO",
+    "RSX UNLOAD HELLO",
+    "RSX LOAD B0:HELLO",
+    "RSX UNLOAD HELLO",
+    "RSX LOAD B0:HELLO",
+    "RSX LOAD B3:STATEFUL",
+    "STATTST I",
+    "STATTST M",
+    "CACHERR",
+    "ERA B0:HELLO.RSX",
+    "ERA B3:STATEFUL.RSX",
+    "RSX UNLOAD HELLO",
+    "STATTST C",
+    "RSX UNLOAD STATEFUL",
+    "SUBMIT UBATCH"
+  ],
+  "batch": "B:XSUB B0:\r\nA:INPUT\r\nBATCHFULL\r\nERA B:BATCHIO.RSX\r\nA:MARK RSXOFFLINE\r\nRSX UNLOAD BATCHIO\r\nRSX LIST\r\n\u001a",
+  "originals_unchanged": true,
+  "audit": {
+    "carrier_removal": "PASS: B0 HELLO/BATCHIO and B3 STATEFUL absent",
+    "unexpected_diagnostics": "none",
+    "bounded_cache_files": [],
+    "cache_reuse_cycles": 6,
+    "native_returning_error_probe": "PASS: removed STATEFUL cache, set change rejected, live service intact, cache restored"
+  },
+  "artifacts": {
+    "build/system/R3PACK.RSX": "ec85509eae0017c56caefbebced04b6e75d31623b17843638f1b1d031e9bb299",
+    "build/system/R3CACHE.RSX": "1b70addf7fb2b1e8da7702cd6b634246151ecc3d0eb31a70d883a0ec6036b800",
+    "build/system/rsxloader.bin": "8027a337195a629eb0bd0adf3d4dc86efbff104b550c2bc421f68fd402639483",
+    "build/system/fileloader.bin": "b586f08b5cc4e8deafed70e33635dcbc7d4ba3959366da972d8b94cadef0b4e5",
+    "build/utilities/RSX.COM": "309d214ce33cd640b5486d421aa20906b5d3512aeb69fbb867c0ce733291edef",
+    "build/utilities/XSUB.COM": "f358401e2ead37445e9b81ed98589d8d24c2fd4e5481a00992b15ee75ff221dc"
+  }
+}

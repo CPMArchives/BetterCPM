@@ -10,8 +10,6 @@
 ; ********************************************************************************
 
 KPBASE          EQU     LY_RSX
-FLOPEN          EQU     LY_FILE
-FLNEXT          EQU     LY_FILE+3
 CFGB            EQU     LY_CFG
 
         CSEG
@@ -322,7 +320,8 @@ KP_RELOCWORDS:                          ; static-list address and count
         LD      (HL),0CCH
         INC HL
         PUSH HL
-        CALL LY_RSX-0400H+15
+        CALL LY_FCB+33
+        DB 15
         POP HL
         LD (HL),C
         INC HL

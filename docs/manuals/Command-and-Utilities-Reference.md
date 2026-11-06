@@ -8093,7 +8093,7 @@ The activation command is:
 XSUB
 ```
 
-Place it before the program to be automated. `XSUB.COM` and its matched `BATCHIO.RSX` are supplied on the **Utilities Disk**. At A0, invoke `B0:XSUB B0:` to use that companion directly. An explicit DU restricts lookup to that location; without one, XSUB searches the current DU, then A0. The COM lookup location does not implicitly select the companion location. No all-drive scan is performed. Keep matching `R3PACK.RSX` and `R3CACHE.RSX` on A0. Once loaded, BATCHIO no longer requires its original carrier.
+Place it before the program to be automated. `XSUB.COM` and its matched `BATCHIO.RSX` are supplied on the **Utilities Disk**. At A0, invoke `B0:XSUB B0:` to use that companion directly. An explicit DU restricts lookup to that location; without one, XSUB searches the current DU, then A0. The COM lookup location does not implicitly select the companion location. No all-drive scan is performed. Keep matching `R3PACK.RSX` and `R3CACHE.RSX` on A0. Once loaded, BATCHIO no longer requires its original carrier. The disk-cache update needs writable A0 space when installing, and readable A0 cache files for later RSX set changes. Its five `$$RSX00.RSC` through `$$RSX04.RSC` names are reserved; do not remove active cache files. Cleanup reclaims them automatically when modules are unloaded. Ordinary warm boots do not read them.
 
 Before running the example, make `ED.COM`, `TYPE.COM`, and `SUBMIT.COM` available on the command search path, mount Utilities as B0, and retain matching `R3PACK.RSX`/`R3CACHE.RSX` runtimes in A0. Keep A0 writable for the shared queue, and use a writable working drive/user where `XDEMO.TXT` does not already exist.
 

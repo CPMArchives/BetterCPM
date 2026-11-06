@@ -229,6 +229,8 @@ RV_HIGHOK:                              ; use the effective workspace ceiling
         OR      A
         SBC     HL,DE
         JP      NC,RV_BAD
+        CALL PX_STAGE
+        JP NZ,RV_BAD
         IF BP_CHECKED EQ 1
         LD      A,(RSTCOUNT)
         OR      A
@@ -248,14 +250,377 @@ RV_NOBACK:
         ADD     HL,BC
         PUSH    HL
         EX      DE,HL
-        LD      HL,RI_ENTRY
-        LD      BC,RI_END-RI_ENTRY
+        LD      HL,(PX_HEADER)
+        LD      BC,0800H
+        ADD     HL,BC
+        LD      BC,0200H
         LDIR
         POP     HL
         LD      DE,RV_HREQ
         LD      A,1
         JP      (HL)
 
+        IF BP_CHECKED EQ 1
+; Checked entry executes in CFG. Stage from caller RAM and restore CFG before
+; returning: physical reads are allowed to overwrite the complete entry image.
+PX_STAGE:
+        PUSH IX
+        PUSH IY
+        LD HL,(RV_HREQ+2)
+        PUSH HL
+        EX DE,HL
+        LD HL,LY_CFG
+        LD BC,0400H
+        LDIR
+        POP HL
+        PUSH HL
+        LD DE,0400H
+        ADD HL,DE
+        PUSH HL
+        EX DE,HL
+        LD HL,PX_CODE
+        LD BC,PX_END-PX_CODE
+        LDIR
+        POP HL
+        PUSH HL
+        LD DE,PX_EXIT-PX_CODE
+        ADD HL,DE
+        PUSH HL
+        POP IY
+        POP HL
+        LD DE,0200H
+        ADD HL,DE
+        PUSH HL
+        POP IX
+        POP DE
+        LD (IX+2),E
+        LD (IX+3),D
+        LD HL,(RV_REQ)
+        LD (IX+0),L
+        LD (IX+1),H
+        PUSH IX
+        POP DE
+        LD HL,12
+        ADD HL,DE
+        EX DE,HL
+        LD HL,PX_DATA
+        LD BC,12
+        LDIR
+        PUSH IX
+        POP HL
+        LD DE,0200H
+        OR A
+        SBC HL,DE
+        LD DE,PX_BACK
+        PUSH DE
+        JP (HL)
+PX_BACK:
+        POP IY
+        POP IX
+        RET
+PX_DATA: DB 'R3DCR3CACHE '
+PX_HEADER: DW 0
+PX_CODE:
+        LD L,(IX+0)
+        LD H,(IX+1)
+        LD DE,14
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        LD DE,255
+        ADD HL,DE
+        JR NC,CK_01
+        LD A,255
+        JP (IY)
+CK_01:  LD L,0
+        LD (IX+4),L
+        LD (IX+5),H
+        LD DE,0A00H
+        ADD HL,DE
+        JR NC,CK_02
+        LD A,255
+        JP (IY)
+CK_02:  PUSH HL
+        LD E,(IX+2)
+        LD D,(IX+3)
+        OR A
+        SBC HL,DE
+        POP HL
+        JR C,CK_03
+        LD A,255
+        JP (IY)
+CK_03:  EX DE,HL
+        LD L,(IX+0)
+        LD H,(IX+1)
+        LD BC,14
+        ADD HL,BC
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        PUSH IX
+        POP HL
+        LD DE,16
+        ADD HL,DE
+        LD A,1
+        CALL LY_FILE
+        JR Z,CK_04
+        LD A,255
+        JP (IY)
+CK_04:  LD L,(IX+4)
+        LD H,(IX+5)
+        LD B,5
+CK_READ:
+        PUSH BC
+        CALL LY_FILE+3
+        POP BC
+        JR Z,CK_05
+        LD A,255
+        JP (IY)
+CK_05:  DJNZ CK_READ
+        ; Authenticate the whole matched private worker before using its
+        ; relocation metadata; unlike the unchecked path no signature scan
+        ; is needed in addition to the identity and expected CRC.
+        LD L,(IX+4)
+        LD H,(IX+5)
+        LD DE,8
+        ADD HL,DE
+        LD DE,LY_CID
+        CALL LY_CCMP
+        JR Z,CK_08
+        LD A,255
+        JP (IY)
+CK_08:  LD E,(IX+4)
+        LD D,(IX+5)
+        LD BC,2560
+        CALL LY_CCRC
+        LD DE,BP_CACHE_CRC
+        OR A
+        SBC HL,DE
+        JR Z,CK_09
+        LD A,255
+        JP (IY)
+CK_09:  LD L,(IX+4)
+        LD H,(IX+5)
+        LD DE,4
+        ADD HL,DE
+        LD A,(HL)
+        LD (IX+10),A
+        LD L,(IX+4)
+        LD H,(IX+5)
+        LD DE,512
+        ADD HL,DE
+        LD (IX+6),L
+        LD (IX+7),H
+        LD DE,01000H
+        OR A
+        SBC HL,DE
+        LD (IX+8),L
+        LD (IX+9),H
+        LD L,(IX+4)
+        LD H,(IX+5)
+        LD DE,32
+        ADD HL,DE
+CK_LOOP:
+        LD A,(IX+10)
+        OR A
+        JR Z,CK_DONE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        INC HL
+        PUSH HL
+        LD HL,1535
+        OR A
+        SBC HL,DE
+        POP HL
+        JR C,CK_BAD
+        JR Z,CK_BAD
+        PUSH HL
+        LD L,(IX+6)
+        LD H,(IX+7)
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        PUSH HL
+        EX DE,HL
+        LD C,(IX+8)
+        LD B,(IX+9)
+        ADD HL,BC
+        EX DE,HL
+        POP HL
+        LD (HL),D
+        DEC HL
+        LD (HL),E
+        POP HL
+        DEC (IX+10)
+        JR CK_LOOP
+CK_BAD: LD A,255
+        JP (IY)
+CK_DONE:
+        LD L,(IX+6)
+        LD H,(IX+7)
+        LD DE,33
+        ADD HL,DE
+        LD (LY_FCB+34),HL
+        LD A,0C3H
+        LD (LY_FCB+33),A
+        CALL LY_FCB+33
+        DB 27
+PX_EXIT:
+        PUSH AF
+        LD L,(IX+2)
+        LD H,(IX+3)
+        LD DE,LY_CFG
+        LD BC,0400H
+        LDIR
+        LD L,(IX+4)
+        LD H,(IX+5)
+        LD (PX_HEADER),HL
+        POP AF
+        OR A
+        RET
+PX_END:
+        ELSE
+; Reserve a page-aligned, caller-owned 2.5KiB worker below overlay scratch.
+PX_STAGE:
+        LD HL,(RV_REQ)
+        LD DE,14
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        LD DE,255
+        ADD HL,DE
+        JP C,PX_BAD
+        LD L,0
+        LD (PX_HEADER),HL
+        LD DE,0A00H
+        ADD HL,DE
+        JP C,PX_BAD
+        PUSH HL
+        LD DE,(RV_HREQ+2)
+        OR A
+        SBC HL,DE
+        POP HL
+        JP NC,PX_BAD
+        EX DE,HL
+        LD HL,(RV_REQ)
+        LD BC,14
+        ADD HL,BC
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        LD HL,PX_FILE
+        LD A,1
+        CALL LY_FILE
+        JP NZ,PX_BAD
+        LD HL,(PX_HEADER)
+        LD B,5
+PX_READ:
+        PUSH BC
+        CALL LY_FILE+3
+        POP BC
+        JP NZ,PX_BAD
+        DJNZ PX_READ
+        LD HL,(PX_HEADER)
+        LD DE,PX_MAGIC
+        LD B,4
+PX_CHECK:
+        LD A,(DE)
+        CP (HL)
+        JP NZ,PX_BAD
+        INC HL
+        INC DE
+        DJNZ PX_CHECK
+        LD A,(HL)
+        CP 241
+        JP NC,PX_BAD
+        LD (PX_COUNT),A
+        IF BP_CHECKED EQ 1
+        LD HL,(PX_HEADER)
+        LD DE,8
+        ADD HL,DE
+        LD DE,LY_CID
+        CALL LY_CCMP
+        JP NZ,PX_BAD
+        LD DE,(PX_HEADER)
+        LD BC,2560
+        CALL LY_CCRC
+        LD DE,BP_CACHE_CRC
+        OR A
+        SBC HL,DE
+        JP NZ,PX_BAD
+        ENDIF
+        LD HL,(PX_HEADER)
+        LD DE,512
+        ADD HL,DE
+        LD (PX_BASE),HL
+        LD DE,01000H
+        OR A
+        SBC HL,DE
+        LD (PX_DELTA),HL
+        LD HL,(PX_HEADER)
+        LD DE,32
+        ADD HL,DE
+PX_RELOC:
+        LD A,(PX_COUNT)
+        OR A
+        JR Z,PX_READY
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        INC HL
+        PUSH HL
+        LD HL,1535
+        OR A
+        SBC HL,DE
+        POP HL
+        JP C,PX_BAD
+        JP Z,PX_BAD
+        PUSH HL
+        LD HL,(PX_BASE)
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        PUSH HL
+        EX DE,HL
+        LD DE,(PX_DELTA)
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        LD (HL),D
+        DEC HL
+        LD (HL),E
+        POP HL
+        LD A,(PX_COUNT)
+        DEC A
+        LD (PX_COUNT),A
+        JR PX_RELOC
+PX_READY:
+        LD HL,(PX_BASE)
+        LD DE,33
+        ADD HL,DE
+        LD (LY_FCB+34),HL
+        LD A,0C3H
+        LD (LY_FCB+33),A
+        CALL LY_FCB+33
+        DB 27                           ; cleanup before candidate preparation
+        RET
+PX_BAD: LD A,255
+        OR A
+        RET
+PX_FILE: DB 'R3CACHE '
+PX_MAGIC: DB 'R3DC'
+PX_HEADER: DW 0
+PX_BASE: DW 0
+PX_DELTA: DW 0
+PX_COUNT: DB 0
+        ENDIF
 RV_ZERO:                                ; return an idempotent miss or no-op
         XOR     A
 
@@ -341,8 +706,36 @@ RV_LOCATION:
         LD DE,4
         ADD HL,DE
         LD A,1
-        CALL LY_RSX-0400H
-        CALL LY_RSX-0400H+15
+        CALL RV_FIND
+        LD B,A
+        LD HL,(LY_SYS+084H)
+PX_CHAIN:
+        LD A,B
+        OR A
+        JR Z,PX_FOUND
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        LD DE,8
+        OR A
+        SBC HL,DE
+        DJNZ PX_CHAIN
+PX_FOUND:
+        PUSH HL
+        LD DE,6
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        POP HL
+        ADD HL,DE
+        LD DE,4
+        OR A
+        SBC HL,DE
+        LD C,(HL)
+        INC HL
+        LD B,(HL)
         POP HL
         LD DE,18
         ADD HL,DE
@@ -368,6 +761,7 @@ RV_HREQ:                                ; replacement-overlay handoff request
 ; Position-independent overlay reader copied to scratch+0400H. HL is its
 ; runtime entry address, DE is a slot descriptor (A=0) or handoff request (A=1).
 ; Scratch holds a complete image, code, private state/stack, and a saved CFG.
+        IF 0                            ; built into the staged worker file
 RI_ENTRY:                               ; enter position-independent staged reader
         PUSH    IX
         POP     BC
@@ -675,6 +1069,7 @@ RI_PACK: DB 'R3PACK  '
 RI_ID: DB BP_ID0,BP_ID1,BP_ID2,BP_ID3,BP_ID4,BP_ID5,BP_ID6,BP_ID7,BP_ID8,BP_ID9,BP_ID10,BP_ID11,BP_ID12,BP_ID13,BP_ID14,BP_ID15
         ENDIF
 RI_END:                                 ; end the copied reader code
+        ENDIF
 
         .DEPHASE
         END
