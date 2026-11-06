@@ -1,0 +1,25 @@
+{
+  "target": "prepare-model4",
+  "fdb_sha256": "0e321eb80c27c7284dc983cdd82368b499a5131cee91b3baa68d3544bd322112",
+  "system_sha256": "303fcd2e6d495d32d743d8caa1eb8b987be3df09904f2f24d8d01d07b8987f55",
+  "samples": {
+    "synthetic-ampro400s.dsk": {
+      "status": "prepared",
+      "guest_commands": [
+        "RSX LOAD M4SCRN",
+        "RSX LOAD ADM3A",
+        "CLS",
+        "B:",
+        "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"Ampro LB 80T SS 5x1024\"",
+        "A:",
+        "DIR C:",
+        "COPY C:*.* B:",
+        "COPY B:PROBE.BIN C:FILL.BIN",
+        "COPY C:FILL.BIN B:RETURN.BIN",
+        "TYPE CPCEND.TXT"
+      ],
+      "fixture_origin": "synthetic: libdsk ampro400s, deterministic payloads, vendor SKW2 order"
+    }
+  },
+  "diskdefs_sha256": "f6c82693cbbed0eeefa834bf6721e6ea31e7233f206df34cd67f5f7fd59d5128"
+}

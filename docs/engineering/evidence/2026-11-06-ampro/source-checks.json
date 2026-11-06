@@ -1,0 +1,17 @@
+[
+  {
+    "member": "SOURCE1.zip/ad-3-3.asm",
+    "sha256": "3d0d147999da1ed7238ac1718b5d10c0dc7beedaf2c989856d5378e9a872e70e",
+    "cpmtools_extraction_matches_archive_file": true
+  },
+  {
+    "member": "SOURCE3.zip/bios-1-6.asm",
+    "sha256": "3271191941fbac392aa7343a0823e304c65008593aff646c0072dbb33e7e68f2",
+    "cpmtools_extraction_matches_archive_file": true
+  },
+  {
+    "member": "SOURCE3.zip/bios-3-8.asm",
+    "sha256": "10219772013319ed501be39868837fb69fd8d2406c451dc9ab86df2980398e0e",
+    "cpmtools_extraction_matches_archive_file": true
+  }
+]

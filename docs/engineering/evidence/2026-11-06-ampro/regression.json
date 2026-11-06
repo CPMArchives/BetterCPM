@@ -1,0 +1,12 @@
+{
+  "cpc": {
+    "samples": 4,
+    "all_sample_receipts_match": true,
+    "result_sha256": "f1bc575cd10274e02fba7e3c85c4b24ff854a229f7030c381afc95607e3b1f9a"
+  },
+  "pcw": {
+    "samples": 1,
+    "all_sample_receipts_match": true,
+    "result_sha256": "923ca98666dd58d907bbb272fa180868e9795f3b16a8dcbf3839e3530a23518f"
+  }
+}

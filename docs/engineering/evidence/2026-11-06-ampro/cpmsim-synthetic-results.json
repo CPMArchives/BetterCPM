@@ -1,0 +1,46 @@
+{
+  "target": "cpmsim",
+  "fdb_sha256": "0e321eb80c27c7284dc983cdd82368b499a5131cee91b3baa68d3544bd322112",
+  "system_sha256": "9242b16825c92328450f0848da8844ef1f9fcd72570dc895b4e5a2e587e0a457",
+  "samples": {
+    "synthetic-ampro400s.dsk": {
+      "status": "pass",
+      "raw_sha256": "0c79e590faa1b103f0f6364a5416bc0a1719da2bd54896aa7e2767074bd233c9",
+      "formatted_cylinders": 80,
+      "rotation": [
+        1,
+        4,
+        2,
+        5,
+        3
+      ],
+      "original_files": {
+        "extent.bin": "724100f37944c514ee6dd96582c2800346b00280216e3eb0bccd3400665f2a3e",
+        "sector.bin": "9a1a8c2cb927cf27f2d8d48e30c63d30f5a555ff4c113b7a493ddb332ab1967e",
+        "small.bin": "7fe33ce50a6d3b7cbbf311a4f8f17a68952c13429b22852d7f1ba14e48b609ef"
+      },
+      "fill_bytes": 356352,
+      "fill_sha256": "59c31e6017a8de8d07a0308947f1266918e22d74f82fda0a2f3ab6da6a2c318d",
+      "highest_block_written": 194,
+      "written_edsk_sha256": "31ce1f56fbb13ae489c4e8306b244a4bf62ff7e2a44aed4c2c4847487f6b43e0",
+      "reserved_bytes_preserved": 10240,
+      "guest_commands": [
+        "A:CONFIG /PHYSICAL=1 /TRACKS=80 /SIDES=1 /STEP=6",
+        "A:CONFIG /PHYSICAL=2 /TRACKS=80 /SIDES=2 /STEP=6",
+        "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"MM 80T DS DATA\"",
+        "A:CONFIG /PHYSICAL=3 /TRACKS=80 /SIDES=2 /STEP=6",
+        "A:CONFIG /LOGICAL=D /PHYSICAL=3 /FORMAT=\"MM 80T DS DATA\"",
+        "C:",
+        "A:CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT=\"Ampro LB 80T SS 5x1024\"",
+        "A:",
+        "DIR B:",
+        "COPY B:*.* C:",
+        "COPY C:PROBE.BIN B:FILL.BIN",
+        "COPY B:FILL.BIN D:RETURN.BIN"
+      ],
+      "fixture_origin": "synthetic: libdsk ampro400s, deterministic payloads, vendor SKW2 order"
+    }
+  },
+  "diskdefs_sha256": "f6c82693cbbed0eeefa834bf6721e6ea31e7233f206df34cd67f5f7fd59d5128",
+  "emulator_sha256": "0f6b256cd6beea2ab7bf0eab8a9cc2a5241ed772408e811150c3f6e0f5cff4e8"
+}
