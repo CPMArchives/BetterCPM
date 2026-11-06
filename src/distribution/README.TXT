@@ -5,8 +5,8 @@ Welcome to BetterCP/M, a CP/M-compatible operating system for Z80
 computers. It keeps the familiar CP/M 2.2 programming model while adding
 shared file-selection syntax, loadable extensions and modern build tools.
 
-This is a development System Disk for the forthcoming 1.0 release.
-Utility completion and final release qualification are still in progress.
+This is the BetterCP/M 1.0.1 System Disk.
+See the accompanying release notes for changes and known limitations.
 The current targets are z80pack/cpmsim and the TRS-80 Model 4/trs80gp.
 
 GETTING STARTED

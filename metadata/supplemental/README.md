@@ -1,5 +1,16 @@
 # Supplemental disk formats
 
+## Release 1.0.1
+
+The release supplement is [1.0.1/SUPPDISK.FDF](1.0.1/SUPPDISK.FDF) and
+[1.0.1/SUPPDISK.FDB](1.0.1/SUPPDISK.FDB): CPCSYS, CPCDATA, PCW and BW14.
+Importing these four into the standard 108-entry catalogue gives 112 entries.
+It retains the existing 32-byte checksum capacity and BIOS layout. ATONSS,
+ATONDS and PT2SS require expanded checksum storage; that expansion is deferred
+to 1.1 consideration. They are not supplied on the 1.0.1 Utilities disks.
+
+## Full experimental collection and qualification history
+
 Use [SUPPDISK.FDF](SUPPDISK.FDF) as the editable source and [SUPPDISK.FDB](SUPPDISK.FDB) as the compiled catalogue. Each row gives the scope of the guest test that admitted the entry.
 
 | ID | CONFIG display name | Qualified for | Pending |
@@ -33,7 +44,8 @@ python3 tools/fdfcomp.py metadata/supplemental/SUPPDISK.FDF metadata/supplementa
 
 Pristine images, expected file hashes, archive identities, and collection admission instructions are indexed in the [disk-image reference collection](../disk-image-reference/README.md).
 
-ATON/Lifeboat requires the updated RAM BIOS and CONFIG together. The required
+ATON/Lifeboat requires the updated RAM BIOS and CONFIG together. This experimental RAM configuration is not selected for 1.0.1;
+ATON/Lifeboat and Pickles & Trout are deferred to 1.1 consideration. The required
 boot-surface extension prevents older catalogue readers from binding these
 entries; the capability query prevents a new utility from applying them to an
 older BIOS. Use the [Model II adapter and qualification procedure](../../docs/engineering/evidence/2026-11-06-model2/INTERCHANGE.md).

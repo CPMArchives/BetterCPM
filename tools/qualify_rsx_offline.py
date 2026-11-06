@@ -85,7 +85,7 @@ def main():
     if native:
         start=SYSTEM_FIRST_LOGICAL_INDEX*512+resident_offset
         old=bytes(payload[start:start+len(stream)])
-        assert sum(a!=b for a,b in zip(old,stream))<=1,'unexpected resident stream baseline'
+        assert bytes(old)==stream,'release stream differs from the delivered System'
         payload[start:start+len(stream)]=stream
     else:
         old=bytearray()
@@ -94,7 +94,8 @@ def main():
             record,byte=divmod(logical,128);track,within=divmod(record,fmt.spt)
             at=track*fmt.raw_track_bytes+mapping[within]*128+byte
             old.append(payload[at]);payload[at]=value
-        assert sum(a!=b for a,b in zip(old,stream))<=1,'unexpected resident stream baseline'
+        assert bytes(old)==stream,'release stream differs from the delivered System'
+    assert bytes(payload)==(extract_raw(original) if native else original),'release qualification must not replace System code'
     raw.write_bytes(payload)
     defs=('diskdef bettercpm-default\n seclen 512\n tracks 160\n sectrk 10\n blocksize 2048\n maxdir 128\n skew 1\n boottrk 4\n os 2.2\nend\n' if native else disk_definition(select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT)))
     (w/'diskdefs').write_text(defs)

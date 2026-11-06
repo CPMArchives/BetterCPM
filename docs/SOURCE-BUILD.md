@@ -2,9 +2,32 @@
 
 This is the build entry point supporting all four manuals. It describes reconstructing the locked 1.0 software from its matching Source download, native development and the separate documentation build. Original prose is CC BY 4.0; original reusable code examples are GPL-2.0-or-later. See [licensing](LICENSING.md).
 
-## Choose the right source
+## 1.0.1 source and reconstruction
 
-Use `BetterCPM-1.0-Source.zip`, whose exact identity is recorded in the [five-package lock](releases/non-documentation-lock-1.0/LOCK.json). Preserve it unchanged and extract a private working copy. Its software source revision is `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`; the qualification merge contains later receipts, not replacement binaries. Automatic GitHub source downloads omit the packaged dependency tar. Current main includes FDB 1.01 development and cannot be substituted while claiming exact release reconstruction.
+Use the matching `BetterCPM-1.0.1-Source.zip` and its `SOURCE-IDENTITY.json`,
+`SOURCE-FILES.json` and release checksums. Package version 1.0.1 does not reset
+individual component versions/revisions or replace the Core OS 1.0 milestone.
+The [release package specification](releases/1.0.1-RELEASE-PACKAGES.md) and
+[release notes](releases/RELEASE-NOTES-1.0.1.md) describe the six downloads,
+matched RSX runtime, PIP selectors and optional four-format supplement.
+
+The source tree remains `source/BetterCPM/`; the pinned offline runtime tar is
+under `source/dependencies/`. Reconstruct the runtime as below, use fresh build
+work/output directories, and follow the current [cpmsim host launch check](platform/CPMSIM-INSTALLATION.md#v101-source-launch-check).
+Build both Systems from the same committed source and rebuild Utilities with
+`tools/build_utilities_disk.py --build`. Exact reconstructed identities and
+package membership must be checked against the 1.0.1 receipts. The supplement
+stays separate from the standard 108-entry catalogue.
+
+Release assembly explicitly selects `tools/package_release_candidates.py
+--version 1.0.1` with matching System, Utilities, runtime and inventory receipts.
+The default 1.0 assembly still refuses the five-package lock. A successful
+build alone is not guest qualification, a tag, or publication. Preserve the
+existing 1.0 downloads and their historical evidence.
+
+## Reconstructing the locked 1.0 source
+
+Use `BetterCPM-1.0-Source.zip`, whose exact identity is recorded in the [five-package lock](releases/non-documentation-lock-1.0/LOCK.json). Preserve it unchanged and extract a private working copy. Its software source revision is `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`; the qualification merge contains later receipts, not replacement binaries. Automatic GitHub source downloads omit the packaged dependency tar. A moving main branch cannot be substituted while claiming exact reconstruction of a pinned release.
 
 From the extracted root, `source/BetterCPM/` is the software source tree. `source/dependencies/` contains the pinned offline cpmsim tar and instructions; `source/native-companions/` contains required host tool/source companions. Preserve `SOURCE-IDENTITY.json`, `SOURCE-FILES.json`, notices and internal checksums. Legacy `-candidate` roots/status fields are frozen build records; do not rename members or rewrite those records to make them appear current.
 

@@ -778,12 +778,13 @@
       "profile": "default",
       "build_mode": "cross",
       "configuration": {
-        "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment",
+        "z80pack_distribution_profile": "Existing 32-byte checksum vectors; no BIOS headroom expansion"
       },
       "files": [
         "metadata/DISK.FDF",
-        "metadata/release-formats.fdf",
         "metadata/mm-builtin-formats.json",
+        "metadata/release-formats.fdf",
         "src/bdos/dirsvc.mac",
         "src/bdos/dispatch.mac",
         "src/bdos/unified.mac",
@@ -895,6 +896,7 @@
         "src/utilities/disk/sysgen.inc",
         "tools/build_config.py",
         "tools/build_cpx_module.py",
+        "tools/build_distribution.py",
         "tools/build_profiles.py",
         "tools/checked_build_contract.py",
         "tools/checked_carriers.py",
@@ -3896,12 +3898,13 @@
       "profile": "default",
       "build_mode": "cross",
       "configuration": {
-        "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment",
+        "z80pack_distribution_profile": "Existing 32-byte checksum vectors; no BIOS headroom expansion"
       },
       "files": [
         "metadata/DISK.FDF",
-        "metadata/release-formats.fdf",
         "metadata/mm-builtin-formats.json",
+        "metadata/release-formats.fdf",
         "src/bdos/dirsvc.mac",
         "src/bdos/dispatch.mac",
         "src/bdos/unified.mac",
@@ -3985,9 +3988,11 @@
         "src/utilities/common/private-utility.inc",
         "src/utilities/common/rcpselect.inc",
         "src/utilities/common/version.inc",
+        "tools/bios_implementation.py",
         "tools/build_bios.py",
         "tools/build_ccp.py",
         "tools/build_cpx_module.py",
+        "tools/build_distribution.py",
         "tools/build_fdf_catalog.py",
         "tools/build_montezuma_extended_790k.py",
         "tools/build_profiles.py",
