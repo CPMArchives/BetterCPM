@@ -107,6 +107,9 @@ PC_CSKIP:
         LD A,(PD_ACTIVE)
         OR A
         JR NZ,PC_CNEXT
+        LD A,(PS_CHECK)
+        OR A
+        JR NZ,PC_CNEXT
         LD A,(OP_DATA+2)
         CP (HL)
         JR NZ,PC_CNEXT

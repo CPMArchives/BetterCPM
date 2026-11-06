@@ -1552,3 +1552,12 @@ Read-only destination replacement uses the shared one-key confirmation binding,
 retaining one cooked read, historical case folding/echo, Y-only approval,
 non-Y decline, W bypass and staged-file cleanup. No PIP command/data-input
 semantics change. See [qualification](PIP%20Shared%20Input%20Qualification.md).
+
+
+## Expanded source DU selector implementation
+
+PIP now uses the shared `duselect.inc` parser/iterator for bracketed source locations in a single file-source to bare destination-DU copy. `pipparse.inc` counts nested selector brackets; `pipselect.inc` distinguishes leading DU scopes from trailing historical parameters and plans up to 64 admitted files before invoking the existing transfer engine. The plan occupies unused `OP_DATA` operand slots (16 bytes per file: drive, user, 11-byte name, three attribute bytes); concatenation cannot use this path. Exact-file and device destinations and selector destinations are rejected. G parameter presence, including G0, is rejected on selector sources.
+
+Shared DU iteration removes repeated locations and establishes canonical drive/user order. Directory enumeration admits the first extent group once and applies R/SYS filtering before detecting duplicate destination names. Distinct sources mapping to the same name reject the entire selection, regardless of W. Existing destination replacement retains the DRI transaction: writable replacement is unconditional; read-only replacement prompts unless W applies. All selected names, self/staging aliases, domain/parameter checks, destination-drive protection and read-only staging checks precede transfer-file mutations. Ordinary errors retain A0 SUBMIT cancellation; later transfer failures are not multi-file rollback. BDOS search termination cannot distinguish all disk failures from no matches.
+
+This implementation supersedes the historical recommendation above to defer selector sets/ranges. It does not add COPY attribute predicates, backup switches or COPY-style collision prompts. User-facing rules are in the Command and Utilities Reference, PIP / Expanded source DU selectors. Regression coverage is in `tools/test_pip_selectors.py`; the existing PIP disk/device/formatting tests remain applicable. `tools/build_native_pip.py` checks native/cross byte parity.

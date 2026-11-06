@@ -1597,7 +1597,7 @@ You should examine both files before deciding whether to delete the original man
 
 #### Description
 
-Transfer files and character streams using BetterCP/M's DRI-compatible Peripheral Interchange Program. PIP.COM is supplied on both System disks. It retains destination-first syntax and historical bracket parameters, adding simple DU locations and utility queries.
+Transfer files and character streams using BetterCP/M's DRI-compatible Peripheral Interchange Program. PIP.COM is supplied on both System disks. It retains destination-first syntax and historical bracket parameters, adding simple DU locations, expanded source DU selectors and utility queries.
 
 #### General Form
 
@@ -1611,6 +1611,8 @@ PIP destination=source[,source...]
 | Task | Invocation |
 | --- | --- |
 | Copy program files | `PIP D:=A:*.COM` |
+| Copy from all source users | `PIP A4:=B[-]:*.COM` |
+| Copy from selected drives/users | `PIP A4:=[B[1-3],C7]:*.COM[V]` |
 | Join text files | `PIP D:ALL.TXT=D:ONE.TXT,D:TWO.TXT` |
 | Copy with verification | `PIP D:BACKUP.COM=A:PROGRAM.COM[V]` |
 
@@ -1630,6 +1632,33 @@ PIP LST:=D:REPORT.TXT
 
 An exact destination filename can rename an exact source while copying. A drive destination with wildcard source retains each matching filename. Concatenation writes sources in the stated order. Distinguish object files from text before applying transformations: ordinary text uses 1Ah as end of text; COM files select object handling automatically. CP/M physical record padding is not a host byte-length field.
 
+
+##### Expanded source DU selectors
+
+For a file copy into a single destination DU, PIP accepts the shared [D.4 expanded DU grammar](#d4-extended-driveuser-selectors) on its one source operand. Lists, ranges (including descending and open-ended ranges), all-user `[-]`, compound drive/user scopes and inherited locations have the same meaning as in COPY and DIR. Repeated locations are visited once, in drive-major, user-minor order. Drives must be configured; this implementation accepts A–D and users 0–31.
+
+```text
+PIP A4:=B[-]:*.COM
+PIP A4:=B[1,3,8-10]:*.COM[RV]
+PIP A4:=[B[0-3],C7]:*.COM[V]
+```
+
+The first copies matching COM files from every user area on B into A4, preserving filenames. `[RV]` after the filename includes system files and verifies each copy; it is distinct from the location brackets before the colon. An exact filename, such as `B[1-3]:README.TXT`, can also select files across users. `[Gn]` is invalid on a selector source, including `[G0]`; put all user selection before the colon.
+
+The destination must use a simple location naming one DU, such as `A4:` or `A:` (the caller's user on A). A selector destination is invalid even when it names only one DU. Expanded source selectors are not accepted for a renamed/exact-file destination, concatenation or device transfers. Those forms retain their historical operand rules.
+
+**Duplicate destination filenames.** PIP enumerates the complete eligible selection before copying. If distinct selected source files have the same 8.3 name and would therefore produce the same destination filename, it rejects the whole selection, identifies both source DUs and names, and reports `No files copied.` For example, selecting both `B0:FOO.COM` and `B7:FOO.COM` produces:
+
+```text
+DUPLICATE DESTINATION NAME: B7:FOO.COM conflicts with B0:FOO.COM
+No files copied.
+```
+
+`[W]` does not bypass this check. Repeating the same DU in a selector does not itself create a conflict. System files excluded without `[R]` do not participate in the selection or its duplicate-name check.
+
+This rule differs from finding a destination that already exists before the command: PIP retains its normal replacement behavior. An existing writable destination is replaced without asking. A read-only destination requires confirmation unless `[W]` is supplied. The original destination remains until its replacement has transferred, optionally verified and closed successfully.
+
+A selector operation accepts at most **64 matched source files**. Duplicate names, too many matches, a selected source that would copy onto itself, a `.$$$` destination-name conflict, unavailable drive letters, unsupported parameters, a read-only destination drive or an existing read-only staging file fail before any transfer-file mutation. Writable staging files follow normal PIP replacement behavior. Ordinary PIP errors still cancel the A0 SUBMIT queue. Preflight does not reserve media or directory contents: keep disks in place and do not change files during the operation. Later I/O failures can leave earlier copies completed; the operation is not a multi-file transaction. A directory search ending without matches cannot distinguish every media failure from an empty location.
 
 ##### Locations and bracket parameters
 
@@ -10740,7 +10769,7 @@ Simple DU locations identify drive and/or user; selectors can identify sets of D
 | DIR, ERA, REN, TYPE, COPY and resident MOVE | Shared selector and attribute forms where detailed in the entry. COPY/MOVE destinations identify a single DU; mapping and protection rules still apply. |
 | SEARCH, checksums and STAT | Extended selection only in the forms described by that command; options and destination lists differ. |
 | DUMP, TED and ED | Exact single-file operands; no general multi-DU selection. Their accepted DU ranges and forms are command-specific. |
-| PIP | Destination-first assignment, simple DU and historical bracket parameters; not the shared `$RO` predicate language. |
+| PIP | Destination-first assignment; simple DU and expanded source selectors for copying into one destination DU. Historical trailing bracket parameters, not the shared `$RO` predicate language; see PIP for preflight and duplicate-name rules. |
 | SQ/USQ, CR/UNCR, LZH/UNLZH | Exact filename, optional drive-only source, drive-only destination, caller's current user. `B0:SQ` qualifies the program, not its operand grammar. |
 | CPX/RSX LOAD and UNLOAD | Unqualified carrier stems, with their own optional extension rules. Carrier lookup uses A0, not ordinary transient search. |
 | FDB | Locked workbench filename behavior and current user; applying B–D does not format or save startup defaults. |
@@ -11059,6 +11088,8 @@ The treatment of protected files depends on the command and any explicit attribu
 For details, consult the ERA, REN, COPY, and MOVE references in [File commands](#files-directories-and-transfers).
 
 ##### D.4 Extended Drive/User Selectors
+
+PIP accepts these selectors for one file-source operand copied into a single destination DU. Its trailing bracket parameters remain PIP-specific. See [PIP — Expanded source DU selectors](#expanded-source-du-selectors) for the 64-file preflight limit and duplicate destination filename policy.
 
 BetterCP/M extends conventional CP/M file specifications by allowing commands to select files from several drive/user areas in a single operation.
 

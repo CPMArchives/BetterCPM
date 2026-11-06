@@ -2,6 +2,8 @@
 ; Result is OP_REC: type/device/drive/user/ambiguous/explicit-user/parameters,
 ; then a 36-byte FCB, 26 parameter bytes and S/Q pointer/length descriptors.
 PO_PARSE:
+        XOR A
+        LD (PS_GSEEN),A
         LD (PO_PTR),HL
         LD A,B
         LD (PO_LEFT),A
@@ -323,6 +325,8 @@ PO_VALUE:
         LD A,(PO_OPT)
         CP 'G'-'A'
         JR NZ,PO_SET
+        LD A,1
+        LD (PS_GSEEN),A
         LD A,(OP_REC+5)
         OR A
         JP NZ,PO_BAD
@@ -435,7 +439,7 @@ OP_NEXT:
         INC HL
         LD (OP_SCAN),HL
         EX DE,HL
-        CALL PO_PARSE
+        CALL PS_PARSE
         JP C,PP_BAD
         LD HL,OP_REC
         LD DE,(OP_OUT)
@@ -445,6 +449,8 @@ OP_NEXT:
         LD HL,OP_LEFT
         DEC (HL)
         JR NZ,OP_NEXT
+        CALL PS_PLAN
+        JP C,PP_BAD
         ; Destination restrictions follow DRI PIP's operation dispatch.
         LD A,(OP_DATA)
         CP 4

@@ -20,7 +20,7 @@ def expanded_source():
  text=text.replace('        CALL P_VCHECK','        CALL QH_CHECK\n        JP C,00000H\n        CALL QS_CHECK\n        JP C,00000H\n        CALL P_VCHECK',1)
  text=text.replace('; @utility-version PIP@',helpers+'\n; @utility-version PIP@')
 
- text=text.replace('; @pip-parser@','\n'.join((ROOT/'src/utilities/common'/n).read_text() for n in ['pipparse.inc','pipoperand.inc','piptransfer.inc','pipconcat.inc','pipwild.inc','pipdevice.inc','pipphysical.inc','pipextract.inc','pipformat.inc','piphex.inc','piphex-transfer.inc','pipbreak.inc']))
+ text=text.replace('; @pip-parser@','\n'.join((ROOT/'src/utilities/common'/n).read_text() for n in ['pipparse.inc','pipoperand.inc','pipselect.inc','duselect.inc','piptransfer.inc','pipconcat.inc','pipwild.inc','pipdevice.inc','pipphysical.inc','pipextract.inc','pipformat.inc','piphex.inc','piphex-transfer.inc','pipbreak.inc']))
  from shared_ui import expand_pip_ui
  return expand_versions(expand_pip_ui(text))
 def main():
