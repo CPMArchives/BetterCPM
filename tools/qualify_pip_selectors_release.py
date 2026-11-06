@@ -53,7 +53,7 @@ def main():
     for user,byte in ((7,b'1'),(9,b'2')):put('b',user,'PDNAME.COM',byte*128)
     put('b',0,'PDUNIQ.COM',b'3'*128);old=b'D'*128;staging=b'T'*128
     put('d',5,'PDNAME.COM',old);put('d',5,'PDNAME.$$$',staging)
-    for index in (1,2,3):
+    for index in (1,):
         code=f'''        ASEG
         ORG 100H
         LD DE,MSG
@@ -65,7 +65,7 @@ def main():
 MSG:    DB 'PIP CHECK {index:02d}','$'
 '''
         data=assemble(Path.home()/'bin/z80asm',code,w/f'RP0{index}.COM',w/f'rp0{index}.lst',256);put('a',0,f'RP0{index}.COM',data)
-    batch=b'CLS\r\n:PIP D4:=[B[0,31],C7]:PS*.COM[RV]\r\nRP01\r\n:PIP D5:=B[-]:PD*.COM[VW]\r\nRP02\r\n:PIP /VER\r\nRP03\r\n\x1a'
+    batch=b'CLS\r\n:PIP D4:=[B[0,31],C7]:PS*.COM[RV]\r\nRP01\r\n\x1a'
     put('a',0,'PIPTEST.SUB',batch)
     startup=(b'RSX LOAD M4SCRN\r\nRSX LOAD ADM3A\r\n' if native else b'')+b'SUBMIT PIPTEST\r\n\x1a'
     put('a',0,'STARTUP.SUB',startup);before={letter:disks[letter].read_bytes() for letter in 'bc'}
@@ -75,17 +75,22 @@ MSG:    DB 'PIP CHECK {index:02d}','$'
         for letter in 'bcd':images[letter].write_bytes(raw_to_dmk(disks[letter].read_bytes(),fmt))
         args=[str(DEFAULT_EMULATOR),'-m4','-frehd','-batch','-turbo','-na','-ktx','-itime','60000']
         for i,letter in enumerate('abcd'):args+=['-d'+str(i),str(images[letter])]
-        for index in (1,2,3):args+=['-iw',f'PIP CHECK {index:02d}','-id','1000','-it']+key_args('\r')
-        args+=['-iw','A0>','-id','1500','-it','-ix'];(w/'invocation.json').write_text(json.dumps(args,indent=2)+'\n')
+        args+=['-iw','PIP CHECK 01','-id','1000','-it']+key_args('\r')
+        args+=['-iw','A0>','-id','2000']+key_args('CLS\r')+['-id','1500']
+        args+=key_args(':PIP D5:=B[-]:PD*.COM[VW]\r')+['-id','8000','-iw','No files copied.','-id','2000','-it']
+        args+=key_args('CLS\r')+['-id','1500']+key_args(':PIP /VER\r')
+        from utility_versions import banner
+        args+=['-iw',banner('PIP'),'-id','3000','-it','-ix']
+        (w/'invocation.json').write_text(json.dumps(args,indent=2)+'\n')
         run(args,cwd=w,timeout=900)
-        captures=sorted(w.glob('trs80-text-*.bin'),key=lambda p:int(p.stem.rsplit('-',1)[1]));assert len(captures)==4
+        captures=sorted(w.glob('trs80-text-*.bin'),key=lambda p:int(p.stem.rsplit('-',1)[1]));assert len(captures)==3
         text='\n'.join(screen(p) for p in captures)
         for letter in 'abcd':disks[letter].write_bytes(extract_raw(images[letter].read_bytes()) if letter=='a' else dmk_to_raw(images[letter].read_bytes(),fmt))
     else:
         folder=w/'disks';folder.mkdir()
         for letter in 'abcd':shutil.copy2(disks[letter],folder/f'drive{letter}.dsk')
-        steps=[(b'',b'PIP CHECK 01',120),(b'\r',b'PIP CHECK 02',120),(b'\r',b'PIP CHECK 03',30),(b'\r',b'A0>_ ',30)]
-        text=session(a.simulator.resolve(),folder,steps,w/'transcript.bin').decode('ascii','replace')
+        steps=[(b'\r',b'A0>_ ',30),(b':PIP D5:=B[-]:PD*.COM[VW]\r',b'A0>_ ',120),(b':PIP /VER\r',b'A0>_ ',30)]
+        text=session(a.simulator.resolve(),folder,steps,w/'transcript.bin',initial_prompt=b'PIP CHECK 01').decode('ascii','replace')
         for letter in 'abcd':shutil.copy2(folder/f'drive{letter}.dsk',disks[letter])
     assert 'DUPLICATE DESTINATION NAME' in text and 'No files copied.' in text,text[-2000:]
     assert 'B7:PDNAME.COM' in text and 'B9:PDNAME.COM' in text
@@ -95,11 +100,24 @@ MSG:    DB 'PIP CHECK {index:02d}','$'
     assert get('d',5,'PDUNIQ.COM') is None
     for letter,data in before.items():assert disks[letter].read_bytes()==data,letter
     for letter in 'abcd':
-        subprocess.run(['fsck.cpm','-T','raw','-f',definition(letter),'-n',str(disks[letter])],cwd=w,check=True,capture_output=True)
+        audit=disks[letter]
+        if letter=='b':
+            # cpmtools' CP/M 2.2 fsck treats supported users 16..31 as bad
+            # status bytes. Map only fixture user 31 to unused user 15 on a
+            # disposable audit copy; allocation and extent bytes stay intact.
+            data=bytearray(audit.read_bytes());mapping=fmt.raw_record_map();changed=0
+            for record in range((fmt.drm+1)*32//128):
+                track,slot=divmod(fmt.reserved_records+record,fmt.spt)
+                at=track*fmt.raw_track_bytes+mapping[slot]*128
+                for offset in range(at,at+128,32):
+                    if data[offset]==31:data[offset]=15;changed+=1
+            assert changed>=2,'user-31 multi-extent fixture missing'
+            audit=w/'b-fsck-user15.raw';audit.write_bytes(data)
+        subprocess.run(['fsck.cpm','-T','raw','-f',definition(letter),'-n',str(audit)],cwd=w,check=True,capture_output=True)
     assert a.system.read_bytes()==original and a.work_disk.read_bytes()==work_original
     result={'status':'PASS','target':a.target,'system_sha256':sha(original),'work_sha256':sha(work_original),'pip_sha256':sha(pip),
             'scope':['compound and all-user selectors','user 31','SYS/V','multi-extents','duplicate-name preflight with existing destination/staging preserved'],
-            'source_images_unchanged':True,'original_media_unchanged':True,'filesystem':'PASS'}
+            'source_images_unchanged':True,'original_media_unchanged':True,'filesystem':'PASS; user-31 status normalized to unused user 15 on disposable fsck-only B copy'}
     (w/'report.json').write_text(json.dumps(result,indent=2)+'\n');print('PASS',a.target,'packaged PIP expanded selectors and collision atomicity')
 
 

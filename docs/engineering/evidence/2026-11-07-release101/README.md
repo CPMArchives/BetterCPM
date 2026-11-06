@@ -31,3 +31,10 @@ The final archive evidence records the fresh checks separately. Unchanged
 utility implementations retain their prior detailed component coverage; newly
 constructed media require independent inventories and paired-media checks.
 Physical media and historical application/boot compatibility remain untested.
+
+[Unchanged Utilities identity evidence](unchanged-utilities.tar.gz) refreshes
+CRCKSUM and PATCH selected-input baselines after proving their assigned
+executables exactly match the actual frozen 1.0 downloads. Automatic builds
+then reproduce those bytes without overrides; their revisions stay 011 and
+003. This prevents development labels caused solely by conservative shared
+input changes from changing otherwise unchanged release binaries.
