@@ -1996,6 +1996,7 @@
         "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
       },
       "files": [
+        "metadata/release-package.json",
         "src/cpx/copy-backup.inc",
         "src/cpx/copy-batch.inc",
         "src/cpx/copy-dest.inc",
@@ -2011,6 +2012,7 @@
         "src/cpx/era-select.inc",
         "src/cpx/feature-hint.inc",
         "src/cpx/hello.mac",
+        "src/cpx/help.inc",
         "src/cpx/rcp.mac",
         "src/cpx/ren-select.inc",
         "src/cpx/type-select.inc",
@@ -2045,8 +2047,8 @@
         "tools/component_registry.py",
         "tools/rsx_container.py",
         "tools/system_layout.py",
-        "tools/utility_versions.py",
-        "metadata/release-package.json"
+        "tools/utility_help.py",
+        "tools/utility_versions.py"
       ],
       "identity_dependencies": [],
       "registry_fields": [

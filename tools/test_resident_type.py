@@ -21,8 +21,11 @@ def execute(tail, files, responses='', base=0x8000, open_fail=(), read_fail=(), 
     c.mem[5:8] = bytes((0xDB,254,0xC9))
     c.setword(1, LAYOUT['BIOS']+3)
     c.mem[LAYOUT['BIOS']+66:LAYOUT['BIOS']+69] = bytes((0xDB,253,0xC9))
-    c.mem[0x2000:0x2000+len(tail)] = tail.encode()
-    c.hl=0x2000; c.b=len(tail)
+    # Exercise the real CPX entry, including query/diagnostic context, rather
+    # than treating the private TYPE implementation as a standalone service.
+    command=tail if transient else 'TYPE '+tail
+    c.mem[0x2000:0x2000+len(command)] = command.encode()
+    c.hl=c.de=0x2000; c.b=len(command)
     if transient:
         binary = (ROOT/'build/utilities/TYPE.COM').read_bytes()
         c.mem[0x100:0x100+len(binary)] = binary
@@ -80,7 +83,7 @@ def execute(tail, files, responses='', base=0x8000, open_fail=(), read_fail=(), 
             if start>=len(data):return 1
             c.mem[state['dma']:state['dma']+128]=data[start:start+128].ljust(128,b'\x1a');return 0
         raise AssertionError(('unexpected/mutating BDOS call',f))
-    c.port_read=io;c.run(0x100 if transient else addr('BC_TYPE'),limit=3000000)
+    c.port_read=io;c.run(0x100 if transient else addr('BC_COMMAND'),limit=3000000)
     assert (state['drive'],state['user'])==(0,2),'caller DU not restored'
     return ''.join(output), actions
 

@@ -1,0 +1,93 @@
+[
+  {
+    "name": "build-rcp",
+    "command": [
+      "python3",
+      "tools/build_rcp_cpx.py"
+    ],
+    "exit": 0,
+    "seconds": 0.27
+  },
+  {
+    "name": "build-transients",
+    "command": [
+      "python3",
+      "tools/build_rcp_transients.py"
+    ],
+    "exit": 0,
+    "seconds": 0.68
+  },
+  {
+    "name": "queries",
+    "command": [
+      "python3",
+      "tools/test_resident_feature_hints.py"
+    ],
+    "exit": 0,
+    "seconds": 2.25
+  },
+  {
+    "name": "type",
+    "command": [
+      "python3",
+      "tools/test_resident_type.py"
+    ],
+    "exit": 0,
+    "seconds": 0.68
+  },
+  {
+    "name": "ren",
+    "command": [
+      "python3",
+      "tools/test_resident_ren_mapping.py"
+    ],
+    "exit": 0,
+    "seconds": 0.17
+  },
+  {
+    "name": "registry",
+    "command": [
+      "python3",
+      "tools/component_registry.py",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.03
+  },
+  {
+    "name": "registry-tests",
+    "command": [
+      "python3",
+      "tools/test_component_registry.py"
+    ],
+    "exit": 0,
+    "seconds": 0.07
+  },
+  {
+    "name": "revision-tests",
+    "command": [
+      "python3",
+      "tools/test_component_revision.py"
+    ],
+    "exit": 0,
+    "seconds": 0.03
+  },
+  {
+    "name": "inventory",
+    "command": [
+      "python3",
+      "tools/test_utility_ui_inventory.py"
+    ],
+    "exit": 1,
+    "seconds": 0.06
+  },
+  {
+    "name": "versions",
+    "command": [
+      "python3",
+      "tools/test_utility_versions.py"
+    ],
+    "exit": 1,
+    "seconds": 0.04
+  }
+]

@@ -59,8 +59,22 @@ SCREENS={
  'TED':('Full-screen Text Editor','TED [DU:]file',[]),
 }
 
-def text(name,identity=None):
- purpose,usage,options=SCREENS[name]
+# Resident operations intentionally expose a smaller contract than the COMs.
+# Share formatting and query semantics, not unsupported transient options.
+RESIDENT_SCREENS={
+ 'DIR':('Directory Listing','DIR [filespec]',[]),
+ 'ERA':('File Erasure','ERA filespec',[]),
+ 'TYPE':('Text File Display','TYPE filespec [/P]',[('/P','Page output.')]),
+ 'REN':('File Renaming','REN newname=filespec',[]),
+ 'CLS':('Clear Screen','CLS',[]),
+ 'USER':('User Area Selection (0..31)','USER number',[]),
+ 'VER':('Version Information','VER [/V]',[('/V','Show subsystem versions.')]),
+ 'COPY':('File Copying','COPY source destination | destination=source [/O]',[('/O','Replace existing destination files.')]),
+ 'MOVE':('File Moving','MOVE source destination | destination=source [/O]',[('/O','Replace existing destination files.')]),
+}
+
+def text(name,identity=None,resident=False):
+ purpose,usage,options=(RESIDENT_SCREENS if resident else SCREENS)[name]
  lines=[identity or banner(name),'  - - -',' | '+purpose,' |',' |   Usage: '+usage,'']
  lines+=['   Options:']
  for opt,desc in options:lines.append('     '+opt.ljust(21)+desc)
@@ -71,6 +85,22 @@ def text(name,identity=None):
 
 def source(name,label,identity=None):
  return label+':\n'+''.join("        DB '"+line.replace("'","''")+"',13,10\n" if line else '        DB 13,10\n' for line in text(name,identity).splitlines())+"        DB '$'\n"
+
+def resident_parts():
+ """Inline variable parts; share framing without relocated pointer tables."""
+ def literal(value):
+  tokens=[]
+  for part in value.splitlines(keepends=True):
+   body=part.rstrip('\r\n')
+   if body:tokens.append("'"+body.replace("'","''")+"'")
+   if part.endswith('\r\n'):tokens.extend(('13','10'))
+  return '        DB '+','.join(tokens+["'$'"])+ '\n'
+ records={}
+ for name,(purpose,usage,options) in RESIDENT_SCREENS.items():
+  option_text=''.join('     '+o.ljust(21)+d+'\r\n' for o,d in options)
+  if options:option_text+='\r\n'
+  records[name]=''.join(literal(v) for v in (purpose,usage,option_text))
+ return records
 
 def query_source(root):
  """One bounded matcher accepts exact /HELP and /H; no extra query stack."""

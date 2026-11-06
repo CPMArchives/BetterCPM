@@ -1,4 +1,4 @@
-; Pure pre-operation gate for recognized transient-only option tokens.
+; Pure pre-operation queries, option validation and transient-only hints.
 ; HL/B is the untouched argument span. Preserve it for ordinary resident parsing.
 RH_VERSION:
         PUSH HL
@@ -6,6 +6,9 @@ RH_VERSION:
         ADD HL,DE
         EX DE,HL
         POP HL
+        LD (RH_ACTIVE),DE          ; rebuilt with this CPX; never persistent state
+        CALL UH_QUERY             ; exact /H or /HELP takes precedence
+        RET C
         CALL UV_QUERY
         RET C
         ; Fall through only after standalone /VER handling.
@@ -16,6 +19,9 @@ RH_CHECK:
         PUSH HL
         LD HL,(BC_CMDPTR)
         LD D,(HL)                 ; canonical command's first letter
+        LD A,D
+        AND 0DFH
+        LD D,A
         POP HL
         PUSH HL
 RH_SCAN:
@@ -87,6 +93,8 @@ RH_ADV:
         JR NZ,RH_ADV
         JR RH_ENTRY
 RH_MISS:
+        CALL RH_OPTOK
+        JR C,RH_BADPOP
         POP HL
         POP BC
 RH_SKIP:
@@ -104,7 +112,34 @@ RH_NONE:
         POP IX
         POP DE
         POP BC
+        LD A,B
         OR A
+        RET NZ
+        ; Empty DIR, CLS and VER are operations; other commands need operands.
+        ; DE still points to the canonical resident identification string.
+        LD A,(DE)
+        CP 'D'
+        RET Z
+        CP 'V'
+        RET Z
+        CP 'C'
+        JR NZ,RH_REJECT
+        INC DE
+        LD A,(DE)
+        DEC DE
+        CP 'L'
+        RET Z
+        JR RH_REJECT
+RH_BADPOP:
+        POP HL
+        POP BC
+        POP HL
+        POP IX
+        POP DE
+        POP BC
+RH_REJECT:
+        CALL RH_SHORT
+        SCF
         RET
 RH_HINT:
         LD E,13
@@ -143,7 +178,42 @@ RH_NLOOP:
         DJNZ RH_NLOOP
         RET
 RH_MSG: DB ': Use :','$'
-RH_SUFFIX: DB '.',13,10,'$'
+RH_SUFFIX: DB '. Additional transient features.',13,10,'$'
+; Only these one-letter options belong to resident operations. Recognized
+; transient-only options have already selected RH_HINT. CF means invalid.
+RH_OPTOK:
+        LD A,C
+        CP 1
+        JR NZ,RH_OPBAD
+        LD A,(HL)
+        AND 0DFH
+        CP 'P'
+        JR NZ,RH_COPT
+        LD A,D
+        CP 'T'
+        JR Z,RH_OPGOOD
+        JR RH_OPBAD
+RH_COPT:
+        CP 'O'
+        JR NZ,RH_VOPT
+        LD A,D
+        CP 'C'
+        JR Z,RH_OPGOOD
+        CP 'M'
+        JR Z,RH_OPGOOD
+        JR RH_OPBAD
+RH_VOPT:
+        CP 'V'
+        JR NZ,RH_OPBAD
+        LD A,D
+        CP 'V'
+        JR NZ,RH_OPBAD
+RH_OPGOOD:
+        OR A
+        RET
+RH_OPBAD:
+        SCF
+        RET
 RH_OPTABLE:
         DB 'V',6,'BANNER'
         DB 'D',7,'WHEREIS'

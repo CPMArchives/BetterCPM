@@ -2473,10 +2473,10 @@
     },
     "utility:CLS|trs80gp|default|cross": {
       "assigned_identity": {
-        "revision": 10,
+        "revision": 11,
         "version": "1.0"
       },
-      "fingerprint": "5250586c3967aeb673c577402328cf442b5df0855b20087eb3707a7639b63b5f",
+      "fingerprint": "25272f0a42ab229a4d41d2eeb46bb0b9ef182e1e92d293f2c94c083ed357be9f",
       "inputs": {
         "component": "utility:CLS",
         "configuration": {
@@ -2498,7 +2498,7 @@
           "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
           "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
           "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
-          "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
           "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
           "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
           "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
@@ -2560,8 +2560,8 @@
           "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
           "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
           "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
-          "tools/utility_help.py": "9462d9ef310a8f603e64ddf9b01ee0a97333f22d150de1d0e7d651723472f380",
-          "tools/utility_versions.py": "696cc9f2e25b4ed66afe948a7c387e18634b6717ab582ea5853b76a82063df0d",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
           "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
         },
         "identity_dependencies": {
@@ -2575,42 +2575,42 @@
             "api_version": null,
             "description": "File Copying",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           },
           "utility:DIR": {
             "api_version": null,
             "description": "Directory Listing",
             "display_format": "numeric",
-            "revision": 13,
+            "revision": 14,
             "version": "1.0"
           },
           "utility:MOVE": {
             "api_version": null,
             "description": "File Moving",
             "display_format": "numeric",
-            "revision": 3,
+            "revision": 4,
             "version": "1.0"
           },
           "utility:RCP": {
             "api_version": null,
             "description": "Resident Command Package",
             "display_format": "numeric",
-            "revision": 17,
+            "revision": 18,
             "version": "1.0"
           },
           "utility:USER": {
             "api_version": null,
             "description": "User Area Selection",
             "display_format": "numeric",
-            "revision": 9,
+            "revision": 10,
             "version": "1.0"
           },
           "utility:VER": {
             "api_version": null,
             "description": "System Version Information",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           }
         },
@@ -2637,10 +2637,10 @@
     },
     "utility:CLS|z80pack|default|cross": {
       "assigned_identity": {
-        "revision": 10,
+        "revision": 11,
         "version": "1.0"
       },
-      "fingerprint": "8453254a3674d36087f778dd53e57380d8701778c65732425814592024aa698f",
+      "fingerprint": "42d3ab90b897d502df64a7449af9dfeb5aff892bc445a9f3a2b7033e4ebc7719",
       "inputs": {
         "component": "utility:CLS",
         "configuration": {
@@ -2662,7 +2662,7 @@
           "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
           "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
           "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
-          "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
           "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
           "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
           "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
@@ -2724,8 +2724,8 @@
           "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
           "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
           "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
-          "tools/utility_help.py": "9462d9ef310a8f603e64ddf9b01ee0a97333f22d150de1d0e7d651723472f380",
-          "tools/utility_versions.py": "696cc9f2e25b4ed66afe948a7c387e18634b6717ab582ea5853b76a82063df0d",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
           "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
         },
         "identity_dependencies": {
@@ -2739,42 +2739,42 @@
             "api_version": null,
             "description": "File Copying",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           },
           "utility:DIR": {
             "api_version": null,
             "description": "Directory Listing",
             "display_format": "numeric",
-            "revision": 13,
+            "revision": 14,
             "version": "1.0"
           },
           "utility:MOVE": {
             "api_version": null,
             "description": "File Moving",
             "display_format": "numeric",
-            "revision": 3,
+            "revision": 4,
             "version": "1.0"
           },
           "utility:RCP": {
             "api_version": null,
             "description": "Resident Command Package",
             "display_format": "numeric",
-            "revision": 17,
+            "revision": 18,
             "version": "1.0"
           },
           "utility:USER": {
             "api_version": null,
             "description": "User Area Selection",
             "display_format": "numeric",
-            "revision": 9,
+            "revision": 10,
             "version": "1.0"
           },
           "utility:VER": {
             "api_version": null,
             "description": "System Version Information",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           }
         },
@@ -3225,10 +3225,10 @@
     },
     "utility:COPY|trs80gp|default|cross": {
       "assigned_identity": {
-        "revision": 11,
+        "revision": 12,
         "version": "1.0"
       },
-      "fingerprint": "17664b2f1433101bc5673875735333acdcde663271276af33d9540e0bad5cd8b",
+      "fingerprint": "04076491c0f5647467daaf2c1cc2b0cb3544a0cfe0e5c2ee6250036bfad14c02",
       "inputs": {
         "component": "utility:COPY",
         "configuration": {
@@ -3250,7 +3250,7 @@
           "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
           "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
           "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
-          "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
           "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
           "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
           "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
@@ -3312,8 +3312,8 @@
           "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
           "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
           "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
-          "tools/utility_help.py": "9462d9ef310a8f603e64ddf9b01ee0a97333f22d150de1d0e7d651723472f380",
-          "tools/utility_versions.py": "696cc9f2e25b4ed66afe948a7c387e18634b6717ab582ea5853b76a82063df0d",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
           "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
         },
         "identity_dependencies": {
@@ -3321,7 +3321,7 @@
             "api_version": null,
             "description": "Clear Screen",
             "display_format": "numeric",
-            "revision": 10,
+            "revision": 11,
             "version": "1.0"
           },
           "utility:COPY": {
@@ -3334,35 +3334,35 @@
             "api_version": null,
             "description": "Directory Listing",
             "display_format": "numeric",
-            "revision": 13,
+            "revision": 14,
             "version": "1.0"
           },
           "utility:MOVE": {
             "api_version": null,
             "description": "File Moving",
             "display_format": "numeric",
-            "revision": 3,
+            "revision": 4,
             "version": "1.0"
           },
           "utility:RCP": {
             "api_version": null,
             "description": "Resident Command Package",
             "display_format": "numeric",
-            "revision": 17,
+            "revision": 18,
             "version": "1.0"
           },
           "utility:USER": {
             "api_version": null,
             "description": "User Area Selection",
             "display_format": "numeric",
-            "revision": 9,
+            "revision": 10,
             "version": "1.0"
           },
           "utility:VER": {
             "api_version": null,
             "description": "System Version Information",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           }
         },
@@ -3389,10 +3389,10 @@
     },
     "utility:COPY|z80pack|default|cross": {
       "assigned_identity": {
-        "revision": 11,
+        "revision": 12,
         "version": "1.0"
       },
-      "fingerprint": "25857a28c3b6e2ff9a3a196e89395383ccd8423cb5f9dd991af532373184c0d5",
+      "fingerprint": "2b1817a23ed68029ac6636296901e7bd2c79ee87ec41b453f7bbecbc268d8d7a",
       "inputs": {
         "component": "utility:COPY",
         "configuration": {
@@ -3414,7 +3414,7 @@
           "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
           "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
           "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
-          "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
           "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
           "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
           "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
@@ -3476,8 +3476,8 @@
           "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
           "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
           "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
-          "tools/utility_help.py": "9462d9ef310a8f603e64ddf9b01ee0a97333f22d150de1d0e7d651723472f380",
-          "tools/utility_versions.py": "696cc9f2e25b4ed66afe948a7c387e18634b6717ab582ea5853b76a82063df0d",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
           "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
         },
         "identity_dependencies": {
@@ -3485,7 +3485,7 @@
             "api_version": null,
             "description": "Clear Screen",
             "display_format": "numeric",
-            "revision": 10,
+            "revision": 11,
             "version": "1.0"
           },
           "utility:COPY": {
@@ -3498,35 +3498,35 @@
             "api_version": null,
             "description": "Directory Listing",
             "display_format": "numeric",
-            "revision": 13,
+            "revision": 14,
             "version": "1.0"
           },
           "utility:MOVE": {
             "api_version": null,
             "description": "File Moving",
             "display_format": "numeric",
-            "revision": 3,
+            "revision": 4,
             "version": "1.0"
           },
           "utility:RCP": {
             "api_version": null,
             "description": "Resident Command Package",
             "display_format": "numeric",
-            "revision": 17,
+            "revision": 18,
             "version": "1.0"
           },
           "utility:USER": {
             "api_version": null,
             "description": "User Area Selection",
             "display_format": "numeric",
-            "revision": 9,
+            "revision": 10,
             "version": "1.0"
           },
           "utility:VER": {
             "api_version": null,
             "description": "System Version Information",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           }
         },
@@ -4197,10 +4197,10 @@
     },
     "utility:DIR|trs80gp|default|cross": {
       "assigned_identity": {
-        "revision": 13,
+        "revision": 14,
         "version": "1.0"
       },
-      "fingerprint": "4fe1f1f47a0d2d30401bb0ca1e9c8742cd06429ed526d65640d70615d16f7f50",
+      "fingerprint": "af8c82e3fea42031e6b179277b9397b3bcabbdba1ada32fd1852c83a400adaa7",
       "inputs": {
         "component": "utility:DIR",
         "configuration": {
@@ -4222,7 +4222,7 @@
           "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
           "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
           "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
-          "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
           "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
           "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
           "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
@@ -4284,8 +4284,8 @@
           "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
           "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
           "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
-          "tools/utility_help.py": "9462d9ef310a8f603e64ddf9b01ee0a97333f22d150de1d0e7d651723472f380",
-          "tools/utility_versions.py": "696cc9f2e25b4ed66afe948a7c387e18634b6717ab582ea5853b76a82063df0d",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
           "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
         },
         "identity_dependencies": {
@@ -4293,14 +4293,14 @@
             "api_version": null,
             "description": "Clear Screen",
             "display_format": "numeric",
-            "revision": 10,
+            "revision": 11,
             "version": "1.0"
           },
           "utility:COPY": {
             "api_version": null,
             "description": "File Copying",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           },
           "utility:DIR": {
@@ -4313,28 +4313,28 @@
             "api_version": null,
             "description": "File Moving",
             "display_format": "numeric",
-            "revision": 3,
+            "revision": 4,
             "version": "1.0"
           },
           "utility:RCP": {
             "api_version": null,
             "description": "Resident Command Package",
             "display_format": "numeric",
-            "revision": 17,
+            "revision": 18,
             "version": "1.0"
           },
           "utility:USER": {
             "api_version": null,
             "description": "User Area Selection",
             "display_format": "numeric",
-            "revision": 9,
+            "revision": 10,
             "version": "1.0"
           },
           "utility:VER": {
             "api_version": null,
             "description": "System Version Information",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           }
         },
@@ -4361,10 +4361,10 @@
     },
     "utility:DIR|z80pack|default|cross": {
       "assigned_identity": {
-        "revision": 13,
+        "revision": 14,
         "version": "1.0"
       },
-      "fingerprint": "0e1ac91ed34621117212fea96013f9288d9085de26f9e7fb76300ac8c98da5d0",
+      "fingerprint": "f579262f4df1f70aa1f67faff2870d54d6d6dd665f781af4b9fd0551cc16c1a2",
       "inputs": {
         "component": "utility:DIR",
         "configuration": {
@@ -4386,7 +4386,7 @@
           "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
           "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
           "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
-          "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
           "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
           "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
           "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
@@ -4448,8 +4448,8 @@
           "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
           "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
           "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
-          "tools/utility_help.py": "9462d9ef310a8f603e64ddf9b01ee0a97333f22d150de1d0e7d651723472f380",
-          "tools/utility_versions.py": "696cc9f2e25b4ed66afe948a7c387e18634b6717ab582ea5853b76a82063df0d",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
           "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
         },
         "identity_dependencies": {
@@ -4457,14 +4457,14 @@
             "api_version": null,
             "description": "Clear Screen",
             "display_format": "numeric",
-            "revision": 10,
+            "revision": 11,
             "version": "1.0"
           },
           "utility:COPY": {
             "api_version": null,
             "description": "File Copying",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           },
           "utility:DIR": {
@@ -4477,28 +4477,28 @@
             "api_version": null,
             "description": "File Moving",
             "display_format": "numeric",
-            "revision": 3,
+            "revision": 4,
             "version": "1.0"
           },
           "utility:RCP": {
             "api_version": null,
             "description": "Resident Command Package",
             "display_format": "numeric",
-            "revision": 17,
+            "revision": 18,
             "version": "1.0"
           },
           "utility:USER": {
             "api_version": null,
             "description": "User Area Selection",
             "display_format": "numeric",
-            "revision": 9,
+            "revision": 10,
             "version": "1.0"
           },
           "utility:VER": {
             "api_version": null,
             "description": "System Version Information",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           }
         },
@@ -6071,10 +6071,10 @@
     },
     "utility:MOVE|trs80gp|default|cross": {
       "assigned_identity": {
-        "revision": 3,
+        "revision": 4,
         "version": "1.0"
       },
-      "fingerprint": "527cc1b2236ca3517f553b92b1c4a3ad558ce56351d14486b17a11f379186f5f",
+      "fingerprint": "2889d6a394716da3f5bf5a5180bd5a81574b6af870fabe4f932b142caeaf1a96",
       "inputs": {
         "component": "utility:MOVE",
         "configuration": {
@@ -6096,7 +6096,7 @@
           "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
           "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
           "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
-          "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
           "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
           "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
           "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
@@ -6158,8 +6158,8 @@
           "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
           "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
           "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
-          "tools/utility_help.py": "9462d9ef310a8f603e64ddf9b01ee0a97333f22d150de1d0e7d651723472f380",
-          "tools/utility_versions.py": "696cc9f2e25b4ed66afe948a7c387e18634b6717ab582ea5853b76a82063df0d",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
           "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
         },
         "identity_dependencies": {
@@ -6167,21 +6167,21 @@
             "api_version": null,
             "description": "Clear Screen",
             "display_format": "numeric",
-            "revision": 10,
+            "revision": 11,
             "version": "1.0"
           },
           "utility:COPY": {
             "api_version": null,
             "description": "File Copying",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           },
           "utility:DIR": {
             "api_version": null,
             "description": "Directory Listing",
             "display_format": "numeric",
-            "revision": 13,
+            "revision": 14,
             "version": "1.0"
           },
           "utility:MOVE": {
@@ -6194,21 +6194,21 @@
             "api_version": null,
             "description": "Resident Command Package",
             "display_format": "numeric",
-            "revision": 17,
+            "revision": 18,
             "version": "1.0"
           },
           "utility:USER": {
             "api_version": null,
             "description": "User Area Selection",
             "display_format": "numeric",
-            "revision": 9,
+            "revision": 10,
             "version": "1.0"
           },
           "utility:VER": {
             "api_version": null,
             "description": "System Version Information",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           }
         },
@@ -6235,10 +6235,10 @@
     },
     "utility:MOVE|z80pack|default|cross": {
       "assigned_identity": {
-        "revision": 3,
+        "revision": 4,
         "version": "1.0"
       },
-      "fingerprint": "e770c6526696b9a14272f13b6f1531a8a3772f4836f2d8302fa9cf7d0f210e69",
+      "fingerprint": "329d7cf0fef7ef596d715b92ae8f001160ebf95f5bdb90a86c26b34a7053d4ab",
       "inputs": {
         "component": "utility:MOVE",
         "configuration": {
@@ -6260,7 +6260,7 @@
           "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
           "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
           "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
-          "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
           "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
           "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
           "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
@@ -6322,8 +6322,8 @@
           "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
           "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
           "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
-          "tools/utility_help.py": "9462d9ef310a8f603e64ddf9b01ee0a97333f22d150de1d0e7d651723472f380",
-          "tools/utility_versions.py": "696cc9f2e25b4ed66afe948a7c387e18634b6717ab582ea5853b76a82063df0d",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
           "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
         },
         "identity_dependencies": {
@@ -6331,21 +6331,21 @@
             "api_version": null,
             "description": "Clear Screen",
             "display_format": "numeric",
-            "revision": 10,
+            "revision": 11,
             "version": "1.0"
           },
           "utility:COPY": {
             "api_version": null,
             "description": "File Copying",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           },
           "utility:DIR": {
             "api_version": null,
             "description": "Directory Listing",
             "display_format": "numeric",
-            "revision": 13,
+            "revision": 14,
             "version": "1.0"
           },
           "utility:MOVE": {
@@ -6358,21 +6358,21 @@
             "api_version": null,
             "description": "Resident Command Package",
             "display_format": "numeric",
-            "revision": 17,
+            "revision": 18,
             "version": "1.0"
           },
           "utility:USER": {
             "api_version": null,
             "description": "User Area Selection",
             "display_format": "numeric",
-            "revision": 9,
+            "revision": 10,
             "version": "1.0"
           },
           "utility:VER": {
             "api_version": null,
             "description": "System Version Information",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           }
         },
@@ -6979,10 +6979,10 @@
     },
     "utility:RCP|trs80gp|default|cross": {
       "assigned_identity": {
-        "revision": 17,
+        "revision": 18,
         "version": "1.0"
       },
-      "fingerprint": "24f9126cb0b381637ceff08fdebb3e6768b6f6f205f39759a7d7158c279bca7d",
+      "fingerprint": "3dd9eccbcf47803c06b3356635749f295ea7665aa740dc57d3a76ccaf7d7f3b1",
       "inputs": {
         "component": "utility:RCP",
         "configuration": {
@@ -7003,8 +7003,9 @@
           "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
           "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
           "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
-          "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
           "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+          "src/cpx/help.inc": "3976b1269305f988c53b2e5752ba600b8e982df3b85168e9412d5a8de38505fc",
           "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
           "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
           "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
@@ -7039,7 +7040,8 @@
           "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
           "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
           "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
-          "tools/utility_versions.py": "696cc9f2e25b4ed66afe948a7c387e18634b6717ab582ea5853b76a82063df0d"
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5"
         },
         "identity_fields": {
           "api_version": null,
@@ -7064,10 +7066,10 @@
     },
     "utility:RCP|z80pack|default|cross": {
       "assigned_identity": {
-        "revision": 17,
+        "revision": 18,
         "version": "1.0"
       },
-      "fingerprint": "d0b42a8ddc52b7eaf83874eab539c42c4d050af940c8108286b8cfe5d811c4e8",
+      "fingerprint": "7c6d325cb9813a556e0a8778122db0947831a7cbfb5f238155873d2bd03b86a0",
       "inputs": {
         "component": "utility:RCP",
         "configuration": {
@@ -7088,8 +7090,9 @@
           "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
           "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
           "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
-          "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
           "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+          "src/cpx/help.inc": "3976b1269305f988c53b2e5752ba600b8e982df3b85168e9412d5a8de38505fc",
           "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
           "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
           "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
@@ -7124,7 +7127,8 @@
           "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
           "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
           "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
-          "tools/utility_versions.py": "696cc9f2e25b4ed66afe948a7c387e18634b6717ab582ea5853b76a82063df0d"
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5"
         },
         "identity_fields": {
           "api_version": null,
@@ -10599,10 +10603,10 @@
     },
     "utility:USER|trs80gp|default|cross": {
       "assigned_identity": {
-        "revision": 9,
+        "revision": 10,
         "version": "1.0"
       },
-      "fingerprint": "6dcdbb34fc3cc0817b26840054a3e4775c2ff06aac77c524a0899eb7c7089db7",
+      "fingerprint": "145c7f8397e3c0a63985dd8fad129239d70e3ab693d0d2f4e726e9910ba37198",
       "inputs": {
         "component": "utility:USER",
         "configuration": {
@@ -10624,7 +10628,7 @@
           "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
           "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
           "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
-          "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
           "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
           "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
           "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
@@ -10686,8 +10690,8 @@
           "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
           "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
           "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
-          "tools/utility_help.py": "9462d9ef310a8f603e64ddf9b01ee0a97333f22d150de1d0e7d651723472f380",
-          "tools/utility_versions.py": "696cc9f2e25b4ed66afe948a7c387e18634b6717ab582ea5853b76a82063df0d",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
           "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
         },
         "identity_dependencies": {
@@ -10695,35 +10699,35 @@
             "api_version": null,
             "description": "Clear Screen",
             "display_format": "numeric",
-            "revision": 10,
+            "revision": 11,
             "version": "1.0"
           },
           "utility:COPY": {
             "api_version": null,
             "description": "File Copying",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           },
           "utility:DIR": {
             "api_version": null,
             "description": "Directory Listing",
             "display_format": "numeric",
-            "revision": 13,
+            "revision": 14,
             "version": "1.0"
           },
           "utility:MOVE": {
             "api_version": null,
             "description": "File Moving",
             "display_format": "numeric",
-            "revision": 3,
+            "revision": 4,
             "version": "1.0"
           },
           "utility:RCP": {
             "api_version": null,
             "description": "Resident Command Package",
             "display_format": "numeric",
-            "revision": 17,
+            "revision": 18,
             "version": "1.0"
           },
           "utility:USER": {
@@ -10736,7 +10740,7 @@
             "api_version": null,
             "description": "System Version Information",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           }
         },
@@ -10763,10 +10767,10 @@
     },
     "utility:USER|z80pack|default|cross": {
       "assigned_identity": {
-        "revision": 9,
+        "revision": 10,
         "version": "1.0"
       },
-      "fingerprint": "52db8d2f9a2d016530747bddc7eca0fc8f5a872062251e76b3dead05dda5bff4",
+      "fingerprint": "c245b1d665feac364db38ae8874a2caa4a2190d866abbe1db94cef4415020270",
       "inputs": {
         "component": "utility:USER",
         "configuration": {
@@ -10788,7 +10792,7 @@
           "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
           "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
           "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
-          "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
           "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
           "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
           "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
@@ -10850,8 +10854,8 @@
           "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
           "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
           "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
-          "tools/utility_help.py": "9462d9ef310a8f603e64ddf9b01ee0a97333f22d150de1d0e7d651723472f380",
-          "tools/utility_versions.py": "696cc9f2e25b4ed66afe948a7c387e18634b6717ab582ea5853b76a82063df0d",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
           "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
         },
         "identity_dependencies": {
@@ -10859,35 +10863,35 @@
             "api_version": null,
             "description": "Clear Screen",
             "display_format": "numeric",
-            "revision": 10,
+            "revision": 11,
             "version": "1.0"
           },
           "utility:COPY": {
             "api_version": null,
             "description": "File Copying",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           },
           "utility:DIR": {
             "api_version": null,
             "description": "Directory Listing",
             "display_format": "numeric",
-            "revision": 13,
+            "revision": 14,
             "version": "1.0"
           },
           "utility:MOVE": {
             "api_version": null,
             "description": "File Moving",
             "display_format": "numeric",
-            "revision": 3,
+            "revision": 4,
             "version": "1.0"
           },
           "utility:RCP": {
             "api_version": null,
             "description": "Resident Command Package",
             "display_format": "numeric",
-            "revision": 17,
+            "revision": 18,
             "version": "1.0"
           },
           "utility:USER": {
@@ -10900,7 +10904,7 @@
             "api_version": null,
             "description": "System Version Information",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           }
         },
@@ -11031,10 +11035,10 @@
     },
     "utility:VER|trs80gp|default|cross": {
       "assigned_identity": {
-        "revision": 11,
+        "revision": 12,
         "version": "1.0"
       },
-      "fingerprint": "2ed540356b2148f479b19f7ed30c4903f726411c4758727dd6671ed82777064f",
+      "fingerprint": "238f5687d7504389f7007660c76ce469c70fd3c4b4867c8c1a17508d827bc10d",
       "inputs": {
         "component": "utility:VER",
         "configuration": {
@@ -11056,7 +11060,7 @@
           "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
           "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
           "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
-          "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
           "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
           "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
           "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
@@ -11118,8 +11122,8 @@
           "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
           "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
           "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
-          "tools/utility_help.py": "9462d9ef310a8f603e64ddf9b01ee0a97333f22d150de1d0e7d651723472f380",
-          "tools/utility_versions.py": "696cc9f2e25b4ed66afe948a7c387e18634b6717ab582ea5853b76a82063df0d",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
           "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
         },
         "identity_dependencies": {
@@ -11127,42 +11131,42 @@
             "api_version": null,
             "description": "Clear Screen",
             "display_format": "numeric",
-            "revision": 10,
+            "revision": 11,
             "version": "1.0"
           },
           "utility:COPY": {
             "api_version": null,
             "description": "File Copying",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           },
           "utility:DIR": {
             "api_version": null,
             "description": "Directory Listing",
             "display_format": "numeric",
-            "revision": 13,
+            "revision": 14,
             "version": "1.0"
           },
           "utility:MOVE": {
             "api_version": null,
             "description": "File Moving",
             "display_format": "numeric",
-            "revision": 3,
+            "revision": 4,
             "version": "1.0"
           },
           "utility:RCP": {
             "api_version": null,
             "description": "Resident Command Package",
             "display_format": "numeric",
-            "revision": 17,
+            "revision": 18,
             "version": "1.0"
           },
           "utility:USER": {
             "api_version": null,
             "description": "User Area Selection",
             "display_format": "numeric",
-            "revision": 9,
+            "revision": 10,
             "version": "1.0"
           },
           "utility:VER": {
@@ -11195,10 +11199,10 @@
     },
     "utility:VER|z80pack|default|cross": {
       "assigned_identity": {
-        "revision": 11,
+        "revision": 12,
         "version": "1.0"
       },
-      "fingerprint": "45366d68599f4a3ea1fdcdbac3988d23f454f814846e9926a1d3f7738f1bab0f",
+      "fingerprint": "c740fb4274dc0b68c109d2a4adaaeece59b42abb268d83c216d815d066f1bc51",
       "inputs": {
         "component": "utility:VER",
         "configuration": {
@@ -11220,7 +11224,7 @@
           "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
           "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
           "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
-          "src/cpx/feature-hint.inc": "b67ec117fd26dc6a85f17dd133b84f6e2165ee5a8891be61e9abfa501ff249d5",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
           "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
           "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
           "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
@@ -11282,8 +11286,8 @@
           "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
           "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
           "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
-          "tools/utility_help.py": "9462d9ef310a8f603e64ddf9b01ee0a97333f22d150de1d0e7d651723472f380",
-          "tools/utility_versions.py": "696cc9f2e25b4ed66afe948a7c387e18634b6717ab582ea5853b76a82063df0d",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
           "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
         },
         "identity_dependencies": {
@@ -11291,42 +11295,42 @@
             "api_version": null,
             "description": "Clear Screen",
             "display_format": "numeric",
-            "revision": 10,
+            "revision": 11,
             "version": "1.0"
           },
           "utility:COPY": {
             "api_version": null,
             "description": "File Copying",
             "display_format": "numeric",
-            "revision": 11,
+            "revision": 12,
             "version": "1.0"
           },
           "utility:DIR": {
             "api_version": null,
             "description": "Directory Listing",
             "display_format": "numeric",
-            "revision": 13,
+            "revision": 14,
             "version": "1.0"
           },
           "utility:MOVE": {
             "api_version": null,
             "description": "File Moving",
             "display_format": "numeric",
-            "revision": 3,
+            "revision": 4,
             "version": "1.0"
           },
           "utility:RCP": {
             "api_version": null,
             "description": "Resident Command Package",
             "display_format": "numeric",
-            "revision": 17,
+            "revision": 18,
             "version": "1.0"
           },
           "utility:USER": {
             "api_version": null,
             "description": "User Area Selection",
             "display_format": "numeric",
-            "revision": 9,
+            "revision": 10,
             "version": "1.0"
           },
           "utility:VER": {
