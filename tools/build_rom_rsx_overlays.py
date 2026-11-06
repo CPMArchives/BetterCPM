@@ -40,7 +40,7 @@ def artifact_paths(root: Path) -> dict[str, Path]:
         "RSXLOAD.BIN": build / "rsxloader.bin",
         "RSXRESOL.BIN": build / "rsxresolver.bin",
     }
-    for name in sorted(CFG_FILES | RSX_FILES):
+    for name in sorted(CFG_FILES | RSX_FILES | {"R3CACHE.RSX"}):
         result[name] = build / name
     return result
 
@@ -73,7 +73,7 @@ def alternate_build(delta: int, assembler: Path) -> dict[str, bytes]:
             ROOT, clone,
             ignore=shutil.ignore_patterns(".git", "build", "__pycache__", "*.pyc"))
         shift_layout(clone / "src/system/layout.inc", delta)
-        for script in ("build_rsxloader.py", "build_rsxresolver.py",
+        for script in ("build_bdos.py", "build_rsxloader.py", "build_rsxresolver.py",
                        "build_rsx_runtime_overlays.py"):
             result = subprocess.run(
                 [sys.executable, str(clone / "tools" / script)], cwd=clone,
@@ -118,6 +118,8 @@ def build(pack: Path, output: Path, selector: Path,
         else:
             linked_base = LAYOUT["CONFIG"] if name in CFG_FILES else LAYOUT["RSX"]
             runtime_base = cfg_base if name in CFG_FILES else LAYOUT["RSX"]
+            if name == "R3CACHE.RSX":
+                linked_base = runtime_base = LAYOUT['RSX']-1024
         alternates = [(images[name], delta) for images, delta in shifted]
         offsets = relocation_offsets(source, alternates, name)
         image = bytearray(source)
@@ -153,7 +155,7 @@ def build(pack: Path, output: Path, selector: Path,
         total += len(references)
 
     from rsx_container import PACK_NAME, pack as combine_slots
-    (output / PACK_NAME).write_bytes(combine_slots({name:(output/name).read_bytes() for name in CFG_FILES | RSX_FILES}))
+    (output / PACK_NAME).write_bytes(combine_slots({name:(output/name).read_bytes() for name in CFG_FILES | RSX_FILES | {"R3CACHE.RSX"}}))
     result: dict[str, object] = {
         "files": reports, "file_count": len(reports),
         "reference_count": total, "unresolved_targets": 0,

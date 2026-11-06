@@ -320,6 +320,13 @@ KP_RELOCWORDS:                          ; static-list address and count
         LD      (HL),A
         INC     HL
         LD      (HL),0CCH
+        INC HL
+        PUSH HL
+        CALL LY_RSX-0400H+15
+        POP HL
+        LD (HL),C
+        INC HL
+        LD (HL),B
         LD      HL,KP_NSNAP
         CALL    KP_OVER
         JP      NZ,KP_BAD
@@ -351,9 +358,7 @@ KP_RELOCWORDS:                          ; static-list address and count
         LD      (HL),D
         INC     HL
         PUSH    HL
-        LD      HL,(KP_FACTS)
-        LD      DE,8
-        ADD     HL,DE
+        LD      HL,KP_SREQ+20           ; facts may overlap the compacted snapshot
         EX      DE,HL
         POP     HL
         LD      A,(DE)
@@ -534,7 +539,7 @@ KP_RCNT:        DB      0               ; runtime-pointer count
 KP_CAP:         DB      0               ; worst-case union capacity
 KP_COUNT:       DB      0               ; returned union count
 KP_UREQ:        DS      13              ; pointer-union request
-KP_SREQ:        DS      23              ; snapshot request
+KP_SREQ:        DS      25              ; snapshot request
 KP_MREQ:        DS      6
 KP_HREQ:        DS      6               ; replacement-overlay handoff request
 

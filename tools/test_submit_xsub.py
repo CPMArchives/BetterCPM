@@ -116,7 +116,11 @@ GOOD:   DB 13,10,'FULLIN OK',13,10,'$'
 FAIL:   DB 13,10,'FULLIN FAILED',13,10,'$'
         END
 """
-        name, ceiling = "FULLIN", LAYOUT["RSX"] - 512 - 3
+        carrier=(ROOT/'build/rsx/BATCHIO.RSX').read_bytes()
+        declared=int.from_bytes(carrier[14:16],'little')
+        compact=48+2*int.from_bytes(carrier[22:24],'little')+len(carrier)-512
+        capsule=(compact+28+255)&~255
+        name, ceiling = "FULLIN", LAYOUT["RSX"]-1024-declared-capsule-3
     else:
         source = """        ORG 0100H
         LD DE,GOOD

@@ -12,8 +12,8 @@
 ; ********************************************************************************
 
 KEBASE          EQU     LY_RSX
-FLOPEN          EQU     LY_FILE
-FLNEXT          EQU     LY_FILE+3
+FLOPEN          EQU     LY_RSX-0400H
+FLNEXT          EQU     LY_RSX-0400H+3
 CFGB            EQU     LY_CFG
 RSTABLE         EQU     LY_RSTA+1
 

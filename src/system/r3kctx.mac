@@ -93,7 +93,7 @@ KC_ENTRY:                               ; enter retained context constructor
         LD      D,0
         ADD     HL,DE                   ; union descriptors
         JP      C,KC_BAD
-        LD      DE,23
+        LD      DE,25
         ADD     HL,DE
         JP      C,KC_BAD
         LD      (KC_CSNAP),HL

@@ -7337,7 +7337,7 @@ Lists, loads, and unloads Resident System Extensions (RSXs). RSX.COM is supplied
 
 ```text
 RSX LIST
-RSX LOAD name
+RSX LOAD [DU:]name
 RSX UNLOAD name
 ```
 
@@ -7356,7 +7356,7 @@ BetterCP/M uses RSXs for several purposes, including terminal emulation, clock s
 
 The RSX utility allows you to manage these extensions without rebuilding the operating system.
 
-Normal carrier loading reads `A0:name.RSX`, regardless of the current drive/user. Keep the matched-build `R3PACK.RSX` runtime container in A0 too; it is required by the manager, not an extension to load with `RSX LOAD`. See [Section 8.2](Users-Guide.md#chapter-8--manage-extensions-and-program-memory) for installation details.
+An explicit source such as `RSX LOAD B3:NAME.RSX` loads only from that drive/user. An unqualified name searches the current drive/user, then A0. `B:NAME` uses the current user on B. Once loaded, the original carrier disk may be removed: warm boots and later RSX loads/unloads use retained RAM data. Keep the matched-build `R3PACK.RSX` and `R3CACHE.RSX` manager runtimes in A0; these are system support files, not extensions to load with `RSX LOAD`. See [Section 8.2](Users-Guide.md#chapter-8--manage-extensions-and-program-memory) for installation details.
 
 
 ##### Syntax
@@ -7365,7 +7365,7 @@ The principal command forms are:
 
 ```text
 RSX LIST
-RSX LOAD name
+RSX LOAD [DU:]name
 RSX UNLOAD name
 ```
 
@@ -7400,7 +7400,7 @@ For example, you might use RSX LIST to determine whether a terminal personality 
 To load an extension, enter:
 
 ```text
-RSX LOAD name
+RSX LOAD [DU:]name
 ```
 
 For example:
@@ -8037,20 +8037,20 @@ Before restarting an interrupted batch, examine the results to determine which o
 
 #### Description
 
-Allows compatible programs to receive input from a SUBMIT file through the CP/M buffered console-input interface. XSUB.COM is on the primary Utilities disk. Copy its matching BATCHIO.RSX to writable A0, alongside the System disk’s R3PACK.RSX, before activation. See the [locked-release erratum](../releases/1.0-ERRATA.md#xsub-companion-must-be-copied-to-a0).
+Allows compatible programs to receive input from a SUBMIT file through the CP/M buffered console-input interface. XSUB.COM is on the primary Utilities disk. Use an explicit companion location, such as `B0:XSUB B0:`, to load BATCHIO.RSX from the Utilities disk. The System disk must contain the matching R3PACK.RSX and R3CACHE.RSX runtimes. The locked 1.0 release still requires the [copy-to-A0 workaround](../releases/1.0-ERRATA.md#xsub-companion-must-be-copied-to-a0).
 
 #### General Form
 
 ```text
-XSUB
+XSUB [DU:]
 ```
 
 #### Quick Reference
 
 | Task | Invocation |
 | --- | --- |
-| Copy the matching companion (from A0) | `COPY B:BATCHIO.RSX A:BATCHIO.RSX` |
-| Enable submitted buffered input | `B0:XSUB` |
+| Enable using the Utilities companion in B0 | `B0:XSUB B0:` |
+| Enable using current DU, then A0 | `XSUB` |
 
 #### Detailed Reference
 
@@ -8093,14 +8093,14 @@ The activation command is:
 XSUB
 ```
 
-Place it before the program to be automated. `XSUB.COM` belongs to the **Utilities Disk**, not the current System Disk. Its protected companion, `BATCHIO.RSX`, must be in A0, along with the matched-build `R3PACK.RSX` manager runtime. The primary Utilities Disk supplies both XSUB.COM and BATCHIO.RSX. Copy its matched BATCHIO.RSX to writable A0 before using XSUB; loading it from a Utilities drive is not an alternative to the runtime’s fixed-A0 lookup. Keep it matched to the System Disk’s R3PACK.RSX. See the [1.0 XSUB erratum](../releases/1.0-ERRATA.md#xsub-companion-must-be-copied-to-a0) for the copy commands and planned 1.01 correction.
+Place it before the program to be automated. `XSUB.COM` and its matched `BATCHIO.RSX` are supplied on the **Utilities Disk**. At A0, invoke `B0:XSUB B0:` to use that companion directly. An explicit DU restricts lookup to that location; without one, XSUB searches the current DU, then A0. The COM lookup location does not implicitly select the companion location. No all-drive scan is performed. Keep matching `R3PACK.RSX` and `R3CACHE.RSX` on A0. Once loaded, BATCHIO no longer requires its original carrier.
 
-Before running the example, make `XSUB.COM`, `ED.COM`, `TYPE.COM`, and `SUBMIT.COM` available on the command search path and `BATCHIO.RSX` and `R3PACK.RSX` available in A0. Keep A0 writable for the shared queue, and use a writable working drive/user where `XDEMO.TXT` does not already exist.
+Before running the example, make `ED.COM`, `TYPE.COM`, and `SUBMIT.COM` available on the command search path, mount Utilities as B0, and retain matching `R3PACK.RSX`/`R3CACHE.RSX` runtimes in A0. Keep A0 writable for the shared queue, and use a writable working drive/user where `XDEMO.TXT` does not already exist.
 
 Save this complete procedure as `XDEMO.SUB` in the working location:
 
 ```text
-XSUB
+B0:XSUB B0:
 ED XDEMO.TXT
 IHELLO FROM XSUB^L^Z
 E
@@ -8191,7 +8191,7 @@ Enable submitted buffered input. Substitute the locations and filenames appropri
 
 #### Errors/Troubleshooting
 
-`Xsub Load Error` can mean BATCHIO.RSX is absent from A0 even though XSUB.COM is runnable from B0. Copy the matching Utilities companion to writable A0 and retain the matching System R3PACK.RSX. `/HELP` and `/VER` do not activate the provider. This workaround preserves the 1.0 lock; a loader/packaging correction is planned for 1.01.
+`Xsub Load Error` means activation failed: check the selected companion DU, matching System runtimes and available memory. From A0 with Utilities on B0, use `B0:XSUB B0:`. `/HELP` and `/VER` do not activate the provider. The locked 1.0 binaries retain their documented copy-to-A0 workaround.
 
 Check the operand grammar and the selected drive/user area. For disk failures, preserve the source and any reported recovery files before retrying. See the [shared system messages](#system-messages) for command lookup, media, configuration and extension diagnostics.
 

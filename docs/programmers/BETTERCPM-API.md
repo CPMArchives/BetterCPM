@@ -60,26 +60,28 @@ A successful append does not certify a carrier. Reconstruction reads `A0:stem.CP
 
 <a id="function-177"></a>
 
-Input: C=177, DE=18-byte version-2 request. This is the production BRSX-v2 transaction gateway. Treat all scratch/workspace as owned by the manager for the call. Supplied callers compute bounds around live code, buffers and their stack; supplying the entire apparent TPA indiscriminately can overwrite the caller.
+Input: C=177, DE=18-byte version-2 request, or a 20-byte version-3 request for explicit carrier locations. This is the production BRSX-v2 transaction gateway. Treat all scratch/workspace as owned by the manager for the call. Supplied callers compute bounds around live code, buffers and their stack; supplying the entire apparent TPA indiscriminately can overwrite the caller.
 
 | Offset | Size | Field |
 | --- | ---: | --- |
-| 0 | 1 | Request version=2. |
+| 0 | 1 | Request version=2 (18 bytes) or 3 (20 bytes). |
 | 1 | 1 | 0 enumerate, 1 LOAD, 2 UNLOAD, 3 QUERY, 4 self-retirement. |
-| 2 | 1 | Enumeration ordinal for operation 0. |
+| 2 | 1 | Enumeration ordinal for operation 0; v3 LOAD search mode (0 exact, 1 current source then A0). |
 | 3 | 1 | Flags/private result state; write zero. |
 | 4 | 8 | Uppercase space-padded filename stem; enumeration output. |
 | 12 | 2 | Enumerated primary numeric service word; FFFFh can mean no numeric service. Not a callable-service identifier. |
 | 14 | 2 | Caller workspace lower address for mutations. |
 | 16 | 2 | Caller workspace exclusive upper address. The manager can lower it to its effective ceiling. |
 
-Enumeration/QUERY return A=1 when present, A=0 when absent/end. LOAD/UNLOAD return zero on success/no-op; nonzero, commonly FFh, means failure. Test by operation, since 1 is a valid enumeration success. There are four profile entries. Use an unqualified stem and keep carriers and matching R3PACK.RSX in A0. Successful LOAD of an existing name and UNLOAD of an absent name are idempotent.
+Enumeration/QUERY return A=1 when present, A=0 when absent/end. LOAD/UNLOAD return zero on success/no-op; nonzero, commonly FFh, means failure. Test by operation, since 1 is a valid enumeration success. There are four profile entries. Version 2 retains fixed-A0 source lookup. Version 3 appends zero-based drive (0–15) at +18 and user (0–31) at +19. For LOAD only, +2 is 0 for that exact location or 1 to retry A0 after an unsuccessful open; an opened invalid carrier never falls through. ENUMERATE and successful QUERY return the retained source DU in +18/+19. Keep the matching R3PACK.RSX and R3CACHE.RSX manager runtimes in A0. Successful LOAD of an existing name and UNLOAD of an absent name are idempotent.
 
 LOAD/UNLOAD prepare the complete prospective profile, carriers, metadata, placement, snapshots and pointer repairs before live mutation. During preparation, the old published profile remains usable. The locked normal path clamps transaction workspace to at most 7000h and reserves its overlay/stack band (0F00h in that path); these are implementation facts, not workspace a client can reclaim. A request can fail for insufficient scratch despite apparently sufficient resident allocation. Use the supplied `RSX.COM` implementation as the exact transient-call pattern.
 
 Operation 4 is a tightly coupled provider self-retirement path which can reclaim the caller and warm boot. It is not a general returning UNLOAD convenience. Do not invoke it from arbitrary callbacks or assume execution resumes at the next instruction.
 
-Retained STATEFUL RSXs survive ordinary WBOOT without reloading disk defaults. Commit is bounded memory work followed by final publication; an invariant violation after movement starts is not a recoverable disk error and must not be reported as a successful rollback. Fixed A0 lookup, four-entry capacity, explicit ordering and specific monitor/clock conflict rules do not constitute a general declarative dependency framework.
+Retained STATEFUL RSXs survive ordinary WBOOT without reloading disk defaults. Commit is bounded memory work followed by final publication; an invariant violation after movement starts is not a recoverable disk error and must not be reported as a successful rollback. Version-2 A0 lookup, four-entry capacity, explicit ordering and specific monitor/clock conflict rules do not constitute a general declarative dependency framework.
+
+After successful installation, neither warm boot nor later profile changes reopen that provider's carrier. The manager retains a compact carrier capsule in its charged allocation, preserving pristine STATELESS templates and STATEFUL relocation/metadata facts. Runtime pointer repair retains the provider's original allocation boundary; capsule addresses are not provider-owned relocation targets. A shared 1 KiB capsule reader is charged while any provider is installed, in addition to the existing 1 KiB manager. Per-provider capsule storage is page-rounded and reclaimed on unload. The last unload restores the no-RSX TPA. This is RAM residency across WBOOT, not persistent installation across cold boot; the System manager runtime remains a separate disk dependency.
 
 Implementation anchors: [transaction entry](../../src/system/r3entry.mac), [coordinator](../../src/system/r3coord.mac), [supplied caller](../../src/utilities/rsx.mac), [prepared commit record](../engineering/151%20Stage%203%20Prepared%20Profile%20Commit.md). The record's historical 202/208 numbers are superseded by 177/182.
 

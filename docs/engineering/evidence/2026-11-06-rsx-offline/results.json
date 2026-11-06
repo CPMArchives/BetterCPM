@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "date_taipei": "2026-11-06",
+  "baseline": "16f9a479e3f24a44476018c2e94cf4b66a53408a",
+  "platform_receipts": {
+    "cpmsim": "cpmsim.json",
+    "trs80gp-model4": "model4.json"
+  },
+  "same_executable_hashes_on_both_platforms": true,
+  "host_checks": {
+    "test_rsx_cache": "PASS",
+    "test_rsx_offline": "PASS",
+    "test_rsx_source_cli": "PASS",
+    "test_rsxsnapshot": "PASS",
+    "test_rsxmover": "PASS",
+    "test_rsx_container": "PASS",
+    "test_component_inputs": "PASS (13 tests)",
+    "test_component_registry": "PASS (9 tests)",
+    "component_registry_check": "PASS"
+  },
+  "checked_branch_sizes": {
+    "cache": 879,
+    "coordinator": 941,
+    "profile": 995,
+    "removal": 973,
+    "entry": 967
+  },
+  "checked_branch_scope": "compile/slot fit only; not native checked-profile qualification",
+  "extra_active_shared_bytes": 1024,
+  "batchio_extra_carrier_bytes": 768,
+  "batchio_additional_bytes_over_previous": 1792,
+  "no_rsx_tpa_change": 0,
+  "fdb_exit_issue": "OPEN: unreproduced; no FDB runtime change",
+  "merges_performed": false,
+  "integration_base": "d0401a26de165a07a26bdbb43a1caa76ae43f99f",
+  "rebuilt_after_rebase_matches_qualified_executable_hashes": true
+}
