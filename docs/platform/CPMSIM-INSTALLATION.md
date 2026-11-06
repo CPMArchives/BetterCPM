@@ -28,6 +28,33 @@ next redraw. This workaround keeps the qualified 1.0 binaries unchanged.
 See [the User's Guide](../manuals/Users-Guide.md#host-terminal-size-and-recovery)
 and [the 1.0 erratum](../releases/1.0-ERRATA.md#ansi-host-terminal-size).
 
+## v1.0.1 source launch check
+
+The v1.0.1 source candidate adds a **cpmsim-only** check of the host terminal
+window. Its generated RAM/ROM launchers refuse to start below 80 columns or
+24 rows, explain how to enlarge the window or reduce the font size, and allow
+a retry after resizing. Rebuild the platform output to update an existing
+launcher. The locked 1.0 downloads and their direct invocation below remain
+unchanged.
+
+For a fresh v1.0.1 source/System host kit, use the guard in place of directly
+invoking the reconstructed emulator (with the helper PATH set as below):
+
+```sh
+python3 tools/cpmsim_terminal.py -- \
+  "$PWD/build/cpmsim-runtime/z80pack/cpmsim/cpmsim" -z -d "$PWD/session/disks"
+```
+
+The guard checks the real output terminal, not COLUMNS/LINES. Output redirected
+to a file or pipe retains automated operation; PTY-based automation must set a
+valid window size. Direct emulator invocation bypasses the check. It adds no
+CP/M memory cost and does not apply to Model 4 or its 40-column mode.
+
+Keep the terminal at least 80x24 after launch too. If you shrink it, exit the
+utility, enlarge the window and restart the utility to redraw. There is no
+continuous resize enforcement or smaller-screen support. See the
+[implementation and validation](../engineering/CPMSIM-Terminal-Size-Guard.md).
+
 ## Sources and prerequisites
 
 Use the matching BetterCP/M source package, including

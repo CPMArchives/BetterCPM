@@ -1,0 +1,77 @@
+{
+  "status": "PASS",
+  "system_sha256": "08a06d4868e378dcfa0b4a6e6d9036a6650f2f34176a9d5ac305ce32c32f4dda",
+  "simulator_sha256": "0f6b256cd6beea2ab7bf0eab8a9cc2a5241ed772408e811150c3f6e0f5cff4e8",
+  "launcher_and_guard": "generated RAM launcher; real cpmsim",
+  "phases": [
+    {
+      "columns": 80,
+      "rows": 24,
+      "menu_and_exit": "PASS",
+      "supported_size": true
+    },
+    {
+      "columns": 100,
+      "rows": 40,
+      "menu_and_exit": "PASS",
+      "supported_size": true
+    },
+    {
+      "columns": 77,
+      "rows": 20,
+      "menu_and_exit": "PASS",
+      "supported_size": false
+    },
+    {
+      "columns": 80,
+      "rows": 24,
+      "menu_and_exit": "PASS",
+      "supported_size": true
+    }
+  ],
+  "ansi_load_unload": "PASS",
+  "post_exit_file_read": "PASS",
+  "unloaded_tpa": "53K",
+  "preserved_files": [
+    "adm3a.rsx",
+    "admtst.com",
+    "ansi.rsx",
+    "ansiscrn.rsx",
+    "ansitst.com",
+    "bye.com",
+    "config.com",
+    "copy.com",
+    "cpx.com",
+    "dir.com",
+    "disk.fdb",
+    "dup.com",
+    "ed.com",
+    "era.com",
+    "fdb.com",
+    "fdbview.ovl",
+    "mount.com",
+    "p2dos.rsx",
+    "pip.com",
+    "r.com",
+    "r3pack.rsx",
+    "rcp.cpx",
+    "readme.txt",
+    "ren.com",
+    "rsx.com",
+    "startup.sub",
+    "stat.com",
+    "submit.com",
+    "sysgen.com",
+    "time.com",
+    "type.com",
+    "ver.com",
+    "vt52.rsx",
+    "vt52tst.com",
+    "w.com",
+    "zprtc.rsx"
+  ],
+  "reserved_tracks_unchanged": true,
+  "filesystem": "PASS",
+  "original_image_unchanged": true,
+  "limit": "Host launch check only. Resize/redraw checks guest lifecycle and emitted menu, not graphical rendering or smaller-screen support."
+}

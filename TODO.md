@@ -41,12 +41,12 @@ records the accepted command UI, DIR and XSUB limitations.
   [revision 015 candidate and qualification](docs/engineering/DIR-Lowercase-Filespec-Correction.md);
   acceptance remains subject to merge.
 
-- [ ] **1.01: ANSI host smaller-window handling.** Review a host-side size
-  warning/check or support for smaller terminals. For 1.0 retain the documented
-  80-column, 24-row minimum and enlarge-then-restart workaround. Cover 77x20,
-  80x24 and larger windows, including resize followed by a fresh redraw. The
-  observed recovery is not a verified binary fix or an implemented guard.
-  See the [terminal-size erratum](docs/releases/1.0-ERRATA.md#ansi-host-terminal-size).
+- [ ] **1.01: ANSI host terminal-size handling.** The approved cpmsim-only
+  [launch guard and validation](docs/engineering/CPMSIM-Terminal-Size-Guard.md)
+  refuse launch below 80x24 and explain resizing/retry; acceptance remains
+  subject to merge. Live resizing and smaller-screen support are not added.
+  The locked 1.0 minimum/workaround remains in the
+  [terminal-size erratum](docs/releases/1.0-ERRATA.md#ansi-host-terminal-size).
 
 ## Immediate priorities
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build an independent cpmsim target; preserve the TRS-80 boot artifacts."""
 from pathlib import Path
-import argparse,re,struct,subprocess,sys,json,hashlib
+import argparse,re,struct,subprocess,sys,json,hashlib,shlex,shutil
 from build_ccp import assemble
 from build_z80pack_bye import build as build_bye
 from fdf_format import select_fdf
@@ -95,6 +95,18 @@ diskdef bettercpm-ampro-little-board-ds
 end
 '''
  return diskdefs
+
+
+def write_launchers(out, simulator):
+ """Keep RAM/ROM launch paths behind the same portable host-only check."""
+ out=Path(out);simulator=Path(simulator)
+ shutil.copy2(ROOT/'tools/cpmsim_terminal.py',out/'cpmsim_terminal.py')
+ prefix=('#!/bin/sh\ncd -- "$(dirname -- "$0")" || exit 1\n'
+         'PATH='+shlex.quote(str(simulator.parent/'srctools'))+':"$PATH"\nexport PATH\n'
+         'exec python3 "$PWD/cpmsim_terminal.py" -- '+shlex.quote(str(simulator)))
+ for name,flags in (('launch-z80pack.command',' -z -d "$PWD/disks"'),
+                    ('launch-z80pack-rom.command',' -z -x "$PWD/rom/rom-boot.hex" -d "$PWD/rom-disks"')):
+  launcher=out/name;launcher.write_text(prefix+flags+' "$@"\n');launcher.chmod(0o755)
 
 
 def main():
@@ -425,10 +437,7 @@ def main():
  (out/'diskdefs').write_text(disk_definition(fmt))
  simulator=args.simulator.expanduser().resolve()
  if not simulator.is_file():raise SystemExit(f'missing cpmsim simulator: {simulator}')
- (out/'launch-z80pack.command').write_text('#!/bin/sh\ncd -- "$(dirname -- "$0")" || exit 1\nPATH="'+str(simulator.parent/'srctools')+':$PATH"\nexport PATH\nexec "'+str(simulator)+'" -z -d "$PWD/disks" "$@"\n')
- (out/'launch-z80pack.command').chmod(0o755)
- (out/'launch-z80pack-rom.command').write_text('#!/bin/sh\ncd -- "$(dirname -- "$0")" || exit 1\nPATH="'+str(simulator.parent/'srctools')+':$PATH"\nexport PATH\nexec "'+str(simulator)+'" -z -x "$PWD/rom/rom-boot.hex" -d "$PWD/rom-disks" "$@"\n')
- (out/'launch-z80pack-rom.command').chmod(0o755)
+ write_launchers(out,simulator)
  (out/'manifest.json').write_text(json.dumps({'target':'z80pack/cpmsim','format':fmt.name,'cylinders':fmt.cylinders,'sides':fmt.sides,'physical_sectors_per_track':fmt.physical_sectors,'physical_sector_bytes':fmt.sector_bytes,'image_bytes':fmt.image_bytes,'records_per_logical_track':fmt.spt,'reserved_tracks':fmt.off,'reserved_records':fmt.reserved_records,'allocation_kib':(fmt.dsm+1)*fmt.block_bytes//1024,'cpmtools_format':'bettercpm-default','sha256':hashlib.sha256(raw).hexdigest(),'shared_bdos_sha256':hashlib.sha256((ROOT/'build/bdos/bdos.bin').read_bytes()).hexdigest()},indent=2)+'\n')
  print(f'Created linked media in {library}; {fmt.name}; {(fmt.dsm+1)*fmt.block_bytes//1024} KiB allocation area')
 if __name__=='__main__':main()

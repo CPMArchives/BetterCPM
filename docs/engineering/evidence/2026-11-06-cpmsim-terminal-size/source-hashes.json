@@ -1,0 +1,7 @@
+{
+  "tools/cpmsim_terminal.py": "652e0559a7dcf0f8927cf893efcd58cf09f78073105a5880ca50628b3bc4564e",
+  "tools/build_z80pack_image.py": "022f1bf2af883351733252a61d1d6f057480586eb155b3cb632fb6a6ea61b8ac",
+  "tools/package_release_candidates.py": "130696a01b22f5384d89daa56ab3ee141b383f84b397a39430c37f48620651cc",
+  "tools/test_cpmsim_terminal.py": "6ae1b32ce6a33577c74467e6c7c7f49f590280bfff68a6281e569b2d6e8044e5",
+  "tools/qualify_cpmsim_terminal.py": "3b7f519cbc00668cc84955e23fbf9f6d3de01dece3f455db35528775cc722be2"
+}

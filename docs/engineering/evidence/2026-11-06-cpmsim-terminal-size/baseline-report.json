@@ -1,0 +1,31 @@
+{
+  "status": "PASS guest lifecycle only; no graphical garbling reproduction claimed",
+  "phases": [
+    {
+      "columns": 77,
+      "rows": 20,
+      "main_menu_emitted": true
+    },
+    {
+      "columns": 80,
+      "rows": 24,
+      "main_menu_emitted": true
+    },
+    {
+      "columns": 100,
+      "rows": 40,
+      "main_menu_emitted": true
+    },
+    {
+      "columns": 77,
+      "rows": 20,
+      "main_menu_emitted": true
+    },
+    {
+      "columns": 80,
+      "rows": 24,
+      "main_menu_emitted": true
+    }
+  ],
+  "original_sha256": "08a06d4868e378dcfa0b4a6e6d9036a6650f2f34176a9d5ac305ce32c32f4dda"
+}
