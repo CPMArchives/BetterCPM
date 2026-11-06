@@ -1323,13 +1323,14 @@
       "reserved_bytes_preserved": 11520,
       "image_length_preserved": true,
       "imd_headers_and_sector_order_preserved": true,
+      "original_directory_entries_preserved": true,
       "original_image_unchanged": true,
       "original_raw_sha256": "3ba6ed1735b454439b678f062c7ee81648523b6af844fc208d43bcc4ac43c00d",
       "written_raw_sha256": "683874a06c8b61a6f246578089d5861d8fa57b47391817bc1cbdf4ba295f6e60",
       "written_imd_sha256": "b265c439313eb8f9bdd27ccb22756ae1f3b23392fdcb76790341c46aef2c0b9b",
       "probe_sha256": "daf00d58c3d1bca088e1869453620c9ee6ef32ed29f3527b1a8760bfd8a79930",
-      "fsck_before": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-01/ATN223IS/working.raw: 20/128 files (0.0% non-contigous), 69/300 blocks\n",
-      "fsck_after": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-01/ATN223IS/working.raw: 49/128 files (0.0% non-contigous), 300/300 blocks\n"
+      "fsck_before": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-02/ATN223IS/working.raw: 20/128 files (0.0% non-contigous), 69/300 blocks\n",
+      "fsck_after": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-02/ATN223IS/working.raw: 49/128 files (0.0% non-contigous), 300/300 blocks\n"
     },
     {
       "filename": "ATN225BD.IMD",
@@ -3885,13 +3886,14 @@
       "reserved_bytes_preserved": 11520,
       "image_length_preserved": true,
       "imd_headers_and_sector_order_preserved": true,
+      "original_directory_entries_preserved": true,
       "original_image_unchanged": true,
       "original_raw_sha256": "409864dd0c9ac6682c3d8d7b570272a0b4443962f9aab377189b3fcbaa44d0cb",
       "written_raw_sha256": "c0b73c4cf5e7ea7970a46d6042fb310ddb76742d9a7bc4a4646c2321966285db",
       "written_imd_sha256": "d7243231d166c9f850c810c3da7ae0278f01954473baaddb0dd06704092feed0",
       "probe_sha256": "934058c1f9e6eb326a1aece527f02b9cac3228f330207d37ec4f3dd978ff503f",
-      "fsck_before": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-01/ATN225BD/working.raw: 38/192 files (0.0% non-contigous), 142/608 blocks\n",
-      "fsck_after": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-01/ATN225BD/working.raw: 97/192 files (0.0% non-contigous), 608/608 blocks\n"
+      "fsck_before": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-02/ATN225BD/working.raw: 38/192 files (0.0% non-contigous), 142/608 blocks\n",
+      "fsck_after": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-02/ATN225BD/working.raw: 97/192 files (0.0% non-contigous), 608/608 blocks\n"
     },
     {
       "filename": "ATN225BS.IMD",
@@ -6512,13 +6514,14 @@
       "reserved_bytes_preserved": 11520,
       "image_length_preserved": true,
       "imd_headers_and_sector_order_preserved": true,
+      "original_directory_entries_preserved": true,
       "original_image_unchanged": true,
       "original_raw_sha256": "ac9c7a014459199920cda3ae021905b792ffc6b8d73b91122e31b52464a8fa26",
       "written_raw_sha256": "a10030759cc82ea631cea80b1a96f3bb9424c852c45a0f6f8fc0faa13d53f9b8",
       "written_imd_sha256": "0c55bb272e1e0e4cdaf153f1e4c182182cb6054a962382ac25c1b8b28ea1ae33",
       "probe_sha256": "f9eaac81098a9f98d36a1ac9146b4d79911b24b32faa37d0be057c4a6c922f1b",
-      "fsck_before": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-01/LB224A/working.raw: 71/128 files (0.2% non-contigous), 288/300 blocks\n",
-      "fsck_after": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-01/LB224A/working.raw: 73/128 files (0.3% non-contigous), 300/300 blocks\n"
+      "fsck_before": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-02/LB224A/working.raw: 71/128 files (0.2% non-contigous), 288/300 blocks\n",
+      "fsck_after": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-02/LB224A/working.raw: 73/128 files (0.3% non-contigous), 300/300 blocks\n"
     },
     {
       "filename": "LB225D.IMD",
@@ -7850,13 +7853,14 @@
       "reserved_bytes_preserved": 11520,
       "image_length_preserved": true,
       "imd_headers_and_sector_order_preserved": true,
+      "original_directory_entries_preserved": true,
       "original_image_unchanged": true,
       "original_raw_sha256": "712e3e127f856e5a578e754372036d360cc9d5e317d62a5989b0e27fd4288779",
       "written_raw_sha256": "efdb9e18a42a21d01d6d3024e6ed186e42e9667da97a94d462360561a1c8bb34",
       "written_imd_sha256": "8f6ddf5193a9308d1dfdf83dd27e57f3263be59c85cb19b664f14679935d86fc",
       "probe_sha256": "c14c65ab3162b9bd35656f5f683487593a0742d8cfcbb313ae26ad4ae01145a4",
-      "fsck_before": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-01/LB225D/working.raw: 48/128 files (0.0% non-contigous), 166/300 blocks\n",
-      "fsck_after": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-01/LB225D/working.raw: 65/128 files (0.0% non-contigous), 300/300 blocks\n"
+      "fsck_before": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-02/LB225D/working.raw: 48/128 files (0.0% non-contigous), 166/300 blocks\n",
+      "fsck_after": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-02/LB225D/working.raw: 65/128 files (0.0% non-contigous), 300/300 blocks\n"
     },
     {
       "filename": "LB225DF80.IMD",
@@ -9154,13 +9158,14 @@
       "reserved_bytes_preserved": 11520,
       "image_length_preserved": true,
       "imd_headers_and_sector_order_preserved": true,
+      "original_directory_entries_preserved": true,
       "original_image_unchanged": true,
       "original_raw_sha256": "46273940475f8148c56d4830e8240e090aa4fe6fa682e00cbb0fb1a68dc69896",
       "written_raw_sha256": "a99023fa438377c65c1dbb497188e610251094c2666a73dbc06e842ca5fbdc53",
       "written_imd_sha256": "f132efe2bc5500a24b080c38b7e099149f0dcdfbdb1a1966df5784c76b36a1b3",
       "probe_sha256": "b4f543127b268538524b7679479ab8c3cdecbdd579cabc70d9b9a02858d06ab0",
-      "fsck_before": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-01/LB225DF80/working.raw: 10/128 files (0.0% non-contigous), 54/300 blocks\n",
-      "fsck_after": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-01/LB225DF80/working.raw: 41/128 files (0.0% non-contigous), 300/300 blocks\n"
+      "fsck_before": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-02/LB225DF80/working.raw: 10/128 files (0.0% non-contigous), 54/300 blocks\n",
+      "fsck_after": "Phase 1: check extent fields\nPhase 2: check extent connectivity\n/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/post-1.0-model2-formats/results/host-02/LB225DF80/working.raw: 41/128 files (0.0% non-contigous), 300/300 blocks\n"
     }
   ]
 }

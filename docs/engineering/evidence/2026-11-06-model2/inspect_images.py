@@ -133,6 +133,8 @@ def run_one(spec, images, output, cpmtools):
         return record
     raw = raw_image(tracks)
     double = len(tracks) == 154
+    assert sorted((t['cylinder'], t['head']) for t in tracks) == [
+        (c, h) for c in range(77) for h in range(2 if double else 1)]
     dsm, maxdir = (607, 192) if double else (299, 128)
     assert len(raw) == PREFIX + (dsm+1)*2048
     assert tracks[0]['mode'] == 0 and tracks[0]['size'] == 128 and set(tracks[0]['ids']) == set(range(1,27))
@@ -169,6 +171,10 @@ def run_one(spec, images, output, cpmtools):
     tool('cpmcp', ['-f', fmt, str(target), str(work/'probe.bin'), '0:m2probe.bin'])
     written = target.read_bytes()
     assert len(written) == len(raw) and written[:PREFIX] == raw[:PREFIX]
+    old_directory, new_directory = logical_data(raw), logical_data(written)
+    for pos in range(0, maxdir*32, 32):
+        if old_directory[pos] != 0xe5:
+            assert new_directory[pos:pos+32] == old_directory[pos:pos+32]
     after, allocated, _ = read_files(written, dsm, maxdir)
     assert allocated == set(range(dsm+1))
     assert after.pop('0:m2probe.bin') == probe and after == files
@@ -188,6 +194,7 @@ def run_one(spec, images, output, cpmtools):
                   logical_sector_order=list(ORDER), probe_bytes=len(probe),
                   highest_block_written=dsm, reserved_bytes_preserved=PREFIX,
                   image_length_preserved=True, imd_headers_and_sector_order_preserved=True,
+                  original_directory_entries_preserved=True,
                   original_image_unchanged=True, original_raw_sha256=digest(raw),
                   written_raw_sha256=digest(written), written_imd_sha256=digest(packed),
                   probe_sha256=digest(probe), fsck_before=before_check, fsck_after=after_check)
