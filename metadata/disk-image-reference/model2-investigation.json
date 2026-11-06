@@ -310,5 +310,12 @@
       "problems": []
     }
   ],
-  "evidence_commit": "3551904ede91b20e1f4551194d6bb2682eea8f32"
+  "evidence_commit": "189b6a4750bd31e800d93d4f3479cec84f48f39b",
+  "archive": {
+    "filename": "BetterCPM-ModelII-Reference-Investigation-2026-11-06.zip",
+    "size_bytes": 939789,
+    "sha256": "890d02fae4ab0f395288037f7ead2bf2849acfcbf292d1bf17989f34926413b8",
+    "access": "Maintainer-held reference archive",
+    "library_file_id": "libfile_faf9e3f6f2588191bf4bf2e19fdce831"
+  }
 }
