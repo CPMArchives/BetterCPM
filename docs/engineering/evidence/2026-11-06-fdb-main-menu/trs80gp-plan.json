@@ -1,0 +1,29 @@
+{
+  "candidate_artifact_sha256": "f6f0ebf1c8715565bc2870ca901dee5d69bf648135bf581609104d379d53e385",
+  "candidate_identity": {
+    "revision": 2,
+    "version": "1.01"
+  },
+  "candidate_input_fingerprint": "944420417bab2a205e87fdf59db1dcd14460f2ec5b78ffa53739ce596192c3ef",
+  "candidate_report_sha256": "ba16336e7d4657014cb4cc66743c2c5cf5c2a97ca2698aec482ce49b9b55c2cc",
+  "component": "utility:FDB",
+  "executable_changed": true,
+  "proposed_identity": {
+    "revision": 3,
+    "version": "1.01"
+  },
+  "reference_artifact_sha256": "3daafafc22daedbb2836e91409299d19e74fb8100c683248e36733bd2c4ebfe7",
+  "reference_identity": {
+    "revision": 2,
+    "version": "1.01"
+  },
+  "reference_report_sha256": "e500ab8cea0197d5fe4800496b56feccb4aeccbafceb1154e843d92d38face89",
+  "schema": 1,
+  "selected_inputs_changed": true,
+  "status": "revision-proposal; not acceptance",
+  "variant": {
+    "build_mode": "cross",
+    "profile": "default",
+    "target": "trs80gp"
+  }
+}

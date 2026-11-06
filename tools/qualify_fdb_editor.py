@@ -105,13 +105,13 @@ def main():
     raw = construct(a.target, root, out, [({'name':n,'user':0},d) for n,d in names],
                     geometry(a.target,root),'')
     stage(a.target,raw,a.system_image,names,out)
-    steps = [('STATE','A0>'), ('FDB','Choice:'), ('A','Logical drive B, C or D:'),
+    steps = [('STATE','A0>'), ('FDB','Your choice: [ ]'), ('A','Logical drive B, C or D:'),
              ('B','Q Back:'), ('3','Q Back:'), ('E','Value:'),
              ('100','Q Back:'), ('V','Format validates.')]
     for drive in 'DCB':
         steps += [('S','other Cancel:'), ('D','Logical drive B, C or D:'),
                   (drive,'(Y/N)?'), ('Y','Active drive binding updated.')]
-    steps += [('Q','Choice:'), ('Q','C Cancel:'), ('D','A0>'), ('STATE','A0>')]
+    steps += [('Q','Your choice: [ ]'), ('Q','C Cancel:'), ('D','A0>'), ('STATE','A0>')]
     if a.target == 'z80pack':
         disks=out/'disks';disks.mkdir()
         image=disks/'drivea.dsk';shutil.copy2(raw,image)

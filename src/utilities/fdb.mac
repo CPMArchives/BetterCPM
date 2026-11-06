@@ -724,11 +724,45 @@ PUTC:   PUSH HL
         POP HL
         RET
 PUTS:   LD A,(HL)
-        OR A
+        CP 255
+        JR Z,MDECODE
+PPLAIN: OR A
         RET Z
         CALL PUTC
         INC HL
-        JR PUTS
+        LD A,(HL)
+        JR PPLAIN
+; Encoded fixed messages begin FFh; ordinary/dynamic strings are unchanged.
+; Dictionary words are plain ASCII. Preserve the original PUTS register ABI.
+MDECODE:PUSH BC
+        PUSH DE
+        INC HL
+        EX DE,HL
+MDLOOP: LD A,(DE)
+        INC DE
+        OR A
+        JR Z,MDDONE
+        JP P,MDCHAR
+        AND 127
+        ADD A,A
+        LD C,A
+        LD B,0
+        LD HL,MDICT
+        ADD HL,BC
+        LD C,(HL)
+        INC HL
+        LD B,(HL)
+        LD H,B
+        LD L,C
+        CALL PUTS
+        JR MDLOOP
+MDCHAR: CALL PUTC
+        JR MDLOOP
+MDDONE: DEC DE
+        EX DE,HL
+        POP DE
+        POP BC
+        RET
 ; Sample the private stack after conversion and file close, including BDOS.
 SUCCESS:LD HL,STACK
         LD BC,0

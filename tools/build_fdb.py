@@ -82,6 +82,11 @@ def assemble(assembler, destination):
         query_source_text(),
         'QUERYEND:\n        END\n',
     ])
+    version, revision = identity('utility:FDB')
+    heading=title('FDB',version,revision,development=selected_display('utility:FDB')['development'])
+    source=source.replace('; @fdb-main-menu-title@',"        DB '"+heading+"',13,10,0")
+    from fdb_menu_text import encode
+    source=encode(source)
     token = zlib.crc32(source.encode()).to_bytes(4,'little')
     source = source.replace('VIEWTOKEN:DB 0,0,0,0', 'VIEWTOKEN:DB '+','.join(map(str,token)))
     output = destination/'FDB.COM'

@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "message_cases": 53,
+  "menu_rows_with_input": 23,
+  "max_width": 80,
+  "stack_used": 32
+}

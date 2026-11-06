@@ -1,0 +1,126 @@
+[
+  [
+    "CLS",
+    "A0>"
+  ],
+  [
+    "FDB",
+    "Your choice: [ ]"
+  ],
+  [
+    "D",
+    "Source: catalogue ID,"
+  ],
+  [
+    "MMI012",
+    "Q or BREAK Return:"
+  ],
+  [
+    "4",
+    "Q or BREAK Return:"
+  ],
+  [
+    "Q",
+    "Your choice: [ ]"
+  ],
+  [
+    "Q",
+    "A0>"
+  ],
+  [
+    "TYPE MENUOK.TXT",
+    "FDB MENU CCP READY"
+  ],
+  [
+    "CLS",
+    "A0>"
+  ],
+  [
+    "FDB",
+    "Your choice: [ ]"
+  ],
+  [
+    "\u0003",
+    "A0>"
+  ],
+  [
+    "TYPE MENUOK.TXT",
+    "FDB MENU CCP READY"
+  ],
+  [
+    "CLS",
+    "A0>"
+  ],
+  [
+    "FDB",
+    "Your choice: [ ]"
+  ],
+  [
+    "N",
+    "Your choice: [ ]"
+  ],
+  [
+    "Q",
+    "A0>"
+  ],
+  [
+    "CLS",
+    "A0>"
+  ],
+  [
+    "FDB",
+    "Your choice: [ ]"
+  ],
+  [
+    "B",
+    "Source file (Return=RAM):"
+  ],
+  [
+    "",
+    "Catalogue ID:"
+  ],
+  [
+    "MMI012",
+    "Q Back:"
+  ],
+  [
+    "G",
+    "Value 0 or 1"
+  ],
+  [
+    "1",
+    "Q Back:"
+  ],
+  [
+    "Q",
+    "Your choice: [ ]"
+  ],
+  [
+    "Q",
+    "Editor pending: S Save"
+  ],
+  [
+    "C",
+    "Your choice: [ ]"
+  ],
+  [
+    "E",
+    "Q Back:"
+  ],
+  [
+    "Q",
+    "Your choice: [ ]"
+  ],
+  [
+    "\u0003",
+    "Editor pending: S Save"
+  ],
+  [
+    "D",
+    "A0>"
+  ],
+  [
+    "TYPE MENUOK.TXT",
+    "FDB MENU CCP READY"
+  ]
+]

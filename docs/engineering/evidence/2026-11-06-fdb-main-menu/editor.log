@@ -1,0 +1,8 @@
+Z80/8080-Macro-Assembler  Release 2.1
+Copyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt
+0 error(s)
+Z80/8080-Macro-Assembler  Release 2.1
+Copyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt
+0 error(s)
+ld: warning: reducing alignment of section __DATA,__common from 0x8000 to 0x4000 because it exceeds segment maximum alignment
+PASS effective geometry, DSM warning, external working copy, mixed 255-slot editing and save

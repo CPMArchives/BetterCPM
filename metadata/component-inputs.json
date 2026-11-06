@@ -5465,6 +5465,7 @@
         "src/utilities/disk/fdbviewload.inc",
         "src/utilities/fdb.mac",
         "tools/build_fdb.py",
+        "tools/fdb_menu_text.py",
         "tools/component_build.py",
         "tools/component_development.py",
         "tools/component_identity.py",

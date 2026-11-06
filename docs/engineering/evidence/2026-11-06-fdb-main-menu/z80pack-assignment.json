@@ -1,0 +1,115 @@
+{
+  "artifact": {
+    "bytes": 21315,
+    "name": "FDB.COM",
+    "sha256": "cd05fdb31272de07243e27ff3e1835ddc1f291e5505c7236292992446877a1bc"
+  },
+  "component": "utility:FDB",
+  "final_report_sha256": "490e36d537f261a5ca9aac44c4be22d3de4f760f01b29be6546b219945a11cae",
+  "identity": {
+    "revision": 3,
+    "version": "1.01"
+  },
+  "input_record": {
+    "assigned_identity": {
+      "revision": 3,
+      "version": "1.01"
+    },
+    "fingerprint": "58a3aa2548dc0937267466e60b8d3a36300310461cf878b683d7304ff1c9caa9",
+    "inputs": {
+      "component": "utility:FDB",
+      "configuration": {
+        "assembler_flags": [
+          "-e32",
+          "-fb"
+        ],
+        "editor_base": 47360,
+        "origin": 256,
+        "query_arena_end": 23296,
+        "sector_sizes_converter": 50944,
+        "sector_sizes_session": 47104,
+        "viewer_base": 42240,
+        "viewer_max_bytes": 4736
+      },
+      "files": {
+        "src/utilities/common/monitorconsole.inc": "bfa01ac854919893852c2f7418638765f53fe7d430f8bfca2ae536c150e56639",
+        "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+        "src/utilities/disk/fdbdrive.inc": "c6e779db8d0fd63d4694ae64691c9257ea8e0f2a88640086255e9010cec1e006",
+        "src/utilities/disk/fdbexchange.inc": "bc4a7c576edab5abfc3c1b36db8476a6411c8f64a756756bea77f9b95344f7b2",
+        "src/utilities/disk/fdbquery.inc": "bbdbdfddb84649deffaea6c8fe3816de87c510a09bab3166510f7ab0c58752bf",
+        "src/utilities/disk/fdbread.inc": "01ee867f0c8ecc17b64c3a63e7a94def652cec654f0297a1537fb127bfe070e3",
+        "src/utilities/disk/fdbsession.inc": "6bf3eb61cfae22a728b2cd8c409bf0d3ac8c3d2439bb506eb0200d7332d38373",
+        "src/utilities/disk/fdbview.inc": "1195e847ad74b88e97153992b2f2ade86def46351b1919c2286be3ab08828f36",
+        "src/utilities/disk/fdbviewload.inc": "9d2e3bc3ff1394d2dd3579cc7d75fdf725ff30f96bb9300f53d6b2521537245f",
+        "src/utilities/fdb.mac": "ed85b6920463b8ed7351d9c651bfe71c5d9d30af153062f4d28896b7a56b6668",
+        "tools/build_fdb.py": "e327fa9e930fc6931d702546560ef53eef04dffe8e90ef19f14f17203364bb3b",
+        "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+        "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+        "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+        "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+        "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+        "tools/fdb_menu_text.py": "acfce7475e40a49d6c4d5c06ce20176bf392efefd339ae430eb81f0684bebf17",
+        "tools/utility_help.py": "dcb325de05d0d030d1f760d9bde759d20b20e3d86cc9f71d2ba21e8af8b24099",
+        "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5"
+      },
+      "identity_fields": {
+        "api_version": null,
+        "version": "1.01"
+      },
+      "schema": 1,
+      "selected_metadata": {
+        "description": "Disk Format Catalogue Workbench",
+        "display_format": "numeric"
+      },
+      "toolchain": {
+        "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+      },
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      }
+    },
+    "schema": 1,
+    "status": "selected-input-capture"
+  },
+  "proposal": {
+    "candidate_artifact_sha256": "f6f0ebf1c8715565bc2870ca901dee5d69bf648135bf581609104d379d53e385",
+    "candidate_identity": {
+      "revision": 2,
+      "version": "1.01"
+    },
+    "candidate_input_fingerprint": "58a3aa2548dc0937267466e60b8d3a36300310461cf878b683d7304ff1c9caa9",
+    "candidate_report_sha256": "1b4898771f4cb64b067cca62ffbd8edd1e50623f79d32e3efef8c5316ac5857b",
+    "component": "utility:FDB",
+    "executable_changed": true,
+    "proposed_identity": {
+      "revision": 3,
+      "version": "1.01"
+    },
+    "reference_artifact_sha256": "3daafafc22daedbb2836e91409299d19e74fb8100c683248e36733bd2c4ebfe7",
+    "reference_identity": {
+      "revision": 2,
+      "version": "1.01"
+    },
+    "reference_report_sha256": "fcd9e5d2148a6e105e44171085d6d98b6616558c95b47fe0fb4abb307239c929",
+    "schema": 1,
+    "selected_inputs_changed": true,
+    "status": "revision-proposal; not acceptance",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "z80pack"
+    }
+  },
+  "provenance": {
+    "repository_commit": "5e3dce3426471e94608a4ed773ff5c73ba14c99f"
+  },
+  "schema": 1,
+  "status": "explicit revision assignment; not qualification",
+  "variant": {
+    "build_mode": "cross",
+    "profile": "default",
+    "target": "z80pack"
+  }
+}
