@@ -2,7 +2,6 @@
   "target": "trs80gp",
   "fdb_sha256": "7b21f92d6195a21ee85301c18d94d020d435543c5c226fbde055eed6bdaf41b2",
   "system_sha256": "303fcd2e6d495d32d743d8caa1eb8b987be3df09904f2f24d8d01d07b8987f55",
-  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
   "samples": {
     "464DDI1_1.DSK": {
       "status": "pass",
@@ -157,6 +156,44 @@
         "COPY C:FILL.BIN B:RETURN.BIN",
         "TYPE CPCEND.TXT"
       ]
+    },
+    "cpcBoosterClient.dsk": {
+      "status": "pass",
+      "raw_sha256": "6a47d928460aaf81f423c1090dd31c00a219d96b7e00132f168aa67e0316b3e8",
+      "formatted_cylinders": 40,
+      "rotation": [
+        193,
+        198,
+        194,
+        199,
+        195,
+        200,
+        196,
+        201,
+        197
+      ],
+      "original_files": {
+        "client": "f573f8cb0a987f644c63d3c3d04c34723b2176e5cf9714187059a2a29a89b471"
+      },
+      "fill_bytes": 180224,
+      "fill_sha256": "947380aacb84e0028a9bc00eb19df9f96163575f74b3c421a279707e056b28c2",
+      "highest_block_written": 179,
+      "written_edsk_sha256": "013b2d1477a4b6d55249748f18a4910e8b7f87ea5e72ddc9f38e0093d2cbc56a",
+      "reserved_bytes_preserved": 0,
+      "guest_commands": [
+        "RSX LOAD M4SCRN",
+        "RSX LOAD ADM3A",
+        "CLS",
+        "B:",
+        "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"Amstrad CPC Data\"",
+        "A:",
+        "DIR C:",
+        "COPY C:*.* B:",
+        "COPY B:PROBE.BIN C:FILL.BIN",
+        "COPY C:FILL.BIN B:RETURN.BIN",
+        "TYPE CPCEND.TXT"
+      ]
     }
-  }
+  },
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f"
 }

@@ -679,7 +679,7 @@ and [BetterCP/M catalogue baseline](https://github.com/CPMArchives/BetterCPM/blo
 
 | Priority among the 104 unmapped names | Count | Work |
 |---|---:|---|
-| P1, qualify | 5 | Amstrad `cpcsys` and `cpcdata` passed cpmsim file interchange and last-block writes on four archived disks. Both are in the [supplemental catalogue](metadata/supplemental/README.md). On Model 4, `cpcsys` passed on both the CPC464 and CPC664 disks through block 170. `cpcdata` passed on CPC6128 disk 3 through block 179. The Booster trial remains open. Next up are `pcw` and the shared Ampro `amp3`/`amp5` layout. |
+| P1, qualify | 5 | Amstrad `cpcsys` and `cpcdata` passed cpmsim file interchange and last-block writes on four archived disks. Both are in the [supplemental catalogue](metadata/supplemental/README.md). On Model 4, `cpcsys` passed on both the CPC464 and CPC664 disks through block 170. `cpcdata` passed on CPC6128 disk 3 and the Booster disk through block 179. All four Model 4 images passed. Next up are `pcw` and the shared Ampro `amp3`/`amp5` layout. |
 | P1, investigate | 5 | Inspect original ATON `trse`/`trsf` and Lifeboat `trs5` media to explain the 11,520-byte image prefix and verify the last block. Recover the sector IDs and order for the 8-inch MAX-80 `lobo2`/`lobo3` disks. Existing MAX-80 entries cover 5¼-inch disks. |
 | P2, follow up | 15 | Prioritize documented floppy families such as Bondwell 14, Microbee/Dreamdisk, Zenith 8-inch DD and Ampro double-sided. PCW 720K (`cf2dd`) specifies CKS 64, above the current BIOS limit of 32. |
 | P3, obtain evidence | 30 | Obtain an original disk or a concrete interchange use for Robotron/SCP/Korvet, Timex, P112 and other OEM variants. |
