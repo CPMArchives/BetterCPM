@@ -11,7 +11,7 @@ Preserve independently sourced disk images for format investigation, regression 
 | [Ampro investigation](ampro-investigation.json) | 7 surveyed; 1 synthetic | AMP3 candidate only (`amp3`/`amp5`) | Vendor-source agreement and synthetic cpmsim pass. Original 80T SS image missing; Model 4 guest I/O untested. |
 | [Model II investigation](model2-investigation.json) | 6 originals; 5 usable | ATONSS / ATONDS | Five cpmsim RAM write/read-back passes through the canonical adapter; one malformed image rejected. Model 4 and ROM remain unsupported. |
 | [Pickles & Trout](pickles-trout.json) | 3 originals | PT2SS | Three cpmsim RAM passes, including master-disk random tail records. Model 4 and ROM remain unsupported. |
-| [Bondwell 14](bondwell14.json) | 9 originals | BW14 | cpmsim RAM with FDF.RSX passed all files and final-block writes; Model 4 prepared, guest execution pending. |
+| [Bondwell 14](bondwell14.json) | 9 originals | BW14 | cpmsim RAM with FDF.RSX passed all files and final-block writes; Model 4 first batch failed; corrected load order awaits rerun. |
 
 The CPC archive is `BetterCPM-CPC-Reference-Images-2026-11-05.zip`, 177,908 bytes, SHA-256 `f807bd15481b2a6ea9111ed55b841bbecf011f3352c17e23c12a945d3ac7fe1f`. The maintainer holds a durable copy identified in the manifest. Other contributors can obtain the same originals from the pinned source URLs or request the archive from the maintainer if a source disappears.
 

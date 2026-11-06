@@ -18,7 +18,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "prepared; guest execution pending",
+        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -53,7 +53,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "prepared; guest execution pending",
+        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -87,7 +87,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "prepared; guest execution pending",
+        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -123,7 +123,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "prepared; guest execution pending",
+        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -158,7 +158,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "prepared; guest execution pending",
+        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -188,7 +188,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "prepared; guest execution pending",
+        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -236,7 +236,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "prepared; guest execution pending",
+        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -291,7 +291,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "prepared; guest execution pending",
+        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -313,7 +313,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "prepared; guest execution pending",
+        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -340,5 +340,6 @@
     "access": "Maintainer-held reference archive",
     "library_file_id": "libfile_f4fd2f4484508191b7c5aeb40ecdf393",
     "library_version": 0
-  }
+  },
+  "followup_evidence": "docs/engineering/evidence/2026-11-06-bondwell14/load-order-results.json"
 }

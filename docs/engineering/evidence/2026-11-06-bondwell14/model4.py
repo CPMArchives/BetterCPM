@@ -59,7 +59,9 @@ end
         (work/'DISK.FDB').write_bytes(serialize(parse((HERE/'CANDIDATE.FDF').read_text())))
         for local,name in [('probe.bin','PROBE.BIN'),('DISK.FDB','DISK.FDB')]:cpm(args,work,'cpmcp','bettercpm-default',dest,work/local,'0:'+name)
         cpm(args,work,'cpmcp','boot',boot,args.mapper,'0:FDF.RSX')
-        commands=['RSX LOAD M4SCRN','RSX LOAD ADM3A','RSX LOAD FDF','CLS','B:',
+        # FDF's private mapper input uses HL, which preceding chaining RSXs
+        # overwrite. Keep FDF first until that existing ABI limitation is fixed.
+        commands=['RSX LOAD FDF','RSX LOAD M4SCRN','RSX LOAD ADM3A','CLS','B:',
                   'A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT="Bondwell 14 40T DS"','A:',
                   'DIR C:','COPY C:*.* B:','COPY B:PROBE.BIN C:FILL.BIN','COPY C:FILL.BIN B:RETURN.BIN','TYPE BWEND.TXT']
         (work/'startup').write_bytes(('\r\n'.join(commands)+'\r\n\x1a').encode());(work/'marker').write_bytes(b'BW14 batch ended\r\n\x1a')

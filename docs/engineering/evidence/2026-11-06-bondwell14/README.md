@@ -8,9 +8,11 @@ changes were needed. The supplemental catalogue now has seven entries; the
 production 108-entry catalogue is unchanged.
 
 Model 4 media and its parallel runner are prepared, including physical DMK
-round trips, but no Model 4 guest result is claimed. This session's read-only
-LaunchServices lookup returned 1100 (BOOTSTRAP_NOT_PRIVILEGED), so the emulator
-was not started. ROM, physical media, historical booting and formatting remain
+round trips. The first user-launched batch failed at DIR with Bad Sector and
+was interrupted. The corrected load order has not yet passed on Model 4; no
+Model 4 pass is claimed. This session's read-only
+LaunchServices lookup returned 1100 (BOOTSTRAP_NOT_PRIVILEGED), so automated
+launch here remains unavailable; the failed batch was launched by the user. ROM, physical media, historical booting and formatting remain
 untested. This evidence concerns file interchange, not execution of Bondwell
 CP/M 3 or its applications under BetterCP/M.
 
@@ -82,6 +84,16 @@ This refusal is not counted as a passed trial. Final receipts refer only to the
 clean nine-worker run on pristine, hash-verified originals.
 
 ## Use
+
+Load **FDF before other RSXs**. The first Model 4 batch loaded screen RSXs
+before FDF; their ordinary chain jumps overwrite HL, which the private FDF
+mapper call uses as its input record number. A controlled cpmsim test reproduces
+Bad Sector with P2DOS before FDF and passes full SYSTEM1 interchange with FDF
+before P2DOS. The corrected Model 4 startup puts FDF first. This is a load-order
+workaround for an existing private-ABI limitation, not a general RSX fix.
+See [load-order evidence](load-order-results.json) and `check_load_order.py`,
+which takes the same runtime arguments as qualify.py except --catalogue/--jobs.
+Its two cases are deliberately sequential and each uses private media.
 
 Build the mapper with `python3 tools/build_fdf_rsx.py` and place FDF.RSX on
 BetterCP/M's System disk. Convert an original container into a fresh raw image:

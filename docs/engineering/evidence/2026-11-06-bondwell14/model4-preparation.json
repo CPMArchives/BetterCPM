@@ -1,5 +1,5 @@
 {
-  "status": "prepared; guest execution pending",
+  "status": "first user batch failed at DIR; corrected FDF-first media prepared, Model 4 rerun pending",
   "host_launch_services_code": 1100,
   "samples": {
     "CSTAR.IMG": {
@@ -8,9 +8,9 @@
       "files": 16,
       "probe_bytes": 231424,
       "guest_commands": [
+        "RSX LOAD FDF",
         "RSX LOAD M4SCRN",
         "RSX LOAD ADM3A",
-        "RSX LOAD FDF",
         "CLS",
         "B:",
         "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"Bondwell 14 40T DS\"",
@@ -24,7 +24,7 @@
       "system_sha256": "303fcd2e6d495d32d743d8caa1eb8b987be3df09904f2f24d8d01d07b8987f55",
       "mapper_sha256": "21f4f647a3f5ab71b309e7f02ed0856a6e746b00f9dc65c00be19868ca3b68de",
       "dmks_sha256": {
-        "drive0.dmk": "c4c23d60790071e5b4fcf0049859874225b3f65c7a2c09d8fa18e9c68e321061",
+        "drive0.dmk": "7e99d65a3c428d386df911c9a0acdb21441d007944603b1743e201ceeb81d1ff",
         "drive1.dmk": "31a09b7b3895e3ee5e7cbe695d32d2feb02004bdb8862b86efe718ddd1c380df",
         "drive2.dmk": "28dafd5cd4ec04633ff3cc4c377a309bee3e368824fbd824734bb82803accf34"
       },
@@ -36,9 +36,9 @@
       "files": 15,
       "probe_bytes": 251904,
       "guest_commands": [
+        "RSX LOAD FDF",
         "RSX LOAD M4SCRN",
         "RSX LOAD ADM3A",
-        "RSX LOAD FDF",
         "CLS",
         "B:",
         "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"Bondwell 14 40T DS\"",
@@ -52,7 +52,7 @@
       "system_sha256": "303fcd2e6d495d32d743d8caa1eb8b987be3df09904f2f24d8d01d07b8987f55",
       "mapper_sha256": "21f4f647a3f5ab71b309e7f02ed0856a6e746b00f9dc65c00be19868ca3b68de",
       "dmks_sha256": {
-        "drive0.dmk": "c4c23d60790071e5b4fcf0049859874225b3f65c7a2c09d8fa18e9c68e321061",
+        "drive0.dmk": "7e99d65a3c428d386df911c9a0acdb21441d007944603b1743e201ceeb81d1ff",
         "drive1.dmk": "2718f16006e238ac427acdb5dd14646a4b2e71344393e3e4460f5959162e81b6",
         "drive2.dmk": "9b96c3eda9378cf589f030830b9ca2ffdf231868a001fd8147ccebb699b766dd"
       },
@@ -64,9 +64,9 @@
       "files": 17,
       "probe_bytes": 247808,
       "guest_commands": [
+        "RSX LOAD FDF",
         "RSX LOAD M4SCRN",
         "RSX LOAD ADM3A",
-        "RSX LOAD FDF",
         "CLS",
         "B:",
         "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"Bondwell 14 40T DS\"",
@@ -80,7 +80,7 @@
       "system_sha256": "303fcd2e6d495d32d743d8caa1eb8b987be3df09904f2f24d8d01d07b8987f55",
       "mapper_sha256": "21f4f647a3f5ab71b309e7f02ed0856a6e746b00f9dc65c00be19868ca3b68de",
       "dmks_sha256": {
-        "drive0.dmk": "c4c23d60790071e5b4fcf0049859874225b3f65c7a2c09d8fa18e9c68e321061",
+        "drive0.dmk": "7e99d65a3c428d386df911c9a0acdb21441d007944603b1743e201ceeb81d1ff",
         "drive1.dmk": "6ebb1efb57dd7e331e6638fdd76b35ad5744e57bbb5161781f4d7f04f386ee50",
         "drive2.dmk": "1e5b90d2d39bd68182fc16375e9033f88a1e2c3d78d04597360927415477f243"
       },
@@ -92,9 +92,9 @@
       "files": 16,
       "probe_bytes": 288768,
       "guest_commands": [
+        "RSX LOAD FDF",
         "RSX LOAD M4SCRN",
         "RSX LOAD ADM3A",
-        "RSX LOAD FDF",
         "CLS",
         "B:",
         "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"Bondwell 14 40T DS\"",
@@ -108,7 +108,7 @@
       "system_sha256": "303fcd2e6d495d32d743d8caa1eb8b987be3df09904f2f24d8d01d07b8987f55",
       "mapper_sha256": "21f4f647a3f5ab71b309e7f02ed0856a6e746b00f9dc65c00be19868ca3b68de",
       "dmks_sha256": {
-        "drive0.dmk": "c4c23d60790071e5b4fcf0049859874225b3f65c7a2c09d8fa18e9c68e321061",
+        "drive0.dmk": "7e99d65a3c428d386df911c9a0acdb21441d007944603b1743e201ceeb81d1ff",
         "drive1.dmk": "b4a8c100bbe4372303cd3cf187ba19ed45a8f5511a615bf5fecb603f01bcf14d",
         "drive2.dmk": "06c386c81a51552ce055af6a4aa98bf98f411b976935fad6777cebbe51cb3282"
       },
@@ -120,9 +120,9 @@
       "files": 11,
       "probe_bytes": 184320,
       "guest_commands": [
+        "RSX LOAD FDF",
         "RSX LOAD M4SCRN",
         "RSX LOAD ADM3A",
-        "RSX LOAD FDF",
         "CLS",
         "B:",
         "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"Bondwell 14 40T DS\"",
@@ -136,7 +136,7 @@
       "system_sha256": "303fcd2e6d495d32d743d8caa1eb8b987be3df09904f2f24d8d01d07b8987f55",
       "mapper_sha256": "21f4f647a3f5ab71b309e7f02ed0856a6e746b00f9dc65c00be19868ca3b68de",
       "dmks_sha256": {
-        "drive0.dmk": "c4c23d60790071e5b4fcf0049859874225b3f65c7a2c09d8fa18e9c68e321061",
+        "drive0.dmk": "7e99d65a3c428d386df911c9a0acdb21441d007944603b1743e201ceeb81d1ff",
         "drive1.dmk": "e465a29c0a17036816b9745acf6ad15d54832fe60e04eeba81dab230da9f649b",
         "drive2.dmk": "0dd655a0a150b535388dff2847dac270b83ba60014d502559982fda01d58324c"
       },
@@ -148,9 +148,9 @@
       "files": 29,
       "probe_bytes": 51200,
       "guest_commands": [
+        "RSX LOAD FDF",
         "RSX LOAD M4SCRN",
         "RSX LOAD ADM3A",
-        "RSX LOAD FDF",
         "CLS",
         "B:",
         "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"Bondwell 14 40T DS\"",
@@ -164,7 +164,7 @@
       "system_sha256": "303fcd2e6d495d32d743d8caa1eb8b987be3df09904f2f24d8d01d07b8987f55",
       "mapper_sha256": "21f4f647a3f5ab71b309e7f02ed0856a6e746b00f9dc65c00be19868ca3b68de",
       "dmks_sha256": {
-        "drive0.dmk": "c4c23d60790071e5b4fcf0049859874225b3f65c7a2c09d8fa18e9c68e321061",
+        "drive0.dmk": "7e99d65a3c428d386df911c9a0acdb21441d007944603b1743e201ceeb81d1ff",
         "drive1.dmk": "b6ea61098f729cbee9e5b793e71b5e6e7b2476b95453462a73b21fb440a12f18",
         "drive2.dmk": "996fd52cb8741a56a663d42d01aa8f3110ad8fbb2f9a38da5db8673fcbd15c32"
       },
@@ -176,9 +176,9 @@
       "files": 36,
       "probe_bytes": 69632,
       "guest_commands": [
+        "RSX LOAD FDF",
         "RSX LOAD M4SCRN",
         "RSX LOAD ADM3A",
-        "RSX LOAD FDF",
         "CLS",
         "B:",
         "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"Bondwell 14 40T DS\"",
@@ -192,7 +192,7 @@
       "system_sha256": "303fcd2e6d495d32d743d8caa1eb8b987be3df09904f2f24d8d01d07b8987f55",
       "mapper_sha256": "21f4f647a3f5ab71b309e7f02ed0856a6e746b00f9dc65c00be19868ca3b68de",
       "dmks_sha256": {
-        "drive0.dmk": "c4c23d60790071e5b4fcf0049859874225b3f65c7a2c09d8fa18e9c68e321061",
+        "drive0.dmk": "7e99d65a3c428d386df911c9a0acdb21441d007944603b1743e201ceeb81d1ff",
         "drive1.dmk": "7ef99b25523f3307f8ae7c68978e870cc5fb18542d751553d73d12656cb2cc3c",
         "drive2.dmk": "e5089e740da26b5c6bc8ffb5471490fe2e6b50982d0fa92f801d7f3ff6502e55"
       },
@@ -204,9 +204,9 @@
       "files": 3,
       "probe_bytes": 245760,
       "guest_commands": [
+        "RSX LOAD FDF",
         "RSX LOAD M4SCRN",
         "RSX LOAD ADM3A",
-        "RSX LOAD FDF",
         "CLS",
         "B:",
         "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"Bondwell 14 40T DS\"",
@@ -220,7 +220,7 @@
       "system_sha256": "303fcd2e6d495d32d743d8caa1eb8b987be3df09904f2f24d8d01d07b8987f55",
       "mapper_sha256": "21f4f647a3f5ab71b309e7f02ed0856a6e746b00f9dc65c00be19868ca3b68de",
       "dmks_sha256": {
-        "drive0.dmk": "c4c23d60790071e5b4fcf0049859874225b3f65c7a2c09d8fa18e9c68e321061",
+        "drive0.dmk": "7e99d65a3c428d386df911c9a0acdb21441d007944603b1743e201ceeb81d1ff",
         "drive1.dmk": "6c3062094d4d7af9effa7b4ef8f4433c5f0a801e05b14e5c17f6e4bdf18ffe6e",
         "drive2.dmk": "8c0f1ee31278eabf8669fb2fd3d9f6b028558255db365dc7f3103780a4a46a39"
       },
@@ -232,9 +232,9 @@
       "files": 9,
       "probe_bytes": 227328,
       "guest_commands": [
+        "RSX LOAD FDF",
         "RSX LOAD M4SCRN",
         "RSX LOAD ADM3A",
-        "RSX LOAD FDF",
         "CLS",
         "B:",
         "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"Bondwell 14 40T DS\"",
@@ -248,7 +248,7 @@
       "system_sha256": "303fcd2e6d495d32d743d8caa1eb8b987be3df09904f2f24d8d01d07b8987f55",
       "mapper_sha256": "21f4f647a3f5ab71b309e7f02ed0856a6e746b00f9dc65c00be19868ca3b68de",
       "dmks_sha256": {
-        "drive0.dmk": "c4c23d60790071e5b4fcf0049859874225b3f65c7a2c09d8fa18e9c68e321061",
+        "drive0.dmk": "7e99d65a3c428d386df911c9a0acdb21441d007944603b1743e201ceeb81d1ff",
         "drive1.dmk": "7b656d8b8eaaab83ca49bec3711f6d50b39779e0c9b752553cd8d9292d805874",
         "drive2.dmk": "e436c677ec42f1d9396cd28f9aadd781871e3e88a0ad0c0b562b9270a6cd7925"
       },
