@@ -61,9 +61,22 @@ DP_STOP:
         LD (DP_HAS),A
         LD A,C
         LD (DP_ALEN),A
-        LD B,0
+        LD B,C
         LD DE,DP_ARG
-        LDIR
+        ; The transient receives the original-case tail. Normalize only
+        ; ASCII letters in our private operand; preserve all punctuation.
+DP_COPY:
+        LD A,(HL)
+        CP 'a'
+        JR C,DP_STORE
+        CP 'z'+1
+        JR NC,DP_STORE
+        SUB 20H
+DP_STORE:
+        LD (DE),A
+        INC HL
+        INC DE
+        DJNZ DP_COPY
         JR DP_RESUME
 DP_SWITCH:
         CALL DP_OPTION

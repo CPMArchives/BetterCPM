@@ -1,0 +1,222 @@
+{
+  "artifact": {
+    "bytes": 11648,
+    "name": "DIR.COM",
+    "sha256": "85bc377e9354cdd2c053fae0e8ef2ffcf58fe9013d17e661de263dd3145d34fd"
+  },
+  "component": "utility:DIR",
+  "final_report_sha256": "3d1ba90069533b957173366409246fb0a526e34ac28e58a2dfd96b2d6ce9eba7",
+  "identity": {
+    "revision": 15,
+    "version": "1.0"
+  },
+  "input_record": {
+    "assigned_identity": {
+      "revision": 15,
+      "version": "1.0"
+    },
+    "fingerprint": "f1c8bc30c8f090e745feb7552993408db68f8df4dbec57a2ec23563038788d7c",
+    "inputs": {
+      "component": "utility:DIR",
+      "configuration": {
+        "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment",
+        "invocation": {
+          "command": [
+            "python3",
+            "tools/build_rcp_transients.py"
+          ]
+        }
+      },
+      "files": {
+        "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
+        "src/bdos/versions.inc": "6560176573c7d4fd2b30374b898e1cced22dcb811d795eb5ad77341f226e4172",
+        "src/cpx/copy-backup.inc": "54beefef80a3ce0a605d8617ec15500cc6cb1e4f4b77986bb8dcd9a3ef9f22cd",
+        "src/cpx/copy-batch.inc": "4027398e7cbcdab9abb6d1a3ecd1b2a0b1b5391fae1e6ec131b674b87b87b4ae",
+        "src/cpx/copy-dest.inc": "19692da3e65e52e2a1f15b97feca194df8525a4abf8ee5ea37c3251d97479792",
+        "src/cpx/copy-error.inc": "853171d42ffd9c8d110748262469ae3e164d3ef774f73aa66c771a4e77873094",
+        "src/cpx/copy-options.inc": "cf31c89c584cce99050beff55c61342fc77b7416c534e59b879bb4dcbd61e880",
+        "src/cpx/copy-rename.inc": "3e5147aa28098f741a2f4f726027cd0aa713980618a73e4b2ffee413c9962c74",
+        "src/cpx/copy-report.inc": "2efbcd502dcbc83338b0d2f6666f63123a6f0743b453b0626ffec8b62621811a",
+        "src/cpx/copy-scope.inc": "9931cedf9340ab96f79d76431e854ed343dc21c4300bea751bd6e6ba784152d6",
+        "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+        "src/cpx/copy-verify.inc": "e0349132a007d9aa983400d7b8db1c2df76268fa89cad96856a27011fb7e2223",
+        "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+        "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+        "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+        "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
+        "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+        "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
+        "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+        "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+        "src/cpx/ver-banner.inc": "341cacaf5a55264a54681e1c25b084a028aa9db8b0e027033a908150333a1a09",
+        "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+        "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+        "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+        "src/system/layout.inc": "1a3a0e4aab0677258ed95b4ffb80cacdbe70d36ef03d93cb39b22f6452739fcf",
+        "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+        "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
+        "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
+        "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
+        "src/utilities/common/dirmetrics.inc": "81d58f2f481118819c36a8997fcbf41c56db49e5ab2ec6de8da290ce271a7f6d",
+        "src/utilities/common/diskfree.inc": "9a371d2506464c9b076bd23fd6d3ca254519b57d98a3fb69054c2d316883326e",
+        "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
+        "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+        "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
+        "src/utilities/common/eraraw.inc": "69cf5d75ca9ccb3364847ff3c601d0ba38157b85bd55df3070d6640194cb9813",
+        "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+        "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+        "src/utilities/common/pipinput.inc": "6bbcfad92995a5be1997c19b8093645feba55a3c825f648445c0492104c4d8af",
+        "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+        "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+        "src/utilities/common/reninput.inc": "282aaf32ae572a9ae5289f03dcacb4333b82041806228a226aa9b2b533dffe99",
+        "src/utilities/common/sysgeninput.inc": "0902c666327bb719d2cfc6f1ef61cdb167b1248114da3e2e3af71d6425228623",
+        "src/utilities/common/ui/append.inc": "340e1a8d24992067d7f57613213fd18c3acac96940696933beea7d26658d175e",
+        "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b",
+        "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+        "src/utilities/common/ui/choiceerror.inc": "3b27714d70bd4b1cbbefe6f4bc5dfcdde5db53231e6eb426d85c453638fb0846",
+        "src/utilities/common/ui/confirm.inc": "1b841462ada57b565084da9b41bc5d7662e3d939e8c5731b4f2767bbbd214529",
+        "src/utilities/common/ui/default.inc": "64a602938d4000de77e31c7b2f4575198141fb7c590374e323ca98b3c31ab2ae",
+        "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+        "src/utilities/common/ui/format.inc": "3b037c07453f5e873864a8f6244ea44af438d05a358c186c64ff0fe9a1cbef5c",
+        "src/utilities/common/ui/inline.inc": "029a45b0f93ce8dd101c4b9d781d25a4ef6a8edb5f8d729df471827a8f0c3f13",
+        "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+        "src/utilities/common/ui/prompt.inc": "2d90d2f468687ae0ada66c043dbb2249020323da943ab5f4fb852aa53439845a",
+        "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
+        "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+        "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+        "src/utilities/cpxvers.inc": "a12a5e1054a4c15b25a222ea31de98f72b521ea85ee5a013611de136b1bd39a0",
+        "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
+        "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
+        "src/utilities/dir-options.inc": "9a270efa04005381a2628f67cf1c924da392e819e8099dcb73aa2c0f3950a7c8",
+        "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
+        "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
+        "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
+        "src/utilities/rsxvers.inc": "e4ecd8d57a0ede0766e6d503ef1831a53bfa7deb3ecb8f5edf9a425bf36a105d",
+        "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+        "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+        "tools/build_rcp_transients.py": "7b856c335df4abc59d94e4098e235fa8bfd1b2122bd92232f062b6800f64cac1",
+        "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+        "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+        "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+        "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+        "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+        "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+        "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+        "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+        "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+        "tools/system_layout.py": "8d535ce4583776c0f5c8508ba8563a5330dd08af24d9a07ba827083ed90c737f",
+        "tools/utility_help.py": "025462fe1cffa59a5dc9ea5ec7e668ab39e94a03ed61c56b06361ff104a8729e",
+        "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
+        "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
+      },
+      "identity_dependencies": {
+        "utility:CLS": {
+          "api_version": null,
+          "description": "Clear Screen",
+          "display_format": "numeric",
+          "revision": 11,
+          "version": "1.0"
+        },
+        "utility:COPY": {
+          "api_version": null,
+          "description": "File Copying",
+          "display_format": "numeric",
+          "revision": 12,
+          "version": "1.0"
+        },
+        "utility:DIR": {
+          "api_version": null,
+          "description": "Directory Listing",
+          "display_format": "numeric",
+          "version": "1.0"
+        },
+        "utility:MOVE": {
+          "api_version": null,
+          "description": "File Moving",
+          "display_format": "numeric",
+          "revision": 4,
+          "version": "1.0"
+        },
+        "utility:RCP": {
+          "api_version": null,
+          "description": "Resident Command Package",
+          "display_format": "numeric",
+          "revision": 18,
+          "version": "1.0"
+        },
+        "utility:USER": {
+          "api_version": null,
+          "description": "User Area Selection",
+          "display_format": "numeric",
+          "revision": 10,
+          "version": "1.0"
+        },
+        "utility:VER": {
+          "api_version": null,
+          "description": "System Version Information",
+          "display_format": "numeric",
+          "revision": 12,
+          "version": "1.0"
+        }
+      },
+      "identity_fields": {
+        "api_version": null,
+        "version": "1.0"
+      },
+      "schema": 1,
+      "selected_metadata": {
+        "description": "Directory Listing",
+        "display_format": "numeric"
+      },
+      "toolchain": {
+        "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+      },
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "trs80gp"
+      }
+    },
+    "schema": 1,
+    "status": "selected-input-capture"
+  },
+  "proposal": {
+    "candidate_artifact_sha256": "3d9216c8060fee05e75fddb98c4da36849aa3d334294b22f04598f0737ec4324",
+    "candidate_identity": {
+      "revision": 14,
+      "version": "1.0"
+    },
+    "candidate_input_fingerprint": "f1c8bc30c8f090e745feb7552993408db68f8df4dbec57a2ec23563038788d7c",
+    "candidate_report_sha256": "b7229b622d4f32de15cb2e775579b7b45f2c498e51ac98621dbc1bb013eb9486",
+    "component": "utility:DIR",
+    "executable_changed": true,
+    "proposed_identity": {
+      "revision": 15,
+      "version": "1.0"
+    },
+    "reference_artifact_sha256": "c9feb8bd6e2794d8b25dc87c6d0702cceb46ea3441240f58545b34afbde46b0a",
+    "reference_identity": {
+      "revision": 14,
+      "version": "1.0"
+    },
+    "reference_report_sha256": "501804ec64967005163f8e5857f282fb74a1287c0ef31f32051ced7095e2e92a",
+    "schema": 1,
+    "selected_inputs_changed": true,
+    "status": "revision-proposal; not acceptance",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "trs80gp"
+    }
+  },
+  "provenance": {
+    "repository_commit": "8d2ca399e8951d0dd9abb96556a9395ccd0f7746"
+  },
+  "schema": 1,
+  "status": "explicit revision assignment; not qualification",
+  "variant": {
+    "build_mode": "cross",
+    "profile": "default",
+    "target": "trs80gp"
+  }
+}

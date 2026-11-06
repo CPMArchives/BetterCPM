@@ -1,0 +1,7 @@
+
+A0>:DIR absent.com
+
+A0: NO FILE
+---- 528K FREE ----
+
+A0>

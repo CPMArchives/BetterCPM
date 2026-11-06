@@ -36,6 +36,11 @@ records the accepted command UI, DIR and XSUB limitations.
   prepared for review; acceptance remains subject to merge. See the
   [FDB erratum](docs/releases/1.0-ERRATA.md#fdb-main-menu-presentation).
 
+- [ ] Correct transient DIR lowercase filespecs (`:DIR *.com`), preserving
+  the original tail and existing selection/output behavior. See the
+  [revision 015 candidate and qualification](docs/engineering/DIR-Lowercase-Filespec-Correction.md);
+  acceptance remains subject to merge.
+
 - [ ] **1.01: ANSI host smaller-window handling.** Review a host-side size
   warning/check or support for smaller terminals. For 1.0 retain the documented
   80-column, 24-row minimum and enlarge-then-restart workaround. Cover 77x20,

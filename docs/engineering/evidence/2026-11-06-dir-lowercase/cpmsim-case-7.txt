@@ -1,0 +1,16 @@
+
+A0:
+ADMTST   COM   2K : ANSITST  COM   2K
+BYE      COM   2K : CASEONE  COM   2K
+CONFIG   COM  18K : COPY     COM  16K
+CPX      COM   2K : DIR      COM  12K
+DUP      COM  10K : ED       COM  10K
+ERA      COM  10K : FDB      COM  22K
+MOUNT    COM   2K : OLDIR    COM  12K
+PIP      COM  16K : R        COM   4K
+REN      COM   8K : RSX      COM   2K
+STAT     COM   8K : SUBMIT   COM   4K
+SYSGEN   COM   8K : TIME     COM   2K
+TYPE     COM   6K : VER      COM   8K
+VT52TST  COM   2K : W        COM   4K
+---- 26 FILES, 194K TOTAL, 70K FREE ----

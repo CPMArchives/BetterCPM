@@ -1,0 +1,6 @@
+
+A0>:DIR c*a.com
+
+Invalid filespec.
+
+A0>

@@ -4197,14 +4197,20 @@
     },
     "utility:DIR|trs80gp|default|cross": {
       "assigned_identity": {
-        "revision": 14,
+        "revision": 15,
         "version": "1.0"
       },
-      "fingerprint": "af8c82e3fea42031e6b179277b9397b3bcabbdba1ada32fd1852c83a400adaa7",
+      "fingerprint": "f1c8bc30c8f090e745feb7552993408db68f8df4dbec57a2ec23563038788d7c",
       "inputs": {
         "component": "utility:DIR",
         "configuration": {
-          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment",
+          "invocation": {
+            "command": [
+              "python3",
+              "tools/build_rcp_transients.py"
+            ]
+          }
         },
         "files": {
           "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
@@ -4231,7 +4237,7 @@
           "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
           "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
           "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
-          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/system/layout.inc": "1a3a0e4aab0677258ed95b4ffb80cacdbe70d36ef03d93cb39b22f6452739fcf",
           "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
           "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
           "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
@@ -4266,7 +4272,7 @@
           "src/utilities/cpxvers.inc": "a12a5e1054a4c15b25a222ea31de98f72b521ea85ee5a013611de136b1bd39a0",
           "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
           "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
-          "src/utilities/dir-options.inc": "307b6e05fccb37e3dd7ba76cac159ab3cf1b5e306ea9c0486ff735a5850da998",
+          "src/utilities/dir-options.inc": "9a270efa04005381a2628f67cf1c924da392e819e8099dcb73aa2c0f3950a7c8",
           "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
           "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
           "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
@@ -4283,8 +4289,8 @@
           "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
           "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
           "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
-          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
-          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/system_layout.py": "8d535ce4583776c0f5c8508ba8563a5330dd08af24d9a07ba827083ed90c737f",
+          "tools/utility_help.py": "025462fe1cffa59a5dc9ea5ec7e668ab39e94a03ed61c56b06361ff104a8729e",
           "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
           "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
         },
@@ -4361,14 +4367,20 @@
     },
     "utility:DIR|z80pack|default|cross": {
       "assigned_identity": {
-        "revision": 14,
+        "revision": 15,
         "version": "1.0"
       },
-      "fingerprint": "f579262f4df1f70aa1f67faff2870d54d6d6dd665f781af4b9fd0551cc16c1a2",
+      "fingerprint": "f4e8396e66937fe62bbef0ab8594aaae5658885f67d0c8ed90a96e09bd0ae6a7",
       "inputs": {
         "component": "utility:DIR",
         "configuration": {
-          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment",
+          "invocation": {
+            "command": [
+              "python3",
+              "tools/build_rcp_transients.py"
+            ]
+          }
         },
         "files": {
           "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
@@ -4395,7 +4407,7 @@
           "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
           "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
           "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
-          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/system/layout.inc": "1a3a0e4aab0677258ed95b4ffb80cacdbe70d36ef03d93cb39b22f6452739fcf",
           "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
           "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
           "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
@@ -4430,7 +4442,7 @@
           "src/utilities/cpxvers.inc": "a12a5e1054a4c15b25a222ea31de98f72b521ea85ee5a013611de136b1bd39a0",
           "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
           "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
-          "src/utilities/dir-options.inc": "307b6e05fccb37e3dd7ba76cac159ab3cf1b5e306ea9c0486ff735a5850da998",
+          "src/utilities/dir-options.inc": "9a270efa04005381a2628f67cf1c924da392e819e8099dcb73aa2c0f3950a7c8",
           "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
           "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
           "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
@@ -4447,8 +4459,8 @@
           "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
           "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
           "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
-          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
-          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/system_layout.py": "8d535ce4583776c0f5c8508ba8563a5330dd08af24d9a07ba827083ed90c737f",
+          "tools/utility_help.py": "025462fe1cffa59a5dc9ea5ec7e668ab39e94a03ed61c56b06361ff104a8729e",
           "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
           "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
         },

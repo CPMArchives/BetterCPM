@@ -1,0 +1,29 @@
+{
+  "candidate_artifact_sha256": "3d9216c8060fee05e75fddb98c4da36849aa3d334294b22f04598f0737ec4324",
+  "candidate_identity": {
+    "revision": 14,
+    "version": "1.0"
+  },
+  "candidate_input_fingerprint": "f1c8bc30c8f090e745feb7552993408db68f8df4dbec57a2ec23563038788d7c",
+  "candidate_report_sha256": "b7229b622d4f32de15cb2e775579b7b45f2c498e51ac98621dbc1bb013eb9486",
+  "component": "utility:DIR",
+  "executable_changed": true,
+  "proposed_identity": {
+    "revision": 15,
+    "version": "1.0"
+  },
+  "reference_artifact_sha256": "c9feb8bd6e2794d8b25dc87c6d0702cceb46ea3441240f58545b34afbde46b0a",
+  "reference_identity": {
+    "revision": 14,
+    "version": "1.0"
+  },
+  "reference_report_sha256": "501804ec64967005163f8e5857f282fb74a1287c0ef31f32051ced7095e2e92a",
+  "schema": 1,
+  "selected_inputs_changed": true,
+  "status": "revision-proposal; not acceptance",
+  "variant": {
+    "build_mode": "cross",
+    "profile": "default",
+    "target": "trs80gp"
+  }
+}
