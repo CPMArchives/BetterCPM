@@ -303,5 +303,14 @@
       "highest_block_written_and_read": 299
     }
   ],
-  "guest_receipt": "docs/engineering/evidence/2026-11-06-pickles-trout/cpmsim-results.json"
+  "guest_receipt": "docs/engineering/evidence/2026-11-06-pickles-trout/cpmsim-results.json",
+  "evidence_commit": "3ed4c7ffcc195b0f6e7a86aef8ad44e363c5e9b5",
+  "archive": {
+    "filename": "BetterCPM-Pickles-Trout-Reference-Images-2026-11-06.zip",
+    "size_bytes": 1574062,
+    "sha256": "7eaac3f2cbd44efff41720c12adf9c2e7c62258270d677dfd43ed44dcef930ba",
+    "access": "Maintainer-held reference archive",
+    "library_file_id": "libfile_5abc5c537a148191945d5f54d69d0bbf",
+    "library_version": 0
+  }
 }
