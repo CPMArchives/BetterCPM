@@ -1,0 +1,58 @@
+{
+  "repository": "https://github.com/pski/model2archive",
+  "commit": "fa76dabb8c41d915cb27c54985555bc9e29baabd",
+  "download_date": "2026-11-06",
+  "images": [
+    {
+      "filename": "ATN223IS.IMD",
+      "bytes": 143814,
+      "sha256": "08426adbb6b21a84b3b461866ae6f21976415ef534ca3d61d13b6cf07e70d1a4",
+      "repository_path": "Software/CPM/Aton/Aton CPM v2.23I/ATN223IS.IMD",
+      "url": "https://github.com/pski/model2archive/blob/fa76dabb8c41d915cb27c54985555bc9e29baabd/Software/CPM/Aton/Aton%20CPM%20v2.23I/ATN223IS.IMD"
+    },
+    {
+      "filename": "ATN225BD.IMD",
+      "bytes": 277014,
+      "sha256": "dd841e318e216312a8122fe60f7e8a1eb287cfa8e2b5f3d25424b3a6d4f4c973",
+      "repository_path": "Software/CPM/Aton/Aton CPM v2.25B Double Sided media/ATN225BD.IMD",
+      "url": "https://github.com/pski/model2archive/blob/fa76dabb8c41d915cb27c54985555bc9e29baabd/Software/CPM/Aton/Aton%20CPM%20v2.25B%20Double%20Sided%20media/ATN225BD.IMD"
+    },
+    {
+      "filename": "ATN225BS.IMD",
+      "bytes": 314678,
+      "sha256": "69d14e99d6b41f4dd227cf326c0e09116d5394966bcd455411effa7746e12018",
+      "repository_path": "Software/CPM/Aton/Aton CPM v2.25B Single Sided media/ATN225BS.IMD",
+      "url": "https://github.com/pski/model2archive/blob/fa76dabb8c41d915cb27c54985555bc9e29baabd/Software/CPM/Aton/Aton%20CPM%20v2.25B%20Single%20Sided%20media/ATN225BS.IMD"
+    },
+    {
+      "filename": "LB224A.IMD",
+      "bytes": 618750,
+      "sha256": "6b3a3effcba5686e3c9c6a058fff0dd04001830e80810eb9a1fc12892f9a0f3f",
+      "repository_path": "Software/CPM/Lifeboat/LB224A.IMD",
+      "url": "https://github.com/pski/model2archive/blob/fa76dabb8c41d915cb27c54985555bc9e29baabd/Software/CPM/Lifeboat/LB224A.IMD"
+    },
+    {
+      "filename": "LB225D.IMD",
+      "bytes": 335119,
+      "sha256": "fe3e919d54dd3aa3b5e99a364e0d5750db941789aa69030f54434d85fde0ec7d",
+      "repository_path": "Software/CPM/Lifeboat/LB225D.IMD",
+      "url": "https://github.com/pski/model2archive/blob/fa76dabb8c41d915cb27c54985555bc9e29baabd/Software/CPM/Lifeboat/LB225D.IMD"
+    },
+    {
+      "filename": "LB225DF80.IMD",
+      "bytes": 115146,
+      "sha256": "1c7a771c5884d2114043a9b99e08b6460587d331f9e4234ffdf8abb74963f3c9",
+      "repository_path": "Software/CPM/Lifeboat/LB225DF80.IMD",
+      "url": "https://github.com/pski/model2archive/blob/fa76dabb8c41d915cb27c54985555bc9e29baabd/Software/CPM/Lifeboat/LB225DF80.IMD"
+    }
+  ],
+  "cpmtools": {
+    "repository": "https://github.com/lipro-cpm4l/cpmtools",
+    "commit": "e534e20c15973a9559e981efb498a102020e5db7",
+    "backend": "POSIX",
+    "build_commands": [
+      "./configure",
+      "make -j4 cpmls cpmcp cpmrm fsck.cpm"
+    ]
+  }
+}

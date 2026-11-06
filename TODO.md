@@ -680,7 +680,7 @@ and [BetterCP/M catalogue baseline](https://github.com/CPMArchives/BetterCPM/blo
 | Priority among the 104 unmapped names | Count | Work |
 |---|---:|---|
 | P1, qualify | 5 | Amstrad `cpcsys` and `cpcdata` passed cpmsim file interchange and last-block writes on four archived disks. Both are in the [supplemental catalogue](metadata/supplemental/README.md). On Model 4, `cpcsys` passed on both the CPC464 and CPC664 disks through block 170. `cpcdata` passed on CPC6128 disk 3 and the Booster disk through block 179. All four Model 4 images passed. Amstrad `pcw` passed cpmsim original-file and last-block write/read-back checks and is in the supplement. Its [Model 4 guest trial](docs/engineering/evidence/2026-11-06-pcw/README.md) remains open. The shared Ampro `amp3`/`amp5` layout has a [vendor-backed candidate and synthetic cpmsim pass](docs/engineering/evidence/2026-11-06-ampro/README.md), including the last allocation block. An independent 80T SS image and Model 4 guest I/O remain required before promotion. |
-| P1, investigate | 5 | Inspect original ATON `trse`/`trsf` and Lifeboat `trs5` media to explain the 11,520-byte image prefix and verify the last block. Recover the sector IDs and order for the 8-inch MAX-80 `lobo2`/`lobo3` disks. Existing MAX-80 entries cover 5¼-inch disks. |
+| P1, investigate | 5 | ATON `trse`/`trsf` and Lifeboat `trs5` [original-media investigation](docs/engineering/evidence/2026-11-06-model2/README.md) established the 11,520-byte mixed-track prefix and OEM DSM 299/607; five host write/read-back trials passed, and one malformed image was retained but rejected. Both ATON diskdefs overstate capacity by 16 KiB. BetterCP/M guest qualification awaits an explicit mixed-track backend; double-sided ATON also exceeds CKS 32. Recover the sector IDs and order for the 8-inch MAX-80 `lobo2`/`lobo3` disks. Existing MAX-80 entries cover 5¼-inch disks. |
 | P2, follow up | 15 | Prioritize documented floppy families such as Bondwell 14, Microbee/Dreamdisk, Zenith 8-inch DD and Ampro double-sided. PCW 720K (`cf2dd`) specifies CKS 64, above the current BIOS limit of 32. |
 | P3, obtain evidence | 30 | Obtain an original disk or a concrete interchange use for Robotron/SCP/Korvet, Timex, P112 and other OEM variants. |
 | Defer | 49 | Revisit hard-sector and GCR media, virtual disks, partitions and exceptional track layouts when their adapter or BIOS support is in scope. |
@@ -696,7 +696,7 @@ and [BetterCP/M catalogue baseline](https://github.com/CPMArchives/BetterCPM/blo
   media. Montezuma Super Data already has FDB entries. Five 1,024-byte sectors
   plus one 512-byte sector give 44 records per track. The uniform cpmtools rows
   would give 48. See the [FDB specification](docs/engineering/DISK-FORMAT-DEFINITION-SPECIFICATION.md).
-- [ ] For Model II interchange, compare ATON/Lifeboat's 8 × 1,024-byte data
+- [x] For Model II interchange, compare ATON/Lifeboat's 8 × 1,024-byte data
   tracks with the 16 × 512-byte tracks in the fork's `BCM2SS` and `PT2SS`.
   Both yield SPT 64. The fork handles its FM boot track in platform code.
   See the [Model II definitions](https://github.com/a-griff/BetterCPM/blob/e24f4b5859e9d9c5abcb044e1eaafe12d3e72c64/src/platform/trs80m2/M2DISK.FDF).

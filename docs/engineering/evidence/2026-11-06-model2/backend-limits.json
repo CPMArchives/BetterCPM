@@ -1,0 +1,32 @@
+{
+  "model4_conversion_error": "Model II data tracks (investigation only): 8 x 1024-byte sectors do not fit a 6378-byte MFM track",
+  "uniform_raw_expected_bytes": {
+    "single_sided": 630784,
+    "double_sided": 1261568
+  },
+  "original_raw_bytes": {
+    "single_sided": 625920,
+    "double_sided": 1256704
+  },
+  "mixed_boot_track_shortfall_bytes": 4864,
+  "double_sided_cks": 48,
+  "current_backend_cks_limit": 32,
+  "stock_diskdefs_sha256": "154dc3267cce4fac8aec7ff6245b4f62ad5b17972db29ac5075cfed5d4c4c2c7",
+  "stock_capacities": {
+    "trse": {
+      "dsm": 307,
+      "actual_dsm": 299,
+      "overrun_bytes": 16384
+    },
+    "trsf": {
+      "dsm": 615,
+      "actual_dsm": 607,
+      "overrun_bytes": 16384
+    },
+    "trs5": {
+      "dsm": 299,
+      "actual_dsm": 299,
+      "overrun_bytes": 0
+    }
+  }
+}
