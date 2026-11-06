@@ -31,9 +31,10 @@ records the accepted command UI, DIR and XSUB limitations.
 - [ ] Correct FDB.COM's main-menu presentation to Engineering Specification 209:
   version heading, grouped bracketed letter choices and the bracketed choice
   prompt, preserving the documented commands and exit behavior. The compact
-  menu remains an accepted 1.0 limitation. Preserve the local development
-  candidate for review; complete affected-platform qualification before 1.01
-  acceptance. See the [FDB erratum](docs/releases/1.0-ERRATA.md#fdb-main-menu-presentation).
+  menu remains an accepted 1.0 limitation. The [revision 003 candidate and
+  qualification evidence](docs/engineering/FDB-Main-Menu-Correction.md) are
+  prepared for review; acceptance remains subject to merge. See the
+  [FDB erratum](docs/releases/1.0-ERRATA.md#fdb-main-menu-presentation).
 
 - [ ] **1.01: ANSI host smaller-window handling.** Review a host-side size
   warning/check or support for smaller terminals. For 1.0 retain the documented

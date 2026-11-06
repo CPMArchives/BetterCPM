@@ -1,0 +1,15 @@
+Z80/8080-Macro-Assembler  Release 2.1
+Copyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt
+0 error(s)
+Z80/8080-Macro-Assembler  Release 2.1
+Copyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt
+0 error(s)
+ld: warning: reducing alignment of section __DATA,__common from 0x8000 to 0x4000 because it exceeds segment maximum alignment
+Z80/8080-Macro-Assembler  Release 2.1
+Copyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt
+0 error(s)
+Z80/8080-Macro-Assembler  Release 2.1
+Copyright (C) 1987-2024 by Udo Munk & 2022-2024 by Thomas Eberhardt
+0 error(s)
+ld: warning: reducing alignment of section __DATA,__common from 0x8000 to 0x4000 because it exceeds segment maximum alignment
+PASS FDB query exact screens, precedence, token bounds, 127-byte tails, console-only ABI and normal fall-through; 47 query/fall-through cases + 2 short-syntax cases; query stack 24 /128; automatic identity baselines PASS

@@ -1,0 +1,53 @@
+{
+  "status": "PASS",
+  "target": "trs80gp",
+  "system_sha256": "303fcd2e6d495d32d743d8caa1eb8b987be3df09904f2f24d8d01d07b8987f55",
+  "artifacts": {
+    "FDB.COM": "cd05fdb31272de07243e27ff3e1835ddc1f291e5505c7236292992446877a1bc",
+    "FDBVIEW.OVL": "e3e5909cec63bfb328aaf0683787f38ee08f87c017185a8df3a951ddfccde2bd"
+  },
+  "menu_captures": 9,
+  "preserved_files": [
+    "adm3a.rsx",
+    "admtst.com",
+    "ansi.rsx",
+    "ansitst.com",
+    "config.com",
+    "copy.com",
+    "cpx.com",
+    "dir.com",
+    "disk.fdb",
+    "dup.com",
+    "ed.com",
+    "era.com",
+    "frehdclk.rsx",
+    "m4scrn.rsx",
+    "p2dos.rsx",
+    "pip.com",
+    "r3pack.rsx",
+    "rcp.cpx",
+    "readme.txt",
+    "ren.com",
+    "rsx.com",
+    "startup.sub",
+    "stat.com",
+    "submit.com",
+    "sysgen.com",
+    "time.com",
+    "type.com",
+    "ver.com",
+    "vt52.rsx",
+    "vt52tst.com"
+  ],
+  "reserved_bytes_unchanged": 20480,
+  "original_media_unchanged": true,
+  "exit_cases": [
+    "clean Q",
+    "clean BREAK",
+    "new Untitled Q",
+    "pending editor Q/Cancel/Resume",
+    "pending editor BREAK/Discard"
+  ],
+  "post_exit_file_read": "PASS",
+  "filesystem": "PASS"
+}

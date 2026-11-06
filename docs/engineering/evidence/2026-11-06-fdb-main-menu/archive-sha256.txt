@@ -1,0 +1,3 @@
+65e8c406e426600dd8202d214b745c63eb2ff10a76926717f8dfd8eb3b7d54dc  assignment-artifacts.tar.gz
+d9083657e7a2e5aa9f93b81ebee763bed515670366da2afb371beabc07a1bb42  cpmsim-transcript.bin.gz
+1236caa2219d27446670329f814ca0ad93235e42ca3d6fb9fd640155127625b1  model4-captures.tar.gz

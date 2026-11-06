@@ -1,0 +1,93 @@
+{
+  "artifact": {
+    "bytes": 21281,
+    "name": "FDB.COM",
+    "sha256": "3daafafc22daedbb2836e91409299d19e74fb8100c683248e36733bd2c4ebfe7"
+  },
+  "companions": [
+    {
+      "bytes": 4736,
+      "name": "FDBVIEW.OVL",
+      "sha256": "452821b58507d4bf62f5fcfa66c6076d94d3ca8b574ea70ac3e99ec75d966df6"
+    }
+  ],
+  "component": "utility:FDB",
+  "display_selection": {
+    "baseline_sha256": null,
+    "development": false,
+    "mode": "assigned",
+    "reason": "explicit build display selection; not qualification"
+  },
+  "identity": {
+    "revision": 2,
+    "version": "1.01"
+  },
+  "input_error": null,
+  "input_record": {
+    "assigned_identity": {
+      "revision": 2,
+      "version": "1.01"
+    },
+    "fingerprint": "acbf70455fa8ead7790db3a29720d0ea3217d37e5b18bbcbc4851a02e3df866e",
+    "inputs": {
+      "component": "utility:FDB",
+      "configuration": {
+        "assembler_flags": [
+          "-e32",
+          "-fb"
+        ],
+        "editor_base": 47360,
+        "origin": 256,
+        "query_arena_end": 23296,
+        "sector_sizes_converter": 50944,
+        "sector_sizes_session": 47104,
+        "viewer_base": 42240,
+        "viewer_max_bytes": 4736
+      },
+      "files": {
+        "src/utilities/common/monitorconsole.inc": "bfa01ac854919893852c2f7418638765f53fe7d430f8bfca2ae536c150e56639",
+        "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+        "src/utilities/disk/fdbdrive.inc": "c6e779db8d0fd63d4694ae64691c9257ea8e0f2a88640086255e9010cec1e006",
+        "src/utilities/disk/fdbexchange.inc": "bc4a7c576edab5abfc3c1b36db8476a6411c8f64a756756bea77f9b95344f7b2",
+        "src/utilities/disk/fdbquery.inc": "bbdbdfddb84649deffaea6c8fe3816de87c510a09bab3166510f7ab0c58752bf",
+        "src/utilities/disk/fdbread.inc": "01ee867f0c8ecc17b64c3a63e7a94def652cec654f0297a1537fb127bfe070e3",
+        "src/utilities/disk/fdbsession.inc": "35385f6aa09c38d8b444c14c8595e3c2af5c68fee156ecdc8520268a631f4427",
+        "src/utilities/disk/fdbview.inc": "1195e847ad74b88e97153992b2f2ade86def46351b1919c2286be3ab08828f36",
+        "src/utilities/disk/fdbviewload.inc": "9d2e3bc3ff1394d2dd3579cc7d75fdf725ff30f96bb9300f53d6b2521537245f",
+        "src/utilities/fdb.mac": "8da04e0bf71fd5816c578c7c9170f54a40e9a788ea6718953984da882dde2215",
+        "tools/build_fdb.py": "81a14acc144418b1adfe7e3f3965bd79c5acec2f993570a5487d410ce7b7495a",
+        "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+        "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+        "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+        "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+        "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+        "tools/utility_help.py": "dcb325de05d0d030d1f760d9bde759d20b20e3d86cc9f71d2ba21e8af8b24099",
+        "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5"
+      },
+      "identity_fields": {
+        "api_version": null,
+        "version": "1.01"
+      },
+      "schema": 1,
+      "selected_metadata": {
+        "description": "Disk Format Catalogue Workbench",
+        "display_format": "numeric"
+      },
+      "toolchain": {
+        "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+      },
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      }
+    },
+    "schema": 1,
+    "status": "selected-input-capture"
+  },
+  "provenance": {
+    "repository_commit": "5e3dce3426471e94608a4ed773ff5c73ba14c99f"
+  },
+  "schema": 1,
+  "status": "build record; execution qualification not asserted"
+}

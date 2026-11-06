@@ -1,0 +1,23 @@
+
+FDB 1.01 (003)
+
+Working catalogue: A0:DISK.FDB   Entries: 108   Unmodified
+
+[ F ] Open a catalogue from disk
+[ N ] New empty working catalogue
+
+[ L ] List or find formats
+[ D ] Display format details
+[ P ] Compare two formats
+
+[ A ] Edit the format of an active logical drive
+[ B ] Load a catalogue entry into the editor
+[ C ] Create a new format
+[ E ] Resume the working format editor
+
+[ I ] Import into the working catalogue (.FDB or .FDF)
+[ O ] Export from the working catalogue (.FDB or .FDF)
+[ S ] Save catalogue or apply working format to a drive
+
+Select [ F, N, L, D, P, A-C, E, I, O, S or Q ]; BREAK (^C) exits.
+Your choice: [ ]

@@ -1,0 +1,29 @@
+{
+  "candidate_artifact_sha256": "f6f0ebf1c8715565bc2870ca901dee5d69bf648135bf581609104d379d53e385",
+  "candidate_identity": {
+    "revision": 2,
+    "version": "1.01"
+  },
+  "candidate_input_fingerprint": "58a3aa2548dc0937267466e60b8d3a36300310461cf878b683d7304ff1c9caa9",
+  "candidate_report_sha256": "1b4898771f4cb64b067cca62ffbd8edd1e50623f79d32e3efef8c5316ac5857b",
+  "component": "utility:FDB",
+  "executable_changed": true,
+  "proposed_identity": {
+    "revision": 3,
+    "version": "1.01"
+  },
+  "reference_artifact_sha256": "3daafafc22daedbb2836e91409299d19e74fb8100c683248e36733bd2c4ebfe7",
+  "reference_identity": {
+    "revision": 2,
+    "version": "1.01"
+  },
+  "reference_report_sha256": "fcd9e5d2148a6e105e44171085d6d98b6616558c95b47fe0fb4abb307239c929",
+  "schema": 1,
+  "selected_inputs_changed": true,
+  "status": "revision-proposal; not acceptance",
+  "variant": {
+    "build_mode": "cross",
+    "profile": "default",
+    "target": "z80pack"
+  }
+}

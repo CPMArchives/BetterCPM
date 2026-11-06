@@ -39,6 +39,8 @@ MENU:   LD SP,STACKTOP
         LD (RAWANSWER),A
         LD (ACTION),A
         LD (EDAFTER),A
+        LD HL,MENUTITLE
+        CALL PUTS
         LD HL,HEADMSG
         CALL PUTS
         LD HL,DEFAULTNAME
@@ -1218,9 +1220,29 @@ UNTITLED:DB 'Untitled',0
 COUNTMSG:DB '   Entries: ',0
 MODSTATE:DB '   Modified',13,10,0
 CLEANSTATE:DB '   Unmodified',13,10,0
-MENUMSG:DB 'A Capture drive  B Load entry  C Blank format  E Resume editor',13,10
-        DB 'F Open  N New  L List  I Import  D Details  P Compare',13,10
-        DB 'O Export  S Save  Q Quit (or BREAK)',13,10,'Choice: ',0
+MENUTITLE: DB 13,10,
+; @fdb-main-menu-title@
+MENUMSG:
+        DB 13,10
+        DB '[ F ] Open a catalogue from disk',13,10
+        DB '[ N ] New empty working catalogue',13,10
+        DB 13,10
+        DB '[ L ] List or find formats',13,10
+        DB '[ D ] Display format details',13,10
+        DB '[ P ] Compare two formats',13,10
+        DB 13,10
+        DB '[ A ] Edit the format of an active logical drive',13,10
+        DB '[ B ] Load a catalogue entry into the editor',13,10
+        DB '[ C ] Create a new format',13,10
+        DB '[ E ] Resume the working format editor',13,10
+        DB 13,10
+        DB '[ I ] Import into the working catalogue (.FDB or .FDF)',13,10
+        DB '[ O ] Export from the working catalogue (.FDB or .FDF)',13,10
+        DB '[ S ] Save catalogue or apply working format to a drive',13,10
+        DB 13,10
+        DB 'Select [ F, N, L, D, P, A-C, E, I, O, S or Q ]; BREAK (^C) exits.',13,10
+        DB 'Your choice: [ ]',0
+; @fdb-message-dictionary@
 PENDINGMSG:DB 'Unsaved catalogue: S Save, D Discard, C Cancel: ',0
 OPENMSG:DB 'Open catalogue filename: ',0
 IMPORTMSG:DB 'Import into working catalogue',13,10,0
