@@ -1,5 +1,5 @@
 {
-  "status": "first user batch failed at DIR; corrected FDF-first media prepared, Model 4 rerun pending",
+  "status": "superseded by completed Model 4 pass; see model4-results.json",
   "host_launch_services_code": 1100,
   "samples": {
     "CSTAR.IMG": {

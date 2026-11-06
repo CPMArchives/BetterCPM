@@ -3,8 +3,8 @@
   "collection": "BetterCP/M disk-image reference collection",
   "collection_id": "bondwell14-2026-11-06",
   "evidence_directory": "docs/engineering/evidence/2026-11-06-bondwell14",
-  "scope": "cpmsim RAM file interchange on canonical C/H/ascending-ID raw media; FDF.RSX required",
-  "verified_date": "2026-11-06",
+  "scope": "cpmsim RAM and trs80gp Model 4 file interchange; FDF.RSX loaded first",
+  "verified_date": "2026-11-07",
   "source_url": "http://www.retroarchive.org/hardware/bondwell/bw14dsks.zip",
   "source_archive_sha256": "94e68d68c239135f1b29abe63df3dc529376392208eb7b1ff3a070afc92515e8",
   "images": [
@@ -18,7 +18,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
+        "trs80gp": "pass: Model 4 with FDF.RSX loaded first",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -41,7 +41,8 @@
         "0:cs.com": "79adcb99941eda389af94b50b1bfb9309aca3787869fa575b6a8c0e84609fd54"
       },
       "probe_bytes": 231424,
-      "highest_block_written_and_read": 174
+      "highest_block_written_and_read": 174,
+      "written_cqm_sha256": "e26912619fb1b8b4e6ef8e960c96b633a250be521874fb37ab0ccc8f5c9d37fa"
     },
     {
       "filename": "DSTAR.IMG",
@@ -53,7 +54,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
+        "trs80gp": "pass: Model 4 with FDF.RSX loaded first",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -75,7 +76,8 @@
         "0:formgen.key": "8251f44f96a8a52e44d169a4c2169b45a4ca63005954729d78f7b6c5d5c51d56"
       },
       "probe_bytes": 251904,
-      "highest_block_written_and_read": 174
+      "highest_block_written_and_read": 174,
+      "written_cqm_sha256": "6090ee831d982046e583ef03cd36887fd1ba6c5852580409e57c67376f69cd3b"
     },
     {
       "filename": "DSTARFIX.IMG",
@@ -87,7 +89,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
+        "trs80gp": "pass: Model 4 with FDF.RSX loaded first",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -111,7 +113,8 @@
         "0:order.ndx": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       },
       "probe_bytes": 247808,
-      "highest_block_written_and_read": 174
+      "highest_block_written_and_read": 174,
+      "written_cqm_sha256": "2329c9a75e7df7ceee432862c3782e06c64634c843e80037fc72924f11db0ac3"
     },
     {
       "filename": "RSTAR1.IMG",
@@ -123,7 +126,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
+        "trs80gp": "pass: Model 4 with FDF.RSX loaded first",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -146,7 +149,8 @@
         "0:staff.def": "36de1cdd061c2d0ed5b584143dc78a36e5f5ef39018bdde94a4b266bfcbe57f1"
       },
       "probe_bytes": 288768,
-      "highest_block_written_and_read": 174
+      "highest_block_written_and_read": 174,
+      "written_cqm_sha256": "f876b27d8241e3f243d97cc6940b28a931221bd34e9016c6d64532e92c2a8a7f"
     },
     {
       "filename": "RSTAR2.IMG",
@@ -158,7 +162,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
+        "trs80gp": "pass: Model 4 with FDF.RSX loaded first",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -176,7 +180,8 @@
         "0:rgen.key": "b1ec66eef4f9e2e5bab02ddf10f02e1eb8d64cba87b1dad556b5086983cfee71"
       },
       "probe_bytes": 184320,
-      "highest_block_written_and_read": 174
+      "highest_block_written_and_read": 174,
+      "written_cqm_sha256": "c58c56ad2fb42ca8e94072338a2f494fa546e18061aeb80734b41a864bb360a8"
     },
     {
       "filename": "SYSTEM1.IMG",
@@ -188,7 +193,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
+        "trs80gp": "pass: Model 4 with FDF.RSX loaded first",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -224,7 +229,8 @@
         "0:autorun.com": "eece000be7a96170444d477bb62ef9bb91c23519a3f6bfd83f81ad3ed5ef00c0"
       },
       "probe_bytes": 51200,
-      "highest_block_written_and_read": 174
+      "highest_block_written_and_read": 174,
+      "written_cqm_sha256": "470d44a9a9d82136672254a46e0870be7d9fd12d5f8594d78813c6b0d24862e4"
     },
     {
       "filename": "SYSTEM2.IMG",
@@ -236,7 +242,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
+        "trs80gp": "pass: Model 4 with FDF.RSX loaded first",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -279,7 +285,8 @@
         "0:z80.lib": "5ada15ee2a04a3e0749e334a32440af0ec97b3262e252a58ca27a3ad08c78080"
       },
       "probe_bytes": 69632,
-      "highest_block_written_and_read": 174
+      "highest_block_written_and_read": 174,
+      "written_cqm_sha256": "28afdd9becc6f69bf53eb9368bb680ad85c173ca51acc97dbee8c327306871b5"
     },
     {
       "filename": "WSTAR1.IMG",
@@ -291,7 +298,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
+        "trs80gp": "pass: Model 4 with FDF.RSX loaded first",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -301,7 +308,8 @@
         "0:ws.ins": "95f7c1e04730f4a52bfb1344b4b1851b31ac818c67e58b6c4d30644dabd0ba1a"
       },
       "probe_bytes": 245760,
-      "highest_block_written_and_read": 174
+      "highest_block_written_and_read": 174,
+      "written_cqm_sha256": "4a4f46449d18c339388624f318f5c8ecef2dfdd9b29dee9b6cf0e1ad0dcd7efe"
     },
     {
       "filename": "WSTAR2.IMG",
@@ -313,7 +321,7 @@
       "fdf_id": "BW14",
       "qualification": {
         "cpmsim": "pass: RAM with FDF.RSX",
-        "trs80gp": "first batch failed at DIR; FDF-first startup correction awaiting guest rerun",
+        "trs80gp": "pass: Model 4 with FDF.RSX loaded first",
         "rom": "untested",
         "physical_media": "untested"
       },
@@ -329,7 +337,8 @@
         "0:wsi.key": "bcbc66219cff3760ac754f8953458df2e9cc183ba48dcf338c72aa94cc11ea2f"
       },
       "probe_bytes": 227328,
-      "highest_block_written_and_read": 174
+      "highest_block_written_and_read": 174,
+      "written_cqm_sha256": "5245309c4ebe9c983092ada1296db16761c94caf70c74dedcc3fe954be3098d5"
     }
   ],
   "evidence_commit": "4d6a9c372a01fd5f0bbc42e54e03e338e4cd6137",
@@ -341,5 +350,7 @@
     "library_file_id": "libfile_f4fd2f4484508191b7c5aeb40ecdf393",
     "library_version": 0
   },
-  "followup_evidence": "docs/engineering/evidence/2026-11-06-bondwell14/load-order-results.json"
+  "followup_evidence": "docs/engineering/evidence/2026-11-06-bondwell14/load-order-results.json",
+  "model4_guest_receipt": "docs/engineering/evidence/2026-11-06-bondwell14/model4-results.json",
+  "cross_backend_written_images_identical": true
 }

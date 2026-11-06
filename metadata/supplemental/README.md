@@ -10,7 +10,7 @@ Use [SUPPDISK.FDF](SUPPDISK.FDF) as the editable source and [SUPPDISK.FDB](SUPPD
 | ATONSS | ATON/Lifeboat Model II SS | cpmsim RAM canonical adapter; four originals, all files and block 299 read/write | Model 4 and ROM unsupported; physical media untested |
 | ATONDS | ATON Model II DS | cpmsim RAM canonical adapter; one original, all files and block 607 read/write | Model 4 and ROM unsupported; physical media untested |
 | PT2SS | Pickles & Trout M2 SS | cpmsim RAM canonical adapter; three originals, sequential files plus random tail records, block 299 read/write | Model 4 and ROM unsupported; physical media untested |
-| BW14 | Bondwell 14 40T DS | cpmsim RAM with FDF.RSX; nine originals, all 152 files and block 174 read/write | Model 4 first batch failed; load-order correction awaiting rerun; ROM and physical media untested |
+| BW14 | Bondwell 14 40T DS | cpmsim RAM and trs80gp with FDF.RSX loaded first; nine originals, all 152 files and block 174 read/write; identical written images | ROM and physical media untested |
 
 To use the supplement on cpmsim, put a copy of `SUPPDISK.FDB` on a separate work disk under the guest name `DISK.FDB`. Keep the production catalogue on system drive A. With that work disk in C and a CPC raw image in physical drive 1, run the following. Select `Amstrad CPC Data` in the CONFIG command for a Data disk.
 
