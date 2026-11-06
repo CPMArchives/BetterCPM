@@ -28,7 +28,6 @@ from test_z80pack_sysgen_install import session
 from trs80gp_launch import run as run_trs80gp
 
 SUPPLEMENT = ROOT / 'metadata/supplemental/SUPPDISK.FDF'
-DATABASE = SUPPLEMENT.with_suffix('.FDB')
 RELEASE = ROOT / 'metadata/release-formats.fdf'
 
 
@@ -140,8 +139,10 @@ def run_sample(args, spec, work, formats):
     work.mkdir()
     stock = work / 'stock'
     stock.mkdir()  # cpmtools reads its installed diskdefs here
+    if args.diskdefs:
+        shutil.copyfile(args.diskdefs, stock / 'diskdefs')
     ident = spec['format']
-    fmt = select_fdf(SUPPLEMENT, ident)
+    fmt = select_fdf(args.catalogue, ident)
     desc = formats[ident].description
     path = args.images / spec['filename']
     if path.exists():
@@ -165,7 +166,7 @@ def run_sample(args, spec, work, formats):
     probe = b''.join(sha256(i.to_bytes(4, 'little')).digest()*4
                      for i in range((total-used)*fmt.block_bytes//128))
     (work / 'probe').write_bytes(probe)
-    scratch_id = 'MMF017' if args.target == 'cpmsim' else 'MMI008'
+    scratch_id = args.work_format if args.target == 'cpmsim' else 'MMI008'
     release = {f.ident: f for f in parse(RELEASE.read_text())}
     (work / 'diskdefs').write_text(diskdef(release[scratch_id]))
     scratch_fmt = select_fdf(RELEASE, scratch_id)
@@ -188,13 +189,23 @@ def run_sample(args, spec, work, formats):
         boot_fmt = 'boot'
     else:
         shutil.copyfile(args.system, boot)
-        boot_fmt = scratch_id
+        boot_fmt = 'MMF017'
     # CONFIG searches the current drive first. Keep the production catalogue on A:.
-    cpm(work, 'cpmcp', scratch_id, scratch, DATABASE, '0:DISK.FDB')
+    cpm(work, 'cpmcp', scratch_id, scratch, args.catalogue.with_suffix('.FDB'), '0:DISK.FDB')
     src, dst, back = ('C', 'B', 'B') if model4 else ('B', 'C', 'D')
     commands = [f'{dst}:', f'A:CONFIG /LOGICAL={src} /PHYSICAL={2 if model4 else 1} /FORMAT="{desc}"', 'A:',
                 f'DIR {src}:', f'COPY {src}:*.* {dst}:',
                 f'COPY {dst}:PROBE.BIN {src}:FILL.BIN', f'COPY {src}:FILL.BIN {back}:RETURN.BIN']
+    setup = []
+    if not model4 and fmt.cylinders > 40:
+        setup.append(f'A:CONFIG /PHYSICAL=1 /TRACKS={fmt.cylinders} /SIDES={fmt.sides} /STEP=6')
+    if not model4 and scratch_id != 'MMF017':
+        for letter, physical in [('C', 2), ('D', 3)]:
+            setup.extend([
+                f'A:CONFIG /PHYSICAL={physical} /TRACKS={scratch_fmt.cylinders} /SIDES={scratch_fmt.sides} /STEP=6',
+                f'A:CONFIG /LOGICAL={letter} /PHYSICAL={physical} /FORMAT="{release[scratch_id].description}"'])
+    if setup:
+        commands = setup + commands
     if model4:
         commands = ['RSX LOAD M4SCRN', 'RSX LOAD ADM3A', 'CLS', *commands, 'TYPE CPCEND.TXT']
         (work/'startup').write_bytes(('\r\n'.join(commands)+'\r\n\x1a').encode())
@@ -228,11 +239,11 @@ def run_sample(args, spec, work, formats):
         for letter, disk in zip('abc', (boot, candidate, scratch)):
             disk.rename(disks/f'drive{letter}.dsk')
         candidate, scratch = disks/'driveb.dsk', disks/'drivec.dsk'
-        steps = [(s.encode()+b'\r', (dst if i < 2 else 'A').encode()+b'0>_ ', 60)
+        steps = [(s.encode()+b'\r', (dst if len(setup) <= i < len(setup)+2 else 'A').encode()+b'0>_ ', 60)
                  for i, s in enumerate(commands)]
         trace = session(args.simulator, disks, steps
                         + [(b'BYE /Y\r', b'System halted', 20)], work/'console.bin')
-        assert b'Disk configuration changed' in trace
+        assert trace.count(b'Disk configuration changed') == len(setup) + 1
     copied = files(work, scratch_id, scratch)
     roundtrip = copied if model4 else files(work, scratch_id, returned)
     for name, data in expected.items():
@@ -268,6 +279,8 @@ def run_sample(args, spec, work, formats):
 def qualify_sample(args, spec, formats):
     work = args.output / Path(spec['filename']).stem
     result = run_sample(args, spec, work, formats)
+    if 'fixture_origin' in spec:
+        result['fixture_origin'] = spec['fixture_origin']
     (work/'sample-result.json').write_text(json.dumps(result, indent=2)+'\n')
     print(spec['filename'], result['status'], flush=True)
     return result
@@ -278,10 +291,16 @@ def main():
     parser.add_argument('--target', choices=['cpmsim','trs80gp','prepare-model4'], required=True)
     parser.add_argument('--system', type=Path, required=True, help='BetterCP/M System image for this target')
     parser.add_argument('--simulator', type=Path, help='patched cpmsim or trs80gp executable')
-    parser.add_argument('--images', type=Path, required=True, help='cache for the four SHA-pinned original images')
+    parser.add_argument('--images', type=Path, required=True, help='cache for SHA-pinned image fixtures')
     parser.add_argument('--output', type=Path, required=True, help='new directory for disposable media and results')
     parser.add_argument('--manifest', type=Path, default=HERE/'samples.json',
                         help='pinned image manifest, defaults to the original CPC set')
+    parser.add_argument('--catalogue', type=Path, default=SUPPLEMENT,
+                        help='FDF catalogue with a matching compiled .FDB')
+    parser.add_argument('--diskdefs', type=Path,
+                        help='independent cpmtools diskdefs for source-image reads')
+    parser.add_argument('--work-format', default='MMF017',
+                        help='release-catalogue format for cpmsim work and return disks')
     parser.add_argument('--jobs', type=int, default=1,
                         help='independent guest processes to run concurrently')
     args = parser.parse_args()
@@ -296,11 +315,17 @@ def main():
     args.images.mkdir(parents=True, exist_ok=True)
     args.output = args.output.resolve()
     args.output.mkdir(parents=True)
-    formats = parse(SUPPLEMENT.read_text())
-    assert serialize(formats) == DATABASE.read_bytes()
-    assert tuple(d.format for d in read_fdb(DATABASE.read_bytes()).descriptors) == formats
-    report = dict(target=args.target, fdb_sha256=digest(DATABASE.read_bytes()),
+    args.catalogue = args.catalogue.resolve(strict=True)
+    if args.diskdefs:
+        args.diskdefs = args.diskdefs.resolve(strict=True)
+    database = args.catalogue.with_suffix('.FDB')
+    formats = parse(args.catalogue.read_text())
+    assert serialize(formats) == database.read_bytes()
+    assert tuple(d.format for d in read_fdb(database.read_bytes()).descriptors) == formats
+    report = dict(target=args.target, fdb_sha256=digest(database.read_bytes()),
                   system_sha256=digest(args.system.read_bytes()), samples={})
+    if args.diskdefs:
+        report['diskdefs_sha256'] = digest(args.diskdefs.read_bytes())
     if args.simulator:
         report['emulator_sha256'] = digest(args.simulator.read_bytes())
     by_id = {f.ident:f for f in formats}

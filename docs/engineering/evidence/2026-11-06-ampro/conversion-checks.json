@@ -1,0 +1,10 @@
+{
+  "fixture_origin": "synthetic",
+  "tracks_checked": 80,
+  "sector_bytes": 1024,
+  "all_chrn_and_track_orders_match": true,
+  "all_payload_bytes_match": true,
+  "source_sha256": "dd7603078bcff13b0387540b04d55f5b19d9f1a893ad08aa82419de9b3d0cef5",
+  "dmk_sha256": "5d6bc3ba46f18d6d33c71d4afd4c7394a85cedfa5be2cd8c9b87795e7b9fdcba",
+  "libdsk_blank_geometry_checked": true
+}

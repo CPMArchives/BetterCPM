@@ -1,0 +1,9 @@
+[
+  {
+    "filename": "synthetic-ampro400s.dsk",
+    "format": "AMP3",
+    "files": 3,
+    "sha256": "dd7603078bcff13b0387540b04d55f5b19d9f1a893ad08aa82419de9b3d0cef5",
+    "fixture_origin": "synthetic: libdsk ampro400s, deterministic payloads, vendor SKW2 order"
+  }
+]

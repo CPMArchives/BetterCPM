@@ -1,0 +1,13 @@
+# cpmtools 2.24 amp3/amp5 parameters, with explicit libdsk geometry.
+# The hint prevents geometry autodetection from rejecting an unbootable fixture.
+diskdef amp3
+  seclen 1024
+  tracks 80
+  sectrk 5
+  blocksize 2048
+  maxdir 128
+  skew 0
+  boottrk 2
+  os 2.2
+  libdsk:format ampro400s
+end

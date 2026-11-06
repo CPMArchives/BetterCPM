@@ -1,0 +1,24 @@
+# Investigation candidate only: independent 80T SS media is still required.
+# cpmtools amp3 and amp5; libdsk ampro400s; Ampro BIOS 1.6 DPARM.
+FDF_VERSION 1
+FORMAT
+ID AMP3
+DESCRIPTION "Ampro LB 80T SS 5x1024"
+CYLINDERS 80
+SIDES 1
+ENCODING MFM
+PSECTORS 5
+SECSIZE 1024
+SECTOR_IDS 1,2,3,4,5
+LOGICAL_TRACK SURFACE
+SPT 40
+OFF 2
+BSH 4
+BLM 15
+EXM 1
+DSM 194
+DRM 127
+AL0 0xC0
+AL1 0
+CKS 32
+END
