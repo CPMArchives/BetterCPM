@@ -353,6 +353,10 @@ VCHAR:  CP (HL)
         LD BC,64
         LDIR
 VNORMALIZE:
+        LD HL,(VIEWSIDE)
+        LD DE,609
+        ADD HL,DE
+        LD (HL),0
         XOR A
         LD (VIEWUNIT),A
         ; Derive effective values from the independent logical-track units.
@@ -512,7 +516,15 @@ VSIZEFILL:LD (HL),A
         ADD HL,DE
         LD A,(HL)
         CP 081H
+        JR Z,VGETSIZES
+        CP 083H
         RET NZ
+        LD HL,(VIEWSIDE)
+        LD DE,609
+        ADD HL,DE
+        LD (HL),1
+        RET
+VGETSIZES:
         INC HL
         LD C,(HL)
         LD B,0
@@ -688,11 +700,15 @@ VLAYOUT:
         DW 53
         DB 2
         DW VLAYOUT0
+        DW 609
+        DB 1
+        DW VBOOTTXT
         DW 65535
+VBOOTTXT:DB 'Boot exception: ',0
 VLAYOUT0:DB 'Reserved logical tracks: ',0
 
-VRAWTXT:DB 'Raw capacity bytes: ',0
-VDIRTXT:DB 'Directory byte offset: ',0
+VRAWTXT:DB 'Canonical raw bytes: ',0
+VDIRTXT:DB 'Canonical directory byte: ',0
 VBLOCKTXT:DB 'Allocation block bytes: ',0
 
 VMAPNEXT:CALL VMAPCOUNT
@@ -815,7 +831,7 @@ VIEWMAPTOTAL:DB 0
 VIEWMAPSHOWN:DB 0
 VIEWMAPSTART:DB 0
 VIEWMAPSLOT:DB 0
-VMAPTITLE:DB 'Slot ID/bytes: ,< Previous   .> Next  ',0
+VMAPTITLE:DB 'Slot ID/bytes: ,< Prev .> Next  ',0
 VMAPEMPTY:DB 'No map differences in this range.',13,10,0
 VMAPNONE:DB 'absent',0
 
@@ -889,7 +905,7 @@ VRESTORE:
         LDIR
         RET
 VSOURCEMSG:DB 'Source: catalogue ID, / file, @ editor, :B-:D drive: ',0
-VFILEMSG:DB 'Source .FDB filename: ',0
+VFILEMSG:DB 'Source FDB file: ',0
 VFDBEXT:DB 'FDB'
 VIEWBASE:DW 0
 VDRIVENO:DB 0
@@ -900,9 +916,9 @@ VSAVEMAP:DS 510
 VRESTOREERROR:CALL VRESTORE
         LD HL,VINVALID
         JP EXITMSG
-VINVALID:DB 'Cannot inspect this source; working format preserved.',13,10,0
+VINVALID:DB 'Cannot inspect; format preserved.',13,10,0
 
-VSIDES:DB 'Two sides (0 no, 1 yes): ',0
+VSIDES:DB 'Two sides (0/1): ',0
 VENCODING:DB 'Recording (0 FM, 1 MFM): ',0
 VINVERT:DB 'Inversion (0 no, 1 yes): ',0
 VSIDEORDER:DB 'Side order (0 alternating, 1 side-major): ',0
@@ -939,8 +955,8 @@ VIDTEXT:LD A,(HL)
 VUNKNOWN:DB '<unknown>',0
 
 VDIRSIZE:DB 'Directory bytes: ',0
-VALLOC:DB 'Allocated filesystem bytes: ',0
-VDIREND:DB 'Directory end byte: ',0
+VALLOC:DB 'Allocated bytes: ',0
+VDIREND:DB 'Canonical directory end: ',0
 
 VIEWUNIT:DB 0
 VUNITTXT:DB 'Logical track (0 surface, 1 cylinder): ',0

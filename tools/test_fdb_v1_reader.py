@@ -66,7 +66,7 @@ def main() -> None:
     # An unknown optional extension is skipped; a required one makes only its
     # descriptor unsupported.  Offset 370 lies in the qualified fixture's
     # zero-filled final record and does not overlap another pool object.
-    for kind, supported in ((0x03, True), (0x83, False)):
+    for kind, supported in ((0x04, True), (0x84, False)):
         changed = bytearray(payload)
         changed[370:375] = bytes((kind, 1, 0xAA, 0, 0))
         changed[128 + 58] |= 0x80
@@ -76,7 +76,7 @@ def main() -> None:
         if supported:
             assert decoded.format is not None and not decoded.unsupported_required
         else:
-            assert decoded.format is None and decoded.unsupported_required == (3,)
+            assert decoded.format is None and decoded.unsupported_required == (4,)
 
     changed = bytearray(payload)
     mixed = extension_offset(payload, 1)

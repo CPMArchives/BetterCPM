@@ -72,7 +72,7 @@ def main():
     # Unknown IDs preserve the comparison's first selection and retry the second.
     text=run('retry-second-source','P\rMMI012\rMISSING\rMMI012\r4\rA\rQ\rQ\r')
     assert 'ID not found; select a source again.' in text and 'Nothing imported' not in text
-    assert 'Directory byte offset: 10240 | 10240' in text
+    assert 'Canonical directory byte: 10240 | 10240' in text
     text=run('missing-viewer','D\rQ\r',{key('DISK.FDB'):stock})
     assert 'FDBVIEW.OVL unavailable. Copy the matching FDB pair.' in text
     bad=bytearray(original[key('FDBVIEW.OVL')]);bad[-1]^=1
@@ -80,7 +80,7 @@ def main():
     assert 'FDBVIEW.OVL mismatched/damaged' in text
     text=run('pending-state','C\rQ\rQ\rD\r')
     assert 'Editor pending: not yet in catalogue.' in text
-    assert 'S Catalogue+write' in text
+    assert 'S Save' in text
     text=run('validation-cause','B\r\rMMI012\rG\r1\rV\rQ\rQ\rD\r')
     assert 'Page 3 E DSM / allowed maximum: 394/389' in text
     assert 'Page 3 A SPT / expected: 40/80' in text
@@ -111,7 +111,7 @@ def main():
     text=run('named-recovery','S\r\rY\rQ\r',files)
     assert 'Recovery file already exists.' in text
     assert all(n in text for n in ['A0:DISK.FDB','A0:DISK.BAK','A0:DISK.$$$'])
-    report={'status':'PASS','cases':len(cases),'case_names':cases,'max_columns':m.max_console_width,'stack_peak':m.stack_used,'stack_allocation':512,'files_preserved':True,'apply_cancel_preserved_bindings':True}
+    report={'status':'PASS','cases':len(cases),'case_names':cases,'max_columns':m.max_console_width,'stack_peak':m.stack_used,'stack_allocation':128,'files_preserved':True,'apply_cancel_preserved_bindings':True}
     (work/'results.json').write_text(json.dumps(report,indent=2)+'\n')
     print('PASS',report)
 

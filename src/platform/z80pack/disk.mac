@@ -43,6 +43,7 @@
 
         ASEG
         ORG LY_DISK
+ZP_BOOT_CAP EQU 0                       ; builder enables only the checked RAM adapter
 
         JP Z_API
         JP Z_MAP
@@ -293,6 +294,13 @@ Z_MAPPED:                               ; publish mapped physical transfer
 
 Z_TRACKONE:                             ; linearize cylinder and side
         LD (ZP_TRACK),A
+        IF ZP_BOOT_CAP EQ 1
+        OR A
+        JR NZ,Z_BOOTOK
+        BIT 0,(IX+61)
+        JP NZ,Z_BADIX                   ; never access canonical boot padding as media
+Z_BOOTOK:
+        ENDIF
 
   ; Compute total bytes in one raw track.  ZP_BYTES returns DE = size of
   ; physical slot A, honoring a packed mixed map.
@@ -673,9 +681,19 @@ Z_API:                                  ; dispatch disk-control request
         JR Z,Z_SETLOG
         CP 5
         JR Z,Z_FORMAT
+        IF ZP_BOOT_CAP EQ 1
+        CP 6
+        JR Z,Z_CAPS
+        ENDIF
 
         LD HL,2
         JP Z_RETURN
+
+        IF ZP_BOOT_CAP EQ 1
+Z_CAPS:
+        LD A,18
+        JR Z_CTL
+        ENDIF
 
 Z_SETPH:                                ; set physical profile
         XOR A

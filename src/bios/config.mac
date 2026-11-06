@@ -95,6 +95,8 @@ CF_LOG:                                 ; set logical disk profile
 ; -------------------------------------------------------------------------------
 
 DC_VALIDATE:                            ; validate logical disk profile
+        LD A,(IX+62)
+        JP NZ,DC_UNSUPPORTED            ; no reserved-surface adapter on Model 4
         CALL DC_PHY
         JP NC,DC_INVALID
         LD (DC_PHYADDR),HL

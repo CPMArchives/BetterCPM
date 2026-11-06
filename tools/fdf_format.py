@@ -26,6 +26,10 @@ class FDFFormat:
     cylinders: int
     flags: int
     sector_ids: tuple[int, ...]
+    boot_psectors: int | None = None
+    boot_secsize: int | None = None
+    boot_encoding: str | None = None
+    boot_sector_ids: tuple[int, ...] | None = None
 
     @property
     def sector_bytes(self) -> int:
@@ -74,6 +78,7 @@ class FDFFormat:
         result[16:20] = bytes((self.cylinders, self.physical_sectors,
                                self.size_code, self.flags))
         result[20:20 + len(self.sector_ids)] = bytes(self.sector_ids)
+        result[61] = int(self.boot_psectors is not None)
         return bytes(result)
 
     def raw_record_map(self) -> tuple[int, ...]:
@@ -149,7 +154,8 @@ def select_fdf(path: Path, name: str) -> FDFFormat:
                      | (1 if f.side1_direction == "REVERSE" else 0))
             return FDFFormat(name, f.spt, f.bsh, f.blm, f.exm, f.dsm, f.drm,
                              f.al0, f.al1, f.cks, f.off, f.psectors,
-                             (f.secsize // 128).bit_length()-1, f.cylinders, flags, f.sector_ids)
+                             (f.secsize // 128).bit_length()-1, f.cylinders, flags, f.sector_ids,
+                             f.boot_psectors, f.boot_secsize, f.boot_encoding, f.boot_sector_ids)
         raise ValueError(f"BetterCP/M catalogue format not found: {name}")
     matches = [item for item in parse_fdf(path) if item.name.casefold() == wanted]
     if len(matches) != 1:

@@ -211,13 +211,14 @@ INITSPACE:
         DJNZ INITSPACE
         LD HL,SEEN
         LD DE,SEEN+1
-        LD BC,25
+        LD BC,28
         LD (HL),0
         LDIR
         XOR A
         LD (HASIDS),A
         LD (HASSIZES),A
         LD (CYLINDER),A
+        LD (BOOTIDS),A
         LD (IX+42),255
 FIELDLOOP:
         CALL READLINE
@@ -855,7 +856,9 @@ QUOTED: DB 0
 COMMENT:DB 0
 ATEOF:  DB 0
 LINEPTR:DW 0
-SEEN:   DS 26
+SEEN:   DS 29
+BOOTDATA:DS 35
+BOOTIDS:DB 0
 ; Dedicated non-overlapping scratch below the relevant arena ceiling.
 SIZESCLI EQU 0C700H
 SIZESSESSION EQU 0B800H
@@ -894,6 +897,10 @@ FIELDS:
         DW KEY_SIDE1_DIRECTION,PARSE_SIDE1_DIRECTION
         DW KEY_TRACK_ID_MODE,PARSE_TRACK_ID_MODE
         DW KEY_SECTOR_ID_MODE,PARSE_SECTOR_ID_MODE
+        DW KEY_BOOT_PSECTORS,PARSE_BOOT_PSECTORS
+        DW KEY_BOOT_SECSIZE,PARSE_BOOT_SECSIZE
+        DW KEY_BOOT_ENCODING,PARSE_BOOT_ENCODING
+        DW KEY_BOOT_SECTOR_IDS,PARSE_BOOT_SECTOR_IDS
         DW 0
 KEY_ID: DB 'ID',0
 KEY_SPT: DB 'SPT',0
@@ -920,6 +927,64 @@ KEY_SIDE_ORDER: DB 'SIDE_ORDER',0
 KEY_SIDE1_DIRECTION: DB 'SIDE1_DIRECTION',0
 KEY_TRACK_ID_MODE: DB 'TRACK_ID_MODE',0
 KEY_SECTOR_ID_MODE: DB 'SECTOR_ID_MODE',0
+KEY_BOOT_PSECTORS:DB 'BOOT_PSECTORS',0
+KEY_BOOT_SECSIZE:DB 'BOOT_SECSIZE',0
+KEY_BOOT_ENCODING:DB 'BOOT_ENCODING',0
+KEY_BOOT_SECTOR_IDS:DB 'BOOT_SECTOR_IDS',0
+PARSE_BOOT_PSECTORS:
+        CALL BYTEVAL
+        LD A,E
+        LD (BOOTDATA+2),A
+        JP FIELDLOOP
+PARSE_BOOT_SECSIZE:
+        CALL SCALAR
+        CALL SIZECODE
+        LD (BOOTDATA+1),A
+        JP FIELDLOOP
+PARSE_BOOT_ENCODING:
+        PUSH HL
+        LD DE,ENUM_ENCODING0
+        CALL STREQ
+        POP HL
+        LD A,0
+        JR Z,BOOTENCSET
+        LD DE,ENUM_ENCODING1
+        CALL STREQ
+        JP NZ,TEXTERR
+        LD A,1
+BOOTENCSET:LD (BOOTDATA),A
+        JP FIELDLOOP
+PARSE_BOOT_SECTOR_IDS:
+        LD DE,BOOTDATA+3
+        LD B,0
+BOOTIDLOOP:
+        PUSH BC
+        PUSH DE
+        CALL NUMBER
+        LD A,D
+        OR A
+        JP NZ,TEXTERR
+        LD A,E
+        POP DE
+        POP BC
+        LD (DE),A
+        INC DE
+        INC B
+        CALL SKIPSPACE
+        LD A,(HL)
+        OR A
+        JR Z,BOOTIDEND
+        CP ','
+        JP NZ,TEXTERR
+        LD A,B
+        CP 32
+        JP NC,TEXTERR
+        INC HL
+        CALL SKIPSPACE
+        JR BOOTIDLOOP
+BOOTIDEND:LD A,B
+        LD (BOOTIDS),A
+        JP FIELDLOOP
 PARSE_ID:
         PUSH IX
         POP DE
@@ -1407,7 +1472,43 @@ NO_MIXED:
         LD A,1
         CALL POOLBYTE
         CALL POOLBYTE
-NO_CYL: LD A,(IX+58)
+NO_CYL:
+        LD HL,SEEN+25
+        LD B,4
+        LD C,(HL)
+BOOTSEEN:LD A,(HL)
+        CP C
+        JP NZ,TEXTERR
+        INC HL
+        DJNZ BOOTSEEN
+        OR A
+        JR Z,NO_BOOT
+        LD A,(BOOTDATA+2)
+        LD HL,BOOTIDS
+        CP (HL)
+        JP NZ,TEXTERR
+        CALL STARTEXT
+        LD A,083H
+        CALL POOLBYTE
+        LD A,(BOOTIDS)
+        ADD A,3
+        LD (FDBEXLEN),A
+        CALL POOLBYTE
+        LD HL,BOOTDATA
+        CALL FDBBOOTCHECK
+        JP C,TEXTERR
+        LD A,(HASSIZES)
+        LD HL,CYLINDER
+        OR (HL)
+        JP NZ,TEXTERR
+        LD A,(FDBEXLEN)
+        LD B,A
+        LD HL,BOOTDATA
+BOOTCOPY:LD A,(HL)
+        CALL POOLBYTE
+        INC HL
+        DJNZ BOOTCOPY
+NO_BOOT: LD A,(IX+58)
         AND 080H
         JR Z,FORMATREADY
         XOR A
@@ -1634,10 +1735,19 @@ CANONMIXSAME: INC HL
 CANONCYL:
         LD A,(HL)
         CP 082H
+        JR NZ,CANONBOOT
+        INC HL
+        INC HL
+        INC HL
+CANONBOOT:
+        LD A,(HL)
+        CP 083H
         JR NZ,CANONTERM
         INC HL
+        LD E,(HL)
+        LD D,0
         INC HL
-        INC HL
+        ADD HL,DE
 CANONTERM:
         LD A,(HL)
         INC HL
@@ -1654,9 +1764,7 @@ EMITFORMAT:
         CALL TEXT
         CALL NEWLINE
         LD HL,KEY_ID
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
+        CALL TEXTSPACE
         PUSH IX
         POP HL
         LD DE,8
@@ -1680,9 +1788,7 @@ EMIT_ID: LD A,(HL)
         DJNZ EMIT_ID
         CALL NEWLINE
         LD HL,KEY_DESCRIPTION
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
+        CALL TEXTSPACE
         LD A,34
         CALL BYTEOUT
         PUSH IX
@@ -1709,114 +1815,40 @@ EMIT_DESCRIPTION: LD A,(HL)
         LD A,34
         CALL BYTEOUT
         CALL NEWLINE
-        LD HL,KEY_SPT
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
-        LD L,(IX+40)
-        LD H,(IX+41)
-        CALL DECIMAL
-        CALL NEWLINE
-        LD HL,KEY_BSH
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
-        LD L,(IX+42)
-        LD H,0
-        CALL DECIMAL
-        CALL NEWLINE
-        LD HL,KEY_BLM
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
-        LD L,(IX+43)
-        LD H,0
-        CALL DECIMAL
-        CALL NEWLINE
-        LD HL,KEY_EXM
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
-        LD L,(IX+44)
-        LD H,0
-        CALL DECIMAL
-        CALL NEWLINE
-        LD HL,KEY_DSM
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
-        LD L,(IX+45)
-        LD H,(IX+46)
-        CALL DECIMAL
-        CALL NEWLINE
-        LD HL,KEY_DRM
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
-        LD L,(IX+47)
-        LD H,(IX+48)
-        CALL DECIMAL
-        CALL NEWLINE
-        LD HL,KEY_AL0
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
-        LD L,(IX+49)
-        LD H,0
-        CALL DECIMAL
-        CALL NEWLINE
-        LD HL,KEY_AL1
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
-        LD L,(IX+50)
-        LD H,0
-        CALL DECIMAL
-        CALL NEWLINE
-        LD HL,KEY_CKS
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
-        LD L,(IX+51)
-        LD H,(IX+52)
-        CALL DECIMAL
-        CALL NEWLINE
-        LD HL,KEY_OFF
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
-        LD L,(IX+53)
-        LD H,(IX+54)
-        CALL DECIMAL
-        CALL NEWLINE
-        LD HL,KEY_PSECTORS
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
-        LD L,(IX+55)
-        LD H,0
-        CALL DECIMAL
-        CALL NEWLINE
-        LD HL,KEY_SECSIZE
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
-        LD A,(IX+56)
+        LD IY,EMITSCALARS
+        LD B,13
+EMITSCALAR:
+        PUSH BC
+        LD L,(IY+0)
+        LD H,(IY+1)
+        CALL TEXTSPACE
+        LD E,(IY+2)
+        LD D,0
+        PUSH IX
+        POP HL
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD A,(IY+3)
+        OR A
+        JR Z,EMITSCALARVAL
+        LD D,0
+        DEC A
+        JR Z,EMITSCALARVAL
+        LD A,E
         CALL SIZEVALUE
+        EX DE,HL
+EMITSCALARVAL:
+        EX DE,HL
         CALL DECIMAL
         CALL NEWLINE
-        LD HL,KEY_CYLINDERS
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
-        LD L,(IX+57)
-        LD H,0
-        CALL DECIMAL
-        CALL NEWLINE
+        LD DE,4
+        ADD IY,DE
+        POP BC
+        DJNZ EMITSCALAR
         LD HL,KEY_SIDES
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
+        CALL TEXTSPACE
         LD HL,ENUM_SIDES0
         BIT 0,(IX+58)
         JR Z,EMIT_SIDES
@@ -1824,9 +1856,7 @@ EMIT_DESCRIPTION: LD A,(HL)
 EMIT_SIDES: CALL TEXT
         CALL NEWLINE
         LD HL,KEY_ENCODING
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
+        CALL TEXTSPACE
         LD HL,ENUM_ENCODING0
         BIT 1,(IX+58)
         JR Z,EMIT_ENCODING
@@ -1834,9 +1864,7 @@ EMIT_SIDES: CALL TEXT
 EMIT_ENCODING: CALL TEXT
         CALL NEWLINE
         LD HL,KEY_INVERT
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
+        CALL TEXTSPACE
         LD HL,ENUM_INVERT0
         BIT 2,(IX+58)
         JR Z,EMIT_INVERT
@@ -1844,14 +1872,15 @@ EMIT_ENCODING: CALL TEXT
 EMIT_INVERT: CALL TEXT
         CALL NEWLINE
         LD HL,KEY_SECTOR_IDS
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
+        CALL TEXTSPACE
         LD L,(IX+60)
         LD H,(IX+61)
         LD DE,FDFRAM
         ADD HL,DE
         LD B,(IX+55)
+        CALL EMITIDLIST
+        JP LISTDONE_SECTOR_IDS
+EMITIDLIST:
 EMITLIST_SECTOR_IDS: PUSH HL
         LD A,(HL)
         LD L,A
@@ -1860,7 +1889,7 @@ EMITLIST_SECTOR_IDS: PUSH HL
         POP HL
         INC HL
         DEC B
-        JR Z,LISTDONE_SECTOR_IDS
+        RET Z
         LD A,44
         CALL BYTEOUT
         JR EMITLIST_SECTOR_IDS
@@ -1880,9 +1909,7 @@ LISTDONE_SECTOR_IDS:
         INC HL
         PUSH HL
         LD HL,KEY_SECTOR_SIZES
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
+        CALL TEXTSPACE
         POP HL
         LD B,(IX+55)
 EMITLIST_SECTOR_SIZES: PUSH HL
@@ -1900,9 +1927,7 @@ LISTDONE_SECTOR_SIZES:
         CALL NEWLINE
 SKIPSIZES:
         LD HL,KEY_LOGICAL_TRACK
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
+        CALL TEXTSPACE
         LD HL,SURFACE
         LD E,(IX+62)
         LD D,(IX+63)
@@ -1929,9 +1954,7 @@ LOOKTRACK:
 EMITTRACK: CALL TEXT
         CALL NEWLINE
         LD HL,KEY_SIDE_ORDER
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
+        CALL TEXTSPACE
         LD HL,ENUM_SIDE_ORDER0
         BIT 3,(IX+58)
         JR Z,EMIT_SIDE_ORDER
@@ -1939,9 +1962,7 @@ EMITTRACK: CALL TEXT
 EMIT_SIDE_ORDER: CALL TEXT
         CALL NEWLINE
         LD HL,KEY_SIDE1_DIRECTION
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
+        CALL TEXTSPACE
         LD HL,ENUM_SIDE1_DIRECTION0
         BIT 4,(IX+58)
         JR Z,EMIT_SIDE1_DIRECTION
@@ -1949,9 +1970,7 @@ EMIT_SIDE_ORDER: CALL TEXT
 EMIT_SIDE1_DIRECTION: CALL TEXT
         CALL NEWLINE
         LD HL,KEY_TRACK_ID_MODE
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
+        CALL TEXTSPACE
         LD HL,ENUM_TRACK_ID_MODE0
         BIT 5,(IX+58)
         JR Z,EMIT_TRACK_ID_MODE
@@ -1959,18 +1978,93 @@ EMIT_SIDE1_DIRECTION: CALL TEXT
 EMIT_TRACK_ID_MODE: CALL TEXT
         CALL NEWLINE
         LD HL,KEY_SECTOR_ID_MODE
-        CALL TEXT
-        LD A,32
-        CALL BYTEOUT
+        CALL TEXTSPACE
         LD HL,ENUM_SECTOR_ID_MODE0
         BIT 6,(IX+58)
         JR Z,EMIT_SECTOR_ID_MODE
         LD HL,ENUM_SECTOR_ID_MODE1
 EMIT_SECTOR_ID_MODE: CALL TEXT
         CALL NEWLINE
+        CALL EMITBOOT
         LD HL,ENDWORD
         CALL TEXT
         JP NEWLINE
+EMITBOOT:
+        BIT 7,(IX+58)
+        RET Z
+        LD L,(IX+62)
+        LD H,(IX+63)
+        LD DE,FDFRAM
+        ADD HL,DE
+        LD A,(HL)
+        CP 083H
+        RET NZ
+        INC HL
+        INC HL
+        PUSH HL
+        POP IY
+        LD HL,KEY_BOOT_PSECTORS
+        CALL TEXTSPACE
+        LD L,(IY+2)
+        LD H,0
+        CALL DECIMAL
+        CALL NEWLINE
+        LD HL,KEY_BOOT_SECSIZE
+        CALL TEXTSPACE
+        LD A,(IY+1)
+        CALL SIZEVALUE
+        CALL DECIMAL
+        CALL NEWLINE
+        LD HL,KEY_BOOT_ENCODING
+        CALL TEXTSPACE
+        LD A,(IY+0)
+        OR A
+        LD HL,ENUM_ENCODING0
+        JR Z,EMITBOOTENC
+        LD HL,ENUM_ENCODING1
+EMITBOOTENC:CALL TEXT
+        CALL NEWLINE
+        LD HL,KEY_BOOT_SECTOR_IDS
+        CALL TEXTSPACE
+        LD B,(IY+2)
+        PUSH IY
+        POP HL
+        INC HL
+        INC HL
+        INC HL
+        CALL EMITIDLIST
+        JP NEWLINE
+TEXTSPACE:
+        CALL TEXT
+        LD A,32
+        JP BYTEOUT
+EMITSCALARS:
+        DW KEY_SPT
+        DB 40,0
+        DW KEY_BSH
+        DB 42,1
+        DW KEY_BLM
+        DB 43,1
+        DW KEY_EXM
+        DB 44,1
+        DW KEY_DSM
+        DB 45,0
+        DW KEY_DRM
+        DB 47,0
+        DW KEY_AL0
+        DB 49,1
+        DW KEY_AL1
+        DB 50,1
+        DW KEY_CKS
+        DB 51,0
+        DW KEY_OFF
+        DB 53,0
+        DW KEY_PSECTORS
+        DB 55,1
+        DW KEY_SECSIZE
+        DB 56,2
+        DW KEY_CYLINDERS
+        DB 57,1
 SIZEVALUE:
         LD HL,128
         OR A
@@ -2352,7 +2446,7 @@ HEXDIGIT:
         ADD A,7
 HEXDONE:JP PUTC
 STACKMSG: DB 'FDB stack free ',0
-STACKUNIT: DB 'h of 0200h',13,10,0
+STACKUNIT: DB 'h of 0080h',13,10,0
 
 ; Text sizes survive subsequent lines. Viewer code is bounded below B800h;
 ; accepted object pools end below B6F8h (session) / BDF8h (converter).

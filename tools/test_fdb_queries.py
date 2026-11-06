@@ -78,7 +78,7 @@ def main():
         assert screen.replace('\r\n','').find('\n') == -1
         assert len(screen.splitlines()) <= 23
         assert max(map(len,screen.splitlines())) <= 79
-    assert query_stack <= 512
+    assert query_stack <= 96
     syntax=work/'syntax';syntax.mkdir(exist_ok=True)
     normal=machine(syntax)
     for tail in ['BAD.TXT OUT.FDB','DISK.FDB BAD.TXT']:
@@ -105,7 +105,7 @@ def main():
         assert not state()['development']
         with (root/'src/utilities/fdb.mac').open('a') as changed:changed.write('\n; changed selected input\n')
         assert state()['development'] and state('trs80gp')['development']
-    print('PASS FDB query exact screens, precedence, token bounds, 127-byte tails, console-only ABI and normal fall-through;',m.cases,'query/fall-through cases +',normal.cases,'short-syntax cases; query stack',query_stack,'/512; automatic identity baselines PASS')
+    print('PASS FDB query exact screens, precedence, token bounds, 127-byte tails, console-only ABI and normal fall-through;',m.cases,'query/fall-through cases +',normal.cases,'short-syntax cases; query stack',query_stack,'/128; automatic identity baselines PASS')
 
 
 if __name__=='__main__':

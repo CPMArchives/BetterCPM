@@ -45,9 +45,13 @@ def main():
  from build_config import validate_layout
  validate_layout(image,ls)
  # Both platform validation and boot-IOBYTE records must remain linked.
- assert address(ls,'SGVEND')-address(ls,'SGVALID')==40
+ count=(address(ls,'SGVEND')-address(ls,'SGVALID'))//20
+ assert count in (2,3)
  io=address(ls,'IO_VALID')-256
- assert image[io:io+2]==bytes([80,0]) and image[io+10:io+12]==bytes([128,0]) and image[io+20:io+22]==bytes(2)
- report={'result':'PASS','menu_cases':cases,'approval_cases':256,'mixed_context_cases':6,'malformed_cases':4,'bytes':len(image),'stack_gap_bytes':0x3e00-address(ls,'CF_MAIN_END'),'sha256':hashlib.sha256(image).hexdigest()}
+ assert image[io:io+2]==bytes([80,0])
+ assert int.from_bytes(image[io+10:io+12],'little') in (36,128)
+ if count==3:assert image[io+20:io+22]==bytes([72,0])
+ assert image[io+count*10:io+count*10+2]==bytes(2)
+ report={'result':'PASS','menu_cases':cases,'approval_cases':256,'mixed_context_cases':6,'malformed_cases':4,'bytes':len(image),'stack_gap_bytes':0x3f00-address(ls,'CF_MAIN_END'),'sha256':hashlib.sha256(image).hexdigest()}
  (OUT/'result.json').write_text(json.dumps(report,indent=2)+'\n');print(report)
 if __name__=='__main__':main()

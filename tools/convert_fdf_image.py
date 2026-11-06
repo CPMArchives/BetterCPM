@@ -30,6 +30,8 @@ def crc16(data: bytes) -> int:
 
 def require_supported(fmt: FDFFormat) -> None:
     """Reject definitions whose physical meaning this converter cannot preserve."""
+    if fmt.boot_psectors is not None:
+        raise ValueError(f"{fmt.name}: exceptional boot-surface DMK conversion is not implemented")
     fmt.raw_record_map()
     if not fmt.flags & 0x80:
         raise ValueError(f"{fmt.name}: FM conversion is not implemented")

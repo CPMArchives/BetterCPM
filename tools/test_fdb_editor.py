@@ -129,7 +129,7 @@ def main():
     console=run('P\r:B\r:C\r4\rA\rQ\rQ\r', viewfiles)
     assert '<unknown> | <unknown>' in console and m.files==viewfiles
     console=run('B\r\rMMI012\rG\r1\rQ\rD\r@\rE\rG\r0\rQ\rQ\r',viewfiles)
-    assert 'Cannot inspect this source' in console and 'Working format pending' not in console
+    assert 'Cannot inspect; format preserved.' in console and 'Working format pending' not in console
     print('PASS effective geometry, DSM warning, external working copy, mixed 255-slot editing and save')
 
 

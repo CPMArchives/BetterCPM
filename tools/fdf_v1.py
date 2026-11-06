@@ -16,6 +16,7 @@ OPTIONAL = {
     "DESCRIPTION", "BLM", "EXM", "INVERT", "SECTOR_SIZES",
     "LOGICAL_TRACK", "SIDE_ORDER", "SIDE1_DIRECTION", "TRACK_ID_MODE",
     "SECTOR_ID_MODE",
+    "BOOT_PSECTORS", "BOOT_SECSIZE", "BOOT_ENCODING", "BOOT_SECTOR_IDS",
 }
 
 
@@ -54,6 +55,10 @@ class Format:
     side1_direction: str
     track_id_mode: str
     sector_id_mode: str
+    boot_psectors: int | None = None
+    boot_secsize: int | None = None
+    boot_encoding: str | None = None
+    boot_sector_ids: tuple[int, ...] | None = None
 
     @property
     def flags(self) -> int:
@@ -73,6 +78,9 @@ class Format:
             result.append((0x81, bytes(SIZE_CODES[size] for size in self.sector_sizes)))
         if self.logical_track == "CYLINDER":
             result.append((0x82, b"\x01"))
+        if self.boot_psectors is not None:
+            result.append((0x83, bytes((int(self.boot_encoding == 'MFM'),
+                SIZE_CODES[self.boot_secsize], self.boot_psectors, *self.boot_sector_ids))))
         return tuple(result)
 
 
@@ -234,10 +242,29 @@ def _make(fields: dict[str, tuple[str, int]]) -> Format:
     if off * spt + allocated_records > total_records:
         raise FDFError("reserved and allocated records exceed recorded capacity")
 
+    boot_keys = {'BOOT_PSECTORS', 'BOOT_SECSIZE', 'BOOT_ENCODING', 'BOOT_SECTOR_IDS'}
+    boot = {}
+    if boot_keys & fields.keys():
+        if not boot_keys <= fields.keys():
+            raise FDFError('BOOT fields must be supplied together')
+        count = _bounded(fields, 'BOOT_PSECTORS', 32)
+        size = _number(fields['BOOT_SECSIZE'][0], 'BOOT_SECSIZE')
+        encoding0 = _enum(fields, 'BOOT_ENCODING', '', ('FM', 'MFM'))
+        ids = _list(fields['BOOT_SECTOR_IDS'][0], 'BOOT_SECTOR_IDS')
+        if not count or size not in SIZE_CODES or len(ids) != count or len(set(ids)) != count or max(ids) > 255:
+            raise FDFError('BOOT sector count, size or IDs are invalid')
+        if not off or cylinders < 2 or logical_track != 'SURFACE' or sector_sizes is not None or invert or \
+                (side_order, side1_direction, track_id_mode, sector_id_mode) != \
+                ('ALTERNATING', 'FORWARD', 'PER_CYLINDER', 'RESTART'):
+            raise FDFError('BOOT requires a reserved first surface, uniform data tracks and default topology')
+        if count * size > psectors * secsize:
+            raise FDFError('BOOT surface exceeds its canonical raw slot')
+        boot = dict(boot_psectors=count, boot_secsize=size, boot_encoding=encoding0, boot_sector_ids=ids)
+
     return Format(ident, description, spt, bsh, blm, exm, dsm, drm, al0, al1,
                   cks, off, psectors, secsize, cylinders, sides, encoding, invert,
                   sector_ids, sector_sizes, logical_track, side_order,
-                  side1_direction, track_id_mode, sector_id_mode)
+                  side1_direction, track_id_mode, sector_id_mode, **boot)
 
 
 def parse(text: str, source: str = "<input>") -> tuple[Format, ...]:
@@ -443,9 +470,9 @@ def read_fdb(data: bytes) -> FDB:
                     raise FDBError(f"{ident}: repeated extension kind {kind}")
                 payload = data[cursor:end]
                 extensions[kind] = payload
-                if kind in (1, 2) and not kind_byte & 0x80:
+                if kind in (1, 2, 3) and not kind_byte & 0x80:
                     raise FDBError(f"{ident}: semantic extension {kind} is not required")
-                if kind not in (1, 2) and kind_byte & 0x80:
+                if kind not in (1, 2, 3) and kind_byte & 0x80:
                     unsupported.append(kind)
                 cursor = end
             own(extension_offset, extension_end, f"{ident} extensions")
@@ -463,6 +490,15 @@ def read_fdb(data: bytes) -> FDB:
             if extensions[2] != b"\x01":
                 raise FDBError(f"{ident}: logical-track extension is malformed")
             logical_track = "CYLINDER"
+
+        if 3 in extensions:
+            b = extensions[3]
+            if (len(b) < 4 or b[0] > 1 or b[1] > 3 or not 1 <= b[2] <= 32
+                    or b[2] != len(b)-3 or len(set(b[3:])) != b[2]):
+                raise FDBError(f'{ident}: boot-surface extension is malformed')
+            if (not off or cylinders < 2 or flags & 0x7c or 1 in extensions or 2 in extensions
+                    or b[2] * (128 << b[1]) > psectors * (128 << size_code)):
+                raise FDBError(f'{ident}: invalid boot-surface topology or capacity')
 
         item = None
         if not unsupported:
@@ -488,6 +524,13 @@ def read_fdb(data: bytes) -> FDB:
             }
             if sector_sizes is not None:
                 fields["SECTOR_SIZES"] = (",".join(map(str, sector_sizes)), 0)
+            if 3 in extensions:
+                b = extensions[3]
+                if len(b) < 4 or b[0] > 1 or b[1] > 3 or b[2] != len(b)-3:
+                    raise FDBError(f'{ident}: boot-surface extension is malformed')
+                fields.update(BOOT_PSECTORS=(str(b[2]), 0), BOOT_SECSIZE=(str(128 << b[1]), 0),
+                              BOOT_ENCODING=('MFM' if b[0] else 'FM', 0),
+                              BOOT_SECTOR_IDS=(','.join(map(str,b[3:])), 0))
             try:
                 item = _make(fields)
             except FDFError as error:

@@ -1,0 +1,183 @@
+{
+  "target": "cpmsim",
+  "fdb_sha256": "cde08153810044324ceb9e28b1a1bb65bafc3d1d3d70747b31fa950ac3be8c92",
+  "system_sha256": "ffd62459b428c4fe81b8bd2b512a325ddea7ce0625dfe84843afec7b855a54e8",
+  "samples": {
+    "464DDI1_1.DSK": {
+      "status": "pass",
+      "raw_sha256": "f9df7ee8a8c13ddc556d60866bee8924417045428a25d38d6040434a47f7c344",
+      "formatted_cylinders": 40,
+      "rotation": [
+        65,
+        70,
+        66,
+        71,
+        67,
+        72,
+        68,
+        73,
+        69
+      ],
+      "original_files": {
+        "amsdos.com": "cd56b6c6e817c6190cabf652724b052938d264e442a6667bdc8266a09cd4b233",
+        "asm.com": "1ee7db36b127de3182d70b897a568f5dafd461cbd21ef25c48900d8a7b7c011b",
+        "bootgen.com": "9c69078fdf1389a9213a5bb02cbf801c444115966928cc1a49e18fb2c31cd70f",
+        "chkdisc.com": "8a533bbab3c1945f7de744f238edf5197407bec56f785c642414ccf6d7abb7cd",
+        "cload.com": "4b9ba4f8c70d89255fed0071d6eb26131de4c66a9b80fe5b6d9d060954149470",
+        "copydisc.com": "fc1acc89507a5768d53cf2df503a03263cfc551d1cd36250b0142aedf081b8a5",
+        "csave.com": "d90c786de7dd30708a3dd4fec02e72397cb8ca36dc0f13f5ded19909d47c21ac",
+        "ddt.com": "4eac26d7010c5154741026c755cab51310cfbec04aecd80bc1514a2c786a402c",
+        "discchk.com": "5aad2c6b062530a459e5a7ce15bd038fc0f161b3389ca3b874bf57a140d0d764",
+        "disccopy.com": "985709957f2e9f3d58c240a4a226218271f2f485c138a2b08c2d65fd2bb8f110",
+        "dump.asm": "0ed417f983049ddc351823ed33bed6477d523331254960db21778fe035bb8495",
+        "dump.com": "9a99911c0fe0aaec22fdec61b1b2b03dd012ea12d20cc17f21c6f6d9c5399fe3",
+        "ed.com": "0397b96b6d48ba92a0b41cdf974bf8ad31e4d49783f1ff7eed9e701b6a8870db",
+        "ex1.bas": "9ea196498fa7a68d64b708a286d97a9c34f1670ab3c2eb478dbecee8d17c93be",
+        "ex2.bas": "03340930698bb8fe1f34d99c8c27db7e93cdeab4f1b6c9cb38592c085d38feeb",
+        "filecopy.com": "d27eb39f453a74d27394dee50a48ffe66bc19bcc580245b3ed563ab46c61f87b",
+        "format.com": "bbbb249a79a44ffbddf971fa68e2b03a122c8725e9e794841f24814498a0f6cb",
+        "load.com": "c885d061a5dcb3830ab1c29a13e34d3c0560cc3faf569bc55b195c0330a9cbd6",
+        "movcpm.com": "ca1c371785812555b1cae7cfa41f5c813dcf561059519050123c194088d92025",
+        "pip.com": "f3084c67365b60bb48bb4a2e7f3a5a6067908a48a0c00b5b79b0cc34e2984e66",
+        "rointime.dem": "9afb10255ba0581f0940b3cd7fed28880dabb023123dcd30dcbf72bc922176ca",
+        "setup.com": "b358a14e45899b38b2daeb1ac3ddaaa0e265987dca83a42e12e494d072d9f2bd",
+        "stat.com": "614d0b1d66466177e5b2bf585251d53d1e24eda34ada136b4ae178ab5944dc73",
+        "submit.com": "e466b44f7ba5313eabd9b574e647c0fe85e953b0f24aa7214afa494ccea5e618",
+        "sysgen.com": "b4faae18bdcdc5d117fe76e23ca46be2cda0258cfa354bd3d4740ce6469c1503",
+        "xsub.com": "817a16b595ea6de8df0dd5e808f89a49e85dea546673283d759d01e960598bed"
+      },
+      "fill_bytes": 51200,
+      "fill_sha256": "96d951077465bba73196da5efd1a9d7617b9f17eb6cdb7e4985b70639f9429ff",
+      "highest_block_written": 170,
+      "written_edsk_sha256": "2914c9a2932d0443ecb450eb4311632224e64c41017a7ba212afb418f67afebf",
+      "reserved_bytes_preserved": 9216,
+      "guest_commands": [
+        "C:",
+        "A:CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT=\"Amstrad CPC System\"",
+        "A:",
+        "DIR B:",
+        "COPY B:*.* C:",
+        "COPY C:PROBE.BIN B:FILL.BIN",
+        "COPY B:FILL.BIN D:RETURN.BIN"
+      ]
+    },
+    "664EN_2.DSK": {
+      "status": "pass",
+      "raw_sha256": "a5525f43cd1606a7c8444074fd837f3b2fd3f582615c2ec687ac49451a67dd1c",
+      "formatted_cylinders": 40,
+      "rotation": [
+        65,
+        70,
+        66,
+        71,
+        67,
+        72,
+        68,
+        73,
+        69
+      ],
+      "original_files": {
+        "amsdos.com": "cd56b6c6e817c6190cabf652724b052938d264e442a6667bdc8266a09cd4b233",
+        "logo.com": "5750969463f16fa61afae6fe444264b1e966852346aa68ac56307edaba7b17de",
+        "setup.com": "b358a14e45899b38b2daeb1ac3ddaaa0e265987dca83a42e12e494d072d9f2bd"
+      },
+      "fill_bytes": 131072,
+      "fill_sha256": "83af4e8f74025fc4c4ca441c35f8a79a94ce0187903445d2ac64c092bc1a6924",
+      "highest_block_written": 170,
+      "written_edsk_sha256": "7124a8b478e102e058e89bdf3931ef923d9f6e6add469e4ab37b58703b822364",
+      "reserved_bytes_preserved": 9216,
+      "guest_commands": [
+        "C:",
+        "A:CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT=\"Amstrad CPC System\"",
+        "A:",
+        "DIR B:",
+        "COPY B:*.* C:",
+        "COPY C:PROBE.BIN B:FILL.BIN",
+        "COPY B:FILL.BIN D:RETURN.BIN"
+      ]
+    },
+    "6128SP_3.DSK": {
+      "status": "pass",
+      "raw_sha256": "558b2aaca0259df73f98acb30ae116034115954e59323ce9a1eb7d5570c10d8f",
+      "formatted_cylinders": 40,
+      "rotation": [
+        193,
+        198,
+        194,
+        199,
+        195,
+        200,
+        196,
+        201,
+        197
+      ],
+      "original_files": {
+        "amsdos.com": "ea93a7139b64dc6ed53f93f34eb3509beed3d101ce915a51be7ca8b74c7f48ba",
+        "assign.sys": "9430e9eb5f5f45cda23e7a80c8be49a78f8510d5127c1abcc974628b64409b9d",
+        "ddfxlr7.prl": "01dc869b20016c51794cc688b7085aee46e2282c092f6c47baf1b72caeb4370a",
+        "ddmode0.prl": "7c0c1d1942bfa2244aa9e02df3bcf6dc49dc4629efbee55592a40b777f830f59",
+        "ddmode1.prl": "4d48be2bb9e777d95fa495686005a9f5f8bd59615e2422157666605a1eacdae7",
+        "ddmode2.prl": "68976b8302c9ae7b9c2a9b2cbea08f5556520c551347aa739af4d2917680d1b0",
+        "drivers.gsx": "f4c74a3c19496adafab1a3b23fc9c4b586fba8ce21c59f3137d9a8150d0ba52c",
+        "gengraf.com": "9b2fbe4cd207ff4d2ba950da56dea97529ee04fd44c9bb1bbafb45d477e9abd2",
+        "gsx.sys": "f78266e9d460c9be0d1ea7b7f01756e005ff1552f871980f67f25c6e253ef1e2",
+        "help.com": "72ad0bd4330ce2643d8d9f678494233455ad802de5ceae181ae48f712738a06b",
+        "help.hlp": "68728ec9f2faf9eff159c505a9dfbde51582b773477a8bc669fe25877d67f250",
+        "keys.ccp": "bab20c50ae9cedbe660532ee7be50e6830668e1f791ca3824e1312a6897b9483",
+        "keys.drl": "f1fe5c6a481db053e645a781de94a70e188bfc1733a7d9b1e4554e6ea4492768",
+        "logo3.com": "8e5f22112889aa0c0b4a7333117e721f263442149705b1260f4677a4c32a180f",
+        "logo3.sub": "5e5406615eb2d4694f07f42096338f4362da4a2db8b74ec0d6046c6aab316a38",
+        "setkeys.com": "7ab367e4f5600fe409936beadfa3cc4e574257377c76ded08f8b823d11bd912c",
+        "submit.com": "2e09418547c7176625ce530a56200475eeab5254dad1d4209e4be3e107d9a32c"
+      },
+      "fill_bytes": 8192,
+      "fill_sha256": "9ed2281992cf62ea66317fc6e75e071c9f4895720e7b4ed37f5534c7ea6eb5c6",
+      "highest_block_written": 179,
+      "written_edsk_sha256": "dbc530a1233d12af4d5b0cd89e1b1c81df236029c542d69f39e0a27398a8f99b",
+      "reserved_bytes_preserved": 0,
+      "guest_commands": [
+        "C:",
+        "A:CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT=\"Amstrad CPC Data\"",
+        "A:",
+        "DIR B:",
+        "COPY B:*.* C:",
+        "COPY C:PROBE.BIN B:FILL.BIN",
+        "COPY B:FILL.BIN D:RETURN.BIN"
+      ]
+    },
+    "cpcBoosterClient.dsk": {
+      "status": "pass",
+      "raw_sha256": "6a47d928460aaf81f423c1090dd31c00a219d96b7e00132f168aa67e0316b3e8",
+      "formatted_cylinders": 40,
+      "rotation": [
+        193,
+        198,
+        194,
+        199,
+        195,
+        200,
+        196,
+        201,
+        197
+      ],
+      "original_files": {
+        "client": "f573f8cb0a987f644c63d3c3d04c34723b2176e5cf9714187059a2a29a89b471"
+      },
+      "fill_bytes": 180224,
+      "fill_sha256": "947380aacb84e0028a9bc00eb19df9f96163575f74b3c421a279707e056b28c2",
+      "highest_block_written": 179,
+      "written_edsk_sha256": "013b2d1477a4b6d55249748f18a4910e8b7f87ea5e72ddc9f38e0093d2cbc56a",
+      "reserved_bytes_preserved": 0,
+      "guest_commands": [
+        "C:",
+        "A:CONFIG /LOGICAL=B /PHYSICAL=1 /FORMAT=\"Amstrad CPC Data\"",
+        "A:",
+        "DIR B:",
+        "COPY B:*.* C:",
+        "COPY C:PROBE.BIN B:FILL.BIN",
+        "COPY B:FILL.BIN D:RETURN.BIN"
+      ]
+    }
+  },
+  "emulator_sha256": "0f6b256cd6beea2ab7bf0eab8a9cc2a5241ed772408e811150c3f6e0f5cff4e8"
+}

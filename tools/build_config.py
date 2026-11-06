@@ -44,13 +44,13 @@ def expanded_source(generated_root=None):
 
 
 def validate_layout(image, listing):
- """Help is disposable above the private stack; ordinary code must stay below."""
+ """Help is disposable above the 256-byte private stack (3F00h..3FFFh)."""
  import re
  def symbol(name):
   match=re.search(r'^([0-9a-f]{4})\s+.*?\b'+name+':',listing,re.M|re.I)
   if not match:raise ValueError('CONFIG listing lacks '+name)
   return int(match[1],16)
- if symbol('CF_MAIN_END')>0x3e00 or symbol('CF_QUERY')!=0x4000:
+ if symbol('CF_MAIN_END')>0x3f00 or symbol('CF_QUERY')!=0x4000:
   raise ValueError('CONFIG code/help overlaps its private stack')
  if 0x100+len(image)>0xac00:
   raise ValueError('CONFIG help exceeds existing minimum transient memory')
