@@ -1,0 +1,539 @@
+        INCLUDE layout.inc
+; @cache-core-symbols@
+; Manager-owned carrier stream. This optional 1K allocation is charged only
+; with an active RSX profile. Carrier capsules use relative offsets and travel
+; inside each provider allocation; the live chain is the lookup index.
+CBBASE EQU LY_RSX-0400H
+        CSEG
+        .PHASE  CBBASE
+        JP CB_OPEN
+        JP CB_NEXT
+        JP CB_RESET
+        JP CB_RESERVE
+        JP CB_PACK
+        JP CB_SOURCE
+        JP CB_BOUND
+        JP CB_DUREQ
+CB_OPEN:
+        LD (CB_NAME),HL
+        LD (CB_DU),BC
+        CP 2
+        JR Z,CB_EXPLICIT
+        LD BC,0
+        LD (CB_DU),BC
+CB_EXPLICIT:
+        XOR A
+        LD (CB_MEMORY),A
+        LD (CB_INDEX),A
+        LD HL,(LY_SYS+084H)
+        LD (CB_LIVE),HL
+CB_FIND:
+        LD A,(CB_INDEX)
+        LD B,A
+        LD A,(LY_RSTA)
+        CP B
+        JP Z,CB_DISK
+        LD A,B
+        ADD A,A
+        ADD A,A
+        ADD A,A
+        LD E,A
+        LD D,0
+        LD HL,LY_RSTA+1
+        ADD HL,DE
+        LD DE,(CB_NAME)
+        LD B,8
+CB_MATCH:
+        LD A,(DE)
+        CP (HL)
+        JR NZ,CB_ADVANCE
+        INC DE
+        INC HL
+        DJNZ CB_MATCH
+        LD HL,(CB_LIVE)
+        LD DE,6
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        PUSH DE
+        LD HL,(CB_LIVE)
+        INC HL
+        INC HL
+        INC HL
+        INC HL
+        LD A,(HL)
+        LD HL,0
+CB_AADD:
+        OR A
+        JR Z,CB_ATOP
+        LD BC,10
+        ADD HL,BC
+        DEC A
+        JR CB_AADD
+CB_ATOP:
+        POP DE
+        ADD HL,DE
+        LD (CB_TOTAL),HL
+        LD HL,(CB_LIVE)
+        ADD HL,DE
+        LD DE,8
+        OR A
+        SBC HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        PUSH HL
+        LD HL,(CB_LIVE)
+        ADD HL,DE
+        LD (CB_DATA),HL
+        POP HL
+        INC HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (CB_LENGTH),DE
+        INC HL
+        LD C,(HL)
+        INC HL
+        LD B,(HL)
+        LD (CB_DU),BC
+        INC HL
+        LD A,(HL)
+        CP 'R'
+        JP NZ,CB_BAD
+        INC HL
+        LD A,(HL)
+        CP 'C'
+        JP NZ,CB_BAD
+        LD HL,(CB_DATA)
+        CALL CB_HSIZE
+        LD (CB_HEADER),DE
+        LD HL,(CB_LENGTH)
+        LD BC,512
+        ADD HL,BC
+        OR A
+        SBC HL,DE
+        LD (CB_LENGTH),HL
+        LD A,1
+        LD (CB_MEMORY),A
+        JR CB_RESET
+CB_ADVANCE:
+        LD HL,(CB_LIVE)
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        LD DE,8
+        OR A
+        SBC HL,DE
+        LD (CB_LIVE),HL
+        LD HL,CB_INDEX
+        INC (HL)
+        JP CB_FIND
+CB_DISK:
+        LD HL,(CB_NAME)
+        LD DE,LY_FCB+1
+        LD BC,8
+        LDIR
+        LD HL,CB_EXT
+        LD BC,3
+        LDIR
+CB_RESET:
+        LD HL,0
+        LD (CB_POSITION),HL
+        LD A,(CB_MEMORY)
+        OR A
+        JR Z,CB_DRESET
+        XOR A
+        RET
+CB_DRESET:
+        LD A,(CB_DU)
+        INC A
+        LD (LY_FCB),A
+        LD HL,LY_FCB+12
+        LD DE,LY_FCB+13
+        LD BC,23
+        LD (HL),0
+        LDIR
+        LD C,15
+        CALL CB_CALL
+        CP 255
+        JP Z,CB_BAD
+        XOR A
+        RET
+CB_NEXT:
+        LD A,(CB_MEMORY)
+        OR A
+        JR NZ,CB_MEMNEXT
+        LD B,4
+CB_READ:
+        PUSH BC
+        PUSH HL
+        LD (CB_DMA),HL
+        LD C,20
+        CALL CB_CALL
+        POP HL
+        POP BC
+        OR A
+        JR NZ,CB_EOF
+        LD DE,128
+        ADD HL,DE
+        DJNZ CB_READ
+        XOR A
+        RET
+CB_EOF:
+        LD A,B
+        CP 4
+        JP Z,CB_BAD
+CB_PAD:
+        LD DE,128
+        ADD HL,DE
+        DJNZ CB_PAD
+        XOR A
+        RET
+CB_MEMNEXT:
+        PUSH HL
+        LD HL,(CB_POSITION)
+        LD DE,(CB_LENGTH)
+        OR A
+        SBC HL,DE
+        POP HL
+        JR NC,CB_BAD
+        LD BC,512
+CB_BYTE:
+        PUSH BC
+        PUSH HL
+        LD HL,(CB_POSITION)
+        LD A,H
+        OR A
+        JR NZ,CB_NORMAL
+        LD A,L
+        CP 14
+        JR Z,CB_ALOW
+        CP 15
+        JR NZ,CB_NORMAL
+        LD A,(CB_TOTAL+1)
+        JR CB_STORE
+CB_ALOW:
+        LD A,(CB_TOTAL)
+        JR CB_STORE
+CB_NORMAL:
+        LD DE,(CB_LENGTH)
+        OR A
+        SBC HL,DE
+        JR NC,CB_ZERO
+        LD HL,(CB_POSITION)
+        LD DE,(CB_HEADER)
+        OR A
+        SBC HL,DE
+        JR C,CB_PREFIX
+        LD HL,(CB_POSITION)
+        LD DE,512
+        OR A
+        SBC HL,DE
+        JR C,CB_ZERO
+        LD DE,(CB_HEADER)
+        ADD HL,DE
+        JR CB_FETCH
+CB_PREFIX:
+        LD HL,(CB_POSITION)
+CB_FETCH:
+        LD DE,(CB_DATA)
+        ADD HL,DE
+        LD A,(HL)
+        JR CB_STORE
+CB_ZERO:
+        XOR A
+CB_STORE:
+        POP HL
+        LD (HL),A
+        INC HL
+        PUSH HL
+        LD HL,(CB_POSITION)
+        INC HL
+        LD (CB_POSITION),HL
+        POP HL
+        POP BC
+        DEC BC
+        LD A,B
+        OR C
+        JR NZ,CB_BYTE
+        XOR A
+        RET
+CB_BAD:
+        LD A,255
+        OR A
+        RET
+; The normal stream's adapters deliberately select A0. Explicit carrier I/O
+; uses the same core with the selected user and private DMA, restoring the
+; caller's complete context even after a failed open/read.
+CB_CALL:
+        LD HL,(UB_DMA)
+        PUSH HL
+        LD HL,(UB_DRIVE)
+        PUSH HL
+        LD A,(CB_DU+1)
+        LD (UB_USERNO),A
+        LD HL,(CB_DMA)
+        LD (UB_DMA),HL
+        LD DE,LY_FCB
+        CALL LY_BDOS
+        LD C,A
+        POP HL
+        LD (UB_DRIVE),HL
+        POP HL
+        LD (UB_DMA),HL
+        LD A,C
+        OR A
+        RET
+CB_SOURCE:
+        LD BC,(CB_DU)
+        RET
+; HL=validated carrier, DE=normalized facts. Enlarge only a fresh candidate.
+CB_RESERVE:
+        LD (CB_CARRIER),HL
+        PUSH DE
+        CALL CB_SIZE
+        JR C,CB_RESBAD
+        LD HL,28+255
+        ADD HL,BC
+        JR C,CB_RESBAD
+        LD L,0
+        EX DE,HL
+        LD HL,(CB_CARRIER)
+        LD BC,14
+        ADD HL,BC
+        LD C,(HL)
+        INC HL
+        LD B,(HL)
+        EX DE,HL
+        ADD HL,BC
+        JR C,CB_RESBAD
+        EX DE,HL
+        POP HL
+        INC HL
+        INC HL
+        INC HL
+        INC HL
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        XOR A
+        RET
+CB_RESBAD:
+        POP DE
+        JP CB_BAD
+; HL=carrier -> DE=used header length; BC=compacted complete carrier length.
+CB_SIZE:
+        PUSH HL
+        CALL CB_HSIZE
+        POP HL
+        PUSH DE
+        PUSH HL
+        LD DE,30
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        POP HL
+        PUSH HL
+        ADD HL,DE
+        LD DE,8
+        ADD HL,DE
+        LD C,(HL)
+        INC HL
+        LD B,(HL)
+        POP HL
+        PUSH HL
+        LD DE,12
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        ADD HL,BC
+        POP DE
+        POP BC
+        ADD HL,BC
+        PUSH HL
+        LD D,B
+        LD E,C
+        POP BC
+        RET
+CB_HSIZE:
+        LD DE,22
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        ADD HL,HL
+        LD DE,48
+        ADD HL,DE
+        EX DE,HL
+        RET
+; DE=snapshot request, including source DU at +23/+24. The cache is placed
+; below callable descriptors, leaving their existing live-header ABI intact.
+CB_PACK:
+        LD (CB_REQUEST),DE
+        EX DE,HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        LD BC,512
+        OR A
+        SBC HL,BC
+        LD (CB_CARRIER),HL
+        CALL CB_SIZE
+        LD (CB_COMPACT),BC
+        LD (CB_HEADER),DE
+        LD HL,(CB_REQUEST)
+        LD DE,18
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (CB_OUTPUT),DE
+        LD HL,(CB_REQUEST)
+        LD DE,4
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD HL,(CB_OUTPUT)
+        ADD HL,DE
+        EX DE,HL
+        LD HL,(CB_REQUEST)
+        LD BC,16
+        ADD HL,BC
+        LD A,(HL)
+        EX DE,HL
+CB_DESCSPACE:
+        OR A
+        JR Z,CB_FOOTER
+        LD BC,10
+        OR A
+        SBC HL,BC
+        DEC A
+        JR CB_DESCSPACE
+CB_FOOTER:
+        LD BC,8
+        OR A
+        SBC HL,BC
+        LD (CB_FOOT),HL
+        LD BC,(CB_COMPACT)
+        OR A
+        SBC HL,BC
+        LD (CB_DATA),HL
+        EX DE,HL
+        LD HL,(CB_CARRIER)
+        LD BC,(CB_HEADER)
+        LDIR
+        LD HL,(CB_CARRIER)
+        LD BC,512
+        ADD HL,BC
+        PUSH HL
+        LD HL,(CB_COMPACT)
+        LD BC,(CB_HEADER)
+        OR A
+        SBC HL,BC
+        LD B,H
+        LD C,L
+        POP HL
+        LDIR
+        LD HL,(CB_DATA)
+        LD DE,(CB_OUTPUT)
+        OR A
+        SBC HL,DE
+        EX DE,HL
+        LD HL,(CB_FOOT)
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        INC HL
+        LD DE,(CB_COMPACT)
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        INC HL
+        EX DE,HL
+        LD HL,(CB_REQUEST)
+        LD BC,23
+        ADD HL,BC
+        LD BC,2
+        LDIR
+        LD A,'R'
+        LD (DE),A
+        INC DE
+        LD A,'C'
+        LD (DE),A
+        XOR A
+        RET
+CB_DUREQ:
+        PUSH HL
+        EX DE,HL
+        LD A,(HL)
+        LD BC,0
+        CP 3
+        JR NZ,CB_DUDONE
+        LD DE,18
+        ADD HL,DE
+        LD C,(HL)
+        INC HL
+        LD B,(HL)
+CB_DUDONE:
+        POP HL
+        RET
+CB_BOUND:
+        ; HL is value-old base. The caller still copies the complete charged
+        ; allocation, but only provider-owned addresses are relocation targets.
+        PUSH HL
+        LD H,B
+        LD L,C
+        LD DE,6
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD H,B
+        LD L,C
+        ADD HL,DE
+        LD DE,8
+        OR A
+        SBC HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD H,B
+        LD L,C
+        ADD HL,DE
+        LD DE,14
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        POP HL
+        OR A
+        SBC HL,DE
+        RET
+CB_TOTAL: DW 0
+CB_EXT: DB 'RSX'
+CB_MEMORY: DB 0
+CB_INDEX: DB 0
+CB_DU: DW 0
+CB_DMA: DW 0
+CB_NAME: DW 0
+CB_LIVE: DW 0
+CB_DATA: DW 0
+CB_LENGTH: DW 0
+CB_POSITION: DW 0
+CB_HEADER: DW 0
+CB_CARRIER: DW 0
+CB_REQUEST: DW 0
+CB_COMPACT: DW 0
+CB_OUTPUT: DW 0
+CB_FOOT: DW 0
+        .DEPHASE
+        END

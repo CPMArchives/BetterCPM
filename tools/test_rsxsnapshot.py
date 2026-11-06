@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import struct
+from functools import lru_cache
+from build_ccp import assemble
 from pathlib import Path
 
 from system_layout import LAYOUT
@@ -21,12 +23,23 @@ CODE_SIZE = 0x80
 ALLOCATION = 0x100
 
 
+@lru_cache(maxsize=1)
+def primitive():
+    # Keep primitive fixtures independent of the production capsule wrapper,
+    # which is exercised with real carriers in test_rsx_cache/offline.
+    work=ROOT/'build/rsx-snapshot-primitive';work.mkdir(parents=True,exist_ok=True)
+    source=(ROOT/'src/system/r3snap.mac').read_text().replace(
+        'RNBASE          EQU     07600H',f'RNBASE EQU 0{ENTRY:04X}H').replace(
+        '        CSEG\n        .PHASE  ','        ASEG\n        ORG     ').replace('        .DEPHASE\n','')
+    return assemble(Path.home()/'bin/z80asm',source,work/'snapshot.bin',work/'snapshot.lst',ENTRY)
+
+
 def invoke(*, relocation_values: tuple[int, ...] = (0x20, 0x30),
            code_size: int = CODE_SIZE, dispatch: int = 8,
            service_count: int = 2, source: int = SOURCE,
            format_version: int = 2) -> tuple[Z80, bytes]:
     cpu = Z80(b"")
-    code = (ROOT / "build/system/R3SNAP.RSX").read_bytes()
+    code = primitive()
     cpu.mem[ENTRY:ENTRY + len(code)] = code
 
     payload = bytearray((index * 3) & 0xFF for index in range(CODE_SIZE))

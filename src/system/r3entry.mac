@@ -33,7 +33,23 @@ RV_ENTRY:                               ; enter production profile selector
         LD      (RV_REQ),DE
         LD      A,(DE)
         CP      2
-        JP      NZ,RV_BAD
+        JR Z,RV_VERSION
+        CP 3
+        JP NZ,RV_BAD
+        PUSH DE
+        EX DE,HL
+        LD DE,18
+        ADD HL,DE
+        LD A,(HL)
+        CP 16
+        JR NC,RV_BADSOURCE
+        INC HL
+        LD A,(HL)
+        CP 32
+RV_BADSOURCE:
+        POP DE
+        JP NC,RV_BAD
+RV_VERSION:
         LD      A,(RSTCOUNT)
         CP      5
         JP      NC,RV_BAD
@@ -83,16 +99,28 @@ RV_ENUM:                                ; enumerate one persistent profile membe
         LD      (HL),E
         INC     HL
         LD      (HL),D
+        CALL RV_LOCATION
         LD      A,1
         JP      RV_RESTORE
 
 RV_QUERY:                               ; query one persistent profile member
         CALL    RV_FIND
         JP      C,RV_ZERO
+        CALL RV_LOCATION
         LD      A,1
         JP      RV_RESTORE
 
 RV_LOAD:                                ; select append transaction
+        LD HL,(RV_REQ)
+        LD A,(HL)
+        CP 3
+        JR NZ,RV_LFLAGS
+        INC HL
+        INC HL
+        LD A,(HL)
+        CP 2
+        JP NC,RV_BAD
+RV_LFLAGS:
         CALL    RV_FIND
         JP      NC,RV_ZERO              ; an existing load is idempotent
         LD      A,(RSTCOUNT)
@@ -302,6 +330,25 @@ RV_SERVPTR:                             ; locate one primary-service record
         LD      H,0
         LD      DE,RSTSERV
         ADD     HL,DE
+        RET
+
+RV_LOCATION:
+        LD HL,(RV_REQ)
+        LD A,(HL)
+        CP 3
+        RET NZ
+        PUSH HL
+        LD DE,4
+        ADD HL,DE
+        LD A,1
+        CALL LY_RSX-0400H
+        CALL LY_RSX-0400H+15
+        POP HL
+        LD DE,18
+        ADD HL,DE
+        LD (HL),C
+        INC HL
+        LD (HL),B
         RET
 
 RV_BAD:                                 ; reject an unavailable transaction phase

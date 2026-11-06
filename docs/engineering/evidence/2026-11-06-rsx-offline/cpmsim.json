@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "target": "z80pack",
+  "system_sha256": "9242b16825c92328450f0848da8844ef1f9fcd72570dc895b4e5a2e587e0a457",
+  "utilities_sha256": "b59d0b3d33a8a7aabf1551c4ea555327fff0f699f3f08490fde67da344ac8527",
+  "steps": [
+    "RSX LOAD B0:HELLO",
+    "RSX LOAD B3:STATEFUL",
+    "STATTST I",
+    "STATTST M",
+    "ERA B0:HELLO.RSX",
+    "ERA B3:STATEFUL.RSX",
+    "RSX UNLOAD HELLO",
+    "STATTST C",
+    "RSX UNLOAD STATEFUL",
+    "SUBMIT UBATCH"
+  ],
+  "batch": "B:XSUB B0:\r\nA:INPUT\r\nBATCHFULL\r\nERA B:BATCHIO.RSX\r\nA:MARK RSXOFFLINE\r\n\u001a",
+  "originals_unchanged": true,
+  "audit": {
+    "carrier_removal": "PASS: B0 HELLO/BATCHIO and B3 STATEFUL absent",
+    "unexpected_diagnostics": "none"
+  },
+  "artifacts": {
+    "build/system/R3PACK.RSX": "a26ad6280b4aa3601290198eb6ed8eb072412271ea68bfadc97a8011130efb7b",
+    "build/system/R3CACHE.RSX": "29daa57e6b6ea89fa8c6e5140e5c516fda5a9deec64e1d934e3c4ef599331e3d",
+    "build/system/rsxloader.bin": "28095847cd493de2af347f4204eea6c4f28a579f8245a7d0699cdaa1082154d0",
+    "build/utilities/RSX.COM": "309d214ce33cd640b5486d421aa20906b5d3512aeb69fbb867c0ce733291edef",
+    "build/utilities/XSUB.COM": "f358401e2ead37445e9b81ed98589d8d24c2fd4e5481a00992b15ee75ff221dc"
+  }
+}

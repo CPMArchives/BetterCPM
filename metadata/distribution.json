@@ -236,6 +236,17 @@
       "user": 0
     },
     {
+      "name": "R3CACHE.RSX",
+      "artifact": "build/system/R3CACHE.RSX",
+      "status": "implemented",
+      "role": "runtime dependency",
+      "targets": [
+        "z80pack",
+        "trs80gp"
+      ],
+      "user": 0
+    },
+    {
       "name": "R3PACK.RSX",
       "artifact": "build/system/R3PACK.RSX",
       "status": "implemented",

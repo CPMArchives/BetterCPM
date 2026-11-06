@@ -717,6 +717,7 @@
       "version": "2.0",
       "placement": "System",
       "roots": [
+        "src/system/r3cache.mac",
         "src/system/r3carr.mac",
         "src/system/r3comit.mac",
         "src/system/r3coord.mac",

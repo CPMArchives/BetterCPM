@@ -14,7 +14,7 @@ SCREENS={
  ('S', 'Show logical record count.'),
  ('CON:=CRT:', 'Assign a logical device (example).')]),
  'CPX':('Command Processor Extension Management','CPX LIST | LOAD name[.CPX] | UNLOAD name[.CPX]',[]),
- 'RSX':('Resident Extension Management','RSX LIST | LOAD name[.RSX] | UNLOAD name[.RSX]',[]),
+ 'RSX':('Resident Extension Management','RSX LIST | LOAD [DU:]name[.RSX] | UNLOAD name[.RSX]',[]),
  'DUP':('Disk Utilities','DUP [operation]',[
  ('/FORMAT d:', 'Format a physical drive.'),('/COPY s: d:', 'Copy a physical disk.'),
  ('/CHECK d:', 'Read-check a physical disk.'),('', 'No operation opens the interactive menu.')]),
@@ -30,7 +30,7 @@ SCREENS={
  'TYPE':('Text File Display','TYPE filespec [options]',[('/P','Page output and navigate files.'),('/7','Strip high bits.'),('/T','Expand tabs to eight-column stops.'),('/CTL','Show controls in caret notation.')]),
  'ED':('Text Editor','ED [drive:]filename.typ',[]),
  'SUBMIT':('Batch Command Processing','SUBMIT filename [arguments]',[]),
- 'XSUB':('Batch Console Input','XSUB',[]),
+ 'XSUB':('Batch Console Input','XSUB [DU:]',[]),
  'DIR':('Directory Listing','DIR [filespec] [options]',[('/WHEREIS','Locate names across drives/users.'),('/A','Display attributes.'),('/P','Page output.'),('/Z /Z=K','Show allocated KiB.'),('/Z=S /Z=E','Show records / directory entries.'),('/C=1|2|4','Select display columns.'),('/S=N|T|Z|U','Sort by name/type/size/directory order.')]),
  'USER':('User Area Selection','USER number',[]),
  'CLS':('Clear Screen','CLS',[]),
