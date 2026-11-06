@@ -341,14 +341,14 @@
       "written_cqm_sha256": "5245309c4ebe9c983092ada1296db16761c94caf70c74dedcc3fe954be3098d5"
     }
   ],
-  "evidence_commit": "4d6a9c372a01fd5f0bbc42e54e03e338e4cd6137",
+  "evidence_commit": "6204af56f839eaa04070a8bc26c51df4c7da8549",
   "archive": {
     "filename": "BetterCPM-Bondwell14-Reference-Images-2026-11-06.zip",
-    "size_bytes": 4040897,
-    "sha256": "5de6499ed6d17b1ebed55f03903be16c732eb2e11dd935ac1769e7f664ec4631",
+    "size_bytes": 14786813,
+    "sha256": "28c0bc7cd91a7841cbe7f1a164854339ec0bee155558a57e75b645998c27cf12",
     "access": "Maintainer-held reference archive",
     "library_file_id": "libfile_f4fd2f4484508191b7c5aeb40ecdf393",
-    "library_version": 0
+    "library_version": 1
   },
   "followup_evidence": "docs/engineering/evidence/2026-11-06-bondwell14/load-order-results.json",
   "model4_guest_receipt": "docs/engineering/evidence/2026-11-06-bondwell14/model4-results.json",
