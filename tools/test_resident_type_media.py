@@ -17,8 +17,9 @@ def main():
               ('LONG.TXT',b''.join(f'TYPE ROW {i:02d}\r\n'.encode() for i in range(30))+b'\x1a',3,0)]
     commands=['TYPE /VER','TYPE A[3,5]:[ $RW]','TYPE A[3,5]:*.TXT[$RO,$SYS]',
               'TYPE A3:ONE.TXT /7','TYPE A3:ONE.TXT','TYPE A5:TWO.TXT']
-    expected=['Resident, RCP Build 007','Invalid filespec.','TYPE ONE $ TEXT',
-              'Invalid filespec.','TYPE ONE $ TEXT','TYPE TWO TEXT']
+    from utility_versions import banner
+    expected=[banner('TYPE',True),'Invalid filespec.','TYPE ONE $ TEXT',
+              'Use :TYPE.','TYPE ONE $ TEXT','TYPE TWO TEXT']
     if a.transient:
         commands=[':TYPE /VER',':TYPE A[3,5]:[ $RW]',':TYPE /CTL A[3,5]:*.TXT[$RO,$SYS]',
                   ':TYPE A3:ONE.TXT /7 /T',':TYPE /CTL /T A3:ONE.TXT',':TYPE A5:TWO.TXT /Z']

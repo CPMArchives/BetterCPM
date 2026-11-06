@@ -1,0 +1,257 @@
+{
+  "artifacts": {
+    "artifacts": {
+      "build/cpx/RCP.CPX": {
+        "bytes": 9653,
+        "sha256": "f27771379e3056f3b6d55d1af0c8eac66a8ccecc1e701de06e7d8ac82346b418"
+      },
+      "build/utilities/CLS.COM": {
+        "bytes": 6996,
+        "sha256": "6d69667b5bcae3e2bb0f53e029e5b2c80de4fb5e84533a032bd5ea722046463f"
+      },
+      "build/utilities/COPY.COM": {
+        "bytes": 14497,
+        "sha256": "62f0ae39bb1a2ed078790a0eacb44e6557abdd20c0dcbbb41024adb22af05f6e"
+      },
+      "build/utilities/DIR.COM": {
+        "bytes": 11635,
+        "sha256": "c9feb8bd6e2794d8b25dc87c6d0702cceb46ea3441240f58545b34afbde46b0a"
+      },
+      "build/utilities/MOVE.COM": {
+        "bytes": 6996,
+        "sha256": "258c8baa6d9c64535990d2a66a31ecceac7a0fd05fddf7e9215f6ef4111a35a1"
+      },
+      "build/utilities/USER.COM": {
+        "bytes": 6996,
+        "sha256": "59c440c7d78381ceb94f173d6240f59e23ea4edb2c7c1de654108fbc3c8ef414"
+      },
+      "build/utilities/VER.COM": {
+        "bytes": 6996,
+        "sha256": "480a49ea959c08fdbb0817db3242e625a5c841b32bb3a92604f544f86124fc03"
+      }
+    },
+    "both_targets_reproduce": true,
+    "display_selection": {
+      "trs80gp": {
+        "CLS": {
+          "baseline_sha256": "9217600577f90031a198aa513a702cdd539964a3a6cf1d2dd93b8cd06e80482b",
+          "development": false,
+          "input_state": "unchanged",
+          "mode": "auto",
+          "reason": "selected inputs compared; executable equivalence not evaluated"
+        },
+        "COPY": {
+          "baseline_sha256": "090877e3b91282b069be107403608eb487372d381a0f37ce0a1f29c7ef830e46",
+          "development": false,
+          "input_state": "unchanged",
+          "mode": "auto",
+          "reason": "selected inputs compared; executable equivalence not evaluated"
+        },
+        "DIR": {
+          "baseline_sha256": "26e4b60e441cb4a735c5aec66e1d66f594d8b26042542164d3737a4f0500f6dc",
+          "development": false,
+          "input_state": "unchanged",
+          "mode": "auto",
+          "reason": "selected inputs compared; executable equivalence not evaluated"
+        },
+        "MOVE": {
+          "baseline_sha256": "1885da21e11adff294837a537823f573c77b3721d71dd17f25ce4a1a7b187fa4",
+          "development": false,
+          "input_state": "unchanged",
+          "mode": "auto",
+          "reason": "selected inputs compared; executable equivalence not evaluated"
+        },
+        "RCP": {
+          "baseline_sha256": "b44a08a2a3baac1de50083776a6e6c612e28827e7dc1d10a2502f7b20daabb94",
+          "development": false,
+          "input_state": "unchanged",
+          "mode": "auto",
+          "reason": "selected inputs compared; executable equivalence not evaluated"
+        },
+        "USER": {
+          "baseline_sha256": "8ddd2e02b0c60743d5864818b01991a571ae562c983a5e2a3849c6193ac27b99",
+          "development": false,
+          "input_state": "unchanged",
+          "mode": "auto",
+          "reason": "selected inputs compared; executable equivalence not evaluated"
+        },
+        "VER": {
+          "baseline_sha256": "ff1888f8fe8cbd34744005a8613992b484c65987f8d1f1f336ef64e069a20abf",
+          "development": false,
+          "input_state": "unchanged",
+          "mode": "auto",
+          "reason": "selected inputs compared; executable equivalence not evaluated"
+        }
+      },
+      "z80pack": {
+        "CLS": {
+          "baseline_sha256": "1aeaef927ecdd414c7f158d4ccc24bee33513544ff6799f871851b4d1bb65bdd",
+          "development": false,
+          "input_state": "unchanged",
+          "mode": "auto",
+          "reason": "selected inputs compared; executable equivalence not evaluated"
+        },
+        "COPY": {
+          "baseline_sha256": "fc79c10f5c551943c319685daa6fd828c79f064a90306897e6184d5e744e8b62",
+          "development": false,
+          "input_state": "unchanged",
+          "mode": "auto",
+          "reason": "selected inputs compared; executable equivalence not evaluated"
+        },
+        "DIR": {
+          "baseline_sha256": "f5fefac65b581375125951c1df13c96be83712f16e1abe437554724085959053",
+          "development": false,
+          "input_state": "unchanged",
+          "mode": "auto",
+          "reason": "selected inputs compared; executable equivalence not evaluated"
+        },
+        "MOVE": {
+          "baseline_sha256": "b43f6ca549b58bca03f18e4dae591f116c4398693bc5648f037ddb205d6c4781",
+          "development": false,
+          "input_state": "unchanged",
+          "mode": "auto",
+          "reason": "selected inputs compared; executable equivalence not evaluated"
+        },
+        "RCP": {
+          "baseline_sha256": "437e6d07b29b8ec0c5abfd1f150106d6de510e8500a4cf82d4005de20fdd7266",
+          "development": false,
+          "input_state": "unchanged",
+          "mode": "auto",
+          "reason": "selected inputs compared; executable equivalence not evaluated"
+        },
+        "USER": {
+          "baseline_sha256": "07fccb2db8eabba95ea50f6eef99006c32cf85d46edc30eeed408557ec2efeb5",
+          "development": false,
+          "input_state": "unchanged",
+          "mode": "auto",
+          "reason": "selected inputs compared; executable equivalence not evaluated"
+        },
+        "VER": {
+          "baseline_sha256": "2989fb76a6b8b6a81ddd85b4330ea923483ba7c8c077f2952f08b5ed25552b8b",
+          "development": false,
+          "input_state": "unchanged",
+          "mode": "auto",
+          "reason": "selected inputs compared; executable equivalence not evaluated"
+        }
+      }
+    }
+  },
+  "base_commit": "16f9a479e3f24a44476018c2e94cf4b66a53408a",
+  "changed_baseline_records": [
+    "utility:CLS|trs80gp|default|cross",
+    "utility:CLS|z80pack|default|cross",
+    "utility:COPY|trs80gp|default|cross",
+    "utility:COPY|z80pack|default|cross",
+    "utility:DIR|trs80gp|default|cross",
+    "utility:DIR|z80pack|default|cross",
+    "utility:MOVE|trs80gp|default|cross",
+    "utility:MOVE|z80pack|default|cross",
+    "utility:RCP|trs80gp|default|cross",
+    "utility:RCP|z80pack|default|cross",
+    "utility:USER|trs80gp|default|cross",
+    "utility:USER|z80pack|default|cross",
+    "utility:VER|trs80gp|default|cross",
+    "utility:VER|z80pack|default|cross"
+  ],
+  "changed_components": [
+    "utility:COPY",
+    "utility:DIR",
+    "utility:USER",
+    "utility:CLS",
+    "utility:VER",
+    "utility:RCP",
+    "utility:MOVE"
+  ],
+  "component_versions": "1.0; revisions advance independently",
+  "date": "2026-11-06",
+  "integration_target": "main",
+  "milestone": "v1.0.1",
+  "platforms": {
+    "cpmsim": {
+      "filesystem": "PASS",
+      "operations": true,
+      "platform": "cpmsim",
+      "rcp_sha256": "f27771379e3056f3b6d55d1af0c8eac66a8ccecc1e701de06e7d8ac82346b418",
+      "removed_transients": [
+        "DIR.COM",
+        "ERA.COM",
+        "TYPE.COM",
+        "REN.COM",
+        "VER.COM",
+        "COPY.COM"
+      ],
+      "resident_only": true,
+      "scope": "resident queries/errors, exact help, preserved files, WBOOT reconstruction and transient TPA observations",
+      "status": "PASS",
+      "steps": 40,
+      "system_sha256": "7894b31ef007f0c6f723da92faa088a70a00375cd4776b2bea2ec8b2461c0820",
+      "tpa_ceiling": "D501",
+      "unchanged_inputs": true,
+      "verified_absent_transients": [
+        "DIR.COM",
+        "ERA.COM",
+        "TYPE.COM",
+        "REN.COM",
+        "CLS.COM",
+        "USER.COM",
+        "VER.COM",
+        "COPY.COM",
+        "MOVE.COM"
+      ]
+    },
+    "model4": {
+      "filesystem": "PASS",
+      "operations": true,
+      "platform": "model4",
+      "rcp_sha256": "f27771379e3056f3b6d55d1af0c8eac66a8ccecc1e701de06e7d8ac82346b418",
+      "removed_transients": [
+        "DIR.COM",
+        "ERA.COM",
+        "TYPE.COM",
+        "REN.COM",
+        "VER.COM",
+        "COPY.COM"
+      ],
+      "resident_only": true,
+      "scope": "resident queries/errors, exact help, preserved files, WBOOT reconstruction and transient TPA observations",
+      "status": "PASS",
+      "steps": 40,
+      "system_sha256": "4105ff45e411e25c0f3cd6024b970ddc231e6287086a553933e1fb577aaf2467",
+      "tpa_ceiling": "CA01",
+      "unchanged_inputs": true,
+      "verified_absent_transients": [
+        "DIR.COM",
+        "ERA.COM",
+        "TYPE.COM",
+        "REN.COM",
+        "CLS.COM",
+        "USER.COM",
+        "VER.COM",
+        "COPY.COM",
+        "MOVE.COM"
+      ]
+    }
+  },
+  "scope": "bounded utility query and resident-operation qualification; no release package or physical hardware acceptance",
+  "source_hashes": {
+    "metadata/component-baselines.json": "261935b5424f3b62d4e34e8a9ac012d3169556344709ec08830ab0dd0785b1df",
+    "metadata/component-inputs.json": "e82f621d16342f86005359821bf8ab4eb47d6a43221818836916ffb7992d01fe",
+    "metadata/component-registry.json": "b713f440491c6979fa0b3d1e2b6861c9f52912b468e6925d218fe7561a4c92b4",
+    "metadata/utility-versions.tsv": "b45fb45a512978b704a86de3ec1dc0566904553cafb680fc16967cd7d2cda261",
+    "specifications/UTILITY-VERSIONING.md": "89b6976da38d5277759f57faf2dd84f3267b8d499e650569dd3a8585688db764",
+    "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
+    "src/cpx/help.inc": "3976b1269305f988c53b2e5752ba600b8e982df3b85168e9412d5a8de38505fc",
+    "tools/test_resident_copy_move_select.py": "d56dcb959d381088d79a51cbfaee7f147bdc66063024d4218fd5ae31dc71237a",
+    "tools/test_resident_feature_hints.py": "6bb084fa4688e1e0825aa3cb3e85eac81cf0ecdb01e6d43eb6d76363fb2f5f55",
+    "tools/test_resident_type.py": "70dca8a66454365c50879c891d60bf4986cd7cd8d08738f4ba95d509a57f2090",
+    "tools/test_resident_type_media.py": "9b16e032a57cfb062b3e988177aa19858dc580f86c85a44504cb1eaf296c8856",
+    "tools/test_utility_query_media.py": "17d3061bdad801d7ff635818c868cf4c6766706eb79e3b6d9514714e1cf57081",
+    "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+    "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5"
+  },
+  "supplemental_cpmsim": {
+    "copy_move_cases": 28,
+    "ren_cases": 22,
+    "type": "PASS; selector/paging/EOF/abort/source-preservation"
+  }
+}

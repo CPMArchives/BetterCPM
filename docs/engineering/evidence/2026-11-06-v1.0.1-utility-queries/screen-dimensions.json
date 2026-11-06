@@ -1,0 +1,70 @@
+{
+  "DIR": {
+    "lines": 9,
+    "max_columns": 51,
+    "over_40_columns": [
+      51
+    ]
+  },
+  "ERA": {
+    "lines": 9,
+    "max_columns": 51,
+    "over_40_columns": [
+      51
+    ]
+  },
+  "TYPE": {
+    "lines": 11,
+    "max_columns": 51,
+    "over_40_columns": [
+      51
+    ]
+  },
+  "REN": {
+    "lines": 9,
+    "max_columns": 51,
+    "over_40_columns": [
+      51
+    ]
+  },
+  "CLS": {
+    "lines": 9,
+    "max_columns": 51,
+    "over_40_columns": [
+      51
+    ]
+  },
+  "USER": {
+    "lines": 9,
+    "max_columns": 51,
+    "over_40_columns": [
+      51
+    ]
+  },
+  "VER": {
+    "lines": 11,
+    "max_columns": 51,
+    "over_40_columns": [
+      50,
+      51
+    ]
+  },
+  "COPY": {
+    "lines": 11,
+    "max_columns": 61,
+    "over_40_columns": [
+      61,
+      61,
+      51
+    ]
+  },
+  "MOVE": {
+    "lines": 11,
+    "max_columns": 61,
+    "over_40_columns": [
+      61,
+      61,
+      51
+    ]
+  }
+}
