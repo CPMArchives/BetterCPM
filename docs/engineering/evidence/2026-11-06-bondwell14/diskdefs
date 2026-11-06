@@ -1,0 +1,10 @@
+diskdef bw14
+ seclen 256
+ tracks 80
+ sectrk 18
+ blocksize 2048
+ maxdir 128
+ skew 0
+ boottrk 2
+ os 3
+end
