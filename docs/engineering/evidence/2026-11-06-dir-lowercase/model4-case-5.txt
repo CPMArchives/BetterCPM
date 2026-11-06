@@ -1,0 +1,8 @@
+
+A0>:DIR caseone.com
+
+A0:
+CASEONE  COM  2K
+---- 1 FILE, 2K TOTAL, 528K FREE ----
+
+A0>

@@ -1,0 +1,104 @@
+{
+  "status": "PASS",
+  "target": "z80pack",
+  "system_sha256": "08a06d4868e378dcfa0b4a6e6d9036a6650f2f34176a9d5ac305ce32c32f4dda",
+  "binary_sha256": "85bc377e9354cdd2c053fae0e8ef2ffcf58fe9013d17e661de263dd3145d34fd",
+  "reference_sha256": "c9feb8bd6e2794d8b25dc87c6d0702cceb46ea3441240f58545b34afbde46b0a",
+  "cases": [
+    [
+      ":OLDIR *.com",
+      "NO FILE"
+    ],
+    [
+      ":OLDIR *.COM",
+      "FILES,"
+    ],
+    [
+      ":DIR *.COM",
+      "FILES,"
+    ],
+    [
+      ":DIR *.com",
+      "FILES,"
+    ],
+    [
+      ":dir *.CoM",
+      "FILES,"
+    ],
+    [
+      ":DIR caseone.com",
+      "1 FILE,"
+    ],
+    [
+      ":DIR c?se*.cOm",
+      "1 FILE,"
+    ],
+    [
+      ":DIR a0:*.com /s=n /c=2",
+      "FILES,"
+    ],
+    [
+      ":DIR a0:caseone.com /whereis",
+      "1 MATCH"
+    ],
+    [
+      ":DIR absent.com",
+      "NO FILE"
+    ],
+    [
+      ":DIR c*a.com",
+      "Invalid filespec."
+    ],
+    [
+      "DIR *.com",
+      "CASEONE"
+    ],
+    [
+      "TYPE DIRRDY.TXT",
+      "DIR CASE CCP READY"
+    ]
+  ],
+  "before_lowercase": "NO FILE",
+  "corrected_case_variants_identical": true,
+  "preserved_original_files": [
+    "adm3a.rsx",
+    "admtst.com",
+    "ansi.rsx",
+    "ansiscrn.rsx",
+    "ansitst.com",
+    "bye.com",
+    "config.com",
+    "copy.com",
+    "cpx.com",
+    "disk.fdb",
+    "dup.com",
+    "ed.com",
+    "era.com",
+    "fdb.com",
+    "fdbview.ovl",
+    "mount.com",
+    "p2dos.rsx",
+    "pip.com",
+    "r.com",
+    "r3pack.rsx",
+    "rcp.cpx",
+    "readme.txt",
+    "ren.com",
+    "rsx.com",
+    "startup.sub",
+    "stat.com",
+    "submit.com",
+    "sysgen.com",
+    "time.com",
+    "type.com",
+    "ver.com",
+    "vt52.rsx",
+    "vt52tst.com",
+    "w.com",
+    "zprtc.rsx"
+  ],
+  "prepared_files_unchanged": true,
+  "reserved_bytes_unchanged": 27648,
+  "original_media_unchanged": true,
+  "filesystem": "PASS"
+}

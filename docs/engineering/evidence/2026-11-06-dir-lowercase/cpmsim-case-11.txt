@@ -1,0 +1,8 @@
+
+A0: DIR      COM : ERA      COM : TYPE     COM : REN      COM
+A0: VER      COM : COPY     COM : CONFIG   COM : DUP      COM
+A0: TIME     COM : SYSGEN   COM : STAT     COM : SUBMIT   COM
+A0: CPX      COM : RSX      COM : FDB      COM : PIP      COM
+A0: ED       COM : BYE      COM : ADMTST   COM : VT52TST  COM
+A0: ANSITST  COM : MOUNT    COM : R        COM : W        COM
+A0: OLDIR    COM : CASEONE  COM

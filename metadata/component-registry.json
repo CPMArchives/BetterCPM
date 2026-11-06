@@ -47,7 +47,7 @@
       "builders": [
         "tools/build_rcp_transients.py"
       ],
-      "revision": 14,
+      "revision": 15,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",

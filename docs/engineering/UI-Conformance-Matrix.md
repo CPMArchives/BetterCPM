@@ -119,8 +119,9 @@ The 1.01 work should provide:
   version heading, grouped bracketed choices and bracketed choice prompt,
   preserving commands and exit behavior. See the [FDB erratum](../releases/1.0-ERRATA.md#fdb-main-menu-presentation)
   and the explicit 1.01 task in [the backlog](../../TODO.md#101-release-corrections).
-- Correct the separately reported transient `:DIR *.COM` issue and verify the
-  reported invocation in the affected environment.
+- Correct the separately reported transient DIR case issue: `:DIR *.com`
+  incorrectly finds no files, while uppercase works. See the
+  [focused correction and qualification](DIR-Lowercase-Filespec-Correction.md).
 - Resolve XSUB's Utilities Disk companion-location mismatch, recorded with the
   copy-to-A0 workaround in the [1.0 errata](../releases/1.0-ERRATA.md#xsub-companion-must-be-copied-to-a0).
   Review packaging/installation and loading alternatives before choosing a fix;

@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/bettercpm-v101-review/tools/test_dir_case.py", line 32, in <module>
+    if __name__=='__main__':main()
+  File "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/bettercpm-v101-review/tools/test_dir_case.py", line 23, in main
+    assert bytes(c.mem[at('FS_FCB')+1:at('FS_FCB')+12])==expected,tail
+AssertionError: *.com
