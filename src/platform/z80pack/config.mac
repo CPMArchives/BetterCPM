@@ -382,6 +382,9 @@ ZC_BLMSH:                               ; derive block mask
         LD A,(IX+14)
         OR A
         JP NZ,ZC_INVALID
+        LD A,(IX+13)
+        CP 33                          ; each resident checksum vector has 32 bytes
+        JP NC,ZC_UNSUP
 
   ; Sector IDs in one physical track must be unique.
         PUSH IX
