@@ -71,5 +71,24 @@
     "metadata/supplemental/SUPPDISK.FDF": "6fd6fb35209d6e8562ed8d0a6ea6c147541e13a7c546fc982d0528859e0224af",
     "metadata/supplemental/SUPPDISK.FDB": "cde08153810044324ceb9e28b1a1bb65bafc3d1d3d70747b31fa950ac3be8c92",
     "build/model2-final-system/system.dsk": "ffd62459b428c4fe81b8bd2b512a325ddea7ce0625dfe84843afec7b855a54e8"
+  },
+  "merged_main_check": {
+    "main_commit": "711bfada",
+    "status": "pass",
+    "identical_ram_artifacts": [
+      "checksum-layout.json",
+      "resident.bin",
+      "config.bin",
+      "boot-format.json",
+      "reloader.bin",
+      "gateway.bin",
+      "rsxselect.bin",
+      "bios.bin",
+      "disk.bin",
+      "boot.bin",
+      "extensions.bin",
+      "checksum-extra.bin",
+      "tables.bin"
+    ]
   }
 }
