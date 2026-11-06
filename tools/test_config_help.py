@@ -48,7 +48,7 @@ def main():
         output,calls=execute(tail,stop_init=True)
         assert not output and not calls,(tail,output,calls)
     # The builder rejects real main-code/stack overlap, not the help appendix.
-    bad=listing.replace('CF_MAIN_END:', 'CF_MAIN_OLD:')+'\n3e01  CF_MAIN_END:\n'
+    bad=listing.replace('CF_MAIN_END:', 'CF_MAIN_OLD:')+'\n3f01  CF_MAIN_END:\n'
     try:validate_layout(image,bad)
     except ValueError:pass
     else:raise AssertionError('stack overlap was accepted')

@@ -1,0 +1,18 @@
+{
+  "profile": "RAM",
+  "cks_limit": 48,
+  "csv_addresses": [
+    61143,
+    61191,
+    60454,
+    60502
+  ],
+  "extra_mutable_region": [
+    60454,
+    60550
+  ],
+  "bios_code_end": 60416,
+  "tpa": 54529,
+  "history": 54532,
+  "boot_surface_capability": true
+}

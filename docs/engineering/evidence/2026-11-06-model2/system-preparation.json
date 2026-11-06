@@ -1,0 +1,9 @@
+{
+  "baseline_sha256": "9242b16825c92328450f0848da8844ef1f9fcd72570dc895b4e5a2e587e0a457",
+  "runtime_carrier_sha256": "56ccaaf3e3071222927c0de4c65cf7489e1e6df32b82001d4ed80c6ddc058172",
+  "resident_sha256": "0be54d4a9bfc5573ed4d7517c573167bb6ca179448e3a75743d2b074a481ccd8",
+  "config_sha256": "c75dd248f0d3289469fe7f57033787700b1db10f99a7b4557f6a041a3e9fa481",
+  "catalogue_sha256": "f42b0a4becb4fe42aaaee0c77b0a3bd2da6e80d9c30014a38dd82cf1b97de942",
+  "system_sha256": "ffd62459b428c4fe81b8bd2b512a325ddea7ce0625dfe84843afec7b855a54e8",
+  "reserved_bytes_replaced": 27648
+}

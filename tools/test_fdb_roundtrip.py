@@ -109,9 +109,9 @@ def main():
     one=bytearray(serialize(parse(decompile(stock))[:1]))
     end=128+64+one[128+55]
     one[128+58]|=128;one[128+62:128+64]=end.to_bytes(2,'little')
-    one[end:end+5]=bytes((3,1,77,0,0))
+    one[end:end+5]=bytes((4,1,77,0,0))
     assert 'losslessly' in m.run('DISK.FDB ROUND.FDF',{source:repaired(one)})
-    one[end]=0x83
+    one[end]=0x84
     assert 'losslessly' in m.run('DISK.FDB ROUND.FDF',{source:repaired(one)})
     # Collision and failure paths preserve source/existing destination bytes.
     assert 'exists' in m.run('DISK.FDB ROUND.FDF',{source:stock,textkey:b'KEEP'})

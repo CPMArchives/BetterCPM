@@ -1,0 +1,9 @@
+{
+  "before_sha256": "1e344c20202056e6add16f827422c30fcbf53c6a72413c0e45948b92c8bfa751",
+  "command": "SYSGEN A: B:",
+  "filesystem_sha256": "0380cc5a7971e338623e6658693cc317b02175c9e090c5da53fd96058a660964",
+  "format": "MMF017",
+  "installed_sha256": "4d18e9e110ab7ad224117d61bef82c3f2c0ad38a796483c89b210dff73ad8d4f",
+  "reserved_records": 216,
+  "simulator": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/release-promotion-20261104/final-runtime/z80pack/cpmsim/cpmsim"
+}

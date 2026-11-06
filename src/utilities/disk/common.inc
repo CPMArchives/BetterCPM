@@ -193,7 +193,35 @@ NUMBAD: SCF
 ; @legacy-number-end@
 ; API is deliberately independent of the loaded BIOS address.
 ; B = operation, DE = 80-byte request, A/Z = result.
-API:    LD C,181
+API:    LD A,B
+        CP 4
+        JR NZ,APICALL
+        PUSH HL
+        LD HL,62                       ; request byte 1 + binding marker 61
+        ADD HL,DE
+        LD A,(HL)
+        POP HL
+        OR A
+        JR Z,APICALL
+        PUSH BC
+        PUSH DE
+        LD B,6
+        LD C,181
+        CALL BDOS
+        POP DE
+        POP BC
+        LD A,H
+        CP 0B3H
+        JR NZ,APICAPBAD
+        LD A,L
+        CP 1
+        JR Z,APICALL
+APICAPBAD:
+        LD HL,2
+        LD A,L
+        OR A
+        RET
+APICALL:LD C,181
         CALL BDOS
         LD A,L
         OR A

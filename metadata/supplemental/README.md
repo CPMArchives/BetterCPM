@@ -7,6 +7,8 @@ Use [SUPPDISK.FDF](SUPPDISK.FDF) as the editable source and [SUPPDISK.FDB](SUPPD
 | CPCSYS | Amstrad CPC System | cpmsim and trs80gp (CPC464 disk 1 and CPC664 disk 2) file reads and writes through allocation block 170 | physical media |
 | CPCDATA | Amstrad CPC Data | cpmsim and trs80gp (CPC6128 disk 3 and Booster) file reads and writes through allocation block 179 | physical media |
 | PCW | Amstrad PCW 180K | cpmsim and trs80gp file reads and writes through allocation block 174 | physical media |
+| ATONSS | ATON/Lifeboat Model II SS | cpmsim RAM canonical adapter; four originals, all files and block 299 read/write | Model 4 and ROM unsupported; physical media untested |
+| ATONDS | ATON Model II DS | cpmsim RAM canonical adapter; one original, all files and block 607 read/write | Model 4 and ROM unsupported; physical media untested |
 
 To use the supplement on cpmsim, put a copy of `SUPPDISK.FDB` on a separate work disk under the guest name `DISK.FDB`. Keep the production catalogue on system drive A. With that work disk in C and a CPC raw image in physical drive 1, run the following. Select `Amstrad CPC Data` in the CONFIG command for a Data disk.
 
@@ -28,3 +30,10 @@ python3 tools/fdfcomp.py metadata/supplemental/SUPPDISK.FDF metadata/supplementa
 ```
 
 Pristine images, expected file hashes, archive identities, and collection admission instructions are indexed in the [disk-image reference collection](../disk-image-reference/README.md).
+
+ATON/Lifeboat requires the updated RAM BIOS and CONFIG together. The required
+boot-surface extension prevents older catalogue readers from binding these
+entries; the capability query prevents a new utility from applying them to an
+older BIOS. Use the [Model II adapter and qualification procedure](../../docs/engineering/evidence/2026-11-06-model2/INTERCHANGE.md).
+The original IMD or variable-length raw file is not a directly mountable cpmsim
+image. Historical booting and formatting are outside the support claim.

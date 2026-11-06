@@ -71,7 +71,7 @@ def assemble(assembler, destination):
         (UTILITIES/'disk/fdbsession.inc').read_text(),
         validator.replace(fixed_limit, 'LD HL,(ARENALIMIT)\n').replace(
             '        LD (FDBOWNBASE),HL', '        LD A,(VIEWACTIVE)\n        OR A\n        JR Z,VIEWOWNNORMAL\n        LD HL,IMPORTBUF\n        LD (FDBOWNBASE),HL\n        JR FDBOWNFIT\nVIEWOWNNORMAL:LD (FDBOWNBASE),HL'),
-        'STACK: DS 512\nSTACKTOP:\nIMAGEEND:',
+        'STACK: DS 128\nSTACKTOP:\nIMAGEEND:',
         '        .PHASE 0B900H\nEDITORBASE:',
         (UTILITIES/'disk/fdbdrive.inc').read_text(),
         runtime,

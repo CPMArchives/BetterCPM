@@ -11,6 +11,8 @@
 
         ASEG
         ORG LY_CFG
+ZP_CKS_LIMIT EQU 32                     ; builder selects 48 with checked RAM storage
+ZP_BOOT_CAP EQU 0                       ; enabled only with the RAM boot-surface adapter
 
         JP ZC_PHYS
         JP ZC_LOG
@@ -18,7 +20,7 @@
         JP BF_CPXCTL
         JP ZC_GETPH
         JP ZC_GETLOG
-        JP ZC_UNSUP
+        JP ZC_CAPS
 
   ; IX=request.  Byte 0 is the physical-drive number; bytes 1..6 are the
   ; six-byte BetterCP/M physical descriptor.
@@ -117,6 +119,9 @@ ZC_FORMAT:                              ; format raw-image surface
         LD A,(IY+52)
         OR A
         JP NZ,ZCF_UNSUP
+        LD A,(IY+61)
+        OR A
+        JP NZ,ZCF_UNSUP                 ; exceptional media: file I/O only, no formatter
         LD A,(IX+1)
         CP (IY+16)
         JP NC,ZCF_INVALID
@@ -356,6 +361,26 @@ ZC_GEOMOK:                              ; accept normalized geometry
         JP NZ,ZC_UNSUP
 
 ZC_NORMOK:                              ; accept normalized binding
+        LD A,(IX+62)
+        OR A
+        JR Z,ZC_BOOTOK
+        IF ZP_BOOT_CAP EQ 1
+        CP 1
+        JP NZ,ZC_UNSUP
+        LD A,(IX+20)
+        AND 03FH
+        OR (IX+53)
+        JP NZ,ZC_UNSUP
+        LD A,(IX+15)
+        OR (IX+16)
+        JP Z,ZC_INVALID
+        ELSE
+        JP ZC_UNSUP
+        ENDIF
+ZC_BOOTOK:
+        LD A,(IX+63)
+        OR (IX+64)
+        JP NZ,ZC_UNSUP
 
   ; BSH/BLM and DSM must be structurally plausible for CP/M 2.2.
         LD A,(IX+4)
@@ -383,7 +408,7 @@ ZC_BLMSH:                               ; derive block mask
         OR A
         JP NZ,ZC_INVALID
         LD A,(IX+13)
-        CP 33                          ; each resident checksum vector has 32 bytes
+        CP ZP_CKS_LIMIT+1               ; must match the builder's protected CSV storage
         JP NC,ZC_UNSUP
 
   ; Sector IDs in one physical track must be unique.
@@ -491,6 +516,15 @@ ZC_RESULT:                              ; return overlay result
         LD H,0
         POP IX
         RET
+
+ZC_CAPS:                                ; operation 6: reserved-surface capability query
+        IF ZP_BOOT_CAP EQ 1
+        LD HL,0B301H                    ; versioned capability token; no request mutation
+        POP IX
+        RET
+        ELSE
+        JP ZC_UNSUP
+        ENDIF
 
   ; A=physical drive 0..3 -> HL six-byte descriptor.
 

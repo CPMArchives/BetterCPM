@@ -1,9 +1,14 @@
 # ATON and Lifeboat Model II format investigation
 
-Five original images passed **host-only** file extraction and full-free-space
+**Investigation baseline:** five original images passed **host-only** file extraction and full-free-space
 write/read-back through their actual last allocation block. One malformed ATON
 image was rejected before filesystem access. No BetterCP/M guest or physical
 media pass is claimed, and no entry was added to the supplemental catalogue.
+
+**Follow-up completed:** both layouts now pass cpmsim RAM interchange through
+the explicit reserved-surface adapter and are admitted as ATONSS/ATONDS.
+See [INTERCHANGE.md](INTERCHANGE.md) for current scope and receipts. The host
+investigation below remains the evidence that led to that implementation.
 
 ## Original media and results
 

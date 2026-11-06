@@ -2,6 +2,9 @@
 
 Assessment revision, 19 September 2026. Supersedes the open decisions in the supplied proposal for purposes of review; it is not an assertion that the compiler and runtime reader have been implemented or that the user has approved every recommendation. Evidence, corrections to earlier advice, and test results are in `ASSESSMENT.md`.
 
+The reserved-first-surface extension and runtime admission rules were approved
+and implemented on 6 November 2026; see the [Model II qualification](evidence/2026-11-06-model2/INTERCHANGE.md).
+
 ## 1. Scope and boundary
 
 `DISK.FDF` describes the format-dependent information an independent BetterCP/M BIOS needs to provide the CP/M disk interface. Controller commands, ports, drive selection, timing, buffering, retry policy and derived drive-binding state remain BIOS responsibilities. Image containers and host-file serialization remain separate adapter concerns.
@@ -116,6 +119,28 @@ SECTOR_SIZES 1024,1024,1024,1024,1024,512
 ```
 
 The current 32-sector runtime arrays are a BIOS/implementation limit, not the FDB language limit. CONFIG reports unsupported bindings for definitions exceeding those arrays. Representing a larger definition does not imply that current hardware can use it.
+
+### Reserved first-surface exception
+
+`BOOT_PSECTORS`, `BOOT_SECSIZE`, `BOOT_ENCODING`, and `BOOT_SECTOR_IDS` are
+optional as a group and must all be supplied together. They describe only
+physical cylinder 0/head 0. All other surfaces retain the base geometry.
+The count is 1–32, size is 128/256/512/1024, encoding is FM/MFM, and the
+counted ID list contains distinct byte values in logical sector order.
+
+Require OFF >= 1, at least two cylinders, SURFACE logical tracks, uniform data
+sectors, no inversion, and the default topology conventions. The exception
+cannot coexist with extensions 81h or 82h. Its byte count must not exceed the
+base surface byte count. SPT and the OEM DPB are unchanged. This bounded
+exception does not introduce arbitrary track ranges.
+
+The cpmsim RAM adapter pads this first surface to the base raw-slot size;
+that padding is container space, not disk content. The guest refuses all I/O
+to the exceptional surface and all formatting of the exceptional medium.
+ATON/Lifeboat qualification preserves the original 3,328-byte FM surface and
+the following reserved MFM surface. The canonical directory offset is 16,384;
+the original variable-length raw directory offset is 11,520. Do not pass the
+original unpadded raw stream to cpmsim. Model 4 and ROM bindings are unsupported.
 
 ## 7. Logical track unit
 
@@ -271,8 +296,26 @@ Assigned v1 semantic extensions:
 |---:|---:|---|
 | 81h | PSECTORS | One size code per SECTOR_IDS entry; all codes 0–3, maximum agrees with descriptor SECSIZE |
 | 82h | 1 | Logical-track unit; sole v1 payload value 1 means CYLINDER |
+| 83h | 3 + count | Reserved first surface: encoding (0 FM/1 MFM), size code (0–3), count (1–32), then distinct sector IDs |
 
-Absence of 81h means uniform sizes. Absence of 82h means SURFACE. Encoding either known semantic kind with its required bit clear is an error. No unrelated speculative types are assigned.
+Absence of 81h means uniform sizes. Absence of 82h means SURFACE. Absence of 83h means no first-surface exception. Encoding any known semantic kind with its required bit clear is an error. No unrelated speculative types are assigned.
+
+### Runtime admission of the first-surface exception
+
+The 64-byte normalized binding uses byte 61 = 1 for this adapter requirement;
+zero retains the old interpretation. Bytes 62–63 remain reserved zero. These
+are binding offsets, distinct from FDB descriptor offsets. CONFIG and FDB
+must query BDOS 181 with B=6 and an ordinary valid request pointer before
+operation 4 publishes a marked binding. Only HL=B301h advertises version 1 of
+the capability. Any other response refuses the binding; the query does not
+modify the request. The BDCF/ABI-5 header remains unchanged.
+
+The RAM backend validates the marker and reserves four 48-byte CSVs. ROM
+retains four 32-byte vectors and advertises no capability. The Model 4 backend
+rejects the marker. A binding does not contain the complete original boot
+profile: native FDB therefore refuses to capture a marked active drive as a
+new definition. Load its catalogue entry to edit it; native edits preserve
+the complete required profile, and export/import round trips retain it.
 
 ### CRC
 

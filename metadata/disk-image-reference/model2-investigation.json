@@ -3,7 +3,7 @@
   "collection": "BetterCP/M disk-image reference collection",
   "collection_id": "model2-investigation-2026-11-06",
   "evidence_directory": "docs/engineering/evidence/2026-11-06-model2",
-  "scope": "host tools only; no BetterCP/M guest or physical-media qualification",
+  "scope": "cpmsim RAM file interchange through canonical reserved-first-surface adapter",
   "source_repository": "https://github.com/pski/model2archive",
   "source_commit": "fa76dabb8c41d915cb27c54985555bc9e29baabd",
   "download_date": "2026-11-06",
@@ -17,11 +17,11 @@
       "container": "ImageDisk IMD",
       "machine": "TRS-80 Model II",
       "archive_path": "originals/ATN223IS.IMD",
-      "fdf_id": null,
+      "fdf_id": "ATONSS",
       "qualification": {
-        "host": "host-only pass; BetterCP/M guest untested",
-        "cpmsim": "untested",
-        "trs80gp": "untested",
+        "host": "pass",
+        "cpmsim": "pass: RAM canonical reserved-surface adapter",
+        "trs80gp": "unsupported: no Model 4 adapter",
         "physical_media": "untested"
       },
       "original_files_sha256": {
@@ -60,11 +60,11 @@
       "container": "ImageDisk IMD",
       "machine": "TRS-80 Model II",
       "archive_path": "originals/ATN225BD.IMD",
-      "fdf_id": null,
+      "fdf_id": "ATONDS",
       "qualification": {
-        "host": "host-only pass; BetterCP/M guest untested",
-        "cpmsim": "untested",
-        "trs80gp": "untested",
+        "host": "pass",
+        "cpmsim": "pass: RAM canonical reserved-surface adapter",
+        "trs80gp": "unsupported: no Model 4 adapter",
         "physical_media": "untested"
       },
       "original_files_sha256": {
@@ -118,7 +118,7 @@
       "fdf_id": null,
       "qualification": {
         "host": "rejected before host I/O; original retained unchanged",
-        "cpmsim": "untested",
+        "cpmsim": "rejected before guest I/O",
         "trs80gp": "untested",
         "physical_media": "untested"
       },
@@ -148,11 +148,11 @@
       "container": "ImageDisk IMD",
       "machine": "TRS-80 Model II",
       "archive_path": "originals/LB224A.IMD",
-      "fdf_id": null,
+      "fdf_id": "ATONSS",
       "qualification": {
-        "host": "host-only pass; BetterCP/M guest untested",
-        "cpmsim": "untested",
-        "trs80gp": "untested",
+        "host": "pass",
+        "cpmsim": "pass: RAM canonical reserved-surface adapter",
+        "trs80gp": "unsupported: no Model 4 adapter",
         "physical_media": "untested"
       },
       "original_files_sha256": {
@@ -224,11 +224,11 @@
       "container": "ImageDisk IMD",
       "machine": "TRS-80 Model II",
       "archive_path": "originals/LB225D.IMD",
-      "fdf_id": null,
+      "fdf_id": "ATONSS",
       "qualification": {
-        "host": "host-only pass; BetterCP/M guest untested",
-        "cpmsim": "untested",
-        "trs80gp": "untested",
+        "host": "pass",
+        "cpmsim": "pass: RAM canonical reserved-surface adapter",
+        "trs80gp": "unsupported: no Model 4 adapter",
         "physical_media": "untested"
       },
       "original_files_sha256": {
@@ -287,11 +287,11 @@
       "container": "ImageDisk IMD",
       "machine": "TRS-80 Model II",
       "archive_path": "originals/LB225DF80.IMD",
-      "fdf_id": null,
+      "fdf_id": "ATONSS",
       "qualification": {
-        "host": "host-only pass; BetterCP/M guest untested",
-        "cpmsim": "untested",
-        "trs80gp": "untested",
+        "host": "pass",
+        "cpmsim": "pass: RAM canonical reserved-surface adapter",
+        "trs80gp": "unsupported: no Model 4 adapter",
         "physical_media": "untested"
       },
       "original_files_sha256": {
@@ -310,12 +310,14 @@
       "problems": []
     }
   ],
-  "evidence_commit": "189b6a4750bd31e800d93d4f3479cec84f48f39b",
   "archive": {
     "filename": "BetterCPM-ModelII-Reference-Investigation-2026-11-06.zip",
-    "size_bytes": 939789,
-    "sha256": "890d02fae4ab0f395288037f7ead2bf2849acfcbf292d1bf17989f34926413b8",
+    "size_bytes": 3987778,
+    "sha256": "efc4f61ed43e4376090904c83b7a0d8abaabf54f009d78b611d762a640be20bc",
     "access": "Maintainer-held reference archive",
-    "library_file_id": "libfile_faf9e3f6f2588191bf4bf2e19fdce831"
-  }
+    "library_file_id": "libfile_faf9e3f6f2588191bf4bf2e19fdce831",
+    "library_version": 1
+  },
+  "guest_receipt": "docs/engineering/evidence/2026-11-06-model2/cpmsim-results.json",
+  "evidence_commit": "523c00d03787e73ed513f1c51c3105f34ee0e525"
 }

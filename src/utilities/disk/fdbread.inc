@@ -466,6 +466,13 @@ FDBEXTLOOP:
         OR A
         SCF
         RET NZ
+        LD A,(FDBTYPES)
+        BIT 3,A
+        JR Z,FBBOOTEND
+        AND 6
+        SCF
+        RET NZ                         ; boot exception excludes mixed/cylinder extensions
+FBBOOTEND:
         EX DE,HL
         LD HL,(FDBEXSTART)
         CALL FDBOBJADD
@@ -496,10 +503,12 @@ FDBEXTNONZERO:
         JR Z,FDBEXTSIZE
         CP 2
         JR Z,FDBEXTTRACK
+        CP 3
+        JP Z,FDBEXTBOOT
         LD A,(FDBEXTYPE)
         AND 080H
         CALL NZ,FDBMARKUNSUPPORTED
-        JR FDBEXTADVANCE
+        JP FDBEXTADVANCE
 FDBEXTDUP:
         POP HL
         SCF
@@ -531,7 +540,7 @@ FESNXT:
         CP (IX+56)
         SCF
         RET NZ
-        JR FDBEXTADVANCE
+        JP FDBEXTADVANCE
 FESBAD:
         POP HL
         SCF
@@ -549,6 +558,80 @@ FDBEXTTRACK:
         CP 1
         SCF
         RET NZ
+        JP FDBEXTADVANCE
+FDBEXTBOOT:
+        LD A,(FDBEXTYPE)
+        CP 083H
+        SCF
+        RET NZ
+        CALL FDBBOOTCHECK
+        RET C
+        JP FDBEXTADVANCE
+
+; IX=descriptor, HL=boot payload. Validate the bounded reserved-surface contract.
+FDBBOOTCHECK:
+        LD A,(IX+53)
+        OR (IX+54)
+        SCF
+        RET Z
+        LD A,(IX+57)
+        CP 2
+        RET C
+        LD A,(IX+58)
+        AND 07CH
+        SCF
+        RET NZ
+        LD A,(FDBEXLEN)
+        CP 4
+        RET C
+        PUSH HL
+        LD A,(HL)
+        CP 2
+        JR NC,FDBBOOTBAD
+        INC HL
+        LD A,(HL)
+        CP 4
+        JR NC,FDBBOOTBAD
+        LD C,A
+        INC HL
+        LD B,(HL)
+        LD A,B
+        DEC A
+        CP 32
+        JR NC,FDBBOOTBAD
+        LD A,(FDBEXLEN)
+        SUB 3
+        CP B
+        JR NZ,FDBBOOTBAD
+        INC HL
+        PUSH BC
+        CALL FDBIDUNIQUE
+        POP BC
+        JR C,FDBBOOTBAD
+        LD L,B
+        LD H,0
+        LD A,C
+        CALL FDBBOOTSHIFT
+        PUSH HL
+        LD L,(IX+55)
+        LD H,0
+        LD A,(IX+56)
+        CALL FDBBOOTSHIFT
+        POP DE
+        OR A
+        SBC HL,DE
+        POP HL
+        RET
+FDBBOOTBAD:
+        POP HL
+        SCF
+        RET
+FDBBOOTSHIFT:
+        OR A
+        RET Z
+        ADD HL,HL
+        DEC A
+        JR FDBBOOTSHIFT
 FDBEXTADVANCE:
         LD A,(FDBEXLEN)
         LD E,A
@@ -844,12 +927,18 @@ FDBBINDEXT:
         JR Z,FDBBINDMIXED
         CP 082H
         JR Z,FDBBINDCYLINDER
+        CP 083H
+        JR Z,FDBBINDBOOT
 FDBBINDSKIP:
         LD A,(FDBEXLEN)
         LD E,A
         LD D,0
         ADD HL,DE
         JR FDBBINDEXT
+FDBBINDBOOT:
+        LD A,1
+        LD (BIND+61),A
+        JR FDBBINDSKIP
 FDBBINDCYLINDER:
         LD A,(BIND+19)
         OR 020H

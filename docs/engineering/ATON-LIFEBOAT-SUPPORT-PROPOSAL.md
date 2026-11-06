@@ -1,10 +1,12 @@
 # ATON/Lifeboat support: implementation decision
 
-Status: proposed, 2026-11-06. This does not amend the FDF/FDB contract or
-qualify a runtime format. Original-media evidence is in
-[the Model II investigation](evidence/2026-11-06-model2/README.md).
+Status: approved and implemented, 2026-11-06. The bounded decision below is
+implemented and qualified for cpmsim RAM file interchange. See the
+[implementation receipt and reproduction steps](evidence/2026-11-06-model2/INTERCHANGE.md).
+The measurements and immediate-fix discussion below record the pre-implementation
+baseline; the current RAM backend supports CKS 48 while ROM retains CKS 32.
 
-## Recommended scope
+## Approved scope
 
 Implement file interchange for single-sided ATON/Lifeboat and double-sided
 ATON on cpmsim, retaining original sector identities and data. Keep the
@@ -24,7 +26,7 @@ with the applicable logical-track mapping). The existing physical fields
 continue to describe the remaining surfaces; SPT and the OEM DPB remain
 unchanged. Do not introduce general track ranges or arbitrary layout tables.
 
-Proposed text fields, supplied together:
+Adopted text fields, supplied together:
 
 ```text
 BOOT_PSECTORS   26
@@ -33,7 +35,7 @@ BOOT_ENCODING   FM
 BOOT_SECTOR_IDS 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26
 ```
 
-Proposed required TLV kind 3 (83h; not yet assigned): encoding, size code,
+Assigned required TLV kind 3 (83h): encoding, size code,
 sector count, followed by that many distinct sector IDs. The observed profile
 needs 29 payload bytes. The implementation must validate all sizes, counts,
 reserved-area constraints and topology interactions. Older readers must mark

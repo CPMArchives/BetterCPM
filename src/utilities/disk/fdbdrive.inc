@@ -3,6 +3,10 @@
 EDCAPTURE:
         CALL EDGETDEST
         RET C
+        LD A,(EDREQUEST+62)
+        OR A
+        SCF
+        RET NZ                         ; binding omits the original boot-sector IDs
         LD HL,EDREQUEST+1
         LD DE,EDITBIND
         LD BC,64
@@ -34,6 +38,16 @@ EDSETDRIVE:
         SBC HL,DE
         JR NZ,EDREFUSED
 EDSETVALID:
+        LD A,(EDREQUEST+62)
+        OR A
+        JR Z,EDSETCAPOK
+        LD B,6
+        CALL EDBINDAPI
+        LD DE,0B301H
+        OR A
+        SBC HL,DE
+        JR NZ,EDREFUSED
+EDSETCAPOK:
         LD B,4
         CALL EDBINDAPI
         JR NZ,EDREFUSED
@@ -192,6 +206,7 @@ EDMATCH:CP (HL)
         LD (EDITBIND+19),A
         XOR A
         LD (EDITBIND+52),A
+        LD (EDITBIND+61),A
         CALL EDUNIFORM
         LD L,(IX+60)
         LD H,(IX+61)
@@ -216,9 +231,25 @@ EDMATCH:CP (HL)
 EDCATCYL:
         LD A,(HL)
         CP 082H
-        JR NZ,EDCATOK
+        JR NZ,EDCATBOOT
+        PUSH HL
         LD HL,EDITBIND+19
         SET 5,(HL)
+        POP HL
+        INC HL
+        INC HL
+        INC HL
+EDCATBOOT:
+        LD A,(HL)
+        CP 083H
+        JR NZ,EDCATOK
+        INC HL
+        LD C,(HL)
+        INC HL
+        LD DE,EDBOOT
+        LDIR
+        LD A,1
+        LD (EDITBIND+61),A
 EDCATOK:LD HL,EDTEMPFILE
         LD DE,EDFILE
         LD BC,12
@@ -1032,6 +1063,17 @@ EDPACK: LD HL,SEEN
 EDSEEN: LD (HL),1
         INC HL
         DJNZ EDSEEN
+        LD A,(EDITBIND+61)
+        LD B,4
+EDBOOTSEEN:LD (HL),A
+        INC HL
+        DJNZ EDBOOTSEEN
+        LD HL,EDBOOT
+        LD DE,BOOTDATA
+        LD BC,35
+        LDIR
+        LD A,(BOOTDATA+2)
+        LD (BOOTIDS),A
         CALL FINALFORMAT
         LD A,1
         LD (FCOUNT),A
@@ -1059,7 +1101,7 @@ EDCHECKFAIL:
         LD HL,(EDCAUSE)
         LD (EDNOTICE),HL
         JP EDSCREEN
-EDINVALIDMSG:DB 'Invalid format: check geometry, map and DPB rules.',13,10,0
+EDINVALIDMSG:DB 'Invalid geometry, map or DPB.',13,10,0
 EDCAUSE:DW 0
 EDFAILPAGE:DB 1
 EDWHYMAX:DB 0
@@ -1067,12 +1109,13 @@ EDMAXDSM:DW 0FFFFH
 EDDSMMSG:DB 'Page 3 E DSM / allowed maximum: ',0
 EDNOTICE:DW 0
 EDTARGET:DB 0
-EDACTIONS:DB 'D Apply active drive, K Add to RAM, W Write file, Q Back: ',0
-EDCONFIRM:DB ': Apply working format to this drive (Y/N)? ',0
-EDAPPLIED:DB 'Active drive binding updated.',13,10,0
+EDACTIONS:DB 'D Apply drive, K Add to RAM, W Write file, Q Back: ',0
+EDCONFIRM:DB ': Apply format (Y/N)? ',0
+EDAPPLIED:DB 'Drive binding updated.',13,10,0
 EDOKMSG:DB 'Format validates.',13,10,0
 
-EDFILEMSG: DB 'Source filename (Return for working catalogue): ',0
+EDFILEMSG: DB 'Source file (Return=RAM): ',0
+EDBOOT:DS 35
 EDIDS: DS 255
 EDCODES: DS 255
 
@@ -1303,7 +1346,7 @@ EDOFFMSG:DB '  Directory byte: ',0
 EDMAXMSG:DB '  Maximum DSM: ',0
 EDWARN:DB '  ! invalid allocation',13,10,0
 EDFILEEND:DB 0
-EDMAPTITLE:DB 'Slot ID Bytes: ,< Previous   .> Next  ',0
+EDMAPTITLE:DB 'Slot ID Bytes: ,< Prev .> Next  ',0
 EDLRECS:DW 0
 EDTRACKS:DW 0
 EDMAPSTART:DB 0
@@ -1369,8 +1412,8 @@ EDTEMPFILE EQU OUTPUT
 EDAFTER:DB 0
 EDPENDING:DB 0
 EDBASEPEND: DB 0
-EDINCMSG:DB 'Add editor to RAM catalogue before write (Y/N)? ',0
-EDQUITMSG:DB 'Editor pending: S Catalogue+write, D Discard, C Cancel: ',0
+EDINCMSG:DB 'Add editor to RAM before write (Y/N)? ',0
+EDQUITMSG:DB 'Editor pending: S Save, D Discard, C Cancel: ',0
 
 EDUNSET:DB ' <unset>',0
 

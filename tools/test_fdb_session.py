@@ -61,9 +61,9 @@ def main():
         return console
 
     console = run('D\rMMI012\r4\rQ\rQ\r', {**original,key('FDBVIEW.OVL'):(work/'FDBVIEW.OVL').read_bytes()})
-    assert 'Directory byte offset: 10240' in console
+    assert 'Canonical directory byte: 10240' in console
     console = run('P\rMMI012\rMMI012\r4\rA\rQ\rQ\r', {**original,key('FDBVIEW.OVL'):(work/'FDBVIEW.OVL').read_bytes()})
-    assert 'Directory byte offset: 10240 | 10240' in console
+    assert 'Canonical directory byte: 10240 | 10240' in console
     damaged = bytearray((work/'FDBVIEW.OVL').read_bytes())
     damaged[-1] ^= 1
     run('D\rQ\r', {**original,key('FDBVIEW.OVL'):bytes(damaged)})
@@ -73,7 +73,7 @@ def main():
     viewfiles={**original, key('FDBVIEW.OVL'):(work/'FDBVIEW.OVL').read_bytes(),
                key('OTHER.FDB'):serialize((comparison,))}
     console = run('P\rMMI012\r/\rOTHER.FDB\rCYLTEST\r4\rQ\rQ\r', viewfiles)
-    assert 'Directory byte offset: 10240 | 20480*' in console, console
+    assert 'Canonical directory byte: 10240 | 20480*' in console, console
     assert m.files == viewfiles
     edit = 'I\rADD.FDB\rTEST109\r'
     save = 'S\r\rY\r'

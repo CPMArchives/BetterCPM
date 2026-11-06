@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "date": "2026-11-06",
+  "scope": "ATON/Lifeboat cpmsim RAM file interchange; Model 4 refusal and ROM build compatibility only",
+  "config_stack": {
+    "status": "pass",
+    "suite_names": [
+      "test_config_command_line",
+      "test_config_help",
+      "test_config_physical_cli",
+      "test_config_logical_cli",
+      "test_config_edit_cli",
+      "test_config_shared_input",
+      "test_config_shared_choices",
+      "test_config_startup_save",
+      "test_config_saved_inspection",
+      "test_config_defaults"
+    ],
+    "peak_bytes": 24,
+    "allocation_bytes": 256,
+    "spare_bytes": 232
+  },
+  "fdb_stack": {
+    "allocation_bytes": 128,
+    "largest_observed_bytes": 40,
+    "spare_bytes": 88,
+    "note": "Observed machine-code suites, not a formal all-path bound"
+  },
+  "component_bounds": {
+    "model4_config_bytes": 1024,
+    "model4_config_limit": 1024,
+    "fdb_image_end_hex": "35C2",
+    "fdb_editor_end_hex": "D3F7",
+    "fdb_editor_limit_hex": "D400",
+    "config_code_ceiling_hex": "3F00",
+    "config_stack_top_hex": "4000"
+  },
+  "passed_checks": [
+    "test_fdf_v1_compiler",
+    "test_fdb_v1_reader",
+    "test_fdf_format",
+    "test_fdf_image_conversion",
+    "test_native_fdb_reader (108 bindings)",
+    "test_fdb_roundtrip (40 cases; unchanged stock FDB)",
+    "test_fdb_editor",
+    "test_fdb_session",
+    "test_fdb_usability (24 cases)",
+    "test_fdb_queries (47 + 2 cases)",
+    "test_boot_surface",
+    "test_boot_capability_gate",
+    "test_boot_surface_compatibility",
+    "test_z80pack_checksum_binding",
+    "test_z80pack_csv_storage --build build/aton-system-final",
+    "test_boot_surface_io --build build/aton-system-final",
+    "test_model2_adapter --images ../../post-1.0-model2-formats/images --results build/model2-guest-final",
+    "test_config_stack_bound (10 suites)",
+    "RAM carrier build",
+    "ROM carrier build and embedded ownership/relocation/overlay checks",
+    "SYSGEN populated-filesystem install and cold boot"
+  ],
+  "receipts": [
+    "cpmsim-results.json",
+    "cpc-regression.json",
+    "pcw-regression.json",
+    "checksum-layout.json",
+    "system-preparation.json",
+    "install-results.json"
+  ],
+  "hashes": {
+    "metadata/supplemental/SUPPDISK.FDF": "6fd6fb35209d6e8562ed8d0a6ea6c147541e13a7c546fc982d0528859e0224af",
+    "metadata/supplemental/SUPPDISK.FDB": "cde08153810044324ceb9e28b1a1bb65bafc3d1d3d70747b31fa950ac3be8c92",
+    "build/model2-final-system/system.dsk": "ffd62459b428c4fe81b8bd2b512a325ddea7ce0625dfe84843afec7b855a54e8"
+  },
+  "merged_main_check": {
+    "main_commit": "711bfada",
+    "status": "pass",
+    "identical_ram_artifacts": [
+      "checksum-layout.json",
+      "resident.bin",
+      "config.bin",
+      "boot-format.json",
+      "reloader.bin",
+      "gateway.bin",
+      "rsxselect.bin",
+      "bios.bin",
+      "disk.bin",
+      "boot.bin",
+      "extensions.bin",
+      "checksum-extra.bin",
+      "tables.bin"
+    ]
+  }
+}

@@ -119,6 +119,13 @@ def main():
   from checked_build_contract import load_contract,assembly_constants
   checked_constants=assembly_constants(load_contract(ROOT,args.assembler))
  fmt=select_fdf(args.fdf,args.format)
+ if fmt.boot_psectors is not None:
+  p.error('an exceptional historical boot surface cannot host a BetterCP/M System image')
+ # The RAM adapter owns two extra 48-byte CSVs in explicitly bounded BIOS
+ # region headroom. ROM templates retain their established 32-byte vectors
+ # and do not advertise this capability. Do not relocate writable CSVs as code.
+ csv_limit = 48 if args.ram_only else 32
+ csv_extra_base = L['FILE'] - 96 if args.ram_only else None
  record_map=fmt.raw_record_map()
  if fmt.reserved_records < 160:raise SystemExit(f'{fmt.name}: reserved area has {fmt.reserved_records} records; 160 required')
  if fmt.raw_tracks>255 or fmt.raw_track_bytes//128>255:raise SystemExit(f'{fmt.name}: bootstrap geometry exceeds 8-bit cpmsim ports')
@@ -146,11 +153,14 @@ def main():
      '        LD HL,IO_LS\n        JP IO_JUMP\n\n',bios_source,count=1)
  a=bios_source.index('BIOREAD:');b=bios_source.index('; LISTST',a)
  bios_source=bios_source[:a]+read('src/platform/z80pack/recordio.inc')+bios_source[b:]
- bios=asm('bios',bios_source.replace('        INCLUDE biosplat.inc',read('src/platform/z80pack/biosplat.inc')),L['BIOS'],L['FILE']-L['BIOS'])
+ bios=asm('bios',bios_source.replace('        INCLUDE biosplat.inc',read('src/platform/z80pack/biosplat.inc')),L['BIOS'],
+          (csv_extra_base if args.ram_only else L['FILE'])-L['BIOS'])
  bs=symbols(out/'bios.lst');bc=symbols(ROOT/'build/bdos/bdos.lst')
  equ=lambda mapping,names:''.join(f'{k} EQU 0{mapping[k]:04X}H\n' for k in names)
  bioslinks=equ(bs,('BIO_DRIVE','BIO_TRACK','BIO_SECTOR','BIO_DMA','BIO_QUART'))
  disk_source=read('src/platform/z80pack/disk.mac').replace('        INCLUDE bioslinks.inc',bioslinks)
+ if args.ram_only:
+  disk_source=disk_source.replace('ZP_BOOT_CAP EQU 0', 'ZP_BOOT_CAP EQU 1')
  disk_source=disk_source.replace('        INCLUDE bootfmt.inc',
                                  f'ZB_SLOTS EQU {fmt.raw_track_bytes//128}\n')
  disk_source=disk_source.replace('        DB ZB_MAP_BYTES',
@@ -163,6 +173,9 @@ def main():
  es=symbols(out/'extensions.lst')
  ds=symbols(out/'disk.lst')
  config=read('src/platform/z80pack/config.mac')
+ config=config.replace('ZP_CKS_LIMIT EQU 32', f'ZP_CKS_LIMIT EQU {csv_limit}')
+ if args.ram_only:
+  config=config.replace('ZP_BOOT_CAP EQU 0', 'ZP_BOOT_CAP EQU 1')
  config=config.replace('        INCLUDE bioslinks.inc',bioslinks)
  config=config.replace('        INCLUDE cpxlinks.inc',
                        equ(es,('EX_RETURN','BCX_MVAL')))
@@ -174,19 +187,30 @@ def main():
  tables='        INCLUDE layout.inc\n        ASEG\n        ORG LY_TAB\n'
  for i in range(4):
   binding=fmt.binding(i)
-  tables+=f'ZDPH{i}: DW 0,0,0,0,LY_DIR,ZDPH{i}+17,ZCSV+{i * 32},ZALV\n'
+  csv_pointer=(f'0{csv_extra_base+(i-2)*48:04X}H' if args.ram_only and i>=2 else f'ZCSV+{i*csv_limit}')
+  tables+=f'ZDPH{i}: DW 0,0,0,0,LY_DIR,ZDPH{i}+17,{csv_pointer},ZALV\n'
   # z80asm accepts a long DB line but silently drops operands beyond its
   # internal line capacity.  Keep each directive short and verify stride.
   for offset in range(0,len(binding),16):
    tables+='        DB '+','.join(str(value) for value in binding[offset:offset+16])+'\n'
  # CONFIG may replace the boot binding with any supported catalogue format.
  # Keep one maximum-size allocation vector for the active BDOS context and a
- # persistent 32-byte checksum vector for each logical drive.  Sizing these
+ # persistent checksum vector for each logical drive (32 ROM / 48 RAM). Sizing these
  # workspaces from the boot format corrupts the following drive's checksum
  # state as soon as a larger disk is selected.
  tables+='ZALV: DS 128\nZCSV: DS 128\n'
  tables+='        END\n'
  tab=asm('tables',tables,L['TABLES'],L['RSX_STATE']-L['TABLES'])
+ csv_addresses=[int.from_bytes(tab[i*80+12:i*80+14],'little') for i in range(4)]
+ if args.ram_only:
+  assert csv_extra_base >= L['BIOS']+len(bios)
+  assert all(csv_addresses[i]+48 <= csv_addresses[i+1] for i in (0,2))
+  (out/'checksum-extra.bin').write_bytes(bytes(96))
+ (out/'checksum-layout.json').write_text(json.dumps(dict(
+  profile='RAM' if args.ram_only else 'ROM-compatible', cks_limit=csv_limit,
+  csv_addresses=csv_addresses, extra_mutable_region=([csv_extra_base,L['FILE']] if args.ram_only else None),
+  bios_code_end=L['BIOS']+len(bios), tpa=L['TPA'], history=L['HISTORY'],
+  boot_surface_capability=args.ram_only),indent=2)+'\n')
  gateway=asm('gateway',read('src/system/gateway.mac').replace('        INCLUDE core.inc',core),L['SYSTEM'],L['BDOS']-L['SYSTEM'])
  if args.resident_only:
   return
@@ -240,6 +264,8 @@ def main():
  boot=asm('boot',boot_source,0,128)
  resident=bytearray(L['DIRBUF']-L['SYSTEM'])
  parts=[(L['SYSTEM'],gateway),(L['BDOS'],(ROOT/'build/bdos/bdos.bin').read_bytes()),(L['EXTENSIONS'],ext),(L['DISK'],disk),(L['BIOS'],bios),(L['FILE'],(ROOT/'build/system/fileloader.bin').read_bytes()),(L['TABLES'],tab)]
+ if args.ram_only:
+  parts.append((csv_extra_base,(out/'checksum-extra.bin').read_bytes()))
  for address,data in parts:resident[address-L['SYSTEM']:address-L['SYSTEM']+len(data)]=data
  if len(resident)>52*128:raise ValueError('resident carrier too small')
  logical=bytearray(b'\xe5'*fmt.image_bytes)

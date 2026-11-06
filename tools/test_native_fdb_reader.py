@@ -253,7 +253,7 @@ FDFLIM  EQU 07F80H
         converted, failed = runtime(boundary)
         assert not failed and converted[14:16] == b"\xfe\xff"
 
-        for kind, supported in ((0x03, 1), (0x83, 0)):
+        for kind, supported in ((0x04, 1), (0x84, 0)):
             changed = bytearray(payload)
             changed[cylinder_ext] = kind
             changed = bytearray(repaired(changed))
