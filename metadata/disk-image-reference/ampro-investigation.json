@@ -333,5 +333,13 @@
     "cpmsim": "synthetic pass only",
     "trs80gp": "synthetic media prepared; guest I/O untested",
     "physical_media": "untested"
+  },
+  "evidence_commit": "d5e247d2ee8637e9c19318fcea8e7e2f620faf4b",
+  "archive": {
+    "filename": "BetterCPM-Ampro-Reference-Investigation-2026-11-06.zip",
+    "size_bytes": 1587595,
+    "sha256": "b2c50bb035b021fd0aa86d23d00f38d700b4c9804b5c0b635525ac7cd1858c8d",
+    "access": "Maintainer-held reference archive",
+    "library_file_id": "libfile_a1223ddf20ec81918ee32e1faa41d3ca"
   }
 }
