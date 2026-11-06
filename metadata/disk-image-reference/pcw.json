@@ -53,12 +53,13 @@
       },
       "qualification": {
         "cpmsim": "pass",
-        "trs80gp": "prepared; guest I/O pending",
+        "trs80gp": "pass",
         "physical_media": "untested",
         "probe_bytes": 8192,
         "highest_block_written": 174,
         "reserved_bytes_preserved": 4608,
-        "unallocated_tail_bytes_preserved": 512
+        "unallocated_tail_bytes_preserved": 512,
+        "written_edsk_sha256_both_backends": "2cfcc2bd510af52e3aad777a7c7a01897c8472a5bb64ab36bf6b381f79061945"
       }
     }
   ],

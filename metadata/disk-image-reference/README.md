@@ -7,7 +7,7 @@ Preserve independently sourced disk images for format investigation, regression 
 | Collection | Images | Definitions | Qualification |
 |---|---:|---|---|
 | [Amstrad CPC](cpc.json) | 4 | CPCSYS, CPCDATA | All four images passed on cpmsim and trs80gp. Physical-media interchange is untested. |
-| [Amstrad PCW](pcw.json) | 1 | PCW | cpmsim passed. Model 4 media prepared, guest I/O pending. Physical-media interchange is untested. |
+| [Amstrad PCW](pcw.json) | 1 | PCW | cpmsim and trs80gp passed, with identical written image hashes. Physical-media interchange is untested. |
 
 The CPC archive is `BetterCPM-CPC-Reference-Images-2026-11-05.zip`, 177,908 bytes, SHA-256 `f807bd15481b2a6ea9111ed55b841bbecf011f3352c17e23c12a945d3ac7fe1f`. The maintainer holds a durable copy identified in the manifest. Other contributors can obtain the same originals from the pinned source URLs or request the archive from the maintainer if a source disappears.
 
