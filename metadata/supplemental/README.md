@@ -25,3 +25,5 @@ Rebuild from the repository root.
 ```sh
 python3 tools/fdfcomp.py metadata/supplemental/SUPPDISK.FDF metadata/supplemental/SUPPDISK.FDB
 ```
+
+Pristine images, expected file hashes, archive identities, and collection admission instructions are indexed in the [disk-image reference collection](../disk-image-reference/README.md).
