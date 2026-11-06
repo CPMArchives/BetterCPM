@@ -1,0 +1,13 @@
+[
+  {
+    "filename": "retronerd-cpm107h.dsk",
+    "format": "PCW",
+    "url": "https://retronerd.co.uk/download/cpm-1-07h-gotek-with-b-drive-modified/?wpdmdl=5624",
+    "sha256": "c5cb6d96da0624c9901b5a6f8cc5db025c9db3ec4d004c2a01d0c84602f5b8c7",
+    "files": 24,
+    "archive_member": "CPM3 1-07H-Working.dsk",
+    "archive_sha256": "d76997aa6ccc62c26c101c2d65468c4877f786de770be0970ee2344ee9f3c0f4",
+    "archive_bytes": 219136,
+    "download_date": "2026-11-06"
+  }
+]

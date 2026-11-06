@@ -1,0 +1,6 @@
+{
+  "target": "cpmsim",
+  "jobs": 2,
+  "all_four_cpc_samples_match_previous_receipt": true,
+  "result_sha256": "f1bc575cd10274e02fba7e3c85c4b24ff854a229f7030c381afc95607e3b1f9a"
+}

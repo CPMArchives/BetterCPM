@@ -7,6 +7,7 @@ Preserve independently sourced disk images for format investigation, regression 
 | Collection | Images | Definitions | Qualification |
 |---|---:|---|---|
 | [Amstrad CPC](cpc.json) | 4 | CPCSYS, CPCDATA | All four images passed on cpmsim and trs80gp. Physical-media interchange is untested. |
+| [Amstrad PCW](pcw.json) | 1 | PCW | cpmsim passed. Model 4 media prepared, guest I/O pending. Physical-media interchange is untested. |
 
 The CPC archive is `BetterCPM-CPC-Reference-Images-2026-11-05.zip`, 177,908 bytes, SHA-256 `f807bd15481b2a6ea9111ed55b841bbecf011f3352c17e23c12a945d3ac7fe1f`. The maintainer holds a durable copy identified in the manifest. Other contributors can obtain the same originals from the pinned source URLs or request the archive from the maintainer if a source disappears.
 
@@ -22,7 +23,7 @@ The archive contains four original Extended CPC DSK files, a collection manifest
 
 The [CPC qualification runner and instructions](../../docs/engineering/evidence/2026-11-05-cpc/README.md) implement this process. Pass the archive's extracted `originals` directory to `--images` and a new disposable directory to `--output`. Its conversions use `tools/convert_fdf_image.py` and the boot-image builders from the pinned repository revision.
 
-Independent disk-image trials may run concurrently with a separate emulator process and private writable media for each trial. Each disk's read-back follows its own write. The current CPC runner processes its four images sequentially. Parallel orchestration is planned for the next batch.
+Independent disk-image trials may run concurrently with a separate emulator process and private writable media for each trial. Each disk's read-back follows its own write. The shared Amstrad runner accepts `--jobs N` to run image trials in separate worker processes with private media. It defaults to one worker and accepts `--manifest` for a pinned image set. Every completed trial saves its own receipt even if a different trial fails.
 
 ## Add reference images
 

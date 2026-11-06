@@ -1,0 +1,23 @@
+{
+  "target": "prepare-model4",
+  "fdb_sha256": "ad4587282e4ddbd2bcec76229f1c141673971a2c02026320a311e87c24c0f11f",
+  "system_sha256": "303fcd2e6d495d32d743d8caa1eb8b987be3df09904f2f24d8d01d07b8987f55",
+  "samples": {
+    "retronerd-cpm107h.dsk": {
+      "status": "prepared",
+      "guest_commands": [
+        "RSX LOAD M4SCRN",
+        "RSX LOAD ADM3A",
+        "CLS",
+        "B:",
+        "A:CONFIG /LOGICAL=C /PHYSICAL=2 /FORMAT=\"Amstrad PCW 180K\"",
+        "A:",
+        "DIR C:",
+        "COPY C:*.* B:",
+        "COPY B:PROBE.BIN C:FILL.BIN",
+        "COPY C:FILL.BIN B:RETURN.BIN",
+        "TYPE CPCEND.TXT"
+      ]
+    }
+  }
+}

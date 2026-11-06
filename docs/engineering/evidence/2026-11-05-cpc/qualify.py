@@ -1,6 +1,7 @@
-"""Check four pinned CPC EDSKs against BetterCP/M on disposable media."""
+"""Check pinned Amstrad EDSKs against BetterCP/M on disposable media."""
 from argparse import ArgumentParser
 from contextlib import contextmanager
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import replace
 from hashlib import sha256
 import json
@@ -20,7 +21,7 @@ sys.path.insert(0, str(HERE.parent / '2026-11-03-release-formats'))
 from verify import diskdef
 from add_cpm_file_to_dmk import extract_raw
 from build_montezuma_extended_790k import build as build_boot_dmk
-from convert_fdf_image import raw_to_dmk, dmk_to_raw
+from convert_fdf_image import raw_to_dmk, dmk_to_raw, _make_track, TRACK_LENGTH
 from fdf_format import select_fdf
 from fdf_v1 import parse, serialize, read_fdb
 from test_z80pack_sysgen_install import session
@@ -29,7 +30,6 @@ from trs80gp_launch import run as run_trs80gp
 SUPPLEMENT = ROOT / 'metadata/supplemental/SUPPDISK.FDF'
 DATABASE = SUPPLEMENT.with_suffix('.FDB')
 RELEASE = ROOT / 'metadata/release-formats.fdf'
-SAMPLES = json.loads((HERE / 'samples.json').read_text())
 
 
 @contextmanager
@@ -52,7 +52,8 @@ def watch_model4(disks, *, interval=30, idle_limit=600):
             detail = 'writes on ' + ', '.join(changed)
         else:
             detail = f'{now-last_write:.0f}s since last observed disk write'
-        print(f'  {disks[0].parent.name}: {int(now-started)//60}m elapsed, {detail}', flush=True)
+        print(f'  {time.strftime("%Y-%m-%d %H:%M:%S %Z")} '
+              f'{disks[0].parent.name}: {int(now-started)//60}m awake, {detail}', flush=True)
         if now - last_write >= idle_limit:
             raise TimeoutError(f'No disk writes for {idle_limit}s; private DMKs remain in {disks[0].parent}')
 
@@ -87,7 +88,7 @@ def files(work, fmt, image, driver='raw'):
     return payloads
 
 
-def decode(image, fmt):
+def decode(image, fmt, *, per_track=False):
     """Read CHRN metadata before discarding the EDSK wrapper."""
     assert image.startswith(b'EXTENDED CPC DSK File') and image[49] == 1
     count = image[48]
@@ -95,7 +96,7 @@ def decode(image, fmt):
     assert len(sizes) == count and sum(sizes) + 256 == len(image)
     assert sizes[:fmt.cylinders] == [256 + fmt.raw_track_bytes] * fmt.cylinders
     assert not any(sizes[fmt.cylinders:]), 'formatted cylinders beyond the definition'
-    pos, raw, orders = 256, bytearray(), set()
+    pos, raw, orders = 256, bytearray(), []
     offsets = []
     for cyl in range(fmt.cylinders):
         track = image[pos:pos+sizes[cyl]]
@@ -112,12 +113,27 @@ def decode(image, fmt):
             data_at = 256 + i*fmt.sector_bytes
             sectors[r] = track[data_at:data_at+fmt.sector_bytes]
             starts[r] = pos - sizes[cyl] + data_at
-        orders.add(tuple(sectors))
+        orders.append(tuple(sectors))
         assert sorted(sectors) == list(fmt.sector_ids)
         raw.extend(b''.join(sectors[r] for r in sorted(sectors)))
         offsets.extend(starts[r] for r in sorted(starts))
-    assert len(orders) == 1, 'these four fixtures have uniform rotational order'
-    return bytes(raw), orders.pop(), offsets
+    if per_track:
+        return bytes(raw), orders, offsets
+    assert len(set(orders)) == 1, 'image has varying rotational order'
+    return bytes(raw), orders[0], offsets
+
+
+def source_dmk(raw, fmt, orders):
+    """Preserve the independently sourced sector order on every track."""
+    image = bytearray(raw_to_dmk(raw, fmt))
+    for cylinder, order in enumerate(orders):
+        start = cylinder * fmt.raw_track_bytes
+        track = _make_track(replace(fmt, sector_ids=order), cylinder, 0,
+                            raw[start:start + fmt.raw_track_bytes])
+        at = 16 + cylinder * TRACK_LENGTH
+        image[at:at + TRACK_LENGTH] = track
+    assert dmk_to_raw(image, fmt) == raw
+    return bytes(image)
 
 
 def run_sample(args, spec, work, formats):
@@ -128,11 +144,19 @@ def run_sample(args, spec, work, formats):
     fmt = select_fdf(SUPPLEMENT, ident)
     desc = formats[ident].description
     path = args.images / spec['filename']
-    image = path.read_bytes() if path.exists() else urlopen(spec['url'], timeout=60).read()
+    if path.exists():
+        image = path.read_bytes()
+    else:
+        image = urlopen(spec['url'], timeout=60).read()
+        if 'archive_member' in spec:
+            assert digest(image) == spec['archive_sha256'], 'downloaded archive hash'
+            image = subprocess.run(
+                ['tar', '-xOf', '-', spec['archive_member']], input=image,
+                stdout=subprocess.PIPE, check=True).stdout
     assert digest(image) == spec['sha256'], path
     if not path.exists():
         path.write_bytes(image)
-    original, rotation, offsets = decode(image, fmt)
+    original, orders, offsets = decode(image, fmt, per_track=True)
     expected = files(stock, ident.lower(), path, 'edsk')
     assert len(expected) == spec['files']
     used, total = map(int, re.search(r'(\d+)/(\d+) blocks',
@@ -182,7 +206,7 @@ def run_sample(args, spec, work, formats):
         drive0.write_bytes(build_boot_dmk(boot.read_bytes()))
         assert extract_raw(drive0.read_bytes()) == boot.read_bytes()
         drive1.write_bytes(raw_to_dmk(scratch.read_bytes(), scratch_fmt))
-        drive2.write_bytes(raw_to_dmk(original, replace(fmt, sector_ids=rotation)))
+        drive2.write_bytes(source_dmk(original, fmt, orders))
         assert dmk_to_raw(drive2.read_bytes(), fmt) == original
         if args.target == 'prepare-model4':
             return {'status': 'prepared', 'guest_commands': commands}
@@ -218,6 +242,8 @@ def run_sample(args, spec, work, formats):
     after = candidate.read_bytes()
     start = fmt.off * fmt.spt * 128
     assert len(after) == len(original) and after[:start] == original[:start]
+    allocation_end = start + (fmt.dsm + 1) * fmt.block_bytes
+    assert after[allocation_end:] == original[allocation_end:]
     entries = [after[i:i+32] for i in range(start, start + 32*(fmt.drm+1), 32)]
     assert any(e[:12] == b'\0FILL    BIN' and fmt.dsm in e[16:32] for e in entries)
     assert f'{total}/{total} blocks' in cpm(stock, 'fsck.cpm', ident.lower(), candidate, flags=['-n'])
@@ -230,11 +256,21 @@ def run_sample(args, spec, work, formats):
     edsk.write_bytes(repacked)
     assert files(stock, ident.lower(), edsk, 'edsk') == {**expected, 'fill.bin': probe}
     assert digest(path.read_bytes()) == spec['sha256']
+    rotation = ({'rotation': list(orders[0])} if len(set(orders)) == 1
+                else {'rotation_by_track': [list(order) for order in orders]})
     return dict(status='pass', raw_sha256=digest(original), formatted_cylinders=fmt.cylinders,
-                rotation=list(rotation), original_files={n:digest(v) for n,v in expected.items()},
+                **rotation, original_files={n:digest(v) for n,v in expected.items()},
                 fill_bytes=len(probe), fill_sha256=digest(probe), highest_block_written=fmt.dsm,
                 written_edsk_sha256=digest(repacked),
                 reserved_bytes_preserved=start, guest_commands=commands)
+
+
+def qualify_sample(args, spec, formats):
+    work = args.output / Path(spec['filename']).stem
+    result = run_sample(args, spec, work, formats)
+    (work/'sample-result.json').write_text(json.dumps(result, indent=2)+'\n')
+    print(spec['filename'], result['status'], flush=True)
+    return result
 
 
 def main():
@@ -244,7 +280,13 @@ def main():
     parser.add_argument('--simulator', type=Path, help='patched cpmsim or trs80gp executable')
     parser.add_argument('--images', type=Path, required=True, help='cache for the four SHA-pinned original images')
     parser.add_argument('--output', type=Path, required=True, help='new directory for disposable media and results')
+    parser.add_argument('--manifest', type=Path, default=HERE/'samples.json',
+                        help='pinned image manifest, defaults to the original CPC set')
+    parser.add_argument('--jobs', type=int, default=1,
+                        help='independent guest processes to run concurrently')
     args = parser.parse_args()
+    if args.jobs < 1:
+        parser.error('--jobs must be positive')
     if not __debug__ or (args.target != 'prepare-model4' and not args.simulator):
         parser.error('run without -O and supply --simulator for guest execution')
     args.system = args.system.resolve(strict=True)
@@ -262,12 +304,17 @@ def main():
     if args.simulator:
         report['emulator_sha256'] = digest(args.simulator.read_bytes())
     by_id = {f.ident:f for f in formats}
-    for spec in SAMPLES:
-        key = spec['filename']
-        work = args.output/Path(key).stem
-        report['samples'][key] = run_sample(args, spec, work, by_id)
-        (work/'sample-result.json').write_text(json.dumps(report['samples'][key], indent=2)+'\n')
-        print(key, report['samples'][key]['status'], flush=True)
+    samples = json.loads(args.manifest.read_text())
+    stems = [Path(spec['filename']).stem for spec in samples]
+    if not samples or len(set(stems)) != len(stems):
+        parser.error('manifest must contain images with distinct filename stems')
+    for spec in samples:
+        if Path(spec['filename']).name != spec['filename']:
+            parser.error('image filenames must be plain basenames')
+    with ProcessPoolExecutor(max_workers=args.jobs) as workers:
+        futures = [workers.submit(qualify_sample, args, spec, by_id) for spec in samples]
+        for spec, future in zip(samples, futures):
+            report['samples'][spec['filename']] = future.result()
     (args.output/'results.json').write_text(json.dumps(report, indent=2)+'\n')
 
 
