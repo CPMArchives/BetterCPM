@@ -64,8 +64,8 @@ def main():
               '-iw','Type TYPE README.TXT for more','-iw','A0>','-id','3000']
         args+=key_args('TYPE DIRRDY.TXT\r')+['-iw','DIR CASE CCP READY','-iw','A0>','-id','3000']
         for command,want in CASES:
-            args+=key_args('CLS\r')+['-iw','A0>','-id','1000']
-            args+=key_args(command+'\r',preserve_case=True)+['-iw',want,'-iw','A0>','-id','2000','-it']
+            args+=key_args('CLS\r',delay=25)+['-iw','A0>','-id','6000']
+            args+=key_args(command+'\r',delay=25,preserve_case=True)+['-iw',want,'-iw','A0>','-id','6000','-it']
         args+=['-ix'];(w/'invocation.json').write_text(json.dumps(args,indent=2)+'\n')
         if not a.verify_existing:run(args,cwd=w,timeout=600)
         captures=sorted(w.glob('trs80-text-*.bin'),key=lambda p:int(p.stem.rsplit('-',1)[1]))
