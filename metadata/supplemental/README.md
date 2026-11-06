@@ -9,6 +9,7 @@ Use [SUPPDISK.FDF](SUPPDISK.FDF) as the editable source and [SUPPDISK.FDB](SUPPD
 | PCW | Amstrad PCW 180K | cpmsim and trs80gp file reads and writes through allocation block 174 | physical media |
 | ATONSS | ATON/Lifeboat Model II SS | cpmsim RAM canonical adapter; four originals, all files and block 299 read/write | Model 4 and ROM unsupported; physical media untested |
 | ATONDS | ATON Model II DS | cpmsim RAM canonical adapter; one original, all files and block 607 read/write | Model 4 and ROM unsupported; physical media untested |
+| PT2SS | Pickles & Trout M2 SS | cpmsim RAM canonical adapter; three originals, sequential files plus random tail records, block 299 read/write | Model 4 and ROM unsupported; physical media untested |
 
 To use the supplement on cpmsim, put a copy of `SUPPDISK.FDB` on a separate work disk under the guest name `DISK.FDB`. Keep the production catalogue on system drive A. With that work disk in C and a CPC raw image in physical drive 1, run the following. Select `Amstrad CPC Data` in the CONFIG command for a Data disk.
 
@@ -37,3 +38,6 @@ entries; the capability query prevents a new utility from applying them to an
 older BIOS. Use the [Model II adapter and qualification procedure](../../docs/engineering/evidence/2026-11-06-model2/INTERCHANGE.md).
 The original IMD or variable-length raw file is not a directly mountable cpmsim
 image. Historical booting and formatting are outside the support claim.
+
+Pickles & Trout uses the same boot adapter with 16 × 512-byte data sectors.
+See the [P&T qualification and master-disk EOF detail](../../docs/engineering/evidence/2026-11-06-pickles-trout/README.md).

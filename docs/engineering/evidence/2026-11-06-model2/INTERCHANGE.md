@@ -118,3 +118,10 @@ additional historical format or a supplemental catalogue entry. The qualified
 source images and pinned cpmtools revision remain in [sources.json](sources.json).
 Use the POSIX cpmtools build for offset-11,520 historical raw extraction; the
 libdsk-backed offset path requires sector alignment and cannot represent it.
+
+## Pickles & Trout follow-up
+
+The same adapter now also accepts the observed single-sided 16 × 512-byte
+data-track profile. See the [P&T qualification](../2026-11-06-pickles-trout/README.md)
+for PT2SS, its three originals and the separate sequential/random-record checks.
+The adapter still rejects other geometry and never overwrites existing output.

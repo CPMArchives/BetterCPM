@@ -82,15 +82,15 @@ def repack(comment, tracks, raw):
     return bytes(output)
 
 
-def logical_data(raw):
+def logical_data(raw, order=ORDER, secsize=1024):
     data = raw[PREFIX:]
     assert len(data) % 8192 == 0
-    return b''.join(data[t+i*1024:t+(i+1)*1024]
-                    for t in range(0, len(data), 8192) for i in (r-1 for r in ORDER))
+    return b''.join(data[t+i*secsize:t+(i+1)*secsize]
+                    for t in range(0, len(data), 8192) for i in (r-1 for r in order))
 
 
-def read_files(raw, dsm, maxdir):
-    data = logical_data(raw)
+def read_extents(raw, dsm, maxdir, order=ORDER, secsize=1024):
+    data = logical_data(raw, order, secsize)
     assert len(data) == (dsm+1)*2048
     files, blocks, extent_count = {}, set(range(maxdir*32//2048)), 0
     for pos in range(0, maxdir*32, 32):
@@ -113,10 +113,29 @@ def read_files(raw, dsm, maxdir):
         assert extent not in parts
         parts[extent] = payload
         extent_count += 1
-    for name, parts in list(files.items()):
-        assert sorted(parts) == list(range(len(parts)))
-        files[name] = b''.join(parts[i] for i in range(len(parts)))
     return files, blocks, extent_count
+
+
+def sequential_files(extents):
+    """CP/M sequential EOF is the first short or missing 16 KiB extent."""
+    result = {}
+    for name, parts in extents.items():
+        payload = bytearray()
+        for number in range(max(parts)+1):
+            part = parts.get(number, b'')
+            payload.extend(part)
+            if len(part) < 16384:
+                break
+        result[name] = bytes(payload)
+    return result
+
+
+def read_files(raw, dsm, maxdir, order=ORDER, secsize=1024):
+    extents, blocks, count = read_extents(raw, dsm, maxdir, order, secsize)
+    for name, parts in extents.items():
+        assert sorted(parts) == list(range(len(parts))), ('sparse file', name)
+        assert all(len(parts[i]) == 16384 for i in range(len(parts)-1)), ('data beyond sequential EOF', name)
+    return sequential_files(extents), blocks, count
 
 
 def run_one(spec, images, output, cpmtools):

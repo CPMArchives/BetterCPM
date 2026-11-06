@@ -1,0 +1,38 @@
+{
+  "repository": "https://github.com/pski/model2archive",
+  "commit": "fa76dabb8c41d915cb27c54985555bc9e29baabd",
+  "verified_date": "2026-11-06",
+  "local_origin": "~/Downloads/Pickles & Trout/; previously used November 1; all three equal pinned upstream bytes",
+  "images": [
+    {
+      "filename": "PT22MHA.IMD",
+      "bytes": 565291,
+      "sha256": "7b18e084792bc77ed38bb8599e8f922f3e7c7d667296cb381105baa7521eb562",
+      "repository_path": "Software/CPM/Pickles and Trout CPM 2.2mH/PT22MHA.IMD",
+      "url": "https://github.com/pski/model2archive/blob/fa76dabb8c41d915cb27c54985555bc9e29baabd/Software/CPM/Pickles%20and%20Trout%20CPM%202.2mH/PT22MHA.IMD"
+    },
+    {
+      "filename": "PT22MHB.IMD",
+      "bytes": 565265,
+      "sha256": "386b6459a757efab38a1e9ff96b7871896b868e77beb8020b5851d0d6d7cbfe7",
+      "repository_path": "Software/CPM/Pickles and Trout CPM 2.2mH/PT22MHB.IMD",
+      "url": "https://github.com/pski/model2archive/blob/fa76dabb8c41d915cb27c54985555bc9e29baabd/Software/CPM/Pickles%20and%20Trout%20CPM%202.2mH/PT22MHB.IMD"
+    },
+    {
+      "filename": "PTWORKDS.IMD",
+      "bytes": 502411,
+      "sha256": "f7581b6384dc6d53ab2cdabf3621e34a9f1ab12e87e23a4484257f97c2a25959",
+      "repository_path": "Software/CPM/Pickles and Trout CPM 2.2mH/PTWORKDS.IMD",
+      "url": "https://github.com/pski/model2archive/blob/fa76dabb8c41d915cb27c54985555bc9e29baabd/Software/CPM/Pickles%20and%20Trout%20CPM%202.2mH/PTWORKDS.IMD"
+    }
+  ],
+  "cpmtools": {
+    "repository": "https://github.com/lipro-cpm4l/cpmtools",
+    "commit": "e534e20c15973a9559e981efb498a102020e5db7",
+    "backend": "POSIX",
+    "build_commands": [
+      "./configure",
+      "make -j4 cpmls cpmcp cpmrm fsck.cpm"
+    ]
+  }
+}

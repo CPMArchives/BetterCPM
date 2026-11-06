@@ -52,7 +52,8 @@ class BootSession(DriveSession):
 
 def main():
     work=ROOT/'build/boot-surface-test';work.mkdir(parents=True,exist_ok=True)
-    entries=formats(); payload=serialize(entries)
+    pt=next(f for f in parse((ROOT/'metadata/supplemental/SUPPDISK.FDF').read_text()) if f.ident=='PT2SS')
+    entries=(*formats(),pt); payload=serialize(entries)
     assert tuple(d.format for d in read_fdb(payload).descriptors)==entries
     assert serialize(parse(decompile(payload)))==payload
     m=machine(work,BootSession)
@@ -66,7 +67,7 @@ def main():
     m.checkpoints=[];m.unexpected_prompt=False
     console=m.run('',{key('DISK.FDB'):payload})
     assert not m.unexpected_prompt,console
-    assert m.files.get(key('OUT.FDB'))==serialize((entries[0],replace(entries[1],description='Edited ATON'))),console
+    assert m.files.get(key('OUT.FDB'))==serialize((entries[0],replace(entries[1],description='Edited ATON'),entries[2])),console
     # Host and native compiler must reject incomplete, unreserved, ambiguous,
     # oversized, duplicate-ID and invalid-encoding boot profiles.
     badtexts=[TEXT.replace('BOOT_ENCODING FM\n',''), TEXT.replace('OFF 2','OFF 0'),
