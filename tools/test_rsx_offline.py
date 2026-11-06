@@ -103,7 +103,7 @@ class Machine:
 
     def change(self, op, name, location=None, high=None):
         at=0x300
-        req=bytes((2 if location is None else 3,op,0,0))+name.ljust(8,b' ')+bytes(2)+struct.pack('<HH',0x405,high or min(self.word(6),0x7000))
+        req=bytes((2 if location is None else 3,op,0,0))+name.ljust(8,b' ')+bytes(2)+struct.pack('<HH',getattr(self,'workspace_low',0x405),high or min(self.word(6),0x7000))
         if location is not None:req+=bytes(location)
         self.mem[at:at+len(req)]=req
         self.mem[L['RSX']:L['RSX']+1024]=self.bootstrap.ljust(1024,b'\0')
@@ -116,121 +116,8 @@ class Machine:
 
 
 def main():
-    m=Machine()
-    artifacts=ROOT
-    stateful=(artifacts/'build/rsx/STATEFUL.RSX').read_bytes()
-    hello=(artifacts/'build/rsx/HELLO.RSX').read_bytes()
-    m.files[1,3,'STATEFUL.RSX']=stateful
-    m.files[2,31,'HELLO.RSX']=hello
-    m.mem[m.symbol['UB_DRIVE']]=2
-    m.mem[m.symbol['UB_USERNO']]=17
-    m.word(m.symbol['UB_DMA'],0x1600)
-    def context():
-        return m.mem[m.symbol['UB_DRIVE']],m.mem[m.symbol['UB_USERNO']],m.word(m.symbol['UB_DMA'])
-    assert m.change(1,b'STATEFUL',(1,3))==0,('first load',m.events)
-    assert context()==(2,17,0x1600)
-    service=service_offset(stateful)
-    def stat(op):
-        base=m.word(L['SYSTEM']+0x84)
-        for i in range(m.mem[L['RSX_STATE']]):
-            if bytes(m.mem[L['RSX_STATE']+1+i*8:L['RSX_STATE']+9+i*8])==b'STATEFUL':
-                break
-            base=m.word(base)-8
-        m.mem[0x3600:0x3610]=bytes((1,16,op))+bytes(13)
-        m.pair('DE',0x3600)
-        assert m.run(base+service)==(0xA4 if op==2 else 0)
-        result=bytearray(m.mem[0x3600:0x3610])
-        if op==2:
-            for at in (6,8):
-                value=struct.unpack_from('<H',result,at)[0]
-                struct.pack_into('<H',result,at,value-base)
-        return bytes(result)
-    stat(0)
-    for _ in range(3):stat(1)
-    expected=stat(2)
-    del m.files[1,3,'STATEFUL.RSX']
-    m.events.clear()
-    assert m.change(1,b'HELLO',(2,31))==0,m.events
-    assert stat(2)==expected
-    assert not any(e[0]==15 and e[-1]=='STATEFUL.RSX' for e in m.events)
-    del m.files[2,31,'HELLO.RSX']
-    m.events.clear()
-    assert m.change(3,b'HELLO',(0,0))==1
-    assert bytes(m.mem[0x312:0x314])==bytes((2,31))
-    assert m.change(0,b'        ',(0,0))==1
-    assert bytes(m.mem[0x312:0x314])==bytes((1,3))
-    assert not any(e[0]==15 for e in m.events)
-    for invalid in ((16,0),(0,32)):
-        assert m.change(1,b'BAD',invalid)==255
-    # A location does not replace an existing name; idempotence needs no source.
-    m.events.clear()
-    assert m.change(1,b'HELLO',(15,31))==0
-    assert not any(e[0]==15 for e in m.events)
-    before=bytes(m.mem[L['RSX_STATE']:L['RSX_STATE']+41])
-    low=m.word(L['SYSTEM']+0x88)
-    live=bytes(m.mem[low:L['RSX']-1024])
-    generation=m.word(L['SYSTEM']+0x92)
-    assert m.change(1,b'MISSING',(1,3))==255
-    assert context()==(2,17,0x1600)
-    assert bytes(m.mem[L['RSX_STATE']:L['RSX_STATE']+41])==before
-    assert bytes(m.mem[low:L['RSX']-1024])==live
-    assert m.word(L['SYSTEM']+0x92)==generation
-    assert stat(2)==expected
-    broken=bytearray(hello);broken[32:40]=b'BROKEN  '
-    m.files[1,3,'BROKEN.RSX']=bytes(broken)
-    m.fail_read=True
-    assert m.change(1,b'BROKEN',(1,3))==255
-    m.fail_read=False
-    assert context()==(2,17,0x1600)
-    assert bytes(m.mem[L['RSX_STATE']:L['RSX_STATE']+41])==before
-    # STATELESS images retain a pristine template, rather than live mutations.
-    hello_base=m.word(m.word(L['SYSTEM']+0x84))-8
-    marker=struct.unpack_from('<H',hello,12)[0]-1
-    original_byte=m.mem[hello_base+marker]
-    m.mem[hello_base+marker]^=255
-    extra=bytearray(hello);extra[32:40]=b'EXTRA   '
-    m.files[0,0,'EXTRA.RSX']=bytes(extra)
-    assert m.change(1,b'EXTRA')==0
-    assert m.mem[hello_base+marker]==original_byte
-    del m.files[0,0,'EXTRA.RSX']
-    assert m.change(2,b'EXTRA')==0
-    # Both the removed and retained carriers are now unavailable.
-    m.events.clear()
-    assert m.change(2,b'STATEFUL')==0,m.events
-    assert not any(e[0]==15 for e in m.events),m.events
-    assert bytes(m.mem[L['RSX_STATE']+1:L['RSX_STATE']+9])==b'HELLO   '
-    hello_base=m.word(L['SYSTEM']+0x84)
-    assert hello_base < L['RSX']-1024
-    assert m.change(2,b'HELLO',(0,0))==0
-    assert m.mem[L['RSX_STATE']]==0 and m.word(L['SYSTEM']+0x84)==0
-    assert m.word(6)==L['TPA']
-    assert context()==(2,17,0x1600)
-    # Legacy v2 callers still resolve only A0, regardless of current DU.
-    m.files[0,0,'HELLO.RSX']=hello
-    assert m.change(1,b'HELLO')==0
-    del m.files[0,0,'HELLO.RSX']
-    assert m.change(2,b'HELLO')==0
-    # A small first allocation forces overlapping upward STATEFUL movement.
-    small=bytearray(hello);struct.pack_into('<H',small,14,256)
-    m.files[0,0,'HELLO.RSX']=bytes(small)
-    m.files[1,3,'STATEFUL.RSX']=stateful
-    assert m.change(1,b'HELLO')==0
-    assert m.change(1,b'STATEFUL',(1,3))==0
-    stat(0)
-    for _ in range(3):stat(1)
-    old=m.word(m.word(L['SYSTEM']+0x84))-8
-    listing=(ROOT/'build/rsx/stateful.lst').read_text()
-    fixed=int(re.search(r'^([0-9a-f]{4}).*\bSR_FIXED:',listing,re.M|re.I)[1],16)-0x8000
-    external=old+struct.unpack_from('<H',stateful,14)[0]+2
-    m.word(old+fixed,external)
-    expected=stat(2)
-    del m.files[0,0,'HELLO.RSX'];del m.files[1,3,'STATEFUL.RSX']
-    assert m.change(2,b'HELLO')==0
-    assert m.word(L['SYSTEM']+0x84)>old
-    assert m.word(m.word(L['SYSTEM']+0x84)+fixed)==external
-    assert stat(2)==expected
-    assert m.change(2,b'STATEFUL')==0
-    print('PASS explicit B3/C31 loads, legacy A0, offline retained movement/removal, state, idempotence, rollback, DU/DMA and last-provider reclamation')
+    from test_rsx_disk_cache import main as disk_cache_checks
+    disk_cache_checks()
 
 
 if __name__=='__main__':main()

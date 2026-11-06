@@ -119,7 +119,7 @@ def build(pack: Path, output: Path, selector: Path,
             linked_base = LAYOUT["CONFIG"] if name in CFG_FILES else LAYOUT["RSX"]
             runtime_base = cfg_base if name in CFG_FILES else LAYOUT["RSX"]
             if name == "R3CACHE.RSX":
-                linked_base = runtime_base = LAYOUT['RSX']-1024
+                linked_base = runtime_base = 0x1000  # staged worker remains relocatable
         alternates = [(images[name], delta) for images, delta in shifted]
         offsets = relocation_offsets(source, alternates, name)
         image = bytearray(source)

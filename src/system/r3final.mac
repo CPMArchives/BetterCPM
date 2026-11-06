@@ -177,7 +177,7 @@ RF_HAVECOUNT:                           ; validate the prospective profile count
         CALL    RF_PUTDE
         LD      A,(RF_COUNT)
         OR      A
-        LD      DE,LY_RSX-0400H
+        LD      DE,LY_RSX
         JR      NZ,RF_TOP
         LD      DE,LY_HIST              ; release the manager for an empty profile
 RF_TOP:                                 ; store the empty-profile boundary

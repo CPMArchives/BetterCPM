@@ -1,38 +1,65 @@
         INCLUDE layout.inc
 ; @cache-core-symbols@
-; Manager-owned carrier stream. This optional 1K allocation is charged only
-; with an active RSX profile. Carrier capsules use relative offsets and travel
-; inside each provider allocation; the live chain is the lookup index.
-CBBASE EQU LY_RSX-0400H
+; Relocatable carrier-cache worker, staged in caller-owned transaction RAM.
+CBBASE EQU 01000H
         CSEG
         .PHASE  CBBASE
-        JP CB_OPEN
-        JP CB_NEXT
-        JP CB_RESET
-        JP CB_RESERVE
-        JP CB_PACK
-        JP CB_SOURCE
-        JP CB_BOUND
-        JP CB_DUREQ
-CB_OPEN:
-        LD (CB_NAME),HL
-        LD (CB_DU),BC
+        JP OPEN
+        JP NEXT
+        JP RESET
+        JP RESERVE
+        JP PACK
+        JP SOURCE
+        JP BOUND
+        JP DUREQ
+        JP VERIFY
+        JP CLEAN
+        JP FINISH
+; Inline-call dispatcher. FCB R0..R2 are private JP while using sequential I/O.
+; Preserve the caller's argument registers and consume the inline vector byte.
+DISPATCH:
+        PUSH AF
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD HL,8
+        ADD HL,SP
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        PUSH HL
+        LD A,(DE)
+        INC DE
+        LD (HL),D
+        DEC HL
+        LD (HL),E
+        POP HL
+        LD E,A
+        LD D,0
+        LD HL,(LY_FCB+34)
+        ADD HL,DE
+        LD DE,33
+        OR A
+        SBC HL,DE
+        LD (DP_JUMP+1),HL
+        POP HL
+        POP DE
+        POP BC
+        POP AF
+DP_JUMP: JP 0
+OPEN:   LD (NAME),HL
+        LD (DU),BC
         CP 2
-        JR Z,CB_EXPLICIT
-        LD BC,0
-        LD (CB_DU),BC
-CB_EXPLICIT:
+        JP Z,EXACT
         XOR A
-        LD (CB_MEMORY),A
-        LD (CB_INDEX),A
+        LD (INDEX),A
         LD HL,(LY_SYS+084H)
-        LD (CB_LIVE),HL
-CB_FIND:
-        LD A,(CB_INDEX)
+        LD (LIVE),HL
+FIND:   LD A,(INDEX)
         LD B,A
         LD A,(LY_RSTA)
         CP B
-        JP Z,CB_DISK
+        JP Z,BAD
         LD A,B
         ADD A,A
         ADD A,A
@@ -41,85 +68,65 @@ CB_FIND:
         LD D,0
         LD HL,LY_RSTA+1
         ADD HL,DE
-        LD DE,(CB_NAME)
+        LD DE,(NAME)
         LD B,8
-CB_MATCH:
-        LD A,(DE)
+MATCH:  LD A,(DE)
         CP (HL)
-        JR NZ,CB_ADVANCE
+        JR NZ,ADVANCE
         INC DE
         INC HL
-        DJNZ CB_MATCH
-        LD HL,(CB_LIVE)
-        LD DE,6
-        ADD HL,DE
-        LD E,(HL)
-        INC HL
-        LD D,(HL)
-        PUSH DE
-        LD HL,(CB_LIVE)
-        INC HL
-        INC HL
-        INC HL
-        INC HL
-        LD A,(HL)
-        LD HL,0
-CB_AADD:
-        OR A
-        JR Z,CB_ATOP
+        DJNZ MATCH
+        LD BC,(LIVE)
+        CALL FOOTLOC
+        DEC HL
+        DEC HL
+        LD DE,HCRC
         LD BC,10
-        ADD HL,BC
-        DEC A
-        JR CB_AADD
-CB_ATOP:
-        POP DE
-        ADD HL,DE
-        LD (CB_TOTAL),HL
-        LD HL,(CB_LIVE)
-        ADD HL,DE
-        LD DE,8
+        LDIR
+        LD BC,(FOOT+4)
+        LD (SOURCEDU),BC
+        LD A,(FOOT+6)
+        CALL SUFFIX
+        CALL CACHEOPEN
+        RET NZ
+        LD HL,BUFFER
+        LD (DMA),HL
+        LD C,20
+        CALL DISKCALL
         OR A
-        SBC HL,DE
-        LD E,(HL)
+        JP NZ,BAD
+        LD HL,BUFFER
+        LD DE,FOOT
+        LD B,8
+HCHECK: LD A,(DE)
+        CP (HL)
+        JP NZ,BAD
         INC HL
-        LD D,(HL)
-        PUSH HL
-        LD HL,(CB_LIVE)
-        ADD HL,DE
-        LD (CB_DATA),HL
-        POP HL
+        INC DE
+        DJNZ HCHECK
+        CALL SIGNATURE
+        JP NZ,BAD
+        LD HL,BUFFER+18
+        LD DE,(NAME)
+        LD B,8
+NCHECK: LD A,(DE)
+        CP (HL)
+        JP NZ,BAD
         INC HL
-        LD E,(HL)
-        INC HL
-        LD D,(HL)
-        LD (CB_LENGTH),DE
-        INC HL
-        LD C,(HL)
-        INC HL
-        LD B,(HL)
-        LD (CB_DU),BC
-        INC HL
-        LD A,(HL)
-        CP 'R'
-        JP NZ,CB_BAD
-        INC HL
-        LD A,(HL)
-        CP 'C'
-        JP NZ,CB_BAD
-        LD HL,(CB_DATA)
-        CALL CB_HSIZE
-        LD (CB_HEADER),DE
-        LD HL,(CB_LENGTH)
-        LD BC,512
-        ADD HL,BC
-        OR A
-        SBC HL,DE
-        LD (CB_LENGTH),HL
+        INC DE
+        DJNZ NCHECK
+        LD HL,(BUFFER+8)
+        LD (LEFT),HL
+        LD HL,0FFFFH
+        LD (CRC),HL
+        XOR A
+        LD (READIDX),A
         LD A,1
-        LD (CB_MEMORY),A
-        JR CB_RESET
-CB_ADVANCE:
-        LD HL,(CB_LIVE)
+        LD (CACHED),A
+        XOR A
+        RET
+ADVANCE:
+        LD HL,(LIVE)
         LD E,(HL)
         INC HL
         LD D,(HL)
@@ -127,155 +134,418 @@ CB_ADVANCE:
         LD DE,8
         OR A
         SBC HL,DE
-        LD (CB_LIVE),HL
-        LD HL,CB_INDEX
+        LD (LIVE),HL
+        LD HL,INDEX
         INC (HL)
-        JP CB_FIND
-CB_DISK:
-        LD HL,(CB_NAME)
+        JP FIND
+EXACT:  LD BC,(DU)
+        LD (SOURCEDU),BC
+        XOR A
+        LD (CACHED),A
+        CALL FILENAME
+        LD HL,EXT
+        LD DE,LY_FCB+9
+        LD BC,3
+        LDIR
+        JP RESET
+FILENAME:
+        LD HL,(NAME)
         LD DE,LY_FCB+1
         LD BC,8
         LDIR
-        LD HL,CB_EXT
-        LD BC,3
-        LDIR
-CB_RESET:
-        LD HL,0
-        LD (CB_POSITION),HL
-        LD A,(CB_MEMORY)
-        OR A
-        JR Z,CB_DRESET
-        XOR A
         RET
-CB_DRESET:
-        LD A,(CB_DU)
+SUFFIX: LD (ID),A
+        PUSH AF
+        LD HL,CACHENAME
+        LD DE,LY_FCB+1
+        LD BC,11
+        LDIR
+        POP AF
+        ADD A,'0'
+        LD (LY_FCB+7),A
+        RET
+CACHEOPEN:
+        LD BC,0
+        LD (DU),BC
+RESET:  LD A,(DU)
         INC A
         LD (LY_FCB),A
         LD HL,LY_FCB+12
         LD DE,LY_FCB+13
-        LD BC,23
+        LD BC,20
         LD (HL),0
         LDIR
         LD C,15
-        CALL CB_CALL
-        CP 255
-        JP Z,CB_BAD
+        CALL DISKCALL
+        CP 4
+        JP NC,BAD
         XOR A
         RET
-CB_NEXT:
-        LD A,(CB_MEMORY)
-        OR A
-        JR NZ,CB_MEMNEXT
-        LD B,4
-CB_READ:
-        PUSH BC
+NEXT:   LD B,4
+RLOOP:  PUSH BC
         PUSH HL
-        LD (CB_DMA),HL
+        LD (DMA),HL
         LD C,20
-        CALL CB_CALL
+        CALL DISKCALL
         POP HL
-        POP BC
         OR A
-        JR NZ,CB_EOF
-        LD DE,128
+        JR NZ,READERR
+        LD A,(CACHED)
+        OR A
+        JR Z,READOK
+        PUSH HL
+        LD BC,128
+        CALL CHECKSUM
+        LD HL,READIDX
+        INC (HL)
+        LD A,(HL)
+        CP 4
+        JR NZ,HEADEROK
+        LD HL,(CRC)
+        LD DE,(HCRC)
+        OR A
+        SBC HL,DE
+        JP NZ,POP2BAD
+HEADEROK:
+        POP HL
+        PUSH HL
+        LD HL,(LEFT)
+        DEC HL
+        LD (LEFT),HL
+        LD A,H
+        OR L
+        POP HL
+        JR NZ,READOK
+        PUSH HL
+        LD HL,(CRC)
+        LD DE,(FOOT+2)
+        OR A
+        SBC HL,DE
+        POP HL
+        JP NZ,POPBAD
+        LD C,16
+        CALL DISKCALL
+        CP 4
+        LD HL,(DMA)
+        JP NC,POPBAD
+READOK: LD DE,128
         ADD HL,DE
-        DJNZ CB_READ
+        POP BC
+        LD A,(CACHED)
+        OR A
+        JR Z,MORE
+        PUSH HL
+        LD HL,(LEFT)
+        LD A,H
+        OR L
+        POP HL
+        JR Z,PAD
+MORE:   DJNZ RLOOP
         XOR A
         RET
-CB_EOF:
+READERR:
+        POP BC
+        ; Only source EOF status 1 permits a short final block. Cache errors
+        ; and BDOS read errors 2+ never become successful partial input.
+        CP 1
+        JP NZ,BAD
+        LD A,(CACHED)
+        OR A
+        JP NZ,BAD
         LD A,B
         CP 4
-        JP Z,CB_BAD
-CB_PAD:
+        JP Z,BAD
+        JR PADLOOP
+PAD:    DEC B
+        JR Z,GOOD
+PADLOOP:
+        PUSH HL
+        LD D,H
+        LD E,L
+        INC DE
+        LD (HL),0
+        PUSH BC
+        LD BC,127
+        LDIR
+        POP BC
+        POP HL
         LD DE,128
         ADD HL,DE
-        DJNZ CB_PAD
+        DJNZ PADLOOP
+GOOD:   XOR A
+        RET
+POP2BAD: POP HL
+POPBAD: POP BC
+BAD:    LD A,255
+        OR A
+        RET
+; HL=validated source carrier, DE=facts. Save full carrier in a fresh file.
+RESERVE:
+        LD (CAND),HL
+        LD (FACTS),DE
+        LD BC,14
+        ADD HL,BC
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (CFOOT),DE
+        ; The entire declared allocation belongs to the provider, including
+        ; padding. Keep it intact; charge one extra 256-byte page for footer.
+        LD HL,(CFOOT)
+        LD DE,256
+        ADD HL,DE
+        JP C,BAD
+        EX DE,HL
+ALLOCOK:
+        LD HL,(FACTS)
+        LD BC,4
+        ADD HL,BC
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        LD HL,(CAND)
+        LD BC,14
+        ADD HL,BC
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        ; original exact file length = metadata offset + metadata length
+        LD HL,(CAND)
+        LD DE,30
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (MOFF),DE
+        LD HL,(CAND)
+        ADD HL,DE
+        LD DE,8
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD HL,(MOFF)
+        ADD HL,DE
+        LD DE,127
+        ADD HL,DE
+        LD A,L
+        AND 080H
+        LD L,A
+        LD (BYTES),HL
+        ADD HL,HL
+        LD A,H
+        LD (NRECS),A
+        LD HL,0FFFFH
+        LD (CRC),HL
+        LD HL,(CAND)
+        LD BC,512
+        CALL CHECKSUM
+        LD HL,(CRC)
+        LD (CHCRC),HL
+        LD HL,0FFFFH
+        LD (CRC),HL
+        LD HL,(CAND)
+        LD BC,(BYTES)
+        CALL CHECKSUM
+        LD HL,(CRC)
+        LD (CFOOT+2),HL
+        LD HL,(SOURCEDU)
+        LD (CFOOT+4),HL
+        LD A,'D'
+        LD (CFOOT+7),A
+        XOR A
+TRYID:  CALL SUFFIX
+        LD A,(ID)
+        LD (CLEANID),A
+        CALL ISLIVE
+        JR Z,SKIPID
+        CALL CACHEOPEN
+        JR NZ,NEWFILE
+        LD C,16
+        CALL DISKCALL
+        CP 4
+        JP NC,BAD
+SKIPID: LD A,(ID)
+        INC A
+        CP 5
+        JP Z,BAD
+        JR TRYID
+NEWFILE:
+        LD A,(ID)
+        LD (CFOOT+6),A
+        LD C,22
+        CALL DISKCALL
+        CP 4
+        JP NC,BAD
+        LD HL,BUFFER
+        LD DE,BUFFER+1
+        LD BC,127
+        LD (HL),0
+        LDIR
+        LD HL,CFOOT
+        LD DE,BUFFER
+        LD BC,8
+        LDIR
+        LD HL,MAGIC
+        LD DE,BUFFER+10
+        LD BC,8
+        LDIR
+        LD HL,(NAME)
+        LD BC,8
+        LDIR
+        LD HL,(CHCRC)
+        LD (BUFFER+26),HL
+        LD A,(NRECS)
+        LD (BUFFER+8),A
+        LD HL,BUFFER
+        LD (DMA),HL
+        LD C,21
+        CALL DISKCALL
+        OR A
+        JR NZ,WRITEFAIL
+        LD HL,(CAND)
+        LD (WPTR),HL
+WLOOP:  LD HL,(WPTR)
+        LD (DMA),HL
+        LD C,21
+        CALL DISKCALL
+        OR A
+        JR NZ,WRITEFAIL
+        LD HL,(WPTR)
+        LD DE,128
+        ADD HL,DE
+        LD (WPTR),HL
+        LD HL,NRECS
+        DEC (HL)
+        JR NZ,WLOOP
+        LD C,16
+        CALL DISKCALL
+        CP 4
+        JR NC,WRITEDEL
         XOR A
         RET
-CB_MEMNEXT:
-        PUSH HL
-        LD HL,(CB_POSITION)
-        LD DE,(CB_LENGTH)
-        OR A
-        SBC HL,DE
-        POP HL
-        JR NC,CB_BAD
-        LD BC,512
-CB_BYTE:
-        PUSH BC
-        PUSH HL
-        LD HL,(CB_POSITION)
-        LD A,H
-        OR A
-        JR NZ,CB_NORMAL
-        LD A,L
-        CP 14
-        JR Z,CB_ALOW
-        CP 15
-        JR NZ,CB_NORMAL
-        LD A,(CB_TOTAL+1)
-        JR CB_STORE
-CB_ALOW:
-        LD A,(CB_TOTAL)
-        JR CB_STORE
-CB_NORMAL:
-        LD DE,(CB_LENGTH)
-        OR A
-        SBC HL,DE
-        JR NC,CB_ZERO
-        LD HL,(CB_POSITION)
-        LD DE,(CB_HEADER)
-        OR A
-        SBC HL,DE
-        JR C,CB_PREFIX
-        LD HL,(CB_POSITION)
-        LD DE,512
-        OR A
-        SBC HL,DE
-        JR C,CB_ZERO
-        LD DE,(CB_HEADER)
-        ADD HL,DE
-        JR CB_FETCH
-CB_PREFIX:
-        LD HL,(CB_POSITION)
-CB_FETCH:
-        LD DE,(CB_DATA)
-        ADD HL,DE
+WRITEFAIL:
+        LD C,16
+        CALL DISKCALL
+WRITEDEL:
+        LD C,19                       ; only the file just created by this call
+        CALL DISKCALL
+        JP BAD
+; CRC16-CCITT, full padded records, also used for readback verification.
+CHECKSUM:
+        LD DE,(CRC)
+CRCLOOP:
         LD A,(HL)
-        JR CB_STORE
-CB_ZERO:
-        XOR A
-CB_STORE:
-        POP HL
-        LD (HL),A
+        XOR D
+        LD D,A
         INC HL
-        PUSH HL
-        LD HL,(CB_POSITION)
-        INC HL
-        LD (CB_POSITION),HL
-        POP HL
+        PUSH BC
+        LD B,8
+CRCBIT: SLA E
+        RL D
+        JR NC,CRCNEXT
+        LD A,D
+        XOR 010H
+        LD D,A
+        LD A,E
+        XOR 021H
+        LD E,A
+CRCNEXT: DJNZ CRCBIT
         POP BC
         DEC BC
         LD A,B
         OR C
-        JR NZ,CB_BYTE
+        JR NZ,CRCLOOP
+        LD (CRC),DE
+        RET
+PACK:   LD (REQ),DE
+        EX DE,HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        LD BC,512
+        OR A
+        SBC HL,BC
+        LD DE,(CAND)
+        OR A
+        SBC HL,DE
+        LD HL,HCRC
+        JR NZ,PACKLIVE
+        LD HL,CHCRC
+PACKLIVE:
+        PUSH HL
+        LD HL,(REQ)
+        LD DE,18
+        ADD HL,DE
+        LD C,(HL)
+        INC HL
+        LD B,(HL)
+        CALL FOOTLOC
+        DEC HL
+        DEC HL
+        EX DE,HL
+        POP HL
+        LD BC,10
+        LDIR
         XOR A
         RET
-CB_BAD:
-        LD A,255
+FOOTLOC:
+        ; BC=live/snapshot base; header+6 = descriptor offset
+        LD H,B
+        LD L,C
+        LD DE,6
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD H,B
+        LD L,C
+        ADD HL,DE
+        LD DE,8
         OR A
+        SBC HL,DE
         RET
-; The normal stream's adapters deliberately select A0. Explicit carrier I/O
-; uses the same core with the selected user and private DMA, restoring the
-; caller's complete context even after a failed open/read.
-CB_CALL:
+BOUND:  PUSH HL
+        CALL FOOTLOC
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        POP HL
+        OR A
+        SBC HL,DE
+        RET
+VERIFY: LD A,(CACHED)
+        OR A
+        RET Z
+        LD HL,(LEFT)
+        LD A,H
+        OR L
+        JP NZ,BAD
+        RET
+SOURCE: LD BC,(SOURCEDU)
+        RET
+DUREQ:  PUSH HL
+        EX DE,HL
+        LD A,(HL)
+        LD BC,0
+        CP 3
+        JR NZ,DUDONE
+        LD DE,18
+        ADD HL,DE
+        LD C,(HL)
+        INC HL
+        LD B,(HL)
+DUDONE: POP HL
+        RET
+DISKCALL:
         LD HL,(UB_DMA)
         PUSH HL
         LD HL,(UB_DRIVE)
         PUSH HL
-        LD A,(CB_DU+1)
+        LD A,(DU+1)
         LD (UB_USERNO),A
-        LD HL,(CB_DMA)
+        LD HL,(DMA)
         LD (UB_DMA),HL
         LD DE,LY_FCB
         CALL LY_BDOS
@@ -287,253 +557,134 @@ CB_CALL:
         LD A,C
         OR A
         RET
-CB_SOURCE:
-        LD BC,(CB_DU)
+ ; Post-commit continuation runs in scratch because disk I/O destroys CFG.
+ ; Discard the disposable CFG continuation before doing best-effort cleanup.
+FINISH: POP DE
+        LD (RESIMAGE),HL
+        CALL CLEAN
+        LD HL,(RESIMAGE)
+        LD DE,LY_RSX
+        LD BC,03F4H
+        LDIR
+        XOR A                         ; committed success; cleanup may be retried
         RET
-; HL=validated carrier, DE=normalized facts. Enlarge only a fresh candidate.
-CB_RESERVE:
-        LD (CB_CARRIER),HL
-        PUSH DE
-        CALL CB_SIZE
-        JR C,CB_RESBAD
-        LD HL,28+255
-        ADD HL,BC
-        JR C,CB_RESBAD
-        LD L,0
-        EX DE,HL
-        LD HL,(CB_CARRIER)
-        LD BC,14
-        ADD HL,BC
-        LD C,(HL)
-        INC HL
-        LD B,(HL)
-        EX DE,HL
-        ADD HL,BC
-        JR C,CB_RESBAD
-        EX DE,HL
-        POP HL
-        INC HL
-        INC HL
-        INC HL
-        INC HL
-        LD (HL),E
-        INC HL
-        LD (HL),D
+RESIMAGE: DW 0
+; Reclaim only unreferenced manager-owned slots. Live footers are the
+; authority; no active cache is removed, even during failed preparation.
+CLEAN:  XOR A
+CLEANLOOP:
+        LD (CLEANID),A
+        CALL ISLIVE
+        JR Z,CLEANNEXT
+CLEANFILE:
+        LD A,(CLEANID)
+        CALL SUFFIX
+        CALL CACHEOPEN
+        JR NZ,CLEANNEXT
+        LD HL,BUFFER
+        LD (DMA),HL
+        LD C,20
+        CALL DISKCALL
+        LD (CSTATUS),A
+        LD C,16
+        CALL DISKCALL
+        CP 4
+        JP NC,BAD
+        LD A,(CSTATUS)
+        CP 1
+        JP Z,CLEANNEXT                  ; empty foreign collision is not ours
+        OR A
+        JP NZ,BAD
+        CALL SIGNATURE
+        JR NZ,CLEANNEXT
+        LD A,(CLEANID)
+        LD HL,BUFFER+6
+        CP (HL)
+        JR NZ,CLEANNEXT
+        LD C,19
+        CALL DISKCALL
+        CP 255
+        JP Z,BAD
+CLEANNEXT:
+        LD A,(CLEANID)
+        INC A
+        CP 5
+        JP NZ,CLEANLOOP
         XOR A
         RET
-CB_RESBAD:
-        POP DE
-        JP CB_BAD
-; HL=carrier -> DE=used header length; BC=compacted complete carrier length.
-CB_SIZE:
-        PUSH HL
-        CALL CB_HSIZE
-        POP HL
-        PUSH DE
-        PUSH HL
-        LD DE,30
-        ADD HL,DE
-        LD E,(HL)
-        INC HL
-        LD D,(HL)
-        POP HL
-        PUSH HL
-        ADD HL,DE
-        LD DE,8
-        ADD HL,DE
-        LD C,(HL)
-        INC HL
-        LD B,(HL)
-        POP HL
-        PUSH HL
-        LD DE,12
-        ADD HL,DE
-        LD E,(HL)
-        INC HL
-        LD D,(HL)
-        EX DE,HL
-        ADD HL,BC
-        POP DE
-        POP BC
-        ADD HL,BC
-        PUSH HL
-        LD D,B
-        LD E,C
-        POP BC
-        RET
-CB_HSIZE:
-        LD DE,22
-        ADD HL,DE
-        LD E,(HL)
-        INC HL
-        LD D,(HL)
-        EX DE,HL
-        ADD HL,HL
-        LD DE,48
-        ADD HL,DE
-        EX DE,HL
-        RET
-; DE=snapshot request, including source DU at +23/+24. The cache is placed
-; below callable descriptors, leaving their existing live-header ABI intact.
-CB_PACK:
-        LD (CB_REQUEST),DE
-        EX DE,HL
-        LD E,(HL)
-        INC HL
-        LD D,(HL)
-        EX DE,HL
-        LD BC,512
+ISLIVE:
+        LD HL,(LY_SYS+084H)
+        LD (LIVE),HL
+        LD A,(LY_RSTA)
+        LD (CLEFT),A
+CLEANLIVE:
+        LD A,(CLEFT)
         OR A
-        SBC HL,BC
-        LD (CB_CARRIER),HL
-        CALL CB_SIZE
-        LD (CB_COMPACT),BC
-        LD (CB_HEADER),DE
-        LD HL,(CB_REQUEST)
-        LD DE,18
-        ADD HL,DE
-        LD E,(HL)
-        INC HL
-        LD D,(HL)
-        LD (CB_OUTPUT),DE
-        LD HL,(CB_REQUEST)
-        LD DE,4
-        ADD HL,DE
-        LD E,(HL)
-        INC HL
-        LD D,(HL)
-        LD HL,(CB_OUTPUT)
-        ADD HL,DE
-        EX DE,HL
-        LD HL,(CB_REQUEST)
-        LD BC,16
-        ADD HL,BC
-        LD A,(HL)
-        EX DE,HL
-CB_DESCSPACE:
-        OR A
-        JR Z,CB_FOOTER
-        LD BC,10
-        OR A
-        SBC HL,BC
-        DEC A
-        JR CB_DESCSPACE
-CB_FOOTER:
-        LD BC,8
-        OR A
-        SBC HL,BC
-        LD (CB_FOOT),HL
-        LD BC,(CB_COMPACT)
-        OR A
-        SBC HL,BC
-        LD (CB_DATA),HL
-        EX DE,HL
-        LD HL,(CB_CARRIER)
-        LD BC,(CB_HEADER)
-        LDIR
-        LD HL,(CB_CARRIER)
-        LD BC,512
-        ADD HL,BC
-        PUSH HL
-        LD HL,(CB_COMPACT)
-        LD BC,(CB_HEADER)
-        OR A
-        SBC HL,BC
-        LD B,H
-        LD C,L
-        POP HL
-        LDIR
-        LD HL,(CB_DATA)
-        LD DE,(CB_OUTPUT)
-        OR A
-        SBC HL,DE
-        EX DE,HL
-        LD HL,(CB_FOOT)
-        LD (HL),E
-        INC HL
-        LD (HL),D
-        INC HL
-        LD DE,(CB_COMPACT)
-        LD (HL),E
-        INC HL
-        LD (HL),D
-        INC HL
-        EX DE,HL
-        LD HL,(CB_REQUEST)
-        LD BC,23
-        ADD HL,BC
-        LD BC,2
-        LDIR
-        LD A,'R'
-        LD (DE),A
-        INC DE
-        LD A,'C'
-        LD (DE),A
-        XOR A
-        RET
-CB_DUREQ:
-        PUSH HL
-        EX DE,HL
-        LD A,(HL)
-        LD BC,0
-        CP 3
-        JR NZ,CB_DUDONE
-        LD DE,18
-        ADD HL,DE
-        LD C,(HL)
-        INC HL
-        LD B,(HL)
-CB_DUDONE:
-        POP HL
-        RET
-CB_BOUND:
-        ; HL is value-old base. The caller still copies the complete charged
-        ; allocation, but only provider-owned addresses are relocation targets.
-        PUSH HL
-        LD H,B
-        LD L,C
+        JR Z,NOTLIVE
+        LD BC,(LIVE)
+        CALL FOOTLOC
         LD DE,6
         ADD HL,DE
+        LD A,(CLEANID)
+        CP (HL)
+        RET Z
+        LD HL,(LIVE)
         LD E,(HL)
         INC HL
         LD D,(HL)
-        LD H,B
-        LD L,C
-        ADD HL,DE
+        EX DE,HL
         LD DE,8
         OR A
         SBC HL,DE
-        LD E,(HL)
-        INC HL
-        LD D,(HL)
-        LD H,B
-        LD L,C
-        ADD HL,DE
-        LD DE,14
-        ADD HL,DE
-        LD E,(HL)
-        INC HL
-        LD D,(HL)
-        POP HL
+        LD (LIVE),HL
+        LD HL,CLEFT
+        DEC (HL)
+        JR CLEANLIVE
+NOTLIVE:
+        LD A,1
         OR A
-        SBC HL,DE
         RET
-CB_TOTAL: DW 0
-CB_EXT: DB 'RSX'
-CB_MEMORY: DB 0
-CB_INDEX: DB 0
-CB_DU: DW 0
-CB_DMA: DW 0
-CB_NAME: DW 0
-CB_LIVE: DW 0
-CB_DATA: DW 0
-CB_LENGTH: DW 0
-CB_POSITION: DW 0
-CB_HEADER: DW 0
-CB_CARRIER: DW 0
-CB_REQUEST: DW 0
-CB_COMPACT: DW 0
-CB_OUTPUT: DW 0
-CB_FOOT: DW 0
+SIGNATURE:
+        LD HL,BUFFER+10
+        LD DE,MAGIC
+        LD B,8
+SIGLOOP:
+        LD A,(DE)
+        CP (HL)
+        RET NZ
+        INC HL
+        INC DE
+        DJNZ SIGLOOP
+        XOR A
+        RET
+CACHENAME: DB '$$RSX00 RSC'
+MAGIC: DB 'BCPMRSC1'
+CLEANID: DB 0
+CLEFT: DB 0
+CSTATUS: DB 0
+EXT: DB 'RSX'
+NAME: DW 0
+DU: DW 0
+SOURCEDU: DW 0
+DMA: DW 0
+INDEX: DB 0
+LIVE: DW 0
+CACHED: DB 0
+ID: DB 0
+CAND: DW 0
+FACTS: DW 0
+MOFF: DW 0
+BYTES: DW 0
+NRECS: DB 0
+WPTR: DW 0
+CRC: DW 0
+LEFT: DW 0
+REQ: DW 0
+HCRC: DW 0
+FOOT: DS 8
+CHCRC: DW 0
+CFOOT: DS 8
+READIDX: DB 0
+BUFFER: DS 128
         .DEPHASE
         END

@@ -61,7 +61,7 @@ FL_REOPEN:                              ; reopen saved stream name
         LD (FL_FCB),A
         LD HL,FL_FCB+12
         LD DE,FL_FCB+13
-        LD BC,23
+        LD BC,20                     ; preserve private sequential-only RSX jump at +33
         LD (HL),0
         LDIR
         LD DE,FL_FCB

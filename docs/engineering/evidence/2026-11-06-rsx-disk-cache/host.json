@@ -1,0 +1,315 @@
+{
+  "scope": "integrated RAM-profile Z80 manager with record-filesystem hooks; not native disk qualification",
+  "status": "PASS",
+  "removed_header_corruption_rejected": true,
+  "precommit_cleanup_error_functions": [
+    20,
+    16,
+    19
+  ],
+  "postcommit_cleanup_failure_deferred": true,
+  "cleanup_reuse_cycles": 8,
+  "relocated_workspace_bases": [
+    1029,
+    4660,
+    8209
+  ],
+  "overlapping_stateful_move_preserves_padding_and_external_pointer": true,
+  "helper_staging_read_failures": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "stateless_pristine_reconstruction": true,
+  "returning_disk_error_cases": [
+    {
+      "function": 22,
+      "occurrence": 1,
+      "operation": "load",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 21,
+      "occurrence": 1,
+      "operation": "load",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 21,
+      "occurrence": 2,
+      "operation": "load",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 21,
+      "occurrence": 3,
+      "operation": "load",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 21,
+      "occurrence": 4,
+      "operation": "load",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 21,
+      "occurrence": 5,
+      "operation": "load",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 21,
+      "occurrence": 6,
+      "operation": "load",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 21,
+      "occurrence": 7,
+      "operation": "load",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 21,
+      "occurrence": 8,
+      "operation": "load",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 21,
+      "occurrence": 9,
+      "operation": "load",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 21,
+      "occurrence": 10,
+      "operation": "load",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 16,
+      "occurrence": 1,
+      "operation": "load",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 20,
+      "occurrence": 1,
+      "operation": "load-retained",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 20,
+      "occurrence": 2,
+      "operation": "load-retained",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 20,
+      "occurrence": 3,
+      "operation": "load-retained",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 20,
+      "occurrence": 4,
+      "operation": "load-retained",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 20,
+      "occurrence": 5,
+      "operation": "load-retained",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 20,
+      "occurrence": 6,
+      "operation": "load-retained",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 20,
+      "occurrence": 7,
+      "operation": "load-retained",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 16,
+      "occurrence": 2,
+      "operation": "load-retained",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 15,
+      "occurrence": 4,
+      "operation": "unload",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 20,
+      "occurrence": 1,
+      "operation": "unload",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 20,
+      "occurrence": 2,
+      "operation": "unload",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 20,
+      "occurrence": 3,
+      "operation": "unload",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 20,
+      "occurrence": 4,
+      "operation": "unload",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 20,
+      "occurrence": 5,
+      "operation": "unload",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 20,
+      "occurrence": 6,
+      "operation": "unload",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 20,
+      "occurrence": 7,
+      "operation": "unload",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    },
+    {
+      "function": 16,
+      "occurrence": 1,
+      "operation": "unload",
+      "chain_unchanged": true,
+      "retry_pass": true,
+      "stateful_service_pass": true
+    }
+  ],
+  "corrupt_cache_offsets_rejected": [
+    0,
+    8,
+    128,
+    700
+  ],
+  "batchio_provider_allocation": 768,
+  "batchio_shared_manager": 1024,
+  "batchio_total_resident": 1792,
+  "batchio_saving_vs_merged": 1536,
+  "provider_footer_bytes": 10,
+  "extra_batchio_allocation_for_footer": 256,
+  "provider_owned_padding_preserved": true,
+  "extra_shared_resident_bytes": 0,
+  "unloaded_tpa_change": 0,
+  "total_emitted_image_bytes": 14814,
+  "helper_file_bytes": 2560,
+  "helper_actual_bytes": 1468,
+  "temporary_reserved_helper_bytes": 2560,
+  "temporary_workspace": "page-aligned caller-supplied bounds",
+  "emitted_code_sizes": {
+    "r3persist.bin": 107,
+    "r3slots.bin": 923,
+    "r3coord.bin": 884,
+    "r3cache.bin": 1468,
+    "r3mover.bin": 283,
+    "r3profile.bin": 998,
+    "r3sched.bin": 496,
+    "r3commit.bin": 1007,
+    "r3final.bin": 982,
+    "r3keep.bin": 678,
+    "r3drop.bin": 975,
+    "r3snapshot.bin": 582,
+    "r3metadata.bin": 974,
+    "r3kpre.bin": 908,
+    "r3carrier.bin": 683,
+    "r3ovload.bin": 58,
+    "r3plan.bin": 583,
+    "r3entry.bin": 766,
+    "r3kctx.bin": 479,
+    "rsxio.bin": 242,
+    "rsxresolver.bin": 738
+  },
+  "disk_free_query_provenance": true,
+  "cache_namespace_exhaustion_safe": true,
+  "limitations": [
+    "CRC16 detects accidental mismatch, not malicious replacement",
+    "unchecked RAM profile only; no ROM/checked profile qualification",
+    "filesystem hooks do not establish physical-media crash atomicity or fatal BDOS error recovery"
+  ],
+  "executable_sha256": {
+    "R3PACK.RSX": "ec85509eae0017c56caefbebced04b6e75d31623b17843638f1b1d031e9bb299",
+    "R3CACHE.RSX": "1b70addf7fb2b1e8da7702cd6b634246151ecc3d0eb31a70d883a0ec6036b800",
+    "r3entry.bin": "8027a337195a629eb0bd0adf3d4dc86efbff104b550c2bc421f68fd402639483"
+  }
+}

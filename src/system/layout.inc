@@ -68,3 +68,5 @@ LY_PDSS         EQU     LY_SYS-LY_HIST  ; current protected-data size
 LY_COMSTART     EQU     LY_SYS+074H     ; protected COM handoff state
 LY_COMDONE      EQU     LY_SYS+003H     ; protected COM return entry
 LY_FCB          EQU     LY_FILE+109     ; shared filename FCB address
+  ; During RSX transactions, its unused random-record bytes +33..35 hold a
+  ; JP to a scratch-only worker. Shared streams use sequential I/O exclusively.

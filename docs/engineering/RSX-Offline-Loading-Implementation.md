@@ -4,6 +4,10 @@
 [proposal](RSX-Offline-Loading-Proposal.md). This is a v1.0.1 maintenance
 candidate; no release package is replaced and no PR is merged by this work.
 
+> Historical RAM-capsule implementation, superseded by the
+> [A0 disk-cache implementation](RSX-Disk-Cache-Implementation.md).
+> Its RAM cost and retained representation below describe the earlier change.
+
 ## Result and boundaries
 
 `RSX LOAD B3:STATEFUL.RSX` loads from that exact drive/user. The original
