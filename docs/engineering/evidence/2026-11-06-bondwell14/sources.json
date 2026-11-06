@@ -1,0 +1,74 @@
+{
+  "source_url": "http://www.retroarchive.org/hardware/bondwell/bw14dsks.zip",
+  "download_date": "2026-11-06",
+  "archive_sha256": "94e68d68c239135f1b29abe63df3dc529376392208eb7b1ff3a070afc92515e8",
+  "archive_bytes": 682077,
+  "container": "CopyQM 3.24 (CQ header despite IMG suffix)",
+  "images": [
+    {
+      "filename": "CSTAR.IMG",
+      "bytes": 368974,
+      "sha256": "fa4ae49571a3303592760311a34b97fe699814a7dcf5fdacb4b0456fa4715198",
+      "sha1": "bdf5bc01f2eca7a5b264df7a5367622270f17631",
+      "mame_filename": "calcstar.cqm"
+    },
+    {
+      "filename": "DSTAR.IMG",
+      "bytes": 368974,
+      "sha256": "e923f32a77042f0c2af388e17775e10ed992d8dd6478c80623692cbc1b962695",
+      "sha1": "13298801950eb3fdbbb4b2f9604b7b5cb0619629",
+      "mame_filename": "datastar.cqm"
+    },
+    {
+      "filename": "DSTARFIX.IMG",
+      "bytes": 368974,
+      "sha256": "64b4e31a732565a85ae174557f23060022a55e86d4d1c62f4a4186265f02c9d1",
+      "sha1": "f61c14a3cb4f4a36a53c8c343d236983db1c5506",
+      "mame_filename": "datastar_v141c.cqm"
+    },
+    {
+      "filename": "RSTAR1.IMG",
+      "bytes": 368974,
+      "sha256": "25deadb9e9df927100caca0649bbdce11c29e1a85ef4713951dfc8d1fee3da05",
+      "sha1": "af55804ff8b59d7ce4782f7c7ba31ad6a8eeca89",
+      "mame_filename": "reportstar_installation.cqm"
+    },
+    {
+      "filename": "RSTAR2.IMG",
+      "bytes": 368974,
+      "sha256": "3e3721f15b54ba8407c261bebbd13829ae16927d312d201c68407586085456f8",
+      "sha1": "547ccb4401d59d6691790a9b7465a5bdff102207",
+      "mame_filename": "reportstar.cqm"
+    },
+    {
+      "filename": "SYSTEM1.IMG",
+      "bytes": 368974,
+      "sha256": "f6a3726dae6f5e602184574860155f7f5522eb8f33612847fa78de481f35c719",
+      "sha1": "cc5fcbf445281625bf9f670d7bbc1f88e0b0f5af",
+      "mame_filename": "cpm3sys1.cqm"
+    },
+    {
+      "filename": "SYSTEM2.IMG",
+      "bytes": 368974,
+      "sha256": "305e3a410477d2e2112ebed606b574568c566d1e338b7838f39f843acf367a29",
+      "sha1": "3886f19a73f4f83db524df5b217f86dfa86bd8c4",
+      "mame_filename": "cpm3sys2.cqm"
+    },
+    {
+      "filename": "WSTAR1.IMG",
+      "bytes": 368974,
+      "sha256": "36e361cdf72594d87f696831e704ebef36ab5d83996b783702156ac73a87140f",
+      "sha1": "2fcd919a8c32acbb3d66d2eedba5da3fe587d400",
+      "mame_filename": "wordstar_installation.cqm"
+    },
+    {
+      "filename": "WSTAR2.IMG",
+      "bytes": 368974,
+      "sha256": "1a43399ccf6dd7e8eb9b7e6e1880e655cc114b1d7327d179a4ca11b78e06fec0",
+      "sha1": "b647902c851a7a037bb7f6ceb8d37e018d25f9fc",
+      "mame_filename": "wordstar.cqm"
+    }
+  ],
+  "mame_manifest_blob_sha1": "b1c67e46fc0f053e8a3b947857bf62664d03bbd1",
+  "mame_manifest_url": "https://github.com/mamedev/mame/blob/master/hash/bw14.xml"
+}
