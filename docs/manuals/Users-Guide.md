@@ -233,7 +233,7 @@ RSX LOAD ANSI
 RSX LIST
 ```
 
-M4SCRN is already loaded. On cpmsim with a suitable ANSI host terminal, load ANSISCRN before ANSI. Keep the host window at least 80 columns by 24 rows with a normal full-screen scrolling region; the distributed launcher does not enforce it. If a menu is garbled after a resize, exit normally, enlarge the window and restart the utility to redraw. Use VT52 instead when the application's terminal installation expects VT52. ADM3A, VT52 and ANSI have dedicated ADMTST, VT52TST and ANSITST exercises. Visual, keyboard and audible checks are separate observations.
+M4SCRN is already loaded. On cpmsim with a suitable ANSI host terminal, load ANSISCRN before ANSI. Keep the host window at least 80 columns by 24 rows with a normal full-screen scrolling region; the locked 1.0 launcher does not enforce it. The [v1.0.1 source launch check](../platform/CPMSIM-INSTALLATION.md#v101-source-launch-check) refuses undersized cpmsim windows at launch. If a menu is garbled after a resize, exit normally, enlarge the window and restart the utility to redraw. Use VT52 instead when the application's terminal installation expects VT52. ADM3A, VT52 and ANSI have dedicated ADMTST, VT52TST and ANSITST exercises. Visual, keyboard and audible checks are separate observations.
 
 TED requires an 80-by-24 backend and ANSI personality and does not load them itself. Use its [reference entry](Command-and-Utilities-Reference.md#ted) before starting. ANSI provides a defined VT100-compatible subset, not every VT100 facility. A general terminal-capability database and arbitrary application hardware access are outside this mechanism.
 

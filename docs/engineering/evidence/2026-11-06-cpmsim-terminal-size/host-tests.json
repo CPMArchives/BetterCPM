@@ -1,0 +1,66 @@
+{
+  "status": "PASS",
+  "sizes": [
+    {
+      "size": [
+        77,
+        20
+      ],
+      "result": "REFUSED; emulator not executed"
+    },
+    {
+      "size": [
+        79,
+        24
+      ],
+      "result": "REFUSED; emulator not executed"
+    },
+    {
+      "size": [
+        80,
+        23
+      ],
+      "result": "REFUSED; emulator not executed"
+    },
+    {
+      "size": [
+        100,
+        20
+      ],
+      "result": "REFUSED; emulator not executed"
+    },
+    {
+      "size": [
+        40,
+        24
+      ],
+      "result": "REFUSED; emulator not executed"
+    },
+    {
+      "size": [
+        0,
+        0
+      ],
+      "result": "REFUSED; emulator not executed"
+    },
+    {
+      "size": [
+        80,
+        24
+      ],
+      "result": "LAUNCHED; arguments/cwd/exit status preserved"
+    },
+    {
+      "size": [
+        100,
+        40
+      ],
+      "result": "LAUNCHED; arguments/cwd/exit status preserved"
+    }
+  ],
+  "resize_retry": "PASS",
+  "redirected_output": "PASS",
+  "unavailable_size": "REFUSED",
+  "generated_ram_and_rom_launchers": "PASS",
+  "environment_dimensions_ignored": true
+}
