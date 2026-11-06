@@ -32,7 +32,7 @@ milestone. Use matching System and Utilities packages from this release.
 
 ## Optional format supplement
 
-The System catalogue retains 108 definitions. The Utilities Disk supplies
+The System catalogue retains 108 definitions. The companion Utilities Disk supplies
 SUPPDISK.FDF, SUPPDISK.FDB and SUPPDISK.TXT with four additional definitions:
 CPC System, CPC Data, PCW 180K and Bondwell 14. Importing all four gives
 112 catalogue entries. These use the existing checksum capacity and BIOS layout.

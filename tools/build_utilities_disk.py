@@ -31,9 +31,7 @@ COMPONENTS.update({'TED.COM':'build/utilities/TED.COM','TED.TXT':'src/distributi
 COMPONENTS['SEARCH.COM']='build/utilities/SEARCH.COM'
 COMPONENTS['CRCKSUM.COM']='build/utilities/CRCKSUM.COM'
 COMPONENTS['MD5SUM.COM']='build/utilities/MD5SUM.COM'
-COMPONENTS.update({'SUPPDISK.FDF':'metadata/supplemental/1.0.1/SUPPDISK.FDF',
-                   'SUPPDISK.FDB':'metadata/supplemental/1.0.1/SUPPDISK.FDB',
-                   'SUPPDISK.TXT':'src/distribution/SUPPDISK.TXT'})
+
 PENDING=['TED final paired-media qualification pending','DASM tool set final release qualification pending','SEARCH final paired-media qualification pending','CRCKSUM final paired-media qualification pending','MD5SUM final paired-media qualification pending']
 sha=lambda data:hashlib.sha256(data).hexdigest()
 

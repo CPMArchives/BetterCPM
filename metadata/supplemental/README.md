@@ -2,7 +2,7 @@
 
 ## Release 1.0.1
 
-The release supplement is [1.0.1/SUPPDISK.FDF](1.0.1/SUPPDISK.FDF) and
+The release supplement, shipped on the companion Utilities disk, is [1.0.1/SUPPDISK.FDF](1.0.1/SUPPDISK.FDF) and
 [1.0.1/SUPPDISK.FDB](1.0.1/SUPPDISK.FDB): CPCSYS, CPCDATA, PCW and BW14.
 Importing these four into the standard 108-entry catalogue gives 112 entries.
 It retains the existing 32-byte checksum capacity and BIOS layout. ATONSS,
