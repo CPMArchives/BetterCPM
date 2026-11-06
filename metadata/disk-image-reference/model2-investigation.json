@@ -312,10 +312,12 @@
   ],
   "archive": {
     "filename": "BetterCPM-ModelII-Reference-Investigation-2026-11-06.zip",
-    "size_bytes": 939789,
-    "sha256": "890d02fae4ab0f395288037f7ead2bf2849acfcbf292d1bf17989f34926413b8",
+    "size_bytes": 3987778,
+    "sha256": "efc4f61ed43e4376090904c83b7a0d8abaabf54f009d78b611d762a640be20bc",
     "access": "Maintainer-held reference archive",
-    "library_file_id": "libfile_faf9e3f6f2588191bf4bf2e19fdce831"
+    "library_file_id": "libfile_faf9e3f6f2588191bf4bf2e19fdce831",
+    "library_version": 1
   },
-  "guest_receipt": "docs/engineering/evidence/2026-11-06-model2/cpmsim-results.json"
+  "guest_receipt": "docs/engineering/evidence/2026-11-06-model2/cpmsim-results.json",
+  "evidence_commit": "523c00d03787e73ed513f1c51c3105f34ee0e525"
 }
