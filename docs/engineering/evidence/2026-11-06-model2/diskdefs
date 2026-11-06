@@ -20,3 +20,14 @@ diskdef m2ds
  offset 11520
  os 2.2
 end
+diskdef pt2ss
+ seclen 512
+ tracks 75
+ sectrk 16
+ blocksize 2048
+ maxdir 128
+ skew 0
+ boottrk 0
+ offset 11520
+ os 2.2
+end

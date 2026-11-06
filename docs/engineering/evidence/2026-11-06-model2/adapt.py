@@ -21,8 +21,11 @@ def inspect(original):
     if not sides:raise ValueError('expected 77-cylinder single- or double-sided image')
     if sorted((t['cylinder'],t['head']) for t in tracks)!=[(c,h) for c in range(77) for h in range(sides)]:
         raise ValueError('unexpected cylinder/head coverage')
+    data_size=next(t['size'] for t in tracks if t['cylinder'] or t['head'])
+    if data_size not in (512,1024) or (data_size==512 and sides!=1):
+        raise ValueError('unsupported data-surface profile')
     for t in tracks:
-        expected=(0,128,list(range(1,27))) if t['cylinder']==t['head']==0 else (3,1024,list(range(1,9)))
+        expected=(0,128,list(range(1,27))) if t['cylinder']==t['head']==0 else (3,data_size,list(range(1,8192//data_size+1)))
         if (t['mode'],t['size'],sorted(t['ids']))!=expected:raise ValueError('unsupported recording/sector profile')
     return comment,tracks
 

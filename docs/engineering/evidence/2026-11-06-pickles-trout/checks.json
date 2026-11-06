@@ -1,0 +1,19 @@
+{
+  "status": "pass",
+  "date": "2026-11-06",
+  "scope": "catalogue and host qualification tooling; no OS executable source changes",
+  "passed": [
+    "three parallel P&T guest trials; 74 sequential files per image; block 299 write/read-back",
+    "BDOS 33 record 256 before and after probe writes on both masters; one-byte mismatch negative controls",
+    "five ATON/Lifeboat guest regressions; malformed sixth image remains rejected",
+    "three P&T and five ATON/Lifeboat adapter round trips, reserved-byte/padding/length/duplicate-ID rejection",
+    "test_fdf_v1_compiler",
+    "test_fdb_v1_reader",
+    "test_boot_surface including PT2SS native compile/export and existing editor/refusal cases",
+    "inspect.py: three embedded DPBs; simple-reader refusal of data beyond sequential EOF"
+  ],
+  "qualification_system": "Identical prebuilt cpmsim RAM qualification System from merged PR632; hash pinned in cpmsim-results.json",
+  "system_preparation_receipt": "../2026-11-06-model2/system-preparation.json",
+  "user_working_disk": "PT-Working-Boot.IMD excluded from trials and unchanged",
+  "user_working_disk_sha256": "9994f072fb698258386850dd2a4b07f939423ddecf1aeb7673dc3eba759bc91d"
+}
