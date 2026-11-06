@@ -1,0 +1,2872 @@
+[
+  {
+    "artifact": {
+      "bytes": 9653,
+      "name": "RCP.CPX",
+      "sha256": "f27771379e3056f3b6d55d1af0c8eac66a8ccecc1e701de06e7d8ac82346b418"
+    },
+    "component": "utility:RCP",
+    "final_report_sha256": "033fb9c204f871518084a75e670ccff105b36bddbbedee5e28a38dd6f798f32a",
+    "identity": {
+      "revision": 18,
+      "version": "1.0"
+    },
+    "input_record": {
+      "assigned_identity": {
+        "revision": 18,
+        "version": "1.0"
+      },
+      "fingerprint": "7c6d325cb9813a556e0a8778122db0947831a7cbfb5f238155873d2bd03b86a0",
+      "inputs": {
+        "component": "utility:RCP",
+        "configuration": {
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        },
+        "files": {
+          "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
+          "src/cpx/copy-backup.inc": "54beefef80a3ce0a605d8617ec15500cc6cb1e4f4b77986bb8dcd9a3ef9f22cd",
+          "src/cpx/copy-batch.inc": "4027398e7cbcdab9abb6d1a3ecd1b2a0b1b5391fae1e6ec131b674b87b87b4ae",
+          "src/cpx/copy-dest.inc": "19692da3e65e52e2a1f15b97feca194df8525a4abf8ee5ea37c3251d97479792",
+          "src/cpx/copy-error.inc": "853171d42ffd9c8d110748262469ae3e164d3ef774f73aa66c771a4e77873094",
+          "src/cpx/copy-options.inc": "cf31c89c584cce99050beff55c61342fc77b7416c534e59b879bb4dcbd61e880",
+          "src/cpx/copy-rename.inc": "3e5147aa28098f741a2f4f726027cd0aa713980618a73e4b2ffee413c9962c74",
+          "src/cpx/copy-report.inc": "2efbcd502dcbc83338b0d2f6666f63123a6f0743b453b0626ffec8b62621811a",
+          "src/cpx/copy-scope.inc": "9931cedf9340ab96f79d76431e854ed343dc21c4300bea751bd6e6ba784152d6",
+          "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+          "src/cpx/copy-verify.inc": "e0349132a007d9aa983400d7b8db1c2df76268fa89cad96856a27011fb7e2223",
+          "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+          "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+          "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
+          "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+          "src/cpx/help.inc": "3976b1269305f988c53b2e5752ba600b8e982df3b85168e9412d5a8de38505fc",
+          "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
+          "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+          "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+          "src/cpx/ver-banner.inc": "341cacaf5a55264a54681e1c25b084a028aa9db8b0e027033a908150333a1a09",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
+          "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
+          "src/utilities/dir-options.inc": "307b6e05fccb37e3dd7ba76cac159ab3cf1b5e306ea9c0486ff735a5850da998",
+          "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
+          "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
+          "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_cpx_module.py": "54b9ab080c5e02784f2e90e8c5086f1c3efecc67c808bd7d02183c86e34df25b",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_rcp_cpx.py": "be2027561d5660ea43e63f75f4c66e12a6b2137badc1c7fbc26c85da4d5589d5",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5"
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "Resident Command Package",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "proposal": {
+      "candidate_artifact_sha256": "49fe514776eab071d5761f458e592241b82c488beba73b0d9190e17e2653ebb5",
+      "candidate_identity": {
+        "revision": 17,
+        "version": "1.0"
+      },
+      "candidate_input_fingerprint": "7c6d325cb9813a556e0a8778122db0947831a7cbfb5f238155873d2bd03b86a0",
+      "candidate_report_sha256": "ced79dba790d04677ebed5d2de6db39aaa094f4621dfc5131cd36e893182a02f",
+      "component": "utility:RCP",
+      "executable_changed": true,
+      "proposed_identity": {
+        "revision": 18,
+        "version": "1.0"
+      },
+      "reference_artifact_sha256": "77e7e9b1de2dc9a478e32cbe4dfe47ce25596c230e592b3ac24af79593b3d3b8",
+      "reference_identity": {
+        "revision": 17,
+        "version": "1.0"
+      },
+      "reference_report_sha256": "eab24ac9207de09a6e7e80805f486702b3d6bb735b91f927bf7981b5f9639601",
+      "schema": 1,
+      "selected_inputs_changed": true,
+      "status": "revision-proposal; not acceptance",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      }
+    },
+    "provenance": {
+      "repository_commit": "16f9a479 (working changes)"
+    },
+    "schema": 1,
+    "status": "explicit revision assignment; not qualification",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "z80pack"
+    }
+  },
+  {
+    "artifact": {
+      "bytes": 9653,
+      "name": "RCP.CPX",
+      "sha256": "f27771379e3056f3b6d55d1af0c8eac66a8ccecc1e701de06e7d8ac82346b418"
+    },
+    "component": "utility:RCP",
+    "final_report_sha256": "8a34cf082bb058bd58530615bee62c706df3a648d58d5953afc98d2705da1de0",
+    "identity": {
+      "revision": 18,
+      "version": "1.0"
+    },
+    "input_record": {
+      "assigned_identity": {
+        "revision": 18,
+        "version": "1.0"
+      },
+      "fingerprint": "3dd9eccbcf47803c06b3356635749f295ea7665aa740dc57d3a76ccaf7d7f3b1",
+      "inputs": {
+        "component": "utility:RCP",
+        "configuration": {
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        },
+        "files": {
+          "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
+          "src/cpx/copy-backup.inc": "54beefef80a3ce0a605d8617ec15500cc6cb1e4f4b77986bb8dcd9a3ef9f22cd",
+          "src/cpx/copy-batch.inc": "4027398e7cbcdab9abb6d1a3ecd1b2a0b1b5391fae1e6ec131b674b87b87b4ae",
+          "src/cpx/copy-dest.inc": "19692da3e65e52e2a1f15b97feca194df8525a4abf8ee5ea37c3251d97479792",
+          "src/cpx/copy-error.inc": "853171d42ffd9c8d110748262469ae3e164d3ef774f73aa66c771a4e77873094",
+          "src/cpx/copy-options.inc": "cf31c89c584cce99050beff55c61342fc77b7416c534e59b879bb4dcbd61e880",
+          "src/cpx/copy-rename.inc": "3e5147aa28098f741a2f4f726027cd0aa713980618a73e4b2ffee413c9962c74",
+          "src/cpx/copy-report.inc": "2efbcd502dcbc83338b0d2f6666f63123a6f0743b453b0626ffec8b62621811a",
+          "src/cpx/copy-scope.inc": "9931cedf9340ab96f79d76431e854ed343dc21c4300bea751bd6e6ba784152d6",
+          "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+          "src/cpx/copy-verify.inc": "e0349132a007d9aa983400d7b8db1c2df76268fa89cad96856a27011fb7e2223",
+          "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+          "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+          "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
+          "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+          "src/cpx/help.inc": "3976b1269305f988c53b2e5752ba600b8e982df3b85168e9412d5a8de38505fc",
+          "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
+          "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+          "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+          "src/cpx/ver-banner.inc": "341cacaf5a55264a54681e1c25b084a028aa9db8b0e027033a908150333a1a09",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
+          "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
+          "src/utilities/dir-options.inc": "307b6e05fccb37e3dd7ba76cac159ab3cf1b5e306ea9c0486ff735a5850da998",
+          "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
+          "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
+          "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_cpx_module.py": "54b9ab080c5e02784f2e90e8c5086f1c3efecc67c808bd7d02183c86e34df25b",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_rcp_cpx.py": "be2027561d5660ea43e63f75f4c66e12a6b2137badc1c7fbc26c85da4d5589d5",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5"
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "Resident Command Package",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "trs80gp"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "proposal": {
+      "candidate_artifact_sha256": "49fe514776eab071d5761f458e592241b82c488beba73b0d9190e17e2653ebb5",
+      "candidate_identity": {
+        "revision": 17,
+        "version": "1.0"
+      },
+      "candidate_input_fingerprint": "3dd9eccbcf47803c06b3356635749f295ea7665aa740dc57d3a76ccaf7d7f3b1",
+      "candidate_report_sha256": "1047720c26719e5f5c6be45c33ced0b2fd80102468344c3447a89a1312966389",
+      "component": "utility:RCP",
+      "executable_changed": true,
+      "proposed_identity": {
+        "revision": 18,
+        "version": "1.0"
+      },
+      "reference_artifact_sha256": "77e7e9b1de2dc9a478e32cbe4dfe47ce25596c230e592b3ac24af79593b3d3b8",
+      "reference_identity": {
+        "revision": 17,
+        "version": "1.0"
+      },
+      "reference_report_sha256": "8c1632425d57fcd4bfe6446279fccb821336d2fa3370ab330b6908a8b510701d",
+      "schema": 1,
+      "selected_inputs_changed": true,
+      "status": "revision-proposal; not acceptance",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "trs80gp"
+      }
+    },
+    "provenance": {
+      "repository_commit": "16f9a479 (working changes)"
+    },
+    "schema": 1,
+    "status": "explicit revision assignment; not qualification",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "trs80gp"
+    }
+  },
+  {
+    "artifact": {
+      "bytes": 11635,
+      "name": "DIR.COM",
+      "sha256": "c9feb8bd6e2794d8b25dc87c6d0702cceb46ea3441240f58545b34afbde46b0a"
+    },
+    "component": "utility:DIR",
+    "final_report_sha256": "7f07ed7a2d410bdc287f67e19c9f223c75ebb54969a2fa6dea513c90d3b2e741",
+    "identity": {
+      "revision": 14,
+      "version": "1.0"
+    },
+    "input_record": {
+      "assigned_identity": {
+        "revision": 14,
+        "version": "1.0"
+      },
+      "fingerprint": "f579262f4df1f70aa1f67faff2870d54d6d6dd665f781af4b9fd0551cc16c1a2",
+      "inputs": {
+        "component": "utility:DIR",
+        "configuration": {
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        },
+        "files": {
+          "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
+          "src/bdos/versions.inc": "6560176573c7d4fd2b30374b898e1cced22dcb811d795eb5ad77341f226e4172",
+          "src/cpx/copy-backup.inc": "54beefef80a3ce0a605d8617ec15500cc6cb1e4f4b77986bb8dcd9a3ef9f22cd",
+          "src/cpx/copy-batch.inc": "4027398e7cbcdab9abb6d1a3ecd1b2a0b1b5391fae1e6ec131b674b87b87b4ae",
+          "src/cpx/copy-dest.inc": "19692da3e65e52e2a1f15b97feca194df8525a4abf8ee5ea37c3251d97479792",
+          "src/cpx/copy-error.inc": "853171d42ffd9c8d110748262469ae3e164d3ef774f73aa66c771a4e77873094",
+          "src/cpx/copy-options.inc": "cf31c89c584cce99050beff55c61342fc77b7416c534e59b879bb4dcbd61e880",
+          "src/cpx/copy-rename.inc": "3e5147aa28098f741a2f4f726027cd0aa713980618a73e4b2ffee413c9962c74",
+          "src/cpx/copy-report.inc": "2efbcd502dcbc83338b0d2f6666f63123a6f0743b453b0626ffec8b62621811a",
+          "src/cpx/copy-scope.inc": "9931cedf9340ab96f79d76431e854ed343dc21c4300bea751bd6e6ba784152d6",
+          "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+          "src/cpx/copy-verify.inc": "e0349132a007d9aa983400d7b8db1c2df76268fa89cad96856a27011fb7e2223",
+          "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+          "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+          "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
+          "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+          "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
+          "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+          "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+          "src/cpx/ver-banner.inc": "341cacaf5a55264a54681e1c25b084a028aa9db8b0e027033a908150333a1a09",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
+          "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
+          "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
+          "src/utilities/common/dirmetrics.inc": "81d58f2f481118819c36a8997fcbf41c56db49e5ab2ec6de8da290ce271a7f6d",
+          "src/utilities/common/diskfree.inc": "9a371d2506464c9b076bd23fd6d3ca254519b57d98a3fb69054c2d316883326e",
+          "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
+          "src/utilities/common/eraraw.inc": "69cf5d75ca9ccb3364847ff3c601d0ba38157b85bd55df3070d6640194cb9813",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/pipinput.inc": "6bbcfad92995a5be1997c19b8093645feba55a3c825f648445c0492104c4d8af",
+          "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/common/reninput.inc": "282aaf32ae572a9ae5289f03dcacb4333b82041806228a226aa9b2b533dffe99",
+          "src/utilities/common/sysgeninput.inc": "0902c666327bb719d2cfc6f1ef61cdb167b1248114da3e2e3af71d6425228623",
+          "src/utilities/common/ui/append.inc": "340e1a8d24992067d7f57613213fd18c3acac96940696933beea7d26658d175e",
+          "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b",
+          "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+          "src/utilities/common/ui/choiceerror.inc": "3b27714d70bd4b1cbbefe6f4bc5dfcdde5db53231e6eb426d85c453638fb0846",
+          "src/utilities/common/ui/confirm.inc": "1b841462ada57b565084da9b41bc5d7662e3d939e8c5731b4f2767bbbd214529",
+          "src/utilities/common/ui/default.inc": "64a602938d4000de77e31c7b2f4575198141fb7c590374e323ca98b3c31ab2ae",
+          "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+          "src/utilities/common/ui/format.inc": "3b037c07453f5e873864a8f6244ea44af438d05a358c186c64ff0fe9a1cbef5c",
+          "src/utilities/common/ui/inline.inc": "029a45b0f93ce8dd101c4b9d781d25a4ef6a8edb5f8d729df471827a8f0c3f13",
+          "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+          "src/utilities/common/ui/prompt.inc": "2d90d2f468687ae0ada66c043dbb2249020323da943ab5f4fb852aa53439845a",
+          "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
+          "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/cpxvers.inc": "a12a5e1054a4c15b25a222ea31de98f72b521ea85ee5a013611de136b1bd39a0",
+          "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
+          "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
+          "src/utilities/dir-options.inc": "307b6e05fccb37e3dd7ba76cac159ab3cf1b5e306ea9c0486ff735a5850da998",
+          "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
+          "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
+          "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
+          "src/utilities/rsxvers.inc": "e4ecd8d57a0ede0766e6d503ef1831a53bfa7deb3ecb8f5edf9a425bf36a105d",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_rcp_transients.py": "7b856c335df4abc59d94e4098e235fa8bfd1b2122bd92232f062b6800f64cac1",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
+          "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
+        },
+        "identity_dependencies": {
+          "utility:CLS": {
+            "api_version": null,
+            "description": "Clear Screen",
+            "display_format": "numeric",
+            "revision": 11,
+            "version": "1.0"
+          },
+          "utility:COPY": {
+            "api_version": null,
+            "description": "File Copying",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          },
+          "utility:DIR": {
+            "api_version": null,
+            "description": "Directory Listing",
+            "display_format": "numeric",
+            "version": "1.0"
+          },
+          "utility:MOVE": {
+            "api_version": null,
+            "description": "File Moving",
+            "display_format": "numeric",
+            "revision": 4,
+            "version": "1.0"
+          },
+          "utility:RCP": {
+            "api_version": null,
+            "description": "Resident Command Package",
+            "display_format": "numeric",
+            "revision": 18,
+            "version": "1.0"
+          },
+          "utility:USER": {
+            "api_version": null,
+            "description": "User Area Selection",
+            "display_format": "numeric",
+            "revision": 10,
+            "version": "1.0"
+          },
+          "utility:VER": {
+            "api_version": null,
+            "description": "System Version Information",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          }
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "Directory Listing",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "proposal": {
+      "candidate_artifact_sha256": "b5aae0991d17bdbe7127540761d8c25e6d799c6a10d1fdcbf0e9c12a0d7974d2",
+      "candidate_identity": {
+        "revision": 13,
+        "version": "1.0"
+      },
+      "candidate_input_fingerprint": "f579262f4df1f70aa1f67faff2870d54d6d6dd665f781af4b9fd0551cc16c1a2",
+      "candidate_report_sha256": "f80b56f86c5129f46e7d553f60f2e54d962d967a1d17fa81d0e1c9172d6b2936",
+      "component": "utility:DIR",
+      "executable_changed": true,
+      "proposed_identity": {
+        "revision": 14,
+        "version": "1.0"
+      },
+      "reference_artifact_sha256": "f4ff85d662d0ef859779486cb11e3fc7bb75064c42605a2f2acddd8e5e2ae78a",
+      "reference_identity": {
+        "revision": 13,
+        "version": "1.0"
+      },
+      "reference_report_sha256": "0e40afce99bf7d720b13f29505c9fa3257aa1ddecf33396b0eb25de88c54cfc3",
+      "schema": 1,
+      "selected_inputs_changed": true,
+      "status": "revision-proposal; not acceptance",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      }
+    },
+    "provenance": {
+      "repository_commit": "16f9a479 (working changes)"
+    },
+    "schema": 1,
+    "status": "explicit revision assignment; not qualification",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "z80pack"
+    }
+  },
+  {
+    "artifact": {
+      "bytes": 11635,
+      "name": "DIR.COM",
+      "sha256": "c9feb8bd6e2794d8b25dc87c6d0702cceb46ea3441240f58545b34afbde46b0a"
+    },
+    "component": "utility:DIR",
+    "final_report_sha256": "3bb1781e19dfec3eb222a0611a94a9fc628a29b5d1f09256718af3aa64437193",
+    "identity": {
+      "revision": 14,
+      "version": "1.0"
+    },
+    "input_record": {
+      "assigned_identity": {
+        "revision": 14,
+        "version": "1.0"
+      },
+      "fingerprint": "af8c82e3fea42031e6b179277b9397b3bcabbdba1ada32fd1852c83a400adaa7",
+      "inputs": {
+        "component": "utility:DIR",
+        "configuration": {
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        },
+        "files": {
+          "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
+          "src/bdos/versions.inc": "6560176573c7d4fd2b30374b898e1cced22dcb811d795eb5ad77341f226e4172",
+          "src/cpx/copy-backup.inc": "54beefef80a3ce0a605d8617ec15500cc6cb1e4f4b77986bb8dcd9a3ef9f22cd",
+          "src/cpx/copy-batch.inc": "4027398e7cbcdab9abb6d1a3ecd1b2a0b1b5391fae1e6ec131b674b87b87b4ae",
+          "src/cpx/copy-dest.inc": "19692da3e65e52e2a1f15b97feca194df8525a4abf8ee5ea37c3251d97479792",
+          "src/cpx/copy-error.inc": "853171d42ffd9c8d110748262469ae3e164d3ef774f73aa66c771a4e77873094",
+          "src/cpx/copy-options.inc": "cf31c89c584cce99050beff55c61342fc77b7416c534e59b879bb4dcbd61e880",
+          "src/cpx/copy-rename.inc": "3e5147aa28098f741a2f4f726027cd0aa713980618a73e4b2ffee413c9962c74",
+          "src/cpx/copy-report.inc": "2efbcd502dcbc83338b0d2f6666f63123a6f0743b453b0626ffec8b62621811a",
+          "src/cpx/copy-scope.inc": "9931cedf9340ab96f79d76431e854ed343dc21c4300bea751bd6e6ba784152d6",
+          "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+          "src/cpx/copy-verify.inc": "e0349132a007d9aa983400d7b8db1c2df76268fa89cad96856a27011fb7e2223",
+          "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+          "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+          "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
+          "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+          "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
+          "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+          "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+          "src/cpx/ver-banner.inc": "341cacaf5a55264a54681e1c25b084a028aa9db8b0e027033a908150333a1a09",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
+          "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
+          "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
+          "src/utilities/common/dirmetrics.inc": "81d58f2f481118819c36a8997fcbf41c56db49e5ab2ec6de8da290ce271a7f6d",
+          "src/utilities/common/diskfree.inc": "9a371d2506464c9b076bd23fd6d3ca254519b57d98a3fb69054c2d316883326e",
+          "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
+          "src/utilities/common/eraraw.inc": "69cf5d75ca9ccb3364847ff3c601d0ba38157b85bd55df3070d6640194cb9813",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/pipinput.inc": "6bbcfad92995a5be1997c19b8093645feba55a3c825f648445c0492104c4d8af",
+          "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/common/reninput.inc": "282aaf32ae572a9ae5289f03dcacb4333b82041806228a226aa9b2b533dffe99",
+          "src/utilities/common/sysgeninput.inc": "0902c666327bb719d2cfc6f1ef61cdb167b1248114da3e2e3af71d6425228623",
+          "src/utilities/common/ui/append.inc": "340e1a8d24992067d7f57613213fd18c3acac96940696933beea7d26658d175e",
+          "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b",
+          "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+          "src/utilities/common/ui/choiceerror.inc": "3b27714d70bd4b1cbbefe6f4bc5dfcdde5db53231e6eb426d85c453638fb0846",
+          "src/utilities/common/ui/confirm.inc": "1b841462ada57b565084da9b41bc5d7662e3d939e8c5731b4f2767bbbd214529",
+          "src/utilities/common/ui/default.inc": "64a602938d4000de77e31c7b2f4575198141fb7c590374e323ca98b3c31ab2ae",
+          "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+          "src/utilities/common/ui/format.inc": "3b037c07453f5e873864a8f6244ea44af438d05a358c186c64ff0fe9a1cbef5c",
+          "src/utilities/common/ui/inline.inc": "029a45b0f93ce8dd101c4b9d781d25a4ef6a8edb5f8d729df471827a8f0c3f13",
+          "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+          "src/utilities/common/ui/prompt.inc": "2d90d2f468687ae0ada66c043dbb2249020323da943ab5f4fb852aa53439845a",
+          "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
+          "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/cpxvers.inc": "a12a5e1054a4c15b25a222ea31de98f72b521ea85ee5a013611de136b1bd39a0",
+          "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
+          "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
+          "src/utilities/dir-options.inc": "307b6e05fccb37e3dd7ba76cac159ab3cf1b5e306ea9c0486ff735a5850da998",
+          "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
+          "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
+          "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
+          "src/utilities/rsxvers.inc": "e4ecd8d57a0ede0766e6d503ef1831a53bfa7deb3ecb8f5edf9a425bf36a105d",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_rcp_transients.py": "7b856c335df4abc59d94e4098e235fa8bfd1b2122bd92232f062b6800f64cac1",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
+          "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
+        },
+        "identity_dependencies": {
+          "utility:CLS": {
+            "api_version": null,
+            "description": "Clear Screen",
+            "display_format": "numeric",
+            "revision": 11,
+            "version": "1.0"
+          },
+          "utility:COPY": {
+            "api_version": null,
+            "description": "File Copying",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          },
+          "utility:DIR": {
+            "api_version": null,
+            "description": "Directory Listing",
+            "display_format": "numeric",
+            "version": "1.0"
+          },
+          "utility:MOVE": {
+            "api_version": null,
+            "description": "File Moving",
+            "display_format": "numeric",
+            "revision": 4,
+            "version": "1.0"
+          },
+          "utility:RCP": {
+            "api_version": null,
+            "description": "Resident Command Package",
+            "display_format": "numeric",
+            "revision": 18,
+            "version": "1.0"
+          },
+          "utility:USER": {
+            "api_version": null,
+            "description": "User Area Selection",
+            "display_format": "numeric",
+            "revision": 10,
+            "version": "1.0"
+          },
+          "utility:VER": {
+            "api_version": null,
+            "description": "System Version Information",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          }
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "Directory Listing",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "trs80gp"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "proposal": {
+      "candidate_artifact_sha256": "b5aae0991d17bdbe7127540761d8c25e6d799c6a10d1fdcbf0e9c12a0d7974d2",
+      "candidate_identity": {
+        "revision": 13,
+        "version": "1.0"
+      },
+      "candidate_input_fingerprint": "af8c82e3fea42031e6b179277b9397b3bcabbdba1ada32fd1852c83a400adaa7",
+      "candidate_report_sha256": "fe567a4dc710717bd0beef12bd83a8a0b6a1844296762c4866ed51332624efd6",
+      "component": "utility:DIR",
+      "executable_changed": true,
+      "proposed_identity": {
+        "revision": 14,
+        "version": "1.0"
+      },
+      "reference_artifact_sha256": "f4ff85d662d0ef859779486cb11e3fc7bb75064c42605a2f2acddd8e5e2ae78a",
+      "reference_identity": {
+        "revision": 13,
+        "version": "1.0"
+      },
+      "reference_report_sha256": "8f7d0a44456e8f213d49d070f901c45ebceb0db2f49842c83c7c8f722f73cd9f",
+      "schema": 1,
+      "selected_inputs_changed": true,
+      "status": "revision-proposal; not acceptance",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "trs80gp"
+      }
+    },
+    "provenance": {
+      "repository_commit": "16f9a479 (working changes)"
+    },
+    "schema": 1,
+    "status": "explicit revision assignment; not qualification",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "trs80gp"
+    }
+  },
+  {
+    "artifact": {
+      "bytes": 6996,
+      "name": "USER.COM",
+      "sha256": "59c440c7d78381ceb94f173d6240f59e23ea4edb2c7c1de654108fbc3c8ef414"
+    },
+    "component": "utility:USER",
+    "final_report_sha256": "57bc0a3485b8663da2f948d09a3b905b7b84be0ecdcf5b07406c73a33c0d8a9b",
+    "identity": {
+      "revision": 10,
+      "version": "1.0"
+    },
+    "input_record": {
+      "assigned_identity": {
+        "revision": 10,
+        "version": "1.0"
+      },
+      "fingerprint": "c245b1d665feac364db38ae8874a2caa4a2190d866abbe1db94cef4415020270",
+      "inputs": {
+        "component": "utility:USER",
+        "configuration": {
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        },
+        "files": {
+          "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
+          "src/bdos/versions.inc": "6560176573c7d4fd2b30374b898e1cced22dcb811d795eb5ad77341f226e4172",
+          "src/cpx/copy-backup.inc": "54beefef80a3ce0a605d8617ec15500cc6cb1e4f4b77986bb8dcd9a3ef9f22cd",
+          "src/cpx/copy-batch.inc": "4027398e7cbcdab9abb6d1a3ecd1b2a0b1b5391fae1e6ec131b674b87b87b4ae",
+          "src/cpx/copy-dest.inc": "19692da3e65e52e2a1f15b97feca194df8525a4abf8ee5ea37c3251d97479792",
+          "src/cpx/copy-error.inc": "853171d42ffd9c8d110748262469ae3e164d3ef774f73aa66c771a4e77873094",
+          "src/cpx/copy-options.inc": "cf31c89c584cce99050beff55c61342fc77b7416c534e59b879bb4dcbd61e880",
+          "src/cpx/copy-rename.inc": "3e5147aa28098f741a2f4f726027cd0aa713980618a73e4b2ffee413c9962c74",
+          "src/cpx/copy-report.inc": "2efbcd502dcbc83338b0d2f6666f63123a6f0743b453b0626ffec8b62621811a",
+          "src/cpx/copy-scope.inc": "9931cedf9340ab96f79d76431e854ed343dc21c4300bea751bd6e6ba784152d6",
+          "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+          "src/cpx/copy-verify.inc": "e0349132a007d9aa983400d7b8db1c2df76268fa89cad96856a27011fb7e2223",
+          "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+          "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+          "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
+          "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+          "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
+          "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+          "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+          "src/cpx/ver-banner.inc": "341cacaf5a55264a54681e1c25b084a028aa9db8b0e027033a908150333a1a09",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
+          "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
+          "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
+          "src/utilities/common/dirmetrics.inc": "81d58f2f481118819c36a8997fcbf41c56db49e5ab2ec6de8da290ce271a7f6d",
+          "src/utilities/common/diskfree.inc": "9a371d2506464c9b076bd23fd6d3ca254519b57d98a3fb69054c2d316883326e",
+          "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
+          "src/utilities/common/eraraw.inc": "69cf5d75ca9ccb3364847ff3c601d0ba38157b85bd55df3070d6640194cb9813",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/pipinput.inc": "6bbcfad92995a5be1997c19b8093645feba55a3c825f648445c0492104c4d8af",
+          "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/common/reninput.inc": "282aaf32ae572a9ae5289f03dcacb4333b82041806228a226aa9b2b533dffe99",
+          "src/utilities/common/sysgeninput.inc": "0902c666327bb719d2cfc6f1ef61cdb167b1248114da3e2e3af71d6425228623",
+          "src/utilities/common/ui/append.inc": "340e1a8d24992067d7f57613213fd18c3acac96940696933beea7d26658d175e",
+          "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b",
+          "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+          "src/utilities/common/ui/choiceerror.inc": "3b27714d70bd4b1cbbefe6f4bc5dfcdde5db53231e6eb426d85c453638fb0846",
+          "src/utilities/common/ui/confirm.inc": "1b841462ada57b565084da9b41bc5d7662e3d939e8c5731b4f2767bbbd214529",
+          "src/utilities/common/ui/default.inc": "64a602938d4000de77e31c7b2f4575198141fb7c590374e323ca98b3c31ab2ae",
+          "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+          "src/utilities/common/ui/format.inc": "3b037c07453f5e873864a8f6244ea44af438d05a358c186c64ff0fe9a1cbef5c",
+          "src/utilities/common/ui/inline.inc": "029a45b0f93ce8dd101c4b9d781d25a4ef6a8edb5f8d729df471827a8f0c3f13",
+          "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+          "src/utilities/common/ui/prompt.inc": "2d90d2f468687ae0ada66c043dbb2249020323da943ab5f4fb852aa53439845a",
+          "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
+          "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/cpxvers.inc": "a12a5e1054a4c15b25a222ea31de98f72b521ea85ee5a013611de136b1bd39a0",
+          "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
+          "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
+          "src/utilities/dir-options.inc": "307b6e05fccb37e3dd7ba76cac159ab3cf1b5e306ea9c0486ff735a5850da998",
+          "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
+          "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
+          "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
+          "src/utilities/rsxvers.inc": "e4ecd8d57a0ede0766e6d503ef1831a53bfa7deb3ecb8f5edf9a425bf36a105d",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_rcp_transients.py": "7b856c335df4abc59d94e4098e235fa8bfd1b2122bd92232f062b6800f64cac1",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
+          "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
+        },
+        "identity_dependencies": {
+          "utility:CLS": {
+            "api_version": null,
+            "description": "Clear Screen",
+            "display_format": "numeric",
+            "revision": 11,
+            "version": "1.0"
+          },
+          "utility:COPY": {
+            "api_version": null,
+            "description": "File Copying",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          },
+          "utility:DIR": {
+            "api_version": null,
+            "description": "Directory Listing",
+            "display_format": "numeric",
+            "revision": 14,
+            "version": "1.0"
+          },
+          "utility:MOVE": {
+            "api_version": null,
+            "description": "File Moving",
+            "display_format": "numeric",
+            "revision": 4,
+            "version": "1.0"
+          },
+          "utility:RCP": {
+            "api_version": null,
+            "description": "Resident Command Package",
+            "display_format": "numeric",
+            "revision": 18,
+            "version": "1.0"
+          },
+          "utility:USER": {
+            "api_version": null,
+            "description": "User Area Selection",
+            "display_format": "numeric",
+            "version": "1.0"
+          },
+          "utility:VER": {
+            "api_version": null,
+            "description": "System Version Information",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          }
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "User Area Selection",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "proposal": {
+      "candidate_artifact_sha256": "fc0eafd128c71986561b6b6a56902fbe0a5a2b5f761ea079da59a9b15f8a241e",
+      "candidate_identity": {
+        "revision": 9,
+        "version": "1.0"
+      },
+      "candidate_input_fingerprint": "c245b1d665feac364db38ae8874a2caa4a2190d866abbe1db94cef4415020270",
+      "candidate_report_sha256": "0865e23d29b17ad34045a34fc1c1379e2e3c83f0ee7397f229cd022c5ec79c2f",
+      "component": "utility:USER",
+      "executable_changed": true,
+      "proposed_identity": {
+        "revision": 10,
+        "version": "1.0"
+      },
+      "reference_artifact_sha256": "c892a4f95781fee0f54a19ff7eb799ab4d770ad01c83bab8215ceefda862f1d2",
+      "reference_identity": {
+        "revision": 9,
+        "version": "1.0"
+      },
+      "reference_report_sha256": "53950482197e093f99b8dc0087dd12e05bf05df4df3032cd638e393348b5b537",
+      "schema": 1,
+      "selected_inputs_changed": true,
+      "status": "revision-proposal; not acceptance",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      }
+    },
+    "provenance": {
+      "repository_commit": "16f9a479 (working changes)"
+    },
+    "schema": 1,
+    "status": "explicit revision assignment; not qualification",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "z80pack"
+    }
+  },
+  {
+    "artifact": {
+      "bytes": 6996,
+      "name": "USER.COM",
+      "sha256": "59c440c7d78381ceb94f173d6240f59e23ea4edb2c7c1de654108fbc3c8ef414"
+    },
+    "component": "utility:USER",
+    "final_report_sha256": "692c8675d2723a09c89014b273284dfcdc127e5d0352e6109ad9724db852fdb1",
+    "identity": {
+      "revision": 10,
+      "version": "1.0"
+    },
+    "input_record": {
+      "assigned_identity": {
+        "revision": 10,
+        "version": "1.0"
+      },
+      "fingerprint": "145c7f8397e3c0a63985dd8fad129239d70e3ab693d0d2f4e726e9910ba37198",
+      "inputs": {
+        "component": "utility:USER",
+        "configuration": {
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        },
+        "files": {
+          "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
+          "src/bdos/versions.inc": "6560176573c7d4fd2b30374b898e1cced22dcb811d795eb5ad77341f226e4172",
+          "src/cpx/copy-backup.inc": "54beefef80a3ce0a605d8617ec15500cc6cb1e4f4b77986bb8dcd9a3ef9f22cd",
+          "src/cpx/copy-batch.inc": "4027398e7cbcdab9abb6d1a3ecd1b2a0b1b5391fae1e6ec131b674b87b87b4ae",
+          "src/cpx/copy-dest.inc": "19692da3e65e52e2a1f15b97feca194df8525a4abf8ee5ea37c3251d97479792",
+          "src/cpx/copy-error.inc": "853171d42ffd9c8d110748262469ae3e164d3ef774f73aa66c771a4e77873094",
+          "src/cpx/copy-options.inc": "cf31c89c584cce99050beff55c61342fc77b7416c534e59b879bb4dcbd61e880",
+          "src/cpx/copy-rename.inc": "3e5147aa28098f741a2f4f726027cd0aa713980618a73e4b2ffee413c9962c74",
+          "src/cpx/copy-report.inc": "2efbcd502dcbc83338b0d2f6666f63123a6f0743b453b0626ffec8b62621811a",
+          "src/cpx/copy-scope.inc": "9931cedf9340ab96f79d76431e854ed343dc21c4300bea751bd6e6ba784152d6",
+          "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+          "src/cpx/copy-verify.inc": "e0349132a007d9aa983400d7b8db1c2df76268fa89cad96856a27011fb7e2223",
+          "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+          "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+          "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
+          "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+          "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
+          "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+          "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+          "src/cpx/ver-banner.inc": "341cacaf5a55264a54681e1c25b084a028aa9db8b0e027033a908150333a1a09",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
+          "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
+          "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
+          "src/utilities/common/dirmetrics.inc": "81d58f2f481118819c36a8997fcbf41c56db49e5ab2ec6de8da290ce271a7f6d",
+          "src/utilities/common/diskfree.inc": "9a371d2506464c9b076bd23fd6d3ca254519b57d98a3fb69054c2d316883326e",
+          "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
+          "src/utilities/common/eraraw.inc": "69cf5d75ca9ccb3364847ff3c601d0ba38157b85bd55df3070d6640194cb9813",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/pipinput.inc": "6bbcfad92995a5be1997c19b8093645feba55a3c825f648445c0492104c4d8af",
+          "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/common/reninput.inc": "282aaf32ae572a9ae5289f03dcacb4333b82041806228a226aa9b2b533dffe99",
+          "src/utilities/common/sysgeninput.inc": "0902c666327bb719d2cfc6f1ef61cdb167b1248114da3e2e3af71d6425228623",
+          "src/utilities/common/ui/append.inc": "340e1a8d24992067d7f57613213fd18c3acac96940696933beea7d26658d175e",
+          "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b",
+          "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+          "src/utilities/common/ui/choiceerror.inc": "3b27714d70bd4b1cbbefe6f4bc5dfcdde5db53231e6eb426d85c453638fb0846",
+          "src/utilities/common/ui/confirm.inc": "1b841462ada57b565084da9b41bc5d7662e3d939e8c5731b4f2767bbbd214529",
+          "src/utilities/common/ui/default.inc": "64a602938d4000de77e31c7b2f4575198141fb7c590374e323ca98b3c31ab2ae",
+          "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+          "src/utilities/common/ui/format.inc": "3b037c07453f5e873864a8f6244ea44af438d05a358c186c64ff0fe9a1cbef5c",
+          "src/utilities/common/ui/inline.inc": "029a45b0f93ce8dd101c4b9d781d25a4ef6a8edb5f8d729df471827a8f0c3f13",
+          "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+          "src/utilities/common/ui/prompt.inc": "2d90d2f468687ae0ada66c043dbb2249020323da943ab5f4fb852aa53439845a",
+          "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
+          "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/cpxvers.inc": "a12a5e1054a4c15b25a222ea31de98f72b521ea85ee5a013611de136b1bd39a0",
+          "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
+          "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
+          "src/utilities/dir-options.inc": "307b6e05fccb37e3dd7ba76cac159ab3cf1b5e306ea9c0486ff735a5850da998",
+          "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
+          "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
+          "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
+          "src/utilities/rsxvers.inc": "e4ecd8d57a0ede0766e6d503ef1831a53bfa7deb3ecb8f5edf9a425bf36a105d",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_rcp_transients.py": "7b856c335df4abc59d94e4098e235fa8bfd1b2122bd92232f062b6800f64cac1",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
+          "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
+        },
+        "identity_dependencies": {
+          "utility:CLS": {
+            "api_version": null,
+            "description": "Clear Screen",
+            "display_format": "numeric",
+            "revision": 11,
+            "version": "1.0"
+          },
+          "utility:COPY": {
+            "api_version": null,
+            "description": "File Copying",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          },
+          "utility:DIR": {
+            "api_version": null,
+            "description": "Directory Listing",
+            "display_format": "numeric",
+            "revision": 14,
+            "version": "1.0"
+          },
+          "utility:MOVE": {
+            "api_version": null,
+            "description": "File Moving",
+            "display_format": "numeric",
+            "revision": 4,
+            "version": "1.0"
+          },
+          "utility:RCP": {
+            "api_version": null,
+            "description": "Resident Command Package",
+            "display_format": "numeric",
+            "revision": 18,
+            "version": "1.0"
+          },
+          "utility:USER": {
+            "api_version": null,
+            "description": "User Area Selection",
+            "display_format": "numeric",
+            "version": "1.0"
+          },
+          "utility:VER": {
+            "api_version": null,
+            "description": "System Version Information",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          }
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "User Area Selection",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "trs80gp"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "proposal": {
+      "candidate_artifact_sha256": "fc0eafd128c71986561b6b6a56902fbe0a5a2b5f761ea079da59a9b15f8a241e",
+      "candidate_identity": {
+        "revision": 9,
+        "version": "1.0"
+      },
+      "candidate_input_fingerprint": "145c7f8397e3c0a63985dd8fad129239d70e3ab693d0d2f4e726e9910ba37198",
+      "candidate_report_sha256": "52e884bd8f9eda1993dceaf5b355cfa131e5a9c120732d0c6f388dfd8f36121f",
+      "component": "utility:USER",
+      "executable_changed": true,
+      "proposed_identity": {
+        "revision": 10,
+        "version": "1.0"
+      },
+      "reference_artifact_sha256": "c892a4f95781fee0f54a19ff7eb799ab4d770ad01c83bab8215ceefda862f1d2",
+      "reference_identity": {
+        "revision": 9,
+        "version": "1.0"
+      },
+      "reference_report_sha256": "0e5a3783120303707a1f52dbc091bb01a37ae6e6259baa437b6e4b1a73614e8a",
+      "schema": 1,
+      "selected_inputs_changed": true,
+      "status": "revision-proposal; not acceptance",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "trs80gp"
+      }
+    },
+    "provenance": {
+      "repository_commit": "16f9a479 (working changes)"
+    },
+    "schema": 1,
+    "status": "explicit revision assignment; not qualification",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "trs80gp"
+    }
+  },
+  {
+    "artifact": {
+      "bytes": 6996,
+      "name": "CLS.COM",
+      "sha256": "6d69667b5bcae3e2bb0f53e029e5b2c80de4fb5e84533a032bd5ea722046463f"
+    },
+    "component": "utility:CLS",
+    "final_report_sha256": "1afcfa80ae49ee32fb14e69d0189f8664d43b87a23eb2042db4c997dee26ed56",
+    "identity": {
+      "revision": 11,
+      "version": "1.0"
+    },
+    "input_record": {
+      "assigned_identity": {
+        "revision": 11,
+        "version": "1.0"
+      },
+      "fingerprint": "42d3ab90b897d502df64a7449af9dfeb5aff892bc445a9f3a2b7033e4ebc7719",
+      "inputs": {
+        "component": "utility:CLS",
+        "configuration": {
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        },
+        "files": {
+          "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
+          "src/bdos/versions.inc": "6560176573c7d4fd2b30374b898e1cced22dcb811d795eb5ad77341f226e4172",
+          "src/cpx/copy-backup.inc": "54beefef80a3ce0a605d8617ec15500cc6cb1e4f4b77986bb8dcd9a3ef9f22cd",
+          "src/cpx/copy-batch.inc": "4027398e7cbcdab9abb6d1a3ecd1b2a0b1b5391fae1e6ec131b674b87b87b4ae",
+          "src/cpx/copy-dest.inc": "19692da3e65e52e2a1f15b97feca194df8525a4abf8ee5ea37c3251d97479792",
+          "src/cpx/copy-error.inc": "853171d42ffd9c8d110748262469ae3e164d3ef774f73aa66c771a4e77873094",
+          "src/cpx/copy-options.inc": "cf31c89c584cce99050beff55c61342fc77b7416c534e59b879bb4dcbd61e880",
+          "src/cpx/copy-rename.inc": "3e5147aa28098f741a2f4f726027cd0aa713980618a73e4b2ffee413c9962c74",
+          "src/cpx/copy-report.inc": "2efbcd502dcbc83338b0d2f6666f63123a6f0743b453b0626ffec8b62621811a",
+          "src/cpx/copy-scope.inc": "9931cedf9340ab96f79d76431e854ed343dc21c4300bea751bd6e6ba784152d6",
+          "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+          "src/cpx/copy-verify.inc": "e0349132a007d9aa983400d7b8db1c2df76268fa89cad96856a27011fb7e2223",
+          "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+          "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+          "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
+          "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+          "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
+          "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+          "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+          "src/cpx/ver-banner.inc": "341cacaf5a55264a54681e1c25b084a028aa9db8b0e027033a908150333a1a09",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
+          "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
+          "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
+          "src/utilities/common/dirmetrics.inc": "81d58f2f481118819c36a8997fcbf41c56db49e5ab2ec6de8da290ce271a7f6d",
+          "src/utilities/common/diskfree.inc": "9a371d2506464c9b076bd23fd6d3ca254519b57d98a3fb69054c2d316883326e",
+          "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
+          "src/utilities/common/eraraw.inc": "69cf5d75ca9ccb3364847ff3c601d0ba38157b85bd55df3070d6640194cb9813",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/pipinput.inc": "6bbcfad92995a5be1997c19b8093645feba55a3c825f648445c0492104c4d8af",
+          "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/common/reninput.inc": "282aaf32ae572a9ae5289f03dcacb4333b82041806228a226aa9b2b533dffe99",
+          "src/utilities/common/sysgeninput.inc": "0902c666327bb719d2cfc6f1ef61cdb167b1248114da3e2e3af71d6425228623",
+          "src/utilities/common/ui/append.inc": "340e1a8d24992067d7f57613213fd18c3acac96940696933beea7d26658d175e",
+          "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b",
+          "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+          "src/utilities/common/ui/choiceerror.inc": "3b27714d70bd4b1cbbefe6f4bc5dfcdde5db53231e6eb426d85c453638fb0846",
+          "src/utilities/common/ui/confirm.inc": "1b841462ada57b565084da9b41bc5d7662e3d939e8c5731b4f2767bbbd214529",
+          "src/utilities/common/ui/default.inc": "64a602938d4000de77e31c7b2f4575198141fb7c590374e323ca98b3c31ab2ae",
+          "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+          "src/utilities/common/ui/format.inc": "3b037c07453f5e873864a8f6244ea44af438d05a358c186c64ff0fe9a1cbef5c",
+          "src/utilities/common/ui/inline.inc": "029a45b0f93ce8dd101c4b9d781d25a4ef6a8edb5f8d729df471827a8f0c3f13",
+          "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+          "src/utilities/common/ui/prompt.inc": "2d90d2f468687ae0ada66c043dbb2249020323da943ab5f4fb852aa53439845a",
+          "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
+          "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/cpxvers.inc": "a12a5e1054a4c15b25a222ea31de98f72b521ea85ee5a013611de136b1bd39a0",
+          "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
+          "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
+          "src/utilities/dir-options.inc": "307b6e05fccb37e3dd7ba76cac159ab3cf1b5e306ea9c0486ff735a5850da998",
+          "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
+          "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
+          "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
+          "src/utilities/rsxvers.inc": "e4ecd8d57a0ede0766e6d503ef1831a53bfa7deb3ecb8f5edf9a425bf36a105d",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_rcp_transients.py": "7b856c335df4abc59d94e4098e235fa8bfd1b2122bd92232f062b6800f64cac1",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
+          "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
+        },
+        "identity_dependencies": {
+          "utility:CLS": {
+            "api_version": null,
+            "description": "Clear Screen",
+            "display_format": "numeric",
+            "version": "1.0"
+          },
+          "utility:COPY": {
+            "api_version": null,
+            "description": "File Copying",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          },
+          "utility:DIR": {
+            "api_version": null,
+            "description": "Directory Listing",
+            "display_format": "numeric",
+            "revision": 14,
+            "version": "1.0"
+          },
+          "utility:MOVE": {
+            "api_version": null,
+            "description": "File Moving",
+            "display_format": "numeric",
+            "revision": 4,
+            "version": "1.0"
+          },
+          "utility:RCP": {
+            "api_version": null,
+            "description": "Resident Command Package",
+            "display_format": "numeric",
+            "revision": 18,
+            "version": "1.0"
+          },
+          "utility:USER": {
+            "api_version": null,
+            "description": "User Area Selection",
+            "display_format": "numeric",
+            "revision": 10,
+            "version": "1.0"
+          },
+          "utility:VER": {
+            "api_version": null,
+            "description": "System Version Information",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          }
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "Clear Screen",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "proposal": {
+      "candidate_artifact_sha256": "a33e489e37df1246089d7f8becc22d407c589b82fb73ab7320e0f3220a19cd61",
+      "candidate_identity": {
+        "revision": 10,
+        "version": "1.0"
+      },
+      "candidate_input_fingerprint": "42d3ab90b897d502df64a7449af9dfeb5aff892bc445a9f3a2b7033e4ebc7719",
+      "candidate_report_sha256": "5fb89e7a6915b34e098fbb94218170f7cf216ec1d6a3f5566df81650772f4430",
+      "component": "utility:CLS",
+      "executable_changed": true,
+      "proposed_identity": {
+        "revision": 11,
+        "version": "1.0"
+      },
+      "reference_artifact_sha256": "b98bf4806b65bd41bdeed9c8c16fe999c3b889135bb2279548b09ab15e9064cc",
+      "reference_identity": {
+        "revision": 10,
+        "version": "1.0"
+      },
+      "reference_report_sha256": "9817fcb1cff4ad0eef26955087b0c7af4b3a26f9d340648ae7bfb0872befba56",
+      "schema": 1,
+      "selected_inputs_changed": true,
+      "status": "revision-proposal; not acceptance",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      }
+    },
+    "provenance": {
+      "repository_commit": "16f9a479 (working changes)"
+    },
+    "schema": 1,
+    "status": "explicit revision assignment; not qualification",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "z80pack"
+    }
+  },
+  {
+    "artifact": {
+      "bytes": 6996,
+      "name": "CLS.COM",
+      "sha256": "6d69667b5bcae3e2bb0f53e029e5b2c80de4fb5e84533a032bd5ea722046463f"
+    },
+    "component": "utility:CLS",
+    "final_report_sha256": "9b3e093ad67e34740424a275d5ca7e018c452df40852a8cf3c6e394c42e33d0e",
+    "identity": {
+      "revision": 11,
+      "version": "1.0"
+    },
+    "input_record": {
+      "assigned_identity": {
+        "revision": 11,
+        "version": "1.0"
+      },
+      "fingerprint": "25272f0a42ab229a4d41d2eeb46bb0b9ef182e1e92d293f2c94c083ed357be9f",
+      "inputs": {
+        "component": "utility:CLS",
+        "configuration": {
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        },
+        "files": {
+          "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
+          "src/bdos/versions.inc": "6560176573c7d4fd2b30374b898e1cced22dcb811d795eb5ad77341f226e4172",
+          "src/cpx/copy-backup.inc": "54beefef80a3ce0a605d8617ec15500cc6cb1e4f4b77986bb8dcd9a3ef9f22cd",
+          "src/cpx/copy-batch.inc": "4027398e7cbcdab9abb6d1a3ecd1b2a0b1b5391fae1e6ec131b674b87b87b4ae",
+          "src/cpx/copy-dest.inc": "19692da3e65e52e2a1f15b97feca194df8525a4abf8ee5ea37c3251d97479792",
+          "src/cpx/copy-error.inc": "853171d42ffd9c8d110748262469ae3e164d3ef774f73aa66c771a4e77873094",
+          "src/cpx/copy-options.inc": "cf31c89c584cce99050beff55c61342fc77b7416c534e59b879bb4dcbd61e880",
+          "src/cpx/copy-rename.inc": "3e5147aa28098f741a2f4f726027cd0aa713980618a73e4b2ffee413c9962c74",
+          "src/cpx/copy-report.inc": "2efbcd502dcbc83338b0d2f6666f63123a6f0743b453b0626ffec8b62621811a",
+          "src/cpx/copy-scope.inc": "9931cedf9340ab96f79d76431e854ed343dc21c4300bea751bd6e6ba784152d6",
+          "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+          "src/cpx/copy-verify.inc": "e0349132a007d9aa983400d7b8db1c2df76268fa89cad96856a27011fb7e2223",
+          "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+          "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+          "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
+          "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+          "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
+          "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+          "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+          "src/cpx/ver-banner.inc": "341cacaf5a55264a54681e1c25b084a028aa9db8b0e027033a908150333a1a09",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
+          "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
+          "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
+          "src/utilities/common/dirmetrics.inc": "81d58f2f481118819c36a8997fcbf41c56db49e5ab2ec6de8da290ce271a7f6d",
+          "src/utilities/common/diskfree.inc": "9a371d2506464c9b076bd23fd6d3ca254519b57d98a3fb69054c2d316883326e",
+          "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
+          "src/utilities/common/eraraw.inc": "69cf5d75ca9ccb3364847ff3c601d0ba38157b85bd55df3070d6640194cb9813",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/pipinput.inc": "6bbcfad92995a5be1997c19b8093645feba55a3c825f648445c0492104c4d8af",
+          "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/common/reninput.inc": "282aaf32ae572a9ae5289f03dcacb4333b82041806228a226aa9b2b533dffe99",
+          "src/utilities/common/sysgeninput.inc": "0902c666327bb719d2cfc6f1ef61cdb167b1248114da3e2e3af71d6425228623",
+          "src/utilities/common/ui/append.inc": "340e1a8d24992067d7f57613213fd18c3acac96940696933beea7d26658d175e",
+          "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b",
+          "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+          "src/utilities/common/ui/choiceerror.inc": "3b27714d70bd4b1cbbefe6f4bc5dfcdde5db53231e6eb426d85c453638fb0846",
+          "src/utilities/common/ui/confirm.inc": "1b841462ada57b565084da9b41bc5d7662e3d939e8c5731b4f2767bbbd214529",
+          "src/utilities/common/ui/default.inc": "64a602938d4000de77e31c7b2f4575198141fb7c590374e323ca98b3c31ab2ae",
+          "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+          "src/utilities/common/ui/format.inc": "3b037c07453f5e873864a8f6244ea44af438d05a358c186c64ff0fe9a1cbef5c",
+          "src/utilities/common/ui/inline.inc": "029a45b0f93ce8dd101c4b9d781d25a4ef6a8edb5f8d729df471827a8f0c3f13",
+          "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+          "src/utilities/common/ui/prompt.inc": "2d90d2f468687ae0ada66c043dbb2249020323da943ab5f4fb852aa53439845a",
+          "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
+          "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/cpxvers.inc": "a12a5e1054a4c15b25a222ea31de98f72b521ea85ee5a013611de136b1bd39a0",
+          "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
+          "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
+          "src/utilities/dir-options.inc": "307b6e05fccb37e3dd7ba76cac159ab3cf1b5e306ea9c0486ff735a5850da998",
+          "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
+          "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
+          "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
+          "src/utilities/rsxvers.inc": "e4ecd8d57a0ede0766e6d503ef1831a53bfa7deb3ecb8f5edf9a425bf36a105d",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_rcp_transients.py": "7b856c335df4abc59d94e4098e235fa8bfd1b2122bd92232f062b6800f64cac1",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
+          "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
+        },
+        "identity_dependencies": {
+          "utility:CLS": {
+            "api_version": null,
+            "description": "Clear Screen",
+            "display_format": "numeric",
+            "version": "1.0"
+          },
+          "utility:COPY": {
+            "api_version": null,
+            "description": "File Copying",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          },
+          "utility:DIR": {
+            "api_version": null,
+            "description": "Directory Listing",
+            "display_format": "numeric",
+            "revision": 14,
+            "version": "1.0"
+          },
+          "utility:MOVE": {
+            "api_version": null,
+            "description": "File Moving",
+            "display_format": "numeric",
+            "revision": 4,
+            "version": "1.0"
+          },
+          "utility:RCP": {
+            "api_version": null,
+            "description": "Resident Command Package",
+            "display_format": "numeric",
+            "revision": 18,
+            "version": "1.0"
+          },
+          "utility:USER": {
+            "api_version": null,
+            "description": "User Area Selection",
+            "display_format": "numeric",
+            "revision": 10,
+            "version": "1.0"
+          },
+          "utility:VER": {
+            "api_version": null,
+            "description": "System Version Information",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          }
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "Clear Screen",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "trs80gp"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "proposal": {
+      "candidate_artifact_sha256": "a33e489e37df1246089d7f8becc22d407c589b82fb73ab7320e0f3220a19cd61",
+      "candidate_identity": {
+        "revision": 10,
+        "version": "1.0"
+      },
+      "candidate_input_fingerprint": "25272f0a42ab229a4d41d2eeb46bb0b9ef182e1e92d293f2c94c083ed357be9f",
+      "candidate_report_sha256": "99ccea26d2021e4d65825853bd02ada296d0cedea5e0c04f8f46cbdb019adf49",
+      "component": "utility:CLS",
+      "executable_changed": true,
+      "proposed_identity": {
+        "revision": 11,
+        "version": "1.0"
+      },
+      "reference_artifact_sha256": "b98bf4806b65bd41bdeed9c8c16fe999c3b889135bb2279548b09ab15e9064cc",
+      "reference_identity": {
+        "revision": 10,
+        "version": "1.0"
+      },
+      "reference_report_sha256": "3497b9a460af03aef9b00d084c575fa322ef2cbd45fa1d9c29e8abb13fbfcba2",
+      "schema": 1,
+      "selected_inputs_changed": true,
+      "status": "revision-proposal; not acceptance",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "trs80gp"
+      }
+    },
+    "provenance": {
+      "repository_commit": "16f9a479 (working changes)"
+    },
+    "schema": 1,
+    "status": "explicit revision assignment; not qualification",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "trs80gp"
+    }
+  },
+  {
+    "artifact": {
+      "bytes": 6996,
+      "name": "VER.COM",
+      "sha256": "480a49ea959c08fdbb0817db3242e625a5c841b32bb3a92604f544f86124fc03"
+    },
+    "component": "utility:VER",
+    "final_report_sha256": "311f9ad662f92181e0c8315074816749c74cd98b726a361cf00810ba5bbba432",
+    "identity": {
+      "revision": 12,
+      "version": "1.0"
+    },
+    "input_record": {
+      "assigned_identity": {
+        "revision": 12,
+        "version": "1.0"
+      },
+      "fingerprint": "c740fb4274dc0b68c109d2a4adaaeece59b42abb268d83c216d815d066f1bc51",
+      "inputs": {
+        "component": "utility:VER",
+        "configuration": {
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        },
+        "files": {
+          "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
+          "src/bdos/versions.inc": "6560176573c7d4fd2b30374b898e1cced22dcb811d795eb5ad77341f226e4172",
+          "src/cpx/copy-backup.inc": "54beefef80a3ce0a605d8617ec15500cc6cb1e4f4b77986bb8dcd9a3ef9f22cd",
+          "src/cpx/copy-batch.inc": "4027398e7cbcdab9abb6d1a3ecd1b2a0b1b5391fae1e6ec131b674b87b87b4ae",
+          "src/cpx/copy-dest.inc": "19692da3e65e52e2a1f15b97feca194df8525a4abf8ee5ea37c3251d97479792",
+          "src/cpx/copy-error.inc": "853171d42ffd9c8d110748262469ae3e164d3ef774f73aa66c771a4e77873094",
+          "src/cpx/copy-options.inc": "cf31c89c584cce99050beff55c61342fc77b7416c534e59b879bb4dcbd61e880",
+          "src/cpx/copy-rename.inc": "3e5147aa28098f741a2f4f726027cd0aa713980618a73e4b2ffee413c9962c74",
+          "src/cpx/copy-report.inc": "2efbcd502dcbc83338b0d2f6666f63123a6f0743b453b0626ffec8b62621811a",
+          "src/cpx/copy-scope.inc": "9931cedf9340ab96f79d76431e854ed343dc21c4300bea751bd6e6ba784152d6",
+          "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+          "src/cpx/copy-verify.inc": "e0349132a007d9aa983400d7b8db1c2df76268fa89cad96856a27011fb7e2223",
+          "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+          "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+          "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
+          "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+          "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
+          "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+          "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+          "src/cpx/ver-banner.inc": "341cacaf5a55264a54681e1c25b084a028aa9db8b0e027033a908150333a1a09",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
+          "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
+          "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
+          "src/utilities/common/dirmetrics.inc": "81d58f2f481118819c36a8997fcbf41c56db49e5ab2ec6de8da290ce271a7f6d",
+          "src/utilities/common/diskfree.inc": "9a371d2506464c9b076bd23fd6d3ca254519b57d98a3fb69054c2d316883326e",
+          "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
+          "src/utilities/common/eraraw.inc": "69cf5d75ca9ccb3364847ff3c601d0ba38157b85bd55df3070d6640194cb9813",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/pipinput.inc": "6bbcfad92995a5be1997c19b8093645feba55a3c825f648445c0492104c4d8af",
+          "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/common/reninput.inc": "282aaf32ae572a9ae5289f03dcacb4333b82041806228a226aa9b2b533dffe99",
+          "src/utilities/common/sysgeninput.inc": "0902c666327bb719d2cfc6f1ef61cdb167b1248114da3e2e3af71d6425228623",
+          "src/utilities/common/ui/append.inc": "340e1a8d24992067d7f57613213fd18c3acac96940696933beea7d26658d175e",
+          "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b",
+          "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+          "src/utilities/common/ui/choiceerror.inc": "3b27714d70bd4b1cbbefe6f4bc5dfcdde5db53231e6eb426d85c453638fb0846",
+          "src/utilities/common/ui/confirm.inc": "1b841462ada57b565084da9b41bc5d7662e3d939e8c5731b4f2767bbbd214529",
+          "src/utilities/common/ui/default.inc": "64a602938d4000de77e31c7b2f4575198141fb7c590374e323ca98b3c31ab2ae",
+          "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+          "src/utilities/common/ui/format.inc": "3b037c07453f5e873864a8f6244ea44af438d05a358c186c64ff0fe9a1cbef5c",
+          "src/utilities/common/ui/inline.inc": "029a45b0f93ce8dd101c4b9d781d25a4ef6a8edb5f8d729df471827a8f0c3f13",
+          "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+          "src/utilities/common/ui/prompt.inc": "2d90d2f468687ae0ada66c043dbb2249020323da943ab5f4fb852aa53439845a",
+          "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
+          "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/cpxvers.inc": "a12a5e1054a4c15b25a222ea31de98f72b521ea85ee5a013611de136b1bd39a0",
+          "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
+          "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
+          "src/utilities/dir-options.inc": "307b6e05fccb37e3dd7ba76cac159ab3cf1b5e306ea9c0486ff735a5850da998",
+          "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
+          "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
+          "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
+          "src/utilities/rsxvers.inc": "e4ecd8d57a0ede0766e6d503ef1831a53bfa7deb3ecb8f5edf9a425bf36a105d",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_rcp_transients.py": "7b856c335df4abc59d94e4098e235fa8bfd1b2122bd92232f062b6800f64cac1",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
+          "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
+        },
+        "identity_dependencies": {
+          "utility:CLS": {
+            "api_version": null,
+            "description": "Clear Screen",
+            "display_format": "numeric",
+            "revision": 11,
+            "version": "1.0"
+          },
+          "utility:COPY": {
+            "api_version": null,
+            "description": "File Copying",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          },
+          "utility:DIR": {
+            "api_version": null,
+            "description": "Directory Listing",
+            "display_format": "numeric",
+            "revision": 14,
+            "version": "1.0"
+          },
+          "utility:MOVE": {
+            "api_version": null,
+            "description": "File Moving",
+            "display_format": "numeric",
+            "revision": 4,
+            "version": "1.0"
+          },
+          "utility:RCP": {
+            "api_version": null,
+            "description": "Resident Command Package",
+            "display_format": "numeric",
+            "revision": 18,
+            "version": "1.0"
+          },
+          "utility:USER": {
+            "api_version": null,
+            "description": "User Area Selection",
+            "display_format": "numeric",
+            "revision": 10,
+            "version": "1.0"
+          },
+          "utility:VER": {
+            "api_version": null,
+            "description": "System Version Information",
+            "display_format": "numeric",
+            "version": "1.0"
+          }
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "System Version Information",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "proposal": {
+      "candidate_artifact_sha256": "170fe7fb941032044644dd6c1e3bc8f30087a75c0ff6adfaa29a9e8616974e0f",
+      "candidate_identity": {
+        "revision": 11,
+        "version": "1.0"
+      },
+      "candidate_input_fingerprint": "c740fb4274dc0b68c109d2a4adaaeece59b42abb268d83c216d815d066f1bc51",
+      "candidate_report_sha256": "210b36f34e1653a5a435e55ac0e3abede472ba138a1d22f4d92c501a4bb1d75c",
+      "component": "utility:VER",
+      "executable_changed": true,
+      "proposed_identity": {
+        "revision": 12,
+        "version": "1.0"
+      },
+      "reference_artifact_sha256": "8bac3a853317a658adb5f61380ecb11bf25c342a0f79907be73a1ea857bac06f",
+      "reference_identity": {
+        "revision": 11,
+        "version": "1.0"
+      },
+      "reference_report_sha256": "080c75df10e03cd01b28981a84edbd528816a9e574fc940de802def3691e1389",
+      "schema": 1,
+      "selected_inputs_changed": true,
+      "status": "revision-proposal; not acceptance",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      }
+    },
+    "provenance": {
+      "repository_commit": "16f9a479 (working changes)"
+    },
+    "schema": 1,
+    "status": "explicit revision assignment; not qualification",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "z80pack"
+    }
+  },
+  {
+    "artifact": {
+      "bytes": 6996,
+      "name": "VER.COM",
+      "sha256": "480a49ea959c08fdbb0817db3242e625a5c841b32bb3a92604f544f86124fc03"
+    },
+    "component": "utility:VER",
+    "final_report_sha256": "ffbd78bc5cc5abc2046a39457b619a48f893832b511dfc7bd679a29532ca5a15",
+    "identity": {
+      "revision": 12,
+      "version": "1.0"
+    },
+    "input_record": {
+      "assigned_identity": {
+        "revision": 12,
+        "version": "1.0"
+      },
+      "fingerprint": "238f5687d7504389f7007660c76ce469c70fd3c4b4867c8c1a17508d827bc10d",
+      "inputs": {
+        "component": "utility:VER",
+        "configuration": {
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        },
+        "files": {
+          "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
+          "src/bdos/versions.inc": "6560176573c7d4fd2b30374b898e1cced22dcb811d795eb5ad77341f226e4172",
+          "src/cpx/copy-backup.inc": "54beefef80a3ce0a605d8617ec15500cc6cb1e4f4b77986bb8dcd9a3ef9f22cd",
+          "src/cpx/copy-batch.inc": "4027398e7cbcdab9abb6d1a3ecd1b2a0b1b5391fae1e6ec131b674b87b87b4ae",
+          "src/cpx/copy-dest.inc": "19692da3e65e52e2a1f15b97feca194df8525a4abf8ee5ea37c3251d97479792",
+          "src/cpx/copy-error.inc": "853171d42ffd9c8d110748262469ae3e164d3ef774f73aa66c771a4e77873094",
+          "src/cpx/copy-options.inc": "cf31c89c584cce99050beff55c61342fc77b7416c534e59b879bb4dcbd61e880",
+          "src/cpx/copy-rename.inc": "3e5147aa28098f741a2f4f726027cd0aa713980618a73e4b2ffee413c9962c74",
+          "src/cpx/copy-report.inc": "2efbcd502dcbc83338b0d2f6666f63123a6f0743b453b0626ffec8b62621811a",
+          "src/cpx/copy-scope.inc": "9931cedf9340ab96f79d76431e854ed343dc21c4300bea751bd6e6ba784152d6",
+          "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+          "src/cpx/copy-verify.inc": "e0349132a007d9aa983400d7b8db1c2df76268fa89cad96856a27011fb7e2223",
+          "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+          "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+          "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
+          "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+          "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
+          "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+          "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+          "src/cpx/ver-banner.inc": "341cacaf5a55264a54681e1c25b084a028aa9db8b0e027033a908150333a1a09",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
+          "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
+          "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
+          "src/utilities/common/dirmetrics.inc": "81d58f2f481118819c36a8997fcbf41c56db49e5ab2ec6de8da290ce271a7f6d",
+          "src/utilities/common/diskfree.inc": "9a371d2506464c9b076bd23fd6d3ca254519b57d98a3fb69054c2d316883326e",
+          "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
+          "src/utilities/common/eraraw.inc": "69cf5d75ca9ccb3364847ff3c601d0ba38157b85bd55df3070d6640194cb9813",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/pipinput.inc": "6bbcfad92995a5be1997c19b8093645feba55a3c825f648445c0492104c4d8af",
+          "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/common/reninput.inc": "282aaf32ae572a9ae5289f03dcacb4333b82041806228a226aa9b2b533dffe99",
+          "src/utilities/common/sysgeninput.inc": "0902c666327bb719d2cfc6f1ef61cdb167b1248114da3e2e3af71d6425228623",
+          "src/utilities/common/ui/append.inc": "340e1a8d24992067d7f57613213fd18c3acac96940696933beea7d26658d175e",
+          "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b",
+          "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+          "src/utilities/common/ui/choiceerror.inc": "3b27714d70bd4b1cbbefe6f4bc5dfcdde5db53231e6eb426d85c453638fb0846",
+          "src/utilities/common/ui/confirm.inc": "1b841462ada57b565084da9b41bc5d7662e3d939e8c5731b4f2767bbbd214529",
+          "src/utilities/common/ui/default.inc": "64a602938d4000de77e31c7b2f4575198141fb7c590374e323ca98b3c31ab2ae",
+          "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+          "src/utilities/common/ui/format.inc": "3b037c07453f5e873864a8f6244ea44af438d05a358c186c64ff0fe9a1cbef5c",
+          "src/utilities/common/ui/inline.inc": "029a45b0f93ce8dd101c4b9d781d25a4ef6a8edb5f8d729df471827a8f0c3f13",
+          "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+          "src/utilities/common/ui/prompt.inc": "2d90d2f468687ae0ada66c043dbb2249020323da943ab5f4fb852aa53439845a",
+          "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
+          "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/cpxvers.inc": "a12a5e1054a4c15b25a222ea31de98f72b521ea85ee5a013611de136b1bd39a0",
+          "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
+          "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
+          "src/utilities/dir-options.inc": "307b6e05fccb37e3dd7ba76cac159ab3cf1b5e306ea9c0486ff735a5850da998",
+          "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
+          "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
+          "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
+          "src/utilities/rsxvers.inc": "e4ecd8d57a0ede0766e6d503ef1831a53bfa7deb3ecb8f5edf9a425bf36a105d",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_rcp_transients.py": "7b856c335df4abc59d94e4098e235fa8bfd1b2122bd92232f062b6800f64cac1",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
+          "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
+        },
+        "identity_dependencies": {
+          "utility:CLS": {
+            "api_version": null,
+            "description": "Clear Screen",
+            "display_format": "numeric",
+            "revision": 11,
+            "version": "1.0"
+          },
+          "utility:COPY": {
+            "api_version": null,
+            "description": "File Copying",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          },
+          "utility:DIR": {
+            "api_version": null,
+            "description": "Directory Listing",
+            "display_format": "numeric",
+            "revision": 14,
+            "version": "1.0"
+          },
+          "utility:MOVE": {
+            "api_version": null,
+            "description": "File Moving",
+            "display_format": "numeric",
+            "revision": 4,
+            "version": "1.0"
+          },
+          "utility:RCP": {
+            "api_version": null,
+            "description": "Resident Command Package",
+            "display_format": "numeric",
+            "revision": 18,
+            "version": "1.0"
+          },
+          "utility:USER": {
+            "api_version": null,
+            "description": "User Area Selection",
+            "display_format": "numeric",
+            "revision": 10,
+            "version": "1.0"
+          },
+          "utility:VER": {
+            "api_version": null,
+            "description": "System Version Information",
+            "display_format": "numeric",
+            "version": "1.0"
+          }
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "System Version Information",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "trs80gp"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "proposal": {
+      "candidate_artifact_sha256": "170fe7fb941032044644dd6c1e3bc8f30087a75c0ff6adfaa29a9e8616974e0f",
+      "candidate_identity": {
+        "revision": 11,
+        "version": "1.0"
+      },
+      "candidate_input_fingerprint": "238f5687d7504389f7007660c76ce469c70fd3c4b4867c8c1a17508d827bc10d",
+      "candidate_report_sha256": "099a73c2a900cf3ea19b9b29457b0dceee3c7cf6367100dd0328bb97409dbd4f",
+      "component": "utility:VER",
+      "executable_changed": true,
+      "proposed_identity": {
+        "revision": 12,
+        "version": "1.0"
+      },
+      "reference_artifact_sha256": "8bac3a853317a658adb5f61380ecb11bf25c342a0f79907be73a1ea857bac06f",
+      "reference_identity": {
+        "revision": 11,
+        "version": "1.0"
+      },
+      "reference_report_sha256": "3d9a35a1a41e976d014138fece193e36a4fbbf149ee8e9e0d171c6ced4819170",
+      "schema": 1,
+      "selected_inputs_changed": true,
+      "status": "revision-proposal; not acceptance",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "trs80gp"
+      }
+    },
+    "provenance": {
+      "repository_commit": "16f9a479 (working changes)"
+    },
+    "schema": 1,
+    "status": "explicit revision assignment; not qualification",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "trs80gp"
+    }
+  },
+  {
+    "artifact": {
+      "bytes": 14497,
+      "name": "COPY.COM",
+      "sha256": "62f0ae39bb1a2ed078790a0eacb44e6557abdd20c0dcbbb41024adb22af05f6e"
+    },
+    "component": "utility:COPY",
+    "final_report_sha256": "a648f3a68590de6daba73126a428084cde9cdcece272fa9b7ec7556064715104",
+    "identity": {
+      "revision": 12,
+      "version": "1.0"
+    },
+    "input_record": {
+      "assigned_identity": {
+        "revision": 12,
+        "version": "1.0"
+      },
+      "fingerprint": "2b1817a23ed68029ac6636296901e7bd2c79ee87ec41b453f7bbecbc268d8d7a",
+      "inputs": {
+        "component": "utility:COPY",
+        "configuration": {
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        },
+        "files": {
+          "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
+          "src/bdos/versions.inc": "6560176573c7d4fd2b30374b898e1cced22dcb811d795eb5ad77341f226e4172",
+          "src/cpx/copy-backup.inc": "54beefef80a3ce0a605d8617ec15500cc6cb1e4f4b77986bb8dcd9a3ef9f22cd",
+          "src/cpx/copy-batch.inc": "4027398e7cbcdab9abb6d1a3ecd1b2a0b1b5391fae1e6ec131b674b87b87b4ae",
+          "src/cpx/copy-dest.inc": "19692da3e65e52e2a1f15b97feca194df8525a4abf8ee5ea37c3251d97479792",
+          "src/cpx/copy-error.inc": "853171d42ffd9c8d110748262469ae3e164d3ef774f73aa66c771a4e77873094",
+          "src/cpx/copy-options.inc": "cf31c89c584cce99050beff55c61342fc77b7416c534e59b879bb4dcbd61e880",
+          "src/cpx/copy-rename.inc": "3e5147aa28098f741a2f4f726027cd0aa713980618a73e4b2ffee413c9962c74",
+          "src/cpx/copy-report.inc": "2efbcd502dcbc83338b0d2f6666f63123a6f0743b453b0626ffec8b62621811a",
+          "src/cpx/copy-scope.inc": "9931cedf9340ab96f79d76431e854ed343dc21c4300bea751bd6e6ba784152d6",
+          "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+          "src/cpx/copy-verify.inc": "e0349132a007d9aa983400d7b8db1c2df76268fa89cad96856a27011fb7e2223",
+          "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+          "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+          "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
+          "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+          "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
+          "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+          "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+          "src/cpx/ver-banner.inc": "341cacaf5a55264a54681e1c25b084a028aa9db8b0e027033a908150333a1a09",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
+          "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
+          "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
+          "src/utilities/common/dirmetrics.inc": "81d58f2f481118819c36a8997fcbf41c56db49e5ab2ec6de8da290ce271a7f6d",
+          "src/utilities/common/diskfree.inc": "9a371d2506464c9b076bd23fd6d3ca254519b57d98a3fb69054c2d316883326e",
+          "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
+          "src/utilities/common/eraraw.inc": "69cf5d75ca9ccb3364847ff3c601d0ba38157b85bd55df3070d6640194cb9813",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/pipinput.inc": "6bbcfad92995a5be1997c19b8093645feba55a3c825f648445c0492104c4d8af",
+          "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/common/reninput.inc": "282aaf32ae572a9ae5289f03dcacb4333b82041806228a226aa9b2b533dffe99",
+          "src/utilities/common/sysgeninput.inc": "0902c666327bb719d2cfc6f1ef61cdb167b1248114da3e2e3af71d6425228623",
+          "src/utilities/common/ui/append.inc": "340e1a8d24992067d7f57613213fd18c3acac96940696933beea7d26658d175e",
+          "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b",
+          "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+          "src/utilities/common/ui/choiceerror.inc": "3b27714d70bd4b1cbbefe6f4bc5dfcdde5db53231e6eb426d85c453638fb0846",
+          "src/utilities/common/ui/confirm.inc": "1b841462ada57b565084da9b41bc5d7662e3d939e8c5731b4f2767bbbd214529",
+          "src/utilities/common/ui/default.inc": "64a602938d4000de77e31c7b2f4575198141fb7c590374e323ca98b3c31ab2ae",
+          "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+          "src/utilities/common/ui/format.inc": "3b037c07453f5e873864a8f6244ea44af438d05a358c186c64ff0fe9a1cbef5c",
+          "src/utilities/common/ui/inline.inc": "029a45b0f93ce8dd101c4b9d781d25a4ef6a8edb5f8d729df471827a8f0c3f13",
+          "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+          "src/utilities/common/ui/prompt.inc": "2d90d2f468687ae0ada66c043dbb2249020323da943ab5f4fb852aa53439845a",
+          "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
+          "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/cpxvers.inc": "a12a5e1054a4c15b25a222ea31de98f72b521ea85ee5a013611de136b1bd39a0",
+          "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
+          "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
+          "src/utilities/dir-options.inc": "307b6e05fccb37e3dd7ba76cac159ab3cf1b5e306ea9c0486ff735a5850da998",
+          "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
+          "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
+          "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
+          "src/utilities/rsxvers.inc": "e4ecd8d57a0ede0766e6d503ef1831a53bfa7deb3ecb8f5edf9a425bf36a105d",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_rcp_transients.py": "7b856c335df4abc59d94e4098e235fa8bfd1b2122bd92232f062b6800f64cac1",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
+          "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
+        },
+        "identity_dependencies": {
+          "utility:CLS": {
+            "api_version": null,
+            "description": "Clear Screen",
+            "display_format": "numeric",
+            "revision": 11,
+            "version": "1.0"
+          },
+          "utility:COPY": {
+            "api_version": null,
+            "description": "File Copying",
+            "display_format": "numeric",
+            "version": "1.0"
+          },
+          "utility:DIR": {
+            "api_version": null,
+            "description": "Directory Listing",
+            "display_format": "numeric",
+            "revision": 14,
+            "version": "1.0"
+          },
+          "utility:MOVE": {
+            "api_version": null,
+            "description": "File Moving",
+            "display_format": "numeric",
+            "revision": 4,
+            "version": "1.0"
+          },
+          "utility:RCP": {
+            "api_version": null,
+            "description": "Resident Command Package",
+            "display_format": "numeric",
+            "revision": 18,
+            "version": "1.0"
+          },
+          "utility:USER": {
+            "api_version": null,
+            "description": "User Area Selection",
+            "display_format": "numeric",
+            "revision": 10,
+            "version": "1.0"
+          },
+          "utility:VER": {
+            "api_version": null,
+            "description": "System Version Information",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          }
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "File Copying",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "proposal": {
+      "candidate_artifact_sha256": "11aa3ce14c7bb82224b5fc8112b67fa16933a7e4c3aff3210665ee75206a5c4c",
+      "candidate_identity": {
+        "revision": 11,
+        "version": "1.0"
+      },
+      "candidate_input_fingerprint": "2b1817a23ed68029ac6636296901e7bd2c79ee87ec41b453f7bbecbc268d8d7a",
+      "candidate_report_sha256": "15b7ffc3b215eb7cd0c9bb765dc02b9ad112ffe13217584b62e82558686720ac",
+      "component": "utility:COPY",
+      "executable_changed": true,
+      "proposed_identity": {
+        "revision": 12,
+        "version": "1.0"
+      },
+      "reference_artifact_sha256": "445034f4927f2eaf05f5bcf72b6e90e266a3038c83aae6b9c083f6821df46f2f",
+      "reference_identity": {
+        "revision": 11,
+        "version": "1.0"
+      },
+      "reference_report_sha256": "0408cebb9f47963104ae2b595ecc87bee03533946131d9743e7b461482e8369b",
+      "schema": 1,
+      "selected_inputs_changed": true,
+      "status": "revision-proposal; not acceptance",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      }
+    },
+    "provenance": {
+      "repository_commit": "16f9a479 (working changes)"
+    },
+    "schema": 1,
+    "status": "explicit revision assignment; not qualification",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "z80pack"
+    }
+  },
+  {
+    "artifact": {
+      "bytes": 14497,
+      "name": "COPY.COM",
+      "sha256": "62f0ae39bb1a2ed078790a0eacb44e6557abdd20c0dcbbb41024adb22af05f6e"
+    },
+    "component": "utility:COPY",
+    "final_report_sha256": "aef3dc9c88e393bb81974f4e2711cdb6ddf5c06e7cbcae738c1ab30efae229d4",
+    "identity": {
+      "revision": 12,
+      "version": "1.0"
+    },
+    "input_record": {
+      "assigned_identity": {
+        "revision": 12,
+        "version": "1.0"
+      },
+      "fingerprint": "04076491c0f5647467daaf2c1cc2b0cb3544a0cfe0e5c2ee6250036bfad14c02",
+      "inputs": {
+        "component": "utility:COPY",
+        "configuration": {
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        },
+        "files": {
+          "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
+          "src/bdos/versions.inc": "6560176573c7d4fd2b30374b898e1cced22dcb811d795eb5ad77341f226e4172",
+          "src/cpx/copy-backup.inc": "54beefef80a3ce0a605d8617ec15500cc6cb1e4f4b77986bb8dcd9a3ef9f22cd",
+          "src/cpx/copy-batch.inc": "4027398e7cbcdab9abb6d1a3ecd1b2a0b1b5391fae1e6ec131b674b87b87b4ae",
+          "src/cpx/copy-dest.inc": "19692da3e65e52e2a1f15b97feca194df8525a4abf8ee5ea37c3251d97479792",
+          "src/cpx/copy-error.inc": "853171d42ffd9c8d110748262469ae3e164d3ef774f73aa66c771a4e77873094",
+          "src/cpx/copy-options.inc": "cf31c89c584cce99050beff55c61342fc77b7416c534e59b879bb4dcbd61e880",
+          "src/cpx/copy-rename.inc": "3e5147aa28098f741a2f4f726027cd0aa713980618a73e4b2ffee413c9962c74",
+          "src/cpx/copy-report.inc": "2efbcd502dcbc83338b0d2f6666f63123a6f0743b453b0626ffec8b62621811a",
+          "src/cpx/copy-scope.inc": "9931cedf9340ab96f79d76431e854ed343dc21c4300bea751bd6e6ba784152d6",
+          "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+          "src/cpx/copy-verify.inc": "e0349132a007d9aa983400d7b8db1c2df76268fa89cad96856a27011fb7e2223",
+          "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+          "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+          "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
+          "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+          "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
+          "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+          "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+          "src/cpx/ver-banner.inc": "341cacaf5a55264a54681e1c25b084a028aa9db8b0e027033a908150333a1a09",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
+          "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
+          "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
+          "src/utilities/common/dirmetrics.inc": "81d58f2f481118819c36a8997fcbf41c56db49e5ab2ec6de8da290ce271a7f6d",
+          "src/utilities/common/diskfree.inc": "9a371d2506464c9b076bd23fd6d3ca254519b57d98a3fb69054c2d316883326e",
+          "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
+          "src/utilities/common/eraraw.inc": "69cf5d75ca9ccb3364847ff3c601d0ba38157b85bd55df3070d6640194cb9813",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/pipinput.inc": "6bbcfad92995a5be1997c19b8093645feba55a3c825f648445c0492104c4d8af",
+          "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/common/reninput.inc": "282aaf32ae572a9ae5289f03dcacb4333b82041806228a226aa9b2b533dffe99",
+          "src/utilities/common/sysgeninput.inc": "0902c666327bb719d2cfc6f1ef61cdb167b1248114da3e2e3af71d6425228623",
+          "src/utilities/common/ui/append.inc": "340e1a8d24992067d7f57613213fd18c3acac96940696933beea7d26658d175e",
+          "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b",
+          "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+          "src/utilities/common/ui/choiceerror.inc": "3b27714d70bd4b1cbbefe6f4bc5dfcdde5db53231e6eb426d85c453638fb0846",
+          "src/utilities/common/ui/confirm.inc": "1b841462ada57b565084da9b41bc5d7662e3d939e8c5731b4f2767bbbd214529",
+          "src/utilities/common/ui/default.inc": "64a602938d4000de77e31c7b2f4575198141fb7c590374e323ca98b3c31ab2ae",
+          "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+          "src/utilities/common/ui/format.inc": "3b037c07453f5e873864a8f6244ea44af438d05a358c186c64ff0fe9a1cbef5c",
+          "src/utilities/common/ui/inline.inc": "029a45b0f93ce8dd101c4b9d781d25a4ef6a8edb5f8d729df471827a8f0c3f13",
+          "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+          "src/utilities/common/ui/prompt.inc": "2d90d2f468687ae0ada66c043dbb2249020323da943ab5f4fb852aa53439845a",
+          "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
+          "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/cpxvers.inc": "a12a5e1054a4c15b25a222ea31de98f72b521ea85ee5a013611de136b1bd39a0",
+          "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
+          "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
+          "src/utilities/dir-options.inc": "307b6e05fccb37e3dd7ba76cac159ab3cf1b5e306ea9c0486ff735a5850da998",
+          "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
+          "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
+          "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
+          "src/utilities/rsxvers.inc": "e4ecd8d57a0ede0766e6d503ef1831a53bfa7deb3ecb8f5edf9a425bf36a105d",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_rcp_transients.py": "7b856c335df4abc59d94e4098e235fa8bfd1b2122bd92232f062b6800f64cac1",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
+          "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
+        },
+        "identity_dependencies": {
+          "utility:CLS": {
+            "api_version": null,
+            "description": "Clear Screen",
+            "display_format": "numeric",
+            "revision": 11,
+            "version": "1.0"
+          },
+          "utility:COPY": {
+            "api_version": null,
+            "description": "File Copying",
+            "display_format": "numeric",
+            "version": "1.0"
+          },
+          "utility:DIR": {
+            "api_version": null,
+            "description": "Directory Listing",
+            "display_format": "numeric",
+            "revision": 14,
+            "version": "1.0"
+          },
+          "utility:MOVE": {
+            "api_version": null,
+            "description": "File Moving",
+            "display_format": "numeric",
+            "revision": 4,
+            "version": "1.0"
+          },
+          "utility:RCP": {
+            "api_version": null,
+            "description": "Resident Command Package",
+            "display_format": "numeric",
+            "revision": 18,
+            "version": "1.0"
+          },
+          "utility:USER": {
+            "api_version": null,
+            "description": "User Area Selection",
+            "display_format": "numeric",
+            "revision": 10,
+            "version": "1.0"
+          },
+          "utility:VER": {
+            "api_version": null,
+            "description": "System Version Information",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          }
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "File Copying",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "trs80gp"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "proposal": {
+      "candidate_artifact_sha256": "11aa3ce14c7bb82224b5fc8112b67fa16933a7e4c3aff3210665ee75206a5c4c",
+      "candidate_identity": {
+        "revision": 11,
+        "version": "1.0"
+      },
+      "candidate_input_fingerprint": "04076491c0f5647467daaf2c1cc2b0cb3544a0cfe0e5c2ee6250036bfad14c02",
+      "candidate_report_sha256": "1b4825422ec0ee2b75384901c59e90a51850c4cde099df1ec0d861472f16fb7e",
+      "component": "utility:COPY",
+      "executable_changed": true,
+      "proposed_identity": {
+        "revision": 12,
+        "version": "1.0"
+      },
+      "reference_artifact_sha256": "445034f4927f2eaf05f5bcf72b6e90e266a3038c83aae6b9c083f6821df46f2f",
+      "reference_identity": {
+        "revision": 11,
+        "version": "1.0"
+      },
+      "reference_report_sha256": "76df6ce0f6c7cc40b1a470e3bda5c277876328f33c98e44933bb56910e5ca3f1",
+      "schema": 1,
+      "selected_inputs_changed": true,
+      "status": "revision-proposal; not acceptance",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "trs80gp"
+      }
+    },
+    "provenance": {
+      "repository_commit": "16f9a479 (working changes)"
+    },
+    "schema": 1,
+    "status": "explicit revision assignment; not qualification",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "trs80gp"
+    }
+  },
+  {
+    "artifact": {
+      "bytes": 6996,
+      "name": "MOVE.COM",
+      "sha256": "258c8baa6d9c64535990d2a66a31ecceac7a0fd05fddf7e9215f6ef4111a35a1"
+    },
+    "component": "utility:MOVE",
+    "final_report_sha256": "cf48e95df540b518c21528a41aed2368d94886a3cd19a6758a36554cbfac0d63",
+    "identity": {
+      "revision": 4,
+      "version": "1.0"
+    },
+    "input_record": {
+      "assigned_identity": {
+        "revision": 4,
+        "version": "1.0"
+      },
+      "fingerprint": "329d7cf0fef7ef596d715b92ae8f001160ebf95f5bdb90a86c26b34a7053d4ab",
+      "inputs": {
+        "component": "utility:MOVE",
+        "configuration": {
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        },
+        "files": {
+          "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
+          "src/bdos/versions.inc": "6560176573c7d4fd2b30374b898e1cced22dcb811d795eb5ad77341f226e4172",
+          "src/cpx/copy-backup.inc": "54beefef80a3ce0a605d8617ec15500cc6cb1e4f4b77986bb8dcd9a3ef9f22cd",
+          "src/cpx/copy-batch.inc": "4027398e7cbcdab9abb6d1a3ecd1b2a0b1b5391fae1e6ec131b674b87b87b4ae",
+          "src/cpx/copy-dest.inc": "19692da3e65e52e2a1f15b97feca194df8525a4abf8ee5ea37c3251d97479792",
+          "src/cpx/copy-error.inc": "853171d42ffd9c8d110748262469ae3e164d3ef774f73aa66c771a4e77873094",
+          "src/cpx/copy-options.inc": "cf31c89c584cce99050beff55c61342fc77b7416c534e59b879bb4dcbd61e880",
+          "src/cpx/copy-rename.inc": "3e5147aa28098f741a2f4f726027cd0aa713980618a73e4b2ffee413c9962c74",
+          "src/cpx/copy-report.inc": "2efbcd502dcbc83338b0d2f6666f63123a6f0743b453b0626ffec8b62621811a",
+          "src/cpx/copy-scope.inc": "9931cedf9340ab96f79d76431e854ed343dc21c4300bea751bd6e6ba784152d6",
+          "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+          "src/cpx/copy-verify.inc": "e0349132a007d9aa983400d7b8db1c2df76268fa89cad96856a27011fb7e2223",
+          "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+          "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+          "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
+          "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+          "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
+          "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+          "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+          "src/cpx/ver-banner.inc": "341cacaf5a55264a54681e1c25b084a028aa9db8b0e027033a908150333a1a09",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
+          "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
+          "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
+          "src/utilities/common/dirmetrics.inc": "81d58f2f481118819c36a8997fcbf41c56db49e5ab2ec6de8da290ce271a7f6d",
+          "src/utilities/common/diskfree.inc": "9a371d2506464c9b076bd23fd6d3ca254519b57d98a3fb69054c2d316883326e",
+          "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
+          "src/utilities/common/eraraw.inc": "69cf5d75ca9ccb3364847ff3c601d0ba38157b85bd55df3070d6640194cb9813",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/pipinput.inc": "6bbcfad92995a5be1997c19b8093645feba55a3c825f648445c0492104c4d8af",
+          "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/common/reninput.inc": "282aaf32ae572a9ae5289f03dcacb4333b82041806228a226aa9b2b533dffe99",
+          "src/utilities/common/sysgeninput.inc": "0902c666327bb719d2cfc6f1ef61cdb167b1248114da3e2e3af71d6425228623",
+          "src/utilities/common/ui/append.inc": "340e1a8d24992067d7f57613213fd18c3acac96940696933beea7d26658d175e",
+          "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b",
+          "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+          "src/utilities/common/ui/choiceerror.inc": "3b27714d70bd4b1cbbefe6f4bc5dfcdde5db53231e6eb426d85c453638fb0846",
+          "src/utilities/common/ui/confirm.inc": "1b841462ada57b565084da9b41bc5d7662e3d939e8c5731b4f2767bbbd214529",
+          "src/utilities/common/ui/default.inc": "64a602938d4000de77e31c7b2f4575198141fb7c590374e323ca98b3c31ab2ae",
+          "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+          "src/utilities/common/ui/format.inc": "3b037c07453f5e873864a8f6244ea44af438d05a358c186c64ff0fe9a1cbef5c",
+          "src/utilities/common/ui/inline.inc": "029a45b0f93ce8dd101c4b9d781d25a4ef6a8edb5f8d729df471827a8f0c3f13",
+          "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+          "src/utilities/common/ui/prompt.inc": "2d90d2f468687ae0ada66c043dbb2249020323da943ab5f4fb852aa53439845a",
+          "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
+          "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/cpxvers.inc": "a12a5e1054a4c15b25a222ea31de98f72b521ea85ee5a013611de136b1bd39a0",
+          "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
+          "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
+          "src/utilities/dir-options.inc": "307b6e05fccb37e3dd7ba76cac159ab3cf1b5e306ea9c0486ff735a5850da998",
+          "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
+          "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
+          "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
+          "src/utilities/rsxvers.inc": "e4ecd8d57a0ede0766e6d503ef1831a53bfa7deb3ecb8f5edf9a425bf36a105d",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_rcp_transients.py": "7b856c335df4abc59d94e4098e235fa8bfd1b2122bd92232f062b6800f64cac1",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
+          "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
+        },
+        "identity_dependencies": {
+          "utility:CLS": {
+            "api_version": null,
+            "description": "Clear Screen",
+            "display_format": "numeric",
+            "revision": 11,
+            "version": "1.0"
+          },
+          "utility:COPY": {
+            "api_version": null,
+            "description": "File Copying",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          },
+          "utility:DIR": {
+            "api_version": null,
+            "description": "Directory Listing",
+            "display_format": "numeric",
+            "revision": 14,
+            "version": "1.0"
+          },
+          "utility:MOVE": {
+            "api_version": null,
+            "description": "File Moving",
+            "display_format": "numeric",
+            "version": "1.0"
+          },
+          "utility:RCP": {
+            "api_version": null,
+            "description": "Resident Command Package",
+            "display_format": "numeric",
+            "revision": 18,
+            "version": "1.0"
+          },
+          "utility:USER": {
+            "api_version": null,
+            "description": "User Area Selection",
+            "display_format": "numeric",
+            "revision": 10,
+            "version": "1.0"
+          },
+          "utility:VER": {
+            "api_version": null,
+            "description": "System Version Information",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          }
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "File Moving",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "z80pack"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "proposal": {
+      "candidate_artifact_sha256": "f7311ac9df69cc49f070ed89f5726b3751bc834251fd7362bcce4c91fe4d39ee",
+      "candidate_identity": {
+        "revision": 3,
+        "version": "1.0"
+      },
+      "candidate_input_fingerprint": "329d7cf0fef7ef596d715b92ae8f001160ebf95f5bdb90a86c26b34a7053d4ab",
+      "candidate_report_sha256": "921264dee364028d89c59c4d4b212e15ae673d7e69238d96838810c8345e1247",
+      "component": "utility:MOVE",
+      "executable_changed": true,
+      "proposed_identity": {
+        "revision": 4,
+        "version": "1.0"
+      },
+      "reference_artifact_sha256": "bb11212a489addf7467b9dd2cae3af288496d976d1cd56bbc02a4451d6bf7feb",
+      "reference_identity": {
+        "revision": 3,
+        "version": "1.0"
+      },
+      "reference_report_sha256": "c9c09ddf493a226c395cbfbee665dd64c97835b0c4b9ae3e7257627ea807945b",
+      "schema": 1,
+      "selected_inputs_changed": true,
+      "status": "revision-proposal; not acceptance",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "z80pack"
+      }
+    },
+    "provenance": {
+      "repository_commit": "16f9a479 (working changes)"
+    },
+    "schema": 1,
+    "status": "explicit revision assignment; not qualification",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "z80pack"
+    }
+  },
+  {
+    "artifact": {
+      "bytes": 6996,
+      "name": "MOVE.COM",
+      "sha256": "258c8baa6d9c64535990d2a66a31ecceac7a0fd05fddf7e9215f6ef4111a35a1"
+    },
+    "component": "utility:MOVE",
+    "final_report_sha256": "58a42050da045efcc1557cb4e35f4060a7b1a46b52583827d40c54c1887f2532",
+    "identity": {
+      "revision": 4,
+      "version": "1.0"
+    },
+    "input_record": {
+      "assigned_identity": {
+        "revision": 4,
+        "version": "1.0"
+      },
+      "fingerprint": "2889d6a394716da3f5bf5a5180bd5a81574b6af870fabe4f932b142caeaf1a96",
+      "inputs": {
+        "component": "utility:MOVE",
+        "configuration": {
+          "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+        },
+        "files": {
+          "metadata/release-package.json": "9fb926ddc378c9672adc7cd231fd7ca734c53544c8b68920ea1d92c25b140930",
+          "src/bdos/versions.inc": "6560176573c7d4fd2b30374b898e1cced22dcb811d795eb5ad77341f226e4172",
+          "src/cpx/copy-backup.inc": "54beefef80a3ce0a605d8617ec15500cc6cb1e4f4b77986bb8dcd9a3ef9f22cd",
+          "src/cpx/copy-batch.inc": "4027398e7cbcdab9abb6d1a3ecd1b2a0b1b5391fae1e6ec131b674b87b87b4ae",
+          "src/cpx/copy-dest.inc": "19692da3e65e52e2a1f15b97feca194df8525a4abf8ee5ea37c3251d97479792",
+          "src/cpx/copy-error.inc": "853171d42ffd9c8d110748262469ae3e164d3ef774f73aa66c771a4e77873094",
+          "src/cpx/copy-options.inc": "cf31c89c584cce99050beff55c61342fc77b7416c534e59b879bb4dcbd61e880",
+          "src/cpx/copy-rename.inc": "3e5147aa28098f741a2f4f726027cd0aa713980618a73e4b2ffee413c9962c74",
+          "src/cpx/copy-report.inc": "2efbcd502dcbc83338b0d2f6666f63123a6f0743b453b0626ffec8b62621811a",
+          "src/cpx/copy-scope.inc": "9931cedf9340ab96f79d76431e854ed343dc21c4300bea751bd6e6ba784152d6",
+          "src/cpx/copy-select.inc": "ba3ed2215515a0348d479037825c8091a2e3c1c8b8aeb44519ce6e32ac1d7637",
+          "src/cpx/copy-verify.inc": "e0349132a007d9aa983400d7b8db1c2df76268fa89cad96856a27011fb7e2223",
+          "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f",
+          "src/cpx/era-resident.inc": "fb36868f23b4a8875608f2d1cbc10b9e45c85c66b868683722876d8bd6162a5e",
+          "src/cpx/era-select.inc": "8d1fdfee25d64548dc0b38ebf96ee9bbe7c4793cb241e6d8090aa24c81c40a41",
+          "src/cpx/feature-hint.inc": "883cec0dd60c6c6a39dc8f541fbc1e72bf06c5c5e57b578975fdc5650cae742e",
+          "src/cpx/hello.mac": "43ff7f2435193ab7b90641c1ba34871db7dbaecbcf5cf71b87b10ffbed816080",
+          "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
+          "src/cpx/ren-select.inc": "ea727eee75e6e9a9f1ff5cb6b3ba641bf3adbac493055c54dfea22917583bca9",
+          "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68",
+          "src/cpx/ver-banner.inc": "341cacaf5a55264a54681e1c25b084a028aa9db8b0e027033a908150333a1a09",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "5ec9a58955bf5dcea6f4d60ba9044e4ede4ba01e420ba161429a0fd5735c59e6",
+          "src/system/layout.inc": "5a0e362dcd7df4d4ca187530bf43adde6960f7dee7280638e13217f5c8acc1f6",
+          "src/utilities/common/attrselect.inc": "16267f06cc07c24d8311a0ccfcef70f2ba92101791366dc8d3e7b4d86b8ba4bf",
+          "src/utilities/common/configchoice.inc": "bf29787ea2507a1c50d6e1cce3998399a1b55a18b3b0d77c507318e146743007",
+          "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891",
+          "src/utilities/common/copyinput.inc": "ce9f8e8d93f6c33b698f5e761497d11eea7dc5f5687cd875a013e7ac41d29aa1",
+          "src/utilities/common/dirmetrics.inc": "81d58f2f481118819c36a8997fcbf41c56db49e5ab2ec6de8da290ce271a7f6d",
+          "src/utilities/common/diskfree.inc": "9a371d2506464c9b076bd23fd6d3ca254519b57d98a3fb69054c2d316883326e",
+          "src/utilities/common/dupmenu.inc": "6b42534019bd1d41e20c535aa4df0bd421bd6f644c04bb9b1a030f4414dde8d0",
+          "src/utilities/common/duselect.inc": "fd3ce0cdc13dc4b332588fa77e7c272049b3bc4773c3117142472cfc23382fbd",
+          "src/utilities/common/erainput.inc": "b28560132831d61eed1b384956caf1a6ac459e6f9401c65cab5587772714e6e6",
+          "src/utilities/common/eraraw.inc": "69cf5d75ca9ccb3364847ff3c601d0ba38157b85bd55df3070d6640194cb9813",
+          "src/utilities/common/filespec.inc": "230e55632fc3c5304463ca3c6143e12c3e024f977ff0946632ff895660320c07",
+          "src/utilities/common/operandqual.inc": "2d06df604f86f753ac0b744e1e8bd80f8065dc17f8da4b8ea2a73a4351c6c26c",
+          "src/utilities/common/pipinput.inc": "6bbcfad92995a5be1997c19b8093645feba55a3c825f648445c0492104c4d8af",
+          "src/utilities/common/private-utility.inc": "25667bd7087e4128aa76016697ece5336694627c141eafeb674e948d5de3654f",
+          "src/utilities/common/rcpselect.inc": "820183e201107bdf1a79214b27a87dc8ea9d7be111f92e044d2de6de5386042e",
+          "src/utilities/common/reninput.inc": "282aaf32ae572a9ae5289f03dcacb4333b82041806228a226aa9b2b533dffe99",
+          "src/utilities/common/sysgeninput.inc": "0902c666327bb719d2cfc6f1ef61cdb167b1248114da3e2e3af71d6425228623",
+          "src/utilities/common/ui/append.inc": "340e1a8d24992067d7f57613213fd18c3acac96940696933beea7d26658d175e",
+          "src/utilities/common/ui/checks.inc": "8884d8c9e1894f8a99d5842e6eeaf44f4bf526a970e194ba4d846d702015d90b",
+          "src/utilities/common/ui/choice.inc": "a102767f6a62065e5ed4b143999dee021319285d7929fc2fbe825e91c9dfcad4",
+          "src/utilities/common/ui/choiceerror.inc": "3b27714d70bd4b1cbbefe6f4bc5dfcdde5db53231e6eb426d85c453638fb0846",
+          "src/utilities/common/ui/confirm.inc": "1b841462ada57b565084da9b41bc5d7662e3d939e8c5731b4f2767bbbd214529",
+          "src/utilities/common/ui/default.inc": "64a602938d4000de77e31c7b2f4575198141fb7c590374e323ca98b3c31ab2ae",
+          "src/utilities/common/ui/events.inc": "c22b616646b95e6707e8349cd006531e07c2a25923e129927f3fc9c4ccab8862",
+          "src/utilities/common/ui/format.inc": "3b037c07453f5e873864a8f6244ea44af438d05a358c186c64ff0fe9a1cbef5c",
+          "src/utilities/common/ui/inline.inc": "029a45b0f93ce8dd101c4b9d781d25a4ef6a8edb5f8d729df471827a8f0c3f13",
+          "src/utilities/common/ui/input.inc": "8782d119d721ec79c21c211941a1ba398224d023566e5a4fd699dcbd8b868c2f",
+          "src/utilities/common/ui/prompt.inc": "2d90d2f468687ae0ada66c043dbb2249020323da943ab5f4fb852aa53439845a",
+          "src/utilities/common/ui/screen.inc": "01517cc02f737eccdff03bf0e4c85d16f1103fa3cb1506a8e906e3f94f3e02af",
+          "src/utilities/common/ui/wordstar.inc": "f8cc0b722d239867b443c85517d0167f1e0f414ab21d0215f4f9f4a4f845b08e",
+          "src/utilities/common/version.inc": "97ad99ce3f03d9b2fdc1889e919d0311333fd3c6c47a36e3565bf40d7f918325",
+          "src/utilities/cpxvers.inc": "a12a5e1054a4c15b25a222ea31de98f72b521ea85ee5a013611de136b1bd39a0",
+          "src/utilities/dir-columns.inc": "344b8f3dde183e09b646b6be0d7b1385f47ebdc78021120f273e863bd0362fe5",
+          "src/utilities/dir-free.inc": "b6ec7f2a0a06c68902e10aa4d1954f6602b55469090b03232a4fc51d2ff8b11a",
+          "src/utilities/dir-options.inc": "307b6e05fccb37e3dd7ba76cac159ab3cf1b5e306ea9c0486ff735a5850da998",
+          "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033",
+          "src/utilities/dir-report.inc": "a28e10d36079feec38e6e0166a10da0264b5a2d47e62621813a811fa963cd8d5",
+          "src/utilities/dir-whereis.inc": "d58965f1e8f01145ac3d457fb3ac3838e6c5732c0057edb127fe71c1f7d1efbc",
+          "src/utilities/rsxvers.inc": "e4ecd8d57a0ede0766e6d503ef1831a53bfa7deb3ecb8f5edf9a425bf36a105d",
+          "tools/build_ccp.py": "63f2a21d02b248c46cdc2ba47bed8683ea6e951c2f97246bb0231479b4dad715",
+          "tools/build_profiles.py": "e9941f6e00752d19878d1df8d47af9f038986086d88ba4fa0ffc6d250892294b",
+          "tools/build_rcp_transients.py": "7b856c335df4abc59d94e4098e235fa8bfd1b2122bd92232f062b6800f64cac1",
+          "tools/checked_build_contract.py": "fdfd89ec9f3dda50156e75d084c376c3a9ce244159448aefcc6799ff8de5cebf",
+          "tools/checked_carriers.py": "38d134c72db957c88491e83db6ac2d66f430b3001e301d411997878a220f4370",
+          "tools/component_build.py": "57dd8d891ce30c5dd5e242a345a3c8a04fcf4bacc739a804f62a22698bed3149",
+          "tools/component_development.py": "cffaf14c1f6adada25422894b337f8faeea40f72556eae97b0519e12e6e59659",
+          "tools/component_identity.py": "89b6e2d03e3427de2f17d077c6b9e85c73e1ecbbfb7307a0eda437b23038d1db",
+          "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
+          "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
+          "tools/system_layout.py": "7b107ef705753a9f1b89ec13b55190da6585cfeeb165f616514b8c9932011def",
+          "tools/utility_help.py": "482cfd86b263e4f98616cd033e3ef450c3c89530afede27bf622a9c1cbe8ea38",
+          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5",
+          "tools/version_metadata.py": "ed5ae71ffe6e8b952dc0160bffd537a119796a261bd64275583dd335d17c6c52"
+        },
+        "identity_dependencies": {
+          "utility:CLS": {
+            "api_version": null,
+            "description": "Clear Screen",
+            "display_format": "numeric",
+            "revision": 11,
+            "version": "1.0"
+          },
+          "utility:COPY": {
+            "api_version": null,
+            "description": "File Copying",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          },
+          "utility:DIR": {
+            "api_version": null,
+            "description": "Directory Listing",
+            "display_format": "numeric",
+            "revision": 14,
+            "version": "1.0"
+          },
+          "utility:MOVE": {
+            "api_version": null,
+            "description": "File Moving",
+            "display_format": "numeric",
+            "version": "1.0"
+          },
+          "utility:RCP": {
+            "api_version": null,
+            "description": "Resident Command Package",
+            "display_format": "numeric",
+            "revision": 18,
+            "version": "1.0"
+          },
+          "utility:USER": {
+            "api_version": null,
+            "description": "User Area Selection",
+            "display_format": "numeric",
+            "revision": 10,
+            "version": "1.0"
+          },
+          "utility:VER": {
+            "api_version": null,
+            "description": "System Version Information",
+            "display_format": "numeric",
+            "revision": 12,
+            "version": "1.0"
+          }
+        },
+        "identity_fields": {
+          "api_version": null,
+          "version": "1.0"
+        },
+        "schema": 1,
+        "selected_metadata": {
+          "description": "File Moving",
+          "display_format": "numeric"
+        },
+        "toolchain": {
+          "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+        },
+        "variant": {
+          "build_mode": "cross",
+          "profile": "default",
+          "target": "trs80gp"
+        }
+      },
+      "schema": 1,
+      "status": "selected-input-capture"
+    },
+    "proposal": {
+      "candidate_artifact_sha256": "f7311ac9df69cc49f070ed89f5726b3751bc834251fd7362bcce4c91fe4d39ee",
+      "candidate_identity": {
+        "revision": 3,
+        "version": "1.0"
+      },
+      "candidate_input_fingerprint": "2889d6a394716da3f5bf5a5180bd5a81574b6af870fabe4f932b142caeaf1a96",
+      "candidate_report_sha256": "5e976db12dd55a117326b661561afcbf3203df8d03663c429a5ed88c30a5bc19",
+      "component": "utility:MOVE",
+      "executable_changed": true,
+      "proposed_identity": {
+        "revision": 4,
+        "version": "1.0"
+      },
+      "reference_artifact_sha256": "bb11212a489addf7467b9dd2cae3af288496d976d1cd56bbc02a4451d6bf7feb",
+      "reference_identity": {
+        "revision": 3,
+        "version": "1.0"
+      },
+      "reference_report_sha256": "77384575f750a5f17d99f9eca862ed1f56c2d7a9488fecbfbea3f168fab45dcd",
+      "schema": 1,
+      "selected_inputs_changed": true,
+      "status": "revision-proposal; not acceptance",
+      "variant": {
+        "build_mode": "cross",
+        "profile": "default",
+        "target": "trs80gp"
+      }
+    },
+    "provenance": {
+      "repository_commit": "16f9a479 (working changes)"
+    },
+    "schema": 1,
+    "status": "explicit revision assignment; not qualification",
+    "variant": {
+      "build_mode": "cross",
+      "profile": "default",
+      "target": "trs80gp"
+    }
+  }
+]

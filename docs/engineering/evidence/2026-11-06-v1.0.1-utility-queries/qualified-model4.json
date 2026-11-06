@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "platform": "model4",
+  "steps": 40,
+  "system_sha256": "4105ff45e411e25c0f3cd6024b970ddc231e6287086a553933e1fb577aaf2467",
+  "rcp_sha256": "f27771379e3056f3b6d55d1af0c8eac66a8ccecc1e701de06e7d8ac82346b418",
+  "removed_transients": [
+    "DIR.COM",
+    "ERA.COM",
+    "TYPE.COM",
+    "REN.COM",
+    "VER.COM",
+    "COPY.COM"
+  ],
+  "verified_absent_transients": [
+    "DIR.COM",
+    "ERA.COM",
+    "TYPE.COM",
+    "REN.COM",
+    "CLS.COM",
+    "USER.COM",
+    "VER.COM",
+    "COPY.COM",
+    "MOVE.COM"
+  ],
+  "resident_only": true,
+  "scope": "resident queries/errors, exact help, preserved files, WBOOT reconstruction and transient TPA observations",
+  "operations": true,
+  "tpa_ceiling": "CA01",
+  "filesystem": "PASS",
+  "unchanged_inputs": true
+}

@@ -26,7 +26,7 @@ def main():
  # Each change is (source DU/name, target DU/name, delete source?).
  cases=[
   ('COPY [A1,A2]:C*.DAT A[10,11]:','COPY source destination',[]),
-  ('MOVE [A4,A5]:M*.DAT [A10,A11]:','COPY source destination',[]),
+  ('MOVE [A4,A5]:M*.DAT [A10,A11]:','MOVE source destination',[]),
   ('COPY A1:C1SYS.DAT A10:F*A.DAT','COPY source destination',[]),
   ('COPY A1:C*B.DAT A10:','COPY source destination',[]),
   ('COPY [A1,E2]:C*.DAT A10:','INVALID DRIVE',[]),
@@ -48,8 +48,8 @@ def main():
   ('COPY [A14,A15,A3]:G*.DAT A3:','',[(14,'G1.DAT',3,'G1.DAT',False),(15,'G2.DAT',3,'G2.DAT',False)]),
   ('COPY A13:Q*.DAT A13:Q2.DAT /O','',[(13,'Q1.DAT',13,'Q2.DAT',False)]),
   ('MOVE [A14,A15,A4]:H*.DAT A4:','',[(14,'H1.DAT',4,'H1.DAT',True),(15,'H2.DAT',4,'H2.DAT',True)]),
-  ('MOVE A10:BAD.DAT:=A1:KEEP.DAT','COPY source destination',[]),
-  ('MOVE A10::=A1:KEEP.DAT','COPY source destination',[]),
+  ('MOVE A10:BAD.DAT:=A1:KEEP.DAT','MOVE source destination',[]),
+  ('MOVE A10::=A1:KEEP.DAT','MOVE source destination',[]),
   ('MOVE A10:=A1:DUONLY.DAT','',[(1,'DUONLY.DAT',10,'DUONLY.DAT',True)]),
   ('MOVE A[10,10]:=[A2,A3]:MANY*.DAT','',[(2,'MANY1.DAT',10,'MANY1.DAT',True),(3,'MANY2.DAT',10,'MANY2.DAT',True)]),
   ('MOVE A13:Q2*.DAT A13:Q3.DAT','',[(13,'Q2.DAT',13,'Q3.DAT',True)])]
@@ -57,6 +57,9 @@ def main():
  observations=[]
  if a.platform=='z80pack':
   assert a.image_dir;shutil.copytree(a.image_dir/'disks',report/'disks');shutil.copy2(a.image_dir/'diskdefs',report/'diskdefs')
+  # This is a fixture-only disposable volume. Inheriting all System COMs can
+  # manufacture NO SPACE failures in the large-file positive copy cases.
+  cpm('cpmrm','0:*.*')
   cpm('cpmrm','0:RCP.CPX');cpm('cpmcp',ROOT/'build/cpx/RCP.CPX','0:RCP.CPX')
   for name,data,user,mask in fixtures:
    f=report/name;f.write_bytes(data);cpm('cpmcp',f,f'{user}:{name}')
@@ -65,6 +68,8 @@ def main():
    before=(report/'disks/drivea.dsk').read_bytes()
    text=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',report/'disks',[(cmd.encode()+b'\r',b'A0>_ ',120)],report/f'case-{i}.txt').decode(errors='replace')
    assert wanted in text,(cmd,wanted,text)
+   if not wanted and changes:
+    assert not any(error in text for error in ('NO SPACE','WRITE ERROR','COPY MADE; SOURCE NOT ERASED')),(cmd,text)
    if wanted or not changes:assert (report/'disks/drivea.dsk').read_bytes()==before,cmd
    observations.append({'command':cmd,'result':'PASS'})
   raw=directory(report/'disks/drivea.dsk',report/'diskdefs')

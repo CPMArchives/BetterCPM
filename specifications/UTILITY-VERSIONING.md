@@ -14,8 +14,11 @@ changes to the caller's DU. An exact `/HELP` or `/H` token takes precedence and 
 help instead. Both spellings are case-insensitive aliases in BetterCP/M-owned
 transient utilities; they do not redefine historical interactive command letters
 or bracketed/quoted literal data. Adopted unmodified third-party tools retain
-their original interfaces. Resident command interfaces remain distinct; use the
-leading colon to select the corresponding transient utility for its help screen. Longer tokens such as `/VERIFY` are ordinary parser input.
+their original interfaces. Resident command interfaces remain distinct. RCP provides its own /H and /HELP
+screens for the resident syntax; use a leading colon to select the transient
+implementation and its additional features. Numeric resident identification is
+`NAME 1.0 (018, Resident RCP)` (or `018-dev` for changed/unassigned inputs),
+using the RCP package revision. Transient identification uses its own revision. Longer tokens such as `/VERIFY` are ordinary parser input.
 
 All utilities using the common `version.inc` recognizer adopt this contract,
 including RCP resident dispatch, transient wrappers, PIP, DUMP and the owned
