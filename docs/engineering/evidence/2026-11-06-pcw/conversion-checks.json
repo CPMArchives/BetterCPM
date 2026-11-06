@@ -1,0 +1,9 @@
+{
+  "sector_payloads_match": true,
+  "tracks_with_verified_sector_order": 40,
+  "distinct_track_orders": 9,
+  "boot_spec_matches_pcw180": true,
+  "original_archive_member_matches": true,
+  "reserved_bytes": 4608,
+  "unallocated_tail_bytes": 512
+}
