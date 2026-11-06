@@ -49,7 +49,9 @@ SCREENS={
  'PIP':('File and Device Transfer','PIP [destination=source[,source...]]',[
  ('', 'No operands opens the interactive prompt.'),
  ('', 'Transfer parameters follow files in brackets.'),
- ('', 'Use the Utilities/User guide for parameter details.')]),
+ ('', 'Sources: B[-]:*.COM or [B0,C[1-3]]:*.COM.'),
+ ('', 'Selectors: one destination DU; at most 64 files.'),
+ ('', 'Duplicate names reject selection before copying.')]),
  'DUMP':('Hexadecimal File Display','DUMP [options] file [options]',[
  ('/P','Use the paged viewer.'),('/40','Show eight bytes per row.'),
  ('/FROM=hex[H]','Start at this file byte offset.'),('/LEN=hex[H]','Limit displayed bytes.'),

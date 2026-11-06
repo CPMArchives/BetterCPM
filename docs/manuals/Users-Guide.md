@@ -112,7 +112,7 @@ COPY A0:README.TXT D0:
 
 Resident DIR handles ordinary listings. Transient `:DIR` adds file-location search, sorting, sizes and paging. `/WHEREIS` with an unqualified filename searches configured accessible drives and users 0–31. An unreadable location can make that search incomplete; zero matches then does not prove absence everywhere.
 
-Use a selector when you deliberately need several users, for example `DIR B[-]:*.COM` or `DIR B[3-5]:*.ASM`. Attribute predicates such as `[$RO]` or `[$ARC+!$SYS]` select files; they do not automatically override protection. A command must explicitly support that grammar. Compression tools, ED, DUMP, PIP and extension managers have different operand rules.
+Use a selector when you deliberately need several users, for example `DIR B[-]:*.COM` or `DIR B[3-5]:*.ASM`. Attribute predicates such as `[$RO]` or `[$ARC+!$SYS]` select files; they do not automatically override protection. A command must explicitly support that grammar. Compression tools, ED, DUMP and extension managers have different operand rules. PIP accepts expanded source DU selectors for copying into one destination DU; its trailing bracket parameters have their historical meanings.
 
 For work files, inspect before moving, renaming or erasing:
 
@@ -124,7 +124,7 @@ MOVE D0:REPORT.BAK D3:
 
 REN keeps files in their original DU; its template cannot select a new location. MOVE creates and closes the destination before deleting the source and refuses an existing destination. It is not an all-or-nothing multi-file transaction. COPY retains the source. Use transient `:COPY` for its batch/verification/replacement facilities rather than passing unsupported switches to resident COPY. See [COPY](Command-and-Utilities-Reference.md#copy-transient), [MOVE](Command-and-Utilities-Reference.md#move-resident) and [ERA](Command-and-Utilities-Reference.md#era-transient) before performing a bulk operation.
 
-To copy using historical destination-first syntax, use [PIP](Command-and-Utilities-Reference.md#pip), for example `PIP D:=A:*.COM`. Its bracket parameters are not COPY's attribute syntax. Use STAT to distinguish allocation space from file record length and directory-entry capacity.
+To copy using historical destination-first syntax, use [PIP](Command-and-Utilities-Reference.md#pip), for example `PIP D:=A:*.COM`. `PIP A4:=B[-]:*.COM` copies from all B user areas into A4. It checks up to 64 matched files before copying and rejects distinct sources with the same destination filename; see [PIP selector and collision rules](Command-and-Utilities-Reference.md#expanded-source-du-selectors). Its bracket parameters are not COPY's attribute syntax. Use STAT to distinguish allocation space from file record length and directory-entry capacity.
 
 <a id="chapter-5"></a>
 

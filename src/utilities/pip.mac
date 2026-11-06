@@ -16,6 +16,7 @@ P_START:
         JP C,00000H
         XOR A
         LD (PW_ACTIVE),A
+        LD (PS_CHECK),A
         LD C,25
         CALL 5
         LD (P_DRIVE),A
@@ -58,6 +59,9 @@ P_EXIT:
 P_MESSAGE:
         LD DE,P_INVALID
         JR C,P_ERROR
+        LD A,(OP_DATA+87)
+        OR A
+        JP NZ,PS_START
         JP PT_COPY
 P_ERROR:
         LD A,1

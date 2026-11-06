@@ -49,8 +49,6 @@ PP_STR:
         JR PP_ADV
 PP_OPEN:
         LD A,(PP_BRACK)
-        OR A
-        JP NZ,PP_BAD
         INC A
         LD (PP_BRACK),A
         JR PP_ADV
@@ -58,7 +56,7 @@ PP_CLOSE:
         LD A,(PP_BRACK)
         OR A
         JP Z,PP_BAD
-        XOR A
+        DEC A
         LD (PP_BRACK),A
         JR PP_ADV
 PP_OUTSIDE:
