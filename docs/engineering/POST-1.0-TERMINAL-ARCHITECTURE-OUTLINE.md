@@ -18,6 +18,31 @@ The accepted BetterCP/M 1.0 design uses the Monitor RSX mechanism as a practical
 
 The post-1.0 goal is a more systematic terminal architecture that improves portability without sacrificing ordinary CP/M compatibility.
 
+### Early 1.1 design work
+
+The [1.1 engineering roadmap](1.1-ENGINEERING-SPECIFICATION.md#portable-terminal-capabilities-tcap)
+brings the application-facing capability contract forward. These three
+utilities exercise different parts of it.
+
+| Consumer | Existing behavior or design need | Question for the shared contract |
+| --- | --- | --- |
+| TYPE | The transient [page replay code](../../src/utilities/common/typepage.inc) assumes 80 columns and 24 rows. Ordinary TYPE also works as a console text stream. | Which width and height can the pager rely on for wrapping, reserving the prompt row and revisiting a page? Define behavior when dimensions are unknown. |
+| TED | The [editor frontend](../../src/utilities/ted/frontend.mac) already checks SCRN services and expects an 80×24 viewport. Editing needs cursor placement, erase and redraw. | How does a full-screen client verify its minimum geometry and required operations before taking over the screen, and return it cleanly? |
+| HELP | The proposed reader needs readable paged text on a plain console. Markdown strong emphasis can use a supported standout style. | How can a line-oriented client request emphasis through the normal console path, preserve text when styling is unavailable and restore prior rendition? |
+
+First map these needs to the active personality, backend and output
+destination. Preserve ordinary CP/M console calls and the ability to switch
+terminal personalities for legacy programs. Distinguish a configured
+viewport from detected physical dimensions. Keep presentation controls out
+of redirected and printer output.
+
+Use sections 21–22 and the existing SCRN/SCX tests to identify concrete
+gaps. Bring a contract proposal to review with one paged-output example,
+TED's required-operation check, and evidence for normal return and interrupted
+output. Measure resident allocation and transient workspace before choosing
+an ABI or scheduling utility migrations. Provider-catalog expansion and
+additional terminal protocols remain later items.
+
 ---
 
 ## 2. Fundamental Compatibility Requirement

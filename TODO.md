@@ -47,6 +47,16 @@ records the accepted command UI, DIR and XSUB limitations.
   The locked 1.0 minimum/workaround remains in the
   [terminal-size erratum](docs/releases/1.0-ERRATA.md#ansi-host-terminal-size).
 
+## 1.1 design priorities
+
+- [ ] **Move portable terminal capabilities (TCAP) into early system-wide
+  design.** Settle how utilities obtain usable geometry and request display
+  operations before fixing new capability-dependent behavior in TYPE, TED
+  and HELP. Deliver a reviewable contract against the current monitor,
+  SCRN and SCX interfaces. Use the [1.1 engineering specification](docs/engineering/1.1-ENGINEERING-SPECIFICATION.md#portable-terminal-capabilities-tcap)
+  for sequencing and the [terminal design agenda](docs/engineering/POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md#early-11-design-work)
+  for the three consumer cases.
+
 ## Immediate priorities
 
 
@@ -1012,11 +1022,10 @@ reconciliation gate precede the corresponding implementation program.
   device services, CONFIG/FDF/installation boundaries, and platform interfaces
   as one architectural problem. Preserve the 53 KiB TPA evidence and avoid
   turning the bounded RomWBW 1.1/1.2 port into an implicit redesign.
-- [ ] Replace provisional Model 4-only terminal operations with a portable
-  terminal-capability interface while retaining `CLR` behavior.
-  Preserve the [post-1.0 terminal architecture discussion outline](docs/engineering/POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md)
-  as an unfrozen research agenda: personality/backend separation, transparent
-  legacy console support, optional native screen API, input/replies and lifecycle.
+- [ ] After the [early TCAP design](#11-design-priorities), apply the reviewed
+  interface to provisional Model 4-only terminal operations, preserving
+  `CLR` behavior. Track broader personality emulation, terminal replies and
+  provider lifecycle in the [terminal architecture outline](docs/engineering/POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md).
 - [ ] Assemble a library of terminal-personality RSXs after the 1.0 monitor
   support is available. Begin by researching the Z-System TCAP library as a
   source of terminal definitions and provenance; distinguish capability
