@@ -339,6 +339,15 @@ The following cannot be settled by documenting existing interfaces alone:
 Until these answers and cost evidence are reviewed, this is a detailed semantic
 proposal, not an implementation-ready engineering specification.
 
+## Routing and recovery source follow-up
+
+The [routing and recovery study](TCAP-Routing-Recovery-Study.md) audits IOBYTE,
+CRT LIST aliasing and existing command-return reset boundaries. Text-only LIST
+means no TCAP-added presentation controls; it does not promise a visually
+independent device when LIST aliases the same CRT. Echo duplication must be
+included in spatial row accounting or invalidate spatial pager eligibility.
+The study recommends candidate boundaries, not implemented cleanup hooks.
+
 ## Gates before an implementation specification
 
 Review and accept or revise the semantic choices above, especially single-scope
