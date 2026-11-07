@@ -102,3 +102,23 @@ The production metadata validator must reject this owner: positive system/versio
 admission and global validity allocation remain unresolved. The campaign emits
 no installable carrier. Do not install its staged core, commands or loader.
 Utilities and release assignment remain deferred.
+
+## Matching-system and global-validity follow-up
+
+```sh
+build/tcap-feasibility/venv/bin/python tools/prototypes/tcap/matching_validity.py
+```
+
+This fourth private campaign combines a permanent matched-system root, positive
+metadata admission, a saturating boot-global validity allocator and prepared
+validity publication through the real commit path. It verifies stale-token
+rejection after unload/same-address reload and measures the permanent RAM and
+boot-volume cost. See the [results and integration boundaries](../../../docs/engineering/TCAP-Matching-Validity-Results.md).
+
+Outputs remain under `build/tcap-matching-validity/`. The private root consumes
+512 permanent bytes; its reference boot volume uses OFF=3/DSM=384 and is
+incompatible with existing OFF=2 system disks. No production source or media is
+modified. The CPU artifact gate is invoked explicitly by the campaign; file-reader
+front doors and full finalizer/context record construction still need integration.
+This is not an installable TCAP system or a public ABI allocation. Utility
+migrations and release assignment remain deferred.

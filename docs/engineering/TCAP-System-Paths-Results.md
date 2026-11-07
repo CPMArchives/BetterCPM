@@ -7,6 +7,13 @@ distribution image or release assignment changes in this experiment.
 
 ## Result and activation boundary
 
+Follow-up: the [matching-system and global-validity experiment](TCAP-Matching-Validity-Results.md)
+implements and qualifies both mechanisms in a private permanent root, including
+positive metadata admission and real commit publication. It measures new RAM and
+boot-volume costs and identifies the remaining loader/finalizer integration.
+The observations below remain specific to this earlier campaign.
+
+
 The private coordinator now reaches **actual transaction and command-return
 entries**, rather than relying on a fixture wrapper in front of the commit
 engine or a replacement warm-entry recovery routine:
