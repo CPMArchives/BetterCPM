@@ -362,7 +362,11 @@ MC_RAW:
         DEC A
         JP Z,PL_CONIN
         DEC A
+        IF BP_CHECKED EQ 1
+        JP Z,PL_CURSOR                  ; checked cpmsim carrier loader exceeds JR reach
+        ELSE
         JR Z,PL_CURSOR
+        ENDIF
         DEC A
         JR Z,MC_CLEAR
         DEC A

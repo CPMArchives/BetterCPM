@@ -31,7 +31,14 @@ bands=[('bdos',b['UB_STACK'],b['UB_STKTOP'],0),('system',g['SYS_STACK'],g['SYS_S
 cfg=out/'stack-bands.cfg';cfg.write_text(''.join(f'{n} {lo:x} {hi:x} {ptr:x}\n' for n,lo,hi,ptr in bands))
 ex=symbols(root/'build/z80pack/extensions.lst')
 commit_cfg=out/'commit-watch.cfg'
-commit_cfg.write_text(f"{L['RSX']:x} {ex['EX_RETURN']:x} "+' '.join(f'{x:x}' for x in (root/'build/system/R3COMIT.RSX').read_bytes()[:16])+'\n')
+# The cache worker may perform cleanup after the final generation store.
+# Older assessment builds returned directly to EX_RETURN after publication.
+commit_end = (symbols(root/'build/system/r3commit.lst')['RC_GENOK']
+              if (root/'build/system/R3CACHE.RSX').is_file() else ex['EX_RETURN'])
+commit_cfg.write_text(f"{L['RSX']:x} {commit_end:x} "+' '.join(f'{x:x}' for x in (root/'build/system/R3COMIT.RSX').read_bytes()[:16])+'\n')
+profile_record = root/'build/z80pack/checked-package.json'
+if not profile_record.is_file():
+    profile_record = root/'assessment-profile.json'
 results={};last_commit_windows=None
 def run(w,commands,stem='transcript'):
     global last_commit_windows
@@ -56,7 +63,7 @@ def run(w,commands,stem='transcript'):
     return t,rows
 def save(name,rows,**extra):
     results[name]={'stacks':rows,'disk_free_commit_windows':last_commit_windows,**extra}
-    (out/'results.json').write_text(json.dumps({'profile':json.loads((root/'assessment-profile.json').read_text())['compatibility_id'],'untraced':a.untraced,'system_raw_sha256':hashlib.sha256((root/'assessment-media/system.raw').read_bytes()).hexdigest(),'results':results},indent=2)+'\n')
+    (out/'results.json').write_text(json.dumps({'profile':json.loads(profile_record.read_text())['compatibility_id'],'untraced':a.untraced,'system_raw_sha256':hashlib.sha256((root/'assessment-media/system.raw').read_bytes()).hexdigest(),'results':results},indent=2)+'\n')
     print('PASS '+name+' '+json.dumps({n:r['used'] for n,r in rows.items()}),flush=True)
 
 PRINT='''

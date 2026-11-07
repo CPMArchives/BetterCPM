@@ -58,7 +58,9 @@ def compose(assembler):
     def put(record,data,capacity):
         if not data or len(data)>capacity:raise ValueError(f'raw carrier overflow at record {record}')
         payload[record*128:record*128+capacity]=data.ljust(capacity,b'\0')
-    put(0,boot,128);put(1,startup_record(system_base=L['SYSTEM']),256)
+    put(0,boot,128)
+    startup = json.loads((ROOT/'metadata/distribution.json').read_text())['cold_start_command']
+    put(1,startup_record(startup, system_base=L['SYSTEM']),256)
     put(8,resident,52*128);put(60,(out/'command-loader/stage1.carrier').read_bytes(),1024)
     put(68,(out/'control.carrier').read_bytes(),1024)
     put(76,(ROOT/'build/system/R3ENTRY.RSX').read_bytes(),1024)

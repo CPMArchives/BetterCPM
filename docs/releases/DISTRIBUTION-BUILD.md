@@ -22,6 +22,18 @@ python3 tools/build_distribution.py --target z80pack
 python3 tools/build_distribution.py --target trs80gp
 ```
 
+For BetterCP/M 1.1, both the combined build and `--target z80pack` select
+the checked `cpmsim-fullram` layout. Its release image uses the standard
+filename below. The same generation contains the matching `z80pack/SYSTEM.SYS`,
+package contract and live acceptance results. The Utilities builder assembles
+the matching BATCHIO.RSX for the cpmsim Utilities disk. From A0 with Utilities
+on B, use `B0:XSUB B0:` to install it.
+
+The 53 KiB cpmsim layout is an engineering fixture for testing rejection of
+incompatible media. Prepare it with `--target z80pack --prepare-profile
+--profile cpmsim-legacy-checked --work <directory>`. The Model 4 uses its
+own qualified layout. See the [1.1 memory specification](../engineering/1.1-ENGINEERING-SPECIFICATION.md).
+
 The cpmsim target requires the patched emulator described in
 [Installing BetterCP/M on z80pack / cpmsim](../platform/CPMSIM-INSTALLATION.md).
 Include its source lock, complete patches, builder, instructions and license in
@@ -35,8 +47,8 @@ LaunchServices wrapper on macOS. The builder actually boots both targets;
 there is no filesystem-only shortcut advertised as a boot-qualified release.
 
 Each target is rebuilt from a private source snapshot using existing builders.
-The current utility metadata needs common Model 4 artifacts even during a
-cpmsim build; prerequisites are built inside that snapshot. Development build
+The cpmsim snapshot builds its resident components, private carriers and
+installer from the same full-RAM configuration. Development build
 artifacts and disks are untouched. Only freshly assembled system tracks are
 retained from intermediate target images; the distribution filesystem starts
 empty and receives the exact selected build artifacts. No utility, diagnostic,

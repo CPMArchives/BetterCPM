@@ -45,7 +45,8 @@ class CheckedDistribution(unittest.TestCase):
                 paths+=publish_named(generation,[(out,image,report)],root)
             self.assertNotEqual(paths[0],paths[1])
             self.assertTrue(all(p.read_bytes()==b'checked' for p in paths))
-            self.assertFalse((root/'build/z80pack/disks/library/image.dsk').exists())
+            self.assertEqual(paths[0], root/'build/z80pack/disks/library/image.dsk')
+            self.assertEqual(paths[1].parent.name, 'cpmsim-legacy-checked')
 
 
 if __name__=='__main__':unittest.main()

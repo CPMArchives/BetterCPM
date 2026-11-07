@@ -89,11 +89,11 @@ def qualify(root,image,out,simulator):
     '''
     code=asm(w,'FIT',s);assert len(code)<=128
     payload=code.ljust(128,b'\0')+b''.join(bytes([i&255])*128 for i in range(1,records))
-    put(w,'FIT.COM',payload);put(w,'OVER.COM',payload+bytes([records&255])*128)
+    put(w,'FIT.COM',payload);put(w,'OVER.COM',payload+bytes([records&255])*128,'b')
     for name,code in [('JPZERO',b'\xc3\0\0'),('FNZERO',b'\x0e\0\xcd\x05\0\x76'),('BIOSWB',b'\x2a\x01\0\xe9')]:put(w,name+'.COM',code)
-    t=run(w,['STAT MEM','FIT','STAT MEM','OVER','STAT MEM','FIT','JPZERO','FNZERO','BIOSWB','CPX /V','STAT MEM'])
+    t=run(w,['STAT MEM','FIT','STAT MEM','B:OVER','STAT MEM','FIT','JPZERO','FNZERO','BIOSWB','CPX /V','STAT MEM'])
     assert t.count('FULLRAM FIT PASS')==2 and 'FULLRAM FIT FAILED' not in t
-    assert 'FULLRAM FIT' not in t.split('A0>OVER \n',1)[1].split('BetterCP/M Memory Map',1)[0]
+    assert 'FULLRAM FIT' not in t.split('A0>B:OVER \n',1)[1].split('BetterCP/M Memory Map',1)[0]
     m=maps(t);assert len(m)==4 and all(x==expected for x in m)
     save('boundary',fit_bytes=len(payload),rejected_bytes=len(payload)+128,returns=['RET','JP 0','BDOS 0','BIOS WBOOT'],maps=m)
 
@@ -106,8 +106,16 @@ def qualify(root,image,out,simulator):
     save('stateful',checks=5,public_cpx=True,missing_rejected=True,unloaded_tpa=expected)
     w=case('monitor')
     t=run(w,['RSX LOAD ANSISCRN','STAT MEM',(b'RSX LOAD ADM3A\r',b'\x1b[7m \x1b[0m ',30),(b'STAT MEM\r',b'\x1b[7m \x1b[0m ',30),(b'RSX UNLOAD ADM3A\r',b'A0>_ ',30),'RSX UNLOAD ANSISCRN','STAT MEM'])
-    assert maps(t)==[expected-2560,expected-3072,expected],maps(t)
-    save('monitor',screen_pair_tpa=expected-3072,unloaded_tpa=expected)
+    screen_bytes, personality_bytes = (
+        int.from_bytes((root/'build/rsx'/name).read_bytes()[14:16], 'little')
+        for name in ('ANSISCRN.RSX', 'ADM3A.RSX'))
+    # The first RSX installs the shared 1 KiB manager. Each provider also
+    # owns one 256-byte cache metadata page.
+    backend_tpa = expected - 1024 - screen_bytes - 256
+    screen_pair_tpa = backend_tpa - personality_bytes - 256
+    assert screen_bytes > 0 and personality_bytes > 0
+    assert maps(t) == [backend_tpa, screen_pair_tpa, expected], maps(t)
+    save('monitor',screen_pair_tpa=screen_pair_tpa,unloaded_tpa=expected)
     for kind in ('payload','public-id','old-format','truncated','late-crc'):
         w=case('cpx-'+kind);bad=bytearray((root/'build/cpx/HELLO.CPX').read_bytes())
         if kind=='payload':bad[bad.index(b'Hello from')]=ord('J')
@@ -154,13 +162,14 @@ def qualify(root,image,out,simulator):
         put(w,'BAD.SYS',bad);target=w/'disks/driveb.dsk';before=target.read_bytes()
         t=run(w,['SYSGEN BAD.SYS B:']);assert 'system package is invalid' in t and target.read_bytes()==before
         save('reject-package-'+kind,target_unchanged=True)
-    for kind in ('missing-rcp','changed-pack','decline'):
+    for kind in ('missing-rcp','changed-pack','missing-cache','decline'):
         w=case(kind);target=w/'disks/driveb.dsk'
         if kind=='missing-rcp':subprocess.run(['cpmrm','-f','bettercpm-default',str(target),'0:RCP.CPX'],cwd=w,check=True,capture_output=True)
+        if kind=='missing-cache':subprocess.run(['cpmrm','-f','bettercpm-default',str(target),'0:R3CACHE.RSX'],cwd=w,check=True,capture_output=True)
         if kind=='changed-pack':
             bad=bytearray((root/'build/system/R3PACK.RSX').read_bytes());bad[8]^=1;put(w,'R3PACK.RSX',bad,'b')
         before=target.read_bytes();t=run(w,[(b'SYSGEN A: B:\r',b'Proceed (Y/N)?',60),(b'N' if kind=='decline' else b'Y',b'A0>_ ',90)])
         assert target.read_bytes()==before
-        if kind!='decline':assert 'Matching RCP.CPX and R3PACK.RSX required' in t
+        if kind!='decline':assert 'Matching RCP.CPX, R3PACK.RSX and R3CACHE.RSX required' in t
         save(kind,target_unchanged=True)
-    return {'cases':len(results),'unloaded_tpa':expected,'screen_pair_tpa':expected-3072,'status':'PASS'}
+    return {'cases':len(results),'unloaded_tpa':expected,'screen_pair_tpa':screen_pair_tpa,'status':'PASS'}

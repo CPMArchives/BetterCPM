@@ -112,7 +112,7 @@ def profile_inputs(profile: BuildProfile, source: Path) -> tuple:
     manifest = {
         'schema': 1, 'profile': profile.name, 'target': profile.target,
         'memory_mode': 'ram', 'checked': profile.checked,
-        'status': 'layout-preparation; checked distribution migration pending',
+        'status': 'release' if profile.name == 'cpmsim-fullram' else 'engineering fixture',
         'delta': profile.delta, 'ram_end': profile.ram_end,
         'top_reserved': profile.top_reserved,
         'format_epochs': {'private': profile.private_epoch,

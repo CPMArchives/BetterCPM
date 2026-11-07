@@ -1,0 +1,227 @@
+{
+  "source_commit": "85bf08ee6d8820a4415cf50049029fb7d89e0488",
+  "source_tree": "e91f41cf2a02723e397095e15788471c2cec3eb9",
+  "target": "z80pack",
+  "profile": "cpmsim-fullram",
+  "compatibility_id": "148adf94787f959e17d9a1de311eec48",
+  "qualification_date": "2026-11-07",
+  "artifacts": {
+    "BetterCPM-Distribution-z80pack-332K.dsk": "25610dfab6c4bf60b9f62d913b67eb05077c2e93f4c88f1a37ea7e42b8775f89",
+    "SYSTEM.SYS": "d406bb852a6c380a751dcb5c88e9eb7b4489e4931fcccf4f2a1f76a0e6b9a13c",
+    "BetterCPM-Utilities-z80pack-332K.dsk": "ade38d512bbfe87e1485a3a109aff1e76cc021ac19dcad23cfd13d3b86e67122"
+  },
+  "simulator_sha256": "0f6b256cd6beea2ab7bf0eab8a9cc2a5241ed772408e811150c3f6e0f5cff4e8",
+  "system_disk_files": 37,
+  "package_matches_disk_reserved_tracks": true,
+  "reuse_verified_same_generation": true,
+  "acceptance": {
+    "filesystem": "PASS",
+    "file_integrity": "PASS",
+    "config_fingerprint": "PASS",
+    "boot": "PASS",
+    "acceptance": {
+      "cases": 23,
+      "unloaded_tpa": 57344,
+      "screen_pair_tpa": 53760,
+      "status": "PASS",
+      "shipped_startup_tpa": 57344
+    }
+  },
+  "live_cases": {
+    "boundary": {
+      "fit_bytes": 57344,
+      "rejected_bytes": 57472,
+      "returns": [
+        "RET",
+        "JP 0",
+        "BDOS 0",
+        "BIOS WBOOT"
+      ],
+      "maps": [
+        57344,
+        57344,
+        57344,
+        57344
+      ]
+    },
+    "stateful": {
+      "checks": 5,
+      "public_cpx": true,
+      "missing_rejected": true,
+      "unloaded_tpa": 57344
+    },
+    "monitor": {
+      "screen_pair_tpa": 53760,
+      "unloaded_tpa": 57344
+    },
+    "cpx-payload": {
+      "rejected": true,
+      "state_checks": 2,
+      "recovered": true
+    },
+    "cpx-public-id": {
+      "rejected": true,
+      "state_checks": 2,
+      "recovered": true
+    },
+    "cpx-old-format": {
+      "rejected": true,
+      "state_checks": 2,
+      "recovered": true
+    },
+    "cpx-truncated": {
+      "rejected": true,
+      "state_checks": 2,
+      "recovered": true
+    },
+    "cpx-late-crc": {
+      "rejected": true,
+      "state_checks": 2,
+      "recovered": true
+    },
+    "halt-stage2-code": {
+      "halt_before_prompt": true
+    },
+    "halt-stage2-id": {
+      "halt_before_prompt": true
+    },
+    "halt-ccp": {
+      "halt_before_prompt": true
+    },
+    "install-package": {
+      "filesystem_unchanged": true,
+      "cold_boot": true,
+      "tpa": 57344
+    },
+    "install-disk": {
+      "filesystem_unchanged": true,
+      "cold_boot": true,
+      "tpa": 57344
+    },
+    "export": {
+      "exact_host_package": true
+    },
+    "reject-package-identity": {
+      "target_unchanged": true
+    },
+    "reject-package-old-format": {
+      "target_unchanged": true
+    },
+    "reject-package-truncated": {
+      "target_unchanged": true
+    },
+    "reject-package-binding": {
+      "target_unchanged": true
+    },
+    "reject-package-stage2": {
+      "target_unchanged": true
+    },
+    "missing-rcp": {
+      "target_unchanged": true
+    },
+    "changed-pack": {
+      "target_unchanged": true
+    },
+    "missing-cache": {
+      "target_unchanged": true
+    },
+    "decline": {
+      "target_unchanged": true
+    }
+  },
+  "paired_utilities": {
+    "system_sha256": "25610dfab6c4bf60b9f62d913b67eb05077c2e93f4c88f1a37ea7e42b8775f89",
+    "utilities_sha256": "ade38d512bbfe87e1485a3a109aff1e76cc021ac19dcad23cfd13d3b86e67122",
+    "compatibility_id": "148adf94787f959e17d9a1de311eec48",
+    "submitted_input": "PASS",
+    "unload": "PASS",
+    "recovered_tpa": 57344
+  },
+  "mixed_profile": {
+    "fullram_rejecting_legacy": {
+      "utilities": {
+        "private_refusals": 3,
+        "public_STAT_RSX_CPX_CLS": true
+      },
+      "package": {
+        "foreign_rejected": true,
+        "target_unchanged": true
+      },
+      "disk": {
+        "foreign_rejected": true,
+        "target_unchanged": true
+      },
+      "rcp": {
+        "foreign_rejected": true,
+        "target_unchanged": true
+      },
+      "pack": {
+        "foreign_rejected": true,
+        "target_unchanged": true
+      },
+      "cache": {
+        "foreign_rejected": true,
+        "target_unchanged": true
+      }
+    },
+    "legacy_rejecting_fullram": {
+      "utilities": {
+        "private_refusals": 3,
+        "public_STAT_RSX_CPX_CLS": true
+      },
+      "package": {
+        "foreign_rejected": true,
+        "target_unchanged": true
+      },
+      "disk": {
+        "foreign_rejected": true,
+        "target_unchanged": true
+      },
+      "rcp": {
+        "foreign_rejected": true,
+        "target_unchanged": true
+      },
+      "pack": {
+        "foreign_rejected": true,
+        "target_unchanged": true
+      },
+      "cache": {
+        "foreign_rejected": true,
+        "target_unchanged": true
+      }
+    }
+  },
+  "bdos_stack": {
+    "select-read-ignore-ANSI-region-reverse": {
+      "used": 38,
+      "capacity": 40,
+      "disk_free_commit_windows": 4,
+      "ordinary_cpmsim_control_pass": true
+    },
+    "select-read-abort-ANSI-region-reverse": {
+      "used": 38,
+      "capacity": 40,
+      "disk_free_commit_windows": 4,
+      "ordinary_cpmsim_control_pass": true
+    }
+  },
+  "returning_conformance": {
+    "ENTRYTST /GROUP:REQUIRED": {
+      "-": 13,
+      "P": 25
+    },
+    "CCPTEST /GROUP:REQUIRED": {
+      "-": 29,
+      "P": 12
+    },
+    "BDOSTEST /GROUP:REQUIRED": {
+      "-": 3,
+      "P": 56
+    }
+  },
+  "host_tests": {
+    "build_profiles": 11,
+    "distribution": 15,
+    "checked_distribution": 3
+  }
+}
