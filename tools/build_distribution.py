@@ -34,32 +34,36 @@ def run(command, cwd, log=None, timeout=900, env=None):
     return result.stdout
 
 
-def source_identity(profile=None):
+def source_identity(profile=None, source_root=ROOT):
     """Hash actual build inputs, not filesystem timestamps or prebuilt media."""
     files = {}
     for folder in ('src', 'tools', 'metadata', 'third_party'):
-        for path in sorted((ROOT / folder).rglob('*')):
+        for path in sorted((source_root / folder).rglob('*')):
             if path.is_file() and '__pycache__' not in path.parts:
-                files[str(path.relative_to(ROOT))] = digest(path.read_bytes())
-    revision = project_revision(ROOT)
+                files[str(path.relative_to(source_root))] = digest(path.read_bytes())
+    state = source_root/'build-state.json'
+    if state.is_file() and not (source_root/'.git').exists():
+        revision = json.loads(state.read_text())['source']['revision']
+    else:
+        revision = project_revision(source_root)
     identity = {'revision': revision, 'inputs': files,
                 'assembler_sha256': digest((Path.home() / 'bin/z80asm').read_bytes())}
     if profile:
-        identity['profile'] = profile_inputs(profile, ROOT/'src/system/layout.inc')[0]
+        identity['profile'] = profile_inputs(profile, source_root/'src/system/layout.inc')[0]
     return identity
 
 
-def stage_sources(destination):
+def stage_sources(destination, source_root=ROOT):
     for folder in ('src', 'tools', 'metadata', 'third_party'):
-        shutil.copytree(ROOT / folder, destination / folder,
+        shutil.copytree(source_root / folder, destination / folder,
                         ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
 
 
-def prepare_profile(work, target, identity, profile, reuse=False):
+def prepare_profile(work, target, identity, profile, reuse=False, source_root=ROOT):
     """Stage unchanged sources and generated inputs; never publish a disk."""
     root = workspace(work, target, profile)
     stamp = root/'profile-state.json'
-    if identity.get('profile') != profile_inputs(profile, ROOT/'src/system/layout.inc')[0]:
+    if identity.get('profile') != profile_inputs(profile, source_root/'src/system/layout.inc')[0]:
         raise ValueError('profile preparation identity does not match requested profile')
     if reuse:
         state = json.loads(stamp.read_text())
@@ -83,7 +87,7 @@ def prepare_profile(work, target, identity, profile, reuse=False):
     if root.exists():
         raise ValueError(f'{root} exists; select a fresh --work or use --reuse-work')
     root.mkdir(parents=True)
-    stage_sources(root)
+    stage_sources(root, source_root)
     write_context(profile, root/'src/system/layout.inc')
     artifacts = {str(p.relative_to(root)): digest(p.read_bytes())
                  for p in sorted(root.rglob('*')) if p.is_file()}
@@ -93,7 +97,7 @@ def prepare_profile(work, target, identity, profile, reuse=False):
 
 def current_build(work, target, identity, reuse):
     if 'profile' in identity:
-        raise ValueError('checked-profile disk generation awaits normal-build integration; use --prepare-profile')
+        raise ValueError('checked cpmsim must use the profile-aware System Disk builder')
     root = workspace(work, target)
     stamp = root / 'build-state.json'
     if reuse:
@@ -334,7 +338,8 @@ def boot(target, image, out, root, simulator, emulator):
         shutil.copy2(image, disks / 'drivea.dsk')
         for letter in 'bcd':
             shutil.copy2(root / f'build/z80pack/disks/drive{letter}.dsk', disks / f'drive{letter}.dsk')
-        text = session(simulator, disks, [(b'CPX LIST\r', b'A0>_ ', 60),
+        text = session(simulator, disks, [(b'STAT MEM\r', b'A0>_ ', 60),
+                       (b'CPX LIST\r', b'A0>_ ', 60),
                        (b'VER\r', b'A0>_ ', 60),
                        (b'ED /VER\r', b'A0>_ ', 60),
                        (b'RSX LOAD ZPRTC\r', b'A0>_ ', 60),
@@ -409,7 +414,8 @@ def publish_named(generation, reports, root=ROOT):
             target = report['target']
             folder = root / ('build/trs80' if target == 'trs80gp'
                              else 'build/z80pack/disks/library')
-            if report.get('profile'):folder=folder/report['profile']
+            if report.get('profile') not in (None, 'cpmsim-fullram'):
+                folder = folder/report['profile']
             folder.mkdir(parents=True, exist_ok=True)
             destination = folder / image.name
             source = generation / target / image.name
@@ -448,11 +454,33 @@ def publish_generation(publication, generation, reports):
     return False
 
 
+def build_cpmsim_release(work, out, identity, simulator, reuse):
+    from build_profiles import context_environment
+    profile = PROFILES['cpmsim-fullram']
+    identity = dict(identity, profile=profile_inputs(profile, ROOT/'src/system/layout.inc')[0])
+    root = prepare_profile(work, 'z80pack', identity, profile, reuse)
+    environment = context_environment(root/'build/profile/context.json', root/'src/system/layout.inc')
+    command = [sys.executable, root/'tools/build_checked_distribution.py',
+               '--output', out, '--simulator', simulator]
+    if reuse:
+        command.append('--reuse')
+    run(command, root, work/('checked-'+profile.name+'.log'), timeout=1800, env=environment)
+    report = json.loads((out/'report.json').read_text())
+    measured = report['validation']['acceptance']['unloaded_tpa']
+    if report['profile'] != profile.name or measured < 56 * 1024:
+        raise ValueError(f'cpmsim release requires at least 56 KiB unloaded TPA; measured {measured}')
+    from release_metadata import disk_record
+    image = out/report['image']
+    report['release_record'] = disk_record(report, image.read_bytes(), root=root)
+    (out/'report.json').write_text(json.dumps(report, indent=2)+'\n')
+    return out, image, report
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--target', choices=['all','z80pack','trs80gp'], default='all')
     p.add_argument('--profile', choices=['default', *PROFILES], default='default',
-                   help='explicit checked cpmsim RAM distribution profile')
+                   help='cpmsim-fullram is the release default; legacy selection is for --prepare-profile only')
     p.add_argument('--prepare-profile', action='store_true',
                    help='stage profile inputs without assembling or publishing a distribution; requires --work')
     p.add_argument('--output', type=Path, default=ROOT/'build/distribution')
@@ -480,34 +508,8 @@ def main():
                           'workspace':str(root), 'profile':profile.name,
                           'context':str(root/'build/profile/context.json')}, indent=2))
         return
-    if profile:
-        from build_profiles import context_environment
-        identity=source_identity(profile)
-        a.output=a.output.resolve();a.output.mkdir(parents=True,exist_ok=True)
-        with tempfile.TemporaryDirectory(prefix='bettercpm-checked-dist-') as temporary:
-            work=a.work.resolve() if a.work else Path(temporary)/'work'
-            root=prepare_profile(work,a.target,identity,profile,a.reuse_work)
-            publication=work/('candidate-'+Path(temporary).name);publication.mkdir(parents=True)
-            out=publication/'z80pack'
-            command=[sys.executable,str(root/'tools/build_checked_distribution.py'),
-                     '--output',str(out),'--simulator',str(a.simulator.resolve())]
-            if a.reuse_work:command.append('--reuse')
-            environment=context_environment(root/'build/profile/context.json',root/'src/system/layout.inc')
-            run(command,root,work/('checked-'+profile.name+'.log'),timeout=1800,env=environment)
-            report=json.loads((out/'report.json').read_text());image=out/report['image']
-            if source_identity(profile)!=identity:raise ValueError('source changed; checked candidate not published')
-            from release_metadata import disk_record
-            report['source']=identity
-            from component_tracking import record_collection
-            record_collection(root,report['target'],report['source'])
-            report['release_record']=disk_record(report,image.read_bytes(),root=root)
-            (out/'report.json').write_text(json.dumps(report,indent=2)+'\n')
-            reports=[(out,image,report)]
-            generation=a.output/('release-'+profile.name+'-'+identity['revision'][:12]+'-'+digest(json.dumps(report,sort_keys=True).encode())[:12])
-            publish_generation(publication,generation,reports)
-            named=publish_named(generation,reports)
-            print('PASS '+str(named[0])+': checked boot and live acceptance')
-        return
+    if profile and profile.name != 'cpmsim-fullram':
+        p.error('the legacy cpmsim layout is only available with --prepare-profile for engineering fixtures')
     manifest = json.loads(MANIFEST.read_text())
     identity = source_identity()
     a.output = a.output.resolve()
@@ -520,11 +522,13 @@ def main():
         reports = []
         for target in (['z80pack','trs80gp'] if a.target=='all' else [a.target]):
             print(f'{target}: building and qualifying isolated System Disk', flush=True)
+            if target == 'z80pack':
+                reports.append(build_cpmsim_release(work, publication/target, identity,
+                                                    a.simulator.resolve(), a.reuse_work))
+                continue
             root = current_build(work, target, identity, a.reuse_work)
             out = publication/target
             out.mkdir()
-            if target == 'z80pack':
-                stage_cpmsim_guest(a.simulator, root)
             files, omitted = selected_files(manifest, target, root)
             g = geometry(target, root)
             totals = capacity(files, g)
@@ -532,21 +536,18 @@ def main():
             validate_config_fingerprint(target, raw, files, root)
             validate_config_cold_patch(target, raw, files, root)
             included = validate_files(raw, out, files, g)
-            name = f'BetterCPM-Distribution-{target}-'+('332K.dsk' if target=='z80pack' else '80T-DS-System.dmk')
+            name = 'BetterCPM-Distribution-trs80gp-80T-DS-System.dmk'
             image = out/name
-            if target=='z80pack':
-                shutil.copy2(raw,image)
-            else:
-                from build_montezuma_extended_790k import build, verify
-                image.write_bytes(build(raw.read_bytes()))
-                verify(image.read_bytes(), require_blank=False)
+            from build_montezuma_extended_790k import build, verify
+            image.write_bytes(build(raw.read_bytes()))
+            verify(image.read_bytes(), require_blank=False)
             boot_result = boot(target,image,out,root,a.simulator.resolve(),a.emulator.resolve())
             report = {'target':target, 'format':g['format'], 'image':name,
                       'cold_start_command':manifest.get('cold_start_command', ''),
                       'sha256':digest(image.read_bytes()), 'source':identity,
                       'manifest_sha256':digest(MANIFEST.read_bytes()),
                       'tools':{n:digest(Path(shutil.which(n)).read_bytes()) for n in ['cpmcp','cpmls','fsck.cpm']},
-                      'emulator_sha256':digest((a.simulator if target=='z80pack' else a.emulator).read_bytes()),
+                      'emulator_sha256':digest(a.emulator.read_bytes()),
                       'included':included, 'omitted':omitted, **totals,
                       'validation':{'filesystem':'PASS','file_integrity':'PASS','config_fingerprint':'PASS','boot':boot_result},
                       'issues':['Utilities/CPM Tools media and additional on-disk documentation deferred']}

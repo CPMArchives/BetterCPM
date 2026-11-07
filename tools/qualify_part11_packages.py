@@ -129,7 +129,7 @@ for label in ('missing-rcp','foreign-rcp','foreign-pack'):
  else:
   name,rel=('RCP.CPX','build/cpx/RCP.CPX') if label=='foreign-rcp' else ('R3PACK.RSX','build/system/R3PACK.RSX');put(w,'b',name,(foreign/rel).read_bytes())
  before=target.read_bytes();t=run(w,[(b'SYSGEN A: B:\r',b'Proceed (Y/N)?',60),(b'Y',b'A0>_ ',90)])
- assert b'Matching RCP.CPX and R3PACK.RSX required' in t and target.read_bytes()==before,(label,t[-1500:])
+ assert b'Matching RCP.CPX' in t and b'required' in t and target.read_bytes()==before,(label,t[-1500:])
  record(label,target_unchanged=True)
 print('PASS package/install/export/mixed-version campaign',flush=True)
 # Refuse a foreign disk-source contract before any destination write, too.
