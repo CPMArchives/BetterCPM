@@ -236,6 +236,12 @@ recovery only after a bounded feasibility study. Assign a binary ABI, provider
 format, implementation scope and release only in a subsequent reviewed design.
 The engineering proposal itself remains a draft until that review occurs.
 
+## First design review
+
+The [first design review](TCAP-Design-Review.md) recommends tighter geometry,
+single-scope ownership and abort-recovery semantics. These recommendations
+remain for review and do not approve an ABI or implementation.
+
 ## Related contracts
 
 - [Roadmap handoff](TCAP-Design-Thread-Handoff.md)
