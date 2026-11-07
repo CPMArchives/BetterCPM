@@ -113,14 +113,14 @@ def utilities_members(platform, sums, images, reports, inventory):
                   'independent_inventory':proof}
 
 
-def package_license_files(tracked, package_id):
+def package_license_files(tracked, package_id, version="1.0"):
     """Attach the first-party grants and notices for this independent download."""
-    notices = json.loads(tracked['packaging/1.0/third-party-notices.json'])
+    notices = json.loads(tracked['packaging/'+version+'/third-party-notices.json'])
     selected = [row for row in notices if package_id in row['packages']]
     if not selected:
         raise ValueError('missing package notice inventory: ' + package_id)
     sections = [
-        'BetterCP/M 1.0 — ' + package_id,
+        'BetterCP/M '+version+' — ' + package_id,
         'Original BetterCP/M software and original code examples: GPL-2.0-or-later (licenses/BetterCPM/LICENSE and COPYING).',
         'Original BetterCP/M documentation prose and illustrations: '
         'CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). '
@@ -135,13 +135,35 @@ def package_license_files(tracked, package_id):
     return files
 
 
+def documentation_members(tracked, commit, version):
+    """Deliver the maintained four-manual edition with source-pinned links."""
+    from release_documentation import selection_mapping, remap_links, check_links, excluded
+    selected='packaging/'+version+'/documentation-selection.json'
+    selection=json.loads(tracked[selected]);mapping=selection_mapping(selection)
+    mapping['README.md']='packaging/'+version+'/README-Documentation.md'
+    mapping['Provenance/selection.json']=selected
+    mapping.pop('Provenance/SOFTWARE-PACKAGES.json')
+    files={}
+    for dest,source in mapping.items():
+        if excluded(dest):raise ValueError('excluded documentation member: '+dest)
+        files[dest]=remap_links(source,dest,tracked[source],mapping,commit,selection.get('external_references',{}))
+    links=check_links(files)
+    files['Provenance/SOURCE-IDENTITY.json']=encoded({'source_commit':commit,'release_version':version,'edition':'four maintained Markdown manuals'})
+    return files,{'manuals':selection['manuals'],'local_links_checked':links,'source_commit':commit,'generated_editions':'PDF/DOCX not included'}
+
+
 def assemble(args):
-    if (ROOT / 'docs/releases/non-documentation-lock-1.0/LOCK.json').exists():
+    version=getattr(args,'version','1.0')
+    if version not in ('1.0','1.0.1'):
+        raise ValueError('unsupported release version')
+    if version=='1.0' and (ROOT / 'docs/releases/non-documentation-lock-1.0/LOCK.json').exists():
         raise ValueError('Five 1.0 packages are locked; use build_documentation.py. Do not rebuild the six-package set during documentation sync.')
     if git('status','--porcelain','--untracked-files=no').strip():
         raise ValueError('candidate assembly requires clean tracked source')
     commit=git('rev-parse','HEAD').decode().strip()
-    layout=json.loads((ROOT/'metadata/release-assets.json').read_text())
+    layout=json.loads((ROOT/('metadata/release-assets.json' if version=='1.0' else 'metadata/release-assets-'+version+'.json')).read_text())
+    if layout['version']!=version or json.loads((ROOT/'metadata/release-package.json').read_text())['version']!=version:
+        raise ValueError('release version metadata mismatch')
     output=args.output.resolve()/'candidates'/commit
     output.mkdir(parents=True,exist_ok=False)
     # Failed candidates are preserved for inspection; never overwrite/reuse.
@@ -227,7 +249,7 @@ def assemble(args):
     packages=[]
     for asset in layout['assets']:
         id=asset['id'];files=dict(common);evidence={}
-        files.update(package_license_files(tracked, id))
+        files.update(package_license_files(tracked, id, version))
         template=tracked[asset['readme_template']].decode()
         template=template.replace('ASSEMBLY TEMPLATE — not a completed or accepted release package.\nRemove this notice only after the release acceptance checks pass.',
                                   'CANDIDATE — assembled for review; NOT ACCEPTED FOR RELEASE.')
@@ -253,11 +275,12 @@ def assemble(args):
             if platform=='cpmsim':
                 files['third_party/z80pack/README.md']=tracked['third_party/z80pack/README.md']
             files['docs/manuals/Users-Guide.md']=tracked['docs/manuals/Users-Guide.md']
-            files['docs/user/FDB.md']=tracked['docs/user/FDB.md']
+            if version=='1.0':files['docs/user/FDB.md']=tracked['docs/user/FDB.md']
+            else:files['docs/manuals/Command-and-Utilities-Reference.md']=tracked['docs/manuals/Command-and-Utilities-Reference.md']
             files['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']=tracked['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']
             files['docs/engineering/BCPM780-Installation-Qualification.md']=tracked['docs/engineering/BCPM780-Installation-Qualification.md']
             files['docs/engineering/Model 4 Release Checklist.md']=tracked['docs/engineering/Model 4 Release Checklist.md']
-            files['docs/releases/RELEASE-NOTES-1.0.md']=tracked['docs/releases/RELEASE-NOTES-1.0.md']
+            files['docs/releases/RELEASE-NOTES-'+version+'.md']=tracked['docs/releases/RELEASE-NOTES-'+version+'.md']
             evidence={'system':report}
             if platform=='cpmsim':
                 files.update({'host/BetterCPM/'+n:d for n,d in host.items()})
@@ -277,8 +300,9 @@ def assemble(args):
             files['docs/manuals/Command-and-Utilities-Reference.md']=tracked['docs/manuals/Command-and-Utilities-Reference.md']
             files['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']=tracked['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']
             files['docs/engineering/BCPM780-Installation-Qualification.md']=tracked['docs/engineering/BCPM780-Installation-Qualification.md']
-            for guide in ('FDB.md','ZSM4.md','LINK.md','SQ.md','USQ.md','CR.md','UNCR.md','LZH.md','UNLZH.md'):
-                files['docs/user/'+guide]=tracked['docs/user/'+guide]
+            if version=='1.0':
+                for guide in ('FDB.md','ZSM4.md','LINK.md','SQ.md','USQ.md','CR.md','UNCR.md','LZH.md','UNLZH.md'):
+                    files['docs/user/'+guide]=tracked['docs/user/'+guide]
             files['docs/engineering/Model 4 Release Checklist.md']=tracked['docs/engineering/Model 4 Release Checklist.md']
         elif id=='source':
             files.update({'source/BetterCPM/'+n:d for n,d in tracked.items()})
@@ -290,20 +314,24 @@ def assemble(args):
                 if name not in images and not name.endswith('.dmk.json') and not name.endswith('.dsk.json'):
                     files['source/native-companions/'+name]=data
         else:
-            for name,data in tracked.items():
-                if name == 'docs/user/users_guide_backup.md':
-                    continue
-                if name.startswith('docs/') and Path(name).suffix.lower() in ('.md','.txt','.json','.tsv','.png','.svg'):
-                    files[name]=data
-            files['CONTENTS.md']=tracked['packaging/1.0/DOCUMENTATION-CONTENTS.md']
-            files['third_party/z80pack/README.md']=tracked['third_party/z80pack/README.md']
-            evidence['generated_editions']='PDF/DOCX omitted pending source-to-edition reconciliation'
+            if version=='1.0.1':
+                selected,evidence=documentation_members(tracked,commit,version)
+                files.update(selected)
+            else:
+                for name,data in tracked.items():
+                    if name == 'docs/user/users_guide_backup.md':
+                        continue
+                    if name.startswith('docs/') and Path(name).suffix.lower() in ('.md','.txt','.json','.tsv','.png','.svg'):
+                        files[name]=data
+                files['CONTENTS.md']=tracked['packaging/'+version+'/DOCUMENTATION-CONTENTS.md']
+                files['third_party/z80pack/README.md']=tracked['third_party/z80pack/README.md']
+                evidence['generated_editions']='PDF/DOCX omitted pending source-to-edition reconciliation'
         # Retain tracked licensing/permission and provenance files in each ZIP.
         for name,data in tracked.items():
             if name.startswith('third_party/') and any(x in Path(name).name.lower() for x in ('license','permission','provenance','copying','notice')):
                 files['licenses/'+name]=data
         verify_members(files, forbidden, inspected)
-        record={'schema':1,'package':id,'version':'1.0','source_commit':commit,
+        record={'schema':1,'package':id,'version':version,'source_commit':commit,
                 'status':'CANDIDATE; NOT ACCEPTED','accepted_commit':None,'tag':None,
                 'platforms':asset['platforms'],'pending':PENDING,'evidence':evidence,
                 'files':{n:sha(d) for n,d in sorted(files.items())}}
@@ -311,15 +339,16 @@ def assemble(args):
         packages.append(write_package(output/filename,asset['archive_root']+'-candidate',files,record))
     index={'schema':1,'status':'CANDIDATE; NOT ACCEPTED','source_commit':commit,
            'accepted_commit':None,'tag':None,'assets':packages,'pending':PENDING}
-    (output/'BetterCPM-1.0-CANDIDATE.json').write_bytes(encoded(index))
+    (output/('BetterCPM-'+version+'-CANDIDATE.json')).write_bytes(encoded(index))
     (output/'SHA256SUMS.txt').write_text(''.join(f'{p["sha256"]}  {p["filename"]}\n' for p in packages)+
-         f'{sha(encoded(index))}  BetterCPM-1.0-CANDIDATE.json\n')
+         f'{sha(encoded(index))}  BetterCPM-{version}-CANDIDATE.json\n')
     print(output)
     return output
 
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--version',choices=('1.0','1.0.1'),default='1.0')
     for name in ('cpmsim-system','model4-system','utilities','inventory','upstream','runtime-manifest','output'):
         p.add_argument('--'+name,type=Path,required=True)
     assemble(p.parse_args())

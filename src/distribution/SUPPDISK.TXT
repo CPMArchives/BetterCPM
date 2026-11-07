@@ -1,0 +1,20 @@
+BETTERCP/M 1.0.1 - OPTIONAL DISK FORMATS
+
+The standard System Disk catalogue retains its 108 entries. This supplement
+contains four additional definitions: CPC System, CPC Data, PCW 180K
+and Bondwell 14. It uses the existing checksum capacity and BIOS layout.
+
+SUPPDISK.FDF is editable text; SUPPDISK.FDB is its compiled catalogue.
+FDB.COM can open/import the supplement. Preserve your original DISK.FDB
+and use Save As for a combined catalogue. Importing all four into the
+standard catalogue gives 112 entries, within the 128-entry limit.
+
+CPC, PCW and Bondwell have file-interchange tests on cpmsim and Model 4.
+Bondwell on Model 4 requires FDF.RSX first in the loaded RSX chain.
+Physical media is untested. ATON/Lifeboat and Pickles & Trout are deferred
+to 1.1 consideration because they require expanded checksum storage.
+
+See metadata/supplemental/README.md in the Source package for attachment,
+conversion and load-order instructions and exact qualification limits.
+Historical booting and application compatibility are not implied.
+

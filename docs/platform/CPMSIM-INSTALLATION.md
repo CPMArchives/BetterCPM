@@ -30,7 +30,7 @@ and [the 1.0 erratum](../releases/1.0-ERRATA.md#ansi-host-terminal-size).
 
 ## v1.0.1 source launch check
 
-The v1.0.1 source candidate adds a **cpmsim-only** check of the host terminal
+The v1.0.1 source adds a **cpmsim-only** check of the host terminal
 window. Its generated RAM/ROM launchers refuse to start below 80 columns or
 24 rows, explain how to enlarge the window or reduce the font size, and allow
 a retry after resizing. Rebuild the platform output to update an existing

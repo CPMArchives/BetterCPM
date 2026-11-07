@@ -11,3 +11,6 @@ src/distribution/TEDCOPY.TXT -text whitespace=cr-at-eol
 src/distribution/NOAH.TXT whitespace=cr-at-eol
 src/distribution/PATCH.TXT -text whitespace=cr-at-eol
 src/distribution/COMPARE.TXT -text whitespace=cr-at-eol
+
+src/distribution/README.TXT -text whitespace=cr-at-eol
+src/distribution/SUPPDISK.TXT -text whitespace=cr-at-eol

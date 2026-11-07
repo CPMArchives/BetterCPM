@@ -41,6 +41,7 @@ def main():
     p.add_argument('--target',choices=('z80pack','trs80gp'),required=True)
     p.add_argument('--system',type=Path,required=True)
     p.add_argument('--artifacts',type=Path,required=True)
+    p.add_argument('--simulator',type=Path,default=Path.home()/'projects/git/z80pack/cpmsim/cpmsim')
     p.add_argument('--output',type=Path,required=True)
     a=p.parse_args();w=a.output.resolve();w.mkdir(parents=True,exist_ok=False)
     native=a.target=='trs80gp';original=a.system.resolve().read_bytes()
@@ -72,7 +73,7 @@ def main():
     if not native:
         disks=w/'disks';disks.mkdir();shutil.copy2(raw,disks/'drivea.dsk')
         commands=[((s if s=='\x03' else s+'\r').encode(), b'A0>_ ' if want=='A0>' else want.encode(),30) for s,want in flow]
-        trace=session(Path.home()/'projects/git/z80pack/cpmsim/cpmsim',disks,commands,w/'transcript.bin')
+        trace=session(a.simulator.resolve(),disks,commands,w/'transcript.bin')
         text=trace.decode('ascii','replace')
         for part in text.split('FDB 1.01 (003)')[1:]:
             if PROMPT in part:menu_frames.append('FDB 1.01 (003)'+part.split(PROMPT)[0]+PROMPT)

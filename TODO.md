@@ -28,23 +28,22 @@ The locked 1.0 packages remain unchanged; only showstoppers warrant reopening
 that lock. The [release disposition](docs/engineering/UI-Conformance-Matrix.md#release-disposition-and-101-scope)
 records the accepted command UI, DIR and XSUB limitations.
 
-- [ ] Correct FDB.COM's main-menu presentation to Engineering Specification 209:
+- [x] Correct FDB.COM's main-menu presentation to Engineering Specification 209:
   version heading, grouped bracketed letter choices and the bracketed choice
   prompt, preserving the documented commands and exit behavior. The compact
   menu remains an accepted 1.0 limitation. The [revision 003 candidate and
   qualification evidence](docs/engineering/FDB-Main-Menu-Correction.md) are
-  prepared for review; acceptance remains subject to merge. See the
+  merged in PR #635 with cpmsim/Model 4 qualification. See the
   [FDB erratum](docs/releases/1.0-ERRATA.md#fdb-main-menu-presentation).
 
-- [ ] Correct transient DIR lowercase filespecs (`:DIR *.com`), preserving
+- [x] Correct transient DIR lowercase filespecs (`:DIR *.com`), preserving
   the original tail and existing selection/output behavior. See the
   [revision 015 candidate and qualification](docs/engineering/DIR-Lowercase-Filespec-Correction.md);
-  acceptance remains subject to merge.
+  merged in PR #637 with cpmsim/Model 4 qualification.
 
-- [ ] **1.01: ANSI host terminal-size handling.** The approved cpmsim-only
+- [x] **1.01: ANSI host terminal-size handling.** The approved cpmsim-only
   [launch guard and validation](docs/engineering/CPMSIM-Terminal-Size-Guard.md)
-  refuse launch below 80x24 and explain resizing/retry; acceptance remains
-  subject to merge. Live resizing and smaller-screen support are not added.
+  refuse launch below 80x24 and explain resizing/retry; merged in PR #639. Live resizing and smaller-screen support are not added.
   The locked 1.0 minimum/workaround remains in the
   [terminal-size erratum](docs/releases/1.0-ERRATA.md#ansi-host-terminal-size).
 

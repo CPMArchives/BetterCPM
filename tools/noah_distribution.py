@@ -15,6 +15,9 @@ COMPONENTS = {'NOAH.COM':'build/utilities/NOAH.COM',
               'PATCH.TXT':'src/distribution/PATCH.TXT'}
 COMPONENTS.update({'COMPARE.COM':'build/utilities/COMPARE.COM',
                    'COMPARE.TXT':'src/distribution/COMPARE.TXT'})
+COMPONENTS.update({'SUPPDISK.FDF':'metadata/supplemental/1.0.1/SUPPDISK.FDF',
+                   'SUPPDISK.FDB':'metadata/supplemental/1.0.1/SUPPDISK.FDB',
+                   'SUPPDISK.TXT':'src/distribution/SUPPDISK.TXT'})
 sha = lambda data: hashlib.sha256(data).hexdigest()
 
 

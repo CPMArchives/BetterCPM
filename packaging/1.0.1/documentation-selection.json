@@ -1,0 +1,150 @@
+{
+  "schema": 3,
+  "manuals": [
+    "docs/manuals/Users-Guide.md",
+    "docs/manuals/Command-and-Utilities-Reference.md",
+    "docs/manuals/Programmers-Guide.md",
+    "docs/manuals/Practical-Porting-Guide.md"
+  ],
+  "references": [
+    "docs/LICENSING-INVENTORY.md",
+    "docs/LICENSING.md",
+    "docs/SOURCE-BUILD.md",
+    "docs/architecture/01 Architectural Principles.txt",
+    "docs/architecture/02 Overall System Architecture.txt",
+    "docs/architecture/03 Architectural Boundaries.txt",
+    "docs/architecture/04 Memory Architecture.txt",
+    "docs/architecture/05 Boot Architecture.txt",
+    "docs/architecture/06 Command Environment.txt",
+    "docs/architecture/07 System Services.txt",
+    "docs/architecture/08 Hardware Abstraction.txt",
+    "docs/architecture/09 Program Execution Model.txt",
+    "docs/architecture/10 Storage and File-System Architecture.txt",
+    "docs/architecture/11 System State - revised.txt",
+    "docs/architecture/12 Compatibility Architecture.txt",
+    "docs/architecture/13 Architectural Constraints and Invariants.txt",
+    "docs/architecture/14 Extension Architecture.txt",
+    "docs/architecture/15 Open Questions.txt",
+    "docs/architecture/16 Optional Filesystem Safety RSX.txt",
+    "docs/architecture/16 Resident Command Set.txt",
+    "docs/architecture/17 Named Directory Register.txt",
+    "docs/architecture/18 Persistent Data Segment.txt",
+    "docs/architecture/19 ABI Design Conventions.txt",
+    "docs/architecture/20 Resident Service ABI.txt",
+    "docs/architecture/21 Stateful RSX Reconstruction ABI.txt",
+    "docs/architecture/22 Clock Provider ABI.txt",
+    "docs/architecture/23 Default Floppy Format.txt",
+    "docs/architecture/24 Configuration Architecture.txt",
+    "docs/architecture/25 Extended BDOS Namespace.txt",
+    "docs/architecture/26 Developer Platform Direction.txt",
+    "docs/architecture/27 ROM and RAM Ownership.txt",
+    "docs/architecture/28 Disk State Normalization.txt",
+    "docs/architecture/29 Bounded 1.0 PDS.txt",
+    "docs/architecture/30 COPY Operand Qualification and Backup.md",
+    "docs/architecture/31 Terminal Monitor RSX.md",
+    "docs/architecture/32 BetterCPM Vision and Post-1.0 Direction.md",
+    "docs/platform/CPMSIM-INSTALLATION.md",
+    "docs/platform/FORMAT-SUPPORT-1.0.md",
+    "docs/platform/MODEL4-INSTALLATION.md",
+    "docs/platform/MODEL4-SHIPPED-INSTALLATION.txt",
+    "docs/programmers/Archive Read Library.md",
+    "docs/programmers/BETTERCPM-API.md",
+    "docs/programmers/BIOS-DISK-CONFIG.md",
+    "docs/programmers/BUILD-DISK.md",
+    "docs/programmers/CONFIG-DUP.md",
+    "docs/programmers/CPM22-API.md",
+    "docs/programmers/Monitor RSX Development.md",
+    "docs/programmers/REFERENCE-STATUS.md",
+    "docs/programmers/RSX and CPX Programmer's Guide.md",
+    "docs/programmers/Shared Input Library.md",
+    "docs/programmers/examples/HELLO.MAC",
+    "docs/programmers/examples/PING.MAC",
+    "docs/programmers/examples/RECORDS.MAC",
+    "docs/programmers/examples/TIMEQ.MAC",
+    "docs/programmers/examples/VERIFICATION.json",
+    "docs/releases/1.0-ERRATA.md",
+    "docs/releases/DISTRIBUTION-BUILD.md",
+    "docs/releases/DISTRIBUTION-MANIFEST.md",
+    "docs/releases/DOCUMENTATION-ACCEPTANCE.md",
+    "docs/releases/DOCUMENTATION-PUBLICATION.md",
+    "docs/releases/RELEASE-NOTES-1.0.md",
+    "docs/releases/RELEASE-NOTES-1.0.1.md",
+    "docs/engineering/CPMSIM-Terminal-Size-Guard.md",
+    "docs/engineering/RSX-Disk-Cache-Implementation.md",
+    "metadata/supplemental/README.md"
+  ],
+  "license_records": [
+    "third_party/cpm-tools/LICENSE",
+    "third_party/cpm-tools/source/LICENSE",
+    "third_party/dasm/provenance.json",
+    "third_party/dri-ddt/LICENSE",
+    "third_party/dri-ddt/provenance.json",
+    "third_party/dri-ddt/reproduction/provenance.json",
+    "third_party/dri-dump/LICENSE",
+    "third_party/dri-dump/provenance.json",
+    "third_party/dri-ed/LICENSE",
+    "third_party/dri-ed/provenance.json",
+    "third_party/dri-link/LICENSE",
+    "third_party/dri-link/permission.html",
+    "third_party/dri-link/provenance.json",
+    "third_party/dri-pip/LICENSE",
+    "third_party/dri-pip/provenance.json",
+    "third_party/ted/LICENSE",
+    "third_party/ted/docs/LICENSE.txt",
+    "third_party/ted/provenance.json",
+    "third_party/z80pack/LICENSE",
+    "third_party/zsm4/LICENSE",
+    "third_party/zsm4/provenance.json"
+  ],
+  "external_references": {
+    "docs/user/development/FDB-1.01.md": {
+      "revision": "d43c2a89de3d20880027cad59f9ec98167c60b7d",
+      "path": "docs/user/FDB.md"
+    },
+    "docs/engineering/evidence/2026-11-04-ansi-terminal-size.json": {
+      "revision": "d43c2a89de3d20880027cad59f9ec98167c60b7d",
+      "path": "docs/engineering/evidence/2026-11-04-ansi-terminal-size.json"
+    },
+    "docs/releases/frozen-1.0-release-identities-2026-11-04/QUALIFICATION.json": {
+      "revision": "d43c2a89de3d20880027cad59f9ec98167c60b7d",
+      "path": "docs/releases/frozen-1.0-release-identities-2026-11-04/QUALIFICATION.json"
+    },
+    "docs/engineering/Release-Identity-Promotion-1.0.md": {
+      "revision": "d43c2a89de3d20880027cad59f9ec98167c60b7d",
+      "path": "docs/engineering/Release-Identity-Promotion-1.0.md"
+    },
+    "docs/engineering/209-usability-101.md": {
+      "revision": "d43c2a89de3d20880027cad59f9ec98167c60b7d",
+      "path": "docs/engineering/209-usability-101.md"
+    },
+    "docs/releases/non-documentation-lock-1.0/VERIFICATION.json": {
+      "revision": "d43c2a89de3d20880027cad59f9ec98167c60b7d",
+      "path": "docs/releases/non-documentation-lock-1.0/VERIFICATION.json"
+    },
+    "docs/releases/DOCUMENTATION-PUBLICATION.md": {
+      "revision": "28aa9f4da647b3c8ca806f0f8a6f261a2b83c8a9",
+      "path": "docs/releases/DOCUMENTATION-PUBLICATION.md"
+    },
+    "docs/releases/DOCUMENTATION-ACCEPTANCE.md": {
+      "revision": "28aa9f4da647b3c8ca806f0f8a6f261a2b83c8a9",
+      "path": "docs/releases/DOCUMENTATION-ACCEPTANCE.md"
+    },
+    "docs/releases/1.0-RELEASE-PACKAGES.md": {
+      "revision": "28aa9f4da647b3c8ca806f0f8a6f261a2b83c8a9",
+      "path": "docs/releases/1.0-RELEASE-PACKAGES.md"
+    },
+    "docs/releases/non-documentation-lock-1.0/CONTENTS.json": {
+      "revision": "28aa9f4da647b3c8ca806f0f8a6f261a2b83c8a9",
+      "path": "docs/releases/non-documentation-lock-1.0/CONTENTS.json"
+    },
+    "docs/releases/non-documentation-lock-1.0/LOCK.json": {
+      "revision": "28aa9f4da647b3c8ca806f0f8a6f261a2b83c8a9",
+      "path": "docs/releases/non-documentation-lock-1.0/LOCK.json"
+    },
+    "docs/releases/non-documentation-lock-1.0/README.md": {
+      "revision": "28aa9f4da647b3c8ca806f0f8a6f261a2b83c8a9",
+      "path": "docs/releases/non-documentation-lock-1.0/README.md"
+    }
+  },
+  "layout": "Four top-level manuals, README, Supporting-Reference, Licenses and Provenance. No locator files, development guides, build tools or historical packaging folders."
+}
