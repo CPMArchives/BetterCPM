@@ -60,6 +60,13 @@ ownership and profile format remain open.
 Use Z-System TCAP descriptions as historical input. Expanding the terminal
 catalog and adopting additional emulation protocols are later decisions.
 
+## Engineering proposal draft
+
+The [TCAP engineering proposal](TCAP-Engineering-Proposal.md) records a static
+audit of Monitor, SCRN and SCX, proposed consumer contracts and qualification
+gates. It is a draft for review, not an accepted ABI or an implemented facility.
+Implementation scope and release assignment remain open.
+
 ## Starting references
 
 - [1.1 engineering specification](1.1-ENGINEERING-SPECIFICATION.md) and [living backlog](../../TODO.md)
