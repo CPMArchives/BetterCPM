@@ -416,3 +416,12 @@ with positive metadata admission and real publication ordering. It charges
 Full loader-front-door and finalizer/context integration remain required; this
 is not production activation, a public ABI freeze or a utility migration.
 Release assignment remains deferred.
+
+### Native-reference manager and loader integration
+
+The [private integrated native campaign](TCAP-Native-Manager-Integration.md)
+now constructs validity through the actual manager and enforces native/file-backed
+loading gates before installation/execution. It verifies complete load/unload,
+cache reconstruction and failure/retry paths. This candidate reserves 1 KiB
+permanently; packaging, other-platform qualification and the full public request
+ABI remain open. Utility migrations and release assignment stay deferred.

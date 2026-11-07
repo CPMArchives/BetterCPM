@@ -164,6 +164,13 @@ not whole-system worst cases or live/native evidence.
 
 ## Remaining integration boundary
 
+Follow-up: [native-reference manager/loader integration](TCAP-Native-Manager-Integration.md)
+now exercises manager-produced reservations, the real commit path and executable
+loading gates together. It measures the larger permanent/transient footprint and
+keeps media, checked-profile and public-ABI qualification separate. The limitations
+below describe this earlier experiment.
+
+
 The two mechanisms are implemented and qualified together **in the private
 campaign**, including positive metadata admission and real commit publication.
 This does not make an installable TCAP system. The campaign explicitly constructs
