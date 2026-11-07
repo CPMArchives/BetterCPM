@@ -249,6 +249,13 @@ controls to LIST. This stronger recovery applies only to admitted portable
 sessions. Preserve legacy MCON operation 5 behavior for other callers; do not
 silently turn its parser reset into a universal mode reset.
 
+The [interface candidate](TCAP-Interface-Candidate.md) bounds repeat-recovery
+recognition to the latest successfully recovered session until a newer activation
+or owner-validity transition. Plain Begin during takeover leaves the takeover
+token intact and creates no emphasis token. A partial activation failure must
+return an identifying token when possible while retaining owner-resident recovery
+state even if the transient aborts before receiving it.
+
 Recover is idempotent with respect to owned recovery work: after successful
 recovery, repeating it for the retired session reports already-recovered and
 performs no output, cursor movement or mode reset. Recovery of an unrelated or
