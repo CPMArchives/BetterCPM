@@ -117,6 +117,12 @@ path before enhanced takeover is permitted.
 | Resource cost | Measure permanent state, loaded page-rounded allocation, first-provider overhead, transient workspace and stack, separately. | No new sizes measured or budget approved. |
 | Consumer parity | TYPE replay and right-edge behavior; unchanged TED cell operations/document recovery; HELP readable plain output and decoder costs. | Existing consumers supply requirements; migrations remain unimplemented. |
 
+## Detailed semantic contract draft
+
+The [semantic contract draft](TCAP-Semantic-Contract.md) develops these
+recommendations into snapshot, admission, scope, failure and recovery semantics.
+It remains proposed and does not allocate an ABI or authorize implementation.
+
 ## Next documentation deliverable
 
 Prepare a detailed semantic contract covering snapshot validity, routing,
