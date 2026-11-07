@@ -324,3 +324,15 @@ page-zero drive, counted command tail and two default FCBs. BDOS file operations
 operand resolution and the CPX/RSX loaders keep their existing contracts.
 Command-environment code built for the same layout can inspect the bounded
 record described in the [1.1 PATH specification](../engineering/Numeric-PATH-1.1.md).
+
+
+## Public TCAP design target (not implemented)
+
+The [TCAP public ABI and admission contract 1.0](../engineering/TCAP-Public-ABI.md)
+defines the future `TCAP` Function-182 service, request/snapshot/eligibility/token
+records, scoped emphasis/takeover and matching-system admission. It preserves
+normal console I/O, explicit personality selection and existing Monitor/SCRN/SCX.
+BMET 3 and MCON 1.4 are future validation obligations, not formats accepted by
+current production builders. Private `XTCP` is not compatible. This is a design
+reference for later implementation; utility migrations and release assignment
+remain deferred.

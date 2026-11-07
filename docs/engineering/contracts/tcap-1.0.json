@@ -1,0 +1,681 @@
+{
+  "schema": 1,
+  "service": "TCAP",
+  "version": [
+    1,
+    0
+  ],
+  "baseline": "790a19c2",
+  "record_sizes": {
+    "request": 32,
+    "snapshot": 64,
+    "eligibility": 96,
+    "token": 16,
+    "provider_requirements": 64,
+    "owner_header": 32
+  },
+  "records": {
+    "request": [
+      {
+        "offset": 0,
+        "bytes": 1,
+        "field": "major"
+      },
+      {
+        "offset": 1,
+        "bytes": 1,
+        "field": "minor"
+      },
+      {
+        "offset": 2,
+        "bytes": 2,
+        "field": "length"
+      },
+      {
+        "offset": 4,
+        "bytes": 1,
+        "field": "operation"
+      },
+      {
+        "offset": 5,
+        "bytes": 1,
+        "field": "flags"
+      },
+      {
+        "offset": 6,
+        "bytes": 1,
+        "field": "rendering_class"
+      },
+      {
+        "offset": 7,
+        "bytes": 1,
+        "field": "intent"
+      },
+      {
+        "offset": 8,
+        "bytes": 2,
+        "field": "input_address"
+      },
+      {
+        "offset": 10,
+        "bytes": 2,
+        "field": "input_length"
+      },
+      {
+        "offset": 12,
+        "bytes": 2,
+        "field": "output_address"
+      },
+      {
+        "offset": 14,
+        "bytes": 2,
+        "field": "output_capacity"
+      },
+      {
+        "offset": 16,
+        "bytes": 2,
+        "field": "token_address"
+      },
+      {
+        "offset": 18,
+        "bytes": 2,
+        "field": "token_capacity"
+      },
+      {
+        "offset": 20,
+        "bytes": 1,
+        "field": "status"
+      },
+      {
+        "offset": 21,
+        "bytes": 1,
+        "field": "state"
+      },
+      {
+        "offset": 22,
+        "bytes": 1,
+        "field": "effects"
+      },
+      {
+        "offset": 23,
+        "bytes": 1,
+        "field": "mode"
+      },
+      {
+        "offset": 24,
+        "bytes": 2,
+        "field": "required_size"
+      },
+      {
+        "offset": 26,
+        "bytes": 6,
+        "field": "reserved"
+      }
+    ],
+    "snapshot": [
+      {
+        "offset": 0,
+        "bytes": 1,
+        "field": "major"
+      },
+      {
+        "offset": 1,
+        "bytes": 1,
+        "field": "minor"
+      },
+      {
+        "offset": 2,
+        "bytes": 2,
+        "field": "length"
+      },
+      {
+        "offset": 4,
+        "bytes": 4,
+        "field": "owner_validity"
+      },
+      {
+        "offset": 8,
+        "bytes": 2,
+        "field": "generation"
+      },
+      {
+        "offset": 10,
+        "bytes": 1,
+        "field": "rendering_class"
+      },
+      {
+        "offset": 11,
+        "bytes": 1,
+        "field": "destination"
+      },
+      {
+        "offset": 12,
+        "bytes": 1,
+        "field": "interactivity"
+      },
+      {
+        "offset": 13,
+        "bytes": 1,
+        "field": "row_provenance"
+      },
+      {
+        "offset": 14,
+        "bytes": 1,
+        "field": "column_provenance"
+      },
+      {
+        "offset": 15,
+        "bytes": 1,
+        "field": "wrap"
+      },
+      {
+        "offset": 16,
+        "bytes": 2,
+        "field": "rows"
+      },
+      {
+        "offset": 18,
+        "bytes": 2,
+        "field": "columns"
+      },
+      {
+        "offset": 20,
+        "bytes": 2,
+        "field": "supported_operations"
+      },
+      {
+        "offset": 22,
+        "bytes": 2,
+        "field": "known_operations"
+      },
+      {
+        "offset": 24,
+        "bytes": 1,
+        "field": "physical_rendition"
+      },
+      {
+        "offset": 25,
+        "bytes": 1,
+        "field": "known_rendition"
+      },
+      {
+        "offset": 26,
+        "bytes": 1,
+        "field": "encoder_rendition"
+      },
+      {
+        "offset": 27,
+        "bytes": 1,
+        "field": "semantic_mapping"
+      },
+      {
+        "offset": 28,
+        "bytes": 2,
+        "field": "supported_cleanup"
+      },
+      {
+        "offset": 30,
+        "bytes": 2,
+        "field": "known_cleanup"
+      },
+      {
+        "offset": 32,
+        "bytes": 4,
+        "field": "route_cookie"
+      },
+      {
+        "offset": 36,
+        "bytes": 4,
+        "field": "policy_cookie"
+      },
+      {
+        "offset": 40,
+        "bytes": 1,
+        "field": "control_class"
+      },
+      {
+        "offset": 41,
+        "bytes": 1,
+        "field": "echo_class"
+      },
+      {
+        "offset": 42,
+        "bytes": 1,
+        "field": "plain_override"
+      },
+      {
+        "offset": 43,
+        "bytes": 1,
+        "field": "coordinator"
+      },
+      {
+        "offset": 44,
+        "bytes": 2,
+        "field": "stream_model"
+      },
+      {
+        "offset": 46,
+        "bytes": 2,
+        "field": "stream_revision"
+      },
+      {
+        "offset": 48,
+        "bytes": 2,
+        "field": "baseline"
+      },
+      {
+        "offset": 50,
+        "bytes": 2,
+        "field": "baseline_revision"
+      },
+      {
+        "offset": 52,
+        "bytes": 2,
+        "field": "routing_policy"
+      },
+      {
+        "offset": 54,
+        "bytes": 2,
+        "field": "routing_revision"
+      },
+      {
+        "offset": 56,
+        "bytes": 2,
+        "field": "fixed_model"
+      },
+      {
+        "offset": 58,
+        "bytes": 2,
+        "field": "fixed_revision"
+      },
+      {
+        "offset": 60,
+        "bytes": 4,
+        "field": "reserved"
+      }
+    ],
+    "eligibility": [
+      {
+        "offset": 0,
+        "bytes": 64,
+        "field": "snapshot"
+      },
+      {
+        "offset": 64,
+        "bytes": 2,
+        "field": "required_operations"
+      },
+      {
+        "offset": 66,
+        "bytes": 2,
+        "field": "required_cleanup"
+      },
+      {
+        "offset": 68,
+        "bytes": 2,
+        "field": "minimum_rows"
+      },
+      {
+        "offset": 70,
+        "bytes": 2,
+        "field": "maximum_rows"
+      },
+      {
+        "offset": 72,
+        "bytes": 2,
+        "field": "minimum_columns"
+      },
+      {
+        "offset": 74,
+        "bytes": 2,
+        "field": "maximum_columns"
+      },
+      {
+        "offset": 76,
+        "bytes": 2,
+        "field": "accepted_wrap"
+      },
+      {
+        "offset": 78,
+        "bytes": 1,
+        "field": "use"
+      },
+      {
+        "offset": 79,
+        "bytes": 1,
+        "field": "mode"
+      },
+      {
+        "offset": 80,
+        "bytes": 2,
+        "field": "model_revision"
+      },
+      {
+        "offset": 82,
+        "bytes": 2,
+        "field": "policy_flags"
+      },
+      {
+        "offset": 84,
+        "bytes": 1,
+        "field": "intent"
+      },
+      {
+        "offset": 85,
+        "bytes": 11,
+        "field": "reserved"
+      }
+    ],
+    "token": [
+      {
+        "offset": 0,
+        "bytes": 4,
+        "field": "owner_validity"
+      },
+      {
+        "offset": 4,
+        "bytes": 4,
+        "field": "session_serial"
+      },
+      {
+        "offset": 8,
+        "bytes": 4,
+        "field": "scope_serial"
+      },
+      {
+        "offset": 12,
+        "bytes": 1,
+        "field": "kind"
+      },
+      {
+        "offset": 13,
+        "bytes": 3,
+        "field": "reserved"
+      }
+    ],
+    "provider_requirements": [
+      {
+        "offset": 0,
+        "bytes": 1,
+        "field": "major"
+      },
+      {
+        "offset": 1,
+        "bytes": 1,
+        "field": "minor"
+      },
+      {
+        "offset": 2,
+        "bytes": 2,
+        "field": "length"
+      },
+      {
+        "offset": 4,
+        "bytes": 2,
+        "field": "entry_offset"
+      },
+      {
+        "offset": 6,
+        "bytes": 2,
+        "field": "owner_offset"
+      },
+      {
+        "offset": 8,
+        "bytes": 2,
+        "field": "owner_bytes"
+      },
+      {
+        "offset": 10,
+        "bytes": 1,
+        "field": "core_major"
+      },
+      {
+        "offset": 11,
+        "bytes": 1,
+        "field": "core_minor"
+      },
+      {
+        "offset": 12,
+        "bytes": 2,
+        "field": "core_gates"
+      },
+      {
+        "offset": 14,
+        "bytes": 2,
+        "field": "scx_operations"
+      },
+      {
+        "offset": 16,
+        "bytes": 2,
+        "field": "service_capabilities"
+      },
+      {
+        "offset": 18,
+        "bytes": 2,
+        "field": "routing_policy"
+      },
+      {
+        "offset": 20,
+        "bytes": 2,
+        "field": "routing_revision"
+      },
+      {
+        "offset": 22,
+        "bytes": 2,
+        "field": "stream_model"
+      },
+      {
+        "offset": 24,
+        "bytes": 2,
+        "field": "stream_revision"
+      },
+      {
+        "offset": 26,
+        "bytes": 2,
+        "field": "fixed_model"
+      },
+      {
+        "offset": 28,
+        "bytes": 2,
+        "field": "fixed_revision"
+      },
+      {
+        "offset": 30,
+        "bytes": 2,
+        "field": "baseline"
+      },
+      {
+        "offset": 32,
+        "bytes": 2,
+        "field": "baseline_revision"
+      },
+      {
+        "offset": 34,
+        "bytes": 2,
+        "field": "flags"
+      },
+      {
+        "offset": 36,
+        "bytes": 28,
+        "field": "reserved"
+      }
+    ],
+    "owner_header": [
+      {
+        "offset": 0,
+        "bytes": 4,
+        "field": "magic"
+      },
+      {
+        "offset": 4,
+        "bytes": 1,
+        "field": "major"
+      },
+      {
+        "offset": 5,
+        "bytes": 1,
+        "field": "minor"
+      },
+      {
+        "offset": 6,
+        "bytes": 2,
+        "field": "length"
+      },
+      {
+        "offset": 8,
+        "bytes": 4,
+        "field": "owner_validity"
+      },
+      {
+        "offset": 12,
+        "bytes": 16,
+        "field": "build_identity"
+      },
+      {
+        "offset": 28,
+        "bytes": 1,
+        "field": "state"
+      },
+      {
+        "offset": 29,
+        "bytes": 3,
+        "field": "reserved"
+      }
+    ]
+  },
+  "operations": [
+    {
+      "value": 0,
+      "name": "Discover",
+      "input_bytes": 0,
+      "output_bytes": 64,
+      "token": false
+    },
+    {
+      "value": 1,
+      "name": "Admit",
+      "input_bytes": 96,
+      "output_bytes": 96,
+      "token": false
+    },
+    {
+      "value": 2,
+      "name": "BeginEmphasis",
+      "input_bytes": 96,
+      "output_bytes": 0,
+      "token": true
+    },
+    {
+      "value": 3,
+      "name": "ActivateTakeover",
+      "input_bytes": 96,
+      "output_bytes": 0,
+      "token": true
+    },
+    {
+      "value": 4,
+      "name": "EndEmphasis",
+      "input_bytes": 0,
+      "output_bytes": 0,
+      "token": true
+    },
+    {
+      "value": 5,
+      "name": "Release",
+      "input_bytes": 0,
+      "output_bytes": 0,
+      "token": true
+    },
+    {
+      "value": 6,
+      "name": "Recover",
+      "input_bytes": 0,
+      "output_bytes": 0,
+      "token": true
+    },
+    {
+      "value": 7,
+      "name": "DescribeSession",
+      "input_bytes": 0,
+      "output_bytes": 0,
+      "token": true
+    }
+  ],
+  "statuses": {
+    "0": "Success",
+    "1": "Plain",
+    "2": "AlreadyRecovered",
+    "3": "Unavailable",
+    "4": "Unsupported",
+    "5": "UnknownFact",
+    "6": "Incompatible",
+    "7": "BadRequest",
+    "8": "BufferTooSmall",
+    "9": "UnusableGeometry",
+    "10": "Stale",
+    "11": "ParserBusy",
+    "12": "ScopeState",
+    "13": "InvalidSession",
+    "14": "ScopeActive",
+    "15": "ResourceUnavailable",
+    "16": "SessionBusy",
+    "17": "ReentryRefused",
+    "18": "RecoveryRequired",
+    "19": "RecoveryFailed",
+    "20": "IdentityExhausted"
+  },
+  "states": {
+    "0": "Idle",
+    "1": "EmphasisOnly",
+    "2": "Takeover",
+    "3": "TakeoverWithEmphasis",
+    "4": "Recovering",
+    "5": "RecoveryRequired",
+    "255": "Unobservable"
+  },
+  "modes": {
+    "0": "None",
+    "1": "Continuous",
+    "2": "LogicalLines",
+    "3": "SpatialStream",
+    "4": "FixedTakeover",
+    "5": "EmphasisStream",
+    "6": "EmphasisFixed"
+  },
+  "masks": {
+    "advertisement": 15,
+    "operations": 2047,
+    "cleanup": 7,
+    "wrap": 7,
+    "policy_flags": 1,
+    "effects": 3,
+    "core_gates": 63,
+    "backend_scx": 255
+  },
+  "metadata": {
+    "major": 3,
+    "minor": 0,
+    "binding_type": 4,
+    "binding_bytes": 18,
+    "requirements_type": 5,
+    "requirements_bytes": 64,
+    "mcon": [
+      1,
+      4
+    ]
+  },
+  "implicit_requirements": {
+    "spatial": {
+      "operations": 768,
+      "cleanup": 0
+    },
+    "emphasis": {
+      "operations": 1600,
+      "cleanup": 7
+    },
+    "takeover": {
+      "operations": 1727,
+      "cleanup": 6
+    }
+  }
+}

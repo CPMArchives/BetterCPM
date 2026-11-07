@@ -209,3 +209,12 @@ returns 5253h. Acceptance requires:
   6. expiration of the old address and successful rediscovery at the new one;
   7. clean removal on unload; and
   8. enumeration which never exposes a partial or stale provider.
+
+
+10. TCAP DESIGN TARGET (NOT IMPLEMENTED)
+
+The public TCAP 1.0 design is defined in
+../engineering/TCAP-Public-ABI.md. It reuses Function 182 without changing this
+registry ABI. Its BMET 3 / MCON 1.4 requirements are future loader obligations,
+not formats accepted by the current loader. Private XTCP is not public TCAP.
+Utility migrations and release assignment remain deferred.

@@ -27,11 +27,11 @@ VT52 portable-backend and native endpoint qualification remain open; see the
 platform-specific builds may share parser and rendering source where useful.
 Only one monitor provider may be resident at a time.
 
-This supplies a de facto TCAP capability: the loaded provider supplies the
-console's terminal personality. `TCAP` is a working name, not a frozen filename,
-capability-record format, query API or database. General capability discovery,
-terminal-profile configuration and a broader portable TCAP interface remain
-post-1.0 work. The monitor layer may support VIEW and existing full-screen
+The loaded provider supplies a terminal personality, not by itself the general
+portable TCAP service. The [public TCAP 1.0 design](../engineering/TCAP-Public-ABI.md)
+now defines that optional interface; it remains unimplemented in production.
+Terminal-profile configuration and the broader personality library remain
+separate work. The monitor layer may support VIEW and existing full-screen
 software; this decision does not itself approve or qualify those utilities.
 
 The [post-1.0 terminal architecture outline](../engineering/POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md)
@@ -119,3 +119,12 @@ the audit sample and has its own live, application and protected-ROM evidence.
 ## Provider behavior
 
 [Monitor Provider Behavioral Requirements](../engineering/Monitor%20Provider%20Behavioral%20Requirements.md) defines the MM-style ADM-3A and VT52 personalities, input/reply queue semantics and qualification cases.
+
+## Public portable-interface design target
+
+The [TCAP public ABI/admission contract 1.0](../engineering/TCAP-Public-ABI.md)
+now assigns the portable design values independently of the implemented monitor
+architecture described above. It preserves explicit ADM3A/VT52/ANSI selection,
+the backend split and Monitor operations 0–5. Public TCAP, BMET 3 and MCON 1.4 are
+not implemented by current production carriers. Utility migrations and release
+assignment remain deferred.
