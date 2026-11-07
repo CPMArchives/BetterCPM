@@ -15,7 +15,7 @@ RAM_MAP = ROOT / "metadata/rom-profile-ram-z80pack.tsv"
 RAM_BASE = LAYOUT["TPA"]
 MUTABLE_COMPONENT_BYTES = {
     "gateway.bin": 90,
-    "bdos.bin": 109,
+    "bdos.bin": 123,
     "extensions.bin": 5,
     "disk.bin": 38,
     "bios.bin": 14,

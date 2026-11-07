@@ -178,12 +178,11 @@ is supplied through loadable CPXs rather than added to the core CCP.
   `docs/architecture/17 Named Directory Register.txt`.
 - [ ] Finish common named-DU resolution and use it consistently for command
   lookup, RCP commands, transient utilities, and module loading.
-- [ ] Implement a system `PATH` facility for command lookup across canonical
-  `DU:` locations, with documented search order, failure behavior, and CPX
-  command precedence. Accept named-directory references as input conveniences,
-  but resolve them immediately to canonical `DU:` entries for storage and
-  runtime use (for example, `ROOT:,UTILS:,C3:,GAMES:` might resolve to
-  `A0:,A1:,C3:,B0:`).
+- [x] Implement the bounded numeric 1.1 command PATH and A0:PATH recovery.
+  [Design and qualification](docs/engineering/Numeric-PATH-1.1.md).
+- [ ] Repeat PATH qualification on the integrated 1.1 release images.
+- [ ] Later, accept NDR names when configuring PATH, resolving each name via
+  NDR.RSX to a fixed DU at set time.
 - [ ] Add a low-priority customizable prompt facility. Supported prompt fields
   should include the current drive/user (`DU:`), named directory, and current
   date/time while preserving a compact CP/M-style default.

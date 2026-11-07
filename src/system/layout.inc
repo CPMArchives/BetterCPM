@@ -70,3 +70,9 @@ LY_COMDONE      EQU     LY_SYS+003H     ; protected COM return entry
 LY_FCB          EQU     LY_FILE+109     ; shared filename FCB address
   ; During RSX transactions, its unused random-record bytes +33..35 hold a
   ; JP to a scratch-only worker. Shared streams use sequential I/O exclusively.
+
+; Fixed command-environment state above the BDOS stack. The image builder
+; reserves this range independently of the stack, PDS and extension code.
+PATHMAX         EQU     6
+LY_LERR         EQU     LY_EXT-17       ; protected reader result until CCP resumes
+LY_PATH         EQU     LY_LERR+1       ; count and six drive/user pairs

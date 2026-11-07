@@ -1,0 +1,242 @@
+; Numeric transient command-search policy. Parse into a private candidate.
+; No BDOS calls or recoverable errors occur during publication.
+        INCLUDE layout.inc
+        ASEG
+        ORG 0100H
+        CALL    UV_CHECK
+        LD      A,(0080H)
+        CP      128
+        JP      NC,BADDU
+        LD      B,A
+        LD      HL,0081H
+        LD      DE,TAIL
+        OR      A
+        JR      Z,READY
+FOLD:   LD      A,(HL)
+        CP      ' '
+        JP      C,BADDU
+        CP      'a'
+        JR      C,FNEXT
+        CP      'z'+1
+        JR      NC,FNEXT
+        AND     05FH
+FNEXT:  LD      (DE),A
+        INC     DE
+        INC     HL
+        DJNZ    FOLD
+READY:  XOR     A
+        LD      (DE),A
+        LD      HL,TAIL
+        CALL    SPACES
+        PUSH    HL
+        CALL    LOCATE
+        JP      NZ,NOSYS
+        POP     HL
+        LD      A,(HL)
+        OR      A
+        JR      Z,DISPLAY
+        PUSH    HL
+        LD      DE,DEFKEY
+        CALL    EXACT
+        POP     HL
+        JR      NZ,PARSE
+        XOR     A
+        LD      (LY_PATH),A
+        JR      DISPLAY
+PARSE:  CALL    ENTRY                   ; DE = drive (1..16) and user, or 0/0
+        LD      A,(CNT)
+        LD      B,A
+        LD      A,(HL)
+        OR      A
+        JR      Z,DELIM
+        CP      ' '
+        JP      NZ,BADDU
+DELIM:  PUSH    HL
+        LD      HL,ITEMS
+        LD      A,B
+        OR      A
+        JR      Z,APPEND
+CHECK:  LD      A,(HL)
+        INC     HL
+        CP      D
+        LD      A,(HL)
+        INC     HL
+        JR      NZ,NXITEM
+        CP      E
+        JP      Z,DUPERR
+NXITEM: DJNZ    CHECK
+APPEND: LD      A,(CNT)
+        CP      PATHMAX
+        JP      NC,FULL
+        INC     A
+        LD      (CNT),A
+        LD      (HL),D
+        INC     HL
+        LD      (HL),E
+        POP     HL
+        CALL    SPACES
+        OR      A
+        JR      NZ,PARSE
+        LD      HL,CNT
+        LD      DE,LY_PATH
+        LD      BC,1+2*PATHMAX
+        LDIR
+DISPLAY:
+        LD      DE,TITLE
+        CALL    PUTS
+        LD      HL,LY_PATH
+        LD      B,(HL)
+        INC     HL
+        LD      A,B
+        OR      A
+        JR      NZ,SHOW
+        LD      DE,DFTEXT
+        JR      FINISH
+SHOW:   CP      PATHMAX+1
+        JP      NC,BADLIVE
+SHNEXT: LD      A,' '
+        CALL    PUTCH
+        LD      A,(HL)
+        INC     HL
+        OR      A
+        JR      NZ,SHFIX
+        LD      A,'.'
+        CALL    PUTCH
+        JR      SHDONE
+SHFIX:  ADD     A,'A'-1
+        CALL    PUTCH
+        LD      A,(HL)
+        LD      D,'0'
+TENS:   CP      10
+        JR      C,UNITS
+        SUB     10
+        INC     D
+        JR      TENS
+UNITS:  LD      E,A
+        LD      A,D
+        CP      '0'
+        CALL    NZ,PUTCH
+        LD      A,E
+        ADD     A,'0'
+        CALL    PUTCH
+        LD      A,':'
+        CALL    PUTCH
+SHDONE: INC     HL
+        DJNZ    SHNEXT
+        LD      DE,EOL
+FINISH: CALL    PUTS
+        JP      0
+
+; Validate the live layout before using the profile's protected address.
+LOCATE: LD      HL,(1)
+        LD      DE,LY_BIOS+3
+        OR      A
+        SBC     HL,DE
+        RET     NZ
+        LD      HL,(LY_PDSD)
+        LD      DE,04D42H               ; BM, ECB version 1 plus PATH capability
+        OR      A
+        SBC     HL,DE
+        RET     NZ
+        LD      A,(LY_PDSD+2)
+        CP      1
+        RET     NZ
+        LD      A,(LY_PDSD+3)
+        AND     2
+        CP      2
+        RET
+
+ENTRY:  LD      A,(HL)
+        INC     HL
+        LD      DE,0
+        CP      '.'
+        RET     Z
+        SUB     'A'
+        CP      16
+        JP      NC,BADDU
+        INC     A
+        LD      D,A
+        LD      A,(HL)
+        SUB     '0'
+        CP      10
+        JP      NC,BADUSER
+        LD      E,A
+        INC     HL
+        LD      A,(HL)
+        CP      ':'
+        JR      Z,COLON
+        SUB     '0'
+        CP      10
+        JP      NC,BADUSER
+        LD      C,A
+        LD      A,E
+        ADD     A,A
+        ADD     A,A
+        ADD     A,E
+        ADD     A,A
+        ADD     A,C
+        CP      32
+        JP      NC,BADUSER
+        LD      E,A
+        INC     HL
+        LD      A,(HL)
+        CP      ':'
+        JP      NZ,BADUSER
+COLON:  INC     HL
+        RET
+SPACES: LD      A,(HL)
+        CP      ' '
+        RET     NZ
+        INC     HL
+        JR      SPACES
+EXACT:  LD      A,(DE)
+        OR      A
+        JR      Z,EXEND
+        CP      (HL)
+        RET     NZ
+        INC     HL
+        INC     DE
+        JR      EXACT
+EXEND:  CALL    SPACES
+        OR      A
+        RET
+PUTS:   LD      C,9
+        JP      5
+PUTCH:  PUSH    HL
+        PUSH    DE
+        PUSH    BC
+        LD      E,A
+        LD      C,2
+        CALL    5
+        POP     BC
+        POP     DE
+        POP     HL
+        RET
+BADDU:  LD      DE,MDU
+        JR      FINISH2
+BADUSER:LD      DE,MUSER
+        JR      FINISH2
+DUPERR: LD      DE,MDUP
+        JR      FINISH2
+FULL:   LD      DE,MFULL
+        JR      FINISH2
+NOSYS:  LD      DE,MSYS
+        JR      FINISH2
+BADLIVE:LD      DE,MLIVE
+        JR      FINISH2
+FINISH2:JP      FINISH
+DEFKEY: DB '/DEFAULT',0
+TITLE:  DB 'PATH:$'
+DFTEXT: DB ' . A0:',13,10,'$'
+EOL:    DB 13,10,'$'
+MDU:    DB 'Invalid PATH entry. Use . or A0: through P31:.',13,10,'$'
+MUSER:  DB 'Invalid PATH user. Use 0 through 31 followed by a colon.',13,10,'$'
+MDUP:   DB 'Duplicate PATH entry.',13,10,'$'
+MFULL:  DB 'PATH accepts up to six entries.',13,10,'$'
+MSYS:   DB 'PATH requires a matching BetterCP/M numeric PATH system.',13,10,'$'
+MLIVE:  DB 'Invalid live PATH. Use A0:PATH /DEFAULT.',13,10,'$'
+; @utility-version PATH@
+CNT:    DB 0
+ITEMS:  DS 2*PATHMAX
+TAIL:   DS 128
+        END

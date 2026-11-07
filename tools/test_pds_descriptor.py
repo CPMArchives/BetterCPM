@@ -22,6 +22,8 @@ def main() -> None:
             "system/PDS descriptor magic or ABI version is wrong")
     require(resident[descriptor + 3] & 1,
             "PDS ABI 1 static-layout-valid flag is clear")
+    require(resident[descriptor + 3] & 2,
+            "numeric PATH capability is missing from the 1.1 ECB")
     require(word(resident, descriptor + 8) == LAYOUT["PDS_LOW"],
             "PDS descriptor does not publish the live lower boundary")
     require(LAYOUT["PDS_TOP"] - word(resident, descriptor + 8) ==

@@ -2672,7 +2672,24 @@ UB_STACK:                               ; private BDOS stack
         DB      0
         ENDM
 
-UB_STKTOP:                              ; top of private BDOS stack
+UB_STKTOP:                              ; exclusive top, stack grows downward
 
+  ; This protected allocation belongs to command processing. Emitting the
+  ; cold template here also makes native and cross packers check the boundary.
+        IF $ LT LY_LERR
+        REPT    LY_LERR-$
+        DB      0
+        ENDM
+        ENDIF
+        IF $ GT LY_LERR
+        .ERROR  BDOS stack overlaps protected command state
+        ENDIF
+COM_ERR:        DB      0
+COM_PATH:       DB      0               ; zero count selects the built-in default
+        REPT    2*PATHMAX
+        DB      0
+        ENDM
+
+COM_END:
         .DEPHASE
         END
