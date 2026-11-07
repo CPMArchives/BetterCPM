@@ -32,14 +32,16 @@ An **output path** combines the selected destination, personality/backend
 binding and rendering class. Rendering classes are normal console stream and
 fixed-cell viewport. Their dimensions and wrapping rules are independent.
 A **snapshot** is immutable descriptive data copied for a client; it is not a
-pointer lease or permission to change the screen. An **admission** authorizes
-a declared set of operations under that snapshot's assumptions. A **scope**
+pointer lease or permission to change the screen. An **admission** establishes eligibility for
+a declared set of operations under that snapshot's assumptions; it does not
+activate recovery ownership or authorize use of stale bindings. A **scope**
 is one temporary semantic emphasis change owned by the active display path.
 A **takeover** is a full-screen client's admitted use of screen operations.
 A **prompt baseline** is the defined recovery state, not a saved screen image.
 
 The semantic operations are Discover, Admit, BeginEmphasis, EndEmphasis,
-Release and Recover. These names assign neither call numbers nor entry points.
+ActivateTakeover, Release and Recover. These names assign neither call numbers
+nor entry points.
 Ordinary text is still emitted by the utility's existing console output path;
 there is no new TCAP text-output operation in this contract.
 
@@ -102,6 +104,27 @@ an incomplete personality sequence or clear a display.
 | HELP | Ordinary readable text; interactive eligibility for prompts. Spatial paging requires the same geometry facts as TYPE. | Plain text, logical-line paging when interactive or continuous output otherwise. |
 | HELP strong emphasis | Eligible display, a coordinated owner, known-supported mapping, complete parser state, restoration and abort-recovery support. | Omit markup delimiters in prose and print the same text plainly. Preserve literal example text under HELP's parser rules. |
 
+### Activation and admission lifetime
+
+Admission is read-only eligibility. BeginEmphasis and ActivateTakeover must
+revalidate it and arm recovery ownership before their first display mutation.
+Failure to reserve that ownership yields resource-unavailable without mutation.
+No gap may exist in which an enhanced display is active but abort recovery has
+no owner. This is a semantic ordering requirement, not a new manager callback
+or an allocated operation number.
+
+ActivateTakeover establishes the declared fixed-cell session and its recovery
+obligations before TED hides a cursor, clears or renders. A scope may be opened
+inside a takeover only if that admitted path supports it; closing that scope
+does not release takeover recovery ownership. Recovery aborts the whole portable
+session. Release retires takeover ownership only after its declared cleanup
+succeeds. An emphasis-only session can retire ownership after successful End.
+
+A retired admission cannot be reactivated. A fresh Discover/Admit is required
+after release or recovery. With unchanged assumptions, sequential emphasis
+scopes may reuse an eligible admission; handles from earlier scopes remain
+invalid. Profile mutation and cleanup must be serialized with activation.
+
 ### Paging semantics
 
 Spatial paging requires rows R≥2, columns C>0 and a supported prompt that fits
@@ -127,6 +150,13 @@ or report a restart requirement. Never reuse row ordinals at a different width.
 TYPE retains its changed-file handling; HELP separately specifies compressed
 member replay and measures decoder workspace. TCAP stores no screenful or
 archive history on their behalf.
+
+Pager prompts and diagnostics must be outside authored emphasis: close the
+scope before printing a prompt, and reopen semantic emphasis after continuation
+only when the remaining text requires it. A failed close requires recovery
+before prompting. A logical span crossing a page therefore becomes multiple
+physical scopes. Backward replay computes emphasis from source/parser state;
+it must not reuse a retired scope handle or replay style controls as text.
 
 Logical-line paging counts rendered logical line breaks, not terminal rows.
 Its finite default budget, prompt wording and option syntax belong to the
@@ -219,6 +249,20 @@ controls to LIST. This stronger recovery applies only to admitted portable
 sessions. Preserve legacy MCON operation 5 behavior for other callers; do not
 silently turn its parser reset into a universal mode reset.
 
+Recover is idempotent with respect to owned recovery work: after successful
+recovery, repeating it for the retired session reports already-recovered and
+performs no output, cursor movement or mode reset. Recovery of an unrelated or
+unknown session is invalid-session with no mutation. A recovery-failed session
+retains a recovery-required state for a safe retry or system recovery path;
+it is not reopened for ordinary enhancement. These rules do not make repeated
+legacy Monitor resets into TCAP recovery.
+
+If both takeover and emphasis are active, recovery retires the scope and
+takeover together. Normal End restores the enclosing takeover's rendition;
+normal Release must still establish the declared exit baseline. Ownership
+metadata must distinguish eligibility, active takeover and active scope without
+requiring transient storage to survive command return.
+
 ## Failure contract
 
 These result names are semantic categories, not numeric codes. Results include
@@ -234,6 +278,8 @@ whether a scope/admission remains active and whether recovery is required.
 | Binding, route or policy no longer matches admission | Stale; discard callable addresses and affected replay anchors, rediscover. Owned cleanup follows lifecycle rules, not the stale handle. |
 | Incomplete personality sequence | Parser-busy; preserve parser state; no Begin/End mutation. |
 | Second begin, wrong handle or end without begin | Scope-state error; leave existing owner/capture unchanged. |
+| Invalid/retired admission or unknown recovery session | Invalid-session; do not activate or reset an unrelated display. |
+| Repeat Recover after successful recovery | Already-recovered; no output or mutation. |
 | Release with active scope | Scope-active; End or Recover before release. |
 | Insufficient scope/recovery resources | Resource-unavailable before mutation; plain fallback or takeover refusal. |
 | Partial apply/restore failure | Recovery-required; roll back or recover before plain continuation. Never report successful restoration without evidence. |
@@ -254,6 +300,44 @@ qualification. An available backend does not identify the active personality.
 | ADM-3A or VT52 personality | Preserve each personality's existing protocol and admitted backend contract. | Do not transfer ANSI ownership/cleanup claims automatically. Qualify semantic emphasis or return plain. |
 | Model II maintained port | Use actual maintained console/backend facts when audited. | No TCAP capability or cleanup certification asserted by this document. |
 | File, LIST or uncertain routing | No eligible enhanced display established. | Text-only output; no spatial pager or emphasis controls. Interactive eligibility is evaluated separately. |
+
+## Worked semantic review cases
+
+These are paper walkthroughs and future acceptance oracles, not runtime test
+results. They expose the expected decisions without choosing implementation.
+
+| Case | Required sequence and observable outcome |
+| --- | --- |
+| TYPE, established 80×24 delayed-wrap stream | Discover/Admit the stream; budget 23 rows; count 80 printable cells followed by CR/LF as one completed line, without a duplicate wrap. Prompt outside content accounting. Backward replay uses the same transition rules. |
+| TYPE, host SCX dimensions zero | Keep stream dimensions unknown even if SCRN reports 80×24. Interactive invocation selects logical-line paging; noninteractive output continues without waiting. No terminal query or clear/home is emitted to guess geometry. |
+| TYPE, explicit refresh from 80 to 100 columns | Retire affected spatial admission and row anchors; rediscover/admit; restart from stable source position under utility policy. An old row ordinal cannot select the new page. |
+| TED, missing required operation | Admit refuses without clearing, hiding the cursor or modifying a file. Report the requirement through existing console output. |
+| TED, complete fixed-cell eligibility | Read-only admission alone changes nothing. ActivateTakeover arms cleanup before the first screen operation; position/cell/erase retain legacy semantics. Release establishes the declared console baseline. |
+| HELP, Model 4 known reverse mapping | Begin captures prior rendition, applies semantic reverse, and text follows BDOS console output. End restores the prior record, including previously unsupported stored attributes, without restoring the old cursor position. |
+| HELP, encoder-only bold support | Return plain unless an explicit eligible profile establishes a supported mapping. Print the prose without Markdown delimiters; no active handle exists to close. |
+| HELP span crosses a page | End before the pager prompt, preserve parser/source emphasis state, then Begin a fresh scope for remaining emphasized text after continuation. The prompt is not emphasized by the author's span. |
+| Second Begin or stale End | Reject without replacing the first capture, touching the save slot or changing output. The valid original scope can still end normally. |
+| Parser incomplete at Begin/End | Reject without discarding the sequence. End leaves its scope active; resolve or Recover before leaving. No plain-success claim is allowed while owned style remains. |
+| Printer echo toggles during HELP emphasis | Printed glyphs reach LIST through the existing echo path; no presentation controls reach it. Begin/End must not use the echoed text channel for controls. |
+| Cooked Ctrl-C inside a scope | Warm-return recovery uses valid owner state, retires the session and establishes the baseline before the next prompt. No transient exit handler is required. A repeat recovery has no effect. |
+| Provider relocation while owned state exists | Only an admitted manager-controlled transition may preserve logical state; rebind through its lifecycle. Old callable addresses remain invalid. Scope ownership is not inferred from a reused address. |
+| Controlled route change or removal | Clean through the old valid owner before publication, or prevent commit/use a defined recovery path. Do not send cleanup to the newly selected unrelated endpoint. |
+| Restore fails after partial effect | Return recovery-required, block enhanced use and recover before plain continuation. If recovery fails, report that fact rather than reporting restored state. |
+
+## Remaining review decisions
+
+The following cannot be settled by documenting existing interfaces alone:
+
+| Decision | Required answer before implementation design |
+| --- | --- |
+| Route observation | Which paths can enforce or observe routing changes, and what happens for direct IOBYTE writes? Restrict enhanced eligibility when this cannot be guaranteed. |
+| Recovery storage/trigger | Which owner survives transient abort, and which existing command-return paths invoke its recovery before prompt output? Do not alter MCON 5 semantics implicitly. |
+| Prompt baseline policy | For each admitted profile, specify the exact start position/newline, full-region reset, visibility, rendition and cooked-column coordination; show LIST remains free of controls. |
+| Failure completion | Identify a safe reporting/retry path after partial restore failure. No arbitrary host-terminal recovery is guaranteed. |
+| Consumer policy | TYPE/HELP must settle logical-line budgets, prompt keys and restart behavior in their own specifications. These do not block semantic review but do block claims of a complete utility migration design. |
+
+Until these answers and cost evidence are reviewed, this is a detailed semantic
+proposal, not an implementation-ready engineering specification.
 
 ## Gates before an implementation specification
 
