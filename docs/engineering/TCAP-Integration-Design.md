@@ -196,8 +196,10 @@ rendition consistently with backend state, resets margins/visibility and cancels
 pending wrap. The coordinator then establishes the profile's prompt-start policy
 and safely synchronizes cooked BDOS column state before retiring the obligation.
 A callback cannot repair that private BDOS column through an undocumented write.
-A separate internal column-sync operation must be designed and costed; no public
-BDOS number is allocated for it.
+The [feasibility campaign](TCAP-Feasibility-Results.md) demonstrates that ordinary
+BDOS Function 2 CR/LF synchronizes the cooked column on a safe coordinator stack.
+Prefer that existing path; no new column-reset entry or public BDOS number is
+required for the tested slice. Full return-path integration still needs proof.
 
 Proposed initial prompt policy is normal CR/LF to the selected display with no
 screen clear, followed by a cooked-column value of zero. This deliberately starts
@@ -315,6 +317,13 @@ records, operation/status tables, bounded recovered-session tombstones and a
 cross-contract consistency review. It refines the logical shapes here but does
 not allocate or freeze an ABI. Unknown/partial-effect results and plain emphasis
 inside takeover must follow the explicit token rules in that candidate.
+
+## Executed feasibility follow-up
+
+The [measured campaign results](TCAP-Feasibility-Results.md) record the authorized
+private implementation slice, 168 CPU/model case executions, resource costs and
+carrier/placement blockers. They are evidence beyond the original documentation
+phase, not a delivered public facility or approval to migrate utilities.
 
 ## Review disposition and completion boundary
 

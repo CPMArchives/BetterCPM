@@ -376,6 +376,13 @@ That phase remains outside the instruction to leave implementation for later.
 No prototype, code migration, ABI freeze, HELP resumption or release assignment
 is performed or implied here.
 
+## Authorized feasibility evidence
+
+The [isolated feasibility campaign](TCAP-Feasibility-Results.md) now supplies
+measured CPU/model evidence and concrete carrier/placement blockers. This
+subsequent authorization covers experimental work; utility migrations and
+release assignment remain deferred. No public TCAP facility is delivered.
+
 ## Related contracts
 
 - [Roadmap handoff](TCAP-Design-Thread-Handoff.md)
