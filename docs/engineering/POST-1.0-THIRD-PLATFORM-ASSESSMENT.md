@@ -2,7 +2,7 @@
 
 Assessment date: 20 September 2026.
 
-November 2026 update: the approved third-platform workstream for 1.1 is
+November 2026 update: the maintained third platform for 1.1 is
 [TRS-80 Model II](../platform/MODEL2-PORT.md). The earlier candidate ranking
 below is historical; Model II promotion still requires guest qualification.
 

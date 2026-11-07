@@ -12,7 +12,7 @@ A STATEFUL callable `SCRN` 1.1 backend declares one exact 16-bit platform value.
 | --- | --- | --- |
 | TRS-80 Model 4 | M4SCRN | 0001h |
 | cpmsim | ANSISCRN | 0002h |
-| TRS-80 Model II (1.1 candidate) | M2SCRN | 0004h |
+| TRS-80 Model II (1.1) | M2SCRN | 0004h |
 
 The Model II loader also requires a private carrier bound to its resident
 build identity. Its BIOS selects the assigned value from the build profile.

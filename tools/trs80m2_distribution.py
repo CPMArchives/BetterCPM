@@ -84,7 +84,7 @@ def build_system(work, out, identity, emulator, reuse, repo):
     from package_release_candidates import write_package
     kit_name = 'BetterCPM-1.1-Model-II-System.zip'
     guide = (repo/'docs/platform/MODEL2-INSTALLATION.md').read_text()
-    notes = f"https://github.com/CPMArchives/BetterCPM/blob/{identity['revision']}/docs/platform/MODEL2-PORT.md"
+    notes = "https://github.com/CPMArchives/BetterCPM/blob/main/docs/platform/MODEL2-PORT.md"
     install = guide.replace('(MODEL2-PORT.md#','('+notes+'#').encode()
     kit_files = {image.name:binary, 'INSTALL.md':install,
                  'LICENSE':(repo/'LICENSE').read_bytes(), 'NOTICE':(repo/'NOTICE').read_bytes(),

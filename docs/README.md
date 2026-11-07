@@ -2,6 +2,8 @@
 
 Start with the installation guide for your platform, then use the manuals below. This collection describes the five locked 1.0 software packages. The dedicated Documentation package has separate provenance and uses a companion acceptance receipt for the exact built bytes. See the [acceptance protocol](releases/DOCUMENTATION-ACCEPTANCE.md). [Release authority and publication policy](releases/DOCUMENTATION-PUBLICATION.md).
 
+The [1.1 maintained platforms and qualification matrix](platform/SUPPORT-1.1.md) covers current 1.1 development.
+
 ## Four manuals
 
 | Need | Manual |

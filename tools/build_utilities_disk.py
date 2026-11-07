@@ -246,6 +246,9 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
         report['patch_companions']={n:sha(d) for n,d in patch_source_companions.items()}
         report['compare_companions']={n:sha(d) for n,d in compare_source_companions.items()}
     reports.extend(companion_reports)
+    if model2_system:
+        from trs80m2_utilities import bind_qualified_pair
+        bind_qualified_pair(reports, artifacts)
     # The complete source companion travels with both images (GPL section 3a).
     for name,data in {**accompanying,**analysis_companions,**editor_companions,**search_source_companions,**crc_source_companions,**md5sum_source_companions,**patch_source_companions,**compare_source_companions}.items():
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
@@ -275,7 +278,7 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
     for name,data,report in reports:
         staged=output/(name+'.tmp');staged.write_bytes(data);staged.replace(output/name)
         (output/(name+'.json')).write_text(json.dumps(report,indent=2)+'\n')
-        print(f"{output/name}: PROVISIONAL, {len(report['included'])} files; {len(report['pending'])} pending selections/implementations")
+        print(f"{output/name}: {report['status']}, {len(report['included'])} files; {len(report['pending'])} pending selections/implementations")
     package={**accompanying,**analysis_companions,**editor_companions,**search_source_companions,**crc_source_companions,**md5sum_source_companions,**patch_source_companions,**compare_source_companions,**acceptance_files}
     for name,data,report in reports:
         package[name]=data

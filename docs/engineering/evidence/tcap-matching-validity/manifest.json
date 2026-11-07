@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "private_epoch": 4,
+  "identity": "85b8a521cca7dc63064587c99246f86a",
+  "root_sha256": "161bbae892fb85fc4be7bf5e433f2957b2fcd536d026afbffc0359d7102f3d28",
+  "resident_sha256": "82b56f05ae3ff958ecd07ec3e25ac0aa59285075c2b311ad21f1c474de6939f6",
+  "artifacts": {
+    "bios": {
+      "sha256": "6c9d6c4ce1d767328adde005b2474e946ba04928cdc48b86d51b4b28392d1648",
+      "length": 757,
+      "crc16": 60346
+    },
+    "ccp": {
+      "sha256": "663c2968c1142b6156a2bd49b36b7b345a0ecf39a81789c2361cde9e8caf836e",
+      "length": 5610,
+      "crc16": 23513
+    },
+    "model4-reloader": {
+      "sha256": "5b4368c8d107701db650226b33f0ff0adc915c058759e863899836c5fd097a73",
+      "length": 932,
+      "crc16": 46953
+    },
+    "stage2": {
+      "sha256": "d1c751f0fb2381fe07970f23adf5aa08556b5b4a5639245cf234c9828f3f641c",
+      "length": 1302,
+      "crc16": 29295
+    },
+    "finalizer": {
+      "sha256": "34d7a4647a1868ac8ac0f47c0be7bb1be63874d40660fb810e0a1f9750ac5478",
+      "length": 991,
+      "crc16": 37701
+    },
+    "commit": {
+      "sha256": "3340b7d5bf0586bbea9cab3fc62b2cfcc1a44bb1942d952d14c5845944df8042",
+      "length": 1012,
+      "crc16": 44544
+    },
+    "metadata": {
+      "sha256": "3771e627a56cf7a1774b4a35adaee103d36c19b8ef485a4c22a6e2ed39c57327",
+      "length": 1021,
+      "crc16": 63935
+    },
+    "publisher": {
+      "sha256": "c21669a508c4c11d5a3919f9d6cd4cd6a0a445781325f6233c62025bbccac490",
+      "length": 107,
+      "crc16": 15522
+    }
+  }
+}

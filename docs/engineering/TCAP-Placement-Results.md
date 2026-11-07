@@ -130,6 +130,13 @@ qualification before activation. No stack size was reduced or grown.
 
 ## Remaining work and scope
 
+Follow-up: the [matching-system and global-validity experiment](TCAP-Matching-Validity-Results.md)
+implements and qualifies both mechanisms in a private permanent root, including
+positive metadata admission and real commit publication. It measures new RAM and
+boot-volume costs and identifies the remaining loader/finalizer integration.
+The observations below remain specific to this earlier campaign.
+
+
 Follow-up: the [transaction and command-return experiment](TCAP-System-Paths-Results.md)
 now executes staged guards and real return entries within their existing budgets.
 It keeps activation blocked through unsupported experimental-version rejection;

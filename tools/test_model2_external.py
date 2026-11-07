@@ -249,6 +249,7 @@ def public_calls(library,out,system):
         io=(guest.read_count,guest.write_count)
         assert bdos(37,mask)==0 and value(24)==value(29)==15 & ~mask
         assert bdos(25)==1 and bdos(32,255)==7 and io==(guest.read_count,guest.write_count)
+        assert word(symbols(out.parent/'bdos/bdos.lst')['UB_DMA'])==0x7000
         value(31)
         assert value(24)==((15 & ~mask)|2)
     checks['0435,0523']='Seven reset masks, unchanged caller DU and deferred relogin'
@@ -417,6 +418,7 @@ OK: DB 'PAINTED LIVE CCP',13,10,'$'
     executed=session.step(b'\r',b'MARK NAME DU B/00 TAIL[ mIxEd.TxT]')
     assert b'FCB=004D49584544202020545854' in executed
     outputs['case-preserving edit and FCB']=executed.decode()
+    command('c0:maRk A:b?.TxT',b'FCB=01423F202020202020545854')
     command('C0:MARK B:ab*.c?m',b'FCB=0241423F3F3F3F3F3F433F4D')
     for bad in ('C0:MARK.TXT','C0:MARK.COM','C0:MARK\tBAD'):
         assert 'MARK NAME DU' not in command(bad,b'B0>')
@@ -435,8 +437,9 @@ OK: DB 'PAINTED LIVE CCP',13,10,'$'
     assert session.ram[3]==0x55
     command('A0:STAT LST:=LPT:',b'B0>')
     assert session.ram[3]==0x95
-    command('USER 15',b'B15>')
-    command('C0:STATE',b'STATE D=01 U=0F TOP=E101')
+    for user in range(16):
+        command(f'USER {user}',f'B{user}>'.encode())
+        command('C0:STATE',f'STATE D=01 U={user:02X} TOP=E101'.encode())
     command('USER 0',b'B0>')
     command('C0:BDOPROBE',b'0420 INPUT READY')
     data = session.step(b'BUFFER42\r',b'OR-0519 PASS:')
@@ -446,6 +449,8 @@ OK: DB 'PAINTED LIVE CCP',13,10,'$'
     command('C0:MORECHAR',b'0440 P R')
     for card in ('0065','0066','0079','0102','0436','0438','0440'):
         assert card+' P R' in outputs['C0:MORECHAR'], (card,outputs['C0:MORECHAR'])
+    command('C0:ABSENT',b'B0>')
+    command('C0:STATE',b'STATE D=01 U=00 TOP=E101')
     command('DIR PROBE.TXT',b'PROBE    TXT')
     before = bytes(session.drives[1])
     for cmd in ('ERA BTRO.DAT','REN BTRO.DAT LOST.TXT'):
@@ -477,7 +482,22 @@ OK: DB 'PAINTED LIVE CCP',13,10,'$'
     session.drives[1][OFFSET+32+10] |= 128
     command('B:',b'B0>')
     assert 'HIDDEN' not in command('DIR *.TXT',b'PUBLIC   TXT')
+    assert 'HIDDEN' not in command('DIR',b'PUBLIC   TXT')
+    assert 'HIDDEN' not in command('DIR HIDDEN.TXT',b'B0>')
+    command('DIR OTHER.TXT',b'NO FILE')
+    command('USER 7',b'B7>')
+    command('DIR OTHER.TXT',b'OTHER    TXT')
+    command('USER 0',b'B0>')
+    command('DIR A:SYSTEM.SYS',b'SYSTEM   SYS')
     assert text_payload.decode() in command('TYPE PUBLIC.TXT',text_payload)
+    command('REN PUBLIC.TXT OTHER.TXT',b'B0>')  # same name in another user is permitted
+    command('TYPE OTHER.TXT',text_payload)
+    command('REN B:X.TXT=A:PATH.COM',b'Invalid filespec.')
+    command('REN X.TXT=MISSING.TXT',b'NO FILE')
+    command('SAVE 1 PRESENT.TXT',b'B0>')
+    command('REN PRESENT.TXT=OTHER.TXT',b'FILE EXISTS')
+    command('ERA PRES*.TXT',b'B0>')
+    command('DIR PRESENT.TXT',b'NO FILE')
     command('ERA *.*',b'ALL (Y/N)?')
     session.step(b'Y\r',b'B0>')
     raw=session.drives[1]

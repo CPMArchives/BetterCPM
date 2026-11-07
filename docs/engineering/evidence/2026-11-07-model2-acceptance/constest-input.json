@@ -1,0 +1,251 @@
+{
+  "status": "PASS",
+  "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+  "constest_sha256": "248a71ce7a35c2ed49ecf2dfc1b9d5a00d9c699261e434a60dbe646fc9185b70",
+  "resident_sha256": "4fbb5d6f00c535234b1b9e2a71807619af96193a3272bb7e192bec5253364d8e",
+  "scope": "Controlled Model II keyboard and CRT. Card 0117 stops at WBOOT; native command recovery is witnessed separately.",
+  "cards": [
+    {
+      "card": "0083",
+      "result": "PASS",
+      "input_hex": [
+        "4b"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0083: Function 6 ready-input result\r\nPress K now: \r\nOBSERVED: return A=4B\r\nEXPECTED: A=4B (K).\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0083  P  R  Operator confirmed ready Function 6 returned input byte\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0084",
+      "result": "PASS",
+      "input_hex": [
+        "55"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0084: Function 6 input is unadorned\r\nPress U; nothing should appear between these brackets: []\r\nOBSERVED: return A=55\r\nEXPECTED: empty brackets and A=55 (U).\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0084  P  R  Operator confirmed Function 6 input had no echo or editing\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0085",
+      "result": "PASS",
+      "input_hex": [
+        "4b"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0085: Function 11 not-ready result\r\nPress any key to start with an empty input queue: \r\n\r\nOBSERVED: return A=00\r\nEXPECTED: A=00.\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0085  P  R  Operator confirmed Function 11 not-ready result A=00\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0092",
+      "result": "PASS",
+      "input_hex": [
+        "42"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0092: Function 1 blocks for input\r\nWait briefly, then press B: B\r\nOBSERVED: return A=42\r\nEXPECTED: call waited and returned A=42 (B).\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0092  P  R  Operator confirmed Function 1 blocked until input\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0093",
+      "result": "PASS",
+      "input_hex": [
+        "52"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0093: Function 1 result character\r\nPress R now: R\r\nOBSERVED: return A=52\r\nEXPECTED: A=52 (R).\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0093  P  R  Operator confirmed Function 1 returned input character\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0094",
+      "result": "PASS",
+      "input_hex": [
+        "47"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0094: Function 1 echoes graphic input\r\nPress G; it should appear between brackets: [G]\r\nOBSERVED: return A=47\r\nEXPECTED: [G] and A=47.\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0094  P  R  Operator confirmed Function 1 echoed graphic input\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0095",
+      "result": "PASS",
+      "input_hex": [
+        "0d"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0095: Function 1 echoes CR\r\nPress Enter; cursor should return to column zero: \r\r\nOBSERVED: return A=0D\r\nEXPECTED: CR was echoed and A=0D.\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0095  P  R  Operator confirmed Function 1 echoed CR\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0096",
+      "result": "PASS",
+      "input_hex": [
+        "0a"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0096: Function 1 echoes LF\r\nPress Ctrl-J; cursor should advance one line: \n\r\nOBSERVED: return A=0A\r\nEXPECTED: LF was echoed and A=0A.\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0096  P  R  Operator confirmed Function 1 echoed LF\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0097",
+      "result": "PASS",
+      "input_hex": [
+        "08"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0097: Function 1 echoes backspace\r\nAfter ABC, press Backspace; X should overwrite C:\r\nABC\bX\r\nEXPECTED: display ends as ABX.\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0097  P  R  Operator confirmed Function 1 echoed backspace\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0098",
+      "result": "PASS",
+      "input_hex": [
+        "09"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0098: Function 1 expands TAB\r\nAfter A, press TAB; B should land at next tab stop:\r\nA       B\r\nEXPECTED: TAB was expanded to the next eight-column stop.\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0098  P  R  Operator confirmed Function 1 expanded TAB\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0099",
+      "result": "PASS",
+      "input_hex": [
+        "01"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0099: ordinary control is not echoed\r\nPress Ctrl-A; nothing should appear between brackets: []\r\nOBSERVED: return A=01\r\nEXPECTED: empty brackets and A=01.\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0099  P  R  Operator confirmed ordinary control was not echoed\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0100",
+      "result": "PASS",
+      "input_hex": [
+        "09"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0100: Function 1 shares formatted column state\r\nAfter A, press TAB; B should use the shared next tab stop:\r\nA       B\r\nEXPECTED: Function 1 TAB used the column established by Function 9.\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0100  P  R  Operator confirmed Function 1 shared formatted state\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0101",
+      "result": "PASS",
+      "input_hex": [
+        "131158"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0101: Function 1 scrolling control\r\nPress Ctrl-S, then Ctrl-Q, then X.\r\nThe input call must pause until resumed and finally return X: X\r\nOBSERVED: final return A=58\r\nEXPECTED: pause/resume occurred and A=58 (X).\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0101  P  R  Operator confirmed Function 1 honored scrolling control\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0104",
+      "result": "PASS",
+      "input_hex": [
+        "4b"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0104: DRI retained Function 11 input\r\nPress K once. Function 11 must detect it; Function 1 must consume it: K\r\nOBSERVED: Function 1 returned A=4B\r\nEXPECTED: K echoed once and A=4B.\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0104  P  X  DRI-CONSOLE: retained input consumed\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0106",
+      "result": "PASS",
+      "input_hex": [
+        "41420d"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0106: Function 10 selector/buffer\r\nType AB then Enter. Expect count 02 and data [AB]: AB\r\r\nOBSERVED: count=02; data=[AB]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0106  P  R  Operator confirmed Function 10 used DE buffer\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0107",
+      "result": "PASS",
+      "input_hex": [
+        "5a",
+        "510d"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0107: Function 10 maximum byte\r\nMaximum is 1. Type Z only; call must return without Enter: Z\r\r\nOBSERVED: count=01; data=[Z]\r\n\r\nMaximum is now 255. Type Q then Enter.\r\nExpect count 01 and data [Q]: Q\r\r\nOBSERVED: count=01; data=[Q]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0107  P  R  Operator confirmed maximum-byte capacity termination\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0108",
+      "result": "PASS",
+      "input_hex": [
+        "4142430d"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0108: Function 10 returned count\r\nType ABC then Enter. Expect count 03: ABC\r\r\nOBSERVED: count=03; data=[ABC]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0108  P  R  Operator confirmed returned count byte\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0109",
+      "result": "PASS",
+      "input_hex": [
+        "58595a0d"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0109: Function 10 data location\r\nType XYZ then Enter. Expect data [XYZ] at buffer+2: XYZ\r\r\nOBSERVED: count=03; data=[XYZ]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0109  P  R  Operator confirmed returned data at buffer+2\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0111",
+      "result": "PASS",
+      "input_hex": [
+        "41420d"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0111: CR termination\r\nType AB then Enter. Expect count 02/data [AB], no CR stored: AB\r\r\nOBSERVED: count=02; data=[AB]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0111  P  R  CR ended input; terminator excluded\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0112",
+      "result": "PASS",
+      "input_hex": [
+        "41420a"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0112: LF termination\r\nType AB then Ctrl-J. Expect count 02/data [AB], no LF stored: AB\r\r\nOBSERVED: count=02; data=[AB]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0112  P  R  Operator confirmed LF terminated and was excluded\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0113",
+      "result": "PASS",
+      "input_hex": [
+        "5a"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0113: capacity termination\r\nMaximum is 1. Type Z only; no additional character is required: Z\r\r\nOBSERVED: count=01; data=[Z]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0113  P  R  Buffer capacity ended input\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0114",
+      "result": "PASS",
+      "input_hex": [
+        "4d0d"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0114: ordinary input storage/echo\r\nType M then Enter. Expect M echoed, count 01, data [M]: M\r\r\nOBSERVED: count=01; data=[M]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0114  P  R  Operator confirmed ordinary input stored and echoed\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0115",
+      "result": "PASS",
+      "input_hex": [
+        "414208430d"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0115: backspace editing\r\nType AB, Backspace, C, Enter. Expect count 02/data [AC]: AB\b \bC\r\r\nOBSERVED: count=02; data=[AC]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0115  P  R  Operator confirmed backspace removed prior character\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0116",
+      "result": "PASS",
+      "input_hex": [
+        "59",
+        "41427f430d"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0116: DEL editing\r\nThis requires byte 7Fh, not Backspace (08h).\r\nCan this keyboard send ASCII DEL (7Fh)? (Y/U; U=untested) Y\r\nType AB, DEL, C, Enter. Expect count 02/data [AC]: AB\b \bC\r\r\nOBSERVED: count=02; data=[AC]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0116  P  R  DEL removed preceding character\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0117",
+      "result": "WBOOT",
+      "input_hex": [
+        "4b03"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0117: initial Ctrl-C warm restart\r\nAt the empty input line press Ctrl-C.\r\nPASS means CP/M returns directly to the CCP; no PASS row follows.\r\nPress any key to start the test: "
+    },
+    {
+      "card": "0118",
+      "result": "PASS",
+      "input_hex": [
+        "41420543440d"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0118: Ctrl-E line continuation\r\nType AB, Ctrl-E, CD, Enter. Expect new line and data [ABCD]: AB\r\nCD\r\r\nOBSERVED: count=04; data=[ABCD]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0118  P  R  Operator confirmed Ctrl-E continued logical line\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0119",
+      "result": "PASS",
+      "input_hex": [
+        "41421243440d"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0119: Ctrl-R redisplay\r\nType AB, Ctrl-R, CD, Enter. Expect redisplay and data [ABCD]: AB#\r\nABCD\r\r\nOBSERVED: count=04; data=[ABCD]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0119  P  R  Operator confirmed Ctrl-R redisplayed retained line\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0120",
+      "result": "PASS",
+      "input_hex": [
+        "41421543440d"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0120: Ctrl-U line deletion\r\nType AB, Ctrl-U, CD, Enter. Expect new line and data [CD]: AB#\r\nCD\r\r\nOBSERVED: count=02; data=[CD]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0120  P  R  Operator confirmed Ctrl-U discarded current line\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0121",
+      "result": "PASS",
+      "input_hex": [
+        "41421843440d"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0121: Ctrl-X line deletion\r\nType AB, Ctrl-X, CD, Enter. Expect erased line and data [CD]: AB\b \b\b \bCD\r\r\nOBSERVED: count=02; data=[CD]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0121  P  R  Operator confirmed Ctrl-X discarded current line\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    },
+    {
+      "card": "0122",
+      "result": "PASS",
+      "input_hex": [
+        "414208430d"
+      ],
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0122: starting-column-relative editing\r\nType AB, Backspace, C, Enter. Editing must respect this prompt column.\r\nExpect count 02/data [AC]: AB\b \bC\r\r\nOBSERVED: count=02; data=[AC]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0122  P  R  Operator confirmed editing used starting column\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n"
+    }
+  ]
+}

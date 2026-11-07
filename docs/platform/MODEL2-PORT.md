@@ -1,6 +1,6 @@
-# TRS-80 Model II — BetterCP/M 1.1 engineering candidate
+# TRS-80 Model II — BetterCP/M 1.1
 
-**The first guest qualification gates passed on trs80gp 2.5.8. Release qualification continues.**
+**Maintained 1.1 platform.** The supported configuration and acceptance evidence are listed in the [1.1 platform matrix](SUPPORT-1.1.md).
 The target is a 64 KiB Radio Shack/Tandy TRS-80 Model II in trs80gp with
 eight-inch single-sided floppy drives. Model 12, 16, 16B, hard disks, physical
 hardware and double-sided media are outside the current claim. No optional
@@ -8,21 +8,29 @@ RSX is loaded by the default startup record. Shipping 1.0.x systems are unchange
 
 ## Build and operate
 
-From the repository root, with Python 3 and the project's z80asm in
-`~/bin/z80asm`, run:
+The ordinary distribution command selects the checked `model2-fullram` profile.
+Run it from the repository root with the project's assembler in `~/bin/z80asm`.
+
+```sh
+python3 -B tools/build_distribution.py --target trs80m2
+```
+
+The System IMD is copied to `build/trs80m2/`. The immutable generation under
+`build/distribution/release-NAME/trs80m2/` also contains the System ZIP, checked
+SYSTEM.SYS and a report. Use that directory with `build_utilities_disk.py
+--model2-system` to build the matching primary and companion Utilities images.
+The combined System build includes Model II.
+
+For a fresh engineering workspace with assembly listings, private guest fixtures
+and the management disk, use the explicit profile form. Existing qualification
+scripts consume these filenames.
 
 ```sh
 python3 -B tools/build_distribution.py --target trs80m2 --profile model2-fullram \
     --work build/model2-work --output build/model2-candidate
 ```
 
-Use fresh work and output directories. The output contains two IMDs and a
-manifest with SHA-256 hashes and a separate pair of RSX test fixtures; the staged workspace contains the assembly
-listings, full checked SYSTEM.SYS and component binaries. The candidate is
-deliberately outside the publish/all release target. Never reuse a checked
-cpmsim or Model 4 binary that embeds resident addresses.
-
-The pinned development emulator is **trs80gp 2.5.8** for macOS, binary SHA-256
+The pinned qualification emulator is **trs80gp 2.5.8** for macOS, binary SHA-256
 `8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f`.
 Use its built-in Model II boot ROM, without a replacement ROM or emulator patch.
 The executable pin identifies the built-in ROM selection; a separate ROM-dump
@@ -39,8 +47,8 @@ Keep the System Disk in drive 0; cold and warm reconstruction read it.
 A0 contains the profile-matched PATH.COM. Use `PATH` to inspect the search
 order and `A0:PATH /DEFAULT` to recover from any configured search list.
 A0 is the expected prompt. DIR, B:STAT and TIME exercise ordinary commands;
-TIME should report that no provider is loaded. The Utilities candidate contains
-the system-management set, not the complete planned 1.1 release collection.
+TIME reports that no provider is loaded. This engineering pair includes a small
+management disk. The full Utilities set has its own ordinary packaging command below.
 Do not use these images for irreplaceable data.
 
 ## Hardware and resident boundary
@@ -51,10 +59,10 @@ Do not use these images for irreplaceable data.
 | WBOOT | Reuses the current checked command stages and CPX reconstruction. The BIOS reads package records by absolute record number, with CRC and component identity checks before entry. The Model II CRT displays a failure indicator on checked-loader halts. |
 | Keyboard and CRT | Test FFh bit 7 without consuming a key; read FCh and mask the keyboard status bit. Emulated mixed-case input, backspace editing and prompt Ctrl-C passed. Physical modifier timing remains outside the emulated claim. Basic CRT is 80×24, with bounded scrolling, CR/LF/backspace, clear/home and the existing reverse cursor-character service. |
 | Video/RAM | FFh=01h normally exposes RAM at F800h–FFFFh. FFh=81h maps the separate video RAM. Code executed during that mapping is below F800h (link assertion). VRAM operations restore RAM before touching the caller's stack and preserve maskable-interrupt state. RTC NMI remains disabled. |
-| Floppy | FD1791 registers E4h–E7h, drive/side/density latch EFh, interrupt status E0h, Z80 DMA F8h. Bounded waits, DMA reset and FDC force-interrupt on abort. Physical DMA consumes 128 or 512 bytes as appropriate; BIOS presents 128-byte CP/M records. This is not hardware timing qualification. |
+| Floppy | FD1791 registers E4h–E7h, drive/side/density latch EFh, interrupt status E0h, Z80 DMA F8h. Bounded waits, DMA reset and FDC force-interrupt on abort. Physical DMA transfers 128 or 512 bytes. BIOS presents 128-byte CP/M records. Recoverable faults get at most three attempts with the original CHS and DMA address. Write protection ends the operation immediately. This is not hardware timing qualification. |
 | Logical drives | A–D are initially assigned units 0–3; only 0/1 are needed in the pinned configuration. CONFIG can unbind/rebind B–D with the selected geometry, rejects other geometries and physical reconfiguration before committing a new binding. |
 | Other devices | The common BIOS advertises CRT console and CRT list routing; unassigned RDR returns 1Ah, PUN discards output, LISTST reflects selected CRT routing. No serial, physical printer, or timer/clock provider is advertised. An optional clock is not needed to boot. |
-| System utilities | CONFIG and SYSGEN translate protected-package records at the disk boundary; DUP walks the short FM surface for copy/check. Track formatting is not implemented; use preformatted BCM2SS images. The BIOS advertises neither a downloadable formatter nor a whole-sector cache to DUP. Guest install, copy and readback passed on the installer build. Configuration write-fault rollback remains open. |
+| System utilities | CONFIG and SYSGEN translate protected-package records at the disk boundary; DUP walks the short FM surface for copy/check. Track formatting is not implemented; use preformatted BCM2SS images. The BIOS advertises neither a downloadable formatter nor a whole-sector cache to DUP. Native install, duplicate boot and full readback passed. Controlled CONFIG tests also exercised torn writes to either startup record and a failed rollback. |
 
 With the overlay switched out, no permanently reserved high-RAM video hole
 is required. The protected TPA gateway is **E101h**; the 448 complete
@@ -77,7 +85,7 @@ to shared BDOS, PDS, CCP dispatch order or public BIOS entry numbers is required
 
 ## Selected formats and package layout
 
-BCM2SS is the only candidate format for the system, utilities and interchange.
+BCM2SS is the release format for the system, utilities and interchange.
 77 cylinders, one side, FM cylinder 0 (26 × 128, IDs 1–26), MFM cylinders
 1–76 (16 × 512, IDs 1–16, 3:1 physical interleave). IMD modes 0 and 3 encode
 500 kb/s. Filesystem SPT=64, OFF=4, 2 KiB blocks, DSM=291, 128 directory
@@ -119,7 +127,7 @@ describes reset/warm boot, BIOS I/O routing and the serial/printer facilities
 standard CP/M entry points. It does not establish a requirement to reproduce
 P&T's private functions, memory placement, or driver modules.
 
-## What passes and what remains
+## Qualification evidence
 
 [Initial host verification](../engineering/evidence/2026-11-07-model2-candidate/host-checks.json)
 and [screen candidate verification and disk hashes](../engineering/evidence/2026-11-07-model2-candidate/screen-04.json).
@@ -171,15 +179,17 @@ and [screen candidate verification and disk hashes](../engineering/evidence/2026
   matched all 625,920 decoded bytes of the source. The duplicate booted alone and
   DUP reported zero unreadable sectors. CONFIG showed 149 for both live and saved
   IOBYTE. [Release-media acceptance record](../engineering/evidence/2026-11-07-model2-release/release-install.json).
-* **Remaining release work:** Reconcile the outstanding console and other external
-  suite cases, then update the maintained support matrix after platform acceptance.
-  Serial, physical printer/clock, formatting and double-sided media are outside
-  this profile. Physical hardware is optional. The candidate
-  [operator guide](MODEL2-INSTALLATION.md) covers startup, monitors, copying and installation.
+* **Support acceptance on the revised controller.** Card 0392 exposed a missing
+  recoverable-error retry in the original candidate. The final controller passed
+  32 injected port-level cases and preserved the unloaded TPA. The final System
+  Disk, primary and companion Utilities were exercised in trs80gp with the exact
+  hashes recorded in the [acceptance record](../engineering/evidence/2026-11-07-model2-acceptance/qualification.json).
+  The [compatibility ledger](../engineering/evidence/2026-11-07-model2-acceptance/cards.tsv)
+  records the disposition and evidence for each of the 627 catalogue cards.
 
 ### CP/M 2.2 and Model II qualification
 
-The 19-case batch runs one independent guest per case against a fresh copy of
+The final 30-case batch runs one independent guest per case against a fresh copy of
 the packaged System Disk. It retains the actual emulator arguments, CRT captures,
 disposable media and results even when a later case fails. For preparation,
 supply a checkout of the [CP/M 2.2 Compatibility Suite](https://github.com/CPMArchives/cpm-2.2-compatibility-suite)
@@ -206,20 +216,32 @@ checked against their retained captures and disks before they are reused.
 | Console editing | Mixed-case command tail after backspace. Ctrl-C abandons the preceding line, and the next command must execute. The emulator injection checks the console path. Physical key rollover is outside this scope. |
 | CONFIG rejection and persistence | Reject an incompatible DSM, read back the live binding, save a startup command, compare the changed disk records, and observe that command on a separate cold boot. |
 
-Serial ports, a physical printer, a clock provider, double-sided operation and
-formatting have no advertised implementation in this profile. Seven controlled CONSTEST output cases (0052–0058) ran with the actual Model II
-resident in the Z80 CPU harness. The harness offered confirmation only after
-the emitted byte stream matched the independent expected result. The
-[transcripts](../engineering/evidence/2026-11-07-model2-release/constest.json)
-document this scope. A separate [IOBYTE test](../engineering/evidence/2026-11-07-model2-release/character-routes.json)
-exercised all 256 route values, non-consuming status, masked keyboard input,
-CRT output/list selection, reader EOF and punch discard. The keyboard ports
-and captured output endpoint were controlled. Additional interactive CONSTEST
-input cases and physical modifier timing have separate evidentiary requirements. The
-assembled Model II CONFIG.COM recovered the original startup record when
-either write failed in the injected-I/O test and reported a failed rollback.
-Guest controller fault injection and the remaining suite-card accounting are open. The [host preflight](../engineering/evidence/2026-11-07-model2-conformance/preflight.json)
-records candidate and fixture verification.
+The final batch adds six protected-disk mutation cases, three physical-error
+operator cases and two removable-media changes. Controlled Z80 tests execute
+the assembled Model II CCP, BDOS and BIOS. These capture the individual suite
+rows, check interactive CONSTEST input and output and observe allocation and
+DMA through the public interfaces. A separate test drives the real FD1791/DMA
+instructions with controlled fault sequences. CONFIG recovered the complete
+original disk after either startup-record write failed and reported a damaged
+disk when rollback also failed. The [acceptance summary](SUPPORT-1.1.md)
+distinguishes these tests from native guest execution. Serial ports, a
+physical printer, a clock provider, double-sided operation and formatting
+have no advertised implementation in this profile.
+
+To repeat the controlled checks, set `staged` to the Model II profile workspace
+and `out` to its `build/trs80m2` directory. The interactive input test uses
+pyte 0.8.2. The C-backed CPU tests use the z80pack checkout specified by
+`--z80pack`. The pinned suite checkout and POSIX cpmtools prepare the same
+disposable fixture packet as the desktop run.
+
+```sh
+python3 -B tools/test_model2_controller.py "$out"
+python3 -B tools/test_model2_character_routes.py "$out"
+python3 -B tools/test_model2_constest.py "$out" --suite /path/to/suite
+python3 -B tools/test_model2_constest_input.py "$out" --suite /path/to/suite
+python3 -B tools/test_model2_external.py "$out" --packet build/model2-conformance11 \
+    --report build/model2-external-results.json
+```
 
 The desktop invocation `run-rnlwah1u` recorded INCOMPLETE after its host audit
 required all of FILETEST's C disk to stay identical. FILETEST actually creates
@@ -291,7 +313,7 @@ copies to run outstanding phases.
 
 ### Model II screen backend
 
-The candidate System Disk carries M2SCRN.RSX and the shared ADM3A, VT52 and
+The System Disk carries M2SCRN.RSX and the shared ADM3A, VT52 and
 ANSI personalities. Load the backend first. For example:
 
 ```text
@@ -312,7 +334,7 @@ The Model II and Model 4 share 80×24 cell, cursor, scrolling and rendition
 code. On Model II each direct VRAM operation maps port FFh, completes the cell
 or block transfer and restores upper RAM and interrupt state. The rendition
 pointer supplied by a caller can therefore refer to normal RAM at F800h or
-above. BEL has no audio output in this candidate.
+above. BEL has no audio output on the Model II.
 
 The host Z80 test measured the limits below through BDOS Function 177 using the
 assembled Model II resident code and a fixture filesystem. The first optional
@@ -332,7 +354,7 @@ identifiers and the three compiled personalities against the Model II
 renderer. The guest batch also loads each personality, verifies an addressed
 marker on the emulator screen and checks TPA after unload.
 
-**Portability findings so far.** The BIOS vectors, checked command loader,
+**Portability findings.** The BIOS vectors, checked command loader,
 CPX/RSX reconstruction, FDF descriptor, filesystem writer, and host media
 tooling proved reusable. The concrete costs were deblocking around a live
 loader, scarce resident disk space, the physical/package distinction in three
