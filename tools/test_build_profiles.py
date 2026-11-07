@@ -74,7 +74,7 @@ class BuildProfiles(unittest.TestCase):
     def test_python_assembly_and_child_process_use_the_same_context(self):
         tools = self.root/'tools'
         tools.mkdir()
-        for name in ['build_profiles.py', 'system_layout.py', 'rsx_container.py', 'utility_versions.py']:
+        for name in ['build_profiles.py', 'system_layout.py', 'rsx_container.py', 'utility_versions.py', 'component_identity.py']:
             shutil.copy2(ROOT/'tools'/name, tools/name)
         common = self.root/'src/utilities/common'
         common.mkdir(parents=True)
@@ -124,6 +124,7 @@ class BuildProfiles(unittest.TestCase):
                 ['--profile', 'cpmsim-fullram', '--target', 'all', '--prepare-profile'],
                 ['--profile', 'cpmsim-fullram', '--target', 'trs80gp', '--prepare-profile'],
                 ['--profile', 'cpmsim-legacy-checked', '--target', 'trs80gp'],
+                ['--profile', 'cpmsim-legacy-checked', '--target', 'z80pack'],
                 ['--prepare-profile']]:
             work = Path(self.temporary.name)/'not-created'
             result = subprocess.run([sys.executable, str(ROOT/'tools/build_distribution.py'),

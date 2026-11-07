@@ -53,7 +53,8 @@ def prepare(root,out,payload,symbols):
     cid=1024+L['BIOS']-16-L['SYSTEM']
     assert payload[cid:cid+16]==bytes.fromhex(profile['compatibility_id'])
     contract={'schema':2,'profile':profile['contract']['profile'],'compatibility_id':profile['compatibility_id'],'system_base':L['SYSTEM'],'masks':masks,'normalized_crc':crc(normalize(payload,masks)),'a_binding_offset':1024+logical-L['SYSTEM']+16,'resident_id_offset':cid,'required_files':{}}
-    for name,rel in [('RCP.CPX','build/cpx/RCP.CPX'),('R3PACK.RSX','build/system/R3PACK.RSX')]:
+    for name,rel in [('RCP.CPX','build/cpx/RCP.CPX'),('R3PACK.RSX','build/system/R3PACK.RSX'),
+                     ('R3CACHE.RSX','build/system/R3CACHE.RSX')]:
         b=(root/rel).read_bytes();contract['required_files'][name]={'bytes':len(b),'crc16':crc(b)}
     (out/'checked-package.json').write_text(json.dumps(contract,indent=2)+'\n')
     (out/'package-guard.inc').write_text(assembly(contract))
@@ -274,7 +275,7 @@ P11CLOS:
         JP XBAD
 P11FBAD:LD HL,P11MSG
         JP REPORT
-P11MSG: DB 'Matching RCP.CPX and R3PACK.RSX required on destination.',13,10,0
+P11MSG: DB 'Matching RCP.CPX, R3PACK.RSX and R3CACHE.RSX required.',13,10,0
 P11USER:DB 0
 P11FCB: DS 36
 P11LEFT:DW 0

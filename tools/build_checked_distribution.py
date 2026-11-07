@@ -3,7 +3,7 @@
 from pathlib import Path
 import argparse
 import json
-import os
+import re
 import shutil
 import subprocess
 import sys
@@ -46,6 +46,8 @@ def components(reuse):
     for drive in 'abcd':(disks/f'drive{drive}.dsk').write_bytes(raw)
     (out/'diskdefs').write_text(disk_definition(fmt))
     if selected_contract()!=contract:raise ValueError('checked source changed during build')
+    from component_tracking import record_collection
+    record_collection(ROOT, 'z80pack', source)
     hashes={str(p.relative_to(ROOT)):digest(p.read_bytes()) for p in sorted((ROOT/'build').rglob('*'))
             if p.is_file() and '__pycache__' not in p.parts and p.suffix!='.pyc'}
     stamp.write_text(json.dumps({'source':source,'artifacts':hashes},indent=2)+'\n')
@@ -57,9 +59,10 @@ def main():
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--simulator',type=Path,required=True)
     p.add_argument('--reuse',action='store_true')
-    a=p.parse_args();contract=components(a.reuse);out=a.output.resolve();out.mkdir(parents=True)
-    manifest=json.loads((ROOT/'metadata/distribution.json').read_text())
+    a=p.parse_args()
     stage_cpmsim_guest(a.simulator, ROOT)
+    contract=components(a.reuse);out=a.output.resolve();out.mkdir(parents=True)
+    manifest=json.loads((ROOT/'metadata/distribution.json').read_text())
     files,omitted=selected_files(manifest,'z80pack',ROOT)
     if {'HELLO.RSX','HELLO.CPX','STATEFUL.RSX'} & {c['name'] for c,_ in files}:
         raise ValueError('development fixture in distribution')
@@ -68,16 +71,29 @@ def main():
     validate_config_fingerprint('z80pack',raw,files,ROOT)
     validate_config_cold_patch('z80pack',raw,files,ROOT)
     included=validate_files(raw,out,files,g)
-    image=out/('BetterCPM-Distribution-'+contract['contract']['profile']+'-332K.dsk')
+    profile = contract['contract']['profile']
+    image_target = 'z80pack' if profile == 'cpmsim-fullram' else profile
+    image = out/f'BetterCPM-Distribution-{image_target}-332K.dsk'
     shutil.copy2(raw,image)
     shutil.copy2(ROOT/'build/z80pack/system-package/SYSTEM.SYS',out/'SYSTEM.SYS')
     shutil.copy2(ROOT/'build/z80pack/checked-package.json',out/'checked-package.json')
+    from checked_system_package import make, raw_payload
+    package_contract = json.loads((out/'checked-package.json').read_text())
+    if make(raw_payload(ROOT, image), package_contract) != (out/'SYSTEM.SYS').read_bytes():
+        raise ValueError('SYSTEM.SYS differs from the published System disk tracks')
     boot('z80pack',image,out,ROOT,a.simulator.resolve(),Path('/unused'))
     from qualify_checked_distribution import qualify
     acceptance=qualify(ROOT,image,out/'acceptance',a.simulator.resolve())
+    boot_map = re.findall(rb'Maximum loadable COM:\s*(\d+) bytes', (out/'boot.txt').read_bytes())
+    if len(boot_map) != 1:
+        raise ValueError('missing or ambiguous shipped-startup TPA measurement')
+    acceptance['shipped_startup_tpa'] = int(boot_map[0])
     report={'target':'z80pack','profile':contract['contract']['profile'],
        'compatibility_id':contract['compatibility_id'],'source':json.loads((ROOT/'profile-state.json').read_text())['source'],
        'image':image.name,'sha256':digest(image.read_bytes()),'format':g['format'],
+       'cold_start_command':manifest.get('cold_start_command', ''),
+       'manifest_sha256':digest((ROOT/'metadata/distribution.json').read_bytes()),
+       'tools':{n:digest(Path(shutil.which(n)).read_bytes()) for n in ('cpmcp','cpmls','fsck.cpm')},
        'included':included,'omitted':omitted,**totals,
        'package_sha256':digest((out/'SYSTEM.SYS').read_bytes()),
        'validation':{'filesystem':'PASS','file_integrity':'PASS','config_fingerprint':'PASS','boot':'PASS','acceptance':acceptance},

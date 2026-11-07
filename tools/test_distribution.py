@@ -10,8 +10,9 @@ from build_distribution import capacity, selected_files, current_build, digest, 
 class DistributionGates(unittest.TestCase):
     def test_default_identity_distinguishes_development_from_frozen_core(self):
         from unittest.mock import patch
+        release = json.loads((Path(__file__).resolve().parents[1]/'metadata/release-package.json').read_text())['version']
         for development, expected in ((True,'BetterCP/M development (after core 1.0)'),
-                                      (False,'BetterCP/M 1.0')):
+                                      (False,'BetterCP/M '+release)):
             with patch('utility_versions.display_development',return_value=development):
                 self.assertEqual(development_identity(),expected)
         source=(Path(__file__).resolve().parents[1]/'src/cpx/rcp.mac').read_text()
