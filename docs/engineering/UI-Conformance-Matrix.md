@@ -30,6 +30,7 @@ Exception cells retain the utility-specific specification; they do not waive dat
 | DUP | C | C | C | N | E | E | N | E | E | N | menu/drive/only-Y approval; no new defaults |
 | ED | C | C | C | E | E | E | E | E | N | N | explicit DRI editor/command-language boundary |
 | ERA | C | C | C | N | E | N | N | E | N | N | compat retry/help/abort choices |
+| FDB | C | C | C | O | O | C | O | O | O | O | [Compiled queries and malformed converter syntax](209-standard-queries.md#validation). [Workbench Q](FDB-Main-Menu-Correction.md) was exercised on both platforms. Other cells await individual review. |
 | LINK | E | E | E | E | E | E | E | E | E | E | unmodified selected third-party tool; original interface |
 | LZH | C | C | C | N | N | N | N | N | N | N | command-tail operation; no generic prompted field |
 | MD5SUM | C | C | C | N | E | N | E | E | N | C | same compact checksum engine; allocation exception; independent digest |
@@ -37,6 +38,7 @@ Exception cells retain the utility-specific specification; they do not waive dat
 | MOVE | C | C | O | N | N | N | N | N | N | N | command-tail operation; no generic prompted field; registry/development command, not current disk membership |
 | NOAH | C | C | C | N | C | E | C | C | E | E | shared choices; overlay and navigation retained |
 | PATCH | C | C | C | N | C | N | N | N | N | E | operation cancellation/acknowledgment; narrow report option |
+| PATH | C | C | C | N | N | N | N | N | N | N | Command-tail utility. Bare PATH displays the list. Exact help and version queries precede edits. Invalid replacements preserve the old list. See [numeric PATH qualification](Numeric-PATH-1.1.md#qualification). |
 | PIP | C | C | C | E | E | E | N | E | N | N | replacement binding only; command/data language |
 | R | E | E | E | N | N | N | N | N | N | N | staged cpmsim host helper; separate query/8080 ABI; source review only |
 | RCP | O | C | O | E | E | E | E | E | E | E | resident DIR/ERA/TYPE/REN/CLS/USER/VER/COPY/MOVE; version dispatch checked; standard help missing; resident tail review outstanding |
@@ -61,7 +63,7 @@ Exception cells retain the utility-specific specification; they do not waive dat
 | VT52TST | C | C | C | E | E | E | N | N | E | N | raw keyboard/terminal diagnostic protocol |
 | W | E | E | E | N | N | N | N | N | N | N | staged cpmsim host helper; separate query/8080 ABI; source review only |
 | WARM | C | C | O | N | N | N | N | N | N | N | command-tail operation; no generic prompted field; registry/development command, not current disk membership |
-| XSUB | C | C | C | N | N | N | N | N | N | N | command-tail operation; no generic prompted field |
+| XSUB | C | C | C | N | N | N | N | N | N | N | Optional source DU. [Source parser and guest qualification](RSX-Offline-Loading-Implementation.md) supersede the no-operand tests for revision 008. |
 | ZSM4 | E | E | E | E | E | E | E | E | E | E | unmodified selected third-party tool; original interface |
 
 ## Resident command coverage correction — 4 November 2026

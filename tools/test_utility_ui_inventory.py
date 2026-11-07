@@ -29,7 +29,7 @@ def main():
         assert proof['host']=='PASS' and proof['cpmsim']=='PASS'
         for path,digest in proof['source_sha256'].items():
             assert hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==digest,('stale TED confirmation evidence',path)
-    noargs=('ADMTST','ANSITST','VT52TST','XSUB')
+    noargs=('ADMTST','ANSITST','VT52TST')
     if any(rows[name][3]=='C' for name in noargs):
         proof=json.loads((ROOT/'docs/engineering/evidence/2026-11-03-ui-argument-validation/results.json').read_text())
         assert proof['host']=='PASS' and proof['cpmsim']=='PASS'
@@ -43,6 +43,26 @@ def main():
         assert native['status']=='PASS' and native['captures']==22
         for name in noargs:
             assert native['receipt']['binaries'][name]==proof['current'][name],('native argument payload differs',name)
+    if rows['XSUB'][3]=='C':
+        # Revision 008 accepts an optional DU. Its two-platform run and parser
+        # checks were recorded together after the old no-operand contract changed.
+        evidence=ROOT/'docs/engineering/evidence/2026-11-06-rsx-offline'
+        proof=json.loads((evidence/'results.json').read_text())
+        assert proof['status']=='PASS' and proof['host_checks']['test_rsx_source_cli']=='PASS'
+        baselines=json.loads((ROOT/'metadata/component-baselines.json').read_text())['records']
+        source='src/utilities/xsub.mac'
+        for target,receipt in (('z80pack','cpmsim.json'),('trs80gp','model4.json')):
+            baseline=baselines[f'utility:XSUB|{target}|default|cross']
+            assert baseline['assigned_identity']['revision']==8
+            assert hashlib.sha256((ROOT/source).read_bytes()).hexdigest()==baseline['inputs']['files'][source]
+            guest=json.loads((evidence/receipt).read_text())
+            assert guest['status']=='PASS' and guest['target']==target
+        if (ROOT/'build/utilities/XSUB.COM').is_file():
+            from test_utility_finalization import execute
+            output, requests = execute('XSUB', ' B0: EXTRA', queries=False)
+            assert 'Invalid usage.' in output and not requests
+            _, requests = execute('XSUB', ' B0:', queries=False)
+            assert [request[1] for request in requests] == [3, 1]
     print(f'PASS: {len(rows)} unique utility rows cover distribution, companion, host helpers and registry')
 
 if __name__=='__main__':main()

@@ -82,9 +82,12 @@ def text(name,identity=None,resident=False):
  purpose,usage,options=(RESIDENT_SCREENS if resident else SCREENS)[name]
  lines=[identity or banner(name),'  - - -',' | '+purpose,' |',' |   Usage: '+usage,'']
  lines+=['   Options:']
- for opt,desc in options:lines.append('     '+opt.ljust(21)+desc)
+ # PATH's short operands fit the same label field as its query switches.
+ query_width=15
+ option_width=query_width if name=='PATH' else 21
+ for opt,desc in options:lines.append('     '+opt.ljust(option_width)+desc)
  if options:lines.append('')
- lines+=['     '+ '/H /HELP'.ljust(15)+'Display this help.','     '+ '/VER'.ljust(15)+'Display utility identification.']
+ lines+=['     '+ '/H /HELP'.ljust(query_width)+'Display this help.','     '+ '/VER'.ljust(query_width)+'Display utility identification.']
  assert len(lines)<=23 and max(map(len,lines))<=79
  return '\r\n'.join(lines)+'\r\n'
 
