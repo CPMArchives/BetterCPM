@@ -1,0 +1,108 @@
+{
+  "system": "d8e20a91e8277090ffbb095fad96b9d2c653af960791d9caa69f154e75a7110d",
+  "primary": "094031700ae2d41bf793cf4226f145e0cfcb83d6a491e20f654cec321a6bdb17",
+  "companion": "cf0a0efc975714d73e3db5d56436a41f5cb8312b460541a351365303e022fa60",
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "run": "run-zyrow7xy",
+  "scope": "Three complete phases and a verified SYSGEN installation. The initial CONFIG view was captured before the next A0 prompt.",
+  "phases": {
+    "utilities": {
+      "status": "PASS",
+      "witnesses": [
+        "A0>",
+        "SQ: complete.",
+        "USQ: complete.",
+        "FILES IDENTICAL",
+        "C0>",
+        "PROOF.BIN"
+      ],
+      "capture_sha256": {
+        "trs80-text-0.bin": "885c9c76e80e945c722ad668e4f82ed37fc4548f35a83e41a55dbbc10bd88a5e",
+        "trs80-text-1.bin": "c5ef714b0432199aedb4eeec55626a47fb3f66515d715981c4c4422600f605dd",
+        "trs80-text-2.bin": "4ed6513812e3de4e70b595bbaccc2ea09c409c3def05e0213fb5defecc14a994",
+        "trs80-text-3.bin": "a370c970db598303cdfd5319cbf010ba3d35f154e4745aeb9503555edf5c7375",
+        "trs80-text-4.bin": "a56338af1b732aea40ce3a056c029279d62ca0050615bc6801fa50aa02c42125",
+        "trs80-text-5.bin": "e50de81f727420888730ca522d21b7302d2d6e1168206a0e2560a385d3857e40"
+      }
+    },
+    "batch": {
+      "status": "PASS",
+      "witnesses": [
+        "A0>",
+        "INPUT OK",
+        "No RSXs loaded",
+        "PAIRED BATCH FINISHED",
+        "Maximum loadable COM: 57344 bytes"
+      ],
+      "capture_sha256": {
+        "trs80-text-0.bin": "885c9c76e80e945c722ad668e4f82ed37fc4548f35a83e41a55dbbc10bd88a5e",
+        "trs80-text-1.bin": "637dcb8f6b9241940620ccb4de382fe342b68b985e51ca0f95fcd68a3c4e9ed6",
+        "trs80-text-2.bin": "cff9b07d9447ffeb0fe8f9cb243a2ad3dd70276d36d26be3bffae13a47a6374f",
+        "trs80-text-3.bin": "722af06aac3121f0b02f640e6708b403b15a2c0dda524285c27c0daf4c340e9d",
+        "trs80-text-4.bin": "92021f55fb298f65e3d399852b4492e1d3b13f5aff78091041a751c3757a1e77"
+      }
+    },
+    "lifecycle": {
+      "status": "PASS (first guest gates only)",
+      "scope": "cold boot, 56 KiB boundary and recovery, RET/JP 0/BDOS 0, CPX, public RSX lifecycle/allocation, TIME without provider, screen personality positioning/unload",
+      "captures": 21
+    },
+    "install": {
+      "status": "INCOMPLETE",
+      "phases": [
+        {
+          "name": "install",
+          "status": "PASS"
+        },
+        {
+          "name": "cold-config",
+          "status": "INCOMPLETE",
+          "detail": "cold-config: missing 'A0>' on capture 2"
+        }
+      ]
+    }
+  },
+  "capture_sha256": {
+    "utilities/trs80-text-0.bin": "885c9c76e80e945c722ad668e4f82ed37fc4548f35a83e41a55dbbc10bd88a5e",
+    "utilities/trs80-text-1.bin": "c5ef714b0432199aedb4eeec55626a47fb3f66515d715981c4c4422600f605dd",
+    "utilities/trs80-text-2.bin": "4ed6513812e3de4e70b595bbaccc2ea09c409c3def05e0213fb5defecc14a994",
+    "utilities/trs80-text-3.bin": "a370c970db598303cdfd5319cbf010ba3d35f154e4745aeb9503555edf5c7375",
+    "utilities/trs80-text-4.bin": "a56338af1b732aea40ce3a056c029279d62ca0050615bc6801fa50aa02c42125",
+    "utilities/trs80-text-5.bin": "e50de81f727420888730ca522d21b7302d2d6e1168206a0e2560a385d3857e40",
+    "batch/trs80-text-0.bin": "885c9c76e80e945c722ad668e4f82ed37fc4548f35a83e41a55dbbc10bd88a5e",
+    "batch/trs80-text-1.bin": "637dcb8f6b9241940620ccb4de382fe342b68b985e51ca0f95fcd68a3c4e9ed6",
+    "batch/trs80-text-2.bin": "cff9b07d9447ffeb0fe8f9cb243a2ad3dd70276d36d26be3bffae13a47a6374f",
+    "batch/trs80-text-3.bin": "722af06aac3121f0b02f640e6708b403b15a2c0dda524285c27c0daf4c340e9d",
+    "batch/trs80-text-4.bin": "92021f55fb298f65e3d399852b4492e1d3b13f5aff78091041a751c3757a1e77",
+    "lifecycle/trs80-text-0.bin": "885c9c76e80e945c722ad668e4f82ed37fc4548f35a83e41a55dbbc10bd88a5e",
+    "lifecycle/trs80-text-1.bin": "44ebb99493441f584ea9ad84a6ebf31c094c46262e6dbf1d75dcd789afef084a",
+    "lifecycle/trs80-text-10.bin": "76a024c360fb4ac68187cde8809947d2321f6230a6fd4faae1433df51ffb805c",
+    "lifecycle/trs80-text-11.bin": "959c7015bc3d1aa1f162dd83286be8288eb46104f4d4310d144c67c1f958f8f7",
+    "lifecycle/trs80-text-12.bin": "546e73afe68c25a55f6dc462c3293de58bdf119a626e68852684e2e4dc6f9d26",
+    "lifecycle/trs80-text-13.bin": "29df2f97d6185ce1df200aac01a6394e396bf95d3f29022873aae3efd117ce1c",
+    "lifecycle/trs80-text-14.bin": "f8a1dc229cf34bdb6ebb5e670714bae244e7ae994f32a3725e211cc91cdbc2cb",
+    "lifecycle/trs80-text-15.bin": "a511ee6a9747406331c3335c214752681c53c67a5e622b8a7a50a51f84ae77d0",
+    "lifecycle/trs80-text-16.bin": "d7adedf5d2e6c35289c14019a73e20daf4b013cd765a5a2dd7ee25127decd171",
+    "lifecycle/trs80-text-17.bin": "02132090070293395204f92fdf274378fe3c2cb6b8a5a7df4319ad4e65f58fd5",
+    "lifecycle/trs80-text-18.bin": "aaf5151195c2cf80028276c5c648c5b6259d2dbbc95a557f7b67284207166aa9",
+    "lifecycle/trs80-text-19.bin": "5e812335b113b23eceb95da3ce8c5ca24d17c8704b817ab192fb0338cf28ce3a",
+    "lifecycle/trs80-text-2.bin": "96fba40392e9c96bf463d6b20b3d9ca15ad2c1033be9fb0ce89986fd5e55fcc8",
+    "lifecycle/trs80-text-20.bin": "50d9a6741058192240918d80197362dc31a819d9f5bbf36e798f4353df17851f",
+    "lifecycle/trs80-text-3.bin": "aeadad4808be6a910791f6e5df9fcc48d79775e4f6ddd9b462fe7bcafaf94fce",
+    "lifecycle/trs80-text-4.bin": "079f1f8f93bd96480b844a5cce30214faf477ea8a21a4a493708ceeea13451b5",
+    "lifecycle/trs80-text-5.bin": "93fbd0b97cf85b73025365fb7b8c478f7321b76f62ae5b4b82b5f3ecd0c0bb53",
+    "lifecycle/trs80-text-6.bin": "ea1d91e46854e815fea7d4265480199221c600fa555b8cf2506fc3aafa4a9cbf",
+    "lifecycle/trs80-text-7.bin": "0f915d408e045e275a47c0b67923cfe1ed45d950345d7a6642e088501a3ecb70",
+    "lifecycle/trs80-text-8.bin": "932af9355b384fa71d7e474abe24e35700e8ec916f698aea90cbbefa9027cadb",
+    "lifecycle/trs80-text-9.bin": "ca0d7074a2d1a109f886f32094a9dd99d17472add6ac8a94705199c644c12297",
+    "install/cold-config/trs80-text-0.bin": "885c9c76e80e945c722ad668e4f82ed37fc4548f35a83e41a55dbbc10bd88a5e",
+    "install/cold-config/trs80-text-1.bin": "060c660941b38a69afe8fdfcc113be61b8fa41339e0cb6c4dae2bcb7f9bf7175",
+    "install/cold-config/trs80-text-2.bin": "d192aec8e9e618b919502a1c012e69f5be73dc948df36c24eaa55a4dfd9da854",
+    "install/install/trs80-text-0.bin": "885c9c76e80e945c722ad668e4f82ed37fc4548f35a83e41a55dbbc10bd88a5e",
+    "install/install/trs80-text-1.bin": "33a829cfb1b170297ea83316c493f34b79d59fd47e06cf843f4c709b1ae2a9df",
+    "install/install/trs80-text-2.bin": "33a829cfb1b170297ea83316c493f34b79d59fd47e06cf843f4c709b1ae2a9df",
+    "install/install/trs80-text-3.bin": "75e3a6f4d4fbd4971ad6305729a928002382cfbe94f26c6f574ccb5a9b3ccfe0",
+    "install/install/trs80-text-4.bin": "75e3a6f4d4fbd4971ad6305729a928002382cfbe94f26c6f574ccb5a9b3ccfe0"
+  },
+  "archive_sha256": "dfc822cbd0915c5cae85a55f1a97ce6dd85914e4b5e127e80af7cbc75db28faa"
+}

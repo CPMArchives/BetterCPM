@@ -3,7 +3,10 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
+import shutil
+import subprocess
 import sys
 
 def marker(text):
@@ -30,30 +33,39 @@ def main():
     from test_z80pack_submit_xsub import input_probe
     from trs80gp_launch import run
     maximum = 57344 if m2 else 54272
-    sequence = ('A0:PATH A3: . A0:', '5:', 'WHICH', 'FIT', 'BIG', 'WHICH',
-                'A0:XSUB', 'INPUT', 'BATCHFULL', 'A0:WHICH', 'A0:PATH')
+    drive = 'B' if m2 else 'A'
+    search = f'{drive}3: . {drive}0:'
+    xsub = 'B0:XSUB B0:' if m2 else 'A0:XSUB'
+    sequence = [f'A0:PATH {search}', '5:', 'WHICH', 'FIT', 'BIG', 'WHICH',
+                xsub, 'INPUT', 'BATCHFULL', f'{drive}0:WHICH', 'A0:PATH']
+    if m2:
+        sequence.insert(0, 'PATH')
+        sequence.extend(['A0:PATH A9:', 'A0:PATH /DEFAULT', 'PATH', 'B0:PTDONE'])
     fixtures = [
         ('PTEST.SUB', ('\r\n'.join(sequence)+'\r\n\x1a').encode(), 0),
-        ('WHICH.COM', marker('FIRST IMAGE A3'), 3),
-        ('WHICH.COM', marker('SECOND IMAGE A0'), 0),
+        ('WHICH.COM', marker(f'FIRST IMAGE {drive}3'), 3),
+        ('WHICH.COM', marker(f'SECOND IMAGE {drive}0'), 0),
         ('FIT.COM', marker(f'FIT {maximum} OK').ljust(maximum, b'X'), 3),
         ('BIG.COM', marker('WRONG OVERSIZE EXECUTION').ljust(maximum+128, b'X'), 3),
         ('BIG.COM', marker('WRONG FALLBACK EXECUTION'), 0),
         ('INPUT.COM', input_probe(work), 3),
     ]
-    common = [(name, (build/folder/name).read_bytes(), 0) for folder, name in
-              [('utilities','PATH.COM'), ('utilities','SUBMIT.COM'), ('utilities','XSUB.COM'),
-               ('cpx','RCP.CPX'), ('rsx','BATCHIO.RSX'), ('system','R3PACK.RSX'),
-               ('system','R3CACHE.RSX')]]
+    def built(folder, name):
+        return (name, (build/folder/name).read_bytes(), 0)
+
     if m2:
-        # The port owns physical IMD layout and bootstrap placement.
         from model2_media import image
-        package = build/'trs80m2/checked-package.json'
-        base = json.loads(package.read_text())['system_base']
-        tracks = bytearray((build/'trs80m2/system-tracks.bin').read_bytes())
-        tracks[128:384] = startup('SUBMIT PTEST', system_base=base)
+        # Keep the assembled System disk intact. SUBMIT writes its queue on a
+        # disposable copy. All test programs and the script come from drive B.
         disk = work/'Model-II-PATH.imd'
-        disk.write_bytes(image(tracks, common + fixtures))
+        shutil.copyfile(build/'trs80m2/Model-II-System-candidate.imd', disk)
+        subprocess.run([sys.executable, '-B', build.parent/'tools/build_batch.py'],
+                       env=dict(os.environ, BETTERCPM_BUILD_CONTEXT=str(build/'profile/context.json')),
+                       check=True)
+        batch = [built('utilities', 'SUBMIT.COM'), built('utilities', 'XSUB.COM'),
+                 built('rsx', 'BATCHIO.RSX'), ('PTDONE.COM', marker('PACKAGED PATH DONE'), 0)]
+        companion = work/'Model-II-PATH-Fixtures.imd'
+        companion.write_bytes(image(bytes(160*128), batch + fixtures, bootable=False))
     else:
         from add_cpm_file_to_dmk import extract_raw
         from build_montezuma_extended_790k import build as dmk
@@ -63,14 +75,22 @@ def main():
         from build_trs80_boot import FILESYSTEM_FIRST_SECTOR, SECTOR_SIZE, install_files
         directory = FILESYSTEM_FIRST_SECTOR * SECTOR_SIZE
         raw[directory:] = bytes([0xe5]) * (len(raw)-directory)
+        common = [built('utilities', 'PATH.COM'), built('utilities', 'SUBMIT.COM'),
+                  built('utilities', 'XSUB.COM'), built('cpx', 'RCP.CPX'),
+                  built('rsx', 'BATCHIO.RSX'), built('system', 'R3PACK.RSX'),
+                  built('system', 'R3CACHE.RSX')]
         install_files(raw, common + fixtures)
         disk = work/'Model4-PATH.dmk'
         disk.write_bytes(dmk(raw))
 
-    expected = ['FIRST IMAGE A3', f'FIT {maximum} OK', 'FILE WILL NOT FIT',
-                'INPUT OK', 'SECOND IMAGE A0', 'PATH: A3: . A0:']
+    expected = [f'FIRST IMAGE {drive}3', f'FIT {maximum} OK', 'FILE WILL NOT FIT',
+                'INPUT OK', f'SECOND IMAGE {drive}0', f'PATH: {search}']
     command = [str(args.emulator or DEFAULT_EMULATOR), '-m'+args.model, '-batch', '-turbo', '-d0', str(disk),
                '-itime', '120000']
+    if m2:
+        command.extend(['-d1', str(companion), '-iw', 'A0>', '-i', 'B0:SUBMIT B:PTEST\r'])
+        expected.insert(0, 'PATH: . A0:')
+        expected.extend(['PATH: A9:', 'PATH: . A0:', 'PACKAGED PATH DONE'])
     for message in expected:
         command.extend(['-iw', message, '-id', '120', '-it'])
     command.append('-ix')

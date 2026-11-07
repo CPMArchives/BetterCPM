@@ -21,6 +21,10 @@ LAYOUT.update(PDS_DESCRIPTOR=LAYOUT["SYSTEM"] + 0x80,
 
 def expand_layout(text: str) -> str:
     """Inline selected generated inputs, or the unchanged canonical default."""
+    if '; @package-record-map@' in text:
+        mapping = ((ROOT/'src/platform/trs80m2/package-map.inc').read_text()
+                   if CONTEXT and CONTEXT[0]['target'] == 'trs80m2' else '')
+        text = text.replace('; @package-record-map@', mapping)
     from rsx_container import constants
     text = text.replace('; @rsx-container-slots@', constants())
     from utility_versions import expand_versions

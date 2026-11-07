@@ -1,0 +1,164 @@
+{
+  "status": "PASS (first guest gates only)",
+  "scope": "cold boot, 56 KiB boundary and recovery, RET/JP 0/BDOS 0, CPX, public RSX lifecycle/allocation, TIME without provider, screen personality positioning/unload",
+  "candidate": {
+    "target": "trs80m2",
+    "status": "engineering candidate; guest qualification outstanding",
+    "profile": "model2-fullram",
+    "source_revision": "93e12e9dfe9f66cc9187115ab87d2c764d33a34f",
+    "compatibility_id": "f1e26cd2a6f9a71d9067177f7d93426c",
+    "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc",
+    "planned_tpa": 57344,
+    "rom_loader_bytes": 368,
+    "console_code_end": 63434,
+    "qualification_files": {
+      "HELLO.RSX": "25e685c6b27d121f1cc46f5f92d2187dfa93f9f7f2f8c16849ffdac053fdbed9",
+      "RSXTEST.COM": "9686a1d222913cfa29424d24b09f1928f044fa83a1634cd4d644368aac1c40e7"
+    },
+    "files": {
+      "Model-II-System-candidate.imd": "89accf98c2b2692fa9bb8c432230e44d27c0c3a39a73e5a8bc7589f6f6a010f7",
+      "Model-II-Utilities-candidate.imd": "1a33e6309ccc733699fa669ced67d2dc3343a7f3ef5c9d2c515346185f62090e"
+    }
+  },
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "machine": "Model II 64K, two single-sided IMD drives",
+  "rom": "built in; no -rom override",
+  "fixture_sha256": "bdfec707f92d1444af021876974e1603bd81fbd2e5e6636abace00ed27b07188",
+  "captures": [
+    {
+      "command": "cold boot",
+      "passed": true,
+      "return_evidence": "same capture"
+    },
+    {
+      "command": "B:STATE",
+      "passed": true,
+      "return_evidence": "same capture"
+    },
+    {
+      "command": "B:ERET",
+      "passed": true,
+      "return_evidence": "same capture"
+    },
+    {
+      "command": "B:EJUMP",
+      "passed": true,
+      "return_evidence": "same capture"
+    },
+    {
+      "command": "B:EFN0",
+      "passed": true,
+      "return_evidence": "same capture"
+    },
+    {
+      "command": "B:OVER",
+      "passed": true,
+      "return_evidence": "same capture"
+    },
+    {
+      "command": "B:STATE",
+      "passed": true,
+      "return_evidence": "same capture"
+    },
+    {
+      "command": "TIME",
+      "passed": true,
+      "return_evidence": "same capture"
+    },
+    {
+      "command": "CPX LIST",
+      "passed": true,
+      "return_evidence": "same capture"
+    },
+    {
+      "command": "B:RSXTEST",
+      "passed": true,
+      "return_evidence": "same capture"
+    },
+    {
+      "command": "RSX LOAD B:HELLO",
+      "passed": true,
+      "return_evidence": "next command echo and service result"
+    },
+    {
+      "command": "B:RSXTEST",
+      "passed": true,
+      "return_evidence": "same capture"
+    },
+    {
+      "command": "RSX LIST",
+      "passed": true,
+      "return_evidence": "same capture"
+    },
+    {
+      "command": "B:STATE",
+      "passed": true,
+      "return_evidence": "same capture"
+    },
+    {
+      "command": "RSX UNLOAD HELLO",
+      "passed": true,
+      "return_evidence": "next command echo and service result"
+    },
+    {
+      "command": "B:RSXTEST",
+      "passed": true,
+      "return_evidence": "same capture"
+    },
+    {
+      "command": "B:STATE",
+      "passed": true,
+      "return_evidence": "same capture"
+    },
+    {
+      "positioned_by": "ADM3A",
+      "passed": true
+    },
+    {
+      "positioned_by": "VT52",
+      "passed": true
+    },
+    {
+      "positioned_by": "ANSI",
+      "passed": true
+    },
+    {
+      "post_monitor_unload": "E101",
+      "fresh_rows": [
+        8,
+        10,
+        12,
+        13,
+        15
+      ],
+      "passed": true
+    }
+  ],
+  "version": "2.5.8",
+  "run": "run-p3m03wtk",
+  "original_verdict": "INCOMPLETE",
+  "original_detail": "failed RSX LOAD B:HELLO: see screen-10.txt",
+  "capture_sha256": {
+    "trs80-text-0.bin": "885c9c76e80e945c722ad668e4f82ed37fc4548f35a83e41a55dbbc10bd88a5e",
+    "trs80-text-1.bin": "44ebb99493441f584ea9ad84a6ebf31c094c46262e6dbf1d75dcd789afef084a",
+    "trs80-text-2.bin": "96fba40392e9c96bf463d6b20b3d9ca15ad2c1033be9fb0ce89986fd5e55fcc8",
+    "trs80-text-3.bin": "aeadad4808be6a910791f6e5df9fcc48d79775e4f6ddd9b462fe7bcafaf94fce",
+    "trs80-text-4.bin": "079f1f8f93bd96480b844a5cce30214faf477ea8a21a4a493708ceeea13451b5",
+    "trs80-text-5.bin": "23eedccfb3acc0aaa7440bcc0305f33e19fbdb083556f36c46408d3a4af51bcd",
+    "trs80-text-6.bin": "acdee7786f7fd30bc0cb149c4aba7f3a4b6cf5652ba97f344e00882ceacafab6",
+    "trs80-text-7.bin": "d9303e1273bf00412ac0553d9b29ae21b65dbaff54280b50bdfee09abb299466",
+    "trs80-text-8.bin": "fd3af9bec0d177bc35868b2184b89831f58629a449f344f542360cfe19eabbd9",
+    "trs80-text-9.bin": "2b61110de9ad89c777dece45fc2de94c847df80feb2fa3d0634db2ec30218df3",
+    "trs80-text-10.bin": "136650aa9f00b076fc853095affde047a6e64047b060a34c231cbdae7640cfa7",
+    "trs80-text-11.bin": "959c7015bc3d1aa1f162dd83286be8288eb46104f4d4310d144c67c1f958f8f7",
+    "trs80-text-12.bin": "546e73afe68c25a55f6dc462c3293de58bdf119a626e68852684e2e4dc6f9d26",
+    "trs80-text-13.bin": "29df2f97d6185ce1df200aac01a6394e396bf95d3f29022873aae3efd117ce1c",
+    "trs80-text-14.bin": "f8a1dc229cf34bdb6ebb5e670714bae244e7ae994f32a3725e211cc91cdbc2cb",
+    "trs80-text-15.bin": "a511ee6a9747406331c3335c214752681c53c67a5e622b8a7a50a51f84ae77d0",
+    "trs80-text-16.bin": "d7adedf5d2e6c35289c14019a73e20daf4b013cd765a5a2dd7ee25127decd171",
+    "trs80-text-17.bin": "02132090070293395204f92fdf274378fe3c2cb6b8a5a7df4319ad4e65f58fd5",
+    "trs80-text-18.bin": "aaf5151195c2cf80028276c5c648c5b6259d2dbbc95a557f7b67284207166aa9",
+    "trs80-text-19.bin": "5e812335b113b23eceb95da3ce8c5ca24d17c8704b817ab192fb0338cf28ce3a",
+    "trs80-text-20.bin": "50d9a6741058192240918d80197362dc31a819d9f5bbf36e798f4353df17851f"
+  }
+}

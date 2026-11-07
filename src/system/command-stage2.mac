@@ -768,8 +768,14 @@ CRLPBAD:                               ; reject out-of-range lifecycle offset
 ; -------------------------------------------------------------------------------
 
 CRFAIL:                                 ; halt after reconstruction failure
+        IF PL_M2 EQ 1
+        LD C,'!'
+        XOR A
+        CALL LY_BIOS+69                 ; raw CRT; no unverified monitor callback
+        ELSE
         LD A,'!'
         OUT (1),A
+        ENDIF
         HALT
         JR CRFAIL
 

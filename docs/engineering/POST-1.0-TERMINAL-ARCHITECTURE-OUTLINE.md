@@ -589,7 +589,7 @@ It should be evaluated before designing additional capability machinery.
 
 | Current implementation | Relevant limit |
 | --- | --- |
-| [Model 4 backend](../../src/rsx/screen/model4.mac), `SX_DESC` | Advertises reverse and conceal, not physical bold or color. Unsupported attributes can be retained in canonical state without a visible effect. |
+| [Model 4 backend](../../src/rsx/screen/crt80x24.mac), `SX_DESC` | Advertises reverse and conceal, not physical bold or color. Unsupported attributes can be retained in canonical state without a visible effect. |
 | [ANSI-host backend](../../src/rsx/screen/ansi-host.mac), `BX_DESC` | Advertises the styles/colors it can encode. Actual endpoint support is a separate question; host-managed geometry is not detected screen size. |
 | SCX operation 23 | One shared cursor/rendition save slot, not a nested utility attribute stack. |
 

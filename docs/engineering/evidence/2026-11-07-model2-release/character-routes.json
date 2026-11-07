@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "iobyte_values": 256,
+  "bios_sha256": "1ba271f3dbfd9739a672462fac6f49b790cd33fc5ba6b9315378c1f6b5680452",
+  "facilities": [
+    "CONST",
+    "CONIN",
+    "CONOUT",
+    "LIST",
+    "PUNCH",
+    "READER",
+    "LISTST"
+  ],
+  "scope": "Model II production BIOS with synthetic keyboard ports and intercepted CRT output; two status polls preserve the queued key, input masks bit 7 and empty status is zero."
+}

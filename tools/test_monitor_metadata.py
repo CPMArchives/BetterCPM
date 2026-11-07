@@ -36,7 +36,8 @@ def legacy_cases(identity):
             check(bits, backend=backend, identity=identity, expected=bits == matching)
             count += 1
         for major, minor in [(0, 0), (1, 1), (2, 0)]:
-            check(matching, backend=backend, identity=identity, major=major, minor=minor)
+            check(matching, backend=backend, identity=identity, major=major, minor=minor,
+                  expected=identity==b'SCRN' and (major,minor)==(1,1))
             count += 1
         for entry in [0, 7, 16, 0xFFFF]:
             check(matching, backend=backend, identity=identity, entry=entry)

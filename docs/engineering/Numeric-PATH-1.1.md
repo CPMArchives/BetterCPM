@@ -94,19 +94,22 @@ TPA. The baseline checked builder leaves 11 bytes in the slot. The concurrent 1.
 
 ## Qualification
 
-The public-prompt tests ran on disposable images. The cpmsim 1.1 run combined
-this feature with a snapshot of the concurrent default-full-RAM workstream.
-The Model II run combined it with that port's engineering candidate and
-included a matching PATH.COM on the test System disk. Keep that file in A0
-when the Model II disk manifest is integrated. Release acceptance still needs
-the final images built from the merged 1.1 source.
+The public-prompt tests ran on disposable images. The merged cpmsim
+default-full-RAM build passed its 23 distribution checks and the 32-command
+PATH suite. The Model II builder installs the profile-matched PATH.COM in A0.
+The media check extracts it with cpmtools and compares every CP/M record
+with the selected build. On 7 November 2026 the interactive trs80gp 2.5.8
+run cold-booted a copy of the normal System disk (SHA-256
+`d8e20a91e8277090ffbb095fad96b9d2c653af960791d9caa69f154e75a7110d`).
+The fixture disk in B held the submitted job and test programs. Final 1.1
+media are rechecked at release.
 
 | Runtime | Observed |
 |---|---|
 | cpmsim, 1.1 full RAM | 32 prompt commands plus the submitted sequence. First match, later match, explicit miss, force prefix, resident DIR precedence, bad input with old list preserved, direct recovery, dynamic DU and cross-DU tail/FCB probe passed. Loaded 57,344 bytes from B3. Rejected 57,472. Bad Sector on an unmounted drive followed by Ctrl-C returned to A3 and preserved PATH. |
 | cpmsim, 1.0-layout compatibility build | Same suite passed. Largest test executed 54,272 bytes. The next 128-byte record was rejected. |
 | TRS-80 Model 4 in trs80gp | Cold-start SUBMIT set the path. At A5 the A3 image won. A 54,272-byte COM executed, the 54,400-byte first candidate reported FILE WILL NOT FIT, the following submitted command again ran the A3 image. XSUB's Function 10 probe printed INPUT OK. A0:WHICH selected the other image and A0:PATH displayed the original order. |
-| TRS-80 Model II in trs80gp | The engineering System image booted and ran the same sequence, including a 57,344-byte COM, rejection at 57,472, the XSUB input probe and exact A0 invocation. The final prompt was A5 with PATH intact. |
+| TRS-80 Model II in trs80gp | Interactive PATH at A0 displayed `. A0:`. With `B3: . B0:` set, the submitted job at A5 ran B3:WHICH and the 57,344-byte B3 program. A 57,472-byte first match produced `FILE WILL NOT FIT`. The next command ran B3:WHICH again. XSUB printed `INPUT OK`, explicit B0:WHICH ran the second copy, and A0:PATH displayed the configured order. After setting an A9-only list, A0:PATH /DEFAULT restored `. A0:`. The job printed `PACKAGED PATH DONE` and returned to A5. |
 
 The assembled recording provider also checks the exact sequence of Open calls
 for fixed-first and dynamic-first duplicates and a six-entry list. The
@@ -134,9 +137,12 @@ The implementation uses sequential Open calls and keeps no directory cache.
 
 Run the guest tests with `tools/qualify_numeric_path.py` on a prepared cpmsim
 disk set and `tools/qualify_numeric_path_trs80.py` on the matching TRS-80
-build. The latter can prepare a cold-booting image with `--prepare-only`.
-The script expects the Model II port's own media builder in the selected build
-workspace. Both harnesses write their fixtures into a fresh output directory.
+build. Both harnesses use a fresh output directory. With `--prepare-only`,
+the TRS-80 harness prepares media for an interactive run. On the Model II,
+mount `Model-II-PATH.imd` in drive 0 and `Model-II-PATH-Fixtures.imd` in
+drive 1. The former starts as a byte-for-byte copy of the normal System disk.
+At A0 enter `B0:SUBMIT B:PTEST`. Drive B supplies the script, test programs
+and BATCHIO.RSX. The packaged A0:PATH manages the list throughout the run.
 
 Additional control runs found two existing harness failures on both the base
 tree and the PATH branch. The old system-console stub stops on an unmodeled IN

@@ -1,0 +1,81 @@
+{
+  "status": "PASS",
+  "scope": "Candidate release-media checks for the emulated 64 KiB Model II on trs80gp 2.5.8.",
+  "system_source_revision": "171741effb38326d1d630e5fab3ba9c71163510b",
+  "system_imd_sha256": "d8e20a91e8277090ffbb095fad96b9d2c653af960791d9caa69f154e75a7110d",
+  "primary_imd_sha256": "094031700ae2d41bf793cf4226f145e0cfcb83d6a491e20f654cec321a6bdb17",
+  "companion_imd_sha256": "cf0a0efc975714d73e3db5d56436a41f5cb8312b460541a351365303e022fa60",
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "original_release_run": "run-zyrow7xy",
+  "resumed_release_run": "run-6o2wq_ty",
+  "original_install_run": "run-q2qyp7ke",
+  "resumed_install_run": "run-y30kgk4_",
+  "prior_release_receipt": "media-guest.json",
+  "qualified_release_phases": [
+    "utilities",
+    "batch",
+    "lifecycle",
+    "install"
+  ],
+  "installer_phases": {
+    "install": {
+      "status": "PASS",
+      "run": "run-q2qyp7ke"
+    },
+    "cold-config": {
+      "status": "PASS",
+      "run": "run-y30kgk4_"
+    },
+    "duplicate": {
+      "status": "PASS",
+      "run": "run-y30kgk4_"
+    },
+    "check-copy": {
+      "status": "PASS",
+      "run": "run-y30kgk4_"
+    },
+    "saved-iobyte": {
+      "status": "PASS",
+      "run": "run-y30kgk4_"
+    }
+  },
+  "decoded_system_media": {
+    "bytes": 625920,
+    "source_installed_and_duplicate_equal": true,
+    "sha256": "2c997e588bc31ccc29efe942e72e35bf473c89f94f362f7a302701393a85e22d"
+  },
+  "config_return_witness": "A0>CPX LIST, RCP.CPX, TPA available: 56K after CONFIG /SHOW",
+  "duplicate_cold_boot_and_check": {
+    "unreadable_sectors": 0
+  },
+  "iobyte": {
+    "live_decimal": 149,
+    "saved_decimal": 149
+  },
+  "captures": {
+    "install": "release-screens.zip, under install/install/",
+    "resumed_phases": "release-install-screens.zip",
+    "resumed_archive_sha256": "7afafe42cecb6e918055460056a3f67f77d1b6fdadc989b7179d452151f01a53",
+    "phase_capture_sha256": {
+      "install/trs80-text-0.bin": "885c9c76e80e945c722ad668e4f82ed37fc4548f35a83e41a55dbbc10bd88a5e",
+      "install/trs80-text-1.bin": "33a829cfb1b170297ea83316c493f34b79d59fd47e06cf843f4c709b1ae2a9df",
+      "install/trs80-text-2.bin": "33a829cfb1b170297ea83316c493f34b79d59fd47e06cf843f4c709b1ae2a9df",
+      "install/trs80-text-3.bin": "75e3a6f4d4fbd4971ad6305729a928002382cfbe94f26c6f574ccb5a9b3ccfe0",
+      "install/trs80-text-4.bin": "75e3a6f4d4fbd4971ad6305729a928002382cfbe94f26c6f574ccb5a9b3ccfe0",
+      "cold-config/trs80-text-0.bin": "885c9c76e80e945c722ad668e4f82ed37fc4548f35a83e41a55dbbc10bd88a5e",
+      "cold-config/trs80-text-1.bin": "060c660941b38a69afe8fdfcc113be61b8fa41339e0cb6c4dae2bcb7f9bf7175",
+      "cold-config/trs80-text-2.bin": "d192aec8e9e618b919502a1c012e69f5be73dc948df36c24eaa55a4dfd9da854",
+      "cold-config/trs80-text-3.bin": "98e896252d71436efdaa0d53b167c4c849d19af0ad4affb1961802d3786f2634",
+      "duplicate/trs80-text-0.bin": "885c9c76e80e945c722ad668e4f82ed37fc4548f35a83e41a55dbbc10bd88a5e",
+      "duplicate/trs80-text-1.bin": "c650527490bd8a5a932f9f71d8908c7a9210441eb33fef46bc6d3d301d9afa38",
+      "duplicate/trs80-text-2.bin": "c650527490bd8a5a932f9f71d8908c7a9210441eb33fef46bc6d3d301d9afa38",
+      "duplicate/trs80-text-3.bin": "b1a4819db69f185840e58daeeed50e97bb8eae53b906a6e0953b76c736df6fbf",
+      "duplicate/trs80-text-4.bin": "53ede8aeec4fc28f1f54b682cac3005049f06b8f6e951f559382648e79e1bdaa",
+      "check-copy/trs80-text-0.bin": "885c9c76e80e945c722ad668e4f82ed37fc4548f35a83e41a55dbbc10bd88a5e",
+      "check-copy/trs80-text-1.bin": "dc812fee4a1bfeed99ae491c814327a9665a516ae7340ed2b098e359a27ed4ff",
+      "check-copy/trs80-text-2.bin": "cc82b4279fe37de4678ca69d11384000654c72c00257126d3cb7d2feeea873e2",
+      "saved-iobyte/trs80-text-0.bin": "885c9c76e80e945c722ad668e4f82ed37fc4548f35a83e41a55dbbc10bd88a5e",
+      "saved-iobyte/trs80-text-1.bin": "8adbe6642020b30c5eaa043ba890eea169ebaca0a28b12bfaa341215512ab4d3"
+    }
+  }
+}

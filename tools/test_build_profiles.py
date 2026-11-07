@@ -31,6 +31,7 @@ class BuildProfiles(unittest.TestCase):
     def test_qualified_boundaries_and_fixed_transient_addresses(self):
         before = SOURCE.read_bytes()
         for name, bdos, bios, top, tpa, reserved in [
+                ('model2-fullram', 0xE2BC, 0xF5E9, 0x10000, 57344, 0),
                 ('cpmsim-fullram', 0xE2BC, 0xF591, 0x10000, 57344, 0),
                 ('cpmsim-legacy-checked', 0xD6BC, 0xE991, 0xF400, 54272, 3072)]:
             manifest, layout, _ = profile_inputs(PROFILES[name], SOURCE)
@@ -99,23 +100,23 @@ class BuildProfiles(unittest.TestCase):
         identities = {name:source_identity(profile) for name, profile in PROFILES.items()}
         roots = {}
         for name, profile in PROFILES.items():
-            root = prepare_profile(work, 'z80pack', identities[name], profile)
+            root = prepare_profile(work, profile.target, identities[name], profile)
             roots[name] = root
-            self.assertEqual(prepare_profile(work, 'z80pack', identities[name], profile, True), root)
-        self.assertNotEqual(*roots.values())
-        self.assertNotEqual(*identities.values())
+            self.assertEqual(prepare_profile(work, profile.target, identities[name], profile, True), root)
+        self.assertEqual(len(set(roots.values())), len(PROFILES))
+        self.assertEqual(len({json.dumps(v,sort_keys=True) for v in identities.values()}), len(PROFILES))
         self.assertNotIn(workspace(work, 'z80pack'), roots.values())
         name = 'cpmsim-fullram';root = roots[name];profile = PROFILES[name]
         with self.assertRaisesRegex(ValueError, 'does not match'):
             prepare_profile(work, 'z80pack', identities['cpmsim-legacy-checked'], profile, True)
         extra = root/'src/unexpected.inc';extra.write_text('extra')
         with self.assertRaisesRegex(ValueError, 'file set changed'):
-            prepare_profile(work, 'z80pack', identities[name], profile, True)
+            prepare_profile(work, profile.target, identities[name], profile, True)
         extra.unlink()
         for rel in ['src/system/layout.inc', 'tools/build_bdos.py', 'build/profile/layout.inc']:
             path = root/rel;before = path.read_bytes();path.write_bytes(before+b'\n; changed\n')
             with self.assertRaisesRegex(ValueError, 'input changed'):
-                prepare_profile(work, 'z80pack', identities[name], profile, True)
+                prepare_profile(work, profile.target, identities[name], profile, True)
             path.write_bytes(before)
 
     def test_unsupported_builds_fail_before_creating_output(self):
@@ -159,12 +160,12 @@ class BuildProfiles(unittest.TestCase):
         assembler = Path.home()/'bin/z80asm'
         original = load_contract(root, assembler)
         for rel in ['src/system/command-stage2.mac', 'tools/checked_build_contract.py',
-                    'metadata/utility-versions.tsv']:
+                    'src/platform/trs80m2/package-map.inc']:
             path = root/rel;before = path.read_bytes();path.write_bytes(before+b'\n')
             with self.assertRaisesRegex(ValueError, 'source closure changed'):
                 load_contract(root, assembler)
             path.write_bytes(before)
-        extra = root/'src/extra.inc';extra.write_text('extra')
+        extra = root/'src/system/extra.inc';extra.write_text('extra')
         with self.assertRaisesRegex(ValueError, 'source closure changed'):
             load_contract(root, assembler)
         extra.unlink()
@@ -177,15 +178,15 @@ class BuildProfiles(unittest.TestCase):
         work = Path(self.temporary.name)/'work';assembler = Path.home()/'bin/z80asm'
         contracts = []
         for profile in PROFILES.values():
-            root = prepare_profile(work, 'z80pack', source_identity(profile), profile)
+            root = prepare_profile(work, profile.target, source_identity(profile), profile)
             contract = load_contract(root, assembler)
             statefile = root/'profile-state.json';state = json.loads(statefile.read_text())
             state['source']['revision'] = 'documentation-only revision'
             statefile.write_text(json.dumps(state))
             self.assertEqual(load_contract(root, assembler)['compatibility_id'], contract['compatibility_id'])
             contracts.append(contract)
-        self.assertNotEqual(contracts[0]['compatibility_id'], contracts[1]['compatibility_id'])
-        self.assertEqual(contracts[0]['contract']['private_inputs'], contracts[1]['contract']['private_inputs'])
+        self.assertEqual(len({c['compatibility_id'] for c in contracts}), len(PROFILES))
+        self.assertTrue(all(c['contract']['private_inputs']==contracts[0]['contract']['private_inputs'] for c in contracts))
 
 
 if __name__ == '__main__':

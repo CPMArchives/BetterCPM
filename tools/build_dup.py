@@ -14,6 +14,11 @@ def expanded_source():
   text=text.replace('        INCLUDE disk/'+name+'.inc',(ROOT/'src/utilities/disk'/(name+'.inc')).read_text())
  text=text.replace('        INCLUDE disk/builtins.inc',builtin_source())
  text=text.replace('; @monitor-console@',(ROOT/'src/utilities/common/monitorconsole.inc').read_text())
+ from system_layout import CONTEXT
+ if CONTEXT and CONTEXT[0]['target']=='trs80m2':
+  text=text.replace('; @dup-boot-record-count@', '        LD A,(DCYL)\n        OR A\n        JR NZ,M2_TPDATA\n        LD HL,26\nM2_TPDATA:')
+  text=text.replace('; @dup-boot-size@', '        LD A,(DCYL)\n        OR A\n        JR NZ,M2_GSDATA\n        LD (SSIZE),A\n        RET\nM2_GSDATA:')
+  text=text.replace('; @dup-boot-sector-id@', '        LD A,(DCYL)\n        OR A\n        JR NZ,M2_IDDATA\n        LD A,(DSEC)\n        INC A\n        LD B,A\n        JR WIDOUT\nM2_IDDATA:')
  from shared_ui import expand_dup_ui
  return expand_dup_ui(text)
 

@@ -35,10 +35,16 @@ def main():
     if checked:
         if args.config_extra_resident:
             p.error('checked utilities use only their selected resident; no extra platform descriptors')
-        resident = ROOT/'build/z80pack/resident.bin'
-        from build_z80pack_image import DEFAULT_FORMAT
-        from fdf_format import select_fdf
-        fmt = select_fdf(ROOT/'metadata/DISK.FDF', DEFAULT_FORMAT)
+        from system_layout import CONTEXT
+        target = CONTEXT[0]['target']
+        resident = ROOT/'build'/target/'resident.bin'
+        if target == 'trs80m2':
+            from model2_media import geometry
+            fmt = geometry()
+        else:
+            from build_z80pack_image import DEFAULT_FORMAT
+            from fdf_format import select_fdf
+            fmt = select_fdf(ROOT/'metadata/DISK.FDF', DEFAULT_FORMAT)
         records=[validation_record(resident.read_bytes(),LAYOUT['SYSTEM'],52,8,fmt.spt)]
     else:
         records=[validation_record((ROOT/'build/system/resident.bin').read_bytes(),

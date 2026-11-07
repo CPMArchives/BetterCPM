@@ -153,6 +153,9 @@
     "module:ANSI": [
       "build/rsx/ANSI.RSX"
     ],
+    "module:M2SCRN": [
+      "build/rsx/M2SCRN.RSX"
+    ],
     "module:M4SCRN": [
       "build/rsx/M4SCRN.RSX"
     ],

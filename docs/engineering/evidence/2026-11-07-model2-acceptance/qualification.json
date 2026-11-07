@@ -1,0 +1,67 @@
+{
+  "status": "PASS",
+  "maintained_platform": "BetterCP/M 1.1 – TRS-80 Model II",
+  "machine": "trs80gp 2.5.8, -m2 -mem 64, built-in ROM, single-sided BCM2SS floppy IMDs",
+  "physical_hardware": "not qualified",
+  "unloaded_tpa_bytes": 57344,
+  "maximum_com_records": 448,
+  "next_record_rejected": true,
+  "qualified_media_source": "c377c47f4dad5ee360b9525f634cbcc0f0f8cac8",
+  "before_controller_fix_system_sha256": "d8e20a91e8277090ffbb095fad96b9d2c653af960791d9caa69f154e75a7110d",
+  "system_sha256": "2219f8dcc6875dc614e8bad126b14ee4cb00825b48f78a8d919130dbc687d893",
+  "primary_sha256": "7ef8f1a4917436ec2167b32b6f7bcaf0ff1c0e770adea8ef74db71b8592f1715",
+  "companion_sha256": "cf0a0efc975714d73e3db5d56436a41f5cb8312b460541a351365303e022fa60",
+  "compatibility_id": "8d7ed8b9b880f73f6198d5da13f09bc3",
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "native_release": {
+    "utilities": "PASS",
+    "batch": "PASS",
+    "lifecycle": "PASS",
+    "install": "PASS"
+  },
+  "native_conformance_cases": 30,
+  "native_returning_suite_passes": 269,
+  "controlled_required_group_additional_disk_passes": 4,
+  "controller_fault_cases": 32,
+  "controlled_constest_output_cards": 7,
+  "controlled_constest_input_cards": 30,
+  "native_path_pass": true,
+  "catalogue": {
+    "revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+    "total": 627,
+    "all_dispositions": {
+      "SUITE_PASS": 273,
+      "UNCLAIMED_PROFILE": 25,
+      "EXTERNAL": 123,
+      "NOT_REQUIRED": 92,
+      "PROFILE_DIFFERENCE": 3,
+      "OUTSIDE_BASELINE": 50,
+      "CONTROLLED_CONSTEST": 37,
+      "OBSERVED": 24
+    },
+    "required": {
+      "SUITE_PASS": 273,
+      "EXTERNAL": 118,
+      "PROFILE_DIFFERENCE": 3,
+      "CONTROLLED_CONSTEST": 36
+    },
+    "unresolved_required": []
+  },
+  "implementation_provenance": {
+    "github_integration_snapshot": "1b7e939f8b1dcb11cdf45cdd1278daeacede40f8",
+    "same_local_integration_tree": "980f7bc8daf1ff77de88a3e2ffac25fc77302beb",
+    "earlier_model_ii_hardware_reference": "a-griff/BetterCPM trs80m2 e24f4b5859e9d9c5abcb044e1eaafe12d3e72c64"
+  },
+  "evidence_sha256": {
+    "cards.tsv": "ec395da30514afa2e51a90d99d0d001f06ac36c02ae46523034f954ee416cd5d",
+    "character-routes.json": "58453745ae03c3095ac3be8ec0d9df79d5342fbab467c733edf48e468f0023cf",
+    "constest-input.json": "55ac05190c01c602d4acde50e9bb3407e581e1563ee445db1076bc38bdbc8624",
+    "constest-output.json": "9e55f046e60a6a40faeb2fa6b02a13a0e812822d1da41ec99f01d8e13af8e791",
+    "controller.json": "2b6d7a3f1539e2b8b79b55a91cff9567cd993bf2e6d17f87dad6256e4e20c094",
+    "external.json": "613c9d0295d3a452c560f35722e68475e80f36f64edd5e1f8fde1151891c9261",
+    "guest-screens.zip": "66a49b4d67b03ac59c8aa4cbd8f6c481b698702ae4e8b1673bebf7d3db8772ec",
+    "guest.json": "51ba9e12842b364cd17ec6eeb5fcc405bbc0d95c0c4c65051b5d68d952de7120",
+    "host.json": "227cb1250113c40e73816f4e36a5aa6b4408b82613bb7fad77e3883fb04c0e66",
+    "lifecycle.json": "62ae05286c756ac53ee8e5e4201da6e94224119e3d7826ac31b2c0f9d531364c"
+  }
+}

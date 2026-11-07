@@ -1,0 +1,43 @@
+        INCLUDE layout.inc
+        ASEG
+        ORG 01000H
+        DB 'BOOT'
+        DI
+        XOR A
+        OUT (0F9H),A                   ; RAM at page zero
+        LD SP,02000H
+        LD A,1
+        OUT (0FFH),A                    ; full RAM, video unmapped, RTC NMI off
+        LD HL,LY_SYS
+        LD DE,0101H                     ; resident starts on cylinder 1, sector 1
+        LD B,LY_SECTS
+M2_BOOT_NEXT:
+        PUSH BC
+        PUSH DE
+        XOR A
+        LD C,080H
+        CALL M2_XFER
+        POP DE
+        POP BC
+        JR NZ,M2_BADBT
+        INC E
+        DJNZ M2_BOOT_NEXT
+        XOR A
+        LD (0048H),A
+        JP LY_BIOS
+M2_BADBT:
+        LD A,081H
+        OUT (0FFH),A
+        LD HL,M2_MSG
+        LD DE,0F800H
+        LD BC,M2_MSG_END-M2_MSG
+        LDIR
+        HALT
+        JR M2_BADBT
+M2_MSG: DB 'Model II: system disk read failed'
+M2_MSG_END:
+        INCLUDE transfer.inc
+        IF $ GT 01200H
+        DB M2_BOOT_EXCEEDS_FOUR_FM_SECTORS
+        ENDIF
+        END

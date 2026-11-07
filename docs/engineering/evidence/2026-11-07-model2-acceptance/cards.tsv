@@ -1,0 +1,628 @@
+card	executable	suite_class	requirement	disposition	evidence	scope
+0001	ENTRYTST	REQUIRED	.COM load origin	SUITE_PASS	external.json	Program began at 0100h
+0002	CCPTEST	REQUIRED	Transient entry point	SUITE_PASS	external.json	Transient program entered at 0100h
+0003	ENTRYTST	REQUIRED	TPA lower boundary	SUITE_PASS	external.json	TPA lower boundary is 0100h
+0004	CCPTEST	REQUIRED	TPA upper-bound discovery	SUITE_PASS	external.json	BDOS/TPA ceiling lies above program
+0005	ENTRYTST	REQUIRED	Warm-start gateway at 0000h	SUITE_PASS	external.json	JMP at 0000h is warm start
+0006	ENTRYTST	REQUIRED	IOBYTE location	SUITE_PASS	external.json	IOBYTE resides at 0003h
+0007	CCPTEST	REQUIRED	Command-entry default-drive byte	SUITE_PASS	external.json	Entry default-drive byte is in range
+0008	ENTRYTST	REQUIRED	BDOS gateway at 0005h	SUITE_PASS	external.json	JMP at 0005h is BDOS gateway
+0009	ENTRYTST	REQUIRED	Reserved restart/interrupt region roles	SUITE_PASS	external.json	Page-zero gateway roles present
+0010	CCPTEST	REQUIRED	CBIOS scratch-area role	SUITE_PASS	external.json	BIOS scratch ends before FCB at 005Ch
+0011	ENTRYTST	REQUIRED	First default FCB location	SUITE_PASS	external.json	First default FCB is at 005Ch
+0012	ENTRYTST	PROFILE REQUIRED	Second default FCB at 006Ch	UNCLAIMED_PROFILE	suite catalogue	the Strict DRI CCP/ecosystem
+0013	CCPTEST	REQUIRED	Default FCB drive-prefix parsing	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0014	ENTRYTST	REQUIRED	Default FCB wildcard expansion	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0015	ENTRYTST	REQUIRED	Default FCB case and padding	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0016	CCPTEST	NOT GUARANTEED	Default FCB unopened control fields	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0017	ENTRYTST	REQUIRED	Command-tail count location	SUITE_PASS	external.json	Tail count read from 0080h
+0018	ENTRYTST	REQUIRED	Command-tail character location	SUITE_PASS	external.json	Tail text begins at 0081h
+0019	CCPTEST	REQUIRED	Leading blank in command tail	SUITE_PASS	external.json	Command tail begins with SPACE
+0020	ENTRYTST	REQUIRED	Uppercase command-tail representation	PROFILE_DIFFERENCE	external.json	CCP retains original case in the command tail and uppercases the default FCB.
+0021	ENTRYTST	NOT GUARANTEED	NUL after counted command tail	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0022	CCPTEST	OUTSIDE SCOPE	Bytes following command-tail terminator	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0023	ENTRYTST	REQUIRED	Default DMA address	SUITE_PASS	external.json	Entry DMA was 0080h
+0024	ENTRYTST	REQUIRED	Command-tail/default-DMA overlap	SUITE_PASS	external.json	Tail and default DMA overlap
+0025	CCPTEST	REQUIRED	Program termination through JMP 0000h	EXTERNAL	lifecycle.json	Entire 448-record COM, RET/JP 0/Function 0, 449-record rejection, CPX reconstruction and subsequent STATE
+0026	ENTRYTST	REQUIRED	Program termination through BDOS function 0	EXTERNAL	lifecycle.json	Entire 448-record COM, RET/JP 0/Function 0, 449-record rejection, CPX reconstruction and subsequent STATE
+0027	ENTRYTST	REQUIRED	RET termination	EXTERNAL	lifecycle.json	Entire 448-record COM, RET/JP 0/Function 0, 449-record rejection, CPX reconstruction and subsequent STATE
+0028	CCPTEST	REQUIRED	Valid entry return word	EXTERNAL	lifecycle.json	Entire 448-record COM, RET/JP 0/Function 0, 449-record rejection, CPX reconstruction and subsequent STATE
+0029	ENTRYTST	OUTSIDE SCOPE	Exact entry SP	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0030	ENTRYTST	OUTSIDE SCOPE	Exact entry return address	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0031	CCPTEST	NOT GUARANTEED	General-register entry state	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0032	ENTRYTST	NOT GUARANTEED	Z80 extended-register entry state	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0033	ENTRYTST	NOT GUARANTEED	Entry flags and interrupt state	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0034	BDOSTEST	OUTSIDE SCOPE	Exact BIOS/BDOS vector targets	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0035	BDOSTEST	REQUIRED	BDOS function selector in C	SUITE_PASS	external.json	C=12 selected version (22h)
+0036	BDOSTEST	REQUIRED	BDOS function-specific input in DE/E	SUITE_PASS	external.json	E=0 selected drive A
+0037	BDOSTEST	REQUIRED	Byte result in A	SUITE_PASS	external.json	Fn 25 returned byte in A
+0038	BDOSTEST	REQUIRED	Word result in HL	SUITE_PASS	external.json	Fn 24 returned word in HL
+0039	BDOSTEST	REQUIRED	Normal-return alias A=L	SUITE_PASS	external.json	Normal return alias A=L
+0040	BDOSTEST	REQUIRED	Normal-return alias B=H	SUITE_PASS	external.json	Normal return alias B=H
+0041	BDOSTEST	REQUIRED	CP/M 2.2 BDOS selector range	SUITE_PASS	external.json	Selector range ends at Fn 40
+0042	BDOSTEST	REQUIRED	Out-of-range BDOS result	SUITE_PASS	external.json	Fn 41 returned zero
+0043	BDOSTEST	REQUIRED	Caller SP restored on returning BDOS calls	SUITE_PASS	external.json	Caller stack restored
+0044	BDOSTEST	OUTSIDE SCOPE	DRI private BDOS stack mechanism	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0045	BDOSTEST	NOT GUARANTEED	AF preservation across BDOS	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0046	BDOSTEST	NOT GUARANTEED	BC preservation across BDOS	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0047	BDOSTEST	NOT GUARANTEED	DE preservation across BDOS	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0048	BDOSTEST	NOT GUARANTEED	HL preservation across BDOS	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0049	BDOSTEST	NOT GUARANTEED	Z80-only and alternate-register preservation	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0050	BDOSTEST	OUTSIDE SCOPE	Valid-call C becomes input E	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0051	CONSTEST	OUTSIDE SCOPE	Observed BDOS return flags	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0052	CONSTEST	REQUIRED	Function 2 character source	CONTROLLED_CONSTEST	constest-output.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0053	CONSTEST	REQUIRED	Function 2 treats '$' as ordinary data	CONTROLLED_CONSTEST	constest-output.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0054	CONSTEST	REQUIRED	Function 9 string address	CONTROLLED_CONSTEST	constest-output.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0055	CONSTEST	REQUIRED	Function 9 '$' termination	CONTROLLED_CONSTEST	constest-output.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0056	CONSTEST	REQUIRED	Function 9 terminator is not emitted	CONTROLLED_CONSTEST	constest-output.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0057	CONSTEST	REQUIRED	Function 9 empty string	CONTROLLED_CONSTEST	constest-output.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0058	CONSTEST	REQUIRED	Function 9 scans across ordinary control characters	CONTROLLED_CONSTEST	constest-output.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0059	CONSTEST	REQUIRED	Function 2 uses formatted console output	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0060	CONSTEST	REQUIRED	Function 9 uses formatted console output	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0061	CONSTEST	REQUIRED	Shared formatted-output state	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0062	CONSTEST	REQUIRED	TAB expansion	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0063	CONSTEST	REQUIRED	Function 2 participates in scrolling control	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0064	CONSTEST	REQUIRED	Function 9 participates in scrolling control	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0065	CONSTEST	REQUIRED	Function 2 participates in active printer echo	EXTERNAL	external.json	MORECHAR intercepted logical input, reader and list vectors
+0066	CONSTEST	REQUIRED	Function 9 participates in active printer echo	EXTERNAL	external.json	MORECHAR intercepted logical input, reader and list vectors
+0067	CONSTEST	NOT GUARANTEED	Function 2 has no function-specific return value	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0068	CONSTEST	NOT GUARANTEED	Function 9 has no function-specific return value	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0069	CONSTEST	PROFILE REQUIRED	Exact logical-column update rules	UNCLAIMED_PROFILE	suite catalogue	the DRI formatted-console profile
+0070	CONSTEST	PROFILE REQUIRED	LF resets DRI logical column	UNCLAIMED_PROFILE	suite catalogue	the DRI formatted-console profile
+0071	CONSTEST	PROFILE REQUIRED	CR does not reset DRI logical column	UNCLAIMED_PROFILE	suite catalogue	the DRI formatted-console profile
+0072	CONSTEST	NOT GUARANTEED	Pending-key buffering during formatted output	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0073	CONSTEST	NOT GUARANTEED	Ctrl-C behavior after output pause	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0074	CONSTEST	OUTSIDE SCOPE	DRI private formatted-output implementation state	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0075	CONSTEST	REQUIRED	Function 6 direct-output selection	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0076	CONSTEST	REQUIRED	Function 6 direct-output character source	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0077	CONSTEST	REQUIRED	Function 6 direct output does not expand TAB	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0078	CONSTEST	REQUIRED	Function 6 direct output bypasses Ctrl-S scrolling control	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0079	CONSTEST	REQUIRED	Function 6 direct output bypasses Ctrl-P printer echo	EXTERNAL	external.json	MORECHAR intercepted logical input, reader and list vectors
+0080	CONSTEST	NOT GUARANTEED	Function 6 direct output has no function-specific result	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0081	CONSTEST	REQUIRED	Function 6 nonblocking-input selection	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0082	CONSTEST	REQUIRED	Function 6 no-input result	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0083	CONSTEST	REQUIRED	Function 6 ready-input result	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0084	CONSTEST	REQUIRED	Function 6 input is unadorned	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0085	CONSTEST	REQUIRED	Function 11 not-ready result	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0086	CONSTEST	NOT GUARANTEED	Exact function 11 ready result	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0087	CONSTEST	NOT GUARANTEED	Function 11 pending-byte retention	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0088	CONSTEST	NOT GUARANTEED	DRI function 6 ignores retained pending byte	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0089	CONSTEST	OUTSIDE SCOPE	DRI function 6 E=FEh behavior	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0090	CONSTEST	OUTSIDE SCOPE	DRI private pending-byte representation	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0091	CONSTEST	REQUIRED	Function 1 selector	EXTERNAL	constest-input.json	Function 1 input and echo, including 0092–0101
+0092	CONSTEST	REQUIRED	Function 1 blocking behavior	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0093	CONSTEST	REQUIRED	Function 1 result character	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0094	CONSTEST	REQUIRED	Function 1 echoes graphic characters	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0095	CONSTEST	REQUIRED	Function 1 echoes CR	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0096	CONSTEST	REQUIRED	Function 1 echoes LF	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0097	CONSTEST	REQUIRED	Function 1 echoes backspace	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0098	CONSTEST	REQUIRED	Function 1 TAB echo expansion	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0099	CONSTEST	REQUIRED	Function 1 ordinary controls are not echoed	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0100	CONSTEST	REQUIRED	Function 1 echo uses shared formatted-console state	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0101	CONSTEST	REQUIRED	Function 1 echo participates in scrolling control	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0102	CONSTEST	REQUIRED	Function 1 echo participates in active printer echo	EXTERNAL	external.json	MORECHAR intercepted logical input, reader and list vectors
+0103	CONSTEST	PROFILE REQUIRED	Function-1 Ctrl-P printer-echo state change	UNCLAIMED_PROFILE	suite catalogue	the DRI formatted-console profile
+0104	CONSTEST	PROFILE REQUIRED	Function 1 consumes function-11-retained input	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0105	CONSTEST	OUTSIDE SCOPE	DRI private function-1 implementation details	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0106	CONSTEST	REQUIRED	Function 10 selector and buffer address	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0107	CONSTEST	REQUIRED	Function 10 maximum byte	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0108	CONSTEST	REQUIRED	Function 10 returned count	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0109	CONSTEST	REQUIRED	Function 10 returned data location	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0110	CONSTEST	NOT GUARANTEED	Bytes beyond function-10 returned count	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0111	CONSTEST	REQUIRED	Function 10 CR termination	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0112	CONSTEST	REQUIRED	Function 10 LF termination	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0113	CONSTEST	REQUIRED	Function 10 capacity termination	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0114	CONSTEST	REQUIRED	Function 10 ordinary-character storage and echo	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0115	CONSTEST	REQUIRED	Function 10 backspace editing	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0116	CONSTEST	REQUIRED	Function 10 DEL editing	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0117	CONSTEST	REQUIRED	Function 10 initial Ctrl-C warm restart	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0118	CONSTEST	REQUIRED	Function 10 Ctrl-E line continuation	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0119	CONSTEST	REQUIRED	Function 10 Ctrl-R redisplay	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0120	CONSTEST	REQUIRED	Function 10 Ctrl-U line deletion	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0121	CONSTEST	REQUIRED	Function 10 Ctrl-X line deletion	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0122	CONSTEST	REQUIRED	Function 10 starting-column-relative editing	CONTROLLED_CONSTEST	constest-input.json	Whole CONSTEST card; 0117 stops at the WBOOT vector
+0123	CONSTEST	REQUIRED	Function 10 stores no line terminator	EXTERNAL	external.json	BDOPROBE counted DE buffer and guarded DMA; BIOS/BDOS pointers on A/B/A
+0124	CONSTEST	NOT GUARANTEED	Function 10 has no function-specific register result	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0125	CONSTEST	PROFILE REQUIRED	Function 10 Ctrl-P exclusion and printer-echo toggle	UNCLAIMED_PROFILE	suite catalogue	the DRI line-editor profile
+0126	CONSTEST	PROFILE REQUIRED	Function 10 post-Ctrl-P echo state	UNCLAIMED_PROFILE	suite catalogue	the DRI line-editor profile
+0127	CONSTEST	PROFILE REQUIRED	Function 10 seven-bit input masking	UNCLAIMED_PROFILE	suite catalogue	the DRI line-editor profile
+0128	CONSTEST	PROFILE REQUIRED	Function 10 exact correction-display bytes	UNCLAIMED_PROFILE	suite catalogue	the DRI line-editor presentation profile
+0129	CONSTEST	PROFILE REQUIRED	Function 10 noninitial Ctrl-C behavior	UNCLAIMED_PROFILE	suite catalogue	the DRI line-editor profile
+0130	CONSTEST	OUTSIDE SCOPE	DRI private function-10 editor organization	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0131	BDOSTEST	OUTSIDE SCOPE	DRI function-10 zero common result	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0132	BDOSTEST	REQUIRED	Function 13 selector	SUITE_PASS	external.json	Fn 13 reset disks; chose A
+0133	BDOSTEST	REQUIRED	Function 13 read/write reset	SUITE_PASS	external.json	Fn 13 cleared R/O vector
+0134	BDOSTEST	REQUIRED	Function 13 selects drive A	SUITE_PASS	external.json	Fn 13 selected drive A
+0135	BDOSTEST	REQUIRED	Function 13 restores default DMA	SUITE_PASS	external.json	Fn 13 restored DMA at 0080h
+0136	BDOSTEST	REQUIRED	Function 13 resets login vector	SUITE_PASS	external.json	Fn 13 reset login vector
+0137	BDOSTEST	NOT GUARANTEED	Function 13 function-specific result	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0138	BDOSTEST	REQUIRED	Function 14 selector	SUITE_PASS	external.json	Fn 14 E=1 selected drive B
+0139	BDOSTEST	REQUIRED	Function 14 drive numbering	SUITE_PASS	external.json	Drive numbering is zero based
+0140	BDOSTEST	REQUIRED	Function 14 changes current disk	SUITE_PASS	external.json	Fn 14 changed current drive
+0141	BDOSTEST	REQUIRED	Function 14 logs selected drive	SUITE_PASS	external.json	Fn 14 logged selected drive
+0142	BDOSTEST	REQUIRED	Login vector is cumulative	SUITE_PASS	external.json	Login vector accumulated A+B
+0143	BDOSTEST	REQUIRED	Standard media-change read-only behavior	EXTERNAL	guest.json	Replacement of logged-in removable B, blocked write, Function 37 reset and create
+0144	BDOSTEST	REQUIRED	FCB drive code zero uses current disk	SUITE_PASS	external.json	FCB drive 0 used current disk
+0145	BDOSTEST	REQUIRED	Explicit FCB drive selection	SUITE_PASS	external.json	Explicit FCB selected drive B
+0146	BDOSTEST	REQUIRED	Explicit FCB selection does not permanently change current disk	SUITE_PASS	external.json	Explicit FCB kept current drive
+0147	BDOSTEST	REQUIRED	Function 24 login vector result	SUITE_PASS	external.json	Fn 24 returned login vector
+0148	BDOSTEST	REQUIRED	Login vector bit mapping	SUITE_PASS	external.json	Login bits map A=0, B=1
+0149	BDOSTEST	REQUIRED	Login bit meaning	SUITE_PASS	external.json	Set bit means drive logged
+0150	BDOSTEST	REQUIRED	Function 25 current disk result	SUITE_PASS	external.json	Fn 25 returned current drive
+0151	BDOSTEST	NOT GUARANTEED	Function 14 invalid-drive result	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0152	BDOSTEST	OUTSIDE SCOPE	Function 13/14 synchronization of page-zero 0004h	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0153	BDOSTEST	OUTSIDE SCOPE	DRI private disk-state implementation	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0154	BDOSTEST	PROFILE REQUIRED	Unavailable-drive presentation	UNCLAIMED_PROFILE	suite catalogue	the Interactive DRI error profile
+0155	DISKTEST	REQUIRED	Function 13 user-number preservation	SUITE_PASS	external.json	Function 13 preserved user number
+0156	FILETEST	REQUIRED	A sequential FCB occupies bytes 0-32 (33 bytes).	SUITE_PASS	external.json	Prereq/Open=00; FCB/I/O state=7F
+0157	FILETEST	REQUIRED	A random-access FCB adds random-record bytes 33-35.	SUITE_PASS	external.json	Prereq/Open=00; FCB/I/O state=82
+0158	FILETEST	REQUIRED	FCB byte 0 uses 0 for current default and 1-16 for explicit A-P selection.	SUITE_PASS	external.json	Prereq/Open=00; FCB/I/O state=03
+0159	FILETEST	REQUIRED	FCB bytes 1-8 contain an uppercase, high-bit-clear, blank-padded filename.	SUITE_PASS	external.json	Prereq/Open=03; FCB/I/O state=03
+0160	FILETEST	REQUIRED	FCB bytes 9-11 contain the uppercase file type.	SUITE_PASS	external.json	Prereq/Open=03; FCB/I/O state=03
+0161	FILETEST	REQUIRED	High bits of type bytes 9-11 carry the documented read-only, system, and reserved attributes.	SUITE_PASS	external.json	Prereq/Open=02; FCB/I/O state=C4
+0162	FILETEST	REQUIRED	FCB byte 12 is current extent, normally caller-initialized to zero and ranging 0-31 during I/O.	SUITE_PASS	external.json	Prereq/Open=03; FCB/I/O state=1F
+0163	FILETEST	NOT GUARANTEED	FCB byte 13 is reserved for system use; applications have no portable literal-content guarantee.	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0164	FILETEST	REQUIRED	FCB byte 14 is reserved for system use and supplied as zero on OPEN, MAKE, and SEARCH calls.	SUITE_PASS	external.json	Prereq/Open=00; FCB/I/O state=80
+0165	FILETEST	REQUIRED	FCB byte 15 holds extent record count in the range 0-128.	SUITE_PASS	external.json	Open=03; RC=01
+0166	FILETEST	REQUIRED	FCB bytes 16-31 hold CP/M-supplied allocation state reserved for system use.	SUITE_PASS	external.json	Prereq/Open=03; FCB/I/O state=3F
+0167	FILETEST	REQUIRED	FCB byte 32 holds the sequential current record 0-127 and is normally initialized by the caller.	SUITE_PASS	external.json	Read returns=00,00,00; CR=03
+0168	FILETEST	REQUIRED	Function 15 is selected by C=0Fh and takes the FCB address in DE.	SUITE_PASS	external.json	Prereq/Open=02; FCB/I/O state=03
+0169	FILETEST	REQUIRED	Function 15 opens an existing file for the current user on the FCB-selected drive.	SUITE_PASS	external.json	Current=00; explicit=00; drive B->B
+0170	FILETEST	REQUIRED	Successful function 15 returns a directory code 0-3 in A.	SUITE_PASS	external.json	Prereq/Open=03; FCB/I/O state=03
+0171	FILETEST	REQUIRED	Function 15 returns FFh in A when no matching file exists.	SUITE_PASS	external.json	Open=FF; FCB guards unchanged
+0172	FILETEST	REQUIRED	Successful open supplies directory/allocation information in the FCB for later file I/O.	SUITE_PASS	external.json	Prereq/Open=03; FCB/I/O state=00
+0173	FILETEST	REQUIRED	Existing files must be successfully opened before read/write access.	SUITE_PASS	external.json	Prereq/Open=03; FCB/I/O state=00
+0174	FILETEST	REQUIRED	? wildcards in open identity fields match corresponding directory characters.	SUITE_PASS	external.json	Prereq/Open=01; FCB/I/O state=00
+0175	FILETEST	REQUIRED	Wildcard open activates the first matching FCB rather than enumerating all matches.	SUITE_PASS	external.json	Prereq/Open=01; FCB/I/O state=00
+0176	FILETEST	REQUIRED	For sequential access from the beginning, the caller sets CR to zero; open need not do so.	SUITE_PASS	external.json	Prereq/Open=03; FCB/I/O state=01
+0177	FILETEST	REQUIRED	Function 16 is selected by C=10h and takes an activated FCB address in DE.	SUITE_PASS	external.json	Prereq/Open=02; FCB/I/O state=02
+0178	FILETEST	REQUIRED	Close after writes permanently records compatible new FCB directory information.	SUITE_PASS	external.json	Prereq/Open=00; FCB/I/O state=00
+0179	FILETEST	REQUIRED	A file used only for reads need not be closed.	SUITE_PASS	external.json	Prereq/Open=03; FCB/I/O state=00
+0180	FILETEST	REQUIRED	Successful close returns a directory code 0-3 in A.	SUITE_PASS	external.json	Prereq/Open=02; FCB/I/O state=02
+0181	FILETEST	REQUIRED	Close returns FFh when the FCB filename cannot be found.	SUITE_PASS	external.json	Prereq/Open=00; FCB/I/O state=FF
+0182	FILETEST	NOT GUARANTEED	FCB allocation-map representation is disk-format-dependent and has no universal application-owned encoding.	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0183	FILETEST	NOT GUARANTEED	Exact FCB bytes after failed Open, except for separately documented effects, are not guaranteed. Policy resolution: The exact behavior described above is not guaranteed by generic BetterCP/M CP/M 2.2 compatibility. Portable software shall not depend on it.	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0184	FILETEST	OUTSIDE SCOPE	DRI's high-S2 no-write/dirty flag representation is private.	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0185	FILETEST	OUTSIDE SCOPE	DRI's exact zero result for unnecessary close after read-only access is not required.	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0186	FILETEST	OUTSIDE SCOPE	DRI's internal open-copy order, search variables, and close map-merge algorithm are private.	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0187	BDOSTEST	OUTSIDE SCOPE	Host-tool exact-byte-count data placed in reserved S1 is not a CP/M 2.2 requirement.	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0188	BDOSTEST	REQUIRED	Search First call convention	SUITE_PASS	external.json	Search First accepted FCB in DE
+0189	BDOSTEST	REQUIRED	Search First initial directory scan position	SUITE_PASS	external.json	Search First began new scan
+0190	BDOSTEST	REQUIRED	Search First successful result code	SUITE_PASS	external.json	Search success returned 0..3
+0191	BDOSTEST	REQUIRED	Search First unsuccessful result code	SUITE_PASS	external.json	No match returned FFh
+0192	BDOSTEST	REQUIRED	Search First DMA record transfer	SUITE_PASS	external.json	Search copied entry to DMA
+0193	BDOSTEST	REQUIRED	Search result entry offset	SUITE_PASS	external.json	Result selected 32-byte slot
+0194	BDOSTEST	REQUIRED	Search transfer record layout	SUITE_PASS	external.json	Search entry layout matched FCB
+0195	BDOSTEST	REQUIRED	Directory entry user number	SUITE_PASS	external.json	Entry user number was zero
+0196	DIRTEST	REQUIRED	Directory entry FCB field layout	SUITE_PASS	external.json	Search slot=03; next=01
+0197	BDOSTEST	REQUIRED	Search wildcard matching	SUITE_PASS	external.json	Wildcard matched search names
+0198	DIRTEST	REQUIRED	Type attribute comparison	SUITE_PASS	external.json	Attribute search=00; next=00
+0199	BDOSTEST	REQUIRED	Default-drive FCB search	SUITE_PASS	external.json	Drive 0 searched current disk
+0200	DIRTEST	REQUIRED	Explicit-drive search	SUITE_PASS	external.json	Explicit result=00; next=01
+0201	BDOSTEST	REQUIRED	Search First S2 handling	SUITE_PASS	external.json	Search First tolerated S2 input
+0202	DIRTEST	REQUIRED	All-user search wildcard drive	SUITE_PASS	external.json	Users found mask=03
+0203	BDOSTEST	REQUIRED	Search Next call convention	SUITE_PASS	external.json	Search Next continued scan
+0204	DIRTEST	REQUIRED	Search Next continuation semantics	SUITE_PASS	external.json	First=01; next=02
+0205	BDOSTEST	REQUIRED	Search Next result and DMA relationship	SUITE_PASS	external.json	Search Next updated DMA slot
+0206	DIRTEST	REQUIRED	Search Next unsuccessful result code	SUITE_PASS	external.json	First=01; next=FF
+0207	BDOSTEST	REQUIRED	Search First restart behavior	SUITE_PASS	external.json	Search First restarted scan
+0208	DIRTEST	REQUIRED	Set DMA Address call convention	SUITE_PASS	external.json	Search=01; next=42
+0209	BDOSTEST	REQUIRED	DMA address persistence	SUITE_PASS	external.json	DMA persisted for search
+0210	DIRTEST	REQUIRED	DMA change during search continuation	SUITE_PASS	external.json	First DMA=01; next=02
+0211	BDOSTEST	REQUIRED	Directory enumeration order	SUITE_PASS	external.json	Enumeration followed entries
+0212	DIRTEST	REQUIRED	Repeat-search ordering stability	SUITE_PASS	external.json	Repeat first=01; next=02
+0213	BDOSTEST	NOT GUARANTEED	Enumeration ordering guarantee limitation	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0214	DIRTEST	NOT GUARANTEED	Default-drive continuation limitation	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0215	BDOSTEST	NOT GUARANTEED	Search continuation state limitation	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0216	DIRTEST	NOT GUARANTEED	Failed-search DMA contents	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0217	BDOSTEST	OUTSIDE SCOPE	DRI FFh-path directory copy	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0218	FILETEST	OUTSIDE SCOPE	DRI private search implementation	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0219	FILETEST	REQUIRED	Function 20 call convention	SUITE_PASS	external.json	Prereq/Open=03; read/state=00
+0220	FILETEST	REQUIRED	Activated-FCB precondition	SUITE_PASS	external.json	Prereq/Open=03; read/state=00
+0221	FILETEST	REQUIRED	Sequential position source	SUITE_PASS	external.json	Prereq/Open=02; read/state=00
+0222	FILETEST	REQUIRED	Successful result	SUITE_PASS	external.json	Prereq/Open=03; read/state=00
+0223	FILETEST	REQUIRED	Successful transfer size	SUITE_PASS	external.json	Prereq/Open=03; read/state=00
+0224	FILETEST	REQUIRED	Current DMA destination	SUITE_PASS	external.json	Prereq/Open=03; read/state=00
+0225	FILETEST	NOT GUARANTEED	Partial-byte count	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0226	FILETEST	REQUIRED	Advance after success	SUITE_PASS	external.json	Prereq/Open=02; read/state=02
+0227	FILETEST	REQUIRED	CR progression within an extent	SUITE_PASS	external.json	Prereq/Open=02; read/state=03
+0228	FILETEST	REQUIRED	Full-extent position	SUITE_PASS	external.json	Prereq/Open=01; read/state=80
+0229	FILETEST	REQUIRED	Automatic extent transition	SUITE_PASS	external.json	Prereq/Open=03; read/state=00
+0230	FILETEST	REQUIRED	New-extent first-record state	SUITE_PASS	external.json	Prereq/Open=03; read/state=01
+0231	FILETEST	REQUIRED	Extent working-state replacement	SUITE_PASS	external.json	Prereq/Open=03; read/state=02
+0232	FILETEST	REQUIRED	EOF/no-data result	SUITE_PASS	external.json	Prereq/Open=03; read/state=01
+0233	FILETEST	NOT GUARANTEED	Exact EOF code	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0234	FILETEST	REQUIRED	Empty-file behavior	SUITE_PASS	external.json	Prereq/Open=01; read/state=01
+0235	FILETEST	REQUIRED	Partial-final-extent EOF	SUITE_PASS	external.json	Prereq/Open=01; read/state=01
+0236	FILETEST	REQUIRED	Exact-boundary EOF	SUITE_PASS	external.json	Prereq/Open=01; read/state=01
+0237	FILETEST	REQUIRED	Repeated EOF indication	SUITE_PASS	external.json	Prereq/Open=01; read/state=01
+0238	FILETEST	NOT GUARANTEED	DMA contents after failure	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0239	FILETEST	REQUIRED	FCB mutation	SUITE_PASS	external.json	Prereq/Open=02; read/state=03
+0240	FILETEST	NOT GUARANTEED	Exact FCB image after failed read	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0241	FILETEST	OUTSIDE SCOPE	DRI exact-boundary EX drift	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0242	FILETEST	REQUIRED	Explicit-drive read	SUITE_PASS	external.json	Prereq/Open=00; read/state=01
+0243	FILETEST	REQUIRED	Read-only readability	SUITE_PASS	external.json	Prereq/Open=02; read/state=00
+0244	FILETEST	NOT GUARANTEED	Unopened-FCB result	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0245	FILETEST	NOT GUARANTEED	Invalid-FCB result	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0246	ERRTEST	PROFILE REQUIRED	Physical read-error presentation	UNCLAIMED_PROFILE	suite catalogue	the Interactive CP/M disk-error profile
+0247	FILETEST	OUTSIDE SCOPE	DRI internal read machinery	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0248	FILETEST	REQUIRED	Function 22 convention	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0249	FILETEST	REQUIRED	Make uniqueness precondition	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0250	FILETEST	REQUIRED	New empty file	SUITE_PASS	external.json	Prereq=00; Make/write=01
+0251	FILETEST	REQUIRED	Make activates FCB	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0252	FILETEST	REQUIRED	Make success result	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0253	FILETEST	REQUIRED	Make directory-full result	SUITE_PASS	external.json	Prereq=00; Make/write=FF
+0254	FILETEST	REQUIRED	Immediate empty-file visibility	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0255	DISKTEST	REQUIRED	Data-full empty Make	SUITE_PASS	external.json	Empty Make succeeded on full disk
+0256	FILETEST	NOT GUARANTEED	Make on existing name	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0257	FILETEST	NOT GUARANTEED	Ambiguous Make name	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0258	FILETEST	OUTSIDE SCOPE	Immediate data-block reservation	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0259	FILETEST	REQUIRED	Function 21 convention	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0260	FILETEST	REQUIRED	Write activation precondition	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0261	FILETEST	REQUIRED	Write source position	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0262	FILETEST	REQUIRED	Successful write result	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0263	FILETEST	REQUIRED	Write transfer size	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0264	FILETEST	REQUIRED	Current DMA source	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0265	FILETEST	NOT GUARANTEED	Partial-record length	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0266	FILETEST	REQUIRED	CR advance after write	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0267	FILETEST	REQUIRED	RC extension	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0268	FILETEST	REQUIRED	Existing-record overwrite	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0269	FILETEST	REQUIRED	On-demand allocation	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0270	FILETEST	NOT GUARANTEED	Exact allocation choice	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0271	FILETEST	REQUIRED	Automatic write extent transition	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0272	FILETEST	REQUIRED	Successful transition state	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0273	FILETEST	REQUIRED	Full last record remains successful	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0274	FILETEST	REQUIRED	Next-extent failure result	SUITE_PASS	external.json	Prereq=00; Make/write=FF
+0275	DISKTEST	REQUIRED	Allocation-full failure	SUITE_PASS	external.json	Growth failed; old file intact
+0276	DISKTEST	REQUIRED	Exact write failure codes	SUITE_PASS	external.json	Sequential=02h, random=02h
+0277	FILETEST	NOT GUARANTEED	Unactivated write behavior	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0278	FILETEST	REQUIRED	Explicit-drive Make/Write	SUITE_PASS	external.json	Prereq=01; Make/write=00
+0279	FILETEST	REQUIRED	Close commits final written metadata	SUITE_PASS	external.json	Prereq=00; Make/write=00
+0280	FILETEST	NOT GUARANTEED	Unclosed final extent	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0281	FILETEST	NOT GUARANTEED	Pre-Close directory metadata	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0282	FILETEST	OUTSIDE SCOPE	Exact close-time update sequence	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0283	ERRTEST	PROFILE REQUIRED	Physical write-error presentation	UNCLAIMED_PROFILE	suite catalogue	the Interactive CP/M disk-error profile
+0284	FILETEST	OUTSIDE SCOPE	DRI private write machinery	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0285	DIRTEST	REQUIRED	Function 19 convention	SUITE_PASS	external.json	Delete=00; next=FF
+0286	DIRTEST	REQUIRED	Delete identity	SUITE_PASS	external.json	Delete/non-target=00; next=03
+0287	DIRTEST	REQUIRED	Delete wildcards	SUITE_PASS	external.json	Wildcard/nonmatch=00; next=00
+0288	DIRTEST	REQUIRED	Delete all matches	SUITE_PASS	external.json	Matches before/after=02; next=00
+0289	DIRTEST	REQUIRED	Delete success result	SUITE_PASS	external.json	Delete result/remaining=00; next=00
+0290	DIRTEST	REQUIRED	Delete no-match result	SUITE_PASS	external.json	Absent delete=FF; next=00
+0291	DIRTEST	REQUIRED	Immediate search disappearance	SUITE_PASS	external.json	Delete/search=00; next=FF
+0292	DISKTEST	REQUIRED	Allocation release	SUITE_PASS	external.json	Released block was reusable
+0293	DISKTEST	NOT GUARANTEED	Exact freed-block reuse	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0294	DIRTEST	REQUIRED	Explicit-drive Delete	SUITE_PASS	external.json	Drive before/after=00; next=00
+0295	DIRTEST	REQUIRED	Delete user isolation	SUITE_PASS	external.json	User0 delete/user1 search=00; next=03
+0296	DIRTEST	NOT GUARANTEED	Open FCB after Delete	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0297	DIRTEST	OUTSIDE SCOPE	DRI E5 deletion mechanism	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0298	DIRTEST	REQUIRED	Function 23 convention	SUITE_PASS	external.json	Rename/search=00; next=02
+0299	DIRTEST	REQUIRED	Rename FCB layout	SUITE_PASS	external.json	Rename/old search=00; next=FF
+0300	DIRTEST	REQUIRED	Same-drive destination	SUITE_PASS	external.json	Same-drive rename/search=00; next=02
+0301	DIRTEST	REQUIRED	Rename all extents	SUITE_PASS	external.json	Rename/size records=00; next=81
+0302	DIRTEST	REQUIRED	Rename success result	SUITE_PASS	external.json	Rename result=00; next=00
+0303	DIRTEST	REQUIRED	Rename missing-source result	SUITE_PASS	external.json	Missing-source rename=FF; next=00
+0304	DIRTEST	REQUIRED	Rename identity transition	SUITE_PASS	external.json	Old/new search=FF; next=02
+0305	DIRTEST	REQUIRED	Rename data preservation	SUITE_PASS	external.json	Rename/read=00; next=00
+0306	DIRTEST	REQUIRED	Rename user preservation	SUITE_PASS	external.json	User1 rename/user0 search=00; next=FF
+0307	DIRTEST	REQUIRED	Explicit-drive Rename	SUITE_PASS	external.json	Default drive before/after=00; next=00
+0308	DIRTEST	NOT GUARANTEED	Destination collision	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0309	DIRTEST	OUTSIDE SCOPE	Wildcard Rename	OUTSIDE_BASELINE	suite catalogue	OUTSIDE SCOPE for BetterCP/M CP/M compatibility claims. Generic compatibility and the profiles selected by Investigation 070 do not promise this behavior.
+0310	DIRTEST	NOT GUARANTEED	Open FCB after Rename	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0311	DIRTEST	NOT GUARANTEED	Physical directory order	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0312	DIRTEST	OUTSIDE SCOPE	Timestamp preservation	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0313	DIRTEST	OUTSIDE SCOPE	DRI in-place rename algorithm	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0314	ERRTEST	PROFILE REQUIRED	Delete/Rename physical errors	UNCLAIMED_PROFILE	suite catalogue	the Interactive CP/M disk-error profile
+0315	DIRTEST	NOT GUARANTEED	Invalid drive ambiguity	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0316	DIRTEST	OUTSIDE SCOPE	Directory compaction	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0317	RANDTEST	REQUIRED	Random field location	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0318	RANDTEST	REQUIRED	Random field byte order	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0319	RANDTEST	REQUIRED	CP/M 2.2 random range	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0320	RANDTEST	REQUIRED	Random/sequential state distinction	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0321	RANDTEST	REQUIRED	Function 36 convention	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0322	RANDTEST	REQUIRED	Function 36 direction	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0323	RANDTEST	REQUIRED	Function 36 boundary equivalence	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0324	RANDTEST	REQUIRED	Function 36 no I/O	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0325	RANDTEST	NOT GUARANTEED	Function 36 A value	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0326	RANDTEST	REQUIRED	Function 33 convention	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0327	RANDTEST	REQUIRED	Random read destination	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0328	RANDTEST	REQUIRED	Random read success	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0329	RANDTEST	REQUIRED	Random read position	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0330	RANDTEST	REQUIRED	Random read no advance	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0331	RANDTEST	REQUIRED	Random read unwritten data	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=01
+0332	RANDTEST	REQUIRED	Random read missing extent	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=FF
+0333	RANDTEST	REQUIRED	Random overflow	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=06
+0334	RANDTEST	NOT GUARANTEED	DMA after failed random read	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0335	RANDTEST	REQUIRED	Function 34 convention	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0336	RANDTEST	REQUIRED	Random write transfer	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0337	RANDTEST	REQUIRED	Random write success	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0338	RANDTEST	REQUIRED	Random write allocation	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0339	RANDTEST	REQUIRED	Random write holes	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0340	RANDTEST	REQUIRED	Random write virtual length	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0341	RANDTEST	REQUIRED	Random write working fields	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0342	RANDTEST	REQUIRED	Random write no advance	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0343	RANDTEST	REQUIRED	No automatic random extent switch	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0344	RANDTEST	REQUIRED	Random write Close	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0345	RANDTEST	REQUIRED	Random write extent failure	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=06
+0346	RANDTEST	REQUIRED	Allocation-full exact code	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=02
+0347	RANDTEST	REQUIRED	Function 35 convention	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=02
+0348	RANDTEST	REQUIRED	Function 35 result location	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=02
+0349	RANDTEST	REQUIRED	Function 35 unit	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=02
+0350	RANDTEST	REQUIRED	Function 35 maximum	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=02
+0351	RANDTEST	REQUIRED	Sparse virtual size	SUITE_PASS	external.json	Prereq/Open=03; random-I/O=00
+0352	RANDTEST	NOT GUARANTEED	Function 35 A value	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0353	RANDTEST	OUTSIDE SCOPE	DRI random seek machinery	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0354	ERRTEST	PROFILE REQUIRED	Physical random-I/O errors	UNCLAIMED_PROFILE	suite catalogue	the Interactive CP/M disk-error profile
+0355	DISKTEST	OUTSIDE SCOPE	Physical allocation equals virtual size	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0356	DIRTEST	REQUIRED	Read-only attribute location	SUITE_PASS	external.json	Read-only type byte=D4; next=4D
+0357	DIRTEST	REQUIRED	System attribute location	SUITE_PASS	external.json	System type bytes=54; next=CD
+0358	DIRTEST	REQUIRED	Attribute/type coexistence	SUITE_PASS	external.json	Coexisting type bytes=D4; next=CD
+0359	DIRTEST	NOT GUARANTEED	Reserved t3’	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0360	DIRTEST	REQUIRED	Function 30 convention	SUITE_PASS	external.json	Function30/search slot=00; next=02
+0361	DIRTEST	REQUIRED	Function 30 set/clear	SUITE_PASS	external.json	Set/clear type byte=D4; next=54
+0362	DIRTEST	REQUIRED	Function 30 all extents	SUITE_PASS	external.json	All-extents result/type=00; next=D4
+0363	DIRTEST	REQUIRED	Function 30 success result	SUITE_PASS	external.json	Function30 result=00; next=00
+0364	DIRTEST	REQUIRED	Function 30 no-match result	SUITE_PASS	external.json	Missing attribute result=FF; next=00
+0365	DIRTEST	NOT GUARANTEED	Function 30 exact success slot	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0366	DIRTEST	REQUIRED	Open preserves indicators	SUITE_PASS	external.json	Open/type indicator=02; next=D4
+0367	DIRTEST	REQUIRED	Make accepts indicators	SUITE_PASS	external.json	Make/type indicator=02; next=D4
+0368	RANDTEST	REQUIRED	File read-only sequential protection	EXTERNAL	guest.json	Read-only files, last writable record, full directory with free blocks, allocation exhaustion and injected failure
+0369	RANDTEST	REQUIRED	File read-only random protection	EXTERNAL	guest.json	Read-only files, last writable record, full directory with free blocks, allocation exhaustion and injected failure
+0370	DIRTEST	REQUIRED	File read-only delete protection	EXTERNAL	external.json	Read-only erase and rename with whole-disk equality
+0371	DIRTEST	REQUIRED	File read-only rename protection	EXTERNAL	external.json	Read-only erase and rename with whole-disk equality
+0372	RANDTEST	NOT GUARANTEED	Protected-operation normal result	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0373	DISKTEST	REQUIRED	Function 28 convention	SUITE_PASS	external.json	Function 28 protected current disk
+0374	DISKTEST	REQUIRED	Function 28 transience	SUITE_PASS	external.json	Protection ended after disk reset
+0375	DISKTEST	REQUIRED	Function 29 convention	SUITE_PASS	external.json	Function 29 returned R/O vector
+0376	DISKTEST	REQUIRED	Read-only vector mapping	SUITE_PASS	external.json	Vector bit 1 represented drive B
+0377	DISKTEST	REQUIRED	Function 28 vector effect	SUITE_PASS	external.json	Function 28 set drive-B vector bit
+0378	DISKTEST	REQUIRED	Reset clears software protection	SUITE_PASS	external.json	Function 13 cleared R/O vector
+0379	DISKTEST	REQUIRED	Protected-disk Make	EXTERNAL	guest.json	Protected-disk terminal cases with Disk R/O, WBOOT and unchanged disk
+0380	DISKTEST	REQUIRED	Protected-disk sequential write	EXTERNAL	guest.json	Protected-disk terminal cases with Disk R/O, WBOOT and unchanged disk
+0381	DISKTEST	REQUIRED	Protected-disk random write	EXTERNAL	guest.json	Protected-disk terminal cases with Disk R/O, WBOOT and unchanged disk
+0382	DISKTEST	REQUIRED	Protected-disk delete	EXTERNAL	guest.json	Protected-disk terminal cases with Disk R/O, WBOOT and unchanged disk
+0383	DISKTEST	REQUIRED	Protected-disk rename	EXTERNAL	guest.json	Protected-disk terminal cases with Disk R/O, WBOOT and unchanged disk
+0384	DISKTEST	REQUIRED	Protection before mutation	EXTERNAL	guest.json	Protected-disk terminal cases with Disk R/O, WBOOT and unchanged disk
+0385	ERRTEST	PROFILE REQUIRED	Fatal presentation	UNCLAIMED_PROFILE	suite catalogue	the Interactive DRI protection-error profile
+0386	ERRTEST	OUTSIDE SCOPE	Fatal handler internals	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0387	ERRTEST	PROFILE REQUIRED	Exact diagnostic text	UNCLAIMED_PROFILE	suite catalogue	the DRI diagnostic-presentation profile
+0388	RANDTEST	NOT GUARANTEED	Late attribute change versus dirty FCB	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0389	ERRTEST	PROFILE REQUIRED	Automatic media-change protection	EXTERNAL	guest.json	Replacement of logged-in removable B, blocked write, Function 37 reset and create
+0390	ERRTEST	REQUIRED	CBIOS physical read result	EXTERNAL	controller.json	Physical failures and recoverable errors at FD1791/DMA ports, plus native media readback
+0391	ERRTEST	REQUIRED	CBIOS physical write result	EXTERNAL	controller.json	Physical failures and recoverable errors at FD1791/DMA ports, plus native media readback
+0392	ERRTEST	REQUIRED	BIOS retry responsibility	EXTERNAL	controller.json	Physical failures and recoverable errors at FD1791/DMA ports, plus native media readback
+0393	ERRTEST	REQUIRED	Physical/logical error separation	EXTERNAL	controller.json	Physical failures and recoverable errors at FD1791/DMA ports, plus native media readback
+0394	ERRTEST	REQUIRED	Bad Sector presentation	EXTERNAL	guest.json	fault-suspended, fault-ignore and fault-abort with healthy read and restored B0 state
+0395	ERRTEST	REQUIRED	Physical-error ignore choice	EXTERNAL	guest.json	fault-suspended, fault-ignore and fault-abort with healthy read and restored B0 state
+0396	ERRTEST	REQUIRED	Physical-error abort choice	EXTERNAL	guest.json	fault-suspended, fault-ignore and fault-abort with healthy read and restored B0 state
+0397	ERRTEST	REQUIRED	Abort restart details	EXTERNAL	guest.json	fault-suspended, fault-ignore and fault-abort with healthy read and restored B0 state
+0398	ERRTEST	NOT GUARANTEED	Result after ignored physical error	OBSERVED	external.json	Ignored physical-error result is not guaranteed
+0399	ERRTEST	NOT GUARANTEED	DMA after ignored physical read	OBSERVED	external.json	DMA after ignored physical read is not guaranteed
+0400	ERRTEST	NOT GUARANTEED	Persistence after ignored physical write	OBSERVED	external.json	Persistence after ignored write is not guaranteed
+0401	ERRTEST	NOT GUARANTEED	Make persistence after physical error	OBSERVED	external.json	Make persistence after physical error is not guaranteed
+0402	ERRTEST	NOT GUARANTEED	Close persistence after physical error	OBSERVED	external.json	Close persistence after physical error is not guaranteed
+0403	ERRTEST	NOT GUARANTEED	Physical-write atomicity	OBSERVED	external.json	Physical-write atomicity is not guaranteed
+0404	ERRTEST	REQUIRED	Sequential read logical result	SUITE_PASS	external.json	One record returned 00h; following sequential EOF returned 01h
+0405	ERRTEST	REQUIRED	Sequential write logical result	EXTERNAL	guest.json	Read-only files, last writable record, full directory with free blocks, allocation exhaustion and injected failure
+0406	ERRTEST	REQUIRED	Random read logical codes	SUITE_PASS	external.json	Random record 0 returned 00h; record 1 returned EOF 01h
+0407	ERRTEST	REQUIRED	Random write logical codes	SUITE_PASS	external.json	Random write returned 00h; record 10000h returned 06h
+0408	ERRTEST	REQUIRED	Make/Delete/Rename/Close logical codes	SUITE_PASS	external.json	Missing Open, then Make/Close/Rename/Delete codes agreed
+0409	ERRTEST	OUTSIDE SCOPE	DRI permanent-error internals	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0410	ERRTEST	OUTSIDE SCOPE	z80pack status values	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0411	ERRTEST	PROFILE REQUIRED	Exact Bad Sector text	UNCLAIMED_PROFILE	suite catalogue	the DRI diagnostic-presentation profile
+0412	ERRTEST	NOT GUARANTEED	Accepted ignore characters	OBSERVED	external.json	Accepted Ignore characters are implementation-dependent
+0413	BDOSTEST	OPTIONAL	Structured physical-error extension	UNCLAIMED_PROFILE	suite catalogue	the Headless/structured-error extension. Generic BetterCP/M CP/M 2.2 compatibility does not require this feature
+0414	BDOSTEST	REQUIRED	Function 12 CP/M version result	SUITE_PASS	external.json	Fn 12 returned CP/M 2.2
+0415	BDOSTEST	REQUIRED	Function 32 user-number query	SUITE_PASS	external.json	Fn 32 queried user number
+0416	BDOSTEST	REQUIRED	Function 32 user-number selection	SUITE_PASS	external.json	Fn 32 selected user 1
+0417	BDOSTEST	NOT GUARANTEED	Function 32 set-form result	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0418	BDOSTEST	REQUIRED	Console functions do not use or overwrite DMA	SUITE_PASS	external.json	Console status preserved DMA
+0419	BDOSTEST	REQUIRED	Console and identity calls preserve DMA selection	SUITE_PASS	external.json	Identity calls preserved DMA
+0420	BDOSTEST	REQUIRED	Function 10 DE buffer is not DMA	EXTERNAL	external.json	BDOPROBE counted DE buffer and guarded DMA; BIOS/BDOS pointers on A/B/A
+0421	CONSTEST	OUTSIDE SCOPE	DRI private console polling implementation	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0422	BDOSTEST	OUTSIDE SCOPE	Function 6 E=FEh behavior	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0423	BIOSTEST	OUTSIDE SCOPE	Function 34 is not Compute File Size	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0424	BIOSTEST	REQUIRED	Function 27 allocation-vector pointer	EXTERNAL	external.json	Public calls: DPB/ALV, select and translation, physical offsets, WRITE types and reset masks
+0425	BIOSTEST	REQUIRED	Allocation-vector length and bit mapping	EXTERNAL	external.json	Public calls: DPB/ALV, select and translation, physical offsets, WRITE types and reset masks
+0426	BIOSTEST	REQUIRED	Reserved directory allocation bits	EXTERNAL	external.json	Public calls: DPB/ALV, select and translation, physical offsets, WRITE types and reset masks
+0427	BIOSTEST	REQUIRED	Live allocation state	EXTERNAL	external.json	Public calls: DPB/ALV, select and translation, physical offsets, WRITE types and reset masks
+0428	BIOSTEST	NOT GUARANTEED	Allocation-pointer address and lifetime	OBSERVED	external.json	Fixed address/lifetime is not portable
+0429	BIOSTEST	NOT GUARANTEED	Application modification of allocation vector	OBSERVED	external.json	Applications must not depend on ALV writes
+0430	BIOSTEST	NOT GUARANTEED	Read-only allocation information	OBSERVED	external.json	Post-Function-28 ALV accuracy may vary
+0431	BIOSTEST	REQUIRED	Function 31 DPB pointer and layout	EXTERNAL	external.json	Public calls: DPB/ALV, select and translation, physical offsets, WRITE types and reset masks
+0432	BIOSTEST	REQUIRED	DPB configuration and sharing	EXTERNAL	external.json	Public calls: DPB/ALV, select and translation, physical offsets, WRITE types and reset masks
+0433	BIOSTEST	REQUIRED	Documented DPB modification	EXTERNAL	external.json	Public calls: DPB/ALV, select and translation, physical offsets, WRITE types and reset masks
+0434	BIOSTEST	NOT GUARANTEED	DPB address and lifetime	OBSERVED	external.json	Fixed DPB address/lifetime is not portable
+0435	BIOSTEST	OPTIONAL	Function 37 compatibility status	EXTERNAL	external.json	Public calls: DPB/ALV, select and translation, physical offsets, WRITE types and reset masks
+0436	CONSTEST	REQUIRED	Function 3 Reader convention	EXTERNAL	external.json	MORECHAR intercepted logical input, reader and list vectors
+0437	BIOSTEST	NOT GUARANTEED	Reader completion and optional-device behavior	OBSERVED	external.json	Reader/device provider behavior may vary
+0438	CONSTEST	REQUIRED	Reader separation from console	EXTERNAL	external.json	MORECHAR intercepted logical input, reader and list vectors
+0439	BIOSTEST	REQUIRED	Function 4 Punch convention	EXTERNAL	external.json	BDOS Function 4 delivered graphic and control bytes at BIOS PUNCH
+0440	CONSTEST	REQUIRED	Function 5 List convention	EXTERNAL	external.json	MORECHAR intercepted logical input, reader and list vectors
+0441	BIOSTEST	NOT GUARANTEED	Character-output result values	OBSERVED	external.json	Character-output return values may vary
+0442	CONSTEST	REQUIRED	Function 7 IOBYTE query	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0443	BIOSTEST	REQUIRED	Function 8 IOBYTE set	SUITE_PASS	external.json	Function 7/8 and 0003h were coherent; restored
+0444	CONSTEST	REQUIRED	IOBYTE field encoding	EXTERNAL	character-routes.json	All 256 IOBYTE combinations, keyboard status/input, CRT/LIST routing, reader EOF and punch sink
+0445	BIOSTEST	REQUIRED	IOBYTE routing boundary	EXTERNAL	character-routes.json	All 256 IOBYTE combinations, keyboard status/input, CRT/LIST routing, reader EOF and punch sink
+0446	CONSTEST	PROFILE REQUIRED	Active IOBYTE routing policy	EXTERNAL	character-routes.json	All 256 IOBYTE combinations, keyboard status/input, CRT/LIST routing, reader EOF and punch sink
+0447	BIOSTEST	NOT GUARANTEED	IOBYTE set has no initialization contract	OBSERVED	external.json	No initialization side effect is guaranteed
+0448	BIOSTEST	REQUIRED	Character-device DMA independence	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0449	BIOSTEST	REQUIRED	Stateful BIOS disk setup	EXTERNAL	external.json	Public calls: DPB/ALV, select and translation, physical offsets, WRITE types and reset masks
+0450	BIOSTEST	REQUIRED	SELDSK result and deferral	EXTERNAL	external.json	Public calls: DPB/ALV, select and translation, physical offsets, WRITE types and reset masks
+0451	BIOSTEST	REQUIRED	Public DPH layout	SUITE_PASS	external.json	Current DPH pointers and Function 31 agreed
+0452	BIOSTEST	NOT GUARANTEED	DPH address and private workspace	OBSERVED	external.json	Fixed DPH/private workspace is not portable
+0453	BIOSTEST	REQUIRED	Track mapping and OFF	EXTERNAL	external.json	Public calls: DPB/ALV, select and translation, physical offsets, WRITE types and reset masks
+0454	BIOSTEST	REQUIRED	Sector translation chain	EXTERNAL	external.json	Public calls: DPB/ALV, select and translation, physical offsets, WRITE types and reset masks
+0455	BIOSTEST	NOT GUARANTEED	Translation implementation freedom	OBSERVED	external.json	Table or equivalent algorithm is accepted
+0456	BIOSTEST	REQUIRED	BIOS DMA state	EXTERNAL	external.json	Public calls: DPB/ALV, select and translation, physical offsets, WRITE types and reset masks
+0457	BIOSTEST	REQUIRED	BIOS logical-sector transfer	EXTERNAL	controller.json	Physical failures and recoverable errors at FD1791/DMA ports, plus native media readback
+0458	BIOSTEST	REQUIRED	BIOS WRITE type codes	EXTERNAL	external.json	Public calls: DPB/ALV, select and translation, physical offsets, WRITE types and reset masks
+0459	BIOSTEST	OUTSIDE SCOPE	Physical storage freedom	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0460	BIOSTEST	NOT GUARANTEED	BIOS disk-call reentrancy	OBSERVED	external.json	Nested disk-call state is not guaranteed
+0461	BIOSTEST	REQUIRED	BIOS jump-vector structure	SUITE_PASS	external.json	Found 17 consecutive public JMP vectors
+0462	BIOSTEST	NOT GUARANTEED	BIOS vector address freedom	OBSERVED	external.json	No fixed BIOS vector address is portable
+0463	BIOSTEST	REQUIRED	BIOS-base discovery through WBOOT gateway	SUITE_PASS	external.json	BIOS base derived only from WBOOT gateway
+0464	BIOSTEST	REQUIRED	BOOT control contract	EXTERNAL	external.json	Damaged gateways, private stack, painted live CCP and warm/cold reconstruction
+0465	BIOSTEST	REQUIRED	WBOOT control contract	EXTERNAL	external.json	Damaged gateways, private stack, painted live CCP and warm/cold reconstruction
+0466	BIOSTEST	REQUIRED	Warm-start gateway reconstruction	EXTERNAL	external.json	Damaged gateways, private stack, painted live CCP and warm/cold reconstruction
+0467	BIOSTEST	OUTSIDE SCOPE	Boot implementation freedom	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0468	BIOSTEST	REQUIRED	BIOS console status contract	EXTERNAL	character-routes.json	All 256 IOBYTE combinations, keyboard status/input, CRT/LIST routing, reader EOF and punch sink
+0469	BIOSTEST	REQUIRED	BIOS console input contract	EXTERNAL	character-routes.json	All 256 IOBYTE combinations, keyboard status/input, CRT/LIST routing, reader EOF and punch sink
+0470	BIOSTEST	REQUIRED	BIOS character output contracts	EXTERNAL	character-routes.json	All 256 IOBYTE combinations, keyboard status/input, CRT/LIST routing, reader EOF and punch sink
+0471	BIOSTEST	REQUIRED	BIOS reader contract	EXTERNAL	character-routes.json	All 256 IOBYTE combinations, keyboard status/input, CRT/LIST routing, reader EOF and punch sink
+0472	BIOSTEST	PROFILE REQUIRED	LISTST result policy	EXTERNAL	character-routes.json	All 256 IOBYTE combinations, keyboard status/input, CRT/LIST routing, reader EOF and punch sink
+0473	BIOSTEST	REQUIRED	Direct BIOS call layering	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0474	CCPTEST	NOT GUARANTEED	BIOS residual registers and reentrancy	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0475	CCPTEST	REQUIRED	CCP semantic prompt	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0476	CCPTEST	NOT GUARANTEED	CCP prompt presentation freedom	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0477	CCPTEST	REQUIRED	CCP buffered command acquisition	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0478	CCPTEST	PROFILE REQUIRED	DRI CCP command capacity	UNCLAIMED_PROFILE	suite catalogue	the Strict DRI CCP profile
+0479	CCPTEST	REQUIRED	CCP empty and SPACE-only commands	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0480	CCPTEST	REQUIRED	TAB is not CCP SPACE	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0481	CCPTEST	REQUIRED	CCP ASCII case normalization	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0482	CCPTEST	REQUIRED	CCP built-in command set	EXTERNAL	external.json	Resident commands, directory and user attributes, wildcard decisions, saved page readback and STAT assignment
+0483	CCPTEST	REQUIRED	Exact built-in-name matching	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0484	CCPTEST	REQUIRED	Built-in precedence	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0485	CCPTEST	REQUIRED	Drive-only CCP selection	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0486	CCPTEST	REQUIRED	Drive-prefixed transient dispatch	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0487	CCPTEST	REQUIRED	Primary-name transient command syntax	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0488	CCPTEST	REQUIRED	CCP resident/transient preparation boundary	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0489	CCPTEST	REQUIRED	Generic command-error recovery	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0490	CCPTEST	PROFILE REQUIRED	Exact DRI command-error presentation	UNCLAIMED_PROFILE	suite catalogue	the DRI diagnostic-presentation profile
+0491	CCPTEST	OUTSIDE SCOPE	CCP parser implementation freedom	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0492	CCPTEST	REQUIRED	CCP executable identity	SUITE_PASS	external.json	CCPTEST image executed at 0100h
+0493	CCPTEST	REQUIRED	Single-drive transient lookup	PROFILE_DIFFERENCE	guest.json	The default numeric PATH searches current DU then A0; explicit drive lookup stays exact.
+0494	CCPTEST	REQUIRED	Current-user transient lookup	PROFILE_DIFFERENCE	guest.json	Numeric PATH can select a different user; explicit DU remains exact.
+0495	CCPTEST	REQUIRED	Explicit-drive lookup context	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0496	CCPTEST	REQUIRED	CCP sequential COM loading	SUITE_PASS	external.json	Sequential COM image fully loaded
+0497	CCPTEST	REQUIRED	CCP load completion	SUITE_PASS	external.json	Final image marker was present
+0498	CCPTEST	NOT GUARANTEED	Final COM record granularity	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0499	CCPTEST	REQUIRED	Resident-system load protection	SUITE_PASS	external.json	Loaded image stayed below BDOS
+0500	CCPTEST	NOT GUARANTEED	Transient maximum is configuration-dependent	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0501	CCPTEST	REQUIRED	CCP load-failure nonexecution	EXTERNAL	lifecycle.json	Entire 448-record COM, RET/JP 0/Function 0, 449-record rejection, CPX reconstruction and subsequent STATE
+0502	CCPTEST	REQUIRED	Pre-execution DMA restoration	SUITE_PASS	external.json	CCP restored default DMA at 0080h
+0503	CCPTEST	REQUIRED	CCP CALL/RET cleanup path	EXTERNAL	lifecycle.json	Entire 448-record COM, RET/JP 0/Function 0, 449-record rejection, CPX reconstruction and subsequent STATE
+0504	CCPTEST	REQUIRED	Termination-state convergence	EXTERNAL	lifecycle.json	Entire 448-record COM, RET/JP 0/Function 0, 449-record rejection, CPX reconstruction and subsequent STATE
+0505	CCPTEST	OUTSIDE SCOPE	CCP loader implementation freedom	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0506	CCPTEST	PROFILE REQUIRED	Default FCB operand assignment	UNCLAIMED_PROFILE	suite catalogue	the Strict DRI CCP/ecosystem
+0507	CCPTEST	NOT GUARANTEED	Default FCB residual fields	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0508	CCPTEST	PROFILE REQUIRED	Tail capacity is bounded by CCP input acquisition	UNCLAIMED_PROFILE	suite catalogue	the Declared CCP profile
+0509	ENTRYTST	REQUIRED	Transient termination mechanisms	EXTERNAL	lifecycle.json	Entire 448-record COM, RET/JP 0/Function 0, 449-record rejection, CPX reconstruction and subsequent STATE
+0510	CCPTEST	NOT GUARANTEED	RET does not generally reconstruct page zero	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0511	ENTRYTST	NOT GUARANTEED	Termination does not implicitly close application FCBs	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0512	ERRTEST	PROFILE REQUIRED	Post-termination drive and user policy	UNCLAIMED_PROFILE	suite catalogue	the CCP/lifecycle profile
+0513	ECOTEST	REQUIRED	File-operation failures are function-specific	SUITE_PASS	external.json	Missing OPEN=FFh; sequential READ returned 00h then EOF 01h
+0514	ERRTEST	NOT GUARANTEED	Failure does not generally validate DMA contents	OBSERVED	external.json	A failed transfer does not validate DMA contents
+0515	ECOTEST	NOT GUARANTEED	FCB state after precondition or operation failure	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0516	ERRTEST	REQUIRED	Directory-full and allocation-full are distinct	EXTERNAL	guest.json	Read-only files, last writable record, full directory with free blocks, allocation exhaustion and injected failure
+0517	BDOSTEST	NOT GUARANTEED	Malformed FCB behavior is outside the portable contract	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0518	BDOSTEST	REQUIRED	BDOS system state components	SUITE_PASS	external.json	Drive, user, login state read
+0519	BDOSTEST	REQUIRED	BIOS-owned selected-drive resources	EXTERNAL	external.json	BDOPROBE counted DE buffer and guarded DMA; BIOS/BDOS pointers on A/B/A
+0520	BDOSTEST	REQUIRED	Function 26 persistence boundary	SUITE_PASS	external.json	Fn 26 persisted until reset
+0521	BDOSTEST	REQUIRED	System-state independence	SUITE_PASS	external.json	Drive/user state independent
+0522	BDOSTEST	NOT GUARANTEED	ALV and DPB pointer lifetime	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0523	BDOSTEST	OPTIONAL	Function 37 state-effect profile scope	EXTERNAL	external.json	Public calls: DPB/ALV, select and translation, physical offsets, WRITE types and reset masks
+0524	BDOSTEST	OUTSIDE SCOPE	CP/M 2.2 Function 39 has no Get-BIOS contract	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0525	BDOSTEST	REQUIRED	CP/M 2.2 selectors 40 and 41	SUITE_PASS	external.json	Fn 40 valid; Fn 41 unsupported
+0526	BDOSTEST	REQUIRED	Common BDOS gateway and invocation	SUITE_PASS	external.json	Gateway at 0005h accepted call
+0527	BDOSTEST	REQUIRED	Common selector and parameter carriers	SUITE_PASS	external.json	C and DE carried selector/input
+0528	BDOSTEST	REQUIRED	Common result and alias convention	SUITE_PASS	external.json	Result aliases matched A/L B/H
+0529	BDOSTEST	REQUIRED	Strict CP/M 2.2 unsupported selectors	SUITE_PASS	external.json	Unsupported call returned zero
+0530	BDOSTEST	NOT GUARANTEED	General register preservation	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0531	BDOSTEST	REQUIRED	Returning-call stack balance	SUITE_PASS	external.json	Returning call balanced stack
+0532	BDOSTEST	NOT GUARANTEED	Invalid parameters are function-specific	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0533	ENTRYTST	NOT GUARANTEED	BDOS reentrancy	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0534	CCPTEST	REQUIRED	Complete transient handoff	SUITE_PASS	external.json	Complete transient image received
+0535	ENTRYTST	OUTSIDE SCOPE	Handoff preparation ordering	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0536	CCPTEST	NOT GUARANTEED	Unloaded transient memory	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0537	ENTRYTST	REQUIRED	Immediate BDOS readiness	SUITE_PASS	external.json	BDOS ready at transient entry
+0538	CCPTEST	REQUIRED	Loader DMA isolation	SUITE_PASS	external.json	Loader left DMA at 0080h
+0539	ENTRYTST	NOT GUARANTEED	Transient stack preparation	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0540	CCPTEST	REQUIRED	Load rejection suppresses execution	EXTERNAL	lifecycle.json	Entire 448-record COM, RET/JP 0/Function 0, 449-record rejection, CPX reconstruction and subsequent STATE
+0541	DIRTEST	NOT GUARANTEED	Post-RET reconstruction boundary	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0542	DIRTEST	REQUIRED	Enumeration returns directory entries, not unique filenames	SUITE_PASS	external.json	Enumerated extents=02; next=00
+0543	DIRTEST	REQUIRED	Matching extents remain separately visible	SUITE_PASS	external.json	Visible matching extents=02; next=00
+0544	DIRTEST	NOT GUARANTEED	Application-built FCB case is not folded	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0545	DIRTEST	REQUIRED	Search FCB lifetime	SUITE_PASS	external.json	Search first/next=01; next=02
+0546	DIRTEST	REQUIRED	Harmless state-query calls need not end enumeration	SUITE_PASS	external.json	Query between searches=01; next=02
+0547	DIRTEST	NOT GUARANTEED	Search context does not survive program lifecycle reset	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0548	DIRTEST	NOT GUARANTEED	Physical enumeration order is not a sort contract	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0549	DIRTEST	NOT GUARANTEED	Invalid-drive search need not return a result code	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0550	RANDTEST	REQUIRED	Special drive-question search exposes complete directory values	SUITE_PASS	external.json	Prereq=03; lifecycle=00
+0551	RANDTEST	REQUIRED	Make-to-open lifecycle equivalence	SUITE_PASS	external.json	Prereq=03; lifecycle=00
+0552	RANDTEST	NOT GUARANTEED	Working FCB may lead directory metadata	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0553	RANDTEST	REQUIRED	Successful Close establishes reopened consistency	SUITE_PASS	external.json	Prereq=03; lifecycle=00
+0554	RANDTEST	NOT GUARANTEED	Reopen reconstructs behavior, not FCB byte identity	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0555	RANDTEST	REQUIRED	Extents form one logical record stream	SUITE_PASS	external.json	Prereq=03; lifecycle=00
+0556	RANDTEST	REQUIRED	Completed extent survives later extension failure	SUITE_PASS	external.json	Prereq=00; lifecycle=00
+0557	RANDTEST	REQUIRED	Failed growth does not claim a new record	SUITE_PASS	external.json	Prereq=00; lifecycle=02
+0558	DISKTEST	OUTSIDE SCOPE	Allocation order is outside lifecycle compatibility	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0559	DIRTEST	REQUIRED	User area participates in ordinary file identity	SUITE_PASS	external.json	User0/user1 search=01; next=02
+0560	DIRTEST	REQUIRED	Function 32 user-state contract	SUITE_PASS	external.json	Set/restored user=01; next=00
+0561	DIRTEST	REQUIRED	FCB does not carry ordinary user identity	SUITE_PASS	external.json	Same FCB user0/user1=01; next=02
+0562	DIRTEST	REQUIRED	Ordinary lookup has no cross-user fallback	SUITE_PASS	external.json	User0 absent/user1 found=FF; next=02
+0563	DIRTEST	REQUIRED	Make records current-user ownership	SUITE_PASS	external.json	Made user1/user0 lookup=02; next=FF
+0564	DIRTEST	REQUIRED	Delete and Rename are current-user scoped	SUITE_PASS	external.json	Scoped delete/result mask=00; next=0F
+0565	DIRTEST	NOT GUARANTEED	User change invalidates retained namespace assumptions	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0566	DIRTEST	REQUIRED	Complete-directory search is not public lookup	SUITE_PASS	external.json	Public result/directory entries=01; next=02
+0567	DIRTEST	REQUIRED	CCP USER and BDOS user state are shared	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0568	CCPTEST	OUTSIDE SCOPE	User areas are not a security contract	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0569	ECOTEST	REQUIRED	Resident command semantic set	EXTERNAL	external.json	Resident commands, directory and user attributes, wildcard decisions, saved page readback and STAT assignment
+0570	CCPTEST	REQUIRED	DIR search and visibility	EXTERNAL	external.json	Resident commands, directory and user attributes, wildcard decisions, saved page readback and STAT assignment
+0571	ECOTEST	NOT GUARANTEED	DIR ordering and exact layout	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0572	CCPTEST	REQUIRED	ERA wildcard confirmation boundary	EXTERNAL	external.json	Resident commands, directory and user attributes, wildcard decisions, saved page readback and STAT assignment
+0573	ECOTEST	NOT GUARANTEED	ERA read-only attribute is not protection	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0574	CCPTEST	REQUIRED	REN resident syntax and validation	EXTERNAL	external.json	Resident commands, directory and user attributes, wildcard decisions, saved page readback and STAT assignment
+0575	ECOTEST	REQUIRED	SAVE page mapping	EXTERNAL	external.json	Resident commands, directory and user attributes, wildcard decisions, saved page readback and STAT assignment
+0576	CCPTEST	NOT GUARANTEED	SAVE destructive replacement	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0577	ECOTEST	REQUIRED	TYPE byte-stream contract	EXTERNAL	external.json	Resident commands, directory and user attributes, wildcard decisions, saved page readback and STAT assignment
+0578	CCPTEST	REQUIRED	CCP USER accepted range	EXTERNAL	external.json	Edited MARK tail and FCB, exact dispatch, collision traps, caller DU and USER 0–15
+0579	ECOTEST	REQUIRED	Ordinary resident-command recovery	EXTERNAL	external.json	Resident commands, directory and user attributes, wildcard decisions, saved page readback and STAT assignment
+0580	ERRTEST	PROFILE REQUIRED	Exact resident output presentation	UNCLAIMED_PROFILE	suite catalogue	the DRI resident-presentation profile
+0581	ERRTEST	REQUIRED	Physical failure suspends the BDOS caller	EXTERNAL	guest.json	fault-suspended, fault-ignore and fault-abort with healthy read and restored B0 state
+0582	ERRTEST	REQUIRED	Logical failures return without physical-error intervention	SUITE_PASS	external.json	All controlled logical failures returned without intervention
+0583	ERRTEST	NOT GUARANTEED	Ignored directory-search result is not validation	OBSERVED	external.json	Ignored search data is not validation
+0584	ERRTEST	NOT GUARANTEED	Ignored directory-update result is not persistence	OBSERVED	external.json	Ignored directory update is not persistence
+0585	ERRTEST	NOT GUARANTEED	Post-ignore affected state is not a continuation contract	OBSERVED	external.json	Post-ignore state has no continuation guarantee
+0586	ERRTEST	REQUIRED	Physical-error abort abandons the interrupted caller	EXTERNAL	guest.json	fault-suspended, fault-ignore and fault-abort with healthy read and restored B0 state
+0587	ERRTEST	REQUIRED	Abort recovery establishes a usable command environment	EXTERNAL	guest.json	fault-suspended, fault-ignore and fault-abort with healthy read and restored B0 state
+0588	ENTRYTST	OUTSIDE SCOPE	Exact recovery internals are not part of the contract	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0589	ENTRYTST	REQUIRED	Loader ceiling and overlay TPA are distinct	SUITE_PASS	external.json	BDOS ceiling lies above program
+0590	ENTRYTST	REQUIRED	CCP overlay invalidates ordinary RET assumptions	EXTERNAL	external.json	Damaged gateways, private stack, painted live CCP and warm/cold reconstruction
+0591	ENTRYTST	NOT GUARANTEED	System ownership is an application obligation	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0592	ENTRYTST	NOT GUARANTEED	Entry-stack storage may occupy overlayable memory	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0593	ENTRYTST	REQUIRED	Cold BOOT public postcondition	EXTERNAL	external.json	Damaged gateways, private stack, painted live CCP and warm/cold reconstruction
+0594	ENTRYTST	NOT GUARANTEED	Cold BOOT does not promise blanket memory clearing	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0595	ENTRYTST	REQUIRED	WBOOT command-environment reconstruction	EXTERNAL	external.json	Damaged gateways, private stack, painted live CCP and warm/cold reconstruction
+0596	ENTRYTST	NOT GUARANTEED	Residual state across WBOOT	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0597	ENTRYTST	NOT GUARANTEED	Console-pending state across WBOOT	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0598	ENTRYTST	REQUIRED	BIOS vector is a public runtime ABI	SUITE_PASS	external.json	WBOOT vector present at 0000h
+0599	ENTRYTST	REQUIRED	DPH structures are compatibility-visible	SUITE_PASS	external.json	Function 31 returned a DPB
+0600	ENTRYTST	REQUIRED	Direct BIOS calls expose raw device behavior	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0601	ENTRYTST	NOT GUARANTEED	BIOS implementation details remain profile-specific	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0602	ENTRYTST	REQUIRED	Function 40 selector and input	SUITE_PASS	external.json	Function 40 consumed scratch FCB
+0603	ENTRYTST	REQUIRED	Function 40 allocation-block zero fill	SUITE_PASS	external.json	Intervening records were zero
+0604	ENTRYTST	NOT GUARANTEED	Function 40 is not universal sparse-hole materialization	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0605	ENTRYTST	REQUIRED	Function 40 result family	SUITE_PASS	external.json	Function 40 returned success
+0606	ENTRYTST	REQUIRED	BIOS character services are raw device interfaces	EXTERNAL	external.json	Public calls: formatted output, direct literal I/O, queued status, flow control and DMA guards
+0607	ENTRYTST	REQUIRED	Character devices remain distinct runtime paths	EXTERNAL	character-routes.json	All 256 IOBYTE combinations, keyboard status/input, CRT/LIST routing, reader EOF and punch sink
+0608	ENTRYTST	REQUIRED	IOBYTE reassignment is runtime visible	SUITE_PASS	external.json	IOBYTE reassignment was visible
+0609	ENTRYTST	REQUIRED	IOBYTE access coherence	SUITE_PASS	external.json	IOBYTE read/write was coherent
+0610	ENTRYTST	REQUIRED	Field-preserving assignment changes	SUITE_PASS	external.json	Other IOBYTE fields preserved
+0611	ENTRYTST	NOT GUARANTEED	IOBYTE assignment does not validate device presence	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0612	ENTRYTST	REQUIRED	STAT device-assignment semantics	EXTERNAL	external.json	Resident commands, directory and user attributes, wildcard decisions, saved page readback and STAT assignment
+0613	ENTRYTST	REQUIRED	Parameterized disk-structure coherence	SUITE_PASS	external.json	Disk parameter block available
+0614	ENTRYTST	REQUIRED	DPB-dependent directory allocation-map width	SUITE_PASS	external.json	DPB block mask/limits coherent
+0615	ENTRYTST	REQUIRED	Logical directory placement	SUITE_PASS	external.json	Logical disk structures followed
+0616	ENTRYTST	NOT GUARANTEED	Raw-format universality	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0617	ENTRYTST	REQUIRED	Direct-structure caller responsibility	SUITE_PASS	external.json	Active DPH/DPB contract followed
+0618	ERRTEST	NOT GUARANTEED	Damaged-directory recovery	OBSERVED	external.json	Damaged-directory recovery behavior is not guaranteed
+0619	ENTRYTST	NOT GUARANTEED	Private BDOS target is not an application gateway	NOT_REQUIRED	suite catalogue	generic CP/M 2.2 baseline
+0620	CCPTEST	REQUIRED	DRI submitted-command stream	EXTERNAL	guest.json	Shipped SUBMIT/XSUB/BATCHIO and submitted Function 10 input
+0621	CCPTEST	REQUIRED	XSUB buffered-input compatibility	EXTERNAL	guest.json	Shipped SUBMIT/XSUB/BATCHIO and submitted Function 10 input
+0622	BIOSTEST	REQUIRED	Self-modifying transient execution	SUITE_PASS	external.json	Modified code executed at two TPA locations
+0623	CPUTEST	REQUIRED	Intel 8080-compatible binary execution baseline	SUITE_PASS	external.json	Register, ALU, memory, stack and CALL/RET signatures agreed
+0624	CPUTEST	REQUIRED	Declared processor-profile instruction semantics	SUITE_PASS	external.json	ADC, INR carry preservation and DAA semantics agreed
+0625	CPUTEST	OUTSIDE SCOPE	Z80 extensions outside a generic CP/M claim	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim
+0626	CPUTEST	NOT GUARANTEED	Undocumented processor behavior	OBSERVED	external.json	Undocumented processor behavior is not guaranteed
+0627	CPUTEST	OUTSIDE SCOPE	Processor timing and interrupt topology	OUTSIDE_BASELINE	suite catalogue	generic CP/M 2.2 compatibility claim

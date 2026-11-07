@@ -1,0 +1,34 @@
+{
+  "status": "PASS",
+  "system": {
+    "sha256": "2219f8dcc6875dc614e8bad126b14ee4cb00825b48f78a8d919130dbc687d893",
+    "included_files": 17,
+    "free_bytes": 475136,
+    "zip_extract_matches": true
+  },
+  "utilities": {
+    "BetterCPM-Utilities-trs80m2-77T-SS-584K.imd": {
+      "sha256": "7ef8f1a4917436ec2167b32b6f7bcaf0ff1c0e770adea8ef74db71b8592f1715",
+      "files_read_back": 27,
+      "fsck": "PASS",
+      "free_blocks": 124
+    },
+    "BetterCPM-NOAH-trs80m2-77T-SS-584K.imd": {
+      "sha256": "cf0a0efc975714d73e3db5d56436a41f5cb8312b460541a351365303e022fa60",
+      "files_read_back": 10,
+      "fsck": "PASS",
+      "free_blocks": 246
+    }
+  },
+  "reproducible_media": "An independent standard System generation and a fresh normal Utilities build reproduced all three exact hashes from the native guest campaign.",
+  "changed_private_modules": "BATCHIO built under model2-fullram with the same private identity as the System; cpmsim/Model 4 private products are not selected.",
+  "z80pack_cpu_source_revision": "b7a6fa36a2ee185a73727dc5b56ac1af40679e81",
+  "console_renderer": "pyte 0.8.2",
+  "cpmtools": {
+    "cpmcp": "23f5ad8713d93b07885ac0acdf42c45f11f386e3de4b10bb297b8f8cd1512b58",
+    "fsck.cpm": "5d71fcb6b63345360442d2ccd0d01f6de9e98a8844ea722bdbacbb921a102389"
+  },
+  "old_controller": "Card 0392: the previous disk code returned 1 after one injected CRC failure on the FM read. The second (successful) attempt was never issued.",
+  "profile_tests": 11,
+  "distribution_tests": 16
+}

@@ -8,7 +8,7 @@ from checked_build_contract import load_contract
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_RSX = frozenset(('HELLO', 'ECHO'))
-PRIVATE_RSX = frozenset(('STATEFUL', 'TEST', 'ANSISCRN', 'ADM3A', 'VT52',
+PRIVATE_RSX = frozenset(('STATEFUL', 'TEST', 'M2SCRN', 'ANSISCRN', 'ADM3A', 'VT52',
                          'ANSI', 'BATCHIO', 'FDF', 'P2DOS', 'ZPRTC',
                          'T104Z8', 'T104C3'))
 

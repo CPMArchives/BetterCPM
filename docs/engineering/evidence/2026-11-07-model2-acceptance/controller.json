@@ -1,0 +1,263 @@
+{
+  "status": "PASS",
+  "disk_code_sha256": "505d078224ef51960f1cbc9960d1d9fd08af1ccf7978d2e639ef71c745405f4a",
+  "scope": "Real controller instructions, synthetic status/interrupt ports, observed DMA setup; guest media tests separately exercise the data transfer.",
+  "cases": [
+    {
+      "case": "healthy",
+      "operation": "read",
+      "size": 128,
+      "attempts": 1,
+      "aborts": 0,
+      "return": 0
+    },
+    {
+      "case": "CRC then success",
+      "operation": "read",
+      "size": 128,
+      "attempts": 2,
+      "aborts": 1,
+      "return": 0
+    },
+    {
+      "case": "miss then CRC then success",
+      "operation": "read",
+      "size": 128,
+      "attempts": 3,
+      "aborts": 2,
+      "return": 0
+    },
+    {
+      "case": "persistent lost data",
+      "operation": "read",
+      "size": 128,
+      "attempts": 3,
+      "aborts": 3,
+      "return": 4
+    },
+    {
+      "case": "controller timeout then success",
+      "operation": "read",
+      "size": 128,
+      "attempts": 2,
+      "aborts": 1,
+      "return": 0
+    },
+    {
+      "case": "three controller timeouts",
+      "operation": "read",
+      "size": 128,
+      "attempts": 3,
+      "aborts": 3,
+      "return": 1
+    },
+    {
+      "case": "seek failure then success",
+      "operation": "read",
+      "size": 128,
+      "attempts": 2,
+      "aborts": 1,
+      "return": 0
+    },
+    {
+      "case": "healthy",
+      "operation": "write",
+      "size": 128,
+      "attempts": 1,
+      "aborts": 0,
+      "return": 0
+    },
+    {
+      "case": "CRC then success",
+      "operation": "write",
+      "size": 128,
+      "attempts": 2,
+      "aborts": 1,
+      "return": 0
+    },
+    {
+      "case": "miss then CRC then success",
+      "operation": "write",
+      "size": 128,
+      "attempts": 3,
+      "aborts": 2,
+      "return": 0
+    },
+    {
+      "case": "persistent lost data",
+      "operation": "write",
+      "size": 128,
+      "attempts": 3,
+      "aborts": 3,
+      "return": 4
+    },
+    {
+      "case": "controller timeout then success",
+      "operation": "write",
+      "size": 128,
+      "attempts": 2,
+      "aborts": 1,
+      "return": 0
+    },
+    {
+      "case": "three controller timeouts",
+      "operation": "write",
+      "size": 128,
+      "attempts": 3,
+      "aborts": 3,
+      "return": 1
+    },
+    {
+      "case": "seek failure then success",
+      "operation": "write",
+      "size": 128,
+      "attempts": 2,
+      "aborts": 1,
+      "return": 0
+    },
+    {
+      "case": "write protected",
+      "operation": "write",
+      "size": 128,
+      "attempts": 1,
+      "aborts": 1,
+      "return": 64
+    },
+    {
+      "case": "CRC then write protection",
+      "operation": "write",
+      "size": 128,
+      "attempts": 2,
+      "aborts": 2,
+      "return": 64
+    },
+    {
+      "case": "healthy",
+      "operation": "read",
+      "size": 512,
+      "attempts": 1,
+      "aborts": 0,
+      "return": 0
+    },
+    {
+      "case": "CRC then success",
+      "operation": "read",
+      "size": 512,
+      "attempts": 2,
+      "aborts": 1,
+      "return": 0
+    },
+    {
+      "case": "miss then CRC then success",
+      "operation": "read",
+      "size": 512,
+      "attempts": 3,
+      "aborts": 2,
+      "return": 0
+    },
+    {
+      "case": "persistent lost data",
+      "operation": "read",
+      "size": 512,
+      "attempts": 3,
+      "aborts": 3,
+      "return": 4
+    },
+    {
+      "case": "controller timeout then success",
+      "operation": "read",
+      "size": 512,
+      "attempts": 2,
+      "aborts": 1,
+      "return": 0
+    },
+    {
+      "case": "three controller timeouts",
+      "operation": "read",
+      "size": 512,
+      "attempts": 3,
+      "aborts": 3,
+      "return": 1
+    },
+    {
+      "case": "seek failure then success",
+      "operation": "read",
+      "size": 512,
+      "attempts": 2,
+      "aborts": 1,
+      "return": 0
+    },
+    {
+      "case": "healthy",
+      "operation": "write",
+      "size": 512,
+      "attempts": 1,
+      "aborts": 0,
+      "return": 0
+    },
+    {
+      "case": "CRC then success",
+      "operation": "write",
+      "size": 512,
+      "attempts": 2,
+      "aborts": 1,
+      "return": 0
+    },
+    {
+      "case": "miss then CRC then success",
+      "operation": "write",
+      "size": 512,
+      "attempts": 3,
+      "aborts": 2,
+      "return": 0
+    },
+    {
+      "case": "persistent lost data",
+      "operation": "write",
+      "size": 512,
+      "attempts": 3,
+      "aborts": 3,
+      "return": 4
+    },
+    {
+      "case": "controller timeout then success",
+      "operation": "write",
+      "size": 512,
+      "attempts": 2,
+      "aborts": 1,
+      "return": 0
+    },
+    {
+      "case": "three controller timeouts",
+      "operation": "write",
+      "size": 512,
+      "attempts": 3,
+      "aborts": 3,
+      "return": 1
+    },
+    {
+      "case": "seek failure then success",
+      "operation": "write",
+      "size": 512,
+      "attempts": 2,
+      "aborts": 1,
+      "return": 0
+    },
+    {
+      "case": "write protected",
+      "operation": "write",
+      "size": 512,
+      "attempts": 1,
+      "aborts": 1,
+      "return": 64
+    },
+    {
+      "case": "CRC then write protection",
+      "operation": "write",
+      "size": 512,
+      "attempts": 2,
+      "aborts": 2,
+      "return": 64
+    }
+  ]
+}

@@ -1,44 +1,60 @@
 #!/usr/bin/env python3
-"""Build unloadable screen backends; no resident image is changed."""
+"""Build the selected platform's unloadable screen backends."""
 import argparse
-import re
 from pathlib import Path
+
 from build_ccp import assemble
 from build_cpx_module import relocation_offsets
 from build_rsx_module import make_module
+from build_z80pack_image import symbols
 from component_registry import module_version
+from system_layout import CONTEXT
 
-ROOT=Path(__file__).resolve().parents[1]
-OUT=ROOT/'build/screen-backends'
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT/'build/screen-backends'
+
+
+def crt_bindings(listing, model2=False):
+    table = symbols(listing)
+    position, column = (('M2_POS', 'M2_COL') if model2 else ('M4CURSOR', 'M4COLUMN'))
+    if model2 and max(table[position]+1, table[column]) >= 0xF800:
+        raise ValueError('Model II cursor state overlaps the video overlay')
+    return (f'CRT_POS EQU 0{table[position]:04X}H\nCRT_COL EQU 0{table[column]:04X}H\n'
+            f'M2BANK EQU {int(model2)}')
+
+
+def build(assembler, name, source, bindings, capability, entry):
+    text = (ROOT/'src/rsx/screen'/source).read_text(encoding='ascii').replace(
+        '        INCLUDE backend.inc', bindings)
+    listing = OUT/(name+'.lst')
+    code = assemble(assembler,text,OUT/(name+'.bin'),listing,0x8000)
+    alt = assemble(assembler,text.replace('08000H','08101H'),OUT/(name+'-alt.bin'),
+                   OUT/(name+'-alt.lst'),0x8101)
+    relocs = relocation_offsets(code,alt,0x101)
+    callback = symbols(listing)[entry]-0x8000
+    carrier = make_module(name=name,version=module_version(name),services=[],linked_base=0x8000,
+        code=code,relocations=relocs,reconstruction_class='STATEFUL',
+        callable_services=[(b'SCRN',1,1,callback,capability)])
+    for folder in (OUT, ROOT/'build/rsx'):
+        (folder/(name+'.RSX')).write_bytes(carrier)
+    print(f'{name}: {len(code)} payload bytes, {int.from_bytes(carrier[14:16],"little")} allocated; {len(relocs)} relocations')
 
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__)
+    p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--assembler',type=Path,default=Path.home()/'bin/z80asm')
-    args=p.parse_args();OUT.mkdir(parents=True,exist_ok=True)
+    args = p.parse_args()
+    OUT.mkdir(parents=True,exist_ok=True)
     (ROOT/'build/rsx').mkdir(parents=True,exist_ok=True)
-    from checked_carriers import selected_contract
-    checked = selected_contract(args.assembler)
-    listing = '' if checked else (ROOT/'build/bios/bios.lst').read_text(errors='replace')
-    bindings=''
-    for name in ([] if checked else ['M4CURSOR','M4COLUMN']):
-        value=int(re.search(r'^([0-9a-f]{4})\s+.*\b'+name+':',listing,re.M)[1],16)
-        bindings+=f'{name} EQU 0{value:04X}H\n'
-    for name,source,bits,entry in [('M4SCRN','model4.mac',1,'S_ENTRY'),('ANSISCRN','ansi-host.mac',2,'SB_ENTRY')]:
-        if checked and name == 'M4SCRN':
-            continue
-        text=(ROOT/'src/rsx/screen'/source).read_text(errors='replace').replace('        INCLUDE backend.inc',bindings)
-        code=assemble(args.assembler,text,OUT/(name+'.bin'),OUT/(name+'.lst'),0x8000)
-        alt=assemble(args.assembler,text.replace('08000H','08101H'),OUT/(name+'-alt.bin'),OUT/(name+'-alt.lst'),0x8101)
-        relocs=relocation_offsets(code,alt,0x101)
-        listing=(OUT/(name+'.lst')).read_text(errors='replace')
-        callback=int(re.search(r'^([0-9a-f]{4})\s+.*\b'+entry+':',listing,re.M)[1],16)-0x8000
-        carrier=make_module(name=name,version=module_version(name),services=[],linked_base=0x8000,
-            code=code,relocations=relocs,reconstruction_class='STATEFUL',
-            callable_services=[(b'SCRN',1,1,callback,bits)])
-        (OUT/(name+'.RSX')).write_bytes(carrier)
-        (ROOT/'build/rsx'/(name+'.RSX')).write_bytes(carrier)
-        print(f'{name}: {len(code)} payload bytes, {int.from_bytes(carrier[14:16],"little")} allocated; {len(relocs)} relocations')
+    if CONTEXT and CONTEXT[0]['target']=='trs80m2':
+        bindings=crt_bindings(ROOT/'build/trs80m2/bios.lst',model2=True)
+        build(args.assembler,'M2SCRN','crt80x24.mac',bindings,4,'S_ENTRY')
+        return
+    if not CONTEXT:
+        bindings=crt_bindings(ROOT/'build/bios/bios.lst')
+        build(args.assembler,'M4SCRN','crt80x24.mac',bindings,1,'S_ENTRY')
+    build(args.assembler,'ANSISCRN','ansi-host.mac','',2,'SB_ENTRY')
 
 
-if __name__=='__main__':main()
+if __name__=='__main__':
+    main()

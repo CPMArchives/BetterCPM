@@ -1,5 +1,30 @@
-; Build-matched Model 4 hardware backend. No terminal grammar lives here.
+; Shared 80x24 CRT renderer. The builder supplies the cursor addresses and
+; whether the video window needs mapping. No terminal grammar lives here.
         INCLUDE backend.inc
+; While Model II VRAM is mapped the protected RAM at F800h..FFFFh is hidden.
+; Only bracket direct cell/VRAM block operations, never a stack access, a
+; callback, or a copy from a caller-owned RAM pointer. The RSX code itself is
+; allocated below the unloaded TPA ceiling. RTC NMI is disabled by the BIOS.
+VOPEN   MACRO
+        IF M2BANK EQ 1
+        LD A,I
+        DI
+        PUSH AF
+        LD A,081H
+        OUT (0FFH),A
+        ENDIF
+        ENDM
+VCLOSE  MACRO
+        IF M2BANK EQ 1
+        LD A,1
+        OUT (0FFH),A
+        POP AF
+        JP PO,$+4                      ; skip EI if interrupts were disabled
+        EI
+        XOR A
+        ENDIF
+        ENDM
+
 BASE EQU 08000H
         ASEG
         ORG BASE
@@ -89,39 +114,41 @@ S_POS:
         ADD HL,DE
         LD DE,0F800H
         ADD HL,DE
-        LD (M4CURSOR),HL
+        LD (CRT_POS),HL
         LD A,C
-        LD (M4COLUMN),A
+        LD (CRT_COL),A
         RET
 S_PUT:
         ; A cell is a literal display byte. Preserve MM's complete video-byte
         ; repertoire; controls are interpreted only by the personality.
-        LD HL,(M4CURSOR)
+        LD HL,(CRT_POS)
+        VOPEN
         LD (HL),C
-        LD A,(M4COLUMN)
+        VCLOSE
+        LD A,(CRT_COL)
         CP 79
         RET Z
         INC A
-        LD (M4COLUMN),A
+        LD (CRT_COL),A
         INC HL
-        LD (M4CURSOR),HL
+        LD (CRT_POS),HL
         RET
 S_EOL:
         LD A,C
         LD (S_FILLBYTE),A
-        LD A,(M4COLUMN)
+        LD A,(CRT_COL)
         LD B,A
         LD A,80
         SUB B
         LD C,A
         LD B,0
-        LD HL,(M4CURSOR)
+        LD HL,(CRT_POS)
         JP S_FILL
 S_EOS:
         LD A,C
         LD (S_FILLBYTE),A
         LD HL,0FF80H
-        LD DE,(M4CURSOR)
+        LD DE,(CRT_POS)
         OR A
         SBC HL,DE
         LD B,H
@@ -134,7 +161,9 @@ S_UP:
         LD HL,0F850H
         LD DE,0F800H
         LD BC,1840
+        VOPEN
         LDIR
+        VCLOSE
         LD HL,0FF30H
         JP S_BLANK
 S_DOWN:
@@ -143,13 +172,16 @@ S_DOWN:
         LD HL,0FF2FH
         LD DE,0FF7FH
         LD BC,1840
+        VOPEN
         LDDR
+        VCLOSE
         LD HL,0F800H
 S_BLANK:
         LD BC,80
 S_FILL:
         LD A,(S_FILLBYTE)
         LD D,A
+        VOPEN
 S_LOOP:
         LD (HL),D
         INC HL
@@ -157,12 +189,13 @@ S_LOOP:
         LD A,B
         OR C
         JR NZ,S_LOOP
+        VCLOSE
         RET
 S_LINE:
         LD A,C
         LD (S_FILLBYTE),A
-        LD HL,(M4CURSOR)
-        LD A,(M4COLUMN)
+        LD HL,(CRT_POS)
+        LD A,(CRT_COL)
         LD E,A
         LD D,0
         OR A
@@ -181,7 +214,9 @@ S_INSERT:
         PUSH HL
         LD HL,0FF2FH
         LD DE,0FF7FH
+        VOPEN
         LDDR
+        VCLOSE
         POP HL
         JP S_BLANK
 S_DELETE:
@@ -191,7 +226,9 @@ S_DELETE:
         LD DE,80
         ADD HL,DE
         POP DE
+        VOPEN
         LDIR
+        VCLOSE
 S_LAST:
         LD HL,0FF30H
         JP S_BLANK
@@ -203,6 +240,9 @@ S_VIS:
         ; The personality owns visibility and must gate that operation.
         RET
 S_BELL:
+        IF M2BANK EQ 1
+        XOR A                          ; this board has no qualified bell output
+        ELSE
         LD C,0
 S_TONE:
         LD A,1
@@ -217,6 +257,7 @@ S_LOW:
         DJNZ S_LOW
         DEC C
         JR NZ,S_TONE
+        ENDIF
         RET
 S_FILLBYTE: DB 32
 ; Optional SCX controls; leave the original fixed-cell interface unchanged.
@@ -291,7 +332,7 @@ SX_MOVE:
         INC A
 SX_COUNT:
         LD (SX_STEP),A
-        LD HL,(M4CURSOR)
+        LD HL,(CRT_POS)
         LD DE,0F800H
         OR A
         SBC HL,DE
@@ -395,7 +436,7 @@ SX_VCHAR:
         OR 128
         LD C,A
 SX_NCHAR:
-        LD A,(M4COLUMN)
+        LD A,(CRT_COL)
         CP 79
         JR Z,SX_MARK
         CALL S_PUT
@@ -428,8 +469,8 @@ SE_ENTRY:
         LD A,B
         OR A
         JR NZ,SE_RANGE
-        LD HL,(M4CURSOR)
-        LD A,(M4COLUMN)
+        LD HL,(CRT_POS)
+        LD A,(CRT_COL)
         LD C,A
         LD B,0
         OR A
@@ -447,11 +488,11 @@ SE_RANGE:
         JR Z,SE_FROM
         CP 1
         JR NZ,SE_COUNT
-        LD DE,(M4CURSOR)
+        LD DE,(CRT_POS)
         INC DE
         JR SE_COUNT
 SE_FROM:
-        LD HL,(M4CURSOR)
+        LD HL,(CRT_POS)
         LD A,(SX_PEND)
         OR A
         JR Z,SE_COUNT
@@ -513,7 +554,7 @@ SM_TOPROW: DB 0
 SM_BOTTOM: DB 23
 ; Current physical row/column. Do not change the cursor or wrap latch.
 SM_CUR:
-        LD HL,(M4CURSOR)
+        LD HL,(CRT_POS)
         LD DE,0F800H
         OR A
         SBC HL,DE
@@ -630,7 +671,9 @@ RG_ENTRY:
         LD DE,(RG_TOP)
         LD HL,80
         ADD HL,DE
+        VOPEN
         LDIR
+        VCLOSE
         LD HL,(RG_BOT)
         JR RG_BLANK
 RG_DOWN:
@@ -640,16 +683,27 @@ RG_DOWN:
         EX DE,HL                      ; end of destination
         LD HL,(RG_BOT)
         DEC HL                        ; end of source
+        VOPEN
         LDDR
+        VCLOSE
 RG_SINGLE:
         LD HL,(RG_TOP)
 RG_BLANK:
         LD A,(RG_FILL)
         LD B,80
+        IF M2BANK EQ 1
+        LD C,A
+        ENDIF
+        VOPEN
 RG_PAINT:
+        IF M2BANK EQ 1
+        LD (HL),C
+        ELSE
         LD (HL),A
+        ENDIF
         INC HL
         DJNZ RG_PAINT
+        VCLOSE
         XOR A
         RET
 RG_BAD:
@@ -690,9 +744,9 @@ SS_ENTRY:
         OR A
         JP Z,S_BAD
         LD HL,(SS_CURSOR)
-        LD (M4CURSOR),HL
+        LD (CRT_POS),HL
         LD A,(SS_COLUMN)
-        LD (M4COLUMN),A
+        LD (CRT_COL),A
         LD HL,SS_ATTR
         LD DE,SX_ATTR
         LD BC,9
@@ -701,9 +755,9 @@ SS_ENTRY:
         LD (SX_PEND),A
         RET
 SS_SAVE:
-        LD HL,(M4CURSOR)
+        LD HL,(CRT_POS)
         LD (SS_CURSOR),HL
-        LD A,(M4COLUMN)
+        LD A,(CRT_COL)
         LD (SS_COLUMN),A
         LD HL,SX_ATTR
         LD DE,SS_ATTR

@@ -1,0 +1,217 @@
+{
+  "status": "PASS",
+  "scope": "Native trs80gp 2.5.8, built-in Model II ROM, 64 KiB, BCM2SS IMDs; includes independent post-run disk audit.",
+  "source_revision": "c377c47f4dad5ee360b9525f634cbcc0f0f8cac8",
+  "run": "model2-final-TTP4w4eq",
+  "release_run": "run-287z8ia0",
+  "conformance_run": "run-wq3fcpbk",
+  "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+  "system_sha256": "2219f8dcc6875dc614e8bad126b14ee4cb00825b48f78a8d919130dbc687d893",
+  "primary_sha256": "7ef8f1a4917436ec2167b32b6f7bcaf0ff1c0e770adea8ef74db71b8592f1715",
+  "companion_sha256": "cf0a0efc975714d73e3db5d56436a41f5cb8312b460541a351365303e022fa60",
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "captures": 173,
+  "capture_archive": "guest-screens.zip",
+  "capture_archive_sha256": "66a49b4d67b03ac59c8aa4cbd8f6c481b698702ae4e8b1673bebf7d3db8772ec",
+  "conformance_runner_sha256": "1b689bd2100910832999dca6204bb391b50841f2f7fa8dcf1676da29a9d24dea",
+  "conformance_auditor_sha256": "1b689bd2100910832999dca6204bb391b50841f2f7fa8dcf1676da29a9d24dea",
+  "conformance_cases": {
+    "cputest": {
+      "status": "PASS",
+      "screens": 3,
+      "suite_pass_count": 2
+    },
+    "ecotest": {
+      "status": "PASS",
+      "screens": 3,
+      "suite_pass_count": 1
+    },
+    "disktest": {
+      "status": "PASS",
+      "screens": 3,
+      "suite_pass_count": 7
+    },
+    "ccptest": {
+      "status": "PASS",
+      "screens": 3,
+      "suite_pass_count": 12
+    },
+    "entrytst": {
+      "status": "PASS",
+      "screens": 3,
+      "suite_pass_count": 25
+    },
+    "biostest": {
+      "status": "PASS",
+      "screens": 3,
+      "suite_pass_count": 5
+    },
+    "errtest": {
+      "status": "PASS",
+      "screens": 3,
+      "suite_pass_count": 5
+    },
+    "dirtest": {
+      "status": "PASS",
+      "screens": 3,
+      "suite_pass_count": 49
+    },
+    "bdostest": {
+      "status": "PASS",
+      "screens": 3,
+      "suite_pass_count": 56
+    },
+    "filetest": {
+      "status": "PASS",
+      "screens": 3,
+      "suite_pass_count": 68
+    },
+    "randtest": {
+      "status": "PASS",
+      "screens": 3,
+      "suite_pass_count": 39
+    },
+    "last-block": {
+      "status": "PASS",
+      "screens": 2,
+      "suite_pass_count": null
+    },
+    "write-protect": {
+      "status": "PASS",
+      "screens": 2,
+      "suite_pass_count": null
+    },
+    "directory-full": {
+      "status": "PASS",
+      "screens": 4,
+      "suite_pass_count": null
+    },
+    "file-ro-0368": {
+      "status": "PASS",
+      "screens": 4,
+      "suite_pass_count": null
+    },
+    "file-ro-0369": {
+      "status": "PASS",
+      "screens": 4,
+      "suite_pass_count": null
+    },
+    "keyboard": {
+      "status": "PASS",
+      "screens": 3,
+      "suite_pass_count": null
+    },
+    "config-rejection": {
+      "status": "PASS",
+      "screens": 3,
+      "suite_pass_count": null
+    },
+    "config-persistence": {
+      "status": "PASS",
+      "screens": 4,
+      "suite_pass_count": null
+    },
+    "disk-ro-0379": {
+      "status": "PASS",
+      "screens": 5,
+      "suite_pass_count": null
+    },
+    "disk-ro-0380": {
+      "status": "PASS",
+      "screens": 5,
+      "suite_pass_count": null
+    },
+    "disk-ro-0381": {
+      "status": "PASS",
+      "screens": 5,
+      "suite_pass_count": null
+    },
+    "disk-ro-0382": {
+      "status": "PASS",
+      "screens": 5,
+      "suite_pass_count": null
+    },
+    "disk-ro-0383": {
+      "status": "PASS",
+      "screens": 5,
+      "suite_pass_count": null
+    },
+    "disk-ro-0384": {
+      "status": "PASS",
+      "screens": 5,
+      "suite_pass_count": null
+    },
+    "fault-suspended": {
+      "status": "PASS",
+      "screens": 4,
+      "suite_pass_count": null
+    },
+    "fault-ignore": {
+      "status": "PASS",
+      "screens": 6,
+      "suite_pass_count": null
+    },
+    "fault-abort": {
+      "status": "PASS",
+      "screens": 5,
+      "suite_pass_count": null
+    },
+    "media-change-write": {
+      "status": "PASS",
+      "screens": 4,
+      "suite_pass_count": null
+    },
+    "media-change-reset": {
+      "status": "PASS",
+      "screens": 4,
+      "suite_pass_count": null
+    }
+  },
+  "release_phases": {
+    "utilities": "PASS",
+    "batch": "PASS",
+    "lifecycle": "PASS",
+    "install": "PASS"
+  },
+  "installation": {
+    "phases": {
+      "install": "PASS",
+      "cold-config": "PASS",
+      "duplicate": "PASS",
+      "check-copy": "PASS",
+      "saved-iobyte": "PASS"
+    },
+    "matching_decoded_bytes": 625920,
+    "source_installed_and_duplicate_sha256": "3449f29d55aacbb8d3855982434eed4cd1201dcb451ccd47d54b902154af1e45",
+    "unreadable_sectors": 0,
+    "live_iobyte": 149,
+    "saved_iobyte": 149
+  },
+  "numeric_path": {
+    "result": "PASS",
+    "witnesses": [
+      "PATH: . A0:",
+      "FIRST IMAGE B3",
+      "FIT 57344 OK",
+      "FILE WILL NOT FIT",
+      "INPUT OK",
+      "SECOND IMAGE B0",
+      "PATH: B3: . B0:",
+      "PATH: A9:",
+      "PATH: . A0:",
+      "PACKAGED PATH DONE"
+    ],
+    "captures": {
+      "trs80-text-0.bin": "fdb9f1f152c24f158b66fcadd185bbb97950ec132ce1b14602a3920f783e196d",
+      "trs80-text-1.bin": "5b6bb7a70afa201361b32b3e3508f17b70c39884af783c725ce5d278b24f8347",
+      "trs80-text-2.bin": "b7c9d9a539d7219d04a5fd39774fa9aa8e5c0f6c65e4a088c0eea78aeb55e62c",
+      "trs80-text-3.bin": "b6562903eee386fed7bb5c978495504d744a905a962f22dac70b56bab13d03a5",
+      "trs80-text-4.bin": "0598a63671e511bb6a065560e4f7398035b7407ece95f1b490f2d908e565d41d",
+      "trs80-text-5.bin": "743b49407cc1d49164fbc445dd9eec57f5d07be95db6a80f85d378b6e261b4bd",
+      "trs80-text-6.bin": "253cfadba984a4cd645ec36c6a5f67f16001f9a89f546b862be8b01d4716e077",
+      "trs80-text-7.bin": "f94cae65a9965a2275d613ac3700cdbb8626ef2018f3fe90f7280da1f87f79d4",
+      "trs80-text-8.bin": "5abd3dc5ea9e6e987363cea423322931ce651240ee85423e0eb17e4a09cf80b7",
+      "trs80-text-9.bin": "2cf8313bd4c9121e3be9cb5f3686ce3ff32fef16bebd41c60904a5f940e595a6"
+    }
+  }
+}

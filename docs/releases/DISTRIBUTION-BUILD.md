@@ -22,6 +22,17 @@ python3 tools/build_distribution.py --target z80pack
 python3 tools/build_distribution.py --target trs80gp
 ```
 
+The 1.1 combined System build also selects the 64 KiB TRS-80 Model II.
+Use `python3 -B tools/build_distribution.py --target trs80m2` for that target
+alone. Its named IMD is written under `build/trs80m2/`. The immutable
+generation includes the System ZIP, checked package and the inventory/boot
+report in `trs80m2/`. For unchanged qualified image bytes, the builder checks
+the retained guest receipt. A changed System Disk requires a fresh native
+lifecycle check before publication. Build the primary and companion Utilities
+disks with `python3 -B tools/build_utilities_disk.py --model2-system
+build/distribution/release-NAME/trs80m2 --output build/model2-utilities`.
+[Model II operator guide](../platform/MODEL2-INSTALLATION.md).
+
 For BetterCP/M 1.1, both the combined build and `--target z80pack` select
 the checked `cpmsim-fullram` layout. Its release image uses the standard
 filename below. The same generation contains the matching `z80pack/SYSTEM.SYS`,
@@ -43,7 +54,7 @@ Prerequisites are those used by the existing build/qualification tools:
 `~/bin/z80asm`, Python 3, cpmtools (`cpmcp`, `cpmls`, `fsck.cpm`), the qualified
 cpmsim environment and its helpers, and trs80gp. `--simulator` and `--emulator`
 override the existing local default paths. Model 4 launch uses the repository's
-LaunchServices wrapper on macOS. The builder actually boots both targets;
+LaunchServices wrapper on macOS. The Model 4 and cpmsim builds boot their respective System disks;
 there is no filesystem-only shortcut advertised as a boot-qualified release.
 
 Each target is rebuilt from a private source snapshot using existing builders.
@@ -69,6 +80,7 @@ generation under `build/distribution/`:
 
 - `z80pack/BetterCPM-Distribution-z80pack-332K.dsk`
 - `trs80gp/BetterCPM-Distribution-trs80gp-80T-DS-System.dmk`
+- `trs80m2/BetterCPM-Distribution-trs80m2-77T-SS-System.imd`
 
 Each target directory includes `report.json`, the build log, directory listing,
 filesystem check output, and boot transcript/screens. The report records source

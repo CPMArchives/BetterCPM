@@ -21,6 +21,9 @@
         JP CF_GETLOG
         JP CF_FAST
 
+        IF PL_M2 EQ 1
+        INCLUDE control.inc
+        ELSE
 DC_PHBAD:                               ; reject invalid physical profile
         JP DC_INVALID
 
@@ -510,6 +513,8 @@ DC_FSTATUS:                             ; return format status
         IN A,(FDCSTATUS)
         AND 0FCH
         JP DC_RETURN
+
+        ENDIF
 
 CPTCOUNT EQU LY_SYS+094H
 CPTFLAGS EQU LY_SYS+095H              ; bit 0: startup command already consumed

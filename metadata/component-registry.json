@@ -834,12 +834,28 @@
       "version": "1.7",
       "placement": "System",
       "roots": [
-        "src/rsx/screen/model4.mac"
+        "src/rsx/screen/crt80x24.mac"
       ],
       "builders": [
         "tools/build_screen_backends.py"
       ],
       "revision": 2,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "module:M2SCRN": {
+      "kind": "loadable module",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/rsx/screen/crt80x24.mac",
+        "src/platform/trs80m2/console.inc"
+      ],
+      "builders": [
+        "tools/build_screen_backends.py"
+      ],
+      "revision": 1,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending"

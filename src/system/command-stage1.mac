@@ -23,8 +23,14 @@ P9_EXPECT: LD DE,COMMAND_STAGE2_CRC
         JR NZ,P9_HALT
         JP 0500H
 P9_HALT:
+        IF PL_M2 EQ 1
+        LD C,'!'
+        XOR A
+        CALL LY_BIOS+69                 ; raw CRT; no unverified monitor callback
+        ELSE
         LD A,'!'
         OUT (1),A
+        ENDIF
         HALT
         JR P9_HALT
         END

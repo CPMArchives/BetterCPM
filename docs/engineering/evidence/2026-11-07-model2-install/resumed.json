@@ -1,0 +1,25 @@
+{
+  "run": "run-iuqnm1vz",
+  "resumed_from": "run-wq0ulkcc",
+  "status": "PASS",
+  "source_revision": "060b323f244991cd1795d512a1fcddf3b654f636",
+  "system_sha256": "32107d570e1409984e1b9eee62d306d31714436429964690d8ef27b75ccc83c5",
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "completed_phases": [
+    "install",
+    "cold-config",
+    "duplicate",
+    "check-copy",
+    "saved-iobyte"
+  ],
+  "scope": "Installer candidate before numeric PATH integration",
+  "decoded_source_installed_and_duplicate_equal": true,
+  "unreadable_sectors": 0,
+  "live_iobyte_decimal": 149,
+  "saved_iobyte_decimal": 149,
+  "captures": {
+    "duplicate-4.bin": "53ede8aeec4fc28f1f54b682cac3005049f06b8f6e951f559382648e79e1bdaa",
+    "check-copy-2.bin": "cc82b4279fe37de4678ca69d11384000654c72c00257126d3cb7d2feeea873e2",
+    "saved-iobyte-1.bin": "8adbe6642020b30c5eaa043ba890eea169ebaca0a28b12bfaa341215512ab4d3"
+  }
+}

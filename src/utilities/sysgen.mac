@@ -466,7 +466,11 @@ PATCHTARGET:                            ; patch package for destination
         CALL API
         RET NZ
         LD A,(REQ+1)
+        IF PL_M2 EQ 1
+        CP 8                            ; Model II boots from eight-inch media
+        ELSE
         CP 5
+        ENDIF
         JR NZ,PTBAD
         CALL FINDDESC
         RET NZ
@@ -715,6 +719,7 @@ IODRIVE:LD (IODRV),A                    ; iodrive
         INC HL
         LD D,(HL)
         LD HL,(IOREC)
+; @package-record-map@
         LD A,(DE)                       ; DPB+0 = logical records per track
         LD C,A
         INC DE

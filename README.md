@@ -6,6 +6,11 @@ The project begins with CP/M 2.2 as its compatibility baseline while redesigning
 
 The released 1.0 baseline has qualified installation and reconstruction receipts for the exact published software packages. Qualification covers patched z80pack `cpmsim` and the TRS-80 Model 4 under `trs80gp`; it does not establish physical-hardware validation.
 
+The BetterCP/M 1.1 development line officially supports the 64 KiB TRS-80 Model II in trs80gp
+2.5.8 with BCM2SS floppy media and 56 KiB unloaded TPA.
+[Maintained platforms and qualification](docs/platform/SUPPORT-1.1.md) ·
+[Model II installation](docs/platform/MODEL2-INSTALLATION.md).
+
 The finalized visual design is defined in the [BetterCP/M Visual Identity standard](specifications/VISUAL-IDENTITY.md).
 
 The [Command and Utilities Reference](docs/manuals/Command-and-Utilities-Reference.md) covers System Disk commands, resident commands, and primary/companion Utilities programs.
