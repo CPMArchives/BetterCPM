@@ -174,15 +174,19 @@ Explicit bold is never satisfied by relabeling reverse as bold.
 
 | State/event | Result | State after operation |
 | --- | --- | --- |
-| Idle + eligible BeginEmphasis | Capture prior logical rendition, apply mapping through the owner; return an ownership handle. | Active. |
-| Idle + plain/unavailable mapping | Return plain result; make no change and issue no active handle. | Idle. |
+| Idle + eligible BeginEmphasis | Arm recovery, capture prior rendition, apply mapping; return emphasis token. | EmphasisOnly. |
+| Idle + plain/unavailable mapping | Return plain, no mutation or active token. | Idle. |
 | Idle + incomplete parser sequence | Return parser-busy; preserve buffered sequence. | Idle. |
-| Active + BeginEmphasis | Return already-active without output or mutation. | Active, original capture unchanged. |
-| Active + matching EndEmphasis, parser complete | Restore captured rendition, retire handle. | Idle. |
-| Active + EndEmphasis, parser incomplete | Return parser-busy without discarding sequence or capture. Caller must resolve the sequence or invoke recovery before exit. | Active. |
-| Idle + EndEmphasis, or wrong/retired handle | Return invalid-scope; no mutation. | Unchanged. |
-| Active + explicit Recover or abnormal command return | Retire scope and establish the documented prompt baseline through the valid owner. Exact prior session is not restored. | Idle after successful recovery. |
-| Active + binding/route invalidation | Retire/clean owned state before old owner is released or route is published; stale clients cannot invoke cleanup through old addresses. | Idle on the new path, or recovery-required if cleanup failed. |
+| Takeover + eligible BeginEmphasis with matching takeover token | Capture the takeover's prior rendition and return a separate emphasis token. | TakeoverWithEmphasis. |
+| Takeover + plain mapping | Return plain, preserve takeover token and ownership. | Takeover. |
+| EmphasisOnly or TakeoverWithEmphasis + BeginEmphasis | Return scope-state/already-active without replacing capture. | Unchanged. |
+| EmphasisOnly + matching EndEmphasis, parser complete | Restore prior rendition and retire scope/session ownership. | Idle. |
+| TakeoverWithEmphasis + matching EndEmphasis, parser complete | Restore prior takeover rendition and retire emphasis only. | Takeover. |
+| Either emphasis state + EndEmphasis, parser incomplete | Return parser-busy; preserve sequence and capture. Resolve or Recover before leaving. | Unchanged. |
+| Idle/Takeover without emphasis + EndEmphasis, or wrong/retired handle | Return invalid-scope; no mutation. | Unchanged. |
+| Any active portable state + explicit Recover or abnormal recoverable return | Retire all portable ownership after successful baseline recovery. | Idle on success; RecoveryRequired on failure. |
+| Any active state + managed profile mutation | Initial design rejects session-busy before publication. Explicitly close/recover first. | Unchanged. |
+| Any active state + observed unmanaged route mismatch | Repair through original valid owner only; preserve ordinary byte routing, block enhanced use pending full coordinator recovery. | RecoveryRequired; no successful-baseline claim. |
 
 Successful Begin/End must leave cursor position, pending-wrap behavior, margins,
 visibility and the existing SCX save slot unchanged, except for the logical
@@ -230,7 +234,8 @@ separate, explicitly supported prior-session restoration contract was admitted.
 Exact previous screen contents and arbitrary host modes are excluded.
 
 For a TCAP-admitted enhanced session, recovery must occur before returning
-command-environment text, even when Ctrl-C/warm boot bypasses transient cleanup.
+command-environment text on a recoverable return path, even when Ctrl-C/warm
+boot bypasses transient cleanup.
 The recovery owner must not depend on transient buffers or an exit handler.
 The proposed prompt baseline is:
 
@@ -269,6 +274,19 @@ takeover together. Normal End restores the enclosing takeover's rendition;
 normal Release must still establish the declared exit baseline. Ownership
 metadata must distinguish eligibility, active takeover and active scope without
 requiring transient storage to survive command return.
+
+### Fatal loader failure boundary
+
+The qualified recovery guarantee covers normal/abnormal returns that reach the
+valid recovery coordinator, including recoverable diagnostics before a prompt.
+A failure to fetch/verify the reloader can halt before that coordinator executes.
+Such a fatal stop is recovery-not-completed, not a successful baseline or a
+promise of readable diagnostic output. Existing platform fatal markers/halts
+remain outside the new recovery guarantee. No transient or provider allocation
+is then safe to release or republish based on an assumed successful cleanup.
+The [integration design](TCAP-Integration-Design.md#fatal-pre-coordinator-paths)
+records the exact source boundary and the additional cost gate for any stronger
+resident recovery guarantee.
 
 ## Failure contract
 

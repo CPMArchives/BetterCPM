@@ -96,7 +96,7 @@ lengths, layout and version rules together before any client is implemented.
 | Request envelope | Version byte, length word, symbolic operation, zero reserved flags, input/output pointers and capacities as needed, result, resulting session state, recovery-required indicator. |
 | Snapshot | Record version/length; owner validity identity; resident generation observation; rendering class; destination/interactivity states; rows/columns words with independent known/provenance tags; wrap/control model; operation availability; emphasis and explicit-attribute facts; routing/echo class; cleanup guarantees; explicit plain policy. |
 | Eligibility | Snapshot identity/facts needed to revalidate; requested operations/cleanup; client geometry range; resolved mode (spatial, non-spatial/plain, fixed-cell takeover or refused). No provider entry pointer or transient callback. |
-| Session token | Owner validity identity, session serial, token kind (takeover or emphasis) and scope serial if needed to distinguish successive scopes within one takeover. Zero components are invalid. |
+| Session token | Owner validity identity, session serial, token kind (takeover or emphasis) and scope serial if needed to distinguish successive scopes within one takeover. Owner/session identities are nonzero; takeover tokens require scope serial zero, while emphasis tokens require a nonzero scope serial. |
 | Owner state | Identities, Idle/Active/Recovering/RecoveryRequired state, takeover/scope ownership, route assumptions, baseline progress and one nine-byte prior logical rendition; no transient pointers. |
 
 The snapshot may report unsupported, unknown or incompatible facts independently;
@@ -224,7 +224,8 @@ must precede CPX_INITIALIZE and error/startup text, not just the interactive loo
 Function 0 and cooked ^C may abandon the BDOS private stack; use the reloader/system
 stack before any BDOS-assisted coordination. Resident commands returning without
 warm boot still cross the prompt guard. Early loader failures that halt need no
-invented successful prompt, but any error text must obey the recovery disposition.
+invented successful prompt, but recoverable error text must obey the recovery disposition. Fatal
+pre-coordinator paths have the explicit limit below.
 
 After partial recovery failure, retain progress and RecoveryRequired. Do not mark
 Idle merely because End/Recover returned. A safe retry may repeat idempotent
@@ -232,6 +233,30 @@ normalization but cannot claim exact restoration. If owner binding or console is
 corrupt/unreachable, use the existing defined system failure path and do not emit
 unverified controls. The implementation must demonstrate its safe diagnostic/halt
 behavior; arbitrary terminal failure cannot be repaired by the specification.
+
+### Fatal pre-coordinator paths
+
+Source review identifies failures before CRBODY can run:
+
+- [cpmsim platform loader](../../src/platform/z80pack/biosplat.inc), PL_RELOAD:
+  raw-sector fetch failure reaches Z_HALT, emits a raw `!` on port 1 and halts.
+- [Checked cpmsim loader](../../src/platform/z80pack/checked-load.inc): fetch,
+  identity or CRC verification failure reaches its raw `!`/HALT path.
+- [Model 4 loader](../../src/platform/trs80m4/reload.inc), M4_RELOAD:
+  fetch failure reaches the M4_RLFAIL loop before entering the reloader.
+
+These are fatal platform dispositions, not normal command-return paths. The
+reloader/CCP coordinator cannot guarantee a baseline on code it never reaches.
+The proposed initial guarantee therefore excludes successful recovery/readable
+markers at such a fatal stop; it must report no successful cleanup and must
+not release/republish owner state. A raw marker may inherit the endpoint's
+prior rendition. Do not reinterpret that as qualified TCAP error reporting.
+
+A stronger guarantee would need a separately costed resident, safe-stack recovery
+entry before the reloader fetch/verification, with no dependency on the code
+being loaded. That is an implementation-feasibility alternative, not a delivered
+entry or an implicit permanent-memory allocation. Normal recovered diagnostics
+inside the loaded reloader and the CCP remain fully subject to the baseline.
 
 ## Resource ledger and compatibility gates
 

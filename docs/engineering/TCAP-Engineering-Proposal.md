@@ -359,6 +359,23 @@ ownership direction as a proposal, retain HELP's hold, and leave implementation,
 ABI allocation, migration scope and release assignment undecided pending those
 gates. Publishing this package does not authorize a prototype or code changes.
 
+## Final documentation review disposition
+
+The design package through PR #653 was reviewed for state/token consistency
+and recovery-entry completeness. The final corrections distinguish End inside
+a takeover from scope-only End, allow the takeover's required zero scope serial,
+and document fatal pre-coordinator loader failures without a successful recovery
+claim. Candidate record sizes are design values; no memory cost is measured.
+
+The documentation phase is ready for a single engineering acceptance/revision
+review. It does not need another speculative prose sequence to stand in for
+implementation evidence. The next meaningful phase is a bounded feasibility
+implementation: owner/coordinator integration, fixed/loaded/transient memory
+measurements and the existing qualification plan, before utility migrations.
+That phase remains outside the instruction to leave implementation for later.
+No prototype, code migration, ABI freeze, HELP resumption or release assignment
+is performed or implied here.
+
 ## Related contracts
 
 - [Roadmap handoff](TCAP-Design-Thread-Handoff.md)
