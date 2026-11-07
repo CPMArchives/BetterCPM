@@ -141,3 +141,27 @@ and retains the experimental OFF=3/DSM=384 boot-volume layout. Its native select
 is permanent; the old image-builder selector tail is not a compatible package.
 No production source, utility, installed media or release assignment changes.
 This is not an installable distribution or a completed public TCAP request ABI.
+
+## Installable native-reference package
+
+```sh
+build/tcap-feasibility/venv/bin/python tools/prototypes/tcap/manager_integration.py --native-package
+python3 tools/prototypes/tcap/qualify_native_package.py
+```
+
+This optional follow-up emits a private OFF=3 Model 4 disk, `XTNP` SYSTEM.SYS,
+and matching INSTALL.COM under `build/tcap-manager-integration/native-package/`.
+The installer refuses ordinary OFF=2 packages and checks sealed system bytes
+before writing. Only independently formatted OFF=3 destinations are supported;
+this is not an in-place filesystem conversion. The production layout is unchanged; a companion Model 4 configuration fix
+restores existing destination admission within the same overlay size. Utility
+migrations and release assignment remain deferred.
+
+The full-machine qualifier requires the local trs80gp executable and its macOS
+application services. It operates only on disposable generated images and closes
+its batch windows. Stock SUBMIT records and explicit blocking guest checkpoints
+avoid timing-dependent keyboard scripts. The ADM3A app / unload / ANSI app switch
+uses ordinary BDOS output and a shared M4SCRN backend; separate private XTCP probes
+exercise warm reconstruction and unload. `qualification.json` exists only after
+all qualification assertions pass. See the [package report](../../../docs/engineering/TCAP-Native-Package-Results.md)
+for the trust chain, disk layout and remaining production boundaries.

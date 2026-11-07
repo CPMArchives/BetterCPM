@@ -1,0 +1,29 @@
+{
+  "rows": [
+    "",
+    "A0>R02",
+    "NATIVE STAGE 02",
+    "A0>ADMAPPAD M4SCRN",
+    "         ANSIAPP NORMAL CONSOLE PASS",
+    "A0>R06",
+    "NATIVE STAGE 06",
+    "A0>RSX LISTAD ADM3A",
+    "",
+    "M4SCRN : BDOS 255",
+    "ANSI : BDOS 255",
+    "TPA available: 47K",
+    "",
+    "A0>R07",
+    "NATIVE STAGE 07",
+    "A0>RSX UNLOAD ANSI",
+    "",
+    "A0>R08",
+    "NATIVE STAGE 08",
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "normalized_screen_sha256": "35f51dcac95cfd3fe76173a9b4c41b00665b951c4ca4e612b10ae59e90ed4d3b"
+}

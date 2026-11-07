@@ -1,0 +1,29 @@
+{
+  "status": "BUILT; full-machine qualification is a separate command",
+  "identity": "e32a02030e7159e505876fe772ab4092",
+  "system_records": 240,
+  "boot_volume_off": 3,
+  "resident_bytes": 7612,
+  "stage1_bytes": 339,
+  "boot_bytes": 461,
+  "files": {
+    "INSTALL.COM": "1df8818ad9eafb7b380b3743be7fa5624e3ce73a5c9f09914fcb29815d342b35",
+    "SYSTEM.SYS": "619e2efdc6d3ee8be188cc62f39dd326cd8ac732c7c26fa21399ad77c5975767",
+    "RSX.COM": "82332cf0a15e8a9a519098fc7961faa3b756b90e016b0f76efb581e90a780086",
+    "R3PACK.RSX": "0f902babee8a5b3ce218e400062e504ecc0248165a5a54bf1c50239e1ecd2c5a",
+    "R3CACHE.RSX": "31ef1889fbf2f7c2b348c8458e67bdc5c4a83df6be65c230dea6d6d2013c8cc9",
+    "M4SCRN.RSX": "c7126fd607a16e60fc53865b02ccbb494330016eae8d9456226cf253d326e3ee",
+    "XTCAP.RSX": "f8469a2a479eb434b4ea374022c6eeb3df16690220950cc7a7c24d7fb5e6fd49",
+    "ADM3A.RSX": "f97422b66b6a97825d9476840039e9c03bb07f7f69ae403e0a82d6ce7fa19b73",
+    "ANSI.RSX": "36325f232b80f23fea6618828d660e5a691d68766f396ef4989caac8b2d0e868",
+    "ADMAPP.COM": "d556e662eb2158cdb22029cdb9d4769ce6d3a98237e2841345c4e852d22c6fcf",
+    "ANSIAPP.COM": "3c6f86d92eddac8556570f45535cd2566bc0cca8b86a488e9a1d76864dfb8c14",
+    "TCHECK.COM": "a9e717aee40d5c06ff4f515884cfb3094cd0751ac8aea333668fd66e302be389",
+    "TSCOPE.COM": "6e4757b8271de352bd31676e09e89048098dbca036189698550868d09aa4bc58",
+    "TBEGIN.COM": "5ab7aa98c198666f978b298a63aa2883b29dee68bc08f9e96500ff463acc28c6",
+    "SETBSYS.COM": "9713cd7e63e6bee41d889aa067256d43d1247c108c0fa99c4c18cbdb48335d4c"
+  },
+  "package_sha256": "619e2efdc6d3ee8be188cc62f39dd326cd8ac732c7c26fa21399ad77c5975767",
+  "raw_sha256": "4f3ea927966ef46d726923bf73c42c34a9a0d4c0cba8b1824b4e0b73cb70dc2c",
+  "scope": "private Model 4 native reference; utility migrations and release assignment deferred"
+}

@@ -1,0 +1,29 @@
+{
+  "rows": [
+    "         ANSIAPP NORMAL CONSOLE PASS",
+    "A0>R06",
+    "NATIVE STAGE 06",
+    "A0>RSX LISTAD ADM3A",
+    "",
+    "M4SCRN : BDOS 255",
+    "ANSI : BDOS 255",
+    "TPA available: 47K",
+    "",
+    "A0>R07",
+    "NATIVE STAGE 07",
+    "A0>RSX UNLOAD ANSI",
+    "",
+    "A0>R08",
+    "NATIVE STAGE 08",
+    "A0>RSX LOAD XTCAP",
+    "",
+    "A0>R09",
+    "NATIVE STAGE 09",
+    "A0>TSCOPE",
+    "TSCOPE PASS",
+    "",
+    "A0>R10",
+    "NATIVE STAGE 10"
+  ],
+  "normalized_screen_sha256": "37ef703cf0dd7906dc75aaa34dfdfc14fe87b81ccd99510dbb121e69b67e0938"
+}

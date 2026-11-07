@@ -1,0 +1,29 @@
+{
+  "rows": [
+    "NATIVE STAGE 06",
+    "A0>RSX LISTAD ADM3A",
+    "A0>R11",
+    "NATIVE STAGE 1155",
+    "ANSI : BDOS 255",
+    "TPA available: 47K",
+    "",
+    "A0>R07",
+    "NATIVE STAGE 07",
+    "A0>RSX UNLOAD ANSI",
+    "",
+    "A0>R08",
+    "NATIVE STAGE 08",
+    "A0>RSX LOAD XTCAP",
+    "",
+    "A0>R09",
+    "NATIVE STAGE 09",
+    "A0>TSCOPE",
+    "TSCOPE PASS",
+    "",
+    "A0>R10",
+    "NATIVE STAGE 10",
+    "A0>TBEGIN",
+    ""
+  ],
+  "normalized_screen_sha256": "f62161978a010394862d1e64cd8f7f0e31cf83f0077851d0d1a9b1c85ad9358a"
+}

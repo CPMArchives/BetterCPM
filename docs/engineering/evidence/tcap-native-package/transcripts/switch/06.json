@@ -1,0 +1,29 @@
+{
+  "rows": [
+    "",
+    "A0>R02",
+    "NATIVE STAGE 02",
+    "A0>ADMAPPAD M4SCRN",
+    "         ANSIAPP NORMAL CONSOLE PASS",
+    "A0>R06",
+    "NATIVE STAGE 06",
+    "A0>RSX UNLOAD ADM3A",
+    "",
+    "A0>R04",
+    "NATIVE STAGE 04",
+    "A0>RSX LOAD ANSI",
+    "",
+    "A0>R05",
+    "NATIVE STAGE 05",
+    "A0>ANSIAPP",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "normalized_screen_sha256": "3cf99e5d6f2f48f021d6648598223766a5dc6123799a1df508bef523f30a35f4"
+}

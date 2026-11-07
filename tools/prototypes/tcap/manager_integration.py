@@ -581,6 +581,7 @@ VI_RELOC:
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--assembler',type=Path,default=Path.home()/'bin/z80asm')
+    p.add_argument('--native-package',action='store_true',help='build private Model 4 reference media after the integration checks')
     args=p.parse_args()
     if layout.CONTEXT:p.error('use the unprepared native-reference checkout; checked/Model II profiles are not qualified by this campaign')
     assert len(NAMES)==15,'private reader format requires the reviewed fifteen-slot pack'
@@ -593,9 +594,20 @@ def main():
     names.update(str(path.relative_to(ROOT)) for folder in ('src/bdos','src/bios','src/system','src/platform','src/ccp','src/rsx') for path in (ROOT/folder).rglob('*') if path.is_file())
     names.update(str(path.relative_to(ROOT)) for path in (ROOT/'tools').glob('build*.py'))
     names.update(('tools/prototypes/tcap/matching_validity.py','tools/prototypes/tcap/validity-root.inc','tools/system_layout.py','tools/checked_build_contract.py','tools/checked_carriers.py','tools/rsx_disk_cache.py','tools/rsx_container.py'))
+    if args.native_package:
+        # Native utility expansion also reads registry/display metadata and
+        # helper modules. Conservatively freeze the complete local source/tool
+        # trees so a matching identity cannot hide changed expansion inputs.
+        names.update(str(path.relative_to(ROOT)) for folder in ('src','metadata','tools') for path in (ROOT/folder).rglob('*') if path.is_file() and (folder!='tools' or path.suffix in ('.py','.inc','.mac')))
+        names.update(('tools/startup_record.py','tools/shared_ui.py','tools/test_sysgen_install.py','tools/add_cpm_file_to_dmk.py','tools/trs80gp_launch.py','tools/run_trs80_command.py'))
     contract={'inputs':{name:previous.sha((ROOT/name).read_bytes()) for name in sorted(names)},'assembler_sha256':previous.sha(args.assembler.read_bytes())}
     for path in (Path(__file__),base.HERE/'manager-prepare.inc'):
         contract['inputs'][str(path.relative_to(ROOT))]=previous.sha(path.read_bytes())
+    if args.native_package:
+        for path in (base.HERE/'native_package.py',):contract['inputs'][str(path.relative_to(ROOT))]=previous.sha(path.read_bytes())
+    if args.native_package:
+        import utility_versions
+        contract['development_display']={name:utility_versions.display_development('utility:'+name) for name in ('RCP','RSX','SYSGEN')}
     contract.update(private_epoch=5,permanent_bytes=1024,roles=ROLES,required_mask=REQUIRED)
     identity=hashlib.sha256(json.dumps(contract,sort_keys=True,separators=(',',':')).encode()).digest()[:16]
     # Preserve historical campaign code while using today's shared CRT source.
@@ -622,6 +634,9 @@ def main():
         if name in changes:base.L[alias]=changes[name]
     base.L.update(PDS_DESCRIPTOR=base.L['SYSTEM']+0x80,PDS_TOP=base.L['SYSTEM'],PDS_LOW=base.L['HISTORY'])
     tables=stage/'src/bios/tables.mac';tables.write_text(tables.read_text().replace('DW 389,127','DW 384,127').replace('DW 32,2','DW 32,3'))
+    if args.native_package:
+        # Canonical cold binding: installer normalization must not change sealed bytes.
+        tables.write_text(tables.read_text().replace('DB 80,10,2,0E0H','DB 80,10,2,0A0H'))
     # New native selector is permanent. No executable tail remains in the raw
     # reloader block, allowing 960 code/data bytes below the original stack low.
     rootbase=base.L['SYSTEM']+0xf8
@@ -653,6 +668,9 @@ def main():
         for name in NAMES:(system/(name+'.RSX')).write_bytes(outputs[name])
         print('BUILT',len(core),'root',root['VG_END']-root['VG_CHECK'],'pack',len(pack),'entry',len((OUT/'r3entry.bin').read_bytes()),flush=True)
         report=qualify(args.assembler,stage,images,root,core,artifacts,built,outputs,matched,slots,backends,identity,reloadlabels)
+        if args.native_package:
+            import native_package
+            report['native_package']=native_package.build_package(args.assembler,stage,images,root,artifacts,matched,slots,backends,identity,reloadlabels)
         report.update(status='PASS',source_baseline='895b8e46',contract=contract,identity=identity.hex(),roles=ROLES,required_mask=REQUIRED,
                       sizes={name:len(data) for name,data in artifacts.items()},root_bytes=root['VG_END']-root['VG_CHECK'],gateway_bytes=len(core),
                       permanent_bytes=1024,resident_span_bytes=(system/'resident.bin').stat().st_size,tpa_record_bytes=((base.L['TPA']-256)//128)*128,
@@ -672,7 +690,7 @@ def main():
         manifest={'schema':1,'private_epoch':5,'identity':identity.hex(),'required_native_mask':REQUIRED,
                   'resident_sha256':previous.sha(resident),'artifacts':{name:{'bytes':len(data),'sha256':previous.sha(data),'crc16':binascii.crc_hqx(data,65535)} for name,data in artifacts.items()}}
         (OUT/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
-        report.update(date='2026-11-07',source_baseline=subprocess.check_output(['git','rev-parse','895b8e46'],cwd=ROOT).decode().strip(),
+        report.update(date='2026-11-07',source_baseline=subprocess.check_output(['git','rev-parse','e366bf9e' if args.native_package else '895b8e46'],cwd=ROOT).decode().strip(),
                       python_version=sys.version.split()[0],assembler_sha256=previous.sha(args.assembler.read_bytes()),
                       patch_sha256=previous.sha(patch.encode()),context_patch_sha256=previous.sha(context_patch.encode()),manifest_sha256=previous.sha((OUT/'manifest.json').read_bytes()),
                       shim_sha256=previous.sha((stage/'build/rsx-offline-test/shim.c').read_bytes()),
@@ -680,6 +698,9 @@ def main():
         engine=Path.home()/'projects/git/z80pack/z80core'
         engine_files=sorted(set(engine.glob('simz80*.c'))|{engine/'simglb.c'}|set(engine.glob('*.h')))
         report['emulator_source_sha256']={path.name:previous.sha(path.read_bytes()) for path in engine_files}
+        if args.native_package:
+            assert all(previous.sha((ROOT/name).read_bytes())==digest for name,digest in contract['inputs'].items()),'package inputs changed during build'
+            assert contract['development_display']=={name:utility_versions.display_development('utility:'+name) for name in ('RCP','RSX','SYSGEN')},'package display inputs changed during build'
         (OUT/'report.json').write_text(json.dumps(report,indent=2)+'\n')
         print(json.dumps({key:report[key] for key in ('root_bytes','gateway_bytes','sizes','permanent_bytes','tpa_record_bytes')},indent=2))
     finally:base.L.clear();base.L.update(old_layout);layout.LAYOUT_TEXT=old_text;placed.ROOT=old_placed_root

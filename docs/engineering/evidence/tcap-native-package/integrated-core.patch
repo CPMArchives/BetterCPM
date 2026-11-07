@@ -1,0 +1,568 @@
+--- a/src/system/layout.inc
++++ b/src/system/layout.inc
+@@ -19 +19 @@
+-LY_SYS          EQU     0D5C4H          ; resident system gateway base
++LY_SYS EQU 0D1C4H
+@@ -31 +31 @@
+-LY_RSX          EQU     0D104H          ; optional protected RSX region
++LY_RSX EQU 0CD04H
+@@ -40 +40 @@
+-LY_RLCAP        EQU     003A4H          ; command-reloader carrier bytes
++LY_RLCAP EQU 003C0H
+@@ -47,3 +47,3 @@
+-LY_HIST         EQU     0D504H          ; persistent command-history base
+-LY_TPA          EQU     0D501H          ; exclusive TPA upper bound
+-LY_SECTS        EQU     0000DH          ; resident system sector count
++LY_HIST EQU 0D104H
++LY_TPA EQU 0D101H
++LY_SECTS EQU 0000FH
+--- a/src/platform/trs80m4/reload.inc
++++ b/src/platform/trs80m4/reload.inc
+@@ -23 +23 @@
+-        JP LY_LOAD
++        JP 0D2D4H
+@@ -32 +32 @@
+-        JP LY_RSSEL
++        JP 0D2C2H
+--- a/src/system/gateway.mac
++++ b/src/system/gateway.mac
+@@ -94 +94 @@
+-        LD      SP,SYS_STKTOP
++        JP      VG_CBOOT
+@@ -308,0 +309,526 @@
++VR_NROLE EQU 22
++VR_CSIZE EQU 0049CH
++VR_N0 EQU 247
++VR_N1 EQU 255
++VR_N2 EQU 63
++VR_N3 EQU 0
++VG_IDOFF EQU 2257
++RT_REQ EQU LY_CFG+03F8H
++; Private matched-system root. Permanent gateway tail, never an RSX allocation.
++; VG_LOAD requires a readable 21-byte header and DE=exclusive envelope end.
++; A successful check authorizes only these pinned bytes; caller loads afterward.
++; Entry offsets are private to this source-closure build, not a public ABI.
++        REPT LY_SYS+00F8H-$
++        DB 0
++        ENDM
++VG_CHECK: JP VG_READY                 ; DE -> 16-byte build identity
++VG_ALLOC: JP VG_ISSUE                 ; HL -> four-byte prepared validity
++VG_PUBL: JP VG_SELECT                   ; HL -> prepared value, DE -> live validity
++VG_LOAD: JP VG_BOUND                  ; A=role 0..7, HL -> bound artifact
++VG_META: JP VG_MVER
++VG_XTEST: JP VG_XID
++VG_COLD: JP VG_CLEAR
++VG_RAW: JP VR_RAW
++VG_BOOT: JP VR_BOOT
++VG_CCP: JP VR_CCP                  ; true cold entry only
++VG_CBOOT:
++        LD SP,SYS_STKTOP
++        CALL VG_CLEAR
++        JP SYS_COLD+3
++VG_READY:
++        PUSH DE
++        CALL VR_BITS
++        POP DE
++        RET NZ
++        JP VG_IDENT
++VR_BITS:
++        LD HL,VG_MASK
++        LD DE,VR_NEED
++        LD B,4
++VR_BLOOP:
++        LD A,(DE)
++        AND (HL)
++        LD C,A
++        LD A,(DE)
++        CP C
++        JP NZ,VG_BAD
++        INC DE
++        INC HL
++        DJNZ VR_BLOOP
++        XOR A
++        RET
++VG_IDENT:
++        LD HL,VG_BUILD
++        LD B,16
++VG_IDLP:
++        LD A,(DE)
++        CP (HL)
++        JP NZ,VG_BAD
++        INC DE
++        INC HL
++        DJNZ VG_IDLP
++        XOR A
++        RET
++VG_BAD: OR 255
++        RET
++VG_CLEAR:
++        XOR A
++        LD (VG_MASK),A
++        LD (VG_MASK+1),A
++        LD (VG_MASK+2),A
++        LD (VG_MASK+3),A
++        LD HL,VG_NEXT
++        LD B,4
++VG_ZLOOP:
++        LD (HL),A
++        INC HL
++        DJNZ VG_ZLOOP
++        LD A,1
++        LD (VG_MASK),A
++        RET
++VG_ISSUE:
++        PUSH HL
++        CALL VR_BITS
++        POP HL
++        RET NZ
++        PUSH HL
++        LD HL,VG_NEXT
++        LD B,4
++        LD A,255
++VG_MAX:
++        AND (HL)
++        INC HL
++        DJNZ VG_MAX
++        INC A
++        JR NZ,VG_ROOM
++        POP HL
++        LD A,20                       ; saturated: no destination/counter mutation
++        OR A
++        RET
++VG_ROOM:
++        LD HL,VG_NEXT
++        LD B,4
++VG_CARRY:
++        INC (HL)
++        JR NZ,VG_DONE
++        INC HL
++        DJNZ VG_CARRY
++VG_DONE:
++        POP DE
++        LD HL,VG_NEXT
++VG_COPY:
++        LD BC,4
++        LDIR
++        XOR A
++        RET
++; Bound artifact envelope: role byte, identity[16], length word, CRC word, bytes.
++; Trusted pins in the root contain length/CRC per role. No caller-supplied CRC
++; can authorize foreign bytes. All roles must pass before TCAP metadata/entry.
++VG_BOUND:
++        LD (VG_LIMIT),DE             ; caller-supplied exclusive buffer end
++        CP 22
++        JP NC,VG_BAD
++        CP (HL)
++        JP NZ,VG_BAD
++        LD (VG_ROLE),A
++        PUSH HL
++        INC HL
++        EX DE,HL
++        CALL VG_IDENT
++        POP HL
++        OR A
++        RET NZ
++        LD DE,17
++        ADD HL,DE
++        PUSH HL
++        LD A,(VG_ROLE)
++        ADD A,A
++        ADD A,A
++        LD E,A
++        LD D,0
++        LD HL,VG_PINS
++        ADD HL,DE
++        EX DE,HL
++        POP HL
++        LD B,4
++VG_PINLP:
++        LD A,(DE)
++        CP (HL)
++        JP NZ,VG_BAD
++        INC DE
++        INC HL
++        DJNZ VG_PINLP
++        ; HL now addresses payload. Fetch pinned length/CRC from envelope,
++        ; whose values were just compared to the trusted root table.
++        PUSH HL
++        LD DE,-4
++        ADD HL,DE
++        LD C,(HL)
++        INC HL
++        LD B,(HL)
++        INC HL
++        LD E,(HL)
++        INC HL
++        LD D,(HL)
++        LD (VG_WANT),DE
++        POP HL
++        PUSH HL
++        ADD HL,BC
++        JR C,VG_RBAD
++        LD DE,(VG_LIMIT)
++        OR A
++        SBC HL,DE
++        POP DE
++        JP NZ,VG_BAD
++        CALL VG_CRC
++        LD DE,(VG_WANT)
++        OR A
++        SBC HL,DE
++        JP NZ,VG_BAD
++VR_MARK:
++        LD A,(VG_ROLE)
++        LD E,A
++        AND 7
++        LD B,A
++        INC B
++        LD A,E
++        RRCA
++        RRCA
++        RRCA
++        AND 3
++        LD E,A
++        LD D,0
++        LD HL,VG_MASK
++        ADD HL,DE
++        LD A,080H
++VG_BIT: RLCA
++        DJNZ VG_BIT
++        OR (HL)
++        LD (HL),A
++        XOR A
++        RET
++VG_RBAD:
++        POP DE
++        JP VG_BAD
++; CRC-16/CCITT, initial FFFF; DE bytes, BC count, HL result.
++VG_CRC:
++        LD HL,0FFFFH
++VG_BYTE:
++        LD A,B
++        OR C
++        RET Z
++        LD A,(DE)
++        XOR H
++        LD H,A
++        PUSH BC
++        LD B,8
++VG_POLY:
++        ADD HL,HL
++        JR NC,VG_SHIFT
++        LD A,H
++        XOR 010H
++        LD H,A
++        LD A,L
++        XOR 021H
++        LD L,A
++VG_SHIFT:
++        DJNZ VG_POLY
++        POP BC
++        INC DE
++        DEC BC
++        JR VG_BYTE
++VG_XID:
++        PUSH BC
++        PUSH DE
++        PUSH HL
++        LD DE,VG_XTCP
++        LD B,4
++VG_XLOOP:
++        LD A,(DE)
++        CP (HL)
++        JR NZ,VG_NOTX
++        INC DE
++        INC HL
++        DJNZ VG_XLOOP
++        POP HL
++        POP DE
++        POP BC
++        INC HL
++        INC HL
++        INC HL
++        INC HL
++        CALL VG_MVER
++        OR A                          ; matched identity: carry clear, A=status
++        RET
++VG_NOTX:
++        POP HL
++        POP DE
++        POP BC
++        SCF                           ; different service: ordinary legacy rules
++        RET
++VG_MVER:
++        PUSH BC
++        PUSH DE
++        LD A,(HL)
++        OR A
++        JR Z,VG_XVER
++        CP 1
++        JR NZ,VG_VNO
++        INC HL
++        LD A,(HL)
++        CP 3
++        JR NZ,VG_VNO
++        JR VG_VOK
++VG_XVER:
++        INC HL
++        LD A,(HL)
++        CP 4
++        JR NZ,VG_VNO
++VG_VOK:
++        POP DE
++        POP HL                        ; code length from saved BC
++        LD BC,VG_IDOFF+16
++        OR A
++        SBC HL,BC
++        JP C,VG_BAD
++        EX DE,HL
++        LD BC,VG_IDOFF
++        ADD HL,BC
++        EX DE,HL
++        JP VG_READY
++VG_VNO:
++        POP DE
++        POP BC
++        JP VG_BAD
++VG_XTCP: DB 'XTCP'
++; Raw pinned objects have no caller-selected checksum or executable prefix.
++; HL=quarantine buffer; DE=exclusive available end; A=role. Accept a bounded
++; prefix of a padded physical block, hashing exactly the pinned logical length.
++VR_RAW:
++        LD (VG_LIMIT),DE
++        CP VR_NROLE
++        JP NC,VG_BAD
++        LD (VG_ROLE),A
++        ADD A,A
++        ADD A,A
++        LD E,A
++        LD D,0
++        PUSH HL
++        LD HL,VG_PINS
++        ADD HL,DE
++        LD C,(HL)
++        INC HL
++        LD B,(HL)
++        INC HL
++        LD E,(HL)
++        INC HL
++        LD D,(HL)
++        LD (VG_WANT),DE
++        POP HL
++        PUSH HL
++        ADD HL,BC
++        JR C,VR_RANGE
++        LD DE,(VG_LIMIT)
++        OR A
++        SBC HL,DE
++        JR C,VR_SIZE
++        JR Z,VR_SIZE
++VR_RANGE:
++        POP HL
++        JP VG_BAD
++VR_SIZE:
++        POP DE
++        CALL VG_CRC
++        LD DE,(VG_WANT)
++        OR A
++        SBC HL,DE
++        JP NZ,VG_BAD
++        JP VR_MARK
++VR_BOOT:
++        LD HL,LY_LOAD
++        LD DE,LY_LOAD+1024
++        LD A,2
++        CALL VR_RAW
++        OR A
++        JR NZ,VR_STOP
++        LD SP,LY_STKT
++        JP LY_LOAD
++VR_CCP:
++        PUSH HL
++        LD DE,(VR_CSIZE)
++        ADD HL,DE
++        EX DE,HL
++        POP HL
++        LD A,1
++        CALL VR_RAW
++        OR A
++        RET Z
++VR_STOP: HALT
++        JR VR_STOP
++; Native selector executes from permanent, already trusted core. Both physical
++; sectors are quarantined in BUF and checked before touching the manager slot.
++VG_SELECT:
++        CP 4
++        JP NC,VG_BAD
++        LD E,A
++        LD D,0
++        PUSH DE
++        LD HL,VR_RMAP
++        ADD HL,DE
++        LD A,(HL)
++        LD (VR_SEL),A
++        POP DE
++        LD H,D
++        LD L,E
++        ADD HL,HL
++        ADD HL,DE
++        ADD HL,HL
++        LD DE,VR_TABLE
++        ADD HL,DE
++        EX DE,HL
++        LD HL,LY_BUF
++        CALL VR_READ
++        RET NZ
++        INC DE
++        INC DE
++        INC DE
++        CALL VR_READ
++        RET NZ
++        LD HL,LY_BUF
++        LD DE,LY_BUF+1024
++        LD A,(VR_SEL)
++        CALL VR_RAW
++        OR A
++        RET NZ
++        LD HL,LY_BUF
++        LD DE,LY_RSX
++        LD BC,03F4H
++        LDIR
++        LD HL,LY_BUF+03FDH
++        LD DE,LY_RSX+03FDH
++        LD BC,3
++        LDIR
++        XOR A
++        RET
++VR_READ:
++        PUSH DE
++        EX DE,HL
++        LD A,(HL)
++        INC HL
++        LD B,(HL)
++        INC HL
++        LD C,(HL)
++        EX DE,HL
++        CALL LY_BIOS+51
++        POP DE
++        RET
++VR_SEL: DB 0
++VR_RMAP: DB 4,10,19,21
++VR_TABLE:
++; @rsx-sector-table@
++; @rsx-validator-sector-table@
++; @rsx-publisher-sector-table@
++; @rsx-resolver-sector-table@
++VR_NEED: DB VR_N0,VR_N1,VR_N2,VR_N3
++VG_BUILD:
++        DB 227,42,2,3,14,113,89,229,5,135,111,231,114,171,64,146
++VG_PINS:
++        DB 245,2,104,91,250,21,172,171,192,3,146,38,22,5,134,56
++        DB 0,4,166,33,0,10,235,40,0,2,3,175,0,4,81,247
++        DB 0,4,16,189,0,4,137,75,0,4,105,30,0,4,126,248
++        DB 0,4,45,1,0,4,174,20,0,4,12,246,0,4,77,27
++        DB 0,4,54,76,0,4,119,155,0,4,141,100,0,4,63,94
++        DB 0,4,83,1,0,4,134,233
++VG_MASK: DB 1,0,0,0
++VG_NEXT: DB 0,0,0,0
++VG_ROLE: DB 0
++VG_WANT: DW 0
++VG_LIMIT: DW 0
++; Infallible persistent publisher body, including prepared validity copy.
++VG_RPUB:                               ; publish prepared persistent profile fields
++        PUSH DE
++        EX DE,HL
++        LD BC,41
++        ADD HL,BC
++        LD E,(HL)
++        INC HL
++        LD D,(HL)
++        PUSH DE
++        INC HL
++        LD E,(HL)
++        INC HL
++        LD D,(HL)
++        POP HL
++        LD A,D
++        OR E
++        JR Z,VG_NOVAL
++        CALL VG_COPY
++VG_NOVAL:
++        POP DE
++        LD      (RT_REQ),DE
++        EX      DE,HL
++        LD      DE,27
++        ADD     HL,DE
++        LD      E,(HL)
++        INC     HL
++        LD      D,(HL)
++        PUSH    DE
++        INC     HL
++        LD      E,(HL)
++        INC     HL
++        LD      D,(HL)
++        POP     HL
++        PUSH    HL
++        PUSH    DE
++        INC     HL
++        INC     DE
++        LD      BC,40
++        LDIR                            ; publish names and services first
++        POP     DE
++        POP     HL
++        LD      A,(HL)
++        LD      (DE),A                  ; publish count last
++        LD      HL,(RT_REQ)
++        LD      DE,31
++        ADD     HL,DE
++        LD      E,(HL)
++        INC     HL
++        LD      D,(HL)
++        EX      DE,HL
++        LD      DE,12
++        ADD     HL,DE
++        EX      DE,HL
++        LD      HL,(RT_REQ)
++        LD      BC,33
++        ADD     HL,BC
++        LD      A,(HL)
++        LD      (DE),A
++        INC     HL
++        INC     DE
++        LD      A,(HL)
++        LD      (DE),A
++  ; HL is request+34. Resolve the binding cell through the immutable MONCALL
++  ; trampoline rather than importing a platform-specific mutable address.
++  ; MONCALL is JP MC_CALL; MC_CALL begins LD HL,(MP_MON). This private API 1.7
++  ; layout is shared by both platform builds and their relocated ROM image.
++        INC     HL
++        LD      E,(HL)
++        INC     HL
++        LD      D,(HL)
++        PUSH    DE                     ; prepared prospective target
++        LD      HL,(LY_BIOS+67)        ; MC_CALL address from MONCALL
++        INC     HL                     ; LD HL,(nn) operand
++        LD      E,(HL)
++        INC     HL
++        LD      D,(HL)
++        EX      DE,HL                  ; protected binding cell
++        POP     DE
++        LD      (HL),E
++        INC     HL
++        LD      (HL),D                ; before final generation publication
++        XOR     A
++        RET
++
++
++VG_END:
++
+--- a/src/bios/tables.mac
++++ b/src/bios/tables.mac
+@@ -26 +26 @@
+-        DW 389,127
++        DW 384,127
+@@ -28,2 +28,2 @@
+-        DW 32,2
+-        DB 80,10,2,0E0H
++        DW 32,3
++        DB 80,10,2,0A0H

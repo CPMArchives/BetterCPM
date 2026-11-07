@@ -1,0 +1,29 @@
+{
+  "rows": [
+    "NATIVE STAGE 06",
+    "A0>RSX LISTAD ADM3A",
+    "A0>R11",
+    "NATIVE STAGE 11 5",
+    "A0>TCHECKOS 255",
+    "TCHECK PASSle: 47K",
+    "",
+    "A0>R12",
+    "NATIVE STAGE 12",
+    "A0>RSX UNLOAD ANSI",
+    "",
+    "A0>R08",
+    "NATIVE STAGE 08",
+    "A0>RSX LOAD XTCAP",
+    "",
+    "A0>R09",
+    "NATIVE STAGE 09",
+    "A0>TSCOPE",
+    "TSCOPE PASS",
+    "",
+    "A0>R10",
+    "NATIVE STAGE 10",
+    "A0>TBEGIN",
+    ""
+  ],
+  "normalized_screen_sha256": "b234ac17a499e28f2aeab47f4cc7e8d35c10d047b3566e30515729c54c31c796"
+}
