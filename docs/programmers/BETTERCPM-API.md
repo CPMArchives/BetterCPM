@@ -315,3 +315,12 @@ MONCALL +66 routes A/C through the current monitor; MONRAW +69 bypasses it to th
 The version-1 Extension Control Block is fixed gateway-owned discovery data, not a new BDOS selector. Its `BM`, version and flags must be validated before using fields or generation values; current placement is a generated-map fact. Use matching [gateway source](../../src/system/gateway.mac) and [memory ownership](../architecture/27%20ROM%20and%20RAM%20Ownership.txt) rather than copying a historical absolute address into an application. No unsupported generic ECB search API is invented here.
 
 The only 1.0 PDS owner is built-in history: fixed 192 bytes, `BH`, structure version1, count, used length, four private work bytes, then 182 packed-record bytes. Cold entry invalidates its signature; the reconstructed CCP initializes empty history. Supported warm/reconstruction paths preserve it. Fixed RSX/CPX profiles, disk state, service descriptors, stacks and workspaces are not PDS allocations. No allocator, migration, expansion or HISTORY.RSX API is supplied. Signature/version validation does not fully validate malformed packed records: BCPM-AUD-003 retains its deferred disposition. See [bounded PDS contract](../architecture/29%20Bounded%201.0%20PDS.txt).
+
+## BetterCP/M 1.1 command lookup
+
+The CCP resolves an unqualified transient using the session's numeric PATH.
+Execution starts at 0100h in the caller's original DU with the ordinary
+page-zero drive, counted command tail and two default FCBs. BDOS file operations,
+operand resolution and the CPX/RSX loaders keep their existing contracts.
+Command-environment code built for the same layout can inspect the bounded
+record described in the [1.1 PATH specification](../engineering/Numeric-PATH-1.1.md).

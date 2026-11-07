@@ -25,7 +25,7 @@ EXPECTED_COMPONENTS = {
     "fileloader": 13,
     "gateway": 24,
 }
-EXPECTED_CLASSES = {"immutable-rom": 468, "live-ram": 320}
+EXPECTED_CLASSES = {"immutable-rom": 467, "live-ram": 321}
 
 
 def digest(data: bytes) -> str:

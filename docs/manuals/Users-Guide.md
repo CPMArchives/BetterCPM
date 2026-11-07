@@ -144,6 +144,8 @@ The first uses resident DIR if RCP is loaded. The second selects DIR.COM. Unsupp
 
 Unqualified transients are searched in the current DU, then A0. A qualified invocation such as `B0:DUMP` searches only B0. The program's file operands retain their own defaults; finding a program in A0 does not move your work there. Carrier loading by CPX/RSX is a different mechanism and uses A0.
 
+For 1.1 development builds, see [Numeric PATH commands and cold-start setup](../engineering/Numeric-PATH-1.1.md#using-path).
+
 For help, use the command's documented query. BetterCP/M-owned utilities generally supply `/H`, `/HELP` and `/VER`; ZSM4 and LINK retain their original interfaces. Quoted SEARCH patterns and PIP bracket strings remain data even when they contain apparent query tokens. Read the [query conventions](Command-and-Utilities-Reference.md#query-conventions) instead of assuming every program parses switches alike.
 
 <a id="chapter-6"></a>

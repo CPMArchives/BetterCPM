@@ -44,6 +44,9 @@ SCREENS={
  'SYSBUILD':('Native System Build','SYSBUILD',[]),
  'RESPACK':('Resident Image Packaging','RESPACK',[]),
  'RLMBUILD':('Relocation Map Build','RLMBUILD',[]),
+ 'PATH':('Numeric Command Search Path','PATH [location ... | /DEFAULT]',[
+ ('location', 'Use . for the current DU or a fixed DU such as B3:.'),
+ ('/DEFAULT','Restore . A0:.')]),
  'WARM':('Warm Boot','WARM',[]),
  'DDT':('Debugger','DDT [file]',[]),
  'PIP':('File and Device Transfer','PIP [destination=source[,source...]]',[

@@ -53,8 +53,8 @@ def main() -> None:
             covered += count
     if covered != manifest["immutable_source_bytes"]:
         raise AssertionError("immutable fragment coverage is incomplete")
-    if sum(component["mutable_bytes"] for component in manifest["components"]) != 868:
-        raise AssertionError("mutable complement is not the accepted 868 source bytes")
+    if sum(component["mutable_bytes"] for component in manifest["components"]) != 882:
+        raise AssertionError("mutable complement is not the accepted 882 source bytes")
 
     for segment, filename in zip(manifest["segments"], ("ram-init.bin", "cold-init.bin")):
         data = (args.artifacts.resolve() / filename).read_bytes()

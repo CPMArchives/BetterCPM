@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute the CCP fixed A0 fallback against a recording BDOS provider."""
+"""Record actual CCP Open calls, including first match and resolved duplicates."""
 from pathlib import Path
 from build_ccp import assemble
 from test_ccp import cpu, symbol, call, install_bdos
@@ -7,11 +7,13 @@ from system_layout import LAYOUT
 
 work = Path(__file__).resolve().parents[1] / 'build/compatibility/a0-lookup'
 work.mkdir(parents=True, exist_ok=True)
-provider = assemble(Path('/Users/nathanael/bin/z80asm'), '''
+provider = assemble(Path.home() / 'bin/z80asm', '''
         ORG %d
         LD A,C
         CP 32
         JR Z,USER
+        CP 25
+        JR Z,DRIVE
         CP 15
         JR Z,OPEN
         XOR A
@@ -23,52 +25,60 @@ USER:   LD A,E
         RET
 QUERY:  LD A,(07500H)
         RET
-OPEN:   LD HL,07501H
-        INC (HL)
-        LD A,(HL)
-        CP 1
-        JR NZ,SECOND
-        LD A,(DE)
-        LD (07502H),A
-        LD A,(07500H)
-        LD (07503H),A
-        LD A,(07506H)
-        SCF                            ; carry is not a public Open result
+DRIVE:  LD A,(07501H)
         RET
-SECOND: LD A,(DE)
-        LD (07504H),A
+OPEN:   LD HL,(07504H)
+        LD A,(DE)
+        LD (HL),A
+        INC HL
         LD A,(07500H)
-        LD (07505H),A
-        LD A,(07507H)
+        LD (HL),A
+        INC HL
+        LD (07504H),HL
+        LD HL,07502H
+        INC (HL)
+        LD A,(07503H)
+        CP (HL)
+        LD A,0FFH
+        RET NZ
+        XOR A
+        SCF                            ; carry is unrelated to public Open success
         RET
         END
 ''' % LAYOUT['BDOS'], work / 'provider.bin', work / 'provider.lst', LAYOUT['BDOS'])
 
-for command, first, second, count, drive, user in (
-    (b'HELLO', 0, 0, 1, 0, 7),
-    (b'HELLO', 255, 0, 2, 0, 7),
-    (b'HELLO', 255, 255, 2, 0, 7),
-    (b':DIR', 255, 0, 2, 0, 7),
-    (b'.DIR', 255, 0, 2, 0, 7),
-    (b'B:HELLO', 255, 0, 1, 2, 7),
-    (b'B3:HELLO', 255, 0, 1, 2, 3),
-    (b'5:HELLO', 255, 0, 1, 0, 5),
-    (b':B3:HELLO', 255, 0, 1, 2, 3),
-):
+# Drive zero in the log denotes the current drive in an FCB, A=1, B=2, etc.
+current = (0, 7)
+default = [current, (1, 0)]
+custom = [(2, 3), (0, 0), (3, 7), (1, 0), (2, 1), (4, 31)]
+resolved = [(2, 3), current, (1, 0), (2, 1), (4, 31)]
+
+for command, entries, hit, expected in [
+    ('HELLO', [], 1, default[:1]), ('HELLO', [], 2, default),
+    ('HELLO', [], 0, default), (':DIR', [], 2, default), ('.DIR', [], 2, default),
+    ('B:HELLO', custom, 0, [(2, 7)]), ('B3:HELLO', custom, 0, [(2, 3)]),
+    ('5:HELLO', custom, 0, [(0, 5)]), (':B3:HELLO', custom, 0, [(2, 3)]),
+    ('FOO', custom, 1, resolved[:1]), ('FOO', custom, 5, resolved),
+    ('FOO', custom, 0, resolved), ('FOO', [(3, 7), (0, 0)], 0, [current]),
+    ('FOO', [(0, 0), (3, 7)], 0, [current]),
+    ('FOO', [(2, 3), (1, 0)], 0, [(2, 3), (1, 0)]),
+]:
     m = cpu()
     install_bdos(m, provider)
-    m.mem[0x7500] = 7
-    m.mem[0x7506:0x7508] = bytes((first, second))
+    m.mem[0x7500:0x7504] = bytes((7, 2, 0, hit))  # caller C7
+    m.setword(0x7504, 0x7510)
+    path = LAYOUT['EXTENSIONS'] - 16
+    record = bytes([len(entries)] + [v for pair in entries for v in pair])
+    m.mem[path:path + len(record)] = record
     m.mem[symbol('CCP_COUNT')] = len(command)
     start = symbol('CCP_DATA')
-    m.mem[start:start + len(command)] = command
+    m.mem[start:start + len(command)] = command.encode()
     call(m, symbol('CCP_LQUAL'))
     call(m, symbol('CCP_LOPEN'))
-    assert m.mem[0x7501] == count, command
-    assert tuple(m.mem[0x7502:0x7504]) == (drive, user), command
-    if count == 2:
-        assert tuple(m.mem[0x7504:0x7506]) == (1, 0), command
-    assert bool(m.z) == (first == 255 and (count == 1 or second == 255)), command
+    assert bool(m.z) == (hit == 0), command
+    attempts = list(zip(m.mem[0x7510:m.word(0x7504):2], m.mem[0x7511:m.word(0x7504):2]))
+    assert attempts == expected, (command, attempts, expected)
     call(m, symbol('CCP_LURST'))
-    assert m.mem[0x7500] == 7, command
-print('Nine current-DU/A0 lookup, prefix, exact-qualifier and restoration cases passed')
+    assert tuple(m.mem[0x7500:0x7502]) == (7, 2), command
+    assert bytes(m.mem[path:path+len(record)]) == record
+print('PASS default and numeric PATH, exact qualifiers, Open order/count, DU restoration')

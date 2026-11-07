@@ -44,7 +44,7 @@ EXPECTED_DISCOVERED = {
 }
 # Shared Open/Make extent matching removes two state references; the explicit
 # sequential-write wrapper adds two code calls. Total coverage is unchanged.
-EXPECTED_CLASSES = {"immutable-rom": 468, "live-ram": 320}
+EXPECTED_CLASSES = {"immutable-rom": 467, "live-ram": 321}
 EXPECTED_OVERLAY_CLASSES = {"immutable-rom": 3, "live-ram": 107}
 # CKS bound, boot-marker and reserved-tail rejection, formatter refusal,
 # and the unsupported capability stub add five overlay references.

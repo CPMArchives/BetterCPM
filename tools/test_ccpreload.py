@@ -17,7 +17,7 @@ CCP = ROOT / "build/ccp/ccp.bin"
 BASIC_MODULE = ROOT / "build/cpx/RCP.CPX"
 HELLO_MODULE = ROOT / "build/cpx/HELLO.CPX"
 BASE = LAYOUT["RELOADER"]
-MODULE_SOURCE = 0x6000
+MODULE_SOURCE = 0x5A00
 DESCRIPTOR_CCP = (LAYOUT["SYSTEM"] + 0x8C)
 SYSTEM_WBOOT = (LAYOUT["SYSTEM"] + 0x23)
 PHYSICAL_READ = LAYOUT["BIOS"] + 51
@@ -154,7 +154,7 @@ def run_at(target: int, with_cpx: bool = False, with_two_cpx: bool = False,
         # the first carrier slot. The unadjusted final slot overlapped CCP.
         0x78, 0x07, 0x07, 0x07, 0x07, 0x81, 0xD6, 6,
         0x67, 0x2E, 0x00, 0x29,        # HL=A*512
-        0x11, 0x00, 0x60, 0x19,  # HL+=6000h
+        0x11, MODULE_SOURCE & 255, MODULE_SOURCE >> 8, 0x19,
         0xD1,                   # POP DE (destination)
         0x01, 0x00, 0x02, 0xED, 0xB0,  # LDIR 512 bytes
         0xEB,                   # return HL=destination+512 like M4_READ

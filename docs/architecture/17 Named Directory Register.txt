@@ -13,6 +13,15 @@ operation. A later implementation must establish its own storage contract and
 does not acquire space in the frozen 1.0 PDS.
 
 
+BETTERCP/M 1.1 SCOPE NOTE
+-------------------------
+
+The numeric command PATH works with a dynamic current-DU marker and fixed DU
+pairs. NDR remains later work. A future PATH editor may ask NDR.RSX to resolve
+a name when setting the list. It stores the resulting fixed pair, so later
+alias edits leave that configured entry pointing at the same DU.
+
+
 1. PURPOSE AND CANONICAL IDENTITY
 
 A named directory is an alias for a canonical drive/user pair (DU).  It does

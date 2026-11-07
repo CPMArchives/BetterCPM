@@ -183,3 +183,13 @@ configuration and its two scopes; implement startup storage, once-only dispatch
 and recovery; complete saved RSX/CPX profile handling; and add only platform
 panels supported by frozen capabilities. No menu entry may claim support before
 its active and saved behavior is tested.
+
+1.1 NUMERIC PATH POLICY
+-----------------------
+
+PATH.COM replaces the active command-search list for this boot session.
+A cold boot begins with ". A0:". An installation can put an A0:PATH command
+in its existing STARTUP.SUB to apply a saved preference once at cold startup.
+This is the 1.1 disk persistence mechanism. CONFIG's startup command can select
+that script. CONFIG has no separate PATH field and neither CONFIG save scope
+serializes the live PATH.

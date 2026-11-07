@@ -12,8 +12,8 @@ from system_layout import LAYOUT
 ROOT = Path(__file__).resolve().parents[1]
 INVENTORY = ROOT / "metadata/rom-ram-ownership.tsv"
 
-RELOCATION_BYTES = {"trs80": 2256, "z80pack": 2253}
-ROM_RAM_BYTES = {"trs80": 2259, "z80pack": 2256}
+RELOCATION_BYTES = {"trs80": 2270, "z80pack": 2267}
+ROM_RAM_BYTES = {"trs80": 2273, "z80pack": 2270}
 STORAGE_CLASSES = {
     "bounded PDS state",
     "fixed subsystem state",
@@ -33,6 +33,8 @@ ANCHORS = {
     "cpx-profile": ("system/gateway.lst:CPTCOUNT", "system/gateway.lst:SINIBODY"),
     "bdos-live-state": ("bdos/bdos.lst:UB_OLDSP", "bdos/bdos.lst:UB_STACK"),
     "bdos-stack": ("bdos/bdos.lst:UB_STACK", "bdos/bdos.lst:UB_STKTOP"),
+    "com-read-result": ("bdos/bdos.lst:COM_ERR", "bdos/bdos.lst:COM_PATH"),
+    "numeric-path": ("bdos/bdos.lst:COM_PATH", "bdos/bdos.lst:COM_END"),
     "extension-live-state": ("system/extensions.lst:EX_OLDSP", "system/extensions.lst:BCV_DESC"),
     "trs80-physical-drive-profiles": ("system/disk.lst:DC_PHYS", "system/disk.lst:DC_IDTRK"),
     "trs80-disk-session-state": ("system/disk.lst:DC_IDTRK", LAYOUT["BIOS"]),
