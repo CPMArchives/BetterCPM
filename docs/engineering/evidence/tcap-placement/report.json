@@ -1,0 +1,235 @@
+{
+  "date": "2026-11-07",
+  "status": "PASS",
+  "disposition": "CARRIER_AND_REFERENCE_MODEL4_PLACEMENT_GATES_RESOLVED_IN_PRIVATE_BUILD",
+  "experimental_interface": "XTCP 0.2 subset; private MCON probe 25; no public allocation",
+  "source_baseline": "d1c493c537a85ecef4ea88ffb78265af00982eb1",
+  "python_version": "3.9.6",
+  "dependencies": {
+    "pyte": "0.8.2",
+    "wcwidth": "0.9.2"
+  },
+  "carrier": {
+    "format": 2,
+    "header_bytes": 512,
+    "relocation_capacity": 232,
+    "relocations": 228,
+    "spare_relocations": 4,
+    "relative_branches": 34,
+    "payload_bytes": 2205,
+    "allocation_bytes": 2304,
+    "baseline_personality_allocation_bytes": 1536,
+    "loaded_allocation_delta_bytes": 768,
+    "optional_resident_bridge_bytes": 85,
+    "sha256": "39ee35fb934f8481b21a9ab5b010d6640ba619c1aca29aaa882adcb627367551"
+  },
+  "core": {
+    "baseline_bios_bytes": 757,
+    "private_bios_bytes": 757,
+    "hook_bytes": 7,
+    "saved_bytes": {
+      "status_normalization": 1,
+      "routing_fallthrough": 2,
+      "scroll_fill": 4
+    },
+    "fixed_image_growth_bytes": 0,
+    "tpa_exclusive": "0xd501",
+    "unloaded_tpa_record_aligned_bytes": 54272,
+    "monitor_binding": "0xec84",
+    "resident_span_bytes": 6588,
+    "packed_image_checks": "PASS",
+    "sha256": "b6d1df33069cc0c733728adbb43625cdd345f1752df2a814a859249bccfe5a49"
+  },
+  "behavioral_cases": [
+    "takeover parser refusal",
+    "plain scope creates no token",
+    "begin",
+    "ordinary cooked text",
+    "rendered reverse",
+    "nested refusal",
+    "wrong identity refusal",
+    "incomplete parser refusal",
+    "end restores prior rendition",
+    "SCX save slot remains valid",
+    "SCX saved rendition and cursor preserved",
+    "retired scope refusal",
+    "scope preserves delayed wrap",
+    "post-scope wrap continuation",
+    "takeover",
+    "takeover emphasis",
+    "end preserves takeover",
+    "plain inside takeover preserves token",
+    "safe coordinator recovery",
+    "cooked column synchronized by real CR",
+    "personality visibility restored",
+    "Model 4 memory prompt baseline",
+    "repeat recovery emits nothing",
+    "session exhaustion atomic",
+    "32-bit session carry",
+    "scope exhaustion atomic",
+    "begin emits no LIST controls",
+    "printer echo sees text not style controls",
+    "end emits no LIST controls",
+    "recovery LIST receives only CR LF",
+    "route mismatch retains recovery obligation",
+    "failed Begin returns owned token",
+    "failed Begin can recover",
+    "restore failure retains ownership",
+    "recovery failure is explicit",
+    "retry recovery",
+    "failed route repair halts without forwarding",
+    "safe retry after fatal fixture reset",
+    "cooked Ctrl-C safe-stack recovery",
+    "active guard preserves request/publication",
+    "idle invokes actual commit",
+    "invalid commit does not publish"
+  ],
+  "runs": [
+    {
+      "backend": "M4SCRN",
+      "origin": "0x9000",
+      "idle_movement": {
+        "old": "0x9000",
+        "new": "0xa101",
+        "repair_words": 228,
+        "result": "PASS",
+        "rebinding": "explicit fixture publication"
+      },
+      "stack_observed_bytes": {
+        "client": 14,
+        "warm": 12,
+        "bdos": 26
+      },
+      "case_count": 42
+    },
+    {
+      "backend": "M4SCRN",
+      "origin": "0xa101",
+      "idle_movement": {
+        "old": "0xa101",
+        "new": "0x9000",
+        "repair_words": 228,
+        "result": "PASS",
+        "rebinding": "explicit fixture publication"
+      },
+      "stack_observed_bytes": {
+        "client": 14,
+        "warm": 12,
+        "bdos": 26
+      },
+      "case_count": 42
+    },
+    {
+      "backend": "ANSISCRN",
+      "origin": "0x9000",
+      "idle_movement": {
+        "old": "0x9000",
+        "new": "0xa101",
+        "repair_words": 228,
+        "result": "PASS",
+        "rebinding": "explicit fixture publication"
+      },
+      "stack_observed_bytes": {
+        "client": 28,
+        "warm": 20,
+        "bdos": 34
+      },
+      "case_count": 42
+    },
+    {
+      "backend": "ANSISCRN",
+      "origin": "0xa101",
+      "idle_movement": {
+        "old": "0xa101",
+        "new": "0x9000",
+        "repair_words": 228,
+        "result": "PASS",
+        "rebinding": "explicit fixture publication"
+      },
+      "stack_observed_bytes": {
+        "client": 28,
+        "warm": 20,
+        "bdos": 34
+      },
+      "case_count": 42
+    }
+  ],
+  "parser_differential": [
+    {
+      "backend": "M4SCRN",
+      "origin": "0x9000",
+      "trace_checkpoints": 397,
+      "result": "PASS"
+    },
+    {
+      "backend": "M4SCRN",
+      "origin": "0xa101",
+      "trace_checkpoints": 397,
+      "result": "PASS"
+    },
+    {
+      "backend": "ANSISCRN",
+      "origin": "0x9000",
+      "trace_checkpoints": 397,
+      "result": "PASS"
+    },
+    {
+      "backend": "ANSISCRN",
+      "origin": "0xa101",
+      "trace_checkpoints": 397,
+      "result": "PASS"
+    }
+  ],
+  "core_regressions": {
+    "legacy_iobyte_cases": 5120,
+    "all_status_values": 256,
+    "basic_fallback_route_comparisons": 512,
+    "independent_video_characters": 4448,
+    "existing_caps_and_compaction_regressions": "PASS"
+  },
+  "old_provider_probes": {
+    "actual_legacy_personalities": [
+      "ADM3A",
+      "VT52",
+      "ANSI"
+    ],
+    "unknown_probe_cases": 36,
+    "result": "PASS"
+  },
+  "carrier_validation": {
+    "production_carrier_validator": "PASS",
+    "production_metadata_validator": "PASS",
+    "production_snapshot_constructor": "PASS",
+    "bad_checksum_rejection": "PASS",
+    "callable_services": [
+      "MCON 1.2",
+      "XTCP 0.2"
+    ],
+    "static_relocation_words": 228
+  },
+  "source_sha256": {
+    "tools/prototypes/tcap/placement.py": "c425c3eba931093c3c02eb922e55f09a96155e6f3397cb51026bda2a9076367e",
+    "tools/prototypes/tcap/campaign.py": "b3e092d9d3ac01aaaf8d559e0209718763d4e8b7e032975007a40be32ee6d73b",
+    "tools/prototypes/tcap/owner.inc": "ff4c8612e9599aea151d4978b520dd9cd9683611dedaa11433e4438007689503",
+    "tools/prototypes/tcap/coordinator.mac": "bc2deca90976f82881278104ef532b78a8d1495987624024450d4aff85e853f5",
+    "src/system/layout.inc": "57ed8d1c6f9ebd6daaffd714d11b705f0603ec61f0b81090e775ba32922811eb",
+    "src/bios/bios.mac": "eb816096d4a80b23246c1100f1c8778ea17f244e84c7c5a0a71f15007012dd28",
+    "src/platform/trs80m4/m4scroll.inc": "1f03e03655cba9f600145380236134f157291b66fd5cf612bf4d7cbdbde3cfa3",
+    "src/rsx/ansi.mac": "010c3e8eddc0e4493c99a7af53acd7e0ea0d44b75549b29b12a25334a1ca3376",
+    "src/rsx/ansi-dispatch.inc": "dc7005c28d175edff572b39975e404658d4bc247bb312fdcdf1f944a9531047b",
+    "src/rsx/screen/rendition.inc": "c2fb0e2e576dc3190f60d9be8c6ef313995a06bcc3c1fec7431fc79834c75614",
+    "src/rsx/screen/model4.mac": "9702aa618043c672298485e47fa43109fab4923c3177d0b8ed5504562d746e71",
+    "src/rsx/screen/ansi-host.mac": "b2085af36b7dd2532c5a8ee584a8963b11a0c0e544da14514a2c791851c94fe3"
+  },
+  "private_core_patch_sha256": "e2065df7f0bbf0f6d4c8520e12f77f5d6de6430311de2d1b856b84bf1b135bb5",
+  "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc",
+  "limits": [
+    "private staged Model 4 reference layout, not installed production source",
+    "host backend exercised with shared BIOS/router and host leaf, not a complete cpmsim image",
+    "fixture keyboard/warm entry and explicit idle publication rebinding",
+    "private MCON probe has no public allocation or compatibility handshake",
+    "boot-global identity allocator, full request ABI and finalizer/return-path admission deferred",
+    "no live/native/protected-ROM or media qualification",
+    "no utility migration or release assignment"
+  ]
+}

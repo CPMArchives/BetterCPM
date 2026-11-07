@@ -6,6 +6,14 @@ migrations and release assignment remain deferred. Source baseline is the main
 merge through PR #654 (`de0dbd20`); exact experiment/source/assembler hashes and
 case inventory are in the [machine-readable evidence](evidence/tcap-feasibility/report.json).
 
+## Follow-up status
+
+The [second campaign](TCAP-Placement-Results.md) resolves the rejected-carrier
+and bridge-placement gates in a private packed reference build. The first
+campaign evidence below remains unchanged as a historical measured checkpoint;
+its blockers must not be mistaken for the latest private-build disposition.
+Production admission and utility migration are still incomplete.
+
 ## Disposition
 
 The ownership/restoration concept works in the tested CPU/model slice, but the

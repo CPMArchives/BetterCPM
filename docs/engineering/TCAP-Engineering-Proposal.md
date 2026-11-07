@@ -383,6 +383,11 @@ measured CPU/model evidence and concrete carrier/placement blockers. This
 subsequent authorization covers experimental work; utility migrations and
 release assignment remain deferred. No public TCAP facility is delivered.
 
+The [carrier/placement follow-up](TCAP-Placement-Results.md) now packages the
+private owner within the existing relocation header and places its routing hook
+without growing the reference fixed BIOS. These measured feasibility results
+do not deliver a public TCAP facility or authorize utility migrations/releases.
+
 ## Related contracts
 
 - [Roadmap handoff](TCAP-Design-Thread-Handoff.md)
