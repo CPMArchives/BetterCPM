@@ -1,0 +1,62 @@
+; Private out-of-line feasibility bridges. Linked against fixture-owned symbols.
+        ASEG
+        ORG 04000H
+; Must be called from safe client/system stack, NEVER from an output callback.
+GX_RECV:
+        CALL TX_FIX
+        CP 2
+        RET Z                       ; already Idle: no repeated newline
+        OR A
+        RET NZ
+        LD A,1
+        LD (GX_INCO),A
+        LD C,2
+        LD E,13
+        CALL BDOSCALL             ; real cooked CR sets UB_COLUMN to zero
+        LD C,2
+        LD E,10
+        CALL BDOSCALL
+        XOR A
+        LD (GX_INCO),A
+        LD (TX_STATE),A
+        RET
+; Internal precommit guard in front of the actual production commit fixture.
+GX_COMIT:
+        LD A,(TX_STATE)
+        OR A
+        JR Z,GC_IDLE
+        LD A,16
+        RET
+GC_IDLE:
+        JP RCOMMIT
+; Preserve ordinary BIOS destination dispatch. State 5 is already being repaired.
+GX_ROUTE:
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD A,(TX_STATE)
+        OR A
+        JR Z,GR_GO
+        CP 5
+        JR NZ,GR_CHECK
+        LD A,(GX_INCO)
+        OR A
+        JR Z,GX_HALT
+        JR GR_GO
+GR_CHECK:
+        LD A,(0003H)
+        LD HL,TX_ROUTE
+        CP (HL)
+        JR Z,GR_GO
+        CALL TX_FIX              ; no BDOS or CR/LF from this callback
+        OR A
+        JR NZ,GX_HALT
+GR_GO:
+        POP HL
+        POP DE
+        POP BC
+        JP RCONOUT
+GX_HALT: HALT                     ; explicit fixture fatal disposition
+        JR GX_HALT
+GX_INCO: DB 0
+GX_IMAGE:
