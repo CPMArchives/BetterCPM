@@ -13,6 +13,12 @@ stacks and workspaces remain with their natural owners. Final ROM addresses,
 stack sizes, overlays and protected boundary are implementation results. The
 default configuration retains at least 53 KiB usable TPA.
 
+BETTERCP/M 1.1 UNLOADED TPA
+---------------------------
+
+For the 1.1 minimum capacity and platform exceptions, see the section
+"Unloaded transient program area" in docs/engineering/1.1-ENGINEERING-SPECIFICATION.md.
+
 4.1 Memory Model
 4.2 Address-Space Organization
 4.3 Transient Program Area
