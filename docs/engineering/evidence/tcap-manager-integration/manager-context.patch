@@ -1,0 +1,116 @@
+--- a/src/system/r3prof.mac
++++ b/src/system/r3prof.mac
+@@ -429 +429 @@
+-        LD      DE,31
++        LD      DE,33
+--- a/src/system/r3kctx.mac
++++ b/src/system/r3kctx.mac
+@@ -115 +115 @@
+-        LD      DE,31
++        LD      DE,33
+@@ -230,4 +230,4 @@
+-        LD      (HL),05AH
+-        INC     HL
+-        XOR     A
+-        LD      B,8
++        LD      (HL),05CH
++        INC     HL
++        XOR     A
++        LD      B,10
+--- a/src/system/r3drop.mac
++++ b/src/system/r3drop.mac
+@@ -94 +94 @@
+-        LD      DE,31
++        LD      DE,33
+@@ -331,3 +331,3 @@
+-        LD      (HL),05BH
+-        INC     HL
+-        LD      B,8
++        LD      (HL),05DH
++        INC     HL
++        LD      B,10
+--- a/src/system/r3keep.mac
++++ b/src/system/r3keep.mac
+@@ -38 +38 @@
+-        CP      05AH
++        CP      05CH
+@@ -40 +40 @@
+-        CP      05BH
++        CP      05DH
+@@ -65 +65 @@
+-        CP      05BH
++        CP      05DH
+--- a/src/system/r3final.mac
++++ b/src/system/r3final.mac
+@@ -39,0 +40,6 @@
++        PUSH    DE
++        LD      A,26
++        CALL    LY_BIOS+66
++        POP     DE
++        CP      16
++        RET     Z
+@@ -45 +51 @@
+-        CP      05AH
++        CP      05CH
+@@ -47 +53 @@
+-        CP      05BH
++        CP      05DH
+@@ -82 +88 @@
+-        CP      05AH
++        CP      05CH
+@@ -95 +101 @@
+-        LD      DE,41
++        LD      DE,49
+@@ -274 +280 @@
+-        LD      HL,0E03H                ; workspace end plus new gateway
++        LD      HL,0F03H                ; workspace end plus new gateway
+@@ -317 +323 @@
+-        LD      HL,0A00H
++        LD      HL,0B00H
+@@ -326,0 +333,5 @@
++        LD HL,(RF_CREQ)
++        LD DE,(RF_CTX)
++        CALL LY_CFG+0392H
++        OR A
++        JP NZ,RF_BAD
+@@ -344 +355 @@
+-        LD      BC,0A00H
++        LD      BC,0B00H
+--- a/src/system/rsxslots.mac
++++ b/src/system/rsxslots.mac
+@@ -0,0 +1 @@
++VM_VALID EQU 2119
+@@ -335,0 +337 @@
++        LD (MS_VSLOT),HL
+@@ -461,0 +464,17 @@
++        CP 3
++        JR NZ,VM_MINOR
++        LD HL,(MS_PLAN)
++        INC HL
++        INC HL
++        LD E,(HL)
++        INC HL
++        LD D,(HL)
++        LD HL,VM_VALID
++        ADD HL,DE
++        JP C,MS_BAD
++        LD (MS_VSLOT),HL
++        LD HL,(MS_SOURCE)
++        LD DE,5
++        ADD HL,DE
++        LD A,2                         ; private MCON 1.3 still requires SCRN 1.1
++VM_MINOR:
+@@ -551,0 +571,11 @@
++        LD DE,(MS_VSLOT)
++        LD A,D
++        OR E
++        JR Z,VM_NONE
++        LD HL,(MS_TARGET)
++        LD BC,8
++        ADD HL,BC
++        LD (HL),E
++        INC HL
++        LD (HL),D
++VM_NONE:
+@@ -642,0 +673 @@
++MS_VSLOT: DW 0

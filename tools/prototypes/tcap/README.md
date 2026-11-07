@@ -122,3 +122,22 @@ modified. The CPU artifact gate is invoked explicitly by the campaign; file-read
 front doors and full finalizer/context record construction still need integration.
 This is not an installable TCAP system or a public ABI allocation. Utility
 migrations and release assignment remain deferred.
+
+## Native manager and load-front-door integration
+
+```sh
+build/tcap-feasibility/venv/bin/python tools/prototypes/tcap/manager_integration.py
+```
+
+This fifth campaign runs actual context producers/finalizer and native/file-backed
+loading front doors, including cache-footer-aware movement and global validity
+publication. It uses the existing C CPU/filesystem fixture, which requires a C
+compiler and the local `~/projects/git/z80pack/z80core` source checkout in addition
+to the environment above. Generated files stay under `build/tcap-manager-integration/`.
+See the [results, footprint and remaining boundaries](../../../docs/engineering/TCAP-Native-Manager-Integration.md).
+
+The native candidate reserves 1 KiB permanently, uses fifteen resident boot sectors
+and retains the experimental OFF=3/DSM=384 boot-volume layout. Its native selector
+is permanent; the old image-builder selector tail is not a compatible package.
+No production source, utility, installed media or release assignment changes.
+This is not an installable distribution or a completed public TCAP request ABI.
