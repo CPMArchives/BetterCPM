@@ -246,6 +246,7 @@ completed runtime qualification is made.
 
 | Design responsibility | Controlling proposed document |
 | --- | --- |
+| Candidate packed interface, buffer/token rules and cross-contract review | [Interface candidate](TCAP-Interface-Candidate.md) |
 | Complete proposed integration, records, identity rules, source responsibilities and delivery gates | [Integration design package](TCAP-Integration-Design.md) |
 | Application-visible operations, failures, geometry, paging and lifecycle | [Detailed semantic contract](TCAP-Semantic-Contract.md) |
 | Owner lifetime, activation, transaction ordering and coordinator split | [Owner and transaction design](TCAP-Owner-Transaction-Design.md) |

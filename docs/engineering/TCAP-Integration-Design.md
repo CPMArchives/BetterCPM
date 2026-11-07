@@ -283,6 +283,14 @@ with separate reviewable code changes only where they help validation:
    are qualified; adoption order is a recommendation, not a release assignment.
    Recheck memory/stack and distribution compatibility after integration.
 
+## Binary interface review follow-up
+
+The [interface candidate](TCAP-Interface-Candidate.md) supplies proposed packed
+records, operation/status tables, bounded recovered-session tombstones and a
+cross-contract consistency review. It refines the logical shapes here but does
+not allocate or freeze an ABI. Unknown/partial-effect results and plain emphasis
+inside takeover must follow the explicit token rules in that candidate.
+
 ## Review disposition and completion boundary
 
 The documentation package now contains a source audit, semantic contract, selected
