@@ -16,7 +16,7 @@ ROM_BASE = 0xDF00
 ROM_END = 0x10000
 # Measured with BCV_RELEASE='1.0'; the former '0.90' label used one more byte.
 EXPECTED_IMMUTABLE = 5501
-EXPECTED_MUTABLE = 868
+EXPECTED_MUTABLE = 882
 
 
 def digest(data: bytes) -> str:

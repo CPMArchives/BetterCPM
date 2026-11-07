@@ -284,3 +284,20 @@ require a later carrier/metadata revision justified by a concrete use. Some
 retained behavior remains implementation work; the architecture is not
 provisional. NDR, PATH and named-directory navigation are later-1.x work.
 Canonical DU operation is the 1.0 model.
+
+6.11 BETTERCP/M 1.1 NUMERIC TRANSIENT SEARCH
+-------------------------------------------
+
+1.0 tries the caller DU and then A0. 1.1 makes this ordered list configurable.
+Only the final transient lookup consults PATH. Navigation, core commands and
+the CPX chain retain their order. The existing :NAME and .NAME force-transient
+forms use PATH. A drive, user or combined qualifier confines Open to the
+specified location, including when used after a force prefix.
+
+The default is ". A0:". A dot denotes the caller DU at invocation time. Up to
+six entries are allowed. Each resolved DU is tried once, in order. The first
+successful Open commits to that image. Failure to use a configured drive or
+load a selected image ends the search. The program sees the caller's logged
+drive/user, original counted tail and normal default FCBs. SUBMIT uses the
+same dispatch entry. The live list belongs to fixed command-environment state
+and survives reconstruction. See ../engineering/Numeric-PATH-1.1.md.

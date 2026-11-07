@@ -55,6 +55,19 @@ CCP_ENTRY:                              ; initialize CCP stack
         ADD     HL,DE
         LD      SP,HL
         CALL    CPX_INITIALIZE
+        LD      A,(LY_LERR)             ; reader may have overwritten the entire CCP
+        OR      A
+        JR      Z,CCP_BOOTCMD
+        INC     A                       ; FF = capacity rejection, other = read error
+        LD      DE,CCP_MTOOBIG
+        JR      Z,CCP_LMSG
+        LD      DE,CCP_MREAD
+CCP_LMSG:
+        XOR     A
+        LD      (LY_LERR),A
+        LD      C,9
+        CALL    BDOS
+CCP_BOOTCMD:
         CALL    CCP_STARTUP
         JR      C,CCP_DISPATCH
 
@@ -130,6 +143,8 @@ CCP_STARTUP:
         RET     NZ
         SET     0,A
         LD      (STARTFLAG),A
+        XOR     A
+        LD      (LY_PATH),A             ; true cold startup selects the default list
         CALL    CCP_STBASE              ; direct BIOS calls avoid BDOS ^C handling
         CALL    CCP_SUPPR
         JR      NC,CCP_STGO
@@ -1685,9 +1700,8 @@ CCP_ARGSKIP:                            ; skip spaces before argument
   ; JUMP deliberately do not inherit the tail left by the last transient.
 
 CCP_MKTAIL:                             ; build transient command tail and FCBs
-        LD      (CCP_APTR),HL
-        LD      A,B
-        LD      (CCP_ALEN),A
+        PUSH    HL
+        PUSH    BC
         LD      HL,005CH
         LD      B,36
         XOR     A
@@ -1696,29 +1710,25 @@ CCP_MTZERO:                             ; clear default FCB area
         LD      (HL),A
         INC     HL
         DJNZ    CCP_MTZERO
-        LD      A,(CCP_ALEN)
+        POP     BC
+        POP     HL
+        PUSH    HL
+        PUSH    BC
+        LD      A,B
         LD      (0080H),A
         LD      C,A
         LD      B,0
-        ; APTR addresses the folded command; copy the original spelling.
-        LD      HL,(CCP_APTR)
-        LD      DE,CCP_DATA
-        OR      A
-        SBC     HL,DE
-        LD      DE,CCP_RAW
+        LD      DE,CCP_RAW-CCP_DATA     ; original case at the same offset
         ADD     HL,DE
         LD      DE,0081H
-        LD      A,C
         OR      A
         JR      Z,CCP_MTCR
         LDIR
-
-CCP_MTCR:                               ; terminate transient command tail
-        XOR     A                       ; DRI tools scan for the stock NUL sentinel
+CCP_MTCR:
+        XOR     A
         LD      (DE),A
-        LD      HL,(CCP_APTR)
-        LD      A,(CCP_ALEN)
-        LD      B,A
+        POP     BC
+        POP     HL
         CALL    CCP_PSKIP
         LD      DE,005CH
         CALL    CCP_PFCB
@@ -2248,6 +2258,7 @@ CCP_PONEXT:                             ; parse next POKE byte
         JR      Z,CCP_POTEXT
         PUSH    DE
         CALL    CCP_HEX
+        JR      NC,CCP_POFAIL           ; invalid token did not consume the input
         LD      A,E
         LD      (CCP_HEXDIG),A
         LD      A,D
@@ -2920,139 +2931,175 @@ CCP_FSPC:                               ; initialize FCB name fields
         CALL    CCP_LQUAL
         LD      A,(CCP_LREML)
         OR      A
-        SCF
-        RET     Z
-        LD      A,(CCP_LREML)
-        LD      B,A
-        LD      HL,(CCP_LPTR)
-        XOR     A
-
-CCP_LNSCAN:                             ; scan transient command name
-        LD      C,A
-        LD      A,(HL)
-        CP      ' '
-        LD      A,C
-        JR      Z,CCP_LNFOUND
-        CP      8
-        JP      NC,CCP_LFAIL
-        INC     A
-        INC     HL
-        DJNZ    CCP_LNSCAN
-        JR      CCP_LNFOUND
-
-CCP_LNFOUND:                            ; finish transient command name
-        OR      A                       ; do not retain Z from the separating-space CP
         JP      Z,CCP_LFAIL
-        LD      (CCP_NAMEL),A
-        LD      C,A
-        LD      A,(CCP_QLEN)
-        ADD     A,C
-        LD      (CCP_CMDLEN),A
-        LD      B,A
-        LD      A,(CCP_NAMEL)
         LD      B,A
         LD      HL,(CCP_LPTR)
         LD      DE,CCP_FCB+1
-
-CCP_FNCPY:                              ; copy transient filename into FCB
+        LD      C,0
+CCP_LNSCAN:
         LD      A,(HL)
-        CP      '!'
+        CP      ' '
+        JR      Z,CCP_LNFOUND
         JP      C,CCP_LFAIL
         CP      '.'
         JP      Z,CCP_LFAIL
+        CP      ':'                     ; malformed qualifier cannot become a PATH name
+        JP      Z,CCP_LFAIL
+        CP      '?'
+        JP      Z,CCP_LFAIL
+        CP      '*'
+        JP      Z,CCP_LFAIL
+        INC     C
+        LD      A,C
+        CP      9
+        JP      NC,CCP_LFAIL
+        LD      A,(HL)
         LD      (DE),A
         INC     HL
         INC     DE
-        DJNZ    CCP_FNCPY
+        DJNZ    CCP_LNSCAN
+CCP_LNFOUND:
+        LD      A,C
+        OR      A
+        JP      Z,CCP_LFAIL
+        LD      A,(CCP_QLEN)
+        ADD     A,C
+        LD      (CCP_CMDLEN),A
         CALL    CCP_LOPEN
         JP      Z,CCP_LFAIL
-        JR      CCP_LEOF
+        INC     A                       ; FF = configured location unavailable
+        LD      DE,CCP_NODRV
+        JP      Z,CCP_LREPORT
+        LD      A,(CCP_FCB+15)          ; no first record: never jump to stale TPA
+        OR      A
+        JP      NZ,CCP_LEOF
+        LD      DE,CCP_EMPTY
+        JP      CCP_LREPORT
 
-CCP_LOPEN:                             ; current DU first, then fixed A0 fallback
-        LD      DE,CCP_FCB
-        LD      C,15
-        CALL    BDOS
-        INC     A
-        RET     NZ
-        LD      A,(CCP_FCB)             ; accepted drive/user qualifiers are exact
+; Only unqualified transients reach the list. The cursor and remaining count
+; stay on the CCP stack across BDOS. Fixed entries are unique by contract.
+CCP_LOPEN:
+        LD      A,(CCP_FCB)
         LD      HL,CCP_LUACT
         OR      (HL)
-        JR      Z,CCP_LAFALL
-        XOR     A                      ; qualified miss: no alternate location
-        RET
-CCP_LAFALL:
+        JP      NZ,CCP_LOP              ; drive-only, user-only or full qualifier
         LD      E,0FFH
         LD      C,32
         CALL    BDOS
         LD      (CCP_LUSAV),A
-        LD      A,1
-        LD      (CCP_LUACT),A
+        LD      C,25
+        CALL    BDOS
+        INC     A
+        LD      (CCP_LDRV),A            ; caller drive in FCB numbering
+        XOR     A
+        LD      (CCP_LUTRG),A           ; caller DU not yet searched
+        INC     A
+        LD      (CCP_LUACT),A           ; arm before any temporary selection
+        LD      HL,LY_PATH
+        LD      B,(HL)
+        INC     HL
+        LD      A,B
+        OR      A
+        JR      Z,CCP_LDEF
+        CP      PATHMAX+1
+        JR      C,CCP_LENT
+        XOR     A                       ; refuse an invalid live count; explicit PATH can reset
+        RET
+CCP_LDEF:
+        LD      HL,CCP_DEFP
+        LD      B,2
+CCP_LENT:
+        LD      D,(HL)                  ; drive 1..16, zero = dynamic DU
+        INC     HL
+        LD      E,(HL)                  ; user 0..31
+        INC     HL
+        PUSH    HL
+        PUSH    BC
+        LD      A,D
+        OR      A
+        LD      A,(CCP_LDRV)
+        JR      NZ,CCP_LFIX
+        LD      D,A
+        LD      A,(CCP_LUSAV)
+        LD      E,A
+        JR      CCP_LLOCAL
+CCP_LFIX:
+        CP      D
+        JR      NZ,CCP_LTRY
+        LD      A,(CCP_LUSAV)
+        CP      E
+        JR      NZ,CCP_LTRY
+CCP_LLOCAL:
+        LD      A,(CCP_LUTRG)
+        OR      A
+        JR      NZ,CCP_LNEXT
+        INC     A
+        LD      (CCP_LUTRG),A
+        LD      D,0                     ; current drive FCB spelling
+CCP_LTRY:
+        LD      A,D
         LD      (CCP_FCB),A
-        LD      HL,CCP_FCB+12           ; discard any failed Open scratch state
+        LD      C,32
+        CALL    BDOS
+        LD      HL,CCP_FCB+12           ; failed Open can modify FCB scratch
         LD      B,24
         XOR     A
 CCP_LACLR:
         LD      (HL),A
         INC     HL
         DJNZ    CCP_LACLR
-        LD      E,A
-        LD      C,32
-        CALL    BDOS
+        CALL    CCP_LOP
+        JR      NZ,CCP_LHIT
+        LD      A,(CCP_FCB)
+        OR      A
+        JR      Z,CCP_LNEXT
+        DEC     A
+        LD      C,A
+        CALL    LY_EXT+3                ; preserved-context login distinguishes bad drive
+        JR      Z,CCP_LNEXT
+        POP     BC
+        POP     HL
+        LD      A,0FFH
+        OR      A
+        RET
+CCP_LNEXT:
+        POP     BC
+        POP     HL
+        DJNZ    CCP_LENT
+        XOR     A
+        RET
+CCP_LHIT:
+        POP     BC
+        POP     HL
+        RET
+CCP_LOP:
         LD      DE,CCP_FCB
         LD      C,15
         CALL    BDOS
         INC     A
         RET
-                                        ; Build the transient arguments while the command line still exists.
-  ; The protected reader now owns EOF/error handling and the final jump.
+CCP_DEFP:
+        DB      0,0,1,0                 ; dynamic caller, A0
+CCP_LREPORT:
+        PUSH    DE
+        CALL    CCP_LURST
+        CALL    CS_CANCEL
+        POP     DE
+        LD      C,9
+        CALL    BDOS
+        OR      A                       ; error already reported
+        RET
 
 CCP_LEOF:                               ; finish transient filename parse
-        LD      HL,005CH
-        LD      B,36
-        XOR     A
-
-CCP_ZPAGE:                              ; clear transient base page
-        LD      (HL),A
-        INC     HL
-        DJNZ    CCP_ZPAGE
-        LD      A,(CCP_CMDLEN)
-        LD      C,A
-        LD      A,(CCP_COUNT)
-        SUB     C
-        LD      (0080H),A
-        LD      B,A
-        LD      A,(CCP_CMDLEN)
-        LD      E,A
-        LD      D,0
-        LD      HL,CCP_RAW
-        ADD     HL,DE
-        LD      DE,0081H
-        LD      A,B
-        OR      A
-        JR      Z,CCP_LTAIL0
-        LD      C,A
-        LD      B,0
-        LDIR
-
-CCP_LTAIL0:                             ; build transient command tail
-        XOR     A                       ; counted tail is followed by the stock NUL
-        LD      (DE),A
-        LD      A,(CCP_CMDLEN)
-        LD      C,A
-        LD      A,(CCP_COUNT)
-        SUB     C
-        LD      B,A
         LD      A,(CCP_CMDLEN)
         LD      E,A
         LD      D,0
         LD      HL,CCP_DATA
         ADD     HL,DE
-        CALL    CCP_PSKIP
-        LD      DE,005CH
-        CALL    CCP_PFCB
-        CALL    CCP_PSKIP
-        LD      DE,006CH
-        CALL    CCP_PFCB
+        LD      A,(CCP_COUNT)
+        SUB     E
+        LD      B,A
+        CALL    CCP_MKTAIL
         LD      HL,CCP_FCB
         LD      DE,LY_FCB               ; protected module-reader FCB, idle during COM load
         LD      BC,36
@@ -3415,6 +3462,8 @@ CCP_KP:        DB      'P'              ; PEEK abbreviation keyword
 CCP_KPOKE:     DB      'POKE'           ; POKE command keyword
 CCP_KGO:       DB      'GO'             ; GO command keyword
 CCP_KSAVE:     DB      'SAVE'           ; SAVE command keyword
+CCP_EMPTY:     DB      13,10,'EMPTY PROGRAM',13,10,'$'
+CCP_NODRV:     DB      13,10,'DRIVE UNAVAILABLE',13,10,'$'
 CCP_COM:                                ; .COM extension text
         DB      'COM'
 CCP_STSIG:     DB      'BCST',1,0,16
@@ -3449,6 +3498,9 @@ CCP_DATA:                               ; command-line text
         DB      0
         ENDM
 ; Original spelling for transient tails; dispatch and default FCBs use DATA.
+; POKE consumes folded DATA and returns directly to the prompt. The saved
+; spelling is dead after the core accepts it, so the staging areas can overlap.
+CCP_PBUF:
 CCP_RAW:
         REPT    127
         DB      0
@@ -3500,16 +3552,11 @@ CCP_USAVE:     DB      0                ; saved default user
 CCP_DTARG:     DB      0FFH             ; target drive
 CCP_UTARG:     DB      0FFH             ; target user
 CCP_DUACT:     DB      0                ; drive/user selection flags
-CCP_PBUF:                               ; validated POKE byte buffer
-        REPT    127
-        DB      0
-        ENDM
 
   ; CCP-only loader scratch occupies the otherwise unused compatibility-page
   ; workspace below the default FCBs.  Using fixed page-zero bytes here also
   ; avoids spending scarce relocation-directory entries on ephemeral state.
 
-CCP_NAMEL      EQU     0040H
 CCP_CMDLEN     EQU     0041H
 CCP_QLEN       EQU     0042H
 CCP_LPTR       EQU     0043H
@@ -3526,8 +3573,6 @@ CPX_CUR:                                ; current CPX descriptor pointer
 
 CCP_NEWLINE:                            ; shared CR/LF string
         DB      13,10,'$'
-CCP_RET:                                ; shared return instruction
-        DW      0000H
 
   ; Command execution owns its stack inside the reconstructible CCP allocation.
 

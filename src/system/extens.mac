@@ -175,8 +175,7 @@ BF_RSXSVC:                              ; locate RSX-published service
 
 BF_RSNONE:                              ; report missing RSX service
         PUSH    DE
-        LD      H,D
-        LD      L,E
+        EX      DE,HL                   ; DE restored by POP below
         LD      BC,12
         ADD     HL,BC
         XOR     A
@@ -213,7 +212,7 @@ BF_RSCLR:                               ; clear RSX registry
 
 BF_VERSION:                             ; return protected version descriptor
         LD      HL,BCV_DESC
-        JP      EX_RETHL
+        JR      EX_RETHL
 
 ; -------------------------------------------------------------------------------
 ; Cursor Service
@@ -330,10 +329,11 @@ CL_NEXT:                                ; read next command-module record
 CL_END:                                 ; finish module read
         POP HL
         DEC A                           ; EOF=1 is success; other errors stay nonzero
+        LD (LY_LERR),A                  ; consumed by the rebuilt CCP
         JP LY_COMDONE
 
 CL_BIG:                                 ; reject oversized module through common finish
-        LD A,2
+        XOR A                          ; DEC in CL_END gives unique size error FFh
         JR CL_END
 
 CL_ABORT:                               ; restore lookup context before WBOOT rebuild

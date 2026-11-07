@@ -7,7 +7,7 @@ gateway-handoff-reserve	reserved	none	D638	D643	12	zero	none	stable COM handoff 
 descriptor-header	reserved	none	D644	D646	3	copy	D644	live descriptor magic and version copied from ROM template
 extension-control-live	object	extension-control-live	D647	D657	17	copy	D647	live extension-control descriptor fields
 cpx-profile	object	cpx-profile	D658	D680	41	copy	D658	persistent CPX reconstruction profile
-gateway-tail-reserve	reserved	none	D683	D6BB	57	zero	none	fixed gateway growth and ROM-entry trampolines
+gateway-tail-reserve	reserved	none	D691	D6BB	43	zero	none	fixed gateway growth and ROM-entry trampolines
 bdos-live-state	object	bdos-live-state	D6BC	D700	69	copy	E3BC	BDOS persistent and call-local state
 bdos-stack	object	bdos-stack	D701	D728	40	zero	none	private BDOS stack
 extension-live-state	object	extension-live-state	D729	D72D	5	zero	none	extension dispatcher call state
@@ -21,3 +21,5 @@ directory-buffer	object	directory-buffer	D9ED	DA6C	128	zero	none	BDOS directory 
 physical-sector-buffer	object	physical-sector-buffer	DA6D	DC6C	512	zero	none	lower workspace for module staging, full-sector transfers and control overlays
 module-config-buffer	object	module-config-buffer	DC6D	DE6C	512	zero	none	upper workspace for small-sector staging, full-sector transfers and control overlays
 monitor-binding	object	z80pack-monitor-binding	D681	D682	2	zero	none	BIOS-owned monitor target initialized by cold BOOT
+com-read-result	object	com-read-result	D683	D683	1	zero	none	protected loader result for CCP reentry
+numeric-path	object	numeric-path	D684	D690	13	zero	none	live numeric command search policy

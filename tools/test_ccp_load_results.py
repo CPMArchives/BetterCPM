@@ -29,7 +29,10 @@ OPEN:   LD HL,0F109H
         JR NZ,FOUND
         LD A,0FFH
         RET
-FOUND:  XOR A
+FOUND:  LD HL,15
+        ADD HL,DE
+        LD (HL),1
+        XOR A
         RET
 DRIVE:  LD A,3
         RET
@@ -101,6 +104,8 @@ for fallback in (0,1):
   assert m.mem[0xF106]==7,'caller user was not restored'
   assert m.mem[0xF107]==1 and m.word(LAYOUT['SYSTEM']+0x86)==0,'COM handoff did not shut down the CPX chain exactly once'
   assert m.mem[4]==3, 'page-zero drive did not follow caller-context loader handoff'
+  status=m.mem[LAYOUT['EXTENSIONS']-17]
+  assert status=={1:0, 2:1, 0xFF:0xFE, 0:0xFF}[result], 'CCP reentry diagnostic class'
   if result==1:
    assert m.mem[0x48]==0, 'successful loader left abort recovery armed'
    assert m.mem[0xF104]==1,'EOF did not execute the complete image'

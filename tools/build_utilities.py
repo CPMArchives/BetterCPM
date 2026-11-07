@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BUILDERS = (
     "fdb",                  # FDB.COM and matching FDBVIEW.OVL
     "disk_utilities",       # CONFIG.COM, DUP.COM, SYSGEN.COM, SYSBUILD.COM
+    "path",                 # Numeric command-search policy
     "cpx_utility",          # CPX.COM
     "rsx_utilities",        # RSX.COM and its diagnostic companions
     "rcp_transients",       # DIR.COM, USER.COM, CLS.COM, VER.COM, COPY.COM, MOVE.COM

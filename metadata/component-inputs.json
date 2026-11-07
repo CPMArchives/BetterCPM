@@ -5589,6 +5589,46 @@
         "description"
       ],
       "identity_dependencies": []
+    },
+    "utility:PATH": {
+      "status": "tracked-conservative",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp",
+        "trs80m2"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "origin": 256,
+        "assembler_flags": [
+          "-fb"
+        ]
+      },
+      "registry_fields": [
+        "display_format",
+        "description"
+      ],
+      "files": [
+        "src/system/layout.inc",
+        "src/utilities/common/version.inc",
+        "src/utilities/path.mac",
+        "tools/build_ccp.py",
+        "tools/build_path.py",
+        "tools/build_profiles.py",
+        "tools/checked_build_contract.py",
+        "tools/checked_carriers.py",
+        "tools/component_build.py",
+        "tools/component_development.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_registry.py",
+        "tools/rsx_container.py",
+        "tools/system_layout.py",
+        "tools/utility_help.py",
+        "tools/utility_versions.py"
+      ]
     }
   }
 }

@@ -33,6 +33,17 @@
       "role": "editable cold-boot startup script"
     },
     {
+      "name": "PATH.COM",
+      "artifact": "build/utilities/PATH.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp",
+        "trs80m2"
+      ],
+      "user": 0
+    },
+    {
       "name": "DIR.COM",
       "artifact": "build/utilities/DIR.COM",
       "status": "implemented",

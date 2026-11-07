@@ -273,6 +273,7 @@ def main() -> None:
     ver_path = ROOT / "build/utilities/VER.COM"
     copy_path = ROOT / "build/utilities/COPY.COM"
     move_path = ROOT / "build/utilities/MOVE.COM"
+    path_utility = ROOT / "build/utilities/PATH.COM"
     warm_path = ROOT / "build/utilities/WARM.COM"
     config_path = ROOT / "build/utilities/CONFIG.COM"
     dup_path = ROOT / "build/utilities/DUP.COM"
@@ -288,7 +289,7 @@ def main() -> None:
                  p2dos_rsx_path,
                  frehd_time_rsx_path, cpx_utility_path, rsx_utility_path,
                  rsxtest_path, rsx2test_path, era_path, ren_path, type_path, dir_path,
-                 user_path, cls_path, ver_path, copy_path, move_path, warm_path, config_path, dup_path, sysgen_path, sysbuild_path, stat_path,
+                 user_path, cls_path, ver_path, copy_path, move_path, warm_path, path_utility, config_path, dup_path, sysgen_path, sysbuild_path, stat_path,
                  submit_path, xsub_path, time_path, fdb_path):
         if not path.is_file():
             raise SystemExit(f"missing system-image input: {path}")
@@ -384,6 +385,7 @@ def main() -> None:
                      ("VER.COM", ver_path.read_bytes()),
                      ("COPY.COM", copy_path.read_bytes()),
                      ("MOVE.COM", move_path.read_bytes()),
+                     ("PATH.COM", path_utility.read_bytes()),
                      ("WARM.COM", warm_path.read_bytes()),
                      ("CONFIG.COM", config_path.read_bytes()),
                      ("DUP.COM", dup_path.read_bytes()),
