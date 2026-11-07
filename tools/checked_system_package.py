@@ -67,7 +67,8 @@ def guard_source(root):
     from checked_carriers import selected_contract
     contract=selected_contract()
     if not contract:raise ValueError('checked package guard requires a prepared profile')
-    out=root/'build/z80pack'
+    from system_layout import CONTEXT
+    out=root/'build'/CONTEXT[0]['target']
     state=json.loads((out/'package-inputs.json').read_text())
     if state['build_contract']!=contract:raise ValueError('foreign/stale package guard')
     for name,key in [('checked-package.json','contract_sha256'),('package-guard.inc','guard_sha256')]:

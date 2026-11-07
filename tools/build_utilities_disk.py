@@ -68,22 +68,22 @@ def validate_search_acceptance(receipt,files,target,image):
     return proof
 
 
-def cpmsim_batchio(artifacts):
+def checked_batchio(artifacts, profile_name):
     """Assemble the private Utilities-disk provider with the System disk's ABI."""
     from build_distribution import prepare_profile, source_identity
     from build_profiles import PROFILES, context_environment
     from checked_carriers import binding
     from checked_build_contract import load_contract
-    profile = PROFILES['cpmsim-fullram']
+    profile = PROFILES[profile_name]
     identity = source_identity(profile, artifacts)
     with tempfile.TemporaryDirectory(prefix='bettercpm-batchio-') as temporary:
-        root = prepare_profile(Path(temporary), 'z80pack', identity, profile, source_root=artifacts)
+        root = prepare_profile(Path(temporary), profile.target, identity, profile, source_root=artifacts)
         env = context_environment(root/'build/profile/context.json', root/'src/system/layout.inc')
         subprocess.run([sys.executable, root/'tools/build_batch.py'], cwd=root, env=env, check=True)
         contract = load_contract(root, Path.home()/'bin/z80asm')
         data = (root/'build/rsx/BATCHIO.RSX').read_bytes()
         if binding('BATCHIO', contract, 'rsx') not in data:
-            raise ValueError('BATCHIO carrier lacks its cpmsim profile binding')
+            raise ValueError('BATCHIO carrier lacks its '+profile.name+' binding')
     relative = Path('build')/profile.name/'rsx/BATCHIO.RSX'
     path = artifacts/relative
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -92,7 +92,7 @@ def cpmsim_batchio(artifacts):
     return relative, data, identity, contract['compatibility_id']
 
 
-def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None, dasm_acceptance=None, ted_acceptance=None, noah_acceptance=None, search_acceptance=None, crc_acceptance=None, md5sum_acceptance=None):
+def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None, dasm_acceptance=None, ted_acceptance=None, noah_acceptance=None, search_acceptance=None, crc_acceptance=None, md5sum_acceptance=None, *, model2_system=None):
     from toolchain_distribution import companions, validate_acceptance
     accompanying = companions(artifacts)
     from dasm_distribution import companions as dasm_companions
@@ -123,36 +123,51 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
     md5sum_accepted=json.loads(md5sum_acceptance.read_text()) if md5sum_acceptance else None
     reports=[]
     output.mkdir(parents=True,exist_ok=True)
-    batch_path, batch_data, batch_identity, batch_id = cpmsim_batchio(artifacts)
-    for target in ['z80pack','trs80gp']:
-        target_files = {**files, 'BATCHIO.RSX': batch_data} if target == 'z80pack' else files
-        native=target=='trs80gp'
-        fmt=select_fdf(ROOT/'metadata/DISK.FDF', 'Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)' if native else DEFAULT_FORMAT)
-        definition='bettercpm-mm-80t-ds-data' if native else 'bettercpm-default'
-        with tempfile.TemporaryDirectory(prefix='bettercpm-utilities-',dir='/private/tmp') as temp:
-            work=Path(temp);(work/'diskdefs').write_text(disk_definition(select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT)))
-            raw=work/'utilities.dsk';raw.write_bytes(bytes([0xE5])*fmt.image_bytes)
-            def run(*args):
-                result=subprocess.run(args,cwd=work,capture_output=True)
-                if result.returncode:raise RuntimeError(f'{args}: {result.stdout!r} {result.stderr!r}')
-                return result
-            run('mkfs.cpm','-f',definition,str(raw))
-            for name,data in target_files.items():
-                source=work/name;source.write_bytes(data);run('cpmcp','-T','raw','-f',definition,str(raw),str(source),'0:'+name)
-                extracted=work/('readback-'+name);run('cpmcp','-T','raw','-f',definition,str(raw),'0:'+name,str(extracted))
-                actual=extracted.read_bytes();assert actual[:len(data)]==data and len(actual)<=((len(data)+127)//128)*128,name
-            run('fsck.cpm','-T','raw','-f',definition,'-n',str(raw))
-            data=raw.read_bytes()
-            if native:
-                image=raw_to_dmk(data,fmt);assert dmk_to_raw(image,fmt)==data
-            else:image=data
-            name=f'BetterCPM-Utilities-{target}-'+('80T-DS-800K.dmk' if native else '332K.dsk')
-            reports.append((name,image,{'target':target,'image':name,'sha256':sha(image),'format':fmt.name,'status':'PROVISIONAL','included':[{'name':n,'sha256':sha(d),'bytes':len(d)} for n,d in target_files.items()],'pending':PENDING,'deferred':['NOAH interactive browser; command-line utility supplied on companion volume'],'validation':'file readback and filesystem PASS; native DMK/raw round trip PASS; no whole Utilities release acceptance claimed'}))
-            if not native:
-                report = reports[-1][2]
-                report['profile'] = 'cpmsim-fullram'
-                report['compatibility_id'] = batch_id
-                next(row for row in report['included'] if row['name'] == 'BATCHIO.RSX')['artifact'] = str(batch_path)
+    profile_name = 'model2-fullram' if model2_system else 'cpmsim-fullram'
+    batch_path, batch_data, batch_identity, batch_id = checked_batchio(artifacts, profile_name)
+    if model2_system:
+        from trs80m2_utilities import system_digest, volume
+        paired_digest = system_digest(model2_system, batch_id)
+        for receipt in (accepted,tools_accepted,dasm_accepted,ted_accepted,search_accepted,
+                        crc_accepted,md5sum_accepted):
+            if receipt is not None and receipt.get('platforms',{}).get('trs80m2',{}).get('system_sha256') != paired_digest:
+                raise ValueError('acceptance receipt belongs to a different System Disk')
+        model2_files = {**files, 'BATCHIO.RSX':batch_data,
+                        'SUBMIT.COM':(artifacts/'build/utilities/SUBMIT.COM').read_bytes()}
+        reports.append(volume('Utilities', model2_files, compatibility_id=batch_id,
+                              system_sha256=paired_digest))
+        row = next(row for row in reports[0][2]['included'] if row['name']=='BATCHIO.RSX')
+        row['artifact'] = str(batch_path)
+    else:
+        for target in ['z80pack','trs80gp']:
+            target_files = {**files, 'BATCHIO.RSX': batch_data} if target == 'z80pack' else files
+            native=target=='trs80gp'
+            fmt=select_fdf(ROOT/'metadata/DISK.FDF', 'Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)' if native else DEFAULT_FORMAT)
+            definition='bettercpm-mm-80t-ds-data' if native else 'bettercpm-default'
+            with tempfile.TemporaryDirectory(prefix='bettercpm-utilities-',dir='/private/tmp') as temp:
+                work=Path(temp);(work/'diskdefs').write_text(disk_definition(select_fdf(ROOT/'metadata/DISK.FDF',DEFAULT_FORMAT)))
+                raw=work/'utilities.dsk';raw.write_bytes(bytes([0xE5])*fmt.image_bytes)
+                def run(*args):
+                    result=subprocess.run(args,cwd=work,capture_output=True)
+                    if result.returncode:raise RuntimeError(f'{args}: {result.stdout!r} {result.stderr!r}')
+                    return result
+                run('mkfs.cpm','-f',definition,str(raw))
+                for name,data in target_files.items():
+                    source=work/name;source.write_bytes(data);run('cpmcp','-T','raw','-f',definition,str(raw),str(source),'0:'+name)
+                    extracted=work/('readback-'+name);run('cpmcp','-T','raw','-f',definition,str(raw),'0:'+name,str(extracted))
+                    actual=extracted.read_bytes();assert actual[:len(data)]==data and len(actual)<=((len(data)+127)//128)*128,name
+                run('fsck.cpm','-T','raw','-f',definition,'-n',str(raw))
+                data=raw.read_bytes()
+                if native:
+                    image=raw_to_dmk(data,fmt);assert dmk_to_raw(image,fmt)==data
+                else:image=data
+                name=f'BetterCPM-Utilities-{target}-'+('80T-DS-800K.dmk' if native else '332K.dsk')
+                reports.append((name,image,{'target':target,'image':name,'sha256':sha(image),'format':fmt.name,'status':'PROVISIONAL','included':[{'name':n,'sha256':sha(d),'bytes':len(d)} for n,d in target_files.items()],'pending':PENDING,'deferred':['NOAH interactive browser; command-line utility supplied on companion volume'],'validation':'file readback and filesystem PASS; native DMK/raw round trip PASS; no whole Utilities release acceptance claimed'}))
+                if not native:
+                    report = reports[-1][2]
+                    report['profile'] = 'cpmsim-fullram'
+                    report['compatibility_id'] = batch_id
+                    next(row for row in report['included'] if row['name'] == 'BATCHIO.RSX')['artifact'] = str(batch_path)
     # Component evidence is valid only for these exact packaged images.
     for name,data,report in reports:
         verdict={'status':'PENDING_RELEASE_ACCEPTANCE','sha256':sha(files['DDT.COM'])}
@@ -213,7 +228,20 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
     # NOAH's matching COM/OVL and notes travel on a companion volume. The
     # 332K primary cannot hold these files alongside the selected tool set.
     from noah_distribution import media as noah_media
-    companion_reports=noah_media(artifacts, noah_acceptance)
+    if model2_system:
+        from noah_distribution import COMPONENTS as companion_inventory, acceptance_proof
+        companion_files = {name:(artifacts/path).read_bytes() for name,path in companion_inventory.items()}
+        companion = volume('NOAH', companion_files, compatibility_id=batch_id, system_sha256=paired_digest)
+        report = companion[2]
+        report['component_acceptance'] = {
+            n:{'status':'PENDING_RELEASE_ACCEPTANCE','sha256':sha(companion_files[n])}
+            for n in ('NOAH.COM','PATCH.COM','COMPARE.COM')}
+        receipt = json.loads(noah_acceptance.read_text()) if noah_acceptance else None
+        report['component_acceptance']['NOAH.COM'] = acceptance_proof(
+            'trs80m2',companion_files,companion[1],receipt,noah_acceptance,paired_digest)
+        companion_reports = [companion]
+    else:
+        companion_reports=noah_media(artifacts, noah_acceptance)
     for _,_,report in companion_reports:
         report['patch_companions']={n:sha(d) for n,d in patch_source_companions.items()}
         report['compare_companions']={n:sha(d) for n,d in compare_source_companions.items()}
@@ -239,7 +267,7 @@ def build(output, artifacts=ROOT, ddt_acceptance=None, toolchain_acceptance=None
     for name,data,report in reports:
         from release_metadata import disk_record
         source_state=artifacts/'build-state.json'
-        if report.get('profile') == 'cpmsim-fullram':report['source'] = batch_identity
+        if report.get('profile') == profile_name:report['source'] = batch_identity
         elif source_state.is_file():report['source']=json.loads(source_state.read_text())['source']
         else:
             report['source']={'revision':project_revision(artifacts)}
@@ -271,6 +299,8 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output',type=Path,default=ROOT/'build/utilities-disks')
     p.add_argument('--artifacts',type=Path,default=ROOT)
+    p.add_argument('--model2-system', type=Path, metavar='CANDIDATE_DIR',
+                   help='package only the Model II primary and companion disks for this checked System Disk')
     p.add_argument('--build',action='store_true',help='freshly build owned Utilities components first')
     p.add_argument('--ddt-acceptance',type=Path,help='bind a passing DDT campaign to these exact image hashes')
     p.add_argument('--toolchain-acceptance',type=Path,help='bind passing native tool campaigns to both exact images and source companions')
@@ -281,14 +311,16 @@ def main():
     p.add_argument('--crc-acceptance',type=Path,help='bind CRC native parity and execution to both exact disk images')
     p.add_argument('--md5sum-acceptance',type=Path,help='bind MD5SUM execution to exact paired images')
     a=p.parse_args()
-    if a.build:
+    if a.model2_system and a.output == ROOT/'build/utilities-disks':
+        a.output = ROOT/'build/model2-utilities-disks'
+    if a.build or a.model2_system:
         for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh','dasm','dsym','dlink','ted','noah','search','crc','md5sum','patch','compare']:
             command=[sys.executable,str(a.artifacts.resolve()/'tools'/f'build_{name}.py')]
             # TED defaults to its development directory; packaging consumes the
             # binary, native source and build records together in utilities.
             if name=='ted':command+=['--output',str(a.artifacts.resolve()/'build/utilities')]
             subprocess.run(command,cwd=a.artifacts.resolve(),check=True)
-    build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance,a.toolchain_acceptance,a.dasm_acceptance,a.ted_acceptance,a.noah_acceptance,a.search_acceptance,a.crc_acceptance,a.md5sum_acceptance)
+    build(a.output.resolve(),a.artifacts.resolve(),a.ddt_acceptance,a.toolchain_acceptance,a.dasm_acceptance,a.ted_acceptance,a.noah_acceptance,a.search_acceptance,a.crc_acceptance,a.md5sum_acceptance,model2_system=a.model2_system)
 
 
 if __name__=='__main__':main()

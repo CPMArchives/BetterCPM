@@ -504,11 +504,16 @@ RXM_LEGACY:
         LD      A,(HL)
         CP      1                      ; STATEFUL is mandatory
         JR      NZ,RXM_MBAD
+        IF PL_M2 EQ 1
+        CALL    M2_BOUND
+        JR      NZ,RXM_MBAD
+        ELSE
         CALL    LY_BIOS+63             ; already installed BIOS character query
         LD      A,L
         AND     1                      ; host TTY exists only on cpmsim
         INC     A                      ; Model 4 bit 0 / cpmsim bit 1
         LD      B,A
+        ENDIF
         LD      HL,(RXM_DATA)
         LD      DE,8
         ADD     HL,DE
@@ -525,6 +530,20 @@ RXM_MOK:
 RXM_MBAD:
         LD      A,0FFH
         RET
+        IF PL_M2 EQ 1
+M2_BOUND:
+        LD      HL,(RXM_DATA)
+        LD      A,(HL)
+        CP      'S'                    ; 04h here is assigned only to SCRN
+        RET     NZ                     ; no platform-specific MCON 1.0 on Model II
+        LD      HL,(RXM_BASE)
+        LD      DE,15                  ; class of the binding admitted by R3CARR
+        ADD     HL,DE
+        LD      A,(HL)
+        DEC     A                      ; class 1 has verified the exact resident ID
+        LD      B,4                    ; Model II screen backend
+        RET
+        ENDIF
 RXM_ISID:
         LD      B,4
 RXM_MID:

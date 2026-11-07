@@ -1,0 +1,66 @@
+; Test the physical write-protect switch on a disposable B: image.
+; Standard BIOS offsets only. Read and require the fixture's known value
+; before writing a different byte; read the same sector again after refusal.
+        ORG 100H
+        LD HL,(1)
+        DEC HL
+        DEC HL
+        DEC HL
+        LD (BASE),HL
+        LD BC,1
+        LD E,0
+        LD A,27
+        CALL BIOS
+        LD A,H
+        OR L
+        JR Z,FAIL
+        CALL ADDRESS
+        LD A,39
+        CALL BIOS
+        OR A
+        JR NZ,FAIL
+        LD A,(DATA)
+        CP 053H
+        JR NZ,FAIL
+        LD A,0A7H
+        LD (DATA),A
+        CALL ADDRESS
+        LD C,0
+        LD A,42
+        CALL BIOS
+        OR A
+        JR Z,FAIL
+        CALL ADDRESS
+        LD A,39
+        CALL BIOS
+        OR A
+        JR NZ,FAIL
+        LD A,(DATA)
+        CP 053H
+        JR NZ,FAIL
+        LD DE,GOOD
+PRINT:  LD C,9
+        CALL 5
+        JP 0
+FAIL:   LD DE,BAD
+        JR PRINT
+ADDRESS:LD BC,76
+        LD A,30
+        CALL BIOS
+        LD BC,63
+        LD A,33
+        CALL BIOS
+        LD BC,DATA
+        LD A,36
+BIOS:   PUSH DE
+        LD HL,(BASE)
+        LD E,A
+        LD D,0
+        ADD HL,DE
+        POP DE
+        JP (HL)
+BASE:   DW 0
+GOOD:   DB 'MEDIA WRITE PROTECT PASS',13,10,'$'
+BAD:    DB 'MEDIA WRITE PROTECT FAIL',13,10,'$'
+DATA:   DS 128
+        END

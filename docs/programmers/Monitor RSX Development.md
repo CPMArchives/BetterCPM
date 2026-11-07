@@ -271,7 +271,7 @@ Modify the builder accordingly before claiming relocation safety.
 
 This starter targets cpmsim-compatible host output only. Changing its backend
 bit to 0001h does not turn it into a Model 4 renderer. For that platform, use
-`src/rsx/screen/model4.mac` and its builder as the hardware backend reference.
+`src/rsx/screen/crt80x24.mac` and its builder as the hardware backend reference.
 The portable ADM3A parser itself imports no hardware symbols.
 
 ### Test before shipping a new personality

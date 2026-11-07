@@ -1,0 +1,20 @@
+{
+  "run": "run-wq0ulkcc",
+  "source_revision": "060b323f244991cd1795d512a1fcddf3b654f636",
+  "emulator": "trs80gp 2.5.8",
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "system_and_installed_imd_sha256": "32107d570e1409984e1b9eee62d306d31714436429964690d8ef27b75ccc83c5",
+  "decoded_disk_bytes": 625920,
+  "install": "PASS: all 160 package records installed, filesystem preserved, entire installed disk matches original source",
+  "installed_cold_boot": "PASS: A0 prompt, RCP.CPX and 56K, CONFIG /SHOW finished with four expected bindings and prompt",
+  "saved_disk_iobyte": "PENDING: previous wait was armed after output scrolled; no value captured",
+  "dup_copy_and_check": "PENDING: original batch stopped before DUP",
+  "capture_sha256": {
+    "install-0.bin": "885c9c76e80e945c722ad668e4f82ed37fc4548f35a83e41a55dbbc10bd88a5e",
+    "install-2.bin": "33a829cfb1b170297ea83316c493f34b79d59fd47e06cf843f4c709b1ae2a9df",
+    "install-4.bin": "75e3a6f4d4fbd4971ad6305729a928002382cfbe94f26c6f574ccb5a9b3ccfe0",
+    "cold-config-0.bin": "885c9c76e80e945c722ad668e4f82ed37fc4548f35a83e41a55dbbc10bd88a5e",
+    "cold-config-1.bin": "060c660941b38a69afe8fdfcc113be61b8fa41339e0cb6c4dae2bcb7f9bf7175",
+    "cold-config-2.bin": "5742adb4b3a5093ee444d43251d0a738e172930b19d122efa737ae3c49bba29c"
+  }
+}

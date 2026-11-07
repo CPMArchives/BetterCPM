@@ -4767,7 +4767,7 @@
         "src/platform/z80pack/checked-crc.inc",
         "src/platform/z80pack/checked-identity.inc",
         "src/platform/z80pack/checked-load.inc",
-        "src/rsx/screen/model4.mac",
+        "src/rsx/screen/crt80x24.mac",
         "src/rsx/screen/rendition.inc",
         "src/system/layout.inc",
         "src/utilities/common/attrselect.inc",
@@ -4798,6 +4798,64 @@
       "modes": [
         "cross",
         "native"
+      ],
+      "native_files": []
+    },
+    "module:M2SCRN": {
+      "status": "tracked-conservative",
+      "target": "trs80m2",
+      "targets": [
+        "trs80m2"
+      ],
+      "profile": "model2-fullram",
+      "build_mode": "cross",
+      "configuration": {
+        "dependency_policy": "owned sources, include closure, source generators; compare executable bytes before revision assignment"
+      },
+      "files": [
+        "src/bios/bios.mac",
+        "src/cpx/copy-select.inc",
+        "src/cpx/dir-select.inc",
+        "src/cpx/era-resident.inc",
+        "src/cpx/era-select.inc",
+        "src/cpx/feature-hint.inc",
+        "src/cpx/ren-select.inc",
+        "src/cpx/type-select.inc",
+        "src/platform/trs80m2/console.inc",
+        "src/platform/z80pack/checked-crc.inc",
+        "src/platform/z80pack/checked-identity.inc",
+        "src/platform/z80pack/checked-load.inc",
+        "src/rsx/screen/crt80x24.mac",
+        "src/rsx/screen/rendition.inc",
+        "src/system/layout.inc",
+        "src/utilities/common/attrselect.inc",
+        "src/utilities/common/duselect.inc",
+        "src/utilities/common/filespec.inc",
+        "src/utilities/common/operandqual.inc",
+        "src/utilities/common/private-utility.inc",
+        "src/utilities/common/rcpselect.inc",
+        "src/utilities/common/version.inc",
+        "tools/build_ccp.py",
+        "tools/build_cpx_module.py",
+        "tools/build_model2.py",
+        "tools/build_profiles.py",
+        "tools/build_rsx_module.py",
+        "tools/build_screen_backends.py",
+        "tools/build_z80pack_image.py",
+        "tools/checked_build_contract.py",
+        "tools/checked_carriers.py",
+        "tools/component_build.py",
+        "tools/component_development.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_registry.py",
+        "tools/rsx_container.py",
+        "tools/system_layout.py",
+        "tools/utility_versions.py"
+      ],
+      "identity_dependencies": [],
+      "modes": [
+        "cross"
       ],
       "native_files": []
     },

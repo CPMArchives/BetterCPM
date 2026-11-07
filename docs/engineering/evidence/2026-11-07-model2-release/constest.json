@@ -1,0 +1,44 @@
+{
+  "status": "PASS",
+  "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+  "constest_sha256": "248a71ce7a35c2ed49ecf2dfc1b9d5a00d9c699261e434a60dbe646fc9185b70",
+  "resident_sha256": "2d52cb2ff539e0f7f98d8da983ebff3cbd1ed8e84478c9b034364562bb0569d6",
+  "cards": [
+    {
+      "card": "0052",
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0052: Function 2 character source\r\nOBSERVED: [A]\r\nEXPECTED: [A]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0052  P  R  Operator confirmed Function 2 emitted A\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n",
+      "status": "PASS"
+    },
+    {
+      "card": "0053",
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0053: Function 2 dollar as data\r\nOBSERVED: [$]\r\nEXPECTED: [$] (one dollar-sign character)\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0053  P  R  Operator confirmed Function 2 emitted dollar sign\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n",
+      "status": "PASS"
+    },
+    {
+      "card": "0054",
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0054: Function 9 DE address\r\nOBSERVED: [F9ADDR]\r\nEXPECTED: [F9ADDR]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0054  P  R  Operator confirmed Function 9 used DE string address\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n",
+      "status": "PASS"
+    },
+    {
+      "card": "0055",
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0055: Function 9 termination\r\nOBSERVED: [LEFT]\r\nEXPECTED: [LEFT]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0055  P  R  Operator confirmed Function 9 stopped at dollar sign\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n",
+      "status": "PASS"
+    },
+    {
+      "card": "0056",
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0056: terminator not emitted\r\nOBSERVED: [X]\r\nEXPECTED: [X]\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0056  P  R  Operator confirmed terminator was not emitted\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n",
+      "status": "PASS"
+    },
+    {
+      "card": "0057",
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0057: Function 9 empty string\r\nOBSERVED: []\r\nEXPECTED: []\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0057  P  R  Operator confirmed empty string emitted no bytes\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n",
+      "status": "PASS"
+    },
+    {
+      "card": "0058",
+      "transcript": "\r\nSTATUS: P=Pass F=Fail -=Not-run O=Observed\r\nCLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile\r\n\r\nITEM  S  C  OBSERVED\r\n----  -  -  ----------------------------------------------------------\r\n\r\nProbe 0058: controls before terminator\r\nOBSERVED:\r\nA\r\nB\r\nEXPECTED:\r\nA\r\nB\r\nDo OBSERVED and EXPECTED match? (Y/N; no Enter) Y\r\n0058  P  R  Operator confirmed controls were scanned before terminator\r\n\r\nSummary: 1 pass, 0 fail, 0 error, 0 observations\r\nDetails: CONSTEST /NNNN:REPORT   Help: CONSTEST /HELP\r\n",
+      "status": "PASS"
+    }
+  ],
+  "scope": "Output cards 0052-0058. The actual Model II BDOS, BIOS, monitor and CRT routine execute in the Z80 CPU harness. Confirmation is offered through synthetic Model II keyboard ports only after the independent literal output matches. Guest filesystems, timing and physical peripherals are outside this check."
+}

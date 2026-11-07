@@ -8,7 +8,7 @@ import shutil
 import tempfile
 from pathlib import Path
 from build_native_trs80 import blank, run
-from test_vt52_foundation import symbols
+from build_screen_backends import crt_bindings
 
 ROOT=Path(__file__).resolve().parents[1]
 TOOLS=Path.home()/'projects/git/cpm-compatibility/suite/build-tools'
@@ -23,14 +23,13 @@ def main():
     args=parser.parse_args()
     os.environ['PATH']=str(SIM.parent/'srctools')+os.pathsep+os.environ.get('PATH','')
     out=ROOT/'build/vt52-development/native';out.mkdir(parents=True,exist_ok=True)
-    bios=symbols(ROOT/'build/bios/bios.lst')
-    bindings='\n'.join(f'{name} EQU 0{bios[name]:04X}H' for name in ['M4CURSOR','M4COLUMN'])
+    bindings=crt_bindings(ROOT/'build/bios/bios.lst')
     results=[]
     units=[
         ('VT52','src/rsx/vt52.mac','build/vt52-development/vt52.bin'),
         ('ADM3A','src/rsx/adm3a.mac','build/monitor-development/adm3a.bin'),
         ('ANSI','src/rsx/ansi.mac','build/ansi-development/ansi.bin'),
-        ('M4SCRN','src/rsx/screen/model4.mac','build/screen-backends/M4SCRN.bin'),
+        ('M4SCRN','src/rsx/screen/crt80x24.mac','build/screen-backends/M4SCRN.bin'),
         ('ANSISCRN','src/rsx/screen/ansi-host.mac','build/screen-backends/ANSISCRN.bin'),
         ('R3KPRE','src/system/r3kpre.mac','build/system/r3kpre.bin'),
         ('R3FINAL','src/system/r3final.mac','build/system/r3final.bin'),

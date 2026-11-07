@@ -1,0 +1,74 @@
+; B0:LAST.DAT occupies only allocation block DSM. Record 15 is the
+; very last physical record. Reopen the FCB before verifying the write.
+        ORG 100H
+        CALL OPEN
+        CALL READOLD
+        LD A,053H
+        CALL VERIFY
+        LD HL,DATA
+        LD B,128
+FILL:   LD (HL),0A7H
+        INC HL
+        DJNZ FILL
+        LD DE,FCB
+        LD C,34
+        CALL 5
+        OR A
+        JP NZ,FAIL
+        CALL CLOSE
+        CALL OPEN
+        CALL READOLD
+        LD A,0A7H
+        CALL VERIFY
+        CALL CLOSE
+        LD DE,GOOD
+PRINT:  LD C,9
+        CALL 5
+        JP 0
+FAIL:   LD DE,BAD
+        JR PRINT
+OPEN:   LD HL,FCB+12
+        LD B,24
+ZERO:   LD (HL),0
+        INC HL
+        DJNZ ZERO
+        LD DE,FCB
+        LD C,15
+        CALL 5
+        INC A
+        JP Z,FAIL
+        LD A,15
+        LD (FCB+33),A
+        LD DE,DATA
+        LD C,26
+        JP 5
+READOLD:LD HL,DATA
+        LD B,128
+CLEAR:  LD (HL),0
+        INC HL
+        DJNZ CLEAR
+        LD DE,FCB
+        LD C,33
+        CALL 5
+        OR A
+        JP NZ,FAIL
+        RET
+VERIFY: LD HL,DATA
+        LD B,128
+BYTE:   CP (HL)
+        JP NZ,FAIL
+        INC HL
+        DJNZ BYTE
+        RET
+CLOSE:  LD DE,FCB
+        LD C,16
+        CALL 5
+        INC A
+        JP Z,FAIL
+        RET
+GOOD:   DB 'FINAL BLOCK READ WRITE PASS',13,10,'$'
+BAD:    DB 'FINAL BLOCK READ WRITE FAIL',13,10,'$'
+FCB:    DB 2,'LAST    DAT'
+        DS 24
+DATA:   DS 128
+        END

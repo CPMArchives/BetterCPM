@@ -1,0 +1,86 @@
+{
+  "status": "PASS (host)",
+  "source_revision": "8c17a09df6cbf764086692ba04724e05be3b1264",
+  "volumes": {
+    "BetterCPM-Utilities-trs80m2-77T-SS-584K.imd": {
+      "sha256": "094031700ae2d41bf793cf4226f145e0cfcb83d6a491e20f654cec321a6bdb17",
+      "inventory": {
+        "files": 27,
+        "user": 0,
+        "allocated_blocks": 168,
+        "free_blocks": 124,
+        "exact_membership": "PASS",
+        "independent_record_readback": "PASS",
+        "allocation": "PASS"
+      },
+      "members": {
+        "DDT.COM": "76fa7408ea21b08707c3c532e2777c544a182fbb5955d187943abae301dda3d3",
+        "DUMP.COM": "6f3bb91680d17aa29eaf1fa0190fd2ae4ab815a457be3426deeaff21c9ff363a",
+        "XSUB.COM": "345783d1cb082fb61f74d3e1770e8408f2f299f86161af1c9ec16a29e45f411d",
+        "BATCHIO.RSX": "9d7e21e6f1496c31a1c624e3a5fde411c359a186778fbe3a7f402abfc129d372",
+        "SQ.COM": "f13b0996d6a8f44f86f36903d1f9974d765f2a82bf0aa4ba13fb31a1f705a8ae",
+        "USQ.COM": "e9b919b77fb2762a56dc92eb618731259d7b4cd6f1e86a903da51701749c61e6",
+        "UNCR.COM": "26f5608c31dab151c00e69a19a7201282aefe4624fe3a6bad73eaa13f0bc3bb6",
+        "CR.COM": "999cb675bb28c27c9b78a3602bb1d7e76f85aa0ffaee4514b39889cf46989796",
+        "UNLZH.COM": "9dce7a5ae10094632802fac25b07d74b94339d53044054706d86d617b262d4ed",
+        "LZH.COM": "ca5ed91246a3616cb72476198edf8c3ac441bd8e6971f783a1ebb1962ed7fe24",
+        "ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+        "LINK.COM": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677",
+        "TOOLINFO.TXT": "e3d2a9812bf8710c30b218d1e210710493904fd4886dab8ea52f31459a955a21",
+        "ZSM4COPY.TXT": "7d4f2be9be7a1d1fdb705986ce2701619cfcc8825356670aaa1e29a3d12c7d0f",
+        "LINKCOPY.TXT": "d7d6e20ff86b7a2a09ced46db14f722d246374ff8f24a9a3ddbb9332fe8735ad",
+        "DASM.COM": "635b07a389bf4aaf9bb086bd2e463c22ad0eaacefc3145f51e21b9c50846cd5b",
+        "DSYM.COM": "08afe7106b24c74883b6a2c98c7f0dfbd845a1b0ad99dce29fd6278c77949cd0",
+        "DLINK.COM": "ca860a253ce6c5899ebb947f30f35e3334480da0470a5db68e40b5bc5555a152",
+        "DASM.TXT": "6987b2d5357a338742f1677ae119b4b2bcbc757413e839bc069fb68c3942b2b3",
+        "DASMCOPY.TXT": "48cd81363e19e946e2f163beaff87ca04320ed163cc286e430d8aaf3267a1ddd",
+        "TED.COM": "4d56382de4ef5f842fa68dd4ab8b8ce3a27994fb1a1c956d21f094a15dd246ab",
+        "TED.TXT": "11a532a81b1767c5cec7560739160d2df9e6fdad2eefbec7d64c1f3c3288cddd",
+        "TEDCOPY.TXT": "3b83eebfc6c3c07ff9eb6ad8492dc7002ad2fb7fb4f144b1822a8fd92303cd33",
+        "SEARCH.COM": "8804f9572ba6016e06f1f4f4e46785d39c1aa665c8f5fa786e5811de518cfde0",
+        "CRCKSUM.COM": "03364dd555e0e38aa7e7f5780d1e498ced3ab58a136509c10b589894234571b1",
+        "MD5SUM.COM": "6b6d035f3a83db14cd89e8babec092386c85bab7c700fa93b7db95673326281b",
+        "SUBMIT.COM": "f7d2449bae144fa45ed7ad308c5458dc2d729bfa3c31da88a1aefe4cd7633157"
+      },
+      "paired_system": "d8e20a91e8277090ffbb095fad96b9d2c653af960791d9caa69f154e75a7110d",
+      "profile": "model2-fullram",
+      "compatibility_id": "0791d8e5fa451e262c3be716c2b561f1"
+    },
+    "BetterCPM-NOAH-trs80m2-77T-SS-584K.imd": {
+      "sha256": "cf0a0efc975714d73e3db5d56436a41f5cb8312b460541a351365303e022fa60",
+      "inventory": {
+        "files": 10,
+        "user": 0,
+        "allocated_blocks": 46,
+        "free_blocks": 246,
+        "exact_membership": "PASS",
+        "independent_record_readback": "PASS",
+        "allocation": "PASS"
+      },
+      "members": {
+        "NOAH.COM": "2b410204b34f36e0e7ce869c61f7b6f7b357dc645c53029c889973ce2c290597",
+        "NOAH.OVL": "fc46866df0ba35945bfa46afec6f6e5196081010ff4916e2f5732eabdc086e81",
+        "NOAH.TXT": "1aca37e799daa9609869d9c647301c1fb5ddcaf28255cb445c22639049a4bf41",
+        "PATCH.COM": "5f9b7b3d7426738785374b3ea2aab85d09a061c6fe19b306fc9638b553298c1d",
+        "PATCH.TXT": "e36eae244b511e17c77ac19af2a04c53699855026ebc2b2b24f70eb2be0e8f68",
+        "COMPARE.COM": "ae8d02f94b8c94bc22d67c2a4941f59729a1cf7298feb365a24bb8a8fbb318d1",
+        "COMPARE.TXT": "85ee059025f136532e36afe23fe765ffcdb44a74d274337cc4c9147a93148ba0",
+        "SUPPDISK.FDF": "fd4a43bb8d897ef000228dac7ea69c04c0f0de1be44564da6f0da00094c82020",
+        "SUPPDISK.FDB": "abadbe43c247ac8d635ca8f66f355f2fca370a46652cb37b566f396bb11e88c9",
+        "SUPPDISK.TXT": "b0909060231876c7bdeb2a157d963a85d2ebf8fc64a06ace91ab320e17f21e08"
+      },
+      "paired_system": "d8e20a91e8277090ffbb095fad96b9d2c653af960791d9caa69f154e75a7110d",
+      "profile": "model2-fullram",
+      "compatibility_id": "0791d8e5fa451e262c3be716c2b561f1"
+    }
+  },
+  "all_outputs_match_two_builds": 30,
+  "package_sha256": "90fe26c085546cbdb9eb8d32eaa7c8b5bcc0c407fb76d61adbc8892a8e4655d0",
+  "independent_readback": "POSIX cpmtools fsck and cpmcp read every member on both volumes. A mismatched private identity was rejected.",
+  "existing_platforms_packaged": [
+    "BetterCPM-NOAH-trs80gp-80T-DS-800K.dmk",
+    "BetterCPM-NOAH-z80pack-332K.dsk",
+    "BetterCPM-Utilities-trs80gp-80T-DS-800K.dmk",
+    "BetterCPM-Utilities-z80pack-332K.dsk"
+  ]
+}

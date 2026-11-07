@@ -1,0 +1,25 @@
+; Observe the counted command tail and report success only after mixed-case
+; edit, backspace and reconstruction from a prompt Ctrl-C.
+        ORG 100H
+        LD HL,0080H
+        LD A,(HL)
+        CP 5
+        JR NZ,FAIL
+        LD DE,WANT
+        LD B,5
+NEXT:   INC HL
+        LD A,(DE)
+        CP (HL)
+        JR NZ,FAIL
+        INC DE
+        DJNZ NEXT
+        LD DE,GOOD
+PRINT:  LD C,9
+        CALL 5
+        RET
+FAIL:   LD DE,BAD
+        JR PRINT
+WANT:   DB ' AbcD'
+GOOD:   DB 'EDITED MIXED CASE PASS',13,10,'$'
+BAD:    DB 'EDITED MIXED CASE FAIL',13,10,'$'
+        END

@@ -84,6 +84,21 @@ def main() -> None:
     require(bytes(machine.mem[0x6d:0x78]) == b'TEST    TXT',
             "second default FCB was not uppercase")
 
+    # POKE may borrow the saved raw tail: it reads the folded command and
+    # consumes dispatch. A bad token must neither loop nor partially commit.
+    for line, expected in [(b'POKE 7400 41 42 "TEXT', b'ABTEXT'),
+                           (b'POKE 7400 41 G', bytes(6)),
+                           (b'POKE 7400 "' + b'X'*116, b'X'*116)]:
+        machine = cpu()
+        install_bdos(machine, bytes((0xAF, 0xC9)))
+        data = symbol("CCP_DATA")
+        machine.mem[data:data+len(line)] = line
+        machine.mem[symbol("CCP_COUNT")] = len(line)
+        call(machine, symbol("CCP_UPPER"))
+        call(machine, symbol("CCP_CORE"))
+        require(machine.mem[0x7400:0x7400+len(expected)] == expected and machine.carry,
+                f"POKE failed to validate and consume {line!r}")
+
     # A CCP-prompt Ctrl-C visibly acknowledges the key before invoking the
     # non-returning warm-boot service. Four direct-output calls avoid adding a
     # pointer to the CCP's already-full one-sector relocation directory.

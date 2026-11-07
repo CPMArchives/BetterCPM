@@ -595,6 +595,7 @@ SGSELECTED:
         ADD A,(HL)
         LD L,A
         LD H,0
+; @package-record-map@
         LD DE,(SGSPT)
         LD BC,0
 SGDIV:  OR A

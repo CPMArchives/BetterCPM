@@ -71,6 +71,9 @@ LY_FCB          EQU     LY_FILE+109     ; shared filename FCB address
   ; During RSX transactions, its unused random-record bytes +33..35 hold a
   ; JP to a scratch-only worker. Shared streams use sequential I/O exclusively.
 
+; Selected at profile preparation; default/native builds use the existing platform.
+PL_M2           EQU     0
+
 ; Fixed command-environment state above the BDOS stack. The image builder
 ; reserves this range independently of the stack, PDS and extension code.
 PATHMAX         EQU     6

@@ -1,0 +1,32 @@
+{
+  "source_revision": "129f77a20174f4963c129fd66ceb719fcb18731f",
+  "profile": "model2-fullram",
+  "scope": "Host engineering evidence only; no trs80gp guest execution",
+  "compatibility_id": "8fbb32fed5c757762cbf1874319e7967",
+  "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc",
+  "candidate_images": {
+    "Model-II-System-candidate.imd": "3a116b0f6a265f908fe9c6dd433d337612f0ff81c76880d2a0d2777c2d8b35f7",
+    "Model-II-Utilities-candidate.imd": "e6d589208fd975e15e9957dc6c701e25ec282663d2a82a2cf83564de27cab5b1"
+  },
+  "reproducibility": "PASS: identical manifest, both IMDs and qualification fixtures in two fresh builds",
+  "host_media": "physical surfaces, protected record map/CRC, independent cpmtools read/write and fsck, final block, disk and directory limits",
+  "host_media_status": "PASS",
+  "raw_reader": "PASS: assembled Z80 routine, every individual package record, split and whole sector spans, invalid bounds; stubbed physical transfer",
+  "shared_regression": "PASS: 11 profile tests, assembled CCP tests on default and checked cpmsim and Model II, complete standard Model 4 host build",
+  "checked_ccp": {
+    "before_bytes": 6670,
+    "after_bytes": 6545,
+    "capacity_bytes": 6656
+  },
+  "tpa": {
+    "linked_record_aligned_bytes": 57344,
+    "guest_observed": null
+  },
+  "guest": {
+    "status": "HOST BLOCKED",
+    "emulator": "trs80gp 2.5.8",
+    "launchservices_code": 1100,
+    "started": false
+  },
+  "release_status": "NOT QUALIFIED"
+}

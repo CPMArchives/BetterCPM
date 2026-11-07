@@ -412,9 +412,9 @@ def publish_named(generation, reports, root=ROOT):
     try:
         for _, image, report in reports:
             target = report['target']
-            folder = root / ('build/trs80' if target == 'trs80gp'
-                             else 'build/z80pack/disks/library')
-            if report.get('profile') not in (None, 'cpmsim-fullram'):
+            folder = root / {'trs80gp':'build/trs80', 'trs80m2':'build/trs80m2',
+                             'z80pack':'build/z80pack/disks/library'}[target]
+            if report.get('profile') not in (None, 'cpmsim-fullram','model2-fullram'):
                 folder = folder/report['profile']
             folder.mkdir(parents=True, exist_ok=True)
             destination = folder / image.name
@@ -442,6 +442,9 @@ def publish_generation(publication, generation, reports):
                 existing = json.loads((target / 'report.json').read_text())
                 image_hash = digest((target / image.name).read_bytes())
                 package_hash = digest((target/'SYSTEM.SYS').read_bytes()) if 'package_sha256' in report else None
+                archive = report.get('system_archive')
+                if archive and digest((target/archive['name']).read_bytes())!=archive['sha256']:
+                    raise ValueError('damaged System archive')
             except (OSError, ValueError) as error:
                 raise ValueError(f'{generation}: existing release is incomplete or unreadable; previous release preserved') from error
             if existing != report or image_hash != report['sha256'] or package_hash != report.get('package_sha256'):
@@ -478,7 +481,7 @@ def build_cpmsim_release(work, out, identity, simulator, reuse):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--target', choices=['all','z80pack','trs80gp'], default='all')
+    p.add_argument('--target', choices=['all','z80pack','trs80gp','trs80m2'], default='all')
     p.add_argument('--profile', choices=['default', *PROFILES], default='default',
                    help='cpmsim-fullram is the release default; legacy selection is for --prepare-profile only')
     p.add_argument('--prepare-profile', action='store_true',
@@ -508,7 +511,33 @@ def main():
                           'workspace':str(root), 'profile':profile.name,
                           'context':str(root/'build/profile/context.json')}, indent=2))
         return
-    if profile and profile.name != 'cpmsim-fullram':
+    # Keep the explicit profile workspace entry used by the engineering and
+    # guest qualification tools. The default selector builds a normal generation.
+    if a.target == 'trs80m2' and profile and a.work:
+        if a.reuse_work:
+            p.error('Model II requires --profile model2-fullram and a fresh --work directory')
+        destination = (ROOT/'build/model2-candidate' if a.output == ROOT/'build/distribution'
+                       else a.output.resolve())
+        if destination.exists():
+            p.error(f'candidate output already exists: {destination}; select a fresh --output')
+        from build_profiles import context_environment
+        root = prepare_profile(a.work.resolve(), a.target, source_identity(profile), profile)
+        subprocess.run([sys.executable, '-B', str(root/'tools/build_model2.py')],
+                       cwd=root, check=True,
+                       env=context_environment(root/'build/profile/context.json', root/'src/system/layout.inc'))
+        artifacts = root/'build/trs80m2'
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=destination.parent) as temporary:
+            bundle = Path(temporary)/'candidate'
+            bundle.mkdir()
+            for name in ('Model-II-System-candidate.imd','Model-II-Utilities-candidate.imd',
+                         'candidate.json'):
+                shutil.copyfile(artifacts/name, bundle/name)
+            shutil.copytree(artifacts/'qualification',bundle/'qualification')
+            bundle.rename(destination)
+        print(f'Model II engineering candidate (guest qualification pending): {destination}')
+        return
+    if profile and profile.name not in ('cpmsim-fullram','model2-fullram'):
         p.error('the legacy cpmsim layout is only available with --prepare-profile for engineering fixtures')
     manifest = json.loads(MANIFEST.read_text())
     identity = source_identity()
@@ -520,11 +549,16 @@ def main():
         publication = work/('candidate-'+Path(temporary).name)
         publication.mkdir()
         reports = []
-        for target in (['z80pack','trs80gp'] if a.target=='all' else [a.target]):
+        for target in (['z80pack','trs80gp','trs80m2'] if a.target=='all' else [a.target]):
             print(f'{target}: building and qualifying isolated System Disk', flush=True)
             if target == 'z80pack':
                 reports.append(build_cpmsim_release(work, publication/target, identity,
                                                     a.simulator.resolve(), a.reuse_work))
+                continue
+            if target == 'trs80m2':
+                from trs80m2_distribution import build_system
+                reports.append(build_system(work,publication/target,identity,
+                                            a.emulator.resolve(),a.reuse_work,ROOT))
                 continue
             root = current_build(work, target, identity, a.reuse_work)
             out = publication/target

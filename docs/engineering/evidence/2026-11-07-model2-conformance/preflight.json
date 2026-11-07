@@ -1,0 +1,63 @@
+{
+  "scope": "Host preparation on disk images; guest evidence is recorded separately.",
+  "status": "PASS",
+  "candidate": {
+    "target": "trs80m2",
+    "profile": "model2-fullram",
+    "source_revision": "171741effb38326d1d630e5fab3ba9c71163510b",
+    "files": {
+      "Model-II-System-candidate.imd": "d8e20a91e8277090ffbb095fad96b9d2c653af960791d9caa69f154e75a7110d",
+      "Model-II-Utilities-candidate.imd": "bbd7702faad2086c6e7cd0302ade3e1c1094c4ec8407e7be9656d187a764948f"
+    }
+  },
+  "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "suite_expected_pass_counts": {
+    "cputest": 2,
+    "ecotest": 1,
+    "disktest": 7,
+    "ccptest": 12,
+    "entrytst": 25,
+    "biostest": 5,
+    "errtest": 5,
+    "dirtest": 49,
+    "bdostest": 56,
+    "filetest": 68,
+    "randtest": 39
+  },
+  "supplemental_cases": [
+    "last-block",
+    "write-protect",
+    "directory-full",
+    "file-ro-0368",
+    "file-ro-0369",
+    "keyboard",
+    "config-rejection",
+    "config-persistence"
+  ],
+  "fixture_images_checked_with_fsck": 18,
+  "guest_com_and_user_1_fixture_readback": "cpmcp read back the suite binary and BTUSR.DAT in each of eleven working disks",
+  "prepared_media": {
+    "randtest_b_free_blocks": 1,
+    "full_d_free_blocks": 0,
+    "full_d_live_entries": 128,
+    "directory_full_b_free_blocks": 282,
+    "directory_full_b_live_entries": 128,
+    "last_dat_block": 291,
+    "last_dat_records": 16,
+    "read_only_file_t1_set": true
+  },
+  "primary_media_audit": "physical surfaces, protected record map/CRC, independent cpmtools read/write and fsck, final block, disk and directory limits",
+  "assembled_model2_checks": {
+    "CONFIG.COM": "Startup save, first-write and second-write failure rollback and rollback-failure reporting passed with injected record I/O.",
+    "raw_record_reader": "All 160 package records, aligned and split spans and invalid bounds passed with the physical controller/DMA stubbed.",
+    "record_aligned_tpa_bytes": {
+      "unloaded": 57344,
+      "HELLO": 55040,
+      "M2SCRN": 54528,
+      "M2SCRN+ADM3A": 53760,
+      "M2SCRN+VT52": 53504,
+      "M2SCRN+ANSI": 52736
+    }
+  }
+}

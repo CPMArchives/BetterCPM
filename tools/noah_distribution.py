@@ -25,6 +25,21 @@ def image_name(target):
     return 'BetterCPM-NOAH-'+target+('-332K.dsk' if target=='z80pack' else '-80T-DS-800K.dmk')
 
 
+def acceptance_proof(target, files, image, receipt, acceptance, system_sha256=None):
+    proof = {'status':'PENDING_RELEASE_ACCEPTANCE', 'sha256':sha(files['NOAH.COM']),
+             'overlay_sha256':sha(files['NOAH.OVL'])}
+    if receipt is not None:
+        observed = receipt.get('platforms', {}).get(target, {})
+        if (receipt.get('noah_acceptance')!='PASS' or observed.get('status')!='PASS'
+                or observed.get('utilities_sha256')!=sha(image) or not observed.get('system_sha256')
+                or (system_sha256 is not None and observed['system_sha256'] != system_sha256)
+                or any(receipt['binaries'][n]['sha256']!=sha(files[n]) for n in ('NOAH.COM','NOAH.OVL'))):
+            raise ValueError('NOAH acceptance differs from companion media: '+target)
+        proof.update(status='PASS', evidence_sha256=sha(acceptance.read_bytes()),
+                     paired_system_sha256=observed['system_sha256'])
+    return proof
+
+
 def media(artifacts, acceptance=None):
     root = Path(artifacts)
     files = {name:(root/path).read_bytes() for name,path in COMPONENTS.items()}
@@ -60,16 +75,7 @@ def media(artifacts, acceptance=None):
             image = raw_to_dmk(data,fmt) if native else data
             if native and dmk_to_raw(image,fmt)!=data:
                 raise ValueError('NOAH DMK/raw round trip differs')
-        proof = {'status':'PENDING_RELEASE_ACCEPTANCE',
-                 'sha256':sha(files['NOAH.COM']),'overlay_sha256':sha(files['NOAH.OVL'])}
-        if receipt:
-            observed = receipt['platforms'][target]
-            if (receipt.get('noah_acceptance')!='PASS' or observed.get('status')!='PASS'
-                    or observed['utilities_sha256']!=sha(image) or not observed.get('system_sha256')
-                    or any(receipt['binaries'][n]['sha256']!=sha(files[n]) for n in ('NOAH.COM','NOAH.OVL'))):
-                raise ValueError('NOAH acceptance differs from companion media: '+target)
-            proof.update(status='PASS',evidence_sha256=sha(acceptance.read_bytes()),
-                         paired_system_sha256=observed['system_sha256'])
+        proof = acceptance_proof(target, files, image, receipt, acceptance)
         report = {'target':target,'image':image_name(target),'sha256':sha(image),
                   'format':fmt.name,'status':'PROVISIONAL','volume':'NOAH companion Utilities Disk',
                   'included':[{'name':n,'bytes':len(b),'sha256':sha(b)} for n,b in files.items()],

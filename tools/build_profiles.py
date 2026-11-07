@@ -39,6 +39,7 @@ class BuildProfile:
 
 
 PROFILES = {
+    'model2-fullram': BuildProfile('model2-fullram', 'trs80m2', 0xC00, 0x10000, 0),
     'cpmsim-legacy-checked': BuildProfile('cpmsim-legacy-checked', 'z80pack',
                                        0, 0xF400, 0xC00),
     'cpmsim-fullram': BuildProfile('cpmsim-fullram', 'z80pack',
@@ -80,6 +81,12 @@ def profile_inputs(profile: BuildProfile, source: Path) -> tuple:
         raise ValueError('canonical RAM ceiling changed; reassess supported profiles')
     selected = {name: value + (profile.delta if name in RELOCATED else 0)
                 for name, value in base.items()}
+    if profile.target == 'trs80m2':
+        # The FD1791/DMA reader needs more room than the simulated controller.
+        # Move the BIOS start 88 bytes and its end 64; reserve a 64-byte ALV
+        # (BCM2SS needs 37), preserving four 32-byte CSVs and the TPA floor.
+        for name, extra in [('LY_BIOS', 88), ('LY_FILE', 64), ('LY_TAB', 64)]:
+            selected[name] += extra
     selected['LY_TOPRSV'] = profile.top_reserved
     if (selected['LY_LIMIT'] != profile.ram_end or
             selected['LY_RAMEND'] != profile.ram_end or
@@ -97,6 +104,8 @@ def profile_inputs(profile: BuildProfile, source: Path) -> tuple:
         if not 0 <= value <= maximum:
             raise ValueError(f'{name} is outside its address/count range')
     layout = EQUATE.sub(lambda m: f'{m[1]}{m[2]}0{selected[m[1]]:04X}H', original)
+    if profile.target == 'trs80m2':
+        layout = layout.replace('PL_M2           EQU     0', 'PL_M2           EQU     1')
     layout = f'; Generated build profile: {profile.name}\n' + layout
     flags = (f'; Generated build profile: {profile.name}\n'
              f'BP_CHECKED EQU {int(profile.checked)}\n'

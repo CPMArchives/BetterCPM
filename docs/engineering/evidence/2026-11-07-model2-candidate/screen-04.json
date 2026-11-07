@@ -1,0 +1,53 @@
+{
+  "source_revision": "93e12e9dfe9f66cc9187115ab87d2c764d33a34f",
+  "private_build_id": "f1e26cd2a6f9a71d9067177f7d93426c",
+  "candidate_images": {
+    "Model-II-System-candidate.imd": "89accf98c2b2692fa9bb8c432230e44d27c0c3a39a73e5a8bc7589f6f6a010f7",
+    "Model-II-Utilities-candidate.imd": "1a33e6309ccc733699fa669ced67d2dc3343a7f3ef5c9d2c515346185f62090e"
+  },
+  "screen": {
+    "capability_word": "0004",
+    "backend": "M2SCRN",
+    "module_allocation_bytes": 1536,
+    "loaded_profiles": {
+      "unloaded": {
+        "top": "E101",
+        "record_aligned_bytes": 57344
+      },
+      "HELLO": {
+        "top": "D801",
+        "record_aligned_bytes": 55040
+      },
+      "M2SCRN": {
+        "top": "D601",
+        "record_aligned_bytes": 54528
+      },
+      "M2SCRN+ADM3A": {
+        "top": "D301",
+        "record_aligned_bytes": 53760
+      },
+      "M2SCRN+VT52": {
+        "top": "D201",
+        "record_aligned_bytes": 53504
+      },
+      "M2SCRN+ANSI": {
+        "top": "CF01",
+        "record_aligned_bytes": 52736
+      }
+    }
+  },
+  "host_checks": {
+    "two_clean_builds": "identical disk images and fixtures",
+    "module_admission": "matching private Model II passes; Model 4, foreign, public and combined capabilities rejected",
+    "rollback": "Function 177: 9 rejected loads preserved the live module chain, screen binding, resolver and gateway; final unload restored E101h",
+    "rendering": "ADM3A, VT52 and ANSI positioned text through the relocated backend; RAM preserved under the switchable VRAM window with interrupts enabled and disabled",
+    "media": "independent cpmtools extraction of all four modules and filesystem check",
+    "regression": "M4SCRN and ANSISCRN carrier bytes identical to baseline; Model 4 manager rejects 04h with active binding intact"
+  },
+  "guest": {
+    "status": "pending",
+    "emulator": "trs80gp 2.5.8",
+    "launchservices_code": 1100,
+    "batch_started": false
+  }
+}

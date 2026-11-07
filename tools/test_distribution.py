@@ -147,6 +147,33 @@ class DistributionGates(unittest.TestCase):
             publish_named(generation,[(target,source,report)],root)
             self.assertEqual(destination.read_bytes(),b'new')
 
+    def test_model2_generation_and_private_profile_match(self):
+        from trs80m2_distribution import SYSTEM_NAME
+        from trs80m2_utilities import system_digest
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            publication = root/'stage'
+            out = publication/'trs80m2'
+            out.mkdir(parents=True)
+            image = out/SYSTEM_NAME
+            image.write_bytes(b'qualified System disk')
+            archive = out/'System.zip'
+            archive.write_bytes(b'qualified kit')
+            report = {'target':'trs80m2','profile':'model2-fullram','image':image.name,
+                      'sha256':digest(image.read_bytes()),'compatibility_id':'matching',
+                      'system_archive':{'name':archive.name,'sha256':digest(archive.read_bytes())}}
+            (out/'report.json').write_text(json.dumps(report))
+            reports = [(out,image,report)]
+            generation = root/'release'
+            publish_generation(publication,generation,reports)
+            self.assertEqual(publish_named(generation,reports,root),[root/'build/trs80m2'/SYSTEM_NAME])
+            self.assertEqual(system_digest(generation/'trs80m2','matching'),report['sha256'])
+            with self.assertRaises(ValueError):
+                system_digest(generation/'trs80m2','another profile')
+            (generation/'trs80m2'/archive.name).write_bytes(b'damaged')
+            with self.assertRaises(ValueError):
+                publish_generation(publication,generation,reports)
+
     def test_repeat_build_reuses_release_and_restores_named_image(self):
         with tempfile.TemporaryDirectory() as t:
             root=Path(t);candidate=root/'candidate';target=candidate/'trs80gp'

@@ -6,9 +6,17 @@ model. See [ANSI qualification](ANSI%20Portable%20Backend%20Audit.md#production-
 and [VT52 integration](VT52%20Portable%20Backend%20Integration.md) for evidence.
 System-wide release validation remains separate.
 
-Current backends advertise STATEFUL callable `SCRN` 1.1, with capability 1 for
-Model 4 or 2 for cpmsim. MCON 1.1 uses the basic contract; MCON 1.2 requires
-full SCX controls. Legacy SCRN 1.0 operations retain their calling convention.
+A STATEFUL callable `SCRN` 1.1 backend declares one exact 16-bit platform value.
+
+| Platform | Backend | Capability word |
+| --- | --- | --- |
+| TRS-80 Model 4 | M4SCRN | 0001h |
+| cpmsim | ANSISCRN | 0002h |
+| TRS-80 Model II (1.1 candidate) | M2SCRN | 0004h |
+
+The Model II loader also requires a private carrier bound to its resident
+build identity. Its BIOS selects the assigned value from the build profile.
+MCON 1.1 uses the basic contract and MCON 1.2 requires full SCX controls. Legacy SCRN 1.0 operations retain their calling convention.
 Selection and manager-owned references follow the admission rules below.
 There is one backend per active profile. Load it before a dependent personality;
 unload the personality before the backend. Loaded allocations reduce TPA;

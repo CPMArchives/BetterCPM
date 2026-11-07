@@ -123,6 +123,8 @@ def main():
  p.add_argument('--resident-only',action='store_true',
                 help='stop after resident artifacts for shifted-layout analysis')
  args=p.parse_args();out=args.output.resolve()
+ if CONTEXT and CONTEXT[0]["target"] != "z80pack":
+  p.error("cpmsim builder cannot use a foreign target profile")
  if CONTEXT and not (args.resident_only and args.ram_only):
   p.error('checked-profile disk generation is pending; only --resident-only --ram-only --system-tracks-only is supported')
  if args.ram_only and not args.system_tracks_only:p.error('--ram-only requires --system-tracks-only')

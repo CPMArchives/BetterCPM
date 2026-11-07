@@ -12,7 +12,11 @@
 
 ; IOBYTE_ROUTING_V1: qualified compact CRT router and capability query.
 BIOSBASE        EQU     LY_BIOS+0
+        IF PL_M2 EQ 1
+BIO_PHYBF       EQU     LY_BUF+512
+        ELSE
 BIO_PHYBF       EQU     LY_BUF          ; 1024-byte shared physical-sector buffer
+        ENDIF
 BIO_DIRBF       EQU     LY_DIR
   ; BIOS-owned descriptors are linked separately in the shared packed map.
 BIO_DPH0        EQU     LY_TAB+0

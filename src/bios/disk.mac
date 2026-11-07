@@ -32,6 +32,9 @@
 ; -------------------------------------------------------------------------------
 
 DC_RAW:                                 ; raw physical-I/O entry
+        IF PL_M2 EQ 1
+        INCLUDE raw.inc
+        ELSE
         ; The bootstrap adapter uses the SAME physical I/O engine as BDOS.
         LD (BIO_PCYL),A
         LD (DC_IDTRK),A
@@ -50,6 +53,8 @@ DC_RAW:                                 ; raw physical-I/O entry
         LD (DC_PHYADDR),HL
         POP HL
         JP DC_READ
+
+        ENDIF
 
 DC_SETPH:                               ; set physical profile entry
         XOR A
@@ -213,8 +218,30 @@ DC_SELECT:                              ; select logical drive
         ADD HL,DE
         LD A,(HL)
         CP 4
+        IF PL_M2 EQ 1
+        JR NC,M2_NODPH
+        LD DE,7
+        ADD HL,DE                      ; DSM high byte: 64-byte ALV holds 512 blocks
+        LD A,(HL)
+        CP 2
+        JR NC,M2_NODPH
+        LD DE,5
+        ADD HL,DE                      ; 32-byte CSV per drive
+        LD A,(HL)
+        INC HL
+        CP 33
+        JR NC,M2_NODPH
+        LD A,(HL)
+        OR A
+        POP HL
+        RET Z
+        JR DC_NOLOG
+M2_NODPH:
+        POP HL
+        ELSE
         POP HL
         RET C
+        ENDIF
 
 DC_NOLOG:                               ; reject unbound logical drive
         LD HL,0
@@ -258,6 +285,7 @@ DC_MASK:                                ; decode geometry flags
         OR A
         SBC HL,DE
         JP NC,DC_MAPBAD
+        IF PL_M2 EQ 0
         LD A,(IX+19)
         AND 00FH
         OR (IX+52)
@@ -287,6 +315,7 @@ DC_MASK:                                ; decode geometry flags
         RRCA
         AND 3
         JR DC_SETSIZE
+        ENDIF
 
 ; -------------------------------------------------------------------------------
 ; Common Mapping Geometry
@@ -297,6 +326,11 @@ DC_COMMON:                              ; apply common geometry mapping
         LD A,H
         OR A
         JP NZ,DC_MAPBAD
+        IF PL_M2 EQ 1
+        LD A,L
+        OR A
+        JP Z,M2_FMMAP
+        ENDIF
         XOR A
         LD (B_PSide),A
         LD A,(BIO_TRACK)
@@ -384,6 +418,9 @@ DC_MAPBAD:                              ; reject invalid mapping
 ; Read and Write Entry
 ; -------------------------------------------------------------------------------
 
+        IF PL_M2 EQ 1
+        INCLUDE physical.inc
+        ELSE
 DC_READ:                                ; read physical sector
         LD A,080H
         JR DC_IO
@@ -750,11 +787,17 @@ DC_INVSH:
         JR NZ,DC_INVSH
         RET
 
+        ENDIF
+
 DC_INFO:                                ; format request descriptor
         DB 'B','D','C','F',5,4,4,64
         DW DC_PHYS,LY_TAB
+        IF PL_M2 EQ 1
+        DW 0,0                         ; no cache or formatter download ABI
+        ELSE
         DW LY_BUF                       ; complete last physical read, logical polarity
         DW LY_CFG+18                    ; ABI 5: cached control image format entry
+        ENDIF
 
 ; -------------------------------------------------------------------------------
 ; Physical Transfer State
@@ -762,7 +805,11 @@ DC_INFO:                                ; format request descriptor
 
 DC_PHYS:                                ; physical profile table
         REPT 4
+        IF PL_M2 EQ 1
+        DB 8,77,1,0,0,15
+        ELSE
         DB 5,80,2,0,2,15
+        ENDIF
         ENDM
 
 DC_IDTRK: DB 0                          ; requested ID track
@@ -774,5 +821,8 @@ DC_COMMAND: DB 0                        ; controller command
 DC_BUFFER: DW 0                         ; transfer buffer pointer
 DC_SIZE: DB 2                           ; physical transfer size
 DC_FLAGS: DB 080H                       ; active geometry flags
+        IF PL_M2 EQ 1
+        INCLUDE checked-identity.inc
+        ENDIF
         .DEPHASE
         END

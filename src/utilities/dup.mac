@@ -662,6 +662,7 @@ BREAKCK:LD C,6                          ; breakck
 ; -------------------------------------------------------------------------------
 
 TRACKPOS:LD HL,(CURB+1)                 ; trackpos
+; @dup-boot-record-count@
         LD A,(CURB+19)
         AND 020H
         JR Z,TPREG
@@ -795,6 +796,7 @@ WERROR: LD (STATUS),A                   ; werror
         CALL LOCATION
         LD HL,SECMSG
         CALL PUTS
+; @dup-boot-sector-id@
         LD A,(DSEC)
         LD E,A
         LD D,0
@@ -1326,7 +1328,9 @@ STATUSMSG:DB ', error status ',0        ; statusmsg
 ; Packed Sector Size
 ; -------------------------------------------------------------------------------
 
-GETSIZE:LD A,(CURB+18)                  ; getsize
+GETSIZE:
+; @dup-boot-size@
+        LD A,(CURB+18)
         LD (SSIZE),A
         LD A,(CURB+52)
         OR A

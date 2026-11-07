@@ -17,6 +17,7 @@ def compatibility_inputs(inputs):
                      'tools/build_rsx', 'tools/build_system', 'tools/build_checked_resident_rsx',
                      'tools/build_checked_command_loader',
                      'tools/build_z80pack_image', 'tools/checked_',
+                     'tools/build_model2', 'tools/model2_media',
                      'tools/system_layout', 'tools/build_profiles', 'tools/rsx_container')
     return {name:value for name,value in inputs.items()
             if (name.startswith(source_prefixes) and not name.endswith(('bye.mac','.md')))

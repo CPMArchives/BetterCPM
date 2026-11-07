@@ -1,0 +1,40 @@
+; Query both live bindings through the same Function 181 ABI used by CONFIG.
+        ORG 100H
+        LD DE,DRVA
+        CALL GET
+        JR NZ,FAIL
+        LD DE,DRVB
+        CALL GET
+        JR NZ,FAIL
+        LD A,(DRVA+1)
+        OR A
+        JR NZ,FAIL
+        LD A,(DRVB+1)
+        CP 1
+        JR NZ,FAIL
+        LD HL,DRVA+2
+        LD DE,DRVB+2
+        LD B,63
+CHECK:  LD A,(DE)
+        CP (HL)
+        JR NZ,FAIL
+        INC DE
+        INC HL
+        DJNZ CHECK
+        LD DE,GOOD
+PRINT:  LD C,9
+        CALL 5
+        RET
+FAIL:   LD DE,BAD
+        JR PRINT
+GET:    LD BC,03B5H
+        CALL 5
+        OR A
+        RET
+GOOD:   DB 'LIVE B BINDING INTACT',13,10,'$'
+BAD:    DB 'LIVE B BINDING FAIL',13,10,'$'
+DRVA:   DB 0
+        DS 80
+DRVB:   DB 1
+        DS 80
+        END
