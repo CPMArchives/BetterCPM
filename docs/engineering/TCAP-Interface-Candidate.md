@@ -1,5 +1,10 @@
 # TCAP interface candidate and design review closure
 
+> Current design: the [public TCAP ABI and admission contract 1.0](TCAP-Public-ABI.md)
+> supersedes the provisional wire values and unresolved admission choices below.
+> This document preserves its historical design baseline; it is not evidence
+> that the public service is implemented. Utility migrations and release assignment remain deferred.
+
 Status: binary-interface candidate for review, 7 November 2026. Completes the
 [proposed integration package](TCAP-Integration-Design.md) with concrete record
 shapes, operation/results and a cross-contract review. These are candidate

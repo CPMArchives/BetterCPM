@@ -171,3 +171,11 @@ The private package retains a 7,612-byte resident, 339-byte stage one and
 461-byte bootstrap. `SYSTEM.SYS` is 30,848 bytes including its header, and the
 matching installer is 6,489 bytes. No additional permanent TCAP bytes are charged
 beyond the preceding 1 KiB reservation.
+
+## Public-contract follow-up
+
+The [public TCAP ABI/admission contract](TCAP-Public-ABI.md) now defines the
+implementation target. This package remains private XTCP evidence; its token-only
+dispatcher, MCON 1.3, carrier metadata and measured sizes do not implement BMET 3,
+MCON 1.4 or the public envelope. It must not advertise public TCAP by changing IDs.
+Utility migrations and release assignment remain deferred.

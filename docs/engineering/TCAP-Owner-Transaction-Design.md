@@ -1,5 +1,10 @@
 # TCAP owner and transaction design
 
+> Current design: the [public TCAP ABI and admission contract 1.0](TCAP-Public-ABI.md)
+> supersedes the provisional wire values and unresolved admission choices below.
+> This document preserves its historical design baseline; it is not evidence
+> that the public service is implemented. Utility migrations and release assignment remain deferred.
+
 Status: proposed design, 7 November 2026. Develops the
 [semantic contract](TCAP-Semantic-Contract.md) and
 [routing/recovery study](TCAP-Routing-Recovery-Study.md) through PR #650.

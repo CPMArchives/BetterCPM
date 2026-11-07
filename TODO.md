@@ -49,13 +49,16 @@ records the accepted command UI, DIR and XSUB limitations.
 
 ## 1.1 design priorities
 
-- [ ] **Move portable terminal capabilities (TCAP) into early system-wide
+- [x] **Move portable terminal capabilities (TCAP) into early system-wide
   design.** Settle how utilities obtain usable geometry and request display
   operations before fixing new capability-dependent behavior in TYPE, TED
   and HELP. Deliver a reviewable contract against the current monitor,
   SCRN and SCX interfaces. Use the [1.1 engineering specification](docs/engineering/1.1-ENGINEERING-SPECIFICATION.md#portable-terminal-capabilities-tcap)
   for sequencing and the [terminal design agenda](docs/engineering/POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md#early-11-design-work)
   for the three consumer cases.
+  The [public ABI/admission design](docs/engineering/TCAP-Public-ABI.md) is complete;
+  this closes the design task only. Public implementation, measured qualification,
+  utility migrations, HELP delivery and release assignment remain deferred.
 
 ## Immediate priorities
 

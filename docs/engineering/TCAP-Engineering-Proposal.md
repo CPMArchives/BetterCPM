@@ -1,9 +1,12 @@
 # TCAP engineering proposal for TYPE, TED and HELP
 
-Status: draft for review, 7 November 2026. Documentation only. This proposes
-an application contract; it is not an accepted ABI or a completed TCAP facility.
-Implementation scope, release assignment and utility migration order remain
-undecided. HELP remains on hold under its existing design checkpoint.
+Status: engineering proposal with completed public ABI/admission design,
+7 November 2026. The [public contract 1.0](TCAP-Public-ABI.md) is authoritative
+for the assigned design values and admission rules. The audit and historical
+review dispositions below retain their original baselines. Private feasibility
+and native-package evidence do not establish public runtime conformance.
+Public implementation/qualification remain later work; utility migrations,
+HELP delivery and release assignment remain deferred.
 
 ## Purpose and boundaries
 
@@ -246,7 +249,7 @@ completed runtime qualification is made.
 
 | Design responsibility | Controlling proposed document |
 | --- | --- |
-| Candidate packed interface, buffer/token rules and cross-contract review | [Interface candidate](TCAP-Interface-Candidate.md) |
+| Public ABI/admission contract; historical candidate retained for provenance | [Public contract 1.0](TCAP-Public-ABI.md), [historical candidate](TCAP-Interface-Candidate.md) |
 | Complete proposed integration, records, identity rules, source responsibilities and delivery gates | [Integration design package](TCAP-Integration-Design.md) |
 | Application-visible operations, failures, geometry, paging and lifecycle | [Detailed semantic contract](TCAP-Semantic-Contract.md) |
 | Owner lifetime, activation, transaction ordering and coordinator split | [Owner and transaction design](TCAP-Owner-Transaction-Design.md) |
@@ -436,3 +439,16 @@ unload ADM3A → load ANSI → ANSI app workflow on a shared screen backend.
 This remains a private engineering reference, not a production distribution,
 public ABI freeze or utility migration. Other-platform qualification and
 release assignment remain deferred.
+
+## Public ABI and admission closure after PR #661
+
+The [public TCAP contract 1.0](TCAP-Public-ABI.md) completes the wire layouts,
+selector/result/state/mode namespaces, memory and token rules, exact stream and
+baseline models, and loader/system admission contract. Its
+[wire schema](contracts/tcap-1.0.json) is structurally checked alongside the prose.
+It preserves Function 182, MCON 0–5 and SCRN/SCX, requires a fail-closed BMET 3
+matching-system binding with public MCON 1.4, and never promotes XTCP by renaming.
+Explicit essentials remain mandatory; optional emphasis is independent of spatial
+geometry. This closes the earlier public-ABI decisions without migrating TYPE,
+TED or HELP, activating public TCAP, changing release assignment or certifying
+that the additional public implementation fits the private reference budgets.

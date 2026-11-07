@@ -1,5 +1,10 @@
 # TCAP semantic contract for TYPE, TED and HELP
 
+> Current design: the [public TCAP ABI and admission contract 1.0](TCAP-Public-ABI.md)
+> supersedes the provisional wire values and unresolved admission choices below.
+> This document preserves its historical design baseline; it is not evidence
+> that the public service is implemented. Utility migrations and release assignment remain deferred.
+
 Status: proposed contract for review, 7 November 2026. This develops the
 [engineering proposal](TCAP-Engineering-Proposal.md) and
 [first design review](TCAP-Design-Review.md) merged through PR #648.
@@ -120,10 +125,12 @@ does not release takeover recovery ownership. Recovery aborts the whole portable
 session. Release retires takeover ownership only after its declared cleanup
 succeeds. An emphasis-only session can retire ownership after successful End.
 
-A retired admission cannot be reactivated. A fresh Discover/Admit is required
-after release or recovery. With unchanged assumptions, sequential emphasis
-scopes may reuse an eligible admission; handles from earlier scopes remain
-invalid. Profile mutation and cleanup must be serialized with activation.
+The public contract resolves admission as a stateless, revalidated observation,
+not a consumed handle. With unchanged assumptions sequential emphasis scopes may
+reuse eligibility; every activation issues a fresh session/scope serial. Clients
+refresh after takeover release or recovery, but identical observations cannot
+prove freshness. Retired tokens remain invalid. See the public contract for the
+exact wire rules, mode distinctions and serialized publication requirements.
 
 ### Paging semantics
 
