@@ -406,3 +406,13 @@ within the existing carrier/overlay limits. It deliberately fails production
 version admission. Positive matching-system admission, global validity allocation
 and the full candidate request ABI remain incomplete; utility migrations and
 release assignment stay deferred. This evidence does not freeze the public ABI.
+
+### Matching-system and global-validity follow-up
+
+The [private matching/validity experiment](TCAP-Matching-Validity-Results.md)
+qualifies a permanently placed allocator and matching-artifact gate together
+with positive metadata admission and real publication ordering. It charges
+512 permanent bytes and an experimental boot-volume reservation change.
+Full loader-front-door and finalizer/context integration remain required; this
+is not production activation, a public ABI freeze or a utility migration.
+Release assignment remains deferred.
