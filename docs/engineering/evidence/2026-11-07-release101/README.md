@@ -38,3 +38,21 @@ executables exactly match the actual frozen 1.0 downloads. Automatic builds
 then reproduce those bytes without overrides; their revisions stay 011 and
 003. This prevents development labels caused solely by conservative shared
 input changes from changing otherwise unchanged release binaries.
+
+## Media execution results
+
+[Media qualification](media-qualification.json) and its
+[capture archive](media-qualification.tar.gz) record passing focused checks on
+both cpmsim and Model 4: resident commands and file operations, FDB menu and
+exit/editor paths, lowercase DIR, expanded PIP selectors and collision safety,
+and offline RSX/cache-error recovery/XSUB. cpmsim also passes the host terminal
+and ANSI resize/recovery checks. The actual System host kit reconstructs the
+exact runtime and guest tools offline. Independent Utilities inventory and
+unchanged-body comparisons retain the prior detailed coverage of the other
+Utilities executables. The PIP fixture submits its commands directly through
+STARTUP, and native DIR input waits for disk-based warm boots before typing.
+
+Execution receipts identify image hashes rather than asserting that later
+source-only packaging/harness edits were already present. Final package
+acceptance must verify those same image bytes, exact source provenance, all
+six ZIPs and checksums before release-ready naming.

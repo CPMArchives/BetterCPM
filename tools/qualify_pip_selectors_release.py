@@ -67,7 +67,7 @@ MSG:    DB 'PIP CHECK {index:02d}','$'
         data=assemble(Path.home()/'bin/z80asm',code,w/f'RP0{index}.COM',w/f'rp0{index}.lst',256);put('a',0,f'RP0{index}.COM',data)
     batch=b'CLS\r\n:PIP D4:=[B[0,31],C7]:PS*.COM[RV]\r\nRP01\r\n\x1a'
     put('a',0,'PIPTEST.SUB',batch)
-    startup=(b'RSX LOAD M4SCRN\r\nRSX LOAD ADM3A\r\n' if native else b'')+b'SUBMIT PIPTEST\r\n\x1a'
+    startup=(b'RSX LOAD M4SCRN\r\nRSX LOAD ADM3A\r\n' if native else b'')+batch
     put('a',0,'STARTUP.SUB',startup);before={letter:disks[letter].read_bytes() for letter in 'bc'}
     if native:
         images={letter:w/(letter+'.dmk') for letter in 'abcd'}

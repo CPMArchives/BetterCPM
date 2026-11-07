@@ -1,0 +1,69 @@
+{
+  "status": "PASS",
+  "date": "2026-11-07",
+  "version": "1.0.1",
+  "campaigns": [
+    {
+      "campaign": "resident-cpmsim-exact",
+      "status": "PASS",
+      "system_sha256": "8f0e1888d1612a4fb617c7c26f3438b4825eb963a97300d4d59ce96991601220"
+    },
+    {
+      "campaign": "resident-model4",
+      "status": "PASS",
+      "system_sha256": "402d6fa7d97723feb661f120134e2f9150cec13d49796470df8d1d721d87c117"
+    },
+    {
+      "campaign": "fdb-cpmsim-exact",
+      "status": "PASS",
+      "system_sha256": "8f0e1888d1612a4fb617c7c26f3438b4825eb963a97300d4d59ce96991601220"
+    },
+    {
+      "campaign": "fdb-model4",
+      "status": "PASS",
+      "system_sha256": "402d6fa7d97723feb661f120134e2f9150cec13d49796470df8d1d721d87c117"
+    },
+    {
+      "campaign": "dir-cpmsim",
+      "status": "PASS",
+      "system_sha256": "8f0e1888d1612a4fb617c7c26f3438b4825eb963a97300d4d59ce96991601220"
+    },
+    {
+      "campaign": "dir-model4-synchronized",
+      "status": "PASS",
+      "system_sha256": "402d6fa7d97723feb661f120134e2f9150cec13d49796470df8d1d721d87c117"
+    },
+    {
+      "campaign": "pip-cpmsim-direct-batch",
+      "status": "PASS",
+      "system_sha256": "8f0e1888d1612a4fb617c7c26f3438b4825eb963a97300d4d59ce96991601220"
+    },
+    {
+      "campaign": "pip-model4-direct-batch",
+      "status": "PASS",
+      "system_sha256": "402d6fa7d97723feb661f120134e2f9150cec13d49796470df8d1d721d87c117"
+    },
+    {
+      "campaign": "rsx-cpmsim-release",
+      "status": "PASS",
+      "system_sha256": "8f0e1888d1612a4fb617c7c26f3438b4825eb963a97300d4d59ce96991601220"
+    },
+    {
+      "campaign": "rsx-model4-release",
+      "status": "PASS",
+      "system_sha256": "402d6fa7d97723feb661f120134e2f9150cec13d49796470df8d1d721d87c117"
+    },
+    {
+      "campaign": "host-terminal",
+      "status": "PASS",
+      "system_sha256": "8f0e1888d1612a4fb617c7c26f3438b4825eb963a97300d4d59ce96991601220"
+    }
+  ],
+  "basis": "Guest execution binds actual image hashes. Final packaging must reproduce the same images after source-only documentation/harness changes. Final acceptance separately binds the exact source commit and final archives.",
+  "utilities": "26 primary and 10 companion files per platform; only XSUB executable differs from 1.0; four supplement definitions added",
+  "limits": [
+    "Physical media untested",
+    "ATONSS/ATONDS/PT2SS and expanded checksum storage deferred to 1.1 consideration",
+    "Unidentified FDB exit report remains unreproduced"
+  ]
+}
