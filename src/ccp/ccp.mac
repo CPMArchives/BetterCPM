@@ -2945,10 +2945,6 @@ CCP_LNSCAN:
         JP      Z,CCP_LFAIL
         CP      ':'                     ; malformed qualifier cannot become a PATH name
         JP      Z,CCP_LFAIL
-        CP      '?'
-        JP      Z,CCP_LFAIL
-        CP      '*'
-        JP      Z,CCP_LFAIL
         INC     C
         LD      A,C
         CP      9

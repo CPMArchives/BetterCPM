@@ -87,10 +87,10 @@ access to any DU.
 
 The CCP overlays POKE's staged bytes on the original-case line after POKE
 accepts the command. It parses operands from the separate folded buffer.
-The numeric CCP payload is 5,609 bytes in its existing 5,632-byte reclaimable
-allocation. Its carrier occupies 6,633 bytes, or 6,655 with the checked
+The numeric CCP payload is 5,599 bytes in its existing 5,632-byte reclaimable
+allocation. Its carrier occupies 6,623 bytes, or 6,645 with the checked
 binding, within the 6,656-byte disk slot. Its reconstruction costs no extra
-TPA. The baseline checked builder leaves one byte in the slot. The concurrent 1.1 cpmsim builder omits the 128-byte uninitialized stack from the disk payload, producing a 6,527-byte carrier with the same live allocation.
+TPA. The baseline checked builder leaves 11 bytes in the slot. The concurrent 1.1 cpmsim builder omits the 128-byte uninitialized stack from the disk payload, producing a 6,517-byte carrier with the same live allocation.
 
 ## Qualification
 
@@ -103,7 +103,7 @@ the final images built from the merged 1.1 source.
 
 | Runtime | Observed |
 |---|---|
-| cpmsim, 1.1 full RAM | 31 prompt commands plus the submitted sequence. First match, later match, explicit miss, force prefix, resident DIR precedence, bad input with old list preserved, direct recovery, dynamic DU and cross-DU tail/FCB probe passed. Loaded 57,344 bytes from B3. Rejected 57,472. Bad Sector on an unmounted drive followed by Ctrl-C returned to A3 and preserved PATH. |
+| cpmsim, 1.1 full RAM | 32 prompt commands plus the submitted sequence. First match, later match, explicit miss, force prefix, resident DIR precedence, bad input with old list preserved, direct recovery, dynamic DU and cross-DU tail/FCB probe passed. Loaded 57,344 bytes from B3. Rejected 57,472. Bad Sector on an unmounted drive followed by Ctrl-C returned to A3 and preserved PATH. |
 | cpmsim, 1.0-layout compatibility build | Same suite passed. Largest test executed 54,272 bytes. The next 128-byte record was rejected. |
 | TRS-80 Model 4 in trs80gp | Cold-start SUBMIT set the path. At A5 the A3 image won. A 54,272-byte COM executed, the 54,400-byte first candidate reported FILE WILL NOT FIT, the following submitted command again ran the A3 image. XSUB's Function 10 probe printed INPUT OK. A0:WHICH selected the other image and A0:PATH displayed the original order. |
 | TRS-80 Model II in trs80gp | The engineering System image booted and ran the same sequence, including a 57,344-byte COM, rejection at 57,472, the XSUB input probe and exact A0 invocation. The final prompt was A5 with PATH intact. |
@@ -112,7 +112,7 @@ The assembled recording provider also checks the exact sequence of Open calls
 for fixed-first and dynamic-first duplicates and a six-entry list. The
 protected-loader provider tests returned read errors 02h and FFh, oversize
 rejection, caller-user restoration and CPX shutdown. Native ZSM4/LINK and
-cross-builds agreed on the CCP (5,609 bytes), BDOS image (3,451 bytes) and
+cross-builds agreed on the CCP (5,599 bytes), BDOS image (3,451 bytes) and
 extension services (424 bytes) in the conventional layout.
 
 For an emulator timing sample, 11 commands per case were run on the checked
@@ -137,3 +137,9 @@ disk set and `tools/qualify_numeric_path_trs80.py` on the matching TRS-80
 build. The latter can prepare a cold-booting image with `--prepare-only`.
 The script expects the Model II port's own media builder in the selected build
 workspace. Both harnesses write their fixtures into a fresh output directory.
+
+Additional control runs found two existing harness failures on both the base
+tree and the PATH branch. The old system-console stub stops on an unmodeled IN
+instruction, and NOAH's help-layout test expects the former help footer. The
+historical CCP acquisition script also requires local September disk fixtures.
+The public-prompt, loader and batch results above were obtained independently.
