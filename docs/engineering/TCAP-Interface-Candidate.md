@@ -208,7 +208,7 @@ to recognize repeat Recover before a newer activation or validity transition.
 Only that repeat returns already-recovered without output. A new activation
 invalidates the tombstone; an older token cannot recover the new session. Normal
 End/Release does not create a recovered-session tombstone. This is bounded owner
-state with a measured cost, not an unbounded retired-handle table.
+state whose cost must be measured, not an unbounded retired-handle table.
 
 ## Candidate operation and buffer table
 
@@ -289,6 +289,8 @@ Idle/already-recovered only under the bounded tombstone rule.
 | Geometry/model knowledge | Fixed 80×24 and host encoding masks do not establish stream dimensions or physical style support. |
 | Prior rendition and prompt baseline | End restores the captured logical rendition; abnormal recovery establishes defaults and the admitted prompt-start policy. |
 | Metadata capacity | Optional second personality advertisement fits current declared capacity; it does not create a third service or a fixed registry table. |
+| Takeover emphasis closure | End returns TakeoverWithEmphasis to Takeover, not Idle; only Release/Recover retires takeover ownership. |
+| Fatal pre-coordinator loader failure | No successful baseline/readable-marker guarantee when the reloader cannot be loaded; retain the fatal platform disposition without claiming cleanup. |
 | Small fixed records versus memory policy | Record sizes are candidate data sizes only, not code, stack, allocation or unloaded-TPA measurements. |
 
 This closes the documentation-only interface design pass. The remaining acceptance
