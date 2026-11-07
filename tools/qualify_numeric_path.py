@@ -133,6 +133,7 @@ FAIL:   DB 'INVOCATION FAILED',13,10,'$'
     check('PATH B3: . A0:', b'PATH: B3: . A0:')
     check('WHICH', b'B3 IMAGE')
     check('A0:WHICH', b'A0 IMAGE')
+    check('B3:WHI?H', b'B3 IMAGE')  # preserve the existing qualified FCB Open
     check('C2:WHICH', b'\n?')
     check('C4:', b'C4>_ ', b'C4>_ ')
     check('CALLER One.txt tWo.Dat', b'INVOCATION OK', b'C4>_ ')
