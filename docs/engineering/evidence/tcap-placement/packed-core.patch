@@ -1,0 +1,37 @@
+--- a/src/bios/bios.mac
++++ b/src/bios/bios.mac
+@@ -144,4 +144,2 @@
+-        OR A
+-        RET Z
+-IO_READY:
+-        LD A,0FFH
++        ADD A,255
++        SBC A,A
+@@ -157,0 +156,4 @@
++        PUSH BC
++        LD A,25
++        CALL MC_CALL
++        POP BC
+@@ -162,6 +163,0 @@
+-        JR BIOLIST
+-IO_CON:
+-        LD A,(0003H)
+-        AND 3
+-        DEC A
+-        RET
+@@ -175,0 +172,6 @@
++IO_CON:
++        LD A,(0003H)
++        AND 3
++        DEC A
++        RET
++
+--- a/src/platform/trs80m4/m4scroll.inc
++++ b/src/platform/trs80m4/m4scroll.inc
+@@ -38,3 +38,3 @@
+-        LD      HL,VIDEOEND-VIDEOCOLS
+-        LD      DE,VIDEOEND-VIDEOCOLS+1
+-        LD      BC,VIDEOCOLS-1
++        EX      DE,HL                   ; completed LDIR: DE=last-row, HL=VIDEOEND
++        LD      E,(VIDEOEND-VIDEOCOLS+1) AND 255
++        LD      C,VIDEOCOLS-1            ; B is zero after completed LDIR

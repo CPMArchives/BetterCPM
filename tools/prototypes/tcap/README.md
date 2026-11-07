@@ -50,3 +50,35 @@ as a production provider or widen the carrier header to make this report green.
 
 See the [measured report](../../../docs/engineering/TCAP-Feasibility-Results.md)
 for current findings, resource limits and the remaining integration work.
+
+## Carrier and packed-placement follow-up
+
+Use the same pinned environment, then run:
+
+```sh
+build/tcap-feasibility/venv/bin/python tools/prototypes/tcap/placement.py
+```
+
+This retains the original failed slice for comparison and builds a private XTCP
+0.2 candidate with indexed owner state and assembler-checked relative branches.
+It moves the coordinator/guard into the optional personality, stages source
+copies under `build/tcap-placement/packed-core/`, and rebuilds a complete reference
+Model 4 resident image. Seven equivalent recovered BIOS bytes pay for the seven-byte
+private routing hook. Production `src/` and layout files are not edited.
+
+The normal BRSX builder and real carrier/metadata/snapshot validators now accept
+the generated `build/tcap-placement/XTCAP.RSX` with the existing header. The private
+MCON probe 25 has no public allocation or production coordinator/version admission;
+**do not install this carrier or staged core in production profiles**.
+
+`placement-report.json` is written only after all checks pass; a stale copy is
+removed before the run. `packed-core.patch` is the reviewable staged source diff.
+The campaign checks behavioral cases, parser parity against the original, actual
+STATEFUL movement, legacy IOBYTE/status/fallback, independent video scrolling and
+existing CAPS/physical-fetch regressions. Idle publication rebinding and warm entry
+remain explicit fixtures, not claims of a complete real-manager/reloader install.
+
+The [measured follow-up](../../../docs/engineering/TCAP-Placement-Results.md)
+distinguishes the two resolved feasibility gates from remaining production,
+ROM/native and whole-system stack qualification work. Utility migrations and
+release assignment remain deferred.

@@ -310,6 +310,12 @@ with separate reviewable code changes only where they help validation:
    are qualified; adoption order is a recommendation, not a release assignment.
    Recheck memory/stack and distribution compatibility after integration.
 
+The [second feasibility campaign](TCAP-Placement-Results.md) places the larger
+bridge in the optional personality and pays for a seven-byte staged BIOS hook
+with seven bytes of equivalent savings. The existing carrier format accepts
+228 fixups. This private candidate still needs version/coordinator admission,
+global identities and real return-path qualification before production use.
+
 ## Binary interface review follow-up
 
 The [interface candidate](TCAP-Interface-Candidate.md) supplies proposed packed
