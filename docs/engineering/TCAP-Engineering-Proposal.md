@@ -425,3 +425,14 @@ loading gates before installation/execution. It verifies complete load/unload,
 cache reconstruction and failure/retry paths. This candidate reserves 1 KiB
 permanently; packaging, other-platform qualification and the full public request
 ABI remain open. Utility migrations and release assignment stay deferred.
+
+### Installable native-reference follow-up
+
+The [private package campaign](TCAP-Native-Package-Results.md) adds matching
+OFF=3 reference media and a matching installer, bootstrap integrity checks,
+and full-machine qualification from cold boot through installation, warm
+reconstruction and unload. It explicitly preserves the user's ADM3A app →
+unload ADM3A → load ANSI → ANSI app workflow on a shared screen backend.
+This remains a private engineering reference, not a production distribution,
+public ABI freeze or utility migration. Other-platform qualification and
+release assignment remain deferred.

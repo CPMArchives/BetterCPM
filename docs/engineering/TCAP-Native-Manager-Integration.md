@@ -194,12 +194,12 @@ not claimed.
 
 ## Remaining boundary
 
-This is not an installable distribution. The existing native image builder still
-expects a selector appended to the reloader block; a future matching package must
-omit that obsolete tail and package the new layout consistently. Existing OFF=2
-disks remain incompatible. Initial boot-sector/stage-one verification, actual disk
-construction/installation, native assembly parity and live Model 4 behavior remain
-unqualified. Checked cpmsim/stage-2 and other maintained platforms need their own
+This campaign by itself is not an installable distribution. The
+[private native-package follow-up](TCAP-Native-Package-Results.md) supplies an
+optional matching OFF=3 reference package, omits the obsolete selector tail,
+and qualifies initial bootstrap verification and installation separately.
+Existing OFF=2 disks remain incompatible. Production distribution integration,
+native assembly parity and physical Model 4 qualification remain open. Checked cpmsim/stage-2 and other maintained platforms need their own
 required-role policy and complete integration qualification.
 
 The proposed full public request ABI, broader display-policy admission and final

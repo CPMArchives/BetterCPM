@@ -1,0 +1,29 @@
+{
+  "rows": [
+    "",
+    "A0>SETBSYS",
+    "B SYSTEM READY",
+    "",
+    "A0>INSTALL SYSTEM.SYS B:",
+    "",
+    "Install the selected BetterCP/M system on drive B:, physical drive 1",
+    "Reserved system records to copy and verify: 240",
+    "",
+    "The destination system area will be replaced.",
+    "Files outside the reserved system tracks will be preserved.",
+    "Proceed (Y/N)?",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "normalized_screen_sha256": "843aeac0dc0e87da20afd67396d898d4488f5ef4cb40e24e7b9f9fe137130192"
+}

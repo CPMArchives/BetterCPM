@@ -1,0 +1,84 @@
+{
+  "status": "PASS",
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "package_manifest_sha256": "a495bc78a36a5054ae0ced160f982371e63a09583dbbc71d7bf8b4acc9749ab3",
+  "runner_sha256": "529bc73bb0cfc417af2b2bcf8ab471a0bb5070e334ed09b0d07b43d46a93e7f3",
+  "checks": {
+    "checksum_cpu": {
+      "stage1": 6,
+      "resident": 6,
+      "installer_before_write": 17
+    },
+    "source_workflow": [
+      "89c04c5f04d75b2fbd12989964c9ed2e324aab46b4cf62571e589f19d7f11718",
+      "daf6bedfbd526a63131665a129b0e224046c91e2c6d9283fab759e83802b9698",
+      "a51f90db48e123d4c13dbddea2f8392211b6dadfab3daf126a909e5030f866dc",
+      "f43a8214aeac4164b83bfbbdd9d1491c68fc88815add30e3d31071ac10339e76",
+      "60e5b09022356580adf5b22b28530503c8770bca8b91d0bcd06f20754d64af48",
+      "ef019e0d0db875f3c54e6a0caea9076e5086f11bad128e7553c1ce0433990ed5",
+      "3cf99e5d6f2f48f021d6648598223766a5dc6123799a1df508bef523f30a35f4",
+      "78e6437da4a5a4f6c1dbcc41fed6debb1c22dfd074c2881bf8a6820cbf7f672d",
+      "35f51dcac95cfd3fe76173a9b4c41b00665b951c4ca4e612b10ae59e90ed4d3b",
+      "b0956682d84ba4e9c029670a512327d24213f14c51bef3b709ec907e6d8be87a",
+      "37ef703cf0dd7906dc75aaa34dfdfc14fe87b81ccd99510dbb121e69b67e0938",
+      "f62161978a010394862d1e64cd8f7f0e31cf83f0077851d0d1a9b1c85ad9358a",
+      "b234ac17a499e28f2aeab47f4cc7e8d35c10d047b3566e30515729c54c31c796",
+      "8f55e86ebfafdc4121d4eccef5d6ee1dd2f79d4801d5768ec6facd5cea9bf5d2",
+      "55fdafcc436ce7fbcc4336da0fb96d6d7f8c6eaa0bca2c672c9cd8a8eaf41c42",
+      "6ae027776e47b87780bc0e8a5ce4f63e83815317f204eb6f3951e21fd1c0681a"
+    ],
+    "installation": {
+      "protected_records_verified": 240,
+      "file_area_unchanged": true,
+      "installed_payload_sha256": "d811081e4fb8d5cbb3e7be2a2ca80eb9e792b22ed85f697593d94e12af152ab0"
+    },
+    "installed_workflow": [
+      "89c04c5f04d75b2fbd12989964c9ed2e324aab46b4cf62571e589f19d7f11718",
+      "daf6bedfbd526a63131665a129b0e224046c91e2c6d9283fab759e83802b9698",
+      "a51f90db48e123d4c13dbddea2f8392211b6dadfab3daf126a909e5030f866dc",
+      "f43a8214aeac4164b83bfbbdd9d1491c68fc88815add30e3d31071ac10339e76",
+      "60e5b09022356580adf5b22b28530503c8770bca8b91d0bcd06f20754d64af48",
+      "ef019e0d0db875f3c54e6a0caea9076e5086f11bad128e7553c1ce0433990ed5",
+      "3cf99e5d6f2f48f021d6648598223766a5dc6123799a1df508bef523f30a35f4",
+      "78e6437da4a5a4f6c1dbcc41fed6debb1c22dfd074c2881bf8a6820cbf7f672d",
+      "35f51dcac95cfd3fe76173a9b4c41b00665b951c4ca4e612b10ae59e90ed4d3b",
+      "b0956682d84ba4e9c029670a512327d24213f14c51bef3b709ec907e6d8be87a",
+      "37ef703cf0dd7906dc75aaa34dfdfc14fe87b81ccd99510dbb121e69b67e0938",
+      "f62161978a010394862d1e64cd8f7f0e31cf83f0077851d0d1a9b1c85ad9358a",
+      "b234ac17a499e28f2aeab47f4cc7e8d35c10d047b3566e30515729c54c31c796",
+      "8f55e86ebfafdc4121d4eccef5d6ee1dd2f79d4801d5768ec6facd5cea9bf5d2",
+      "55fdafcc436ce7fbcc4336da0fb96d6d7f8c6eaa0bca2c672c9cd8a8eaf41c42",
+      "6ae027776e47b87780bc0e8a5ce4f63e83815317f204eb6f3951e21fd1c0681a"
+    ],
+    "bad-stage1": {
+      "corrupt_offset": 612,
+      "reached_prompt": false,
+      "screen_sha256": "add1db216823956b88e75e9a329b517d8df5ae0e84dc419f3216286c1bad7d1e"
+    },
+    "bad-resident": {
+      "corrupt_offset": 1124,
+      "reached_prompt": false,
+      "screen_sha256": "6e0ce65031e802f83e9c1e92b66a459ada9f1f5f6522ba6c8d8198228fd219c3"
+    },
+    "bad-resident-padding": {
+      "corrupt_offset": 8703,
+      "reached_prompt": false,
+      "screen_sha256": "6e0ce65031e802f83e9c1e92b66a459ada9f1f5f6522ba6c8d8198228fd219c3"
+    },
+    "bad-reloader": {
+      "corrupt_offset": 8704,
+      "reached_prompt": false,
+      "screen_sha256": "6e0ce65031e802f83e9c1e92b66a459ada9f1f5f6522ba6c8d8198228fd219c3"
+    },
+    "bad-ccp": {
+      "corrupt_offset": 15877,
+      "reached_prompt": false,
+      "screen_sha256": "6e0ce65031e802f83e9c1e92b66a459ada9f1f5f6522ba6c8d8198228fd219c3"
+    }
+  },
+  "limits": [
+    "emulated Model 4, not physical hardware or native-assembler parity",
+    "private XTCP probe entry offsets; no public request ABI claim",
+    "utility migrations and release assignment deferred"
+  ]
+}

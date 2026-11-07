@@ -98,7 +98,9 @@ CF_LOG:                                 ; set logical disk profile
 ; -------------------------------------------------------------------------------
 
 DC_VALIDATE:                            ; validate logical disk profile
-        LD A,(IX+62)
+        LD B,(IX+62)                 ; preserve requested physical device in A
+        INC B
+        DEC B                          ; test adapter field, not prior compare flags
         JP NZ,DC_UNSUPPORTED            ; no reserved-surface adapter on Model 4
         CALL DC_PHY
         JP NC,DC_INVALID
@@ -121,7 +123,7 @@ DC_VALIDATE:                            ; validate logical disk profile
         AND 060H
         CP 060H
         JP Z,DC_UNSUPPORTED
-        BIT 6,(IX+20)
+        BIT 6,A                        ; A still holds flags AND 60h; saves two bytes
         JR Z,DC_ONESIDE
         LD A,(HL)
         CP 2
