@@ -161,6 +161,14 @@ FAIL:   DB 'INVOCATION FAILED',13,10,'$'
     commands += [(b'SUBMIT PTEST\r', b'INPUT OK', 60),
                  (b'', b'B3 IMAGE', 30), (b'', b'A0>_ ', 30)]
     log = session(simulator, disks, commands, work/'prompt.log')
+    # Read the emitted help rows so a formatter change cannot move only one group.
+    help_rows = log.split(b'   Options:\r\n', 1)[1].splitlines()
+    for index, label in enumerate((b'location', b'/DEFAULT', b'', b'/H /HELP', b'/VER')):
+        row = help_rows[index]
+        if label:
+            assert row.startswith(b'     ' + label.ljust(15)) and row[20:21].isalpha(), row
+        else:
+            assert not row, row
     assert b'INPUT FAILED' not in log and b'WRONG FALLBACK EXECUTED' not in log
     # Separate process and same disks prove cold defaults after a custom list.
     check_cold = [(b'PATH\r', b'PATH: . A0:', 30)]
