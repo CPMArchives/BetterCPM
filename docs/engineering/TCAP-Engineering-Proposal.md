@@ -246,6 +246,7 @@ completed runtime qualification is made.
 
 | Design responsibility | Controlling proposed document |
 | --- | --- |
+| Complete proposed integration, records, identity rules, source responsibilities and delivery gates | [Integration design package](TCAP-Integration-Design.md) |
 | Application-visible operations, failures, geometry, paging and lifecycle | [Detailed semantic contract](TCAP-Semantic-Contract.md) |
 | Owner lifetime, activation, transaction ordering and coordinator split | [Owner and transaction design](TCAP-Owner-Transaction-Design.md) |
 | Existing route behavior, CRT LIST aliasing and command-return evidence | [Routing and recovery source study](TCAP-Routing-Recovery-Study.md) |
@@ -336,6 +337,9 @@ in this list is claimed performed for this proposal.
 
 ## Remaining feasibility gates and review disposition
 
+The [integration design package](TCAP-Integration-Design.md) resolves the
+documentation alternatives into one bounded candidate, including proposed
+request/identity rules and concrete source integration responsibilities.
 The documentation proposal is complete enough for a single engineering review.
 The remaining work below requires implementation investigation or measurement;
 it must not be represented as another completed static audit.

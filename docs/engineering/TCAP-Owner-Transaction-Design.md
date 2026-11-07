@@ -176,3 +176,11 @@ Review should accept or revise the idle-only transaction restriction and logical
 owner/coordinator split, then request a bounded costed integration design for
 routing observation and return-path dispatch. Binary ABI, implementation scope,
 consumer migration order and release assignment remain later decisions.
+
+## Consolidated integration follow-up
+
+The [integration design package](TCAP-Integration-Design.md) specifies the
+recommended optional-owner discovery, provisional records and identity policy,
+routing eligibility, recovery ordering and source responsibilities together.
+Its selected candidate refines the alternatives here without approving an ABI
+or claiming measured implementation feasibility.
