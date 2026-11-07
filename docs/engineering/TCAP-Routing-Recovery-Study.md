@@ -123,3 +123,10 @@ mechanism only after these boundaries and cost limits are demonstrated. A
 bounded prototype remains later work, not authorized or performed by this study.
 The current semantic draft can be refined using these findings without claiming
 that TCAP is implemented or that its engineering specification is frozen.
+
+## Owner and transaction design follow-up
+
+The [owner/transaction design](TCAP-Owner-Transaction-Design.md) proposes
+personality-associated recovery ownership, idle-only profile transactions and
+a return-path coordinator. These remain design recommendations; routing guards,
+storage, ABI and implementation are not approved or delivered.

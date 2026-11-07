@@ -348,6 +348,11 @@ independent device when LIST aliases the same CRT. Echo duplication must be
 included in spatial row accounting or invalidate spatial pager eligibility.
 The study recommends candidate boundaries, not implemented cleanup hooks.
 
+The [owner/transaction design](TCAP-Owner-Transaction-Design.md) recommends
+rejecting profile mutations while portable ownership is active as an initial
+implementation-design restriction. It narrows the possible lifecycle mechanism
+without claiming active-session movement support or changing legacy contracts.
+
 ## Gates before an implementation specification
 
 Review and accept or revise the semantic choices above, especially single-scope

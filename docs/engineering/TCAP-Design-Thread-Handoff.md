@@ -64,7 +64,9 @@ catalog and adopting additional emulation protocols are later decisions.
 
 The [TCAP engineering proposal](TCAP-Engineering-Proposal.md) records a static
 audit of Monitor, SCRN and SCX, proposed consumer contracts and qualification
-gates. It is a draft for review, not an accepted ABI or an implemented facility.
+gates. Its consolidated design package is the entry point for one engineering
+review, including the detailed semantic contract, owner/transaction design and
+remaining feasibility gates. It is not an accepted ABI or an implemented facility.
 Implementation scope and release assignment remain open.
 
 ## Starting references

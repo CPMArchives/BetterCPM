@@ -236,11 +236,123 @@ recovery only after a bounded feasibility study. Assign a binary ABI, provider
 format, implementation scope and release only in a subsequent reviewed design.
 The engineering proposal itself remains a draft until that review occurs.
 
-## First design review
+## Consolidated design package
 
-The [first design review](TCAP-Design-Review.md) recommends tighter geometry,
-single-scope ownership and abort-recovery semantics. These recommendations
-remain for review and do not approve an ABI or implementation.
+This document is the entry point for the complete documentation proposal.
+The linked documents supply the detailed contract and source evidence; they
+are not separate requests to start another design workstream. Review the
+package together. No claim of implementation readiness, accepted ABI or
+completed runtime qualification is made.
+
+| Design responsibility | Controlling proposed document |
+| --- | --- |
+| Application-visible operations, failures, geometry, paging and lifecycle | [Detailed semantic contract](TCAP-Semantic-Contract.md) |
+| Owner lifetime, activation, transaction ordering and coordinator split | [Owner and transaction design](TCAP-Owner-Transaction-Design.md) |
+| Existing route behavior, CRT LIST aliasing and command-return evidence | [Routing and recovery source study](TCAP-Routing-Recovery-Study.md) |
+| Rationale for the conservative semantic choices | [First design review](TCAP-Design-Review.md) |
+
+Where the earlier alternatives in this proposal differ from the detailed
+recommendations, use the following consolidated design direction for review:
+
+- Retain Function 182 discovery and existing SCRN/SCX operation contracts.
+  Add no utility-specific terminal grammar or automatic provider loading.
+- Keep portable owner state associated with the active personality; retain
+  hardware rendering in the backend. Transient bindings own validation and
+  utility policy, not abort-surviving capture.
+- Separate read-only admission from activation. Arm owner-resident recovery
+  before display mutation. Use one emphasis capture independent of SCX 23;
+  close it around prompts and diagnostics.
+- Initially reject profile mutations during portable ownership. End/Release
+  or Recover first; keep fallible display cleanup outside manager commit.
+- Distinguish fixed-cell geometry from stream geometry, and encoder support
+  from known endpoint support. Unknowns yield readable fallbacks.
+- Preserve printer echo. CRT alias duplication invalidates spatial guarantees
+  unless accounted for before affected output; it does not justify disabling ^P.
+- Recover rendering through the owner and cooked-column/start coordination
+  through a safe return-path coordinator. Preserve legacy Monitor 5 behavior.
+
+These are proposed engineering choices, not maintainer acceptance inferred
+from merging documentation.
+
+## Integration responsibilities and ordering
+
+The candidate integration boundary for route eligibility is the normal BIOS
+console router before destination dispatch, where both CRT and bypass/sink
+routes can be classified. A Monitor-only check is insufficient because some
+routes never reach it. The router must not invoke BDOS or accept arbitrary
+transient callbacks. Normal output retains the existing BDOS interception and
+flow-control path. Exact entry dispatch and permanent code cost remain subject
+to feasibility measurement; no new vector is assigned here.
+
+Echo-related spatial eligibility needs information from the BDOS output-flow
+layer, where ^P is consumed and the echo flag changes. Proposed conservative
+initial policy: if CRT echo aliasing can change during an interactive page and
+there is no qualified pre-glyph layout observation, spatial paging is ineligible
+for that path. Logical-line paging remains available. This avoids pretending
+that a page-end poll repairs rows already displayed. A later richer accounting
+path can be reviewed independently.
+
+The recovery coordinator belongs logically to command return. It must run on
+a valid system/reloader stack before diagnostic or prompt text. Candidate
+insertion boundaries are both reloader CRBODY entries and the CCP prompt guard.
+The owner performs rendering repair without recursive BDOS; the coordinator
+synchronizes cooked-column state through a separately defined safe system
+operation. Writing another subsystem's private column byte from a personality
+is not an acceptable shortcut. Dispatch and state-transfer representation stay
+unallocated until the implementation feasibility gate.
+
+Recovery ordering for an owned session is: mark recovery in progress; discard
+its parser continuation; normalize logical/backend rendition; reset margins and
+visibility; cancel pending wrap and establish the profile's prompt start;
+synchronize cooked-column state; retire ownership. Failure retains recovery-required
+and prevents successful-baseline claims. Repeated guards after success are no-ops.
+The path's exact start/newline policy must be qualified; no arbitrary host mode
+or prior screen restoration is promised.
+
+Profile transactions prepare and validate normally, then reject active,
+recovering or recovery-required portable ownership. Revalidate idle owner state
+at the serialized precommit boundary. Only then transform memory, rebind the
+prepared monitor/backend and publish generation last. No terminal I/O, fallible
+cleanup or active-handle migration occurs inside publication. A failed request
+leaves the old profile and owner intact. A separately completed recovery is
+not rolled back by a subsequent failed profile request.
+
+## Consumer acceptance and qualification package
+
+| Consumer | Design completion criterion | Evidence required later |
+| --- | --- | --- |
+| TYPE | Correct geometry class, shared visible/replay transition model, prompt budget and fallback/invalidation rules. | Exact-edge CR/LF, tabs/backspace, changed files, echo alias/toggle, narrow/unknown dimensions and backward replay. |
+| TED | Existing 80×24 admission and typed cell semantics retained; recovery armed before takeover. | No mutation on refusal; normal and abnormal cleanup; document recovery unchanged; native visual validation. |
+| HELP | Semantic strong emphasis through ordinary console text, single-scope lifecycle, plain readability and prompt boundaries. | Bold/reverse/plain text equivalence, no TCAP controls in LIST/file bytes, decoder/replay memory and cancellation. HELP remains held until the facility is delivered. |
+
+Qualification must distinguish CPU models, wire captures, rendered-screen
+oracles and actual native display campaigns. Use cpmsim RAM/protected-ROM and
+Model 4; add maintained Model II profile evidence before making claims for it.
+The semantic contract's failure table and worked cases are the acceptance
+inventory. Test no provider, incompatible metadata, rejected activation,
+stale/reused handles, partial cleanup failure, RET/Function 0/jump 0/cooked ^C,
+resident command return, startup/SUBMIT and loader/manager error paths. No result
+in this list is claimed performed for this proposal.
+
+## Remaining feasibility gates and review disposition
+
+The documentation proposal is complete enough for a single engineering review.
+The remaining work below requires implementation investigation or measurement;
+it must not be represented as another completed static audit.
+
+| Gate | Required result before approving an implementation specification |
+| --- | --- |
+| Routing/echo coverage | Show actual pre-dispatch observation and conservative spatial eligibility on every admitted path; handle or exclude asynchronous/direct-hardware changes honestly. |
+| Return-path coverage | Prove owner reachability and valid stacks before every diagnostic/prompt path; define safe failure reporting and exact per-profile prompt start. |
+| Transaction serialization | Demonstrate idle checks cannot race activation and busy errors do not print into active takeovers/scopes. |
+| Owner representation | Choose identity exhaustion rules, version/capability admission, pointer repair and recovery state lifetime without transient pointers. |
+| Resource costs | Measure fixed growth/unloaded TPA, optional page-rounded provider and first-provider overhead, transient code/workspace and stack separately. No reduction of qualified memory policy is implicitly approved. |
+| Binary interface | Only after the above, allocate service/version/operation identifiers, record layouts, calling conventions and bounded argument ranges. |
+
+Recommended review disposition: accept or revise the consolidated semantic and
+ownership direction as a proposal, retain HELP's hold, and leave implementation,
+ABI allocation, migration scope and release assignment undecided pending those
+gates. Publishing this package does not authorize a prototype or code changes.
 
 ## Related contracts
 
