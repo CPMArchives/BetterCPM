@@ -397,3 +397,12 @@ do not deliver a public TCAP facility or authorize utility migrations/releases.
 - [SCRN and SCX ABI, including full-control admission](Unloadable%20Screen%20Backend%20ABI.md)
 - [Resident service ABI](../architecture/20%20Resident%20Service%20ABI.txt)
 - [Held HELP design checkpoint](HELP-1.1-Specification.md)
+
+### Transaction and command-return feasibility follow-up
+
+The [isolated system-path experiment](TCAP-System-Paths-Results.md) executes
+transaction guards and command-return recovery in staged real-source entries,
+within the existing carrier/overlay limits. It deliberately fails production
+version admission. Positive matching-system admission, global validity allocation
+and the full candidate request ABI remain incomplete; utility migrations and
+release assignment stay deferred. This evidence does not freeze the public ABI.

@@ -1,0 +1,440 @@
+--- a/src/system/r3final.mac
++++ b/src/system/r3final.mac
+@@ -1,3 +1,94 @@
+-        INCLUDE layout.inc
+-        INCLUDE profile.inc
+-; @rsx-container-slots@
++; ********************************************************************************
++; *                         BetterCP/M Common RAM Layout                         *
++; *                                                                              *
++; * Defines the shared resident, transient, extension, workspace, and protected  *
++; * memory assignments. BetterCP/M requires no hidden RAM or bank switching;     *
++; * build-time size checks enforce every boundary.                               *
++; ********************************************************************************
++
++  ; TPA is 0100H through LY_TPA-1.  The three-byte jump and command
++  ; history follow it.  The command processor itself is reconstructible.
++  ; LY_RSX is optional: one K is charged only with an active RSX profile.
++  ; LY_CFG reuses LY_BUF; LY_LOAD and its stack borrow the finished TPA.
++  ; Keep build-time size checks: even a twelve-byte overrun is fatal.
++
++; -------------------------------------------------------------------------------
++; Resident and Reconstructible Regions
++; -------------------------------------------------------------------------------
++
++LY_SYS          EQU     0D5C4H          ; resident system gateway base
++LY_BDOS         EQU     0D6BCH          ; unified BDOS base
++; Qualified memory savings reserve BIOS routing/monitor space at unchanged TPA.
++; Rebuild all layout-dependent components together after these bases change.
++LY_EXT          EQU     0E43AH          ; protected extension-services base
++LY_DISK         EQU     0E5E3H          ; resident disk-service base
++LY_BIOS         EQU     0E991H          ; compatibility BIOS base
++LY_FILE         EQU     0EC86H          ; shared file-loader base
++LY_TAB          EQU     0ED17H          ; resident disk-table base
++LY_RSTA         EQU     0EF57H          ; resident-state workspace base
++LY_DIR          EQU     0EF80H          ; directory buffer address
++LY_BUF          EQU     0F000H          ; shared sector/overlay buffer
++LY_RSX          EQU     0D104H          ; optional protected RSX region
++
++; -------------------------------------------------------------------------------
++; Transient and Shared Workspace
++; -------------------------------------------------------------------------------
++
++LY_LOAD         EQU     00100H          ; transient loader address
++LY_CFG          EQU     0F000H          ; configuration-overlay address
++LY_CPX          EQU     0F009H          ; reconstructible CPX region
++LY_RLCAP        EQU     003A4H          ; command-reloader carrier bytes
++LY_RSSEL        EQU     0F3A4H          ; RSX selector overlay entry
++LY_STKL         EQU     004C0H          ; transient loader stack low
++LY_STKT         EQU     00500H          ; transient loader stack top
++LY_LIMIT        EQU     0F400H          ; resident-memory upper limit
++LY_TOPRSV       EQU     00C00H          ; bytes above resident RAM (STAT count)
++LY_RAMEND       EQU     0F400H          ; available RAM end
++LY_HIST         EQU     0D504H          ; persistent command-history base
++LY_TPA          EQU     0D501H          ; exclusive TPA upper bound
++LY_SECTS        EQU     0000DH          ; resident system sector count
++
++; -------------------------------------------------------------------------------
++; PDS ABI 1 Static-Layout Bridge
++; -------------------------------------------------------------------------------
++
++  ; PDS ABI 1 static-layout bridge. The versioned system descriptor at LY_PDSD
++  ; publishes LY_PDSF as its live lower boundary. Until configurable sizing is
++  ; implemented, the upper boundary is LY_PDST and boot size equals current size.
++LY_PDSD         EQU     LY_SYS+080H     ; PDS versioned descriptor address
++LY_PDST         EQU     LY_SYS          ; PDS upper boundary
++LY_PDSF         EQU     LY_SYS+088H     ; PDS live lower-bound field
++LY_PDSS         EQU     LY_SYS-LY_HIST  ; current protected-data size
++
++; -------------------------------------------------------------------------------
++; Protected COM Handoff and Shared Filename State
++; -------------------------------------------------------------------------------
++
++  ; Protected COM handoff and shared filename state (checked by builders).
++LY_COMSTART     EQU     LY_SYS+074H     ; protected COM handoff state
++LY_COMDONE      EQU     LY_SYS+003H     ; protected COM return entry
++LY_FCB          EQU     LY_FILE+109     ; shared filename FCB address
++  ; During RSX transactions, its unused random-record bytes +33..35 hold a
++  ; JP to a scratch-only worker. Shared streams use sequential I/O exclusively.
++
++; Fixed command-environment state above the BDOS stack. The image builder
++; reserves this range independently of the stack, PDS and extension code.
++PATHMAX         EQU     6
++LY_LERR         EQU     LY_EXT-17       ; protected reader result until CCP resumes
++LY_PATH         EQU     LY_LERR+1       ; count and six drive/user pairs
++BP_CHECKED EQU 0
++R3PLAN_RECORD EQU 0
++R3SLOTS_RECORD EQU 8
++R3SNAP_RECORD EQU 16
++R3CARR_RECORD EQU 24
++R3META_RECORD EQU 32
++R3COORD_RECORD EQU 40
++R3PROF_RECORD EQU 48
++R3KCTX_RECORD EQU 56
++R3KEEP_RECORD EQU 64
++R3KPRE_RECORD EQU 72
++R3FINAL_RECORD EQU 80
++R3DROP_RECORD EQU 88
++R3MOVE_RECORD EQU 96
++R3COMIT_RECORD EQU 104
++R3RESOL_RECORD EQU 112
+@@ -28,2 +119,2 @@
+-        CSEG
+-        .PHASE  RFBASE
++        ASEG
++        ORG RFBASE
+@@ -39,0 +131,6 @@
++        PUSH    DE
++        LD      A,26
++        CALL    LY_BIOS+66
++        POP     DE
++        CP      16
++        RET     Z
+@@ -47,0 +145 @@
++XP0000:
+@@ -56,0 +155 @@
++XP0001:
+@@ -75,0 +175 @@
++XP0002:
+@@ -87,0 +188 @@
++XP0003:
+@@ -97,0 +199 @@
++XP0004:
+@@ -102,0 +205 @@
++XP0005:
+@@ -117,0 +221 @@
++XP0006:
+@@ -122,0 +227 @@
++XP0007:
+@@ -127,0 +233 @@
++XP0008:
+@@ -129,0 +236 @@
++XP0009:
+@@ -132,0 +240 @@
++XP0010:
+@@ -239,0 +348 @@
++XP0011:
+@@ -294,0 +404 @@
++XP0012:
+@@ -306,0 +417 @@
++XP0013:
+@@ -325,0 +437 @@
++XP0014:
+@@ -430,0 +543 @@
++XP0015:
+@@ -535 +648,2 @@
+-        JP      Z,RF_BAD
++XP0016:
++        JR      Z,RF_BAD
+@@ -629 +742,0 @@
+-        .DEPHASE
+--- a/src/system/r3comit.mac
++++ b/src/system/r3comit.mac
+@@ -0,0 +1 @@
++        INCLUDE layout.inc
+@@ -32,2 +33,2 @@
+-        CSEG
+-        .PHASE  RCBASE
++        ASEG
++        ORG RCBASE
+@@ -34,0 +36,6 @@
++        PUSH    DE
++        LD      A,26
++        CALL    LY_BIOS+66
++        POP     DE
++        CP      16
++        RET     Z
+@@ -53,0 +61 @@
++XP0000:
+@@ -58,0 +67 @@
++XP0001:
+@@ -111,0 +121 @@
++XP0002:
+@@ -130,0 +141 @@
++XP0003:
+@@ -134,0 +146 @@
++XP0004:
+@@ -136,0 +149 @@
++XP0005:
+@@ -143,2 +156,2 @@
+-        OR      A
+-        ADD     HL,DE
++        ADD     HL,DE
++XP0006:
+@@ -148,0 +162 @@
++XP0007:
+@@ -172,0 +187 @@
++XP0008:
+@@ -177,0 +193 @@
++XP0009:
+@@ -178,0 +195 @@
++XP0010:
+@@ -195,0 +213 @@
++XP0011:
+@@ -199,0 +218 @@
++XP0012:
+@@ -205,0 +225 @@
++XP0013:
+@@ -210,0 +231 @@
++XP0014:
+@@ -213,2 +234,2 @@
+-        OR      A
+-        ADD     HL,DE
++        ADD     HL,DE
++XP0015:
+@@ -217,0 +239 @@
++XP0016:
+@@ -221,0 +244 @@
++XP0017:
+@@ -264,0 +288 @@
++XP0018:
+@@ -516 +540,2 @@
+-        JP      C,RC_BAD
++XP0019:
++        JR      C,RC_BAD
+@@ -553 +578,2 @@
+-        JP      C,RC_BAD
++XP0020:
++        JR      C,RC_BAD
+@@ -571,0 +598 @@
++XP0021:
+@@ -598,2 +625 @@
+-        LD      A,0FFH
+-        OR      A
++        OR      0FFH
+@@ -640 +665,0 @@
+-        .DEPHASE
+--- a/src/ccp/ccp.mac
++++ b/src/ccp/ccp.mac
+@@ -56,0 +57 @@
++        CALL    XP_CHECK
+@@ -79,2 +80 @@
+-        LD      A,5
+-        CALL    LY_BIOS+66              ; resident-command returns bypass warm boot
++        CALL    XP_CHECK
+@@ -3580,0 +3581,6 @@
++XP_CHECK:
++        LD      A,27
++        CALL    LY_BIOS+66
++        LD      A,5
++        JP      LY_BIOS+66
++
+--- a/src/platform/trs80m4/ccprelod.mac
++++ b/src/platform/trs80m4/ccprelod.mac
+@@ -42,2 +42,2 @@
+-        CSEG
+-        .PHASE  RELOADBASE
++        ASEG
++        ORG RELOADBASE
+@@ -59,0 +60,2 @@
++        LD      A,27
++        CALL    LY_BIOS+66
+@@ -69,0 +72 @@
++XP0000:
+@@ -79,0 +83 @@
++XP0001:
+@@ -174,0 +179 @@
++XP0002:
+@@ -182,0 +188 @@
++XP0003:
+@@ -233,0 +240 @@
++XP0004:
+@@ -252,0 +260 @@
++XP0005:
+@@ -256,0 +265 @@
++XP0006:
+@@ -286,0 +296 @@
++XP0007:
+@@ -292,0 +303 @@
++XP0008:
+@@ -298,0 +310 @@
++XP0009:
+@@ -300,2 +312,2 @@
+-        LD      A,H
+-        OR      A
++        OR      H
++XP0010:
+@@ -306,0 +319 @@
++XP0011:
+@@ -310,2 +323,2 @@
+-        OR      A
+-        SBC     HL,DE
++        SBC     HL,DE
++XP0012:
+@@ -314,0 +328 @@
++XP0013:
+@@ -327,0 +342 @@
++XP0014:
+@@ -332,0 +348 @@
++XP0015:
+@@ -338,0 +355 @@
++XP0016:
+@@ -392 +409,2 @@
+-        LD      HL,0
++        LD      H,B
++        LD      L,C
+@@ -482,2 +500,2 @@
+-        LD      A,1
+-        OR      A
++        XOR     A
++        INC     A
+@@ -572,0 +591 @@
++XP0017:
+@@ -585,0 +605 @@
++XP0018:
+@@ -589 +609,2 @@
+-        JP      NC,CRBAD
++XP0019:
++        JR      NC,CRBAD
+@@ -606,0 +628 @@
++XP0020:
+@@ -658 +679,0 @@
+-        .DEPHASE
+--- a/src/system/command-stage2.mac
++++ b/src/system/command-stage2.mac
+@@ -0,0 +1,3 @@
++LY_CCRC EQU 0EC66H
++LY_CID EQU 0E981H
++LY_CCMP EQU 0E977H
+@@ -61,0 +65,2 @@
++        LD      A,27
++        CALL    LY_BIOS+66
+@@ -71,0 +77 @@
++XP0000:
+@@ -81,0 +88 @@
++XP0001:
+@@ -177,0 +185 @@
++XP0002:
+@@ -185,0 +194 @@
++XP0003:
+@@ -216,0 +226 @@
++XP0004:
+@@ -227,0 +238 @@
++XP0005:
+@@ -231,0 +243 @@
++XP0006:
+@@ -249,0 +262 @@
++XP0007:
+@@ -268,0 +282 @@
++XP0008:
+@@ -273,0 +288 @@
++XP0009:
+@@ -278,0 +294 @@
++XP0010:
+@@ -283,0 +300 @@
++XP0011:
+@@ -286,0 +304 @@
++XP0012:
+@@ -290,0 +309 @@
++XP0013:
+@@ -293,0 +313 @@
++XP0014:
+@@ -296,0 +317 @@
++XP0015:
+@@ -298,0 +320 @@
++XP0016:
+@@ -302,0 +325 @@
++XP0017:
+@@ -305,0 +329 @@
++XP0018:
+@@ -308,0 +333 @@
++XP0019:
+@@ -313,0 +339 @@
++XP0020:
+@@ -317,0 +344 @@
++XP0021:
+@@ -325,0 +353 @@
++XP0022:
+@@ -330,0 +359 @@
++XP0023:
+@@ -333,0 +363 @@
++XP0024:
+@@ -336,0 +367 @@
++XP0025:
+@@ -339,0 +371 @@
++XP0026:
+@@ -344,0 +377 @@
++XP0027:
+@@ -348,0 +382 @@
++XP0028:
+@@ -352,0 +387 @@
++XP0029:
+@@ -361,0 +397 @@
++XP0030:
+@@ -366,0 +403 @@
++XP0031:
+@@ -408,0 +446 @@
++XP0032:
+@@ -409,0 +448 @@
++XP0033:
+@@ -416,0 +456 @@
++XP0034:
+@@ -439,0 +480 @@
++XP0035:
+@@ -459,0 +501 @@
++XP0036:
+@@ -467,0 +510 @@
++XP0037:
+@@ -475,0 +519 @@
++XP0038:
+@@ -480,0 +525 @@
++XP0039:
+@@ -483,0 +529 @@
++XP0040:
+@@ -488,0 +535 @@
++XP0041:
+@@ -492,0 +540 @@
++XP0042:
+@@ -496,0 +545 @@
++XP0043:
+@@ -500,0 +550 @@
++XP0044:
+@@ -507,0 +558 @@
++XP0045:
+@@ -514,0 +566 @@
++XP0046:
+@@ -517,0 +570 @@
++XP0047:
+@@ -525,0 +579 @@
++XP0048:
+@@ -528 +582,2 @@
+-        JP CR9COPY
++XP0049:
++        JR CR9COPY
+@@ -603,0 +659 @@
++XP0050:
+@@ -642,2 +698,4 @@
+-        JP C,CRBAD
+-        JP Z,CRBAD
++XP0051:
++        JR C,CRBAD
++XP0052:
++        JR Z,CRBAD
+@@ -674 +732,2 @@
+-        JP NC,CRBAD
++XP0053:
++        JR NC,CRBAD
+@@ -717,0 +777 @@
++XP0054:
+@@ -720,0 +781 @@
++XP0055:

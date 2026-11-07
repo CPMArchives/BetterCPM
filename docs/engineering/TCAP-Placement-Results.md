@@ -130,6 +130,13 @@ qualification before activation. No stack size was reduced or grown.
 
 ## Remaining work and scope
 
+Follow-up: the [transaction and command-return experiment](TCAP-System-Paths-Results.md)
+now executes staged guards and real return entries within their existing budgets.
+It keeps activation blocked through unsupported experimental-version rejection;
+positive matching-system admission and global validity allocation remain open.
+The statements below describe this placement campaign’s own evidence.
+
+
 This closes the specific rejected-carrier and unplaced-bridge gates from PR #655
 for the private Model 4 reference candidate. It does **not** close complete TCAP
 production admission: the global non-reusing validity allocator, full candidate

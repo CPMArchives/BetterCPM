@@ -82,3 +82,23 @@ The [measured follow-up](../../../docs/engineering/TCAP-Placement-Results.md)
 distinguishes the two resolved feasibility gates from remaining production,
 ROM/native and whole-system stack qualification work. Utility migrations and
 release assignment remain deferred.
+
+## Transaction and command-return follow-up
+
+```sh
+build/tcap-feasibility/venv/bin/python tools/prototypes/tcap/system_paths.py
+```
+
+This third isolated campaign stages guards inside the actual finalizer and
+commit entries, and recovery inside CCP initialization/prompt and both reloader
+entries. It fits the original overlay/carrier budgets, repeats the behavioral
+checks, runs the existing full commit regression, and exercises ten full Model 4
+reloader cases with controlled services and synthetic CPXs. See the
+[results and precise limits](../../../docs/engineering/TCAP-System-Paths-Results.md).
+
+Outputs remain under `build/tcap-system-paths/`. Private MCON controls 25/26/27
+and the unallocated experimental MCON 1.3 requirement are not public ABI changes.
+The production metadata validator must reject this owner: positive system/version
+admission and global validity allocation remain unresolved. The campaign emits
+no installable carrier. Do not install its staged core, commands or loader.
+Utilities and release assignment remain deferred.
