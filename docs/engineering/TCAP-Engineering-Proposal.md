@@ -67,7 +67,7 @@ Source references: [BDOS console](../../src/bdos/unified.mac),
 [BIOS dispatch](../../src/bios/bios.mac),
 [TYPE pager](../../src/utilities/common/typepage.inc),
 [TED frontend](../../src/utilities/ted/frontend.mac),
-[Model 4 backend](../../src/rsx/screen/model4.mac),
+[Model 4 backend](../../src/rsx/screen/crt80x24.mac),
 [host backend](../../src/rsx/screen/ansi-host.mac), and
 [ANSI personality dispatcher](../../src/rsx/ansi-dispatch.inc).
 

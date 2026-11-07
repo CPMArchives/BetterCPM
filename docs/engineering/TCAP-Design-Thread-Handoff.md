@@ -74,4 +74,4 @@ Implementation scope and release assignment remain open.
 - [1.1 engineering specification](1.1-ENGINEERING-SPECIFICATION.md) and [living backlog](../../TODO.md)
 - [Terminal Monitor RSX architecture](../architecture/31%20Terminal%20Monitor%20RSX.md)
 - [Terminal architecture outline, especially sections 21–22](POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md) and [SCRN/SCX backend ABI](Unloadable%20Screen%20Backend%20ABI.md)
-- [TYPE page replay](../../src/utilities/common/typepage.inc), [TED frontend](../../src/utilities/ted/frontend.mac), [Model 4 backend](../../src/rsx/screen/model4.mac) and [ANSI host backend](../../src/rsx/screen/ansi-host.mac)
+- [TYPE page replay](../../src/utilities/common/typepage.inc), [TED frontend](../../src/utilities/ted/frontend.mac), [Model 4 backend](../../src/rsx/screen/crt80x24.mac) and [ANSI host backend](../../src/rsx/screen/ansi-host.mac)
