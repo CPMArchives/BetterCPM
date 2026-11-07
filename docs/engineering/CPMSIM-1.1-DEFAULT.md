@@ -49,3 +49,23 @@ builder's `--prepare-profile` option. In that staged tree run
 its absolute `build/profile/context.json` path. Use
 `tools/test_checked_cross_profile.py` in each staged tree with the other
 tree and its disk as the foreign inputs.
+
+## Qualification on 7 November 2026
+
+The [qualification record](CPMSIM-1.1-DEFAULT.json) identifies the tested source
+commit, simulator and SHA-256 sums of the 37-file System Disk, its matching
+installation package and the Utilities disk. A second default build using
+`--reuse-work` verified and reused the same generation.
+
+The 57,344-byte patterned program ran twice and checked its contents. The
+57,472-byte program returned to the prompt without executing. All 23 System
+media cases passed, including filesystem preservation on both installation
+paths, installed-system boot and exact package export. Six mixed-profile
+campaigns passed in each direction. The paired Utilities disk supplied XSUB
+and BATCHIO for a submitted Function 10 input test.
+
+The required CCP, transient-entry and BDOS compatibility groups produced
+12, 25 and 56 passes respectively, with zero failure or error rows. The
+ANSI scroll-region/reverse-video disk-error paths for Ignore and Abort
+each used 38 of the 40 BDOS stack bytes. Both returned correctly on ordinary
+cpmsim. Two bytes is the smallest margin observed in these workloads.
