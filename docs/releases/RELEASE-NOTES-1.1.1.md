@@ -16,9 +16,16 @@ on final release media.
   deletion of the final entry leave the live list unchanged. Whole-list
   replacement, `/DEFAULT`, `/H`, `/HELP` and `/VER` remain supported.
 
-The PATH storage format and six-entry limit are unchanged. Dot entries and
-fixed entries resolving to the caller do not repeat the initial local search.
-The CCP change adds four bytes within its existing allocation, without TPA loss.
+Z-System symbolic entries replace the dot entry: `$$` means current drive/user,
+`$0` means current drive/user 0, and `A$` means drive A/current user. Trailing
+colons are optional; PATH displays `$$: A0:` for the default. A lone dollar and
+a dot are rejected. Double literal dollars in SUBMIT source files.
+
+The PATH allocation and six-entry limit are unchanged, but the encoding and
+capability flag are revised. Ship matching kernel, CCP and PATH.COM builds;
+old and new utilities reject incompatible kernel capabilities. Entries resolving
+to the caller do not repeat the initial local search. The CCP occupies 5,593
+bytes within its existing 5,632-byte allocation, without TPA loss.
 
 Focused assembled-code lookup, dispatch, loader and PATH edit checks pass.
 The public-prompt harness has been updated; final media qualification remains

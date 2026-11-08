@@ -78,4 +78,4 @@ PL_M2           EQU     0
 ; reserves this range independently of the stack, PDS and extension code.
 PATHMAX         EQU     6
 LY_LERR         EQU     LY_EXT-17       ; protected reader result until CCP resumes
-LY_PATH         EQU     LY_LERR+1       ; count and six drive/user pairs
+LY_PATH         EQU     LY_LERR+1       ; count and six DU pairs; drive 0/user FF = current

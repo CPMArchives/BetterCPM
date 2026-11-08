@@ -35,7 +35,7 @@ def main():
     from trs80gp_launch import run
     maximum = 57344 if m2 else 54272
     drive = 'B' if m2 else 'A'
-    search = f'{drive}3: . {drive}0:'
+    search = f'{drive}3: $$: {drive}0:'
     xsub = 'B0:XSUB B0:' if drive=='B' else 'A0:XSUB'
     sequence = [f'A0:PATH {search}', '5:', 'WHICH', 'FIT', 'BIG', 'WHICH',
                 xsub, 'INPUT', 'BATCHFULL', f'{drive}0:WHICH', 'A0:PATH']
@@ -43,7 +43,7 @@ def main():
         sequence.insert(0, 'PATH')
         sequence.extend(['A0:PATH A9:', 'A0:PATH /DEFAULT', 'PATH', f'{drive}0:PTDONE'])
     fixtures = [
-        ('PTEST.SUB', ('\r\n'.join(sequence)+'\r\n\x1a').encode(), 0),
+        ('PTEST.SUB', ('\r\n'.join(line.replace('$', '$$') for line in sequence)+'\r\n\x1a').encode(), 0),
         ('WHICH.COM', marker(f'FIRST IMAGE {drive}3'), 3),
         ('WHICH.COM', marker(f'SECOND IMAGE {drive}0'), 0),
         ('FIT.COM', marker(f'FIT {maximum} OK').ljust(maximum, b'X'), 3),
@@ -135,8 +135,8 @@ def main():
             command.extend(['-ktx'])
         else:
             command.extend(['-iw','A0>','-i','B0:SUBMIT B:PTEST\r'])
-        expected.insert(0, 'PATH: . A0:')
-        expected.extend(['PATH: A9:', 'PATH: . A0:', 'PACKAGED PATH DONE'])
+        expected.insert(0, 'PATH: $$: A0:')
+        expected.extend(['PATH: A9:', 'PATH: $$: A0:', 'PACKAGED PATH DONE'])
     for message in expected:
         command.extend(['-iw', message, '-id', '120', '-it'])
     command.append('-ix')

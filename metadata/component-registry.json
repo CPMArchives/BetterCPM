@@ -693,7 +693,7 @@
         "tools/build_ccpreload.py",
         "tools/build_checked_command_loader.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": "2.0",
       "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -1169,7 +1169,7 @@
       "builders": [
         "tools/build_path.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "selected input map",

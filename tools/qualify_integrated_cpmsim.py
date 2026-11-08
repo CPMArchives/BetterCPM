@@ -69,7 +69,7 @@ def main():
         guest=Guest(a.simulator.resolve(),case/'disks',case)
         boundaries=[];records=[];frames=[];active=None
         try:
-            guest.prompt();guest.prompt('PATH . B0: A0:')
+            guest.prompt();guest.prompt('PATH $$ B0: A0:')
             for command in sequence:
                 if command.startswith('RSX LOAD ') and command.split()[-1] in budgets:active=command.split()[-1]
                 if command.startswith('RSX UNLOAD ') and command.split()[-1] in budgets:active=None

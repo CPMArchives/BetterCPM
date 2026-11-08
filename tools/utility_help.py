@@ -45,10 +45,10 @@ SCREENS={
  'RESPACK':('Resident Image Packaging','RESPACK',[]),
  'RLMBUILD':('Relocation Map Build','RLMBUILD',[]),
  'PATH':('Numeric Command Search Path','PATH [location ... | /A location | /D location | /DEFAULT]',[
- ('location', 'Current DU is always first; add DUs such as B3: or .'),
+ ('location', 'Z-System DU entry; current DU is always first.'),
  ('/A /ADD DU', 'Append one entry to the list.'),
  ('/D /DEL DU', 'Delete one entry; at least one must remain.'),
- ('/DEFAULT','Restore . A0:.')]),
+ ('/DEFAULT','Restore current DU followed by A0:.')]),
  'WARM':('Warm Boot','WARM',[]),
  'DDT':('Debugger','DDT [file]',[]),
  'PIP':('File and Device Transfer','PIP [destination=source[,source...]]',[

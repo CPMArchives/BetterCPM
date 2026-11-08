@@ -50,7 +50,7 @@ OPEN:   LD HL,(07504H)
 # Drive zero in the log denotes the current drive in an FCB, A=1, B=2, etc.
 current = (0, 7)
 default = [current, (1, 0)]
-custom = [(2, 3), (0, 0), (3, 7), (1, 0), (2, 1), (4, 31)]
+custom = [(2, 3), (0, 255), (3, 7), (1, 0), (2, 1), (4, 31)]
 resolved = [current, (2, 3), (1, 0), (2, 1), (4, 31)]
 
 for command, entries, hit, expected in [
@@ -59,10 +59,15 @@ for command, entries, hit, expected in [
     ('B:HELLO', custom, 0, [(2, 7)]), ('B3:HELLO', custom, 0, [(2, 3)]),
     ('5:HELLO', custom, 0, [(0, 5)]), (':B3:HELLO', custom, 0, [(2, 3)]),
     ('FOO', custom, 1, resolved[:1]), ('FOO', custom, 5, resolved),
-    ('FOO', custom, 0, resolved), ('FOO', [(3, 7), (0, 0)], 0, [current]),
-    ('FOO', [(0, 0), (3, 7)], 0, [current]),
+    ('FOO', custom, 0, resolved), ('FOO', [(3, 7), (0, 255)], 0, [current]),
+    ('FOO', [(0, 255), (3, 7)], 0, [current]),
     ('FOO', [(2, 3), (1, 0)], 0, [current, (2, 3), (1, 0)]),
     ('PATH', [(4, 0)], 1, [current]),
+    ('FOO', [(0, 0)], 0, [current, (3, 0)]),
+    ('FOO', [(1, 255)], 0, [current, (1, 7)]),
+    ('FOO', [(0, 255)], 0, [current]),
+    ('FOO', [(0, 7), (3, 255)], 0, [current]),
+    ('FOO', [(0, 0), (1, 255)], 2, [current, (3, 0)]),
     ('FOO', [(4, 0)], 0, [current, (4, 0)]),
     (':FOO', [(4, 0)], 1, [current]),
     ('.FOO', [(4, 0)], 0, [current, (4, 0)]),
