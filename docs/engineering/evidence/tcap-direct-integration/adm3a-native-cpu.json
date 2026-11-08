@@ -1,0 +1,24 @@
+{
+  "status": "PASS private integrated ADM3A CPU differential checks",
+  "checks": 289405,
+  "all_coordinate_pairs": true,
+  "payload_bytes": 628,
+  "relocations": 78,
+  "resident_including_descriptor_bytes": 1024,
+  "application_helper_bytes": 159,
+  "shared_bios_state_bytes": 3,
+  "call_site_allowance_bytes": 32,
+  "stack_allowance_bytes": 32,
+  "full_budgeted_path_bytes": 1250,
+  "limit_bytes": 1280,
+  "maximum_observed_stack_bytes": [
+    10,
+    14
+  ],
+  "prototype_source_sha256": "c47147c21d7eea90ca3f6af87b501f5f6d0cceb1beb11c2ea78445aa7b749684",
+  "client_source_sha256": "615afac39644b18c8216655bfc3306d5b6e2bc58ebc492574fcd57faf01e3c99",
+  "actual_resolver_client_checks": "PASS discovery, facts, operations, route refusal, invalid identifier, foreign-owner uncalled HALT",
+  "reference_payload_sha256": "cd3011bf34564245001a14e31aa17e225ec60f20253da3433c692401f9078ef7",
+  "reference_backend_sha256": "be83aae6288bc2e3a94041278de702b5034cb9c8d72b12d5386783543eca841d",
+  "scope": "Model 4 CPU output experiment; public ABI, real loader, installation, cpmsim and Model II not yet qualified"
+}

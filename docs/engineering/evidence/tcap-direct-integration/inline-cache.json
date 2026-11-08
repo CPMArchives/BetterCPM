@@ -1,0 +1,18 @@
+{
+  "status": "PASS inline cache ownership, relocation, reconstruction, rollback and unload",
+  "saved_bytes_per_opted_in_allocation": 256,
+  "footer_bytes_charged_in_allocation": 10,
+  "provider_padding_preserved": true,
+  "source_removed_reconstruction": true,
+  "stateful_runtime_pointers_preserved": true,
+  "mixed_stateless_stateful": true,
+  "exact_boundary_restored": true,
+  "rejections": [
+    "word-overlaps-footer",
+    "payload-overlaps-footer",
+    "reserved-flags",
+    "rollback-22",
+    "rollback-21",
+    "rollback-16"
+  ]
+}

@@ -116,7 +116,7 @@ RX_ABILP:
         OR      A
         JP      NZ,RX_BAD
         LD      A,E
-        AND     0FCH
+        AND     0F8H                    ; bit 2 explicitly yields inline cache footer
         JP      NZ,RX_BAD
         LD      A,E
         AND     3

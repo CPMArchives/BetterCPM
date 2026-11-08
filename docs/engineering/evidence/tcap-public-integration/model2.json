@@ -1,0 +1,539 @@
+{
+  "status": "PASS public TCAP source, installation, installed cold/warm lifecycle and unload",
+  "platform": "model2",
+  "service": "TCAP 1.0",
+  "identity": "156affdc890ffb19d29757dfdf82abdb",
+  "baseline_boundary": 57601,
+  "maximum_com_bytes": 57344,
+  "budgets": {
+    "ADM3A": {
+      "public_service": "TCAP 1.0",
+      "table_bytes": 33,
+      "query_bytes": 10,
+      "baseline_allocated_bytes": 768,
+      "allocated_bytes": 1024,
+      "extra_resident_bytes": 256,
+      "helper": {
+        "code_bytes": 574,
+        "data_bytes": 203,
+        "total_bytes": 777,
+        "source_sha256": "112e883eab8c9c01849087f6ab5e899e67b66ff10cd4fef9856f1b74c5bf97e0"
+      },
+      "static_tcap_bytes": 1033,
+      "call_site_allowance_bytes": 32,
+      "stack_allowance_bytes": 32,
+      "permanent_tcap_bytes": 0,
+      "limit_bytes": 1280,
+      "budgeted_bytes": 1097,
+      "example_com_bytes": 930,
+      "example_with_resident_and_stack_allowance_bytes": 1218
+    },
+    "ANSI": {
+      "public_service": "TCAP 1.0",
+      "table_bytes": 56,
+      "query_bytes": 10,
+      "baseline_allocated_bytes": 1792,
+      "allocated_bytes": 2048,
+      "extra_resident_bytes": 256,
+      "helper": {
+        "code_bytes": 574,
+        "data_bytes": 203,
+        "total_bytes": 777,
+        "source_sha256": "112e883eab8c9c01849087f6ab5e899e67b66ff10cd4fef9856f1b74c5bf97e0"
+      },
+      "static_tcap_bytes": 1033,
+      "call_site_allowance_bytes": 32,
+      "stack_allowance_bytes": 32,
+      "permanent_tcap_bytes": 0,
+      "limit_bytes": 1280,
+      "budgeted_bytes": 1097,
+      "example_com_bytes": 930,
+      "example_with_resident_and_stack_allowance_bytes": 1218
+    },
+    "VT52": {
+      "public_service": "TCAP 1.0",
+      "table_bytes": 29,
+      "query_bytes": 10,
+      "baseline_allocated_bytes": 1024,
+      "allocated_bytes": 1024,
+      "extra_resident_bytes": 0,
+      "helper": {
+        "code_bytes": 574,
+        "data_bytes": 203,
+        "total_bytes": 777,
+        "source_sha256": "112e883eab8c9c01849087f6ab5e899e67b66ff10cd4fef9856f1b74c5bf97e0"
+      },
+      "static_tcap_bytes": 777,
+      "call_site_allowance_bytes": 32,
+      "stack_allowance_bytes": 32,
+      "permanent_tcap_bytes": 0,
+      "limit_bytes": 1280,
+      "budgeted_bytes": 841,
+      "example_com_bytes": 930,
+      "example_with_resident_and_stack_allowance_bytes": 962
+    }
+  },
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "runner_sha256": "1ab32924d0dfc1108ee0cabb2f13f4c8a7ed1919f35c2183fc5805ff2f488bf9",
+  "checks": {
+    "source-lifecycle": {
+      "commands": [
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "TREFUSE 1"
+        },
+        {
+          "command": "RSX LOAD M2SCRN"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX LOAD ADM3A"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 53761
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500F02"
+        },
+        {
+          "command": "TPROBE"
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500F02"
+        },
+        {
+          "command": "RSX UNLOAD ADM3A"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX LOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 52737
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500F02"
+        },
+        {
+          "command": "TPROBE"
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500F02"
+        },
+        {
+          "command": "RSX UNLOAD ANSI"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX LOAD VT52"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 53761
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500700"
+        },
+        {
+          "command": "TPROBE"
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500700"
+        },
+        {
+          "command": "RSX UNLOAD VT52"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX LOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 52737
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500F02"
+        },
+        {
+          "command": "TPROBE"
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500F02"
+        },
+        {
+          "command": "RSX UNLOAD ANSI"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX UNLOAD M2SCRN"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "TABSENT"
+        }
+      ],
+      "rendering": [
+        {
+          "personality": "ADM3A",
+          "reverse": true,
+          "capture": "trs80-text-10.bin"
+        },
+        {
+          "personality": "ANSI",
+          "reverse": true,
+          "capture": "trs80-text-19.bin"
+        },
+        {
+          "personality": "VT52",
+          "reverse": false,
+          "capture": "trs80-text-28.bin"
+        },
+        {
+          "personality": "ANSI",
+          "reverse": true,
+          "capture": "trs80-text-37.bin"
+        }
+      ],
+      "captures": {
+        "trs80-text-0.bin": "e1ad3870f6714e2f0a973e51732c646c3d605f37382275f0674e2249aff8843c",
+        "trs80-text-1.bin": "f7a18b9dbe7f7950a8f0c66c9daf2342a2654aa8333eb4dd3b4a887d1e9f9ce2",
+        "trs80-text-2.bin": "4f52d332b902c75043671270c63b234ee8d239aa51416288283f30a5f0bbe70c",
+        "trs80-text-3.bin": "a1a2037521fb09bb6bb456446353b8e329fc8433bd880b7986680e5d23f65d89",
+        "trs80-text-4.bin": "506dae5a8ce4e244c2a078cb36af48516f655ec7894482aa96cdc2442181f16b",
+        "trs80-text-5.bin": "522bb163fe6f10494d5b1ca936a039115b661ee9081767e51311a7d0957212a3",
+        "trs80-text-6.bin": "6e65442a2d6e1dd492c064aaf3a57780ba79b9e0f864ac23923c702ee170fb11",
+        "trs80-text-7.bin": "ad12e87d5acd77bd5f1815711b23f57e26f64e30686cc94d28a885f850c23dfa",
+        "trs80-text-8.bin": "3ae418d55e76d46c57a62bec6908ef708b711545b5a158165f329aec0a6deff0",
+        "trs80-text-9.bin": "8763e0dcf6ab6b0ba0ac596f540d32049ef8700810d1039198e85d759e5b4319",
+        "trs80-text-10.bin": "4cae15ae7ad3fe26c7127145674185ae9df7d49ded32f2c8ad6538ee778f7348",
+        "trs80-text-11.bin": "03e9a066ec34f1588a441ac78a0febc70a69dc44b4c2e14262b6afbdd3e7b923",
+        "trs80-text-12.bin": "55182c980c184b890c53a5d90e959beaa16f7e5697ef05d59281246f36456c21",
+        "trs80-text-13.bin": "fa53572a469a24feb01625629142eb61172cd2e95096cfe3f2f391111f7b4288",
+        "trs80-text-14.bin": "779e903cba5232f66a1e0a3809ec366dfcd4706d8ee49bfbe32d771882810206",
+        "trs80-text-15.bin": "d34c32214a9ca452ae3ca954ba1a47a6bee3522cc03433bff2c6add94845ed9a",
+        "trs80-text-16.bin": "0830fbb7e4e01f061d7b31aeefd376fd8d3e9827e572884d662bdd8ce4e503ee",
+        "trs80-text-17.bin": "9438f52f30ed70d11b1d48ecf48d56195e391332789e18883ed4ce9c5c888494",
+        "trs80-text-18.bin": "6c041e0f3903850e577520e36039bf014df87d3ebccac07a76a9a61e3774b1fb",
+        "trs80-text-19.bin": "dfc4d539b2c5a206a537c21f805d5b6c5d0d112a1e22d36e9ec975a3d890222a",
+        "trs80-text-20.bin": "e5fe1b6324901206844389e8aee7d91dad53f41ae5d8d804425cbac9969e635d",
+        "trs80-text-21.bin": "f93a602ffca19c74e90d13eeeb1967b0fbdaa149e5496909ff8546820349e105",
+        "trs80-text-22.bin": "eeb16fbfb40467c33168a837e4dcbbd49c8032fd8b1920218ebd8e271e2e38a3",
+        "trs80-text-23.bin": "5d9d3247528452c56e30228f31cc0505829d926f0454b8ac7811616be6e26e67",
+        "trs80-text-24.bin": "9b6a22082cb303aa81c91613ba25c27c31f40758acb875389f68497e0ff15019",
+        "trs80-text-25.bin": "44cd0e5ff7edb7967c6e129fdd9e0688fb5180c9ff63728ea6cc648b536cceb8",
+        "trs80-text-26.bin": "ce38a4383b392e38e016b0bc7466a5177a9d34bff945100f448ee1c9d351ffa4",
+        "trs80-text-27.bin": "f8391c9cef8f0aae53ddc9fcf668396ef2442a9cc999ac47e66de290d53d5148",
+        "trs80-text-28.bin": "670ae6ec5ac3625df2d0a7b2afc23221603764646b4f6c7210bb101b01c97fa7",
+        "trs80-text-29.bin": "a1c3b289d0831cb0cc75051680548b3884ba2eaf3a6cfcfad76f4656d37a854a",
+        "trs80-text-30.bin": "513991ebe460b93ba50e69c7d10f7864a6d6d8817562172cc3033dc3839f26a4",
+        "trs80-text-31.bin": "b6107516d72fe86b6bd9e47e7aea5829030437b1a67441517efdd8e250a5ab04",
+        "trs80-text-32.bin": "ce87b8f5a60d4f71d929107d507173abbd15420b9a33132b5871e4e3922c81ef",
+        "trs80-text-33.bin": "7f36055bcbe882b7f0ebeb70fbad607035afde6bdf69ce1b1b8ded0713affab9",
+        "trs80-text-34.bin": "b56f1de94421e3c33ed4b0d00de03abeb4cdd8e6214250cd3a5a19687271575c",
+        "trs80-text-35.bin": "273721cee477f4777bb590bfb3c4c6ffdea74b1881aed56435e1bbae9bfedfd0",
+        "trs80-text-36.bin": "57c8918b33d83dbf63caccacedf3f5b3a597fd65acd59ae5195538f54d8230cd",
+        "trs80-text-37.bin": "041a70a86ba1f6e5e90860db7f207e4f0fe0eb9f15d1282f4e5992e47b58d3a8",
+        "trs80-text-38.bin": "12c24dc935ac962aa4507444a7a77fcb7fe9691890106356bba922fc0ed1964a",
+        "trs80-text-39.bin": "7170728466b33648c032242108844edb2219b139c4decb8e06f61f6466614cef",
+        "trs80-text-40.bin": "a9f2bc58f1cc253a4ec249a7d9dd99134ef78041195f754b1a5731ad9ca4db72",
+        "trs80-text-41.bin": "254ae052309ea3b40f95a46346789ced4e264647ef3d7fc2bdde5037cd0e9ae8",
+        "trs80-text-42.bin": "b93bdb3be9317f719cff0c8f87fa8f1e6cbd870365cb3386e9e0af0cd62aae01",
+        "trs80-text-43.bin": "123f20213590a88baec47427f1fa3be1c1913377511197cec16ae3d99a2e0290",
+        "trs80-text-44.bin": "1b33d914f74cba623de66485f1653cc01706e634fd352e03eb3543a66aab6591",
+        "trs80-text-45.bin": "4cc787dc9ac6aa89552033175ce81dfd16677de27e3c6f86075aeb20a6f61d83",
+        "trs80-text-46.bin": "dc2e085413c37e57af064b4d936b5bb8eece64b5cdc8a803754a24076b87ae78"
+      },
+      "workflow_image_sha256": "9b8bebbadaddc516aeed328775eff7ef1df487c979883d6f1ed882c85f5ba0db",
+      "consumer_helper": {
+        "code_bytes": 574,
+        "data_bytes": 203,
+        "total_bytes": 777,
+        "source_sha256": "112e883eab8c9c01849087f6ab5e899e67b66ff10cd4fef9856f1b74c5bf97e0"
+      }
+    },
+    "installation": {
+      "filesystem_unchanged": true,
+      "installed_image_sha256": "3ad4e4170e8a426795b0ec60045fbcf9c5df99d908e931214439bb5e733a7a99"
+    },
+    "installed-lifecycle": {
+      "commands": [
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "TREFUSE 1"
+        },
+        {
+          "command": "RSX LOAD M2SCRN"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX LOAD ADM3A"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 53761
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500F02"
+        },
+        {
+          "command": "TPROBE"
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500F02"
+        },
+        {
+          "command": "RSX UNLOAD ADM3A"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX LOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 52737
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500F02"
+        },
+        {
+          "command": "TPROBE"
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500F02"
+        },
+        {
+          "command": "RSX UNLOAD ANSI"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX LOAD VT52"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 53761
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500700"
+        },
+        {
+          "command": "TPROBE"
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500700"
+        },
+        {
+          "command": "RSX UNLOAD VT52"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX LOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 52737
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500F02"
+        },
+        {
+          "command": "TPROBE"
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500F02"
+        },
+        {
+          "command": "RSX UNLOAD ANSI"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX UNLOAD M2SCRN"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "TABSENT"
+        }
+      ],
+      "rendering": [
+        {
+          "personality": "ADM3A",
+          "reverse": true,
+          "capture": "trs80-text-10.bin"
+        },
+        {
+          "personality": "ANSI",
+          "reverse": true,
+          "capture": "trs80-text-19.bin"
+        },
+        {
+          "personality": "VT52",
+          "reverse": false,
+          "capture": "trs80-text-28.bin"
+        },
+        {
+          "personality": "ANSI",
+          "reverse": true,
+          "capture": "trs80-text-37.bin"
+        }
+      ],
+      "captures": {
+        "trs80-text-0.bin": "e1ad3870f6714e2f0a973e51732c646c3d605f37382275f0674e2249aff8843c",
+        "trs80-text-1.bin": "f7a18b9dbe7f7950a8f0c66c9daf2342a2654aa8333eb4dd3b4a887d1e9f9ce2",
+        "trs80-text-2.bin": "4f52d332b902c75043671270c63b234ee8d239aa51416288283f30a5f0bbe70c",
+        "trs80-text-3.bin": "a1a2037521fb09bb6bb456446353b8e329fc8433bd880b7986680e5d23f65d89",
+        "trs80-text-4.bin": "506dae5a8ce4e244c2a078cb36af48516f655ec7894482aa96cdc2442181f16b",
+        "trs80-text-5.bin": "522bb163fe6f10494d5b1ca936a039115b661ee9081767e51311a7d0957212a3",
+        "trs80-text-6.bin": "6e65442a2d6e1dd492c064aaf3a57780ba79b9e0f864ac23923c702ee170fb11",
+        "trs80-text-7.bin": "ad12e87d5acd77bd5f1815711b23f57e26f64e30686cc94d28a885f850c23dfa",
+        "trs80-text-8.bin": "3ae418d55e76d46c57a62bec6908ef708b711545b5a158165f329aec0a6deff0",
+        "trs80-text-9.bin": "8763e0dcf6ab6b0ba0ac596f540d32049ef8700810d1039198e85d759e5b4319",
+        "trs80-text-10.bin": "4cae15ae7ad3fe26c7127145674185ae9df7d49ded32f2c8ad6538ee778f7348",
+        "trs80-text-11.bin": "03e9a066ec34f1588a441ac78a0febc70a69dc44b4c2e14262b6afbdd3e7b923",
+        "trs80-text-12.bin": "55182c980c184b890c53a5d90e959beaa16f7e5697ef05d59281246f36456c21",
+        "trs80-text-13.bin": "fa53572a469a24feb01625629142eb61172cd2e95096cfe3f2f391111f7b4288",
+        "trs80-text-14.bin": "779e903cba5232f66a1e0a3809ec366dfcd4706d8ee49bfbe32d771882810206",
+        "trs80-text-15.bin": "d34c32214a9ca452ae3ca954ba1a47a6bee3522cc03433bff2c6add94845ed9a",
+        "trs80-text-16.bin": "0830fbb7e4e01f061d7b31aeefd376fd8d3e9827e572884d662bdd8ce4e503ee",
+        "trs80-text-17.bin": "9438f52f30ed70d11b1d48ecf48d56195e391332789e18883ed4ce9c5c888494",
+        "trs80-text-18.bin": "6c041e0f3903850e577520e36039bf014df87d3ebccac07a76a9a61e3774b1fb",
+        "trs80-text-19.bin": "dfc4d539b2c5a206a537c21f805d5b6c5d0d112a1e22d36e9ec975a3d890222a",
+        "trs80-text-20.bin": "e5fe1b6324901206844389e8aee7d91dad53f41ae5d8d804425cbac9969e635d",
+        "trs80-text-21.bin": "f93a602ffca19c74e90d13eeeb1967b0fbdaa149e5496909ff8546820349e105",
+        "trs80-text-22.bin": "eeb16fbfb40467c33168a837e4dcbbd49c8032fd8b1920218ebd8e271e2e38a3",
+        "trs80-text-23.bin": "5d9d3247528452c56e30228f31cc0505829d926f0454b8ac7811616be6e26e67",
+        "trs80-text-24.bin": "9b6a22082cb303aa81c91613ba25c27c31f40758acb875389f68497e0ff15019",
+        "trs80-text-25.bin": "44cd0e5ff7edb7967c6e129fdd9e0688fb5180c9ff63728ea6cc648b536cceb8",
+        "trs80-text-26.bin": "ce38a4383b392e38e016b0bc7466a5177a9d34bff945100f448ee1c9d351ffa4",
+        "trs80-text-27.bin": "f8391c9cef8f0aae53ddc9fcf668396ef2442a9cc999ac47e66de290d53d5148",
+        "trs80-text-28.bin": "670ae6ec5ac3625df2d0a7b2afc23221603764646b4f6c7210bb101b01c97fa7",
+        "trs80-text-29.bin": "a1c3b289d0831cb0cc75051680548b3884ba2eaf3a6cfcfad76f4656d37a854a",
+        "trs80-text-30.bin": "513991ebe460b93ba50e69c7d10f7864a6d6d8817562172cc3033dc3839f26a4",
+        "trs80-text-31.bin": "b6107516d72fe86b6bd9e47e7aea5829030437b1a67441517efdd8e250a5ab04",
+        "trs80-text-32.bin": "ce87b8f5a60d4f71d929107d507173abbd15420b9a33132b5871e4e3922c81ef",
+        "trs80-text-33.bin": "7f36055bcbe882b7f0ebeb70fbad607035afde6bdf69ce1b1b8ded0713affab9",
+        "trs80-text-34.bin": "b56f1de94421e3c33ed4b0d00de03abeb4cdd8e6214250cd3a5a19687271575c",
+        "trs80-text-35.bin": "273721cee477f4777bb590bfb3c4c6ffdea74b1881aed56435e1bbae9bfedfd0",
+        "trs80-text-36.bin": "57c8918b33d83dbf63caccacedf3f5b3a597fd65acd59ae5195538f54d8230cd",
+        "trs80-text-37.bin": "041a70a86ba1f6e5e90860db7f207e4f0fe0eb9f15d1282f4e5992e47b58d3a8",
+        "trs80-text-38.bin": "12c24dc935ac962aa4507444a7a77fcb7fe9691890106356bba922fc0ed1964a",
+        "trs80-text-39.bin": "7170728466b33648c032242108844edb2219b139c4decb8e06f61f6466614cef",
+        "trs80-text-40.bin": "a9f2bc58f1cc253a4ec249a7d9dd99134ef78041195f754b1a5731ad9ca4db72",
+        "trs80-text-41.bin": "254ae052309ea3b40f95a46346789ced4e264647ef3d7fc2bdde5037cd0e9ae8",
+        "trs80-text-42.bin": "b93bdb3be9317f719cff0c8f87fa8f1e6cbd870365cb3386e9e0af0cd62aae01",
+        "trs80-text-43.bin": "123f20213590a88baec47427f1fa3be1c1913377511197cec16ae3d99a2e0290",
+        "trs80-text-44.bin": "1b33d914f74cba623de66485f1653cc01706e634fd352e03eb3543a66aab6591",
+        "trs80-text-45.bin": "4cc787dc9ac6aa89552033175ce81dfd16677de27e3c6f86075aeb20a6f61d83",
+        "trs80-text-46.bin": "dc2e085413c37e57af064b4d936b5bb8eece64b5cdc8a803754a24076b87ae78"
+      },
+      "workflow_image_sha256": "9b8bebbadaddc516aeed328775eff7ef1df487c979883d6f1ed882c85f5ba0db",
+      "consumer_helper": {
+        "code_bytes": 574,
+        "data_bytes": 203,
+        "total_bytes": 777,
+        "source_sha256": "112e883eab8c9c01849087f6ab5e899e67b66ff10cd4fef9856f1b74c5bf97e0"
+      }
+    }
+  },
+  "permanent_memory_loss_bytes": 0
+}

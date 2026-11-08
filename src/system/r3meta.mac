@@ -337,6 +337,15 @@ RXM_RECDONE:
         ADD     A,A
         LD      E,A
         LD      D,0
+        LD      HL,(RXM_CARRIER)
+        LD      BC,8
+        ADD     HL,BC
+        BIT     2,(HL)
+        JR      Z,RXM_ROOM
+        LD      A,E
+        ADD     A,10                    ; two CRC bytes plus eight-byte cache footer
+        LD      E,A
+RXM_ROOM:
         LD      HL,(RXM_ALLOC)
         OR      A
         SBC     HL,DE
@@ -433,7 +442,9 @@ RXM_PUBLISH:
         XOR     A
         RET
 
-; MCON and SCRN are reserved callable identities. Validate their common
+; MCON and SCRN have platform-specific admission. TCAP uses ordinary callable
+; metadata admission plus selected-owner verification by its application client.
+; Validate their common
 ; platform-bound ABI before either can enter the live callable registry.
 ; MCON 1.1/1.2 declare portable frontends with a binding word at +12.
 ; SCRN 1.1 promises full SCX controls; MCON 1.2 requires that revision.
@@ -449,8 +460,16 @@ RXM_MONITOR:
         CALL    RXM_ISID
         JR      NZ,RXM_MOK             ; other identities remain opaque
 RXM_SCREEN:
+        PUSH    HL
+        LD      HL,(RXM_FACTS)
+        LD      DE,20
+        ADD     HL,DE
+        LD      A,(HL)
+        DEC     A                      ; STATEFUL is mandatory for both paths
+        POP     HL
+        JR      NZ,RXM_MBAD
         LD      A,(HL)                 ; major exactly 1; minor selected below
-        CP      1
+        DEC     A
         JR      NZ,RXM_MBAD
         INC     HL
         LD      A,(HL)
@@ -468,12 +487,6 @@ RXM_SCREEN:
         JR      NZ,RXM_MBAD
         JR      RXM_LEGACY
 RXM_PORTABLE:                           ; MCON 1.1 basic / 1.2 full SCX required
-        LD      HL,(RXM_FACTS)
-        LD      DE,20
-        ADD     HL,DE
-        LD      A,(HL)
-        CP      1
-        JR      NZ,RXM_MBAD
         LD      HL,(RXM_DATA)
         LD      DE,8
         ADD     HL,DE
@@ -497,13 +510,12 @@ RXM_PORTABLE:                           ; MCON 1.1 basic / 1.2 full SCX required
         OR      (HL)
         JR      NZ,RXM_MBAD             ; initially null, manager-owned thereafter
         RET
+RXM_MBAD:
+RXM_BAD:
+        LD      A,0FFH
+        OR      A
+        RET
 RXM_LEGACY:
-        LD      HL,(RXM_FACTS)
-        LD      DE,20
-        ADD     HL,DE
-        LD      A,(HL)
-        CP      1                      ; STATEFUL is mandatory
-        JR      NZ,RXM_MBAD
         IF PL_M2 EQ 1
         CALL    M2_BOUND
         JR      NZ,RXM_MBAD
@@ -527,15 +539,11 @@ RXM_LEGACY:
 RXM_MOK:
         XOR     A
         RET
-RXM_MBAD:
-        LD      A,0FFH
-        RET
         IF PL_M2 EQ 1
 M2_BOUND:
-        LD      HL,(RXM_DATA)
-        LD      A,(HL)
-        CP      'S'                    ; 04h here is assigned only to SCRN
-        RET     NZ                     ; no platform-specific MCON 1.0 on Model II
+        ; Native MCON 1.0 and SCRN use the same Model II platform bit.
+        ; Both must carry the exact checked private binding; portable MCON
+        ; 1.1/1.2 are still admitted through their separate SCRN dependency path.
         LD      HL,(RXM_BASE)
         LD      DE,15                  ; class of the binding admitted by R3CARR
         ADD     HL,DE
@@ -556,11 +564,6 @@ RXM_MID:
         RET
 RXM_MCON:      DB      'MCON'
 RXM_SCRN:      DB      'SCRN'
-
-RXM_BAD:
-        LD      A,0FFH
-        OR      A
-        RET
 
 RXM_BMET:      DB      'B','M','E','T'
 RXM_REQ:       DW      0

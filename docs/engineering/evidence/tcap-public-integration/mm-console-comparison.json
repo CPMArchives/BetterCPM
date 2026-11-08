@@ -1,0 +1,56 @@
+{
+  "status": "MEASURED original MM 2.31 output engine and selected VLIB closure",
+  "image_sha256": "480cdf5dc504ad437448a27938241c81e45d91bab9c0073db738d11cabfb34aa",
+  "boundary_source_archive_sha256": "feb519b34d2874e29b62b36d911c15631eca7ca8a35f8a10c1a048869ffdfa6b",
+  "measurement_script_sha256": "585b38f94a974d154ce2880c3027d4f5caafb79b0f6d7cfe84fcb158d5ce9cfa",
+  "original_pages": [
+    {
+      "address": 61184,
+      "raw_offset": 5376
+    },
+    {
+      "address": 61440,
+      "raw_offset": 5888
+    },
+    {
+      "address": 60672,
+      "raw_offset": 8704
+    }
+  ],
+  "console_entry": 61256,
+  "console_end_exclusive": 61679,
+  "console_code_state_and_table_bytes": 423,
+  "shared_helpers_bytes": 22,
+  "console_total_bytes": 445,
+  "console_sha256": "0dda364c7e32f9e9f56b491a3764ddc2037c4232db37c2bd9d59a85b97341a61",
+  "helpers_sha256": "bf7dfbaab407c1a90a3f8d78c8a4bc6d591965dae75a49dc144c6f0120872036",
+  "source_binary_differences": [
+    [
+      61526,
+      129,
+      127
+    ]
+  ],
+  "zsystem": {
+    "environment_including_tcap_bytes": 256,
+    "linked_vlib_with_geometry_bytes": 613,
+    "native_console_bytes": 445,
+    "static_total_bytes": 1314
+  },
+  "bettercpm_adm3a": {
+    "backend_and_personality_allocation_bytes": 2560,
+    "application_helper_bytes": 777,
+    "subtotal_bytes": 3337,
+    "shared_bios_cursor_state_bytes": 3,
+    "static_total_bytes": 3340,
+    "qualification_receipt_sha256": "920312763230be5a063696d2c7b0940bb8433630538cc5b67c0238b666419928"
+  },
+  "scope": "Model 4 ADM3A core display path; excludes generic routing/loading, keyboard input, framebuffer, application call sites and stack on both sides",
+  "limits": [
+    "Not a comparison of every VLIB or SCX feature",
+    "MM console is embedded in the baseline BIOS; BetterCPM backend/personality are unloadable",
+    "Full 256-byte Z-System environment and both shared MM helpers charged conservatively",
+    "BetterCPM includes complete required allocation rounding and descriptors"
+  ],
+  "bettercpm_to_zsystem_static_ratio": 2.5418569254185694
+}

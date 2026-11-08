@@ -534,7 +534,7 @@ PF_V2CLASS:                             ; decode v2 reconstruction class
         OR      A
         JP      NZ,PF_BAD
         LD      A,E
-        AND     0FCH
+        AND     0F8H                    ; inline cache permission is not a class bit
         JP      NZ,PF_BAD
         LD      A,E
         AND     3

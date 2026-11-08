@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "cases": 68,
+  "scope": "MCON/SCRN version/class/platform compatibility",
+  "log_sha256": "33a0271d5ef1f429710974c66dc31194486a92b2be5e74f19cf72292234fe52f"
+}

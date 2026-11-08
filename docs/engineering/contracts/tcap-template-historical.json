@@ -1,0 +1,114 @@
+{
+  "schema": 2,
+  "service": "TCAP",
+  "version": [
+    1,
+    0
+  ],
+  "status": "compact public integration candidate; unreleased transaction wire ABI superseded",
+  "advertisement_capabilities": 0,
+  "query_selector": 0,
+  "unsupported_selector_status": 255,
+  "minimum_record_bytes": 16,
+  "maximum_record_bytes": 128,
+  "record_version": 1,
+  "record_header": [
+    [
+      "magic",
+      0,
+      2
+    ],
+    [
+      "version",
+      2,
+      1
+    ],
+    [
+      "length",
+      3,
+      1
+    ],
+    [
+      "rows",
+      4,
+      1
+    ],
+    [
+      "columns",
+      5,
+      1
+    ],
+    [
+      "operations",
+      6,
+      1
+    ],
+    [
+      "strong",
+      7,
+      1
+    ],
+    [
+      "clear",
+      8,
+      1
+    ],
+    [
+      "position",
+      9,
+      1
+    ],
+    [
+      "erase_line",
+      10,
+      1
+    ],
+    [
+      "strong_begin",
+      11,
+      1
+    ],
+    [
+      "strong_end",
+      12,
+      1
+    ],
+    [
+      "initialize",
+      13,
+      1
+    ],
+    [
+      "deinitialize",
+      14,
+      1
+    ],
+    [
+      "geometry",
+      15,
+      1
+    ]
+  ],
+  "slots": [
+    "clear",
+    "position",
+    "erase_line",
+    "strong_begin",
+    "strong_end",
+    "initialize",
+    "deinitialize"
+  ],
+  "statuses": {
+    "0": "Success",
+    "1": "Unavailable",
+    "2": "Malformed",
+    "3": "UnsupportedOrBadArgument"
+  },
+  "geometry": {
+    "0": "Unknown",
+    "1": "FixedViewport",
+    "2": "BackendStream"
+  },
+  "limit_bytes": 1280,
+  "permanent_tcap_bytes": 0
+}

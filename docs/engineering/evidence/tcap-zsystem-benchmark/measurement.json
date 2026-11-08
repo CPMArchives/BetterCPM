@@ -1,0 +1,853 @@
+{
+  "status": "MEASURED original REL module-level closures",
+  "distribution": "LIBS45A.LBR, VLIB 4.5",
+  "source_url": "https://www.df.lth.se/~pi/cpm/files/ftp.mayn.de/pub/cpm/archive/zcpr33/libs45a.lbr",
+  "archive_sha256": "39232c13fb0181a26a77a1187ef32121e318a3d4085a294fe6e04bb05fe8cf99",
+  "measurement_script_sha256": "a9c92c675c3160fa2af6ea751608cb6aad1c7a718c8676bfb2f2c8af9dfbaf72",
+  "libraries": [
+    {
+      "library": "SYSLIB",
+      "rel_file_bytes": 22144,
+      "sha256": "7863e9173c642089793676b0a7ed545dbf5a17a10a17db4ef8c36bd8caf87408",
+      "compressed_member_records": 120,
+      "compressed_bytes_consumed": 15244
+    },
+    {
+      "library": "VLIB",
+      "rel_file_bytes": 5760,
+      "sha256": "4f5053a43652d98085e05ec42b5afbce08d1dc7584ffb569cc68e177a57350d8",
+      "compressed_member_records": 39,
+      "compressed_bytes_consumed": 4866
+    },
+    {
+      "library": "Z3LIB",
+      "rel_file_bytes": 11392,
+      "sha256": "1adb841aae08ccc2d3200d83ff4d45c982aa617427b0c918939a51441f6e77aa",
+      "compressed_member_records": 63,
+      "compressed_bytes_consumed": 8022
+    }
+  ],
+  "scenarios": {
+    "dimensions": {
+      "roots": [
+        "Z3INIT",
+        "GETCRT"
+      ],
+      "code_bytes": 16,
+      "private_data_bytes": 2,
+      "linked_bytes": 18,
+      "with_tcap_bytes": 146,
+      "with_full_environment_bytes": 274,
+      "modules": [
+        {
+          "library": "Z3LIB",
+          "ordinal": 87,
+          "name": "Z3GCRT",
+          "code_bytes": 12,
+          "data_bytes": 0
+        },
+        {
+          "library": "Z3LIB",
+          "ordinal": 131,
+          "name": "Z3INI",
+          "code_bytes": 4,
+          "data_bytes": 2
+        }
+      ],
+      "linked_sha256": "0987add5dc95d931ddcd490f941a6c6b250d0ea61246000c681e32982dbf7b23"
+    },
+    "initialization": {
+      "roots": [
+        "Z3VINIT"
+      ],
+      "code_bytes": 158,
+      "private_data_bytes": 60,
+      "linked_bytes": 218,
+      "with_tcap_bytes": 346,
+      "with_full_environment_bytes": 474,
+      "modules": [
+        {
+          "library": "VLIB",
+          "ordinal": 26,
+          "name": "VIDAB",
+          "code_bytes": 154,
+          "data_bytes": 58
+        },
+        {
+          "library": "Z3LIB",
+          "ordinal": 131,
+          "name": "Z3INI",
+          "code_bytes": 4,
+          "data_bytes": 2
+        }
+      ],
+      "linked_sha256": "3f21070203f9bad2e15334e9610d92b3a065b6f46db5fe3f9dadd0ff28719ba5"
+    },
+    "help_emphasis": {
+      "roots": [
+        "Z3VINIT",
+        "STNDOUT",
+        "STNDEND"
+      ],
+      "code_bytes": 474,
+      "private_data_bytes": 60,
+      "linked_bytes": 534,
+      "with_tcap_bytes": 662,
+      "with_full_environment_bytes": 790,
+      "modules": [
+        {
+          "library": "SYSLIB",
+          "ordinal": 175,
+          "name": "COUT",
+          "code_bytes": 16,
+          "data_bytes": 0
+        },
+        {
+          "library": "SYSLIB",
+          "ordinal": 216,
+          "name": "CAPS",
+          "code_bytes": 11,
+          "data_bytes": 0
+        },
+        {
+          "library": "SYSLIB",
+          "ordinal": 217,
+          "name": "@BIOSA",
+          "code_bytes": 8,
+          "data_bytes": 0
+        },
+        {
+          "library": "SYSLIB",
+          "ordinal": 218,
+          "name": "BIOS",
+          "code_bytes": 10,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 20,
+          "name": "VID34",
+          "code_bytes": 18,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 24,
+          "name": "VID7",
+          "code_bytes": 184,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 25,
+          "name": "VID89",
+          "code_bytes": 69,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 26,
+          "name": "VIDAB",
+          "code_bytes": 154,
+          "data_bytes": 58
+        },
+        {
+          "library": "Z3LIB",
+          "ordinal": 131,
+          "name": "Z3INI",
+          "code_bytes": 4,
+          "data_bytes": 2
+        }
+      ],
+      "linked_sha256": "a446f52fa734fd3d1b4f700a10bf9910944206c562fe232047f8746c5239d0b1"
+    },
+    "core_screen": {
+      "roots": [
+        "Z3VINIT",
+        "TINIT",
+        "DINIT",
+        "CLS",
+        "EREOL",
+        "GOTOXY",
+        "STNDOUT",
+        "STNDEND"
+      ],
+      "code_bytes": 541,
+      "private_data_bytes": 60,
+      "linked_bytes": 601,
+      "with_tcap_bytes": 729,
+      "with_full_environment_bytes": 857,
+      "modules": [
+        {
+          "library": "SYSLIB",
+          "ordinal": 175,
+          "name": "COUT",
+          "code_bytes": 16,
+          "data_bytes": 0
+        },
+        {
+          "library": "SYSLIB",
+          "ordinal": 216,
+          "name": "CAPS",
+          "code_bytes": 11,
+          "data_bytes": 0
+        },
+        {
+          "library": "SYSLIB",
+          "ordinal": 217,
+          "name": "@BIOSA",
+          "code_bytes": 8,
+          "data_bytes": 0
+        },
+        {
+          "library": "SYSLIB",
+          "ordinal": 218,
+          "name": "BIOS",
+          "code_bytes": 10,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 19,
+          "name": "VID2",
+          "code_bytes": 10,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 20,
+          "name": "VID34",
+          "code_bytes": 18,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 21,
+          "name": "VID56",
+          "code_bytes": 30,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 23,
+          "name": "VID1",
+          "code_bytes": 27,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 24,
+          "name": "VID7",
+          "code_bytes": 184,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 25,
+          "name": "VID89",
+          "code_bytes": 69,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 26,
+          "name": "VIDAB",
+          "code_bytes": 154,
+          "data_bytes": 58
+        },
+        {
+          "library": "Z3LIB",
+          "ordinal": 131,
+          "name": "Z3INI",
+          "code_bytes": 4,
+          "data_bytes": 2
+        }
+      ],
+      "linked_sha256": "fd40ed5da817e75f91a6b11871b5aca1d56dfdb1da4ca307e28e8151edea0262"
+    },
+    "editor_with_dimensions": {
+      "roots": [
+        "Z3VINIT",
+        "TINIT",
+        "DINIT",
+        "CLS",
+        "EREOL",
+        "GOTOXY",
+        "STNDOUT",
+        "STNDEND",
+        "GETCRT"
+      ],
+      "code_bytes": 553,
+      "private_data_bytes": 60,
+      "linked_bytes": 613,
+      "with_tcap_bytes": 741,
+      "with_full_environment_bytes": 869,
+      "modules": [
+        {
+          "library": "SYSLIB",
+          "ordinal": 175,
+          "name": "COUT",
+          "code_bytes": 16,
+          "data_bytes": 0
+        },
+        {
+          "library": "SYSLIB",
+          "ordinal": 216,
+          "name": "CAPS",
+          "code_bytes": 11,
+          "data_bytes": 0
+        },
+        {
+          "library": "SYSLIB",
+          "ordinal": 217,
+          "name": "@BIOSA",
+          "code_bytes": 8,
+          "data_bytes": 0
+        },
+        {
+          "library": "SYSLIB",
+          "ordinal": 218,
+          "name": "BIOS",
+          "code_bytes": 10,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 19,
+          "name": "VID2",
+          "code_bytes": 10,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 20,
+          "name": "VID34",
+          "code_bytes": 18,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 21,
+          "name": "VID56",
+          "code_bytes": 30,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 23,
+          "name": "VID1",
+          "code_bytes": 27,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 24,
+          "name": "VID7",
+          "code_bytes": 184,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 25,
+          "name": "VID89",
+          "code_bytes": 69,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 26,
+          "name": "VIDAB",
+          "code_bytes": 154,
+          "data_bytes": 58
+        },
+        {
+          "library": "Z3LIB",
+          "ordinal": 87,
+          "name": "Z3GCRT",
+          "code_bytes": 12,
+          "data_bytes": 0
+        },
+        {
+          "library": "Z3LIB",
+          "ordinal": 131,
+          "name": "Z3INI",
+          "code_bytes": 4,
+          "data_bytes": 2
+        }
+      ],
+      "linked_sha256": "f3fe94bedb74ac2656c2ec601a94181dd8f4b3ceceb6a049cb76dbf0d226da16"
+    },
+    "entire_vlib": {
+      "roots": [
+        "VVERS",
+        "SETATT",
+        "SETATR",
+        "GETCUR",
+        "GETLIN",
+        "@LINE",
+        "CLRPDM",
+        "SELPDM",
+        "DRFBOX",
+        "DRBOX",
+        "ERABOX",
+        "GFBOX",
+        "GBOX",
+        "GERBOX",
+        "CHKBOX",
+        "DRHBAR",
+        "DRHORZ",
+        "ERAHOR",
+        "GHBAR",
+        "ERAHBA",
+        "ULEFT",
+        "URIGHT",
+        "LLEFT",
+        "LRIGHT",
+        "LTISEC",
+        "RTISEC",
+        "UISEC",
+        "LISEC",
+        "ISEC",
+        "DRFULL",
+        "DRHASH",
+        "@GSET0",
+        "DRVBAR",
+        "DRVERT",
+        "ERAVER",
+        "GVBAR",
+        "ERAVBA",
+        "GRXON",
+        "GRXOFF",
+        "CURON",
+        "CUROFF",
+        "MCLS",
+        "SPDMCH",
+        "ISPDM",
+        "ISCUR",
+        "SETPDM",
+        "SETPDR",
+        "PDMINI",
+        "@PDMCH",
+        "@PDMBF",
+        "@MBUFF",
+        "GZ3INI",
+        "GXYMSG",
+        "VPRINT",
+        "VPSTR",
+        "AT",
+        "@GOXY",
+        "EREOL",
+        "STNDOU",
+        "STNDEN",
+        "TINIT",
+        "DINIT",
+        "DELLIN",
+        "INSLIN",
+        "CLS",
+        "CLREOS",
+        "@SETV0",
+        "GOTOXY",
+        "@PARSV",
+        "VIDOUT",
+        "VIDELA",
+        "Z3VINI",
+        "VIDINI",
+        "VIDPTR",
+        "VIDSKP",
+        "@B13",
+        "@B14",
+        "@B15",
+        "@CL",
+        "@CM",
+        "@CE",
+        "@SO",
+        "@SE",
+        "@TI",
+        "@TO",
+        "@LD",
+        "@LI",
+        "@SA",
+        "@AT",
+        "@CMD",
+        "@CLSD",
+        "@EOLD",
+        "@CD",
+        "@GOELD",
+        "@GO",
+        "@GE",
+        "@CDO",
+        "@CDE",
+        "@RC",
+        "@RL",
+        "@GULC",
+        "@GURC",
+        "@GLLC",
+        "@GLRC",
+        "@GHL",
+        "@GVL",
+        "@GFB",
+        "@GHB",
+        "@GUI",
+        "@GLI",
+        "@GIS",
+        "@GRTI",
+        "@GLTI"
+      ],
+      "code_bytes": 2418,
+      "private_data_bytes": 401,
+      "linked_bytes": 2819,
+      "with_tcap_bytes": 2947,
+      "with_full_environment_bytes": 3075,
+      "modules": [
+        {
+          "library": "SYSLIB",
+          "ordinal": 119,
+          "name": "CIN",
+          "code_bytes": 9,
+          "data_bytes": 0
+        },
+        {
+          "library": "SYSLIB",
+          "ordinal": 175,
+          "name": "COUT",
+          "code_bytes": 16,
+          "data_bytes": 0
+        },
+        {
+          "library": "SYSLIB",
+          "ordinal": 216,
+          "name": "CAPS",
+          "code_bytes": 11,
+          "data_bytes": 0
+        },
+        {
+          "library": "SYSLIB",
+          "ordinal": 217,
+          "name": "@BIOSA",
+          "code_bytes": 8,
+          "data_bytes": 0
+        },
+        {
+          "library": "SYSLIB",
+          "ordinal": 218,
+          "name": "BIOS",
+          "code_bytes": 10,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 0,
+          "name": "VVERSI",
+          "code_bytes": 62,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 1,
+          "name": "VIDS",
+          "code_bytes": 83,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 2,
+          "name": "VIDR",
+          "code_bytes": 153,
+          "data_bytes": 133
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 3,
+          "name": "VIDQ",
+          "code_bytes": 156,
+          "data_bytes": 1
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 4,
+          "name": "VIDP",
+          "code_bytes": 349,
+          "data_bytes": 8
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 5,
+          "name": "VIDJ",
+          "code_bytes": 252,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 6,
+          "name": "VIDH",
+          "code_bytes": 118,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 7,
+          "name": "VIDF",
+          "code_bytes": 25,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 8,
+          "name": "VIDG",
+          "code_bytes": 31,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 9,
+          "name": "VIDD",
+          "code_bytes": 28,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 10,
+          "name": "VIDI",
+          "code_bytes": 147,
+          "data_bytes": 3
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 11,
+          "name": "VIDE",
+          "code_bytes": 28,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 12,
+          "name": "VIDK",
+          "code_bytes": 12,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 13,
+          "name": "VIDL",
+          "code_bytes": 16,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 14,
+          "name": "VIDM",
+          "code_bytes": 41,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 15,
+          "name": "VIDO",
+          "code_bytes": 179,
+          "data_bytes": 196
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 16,
+          "name": "VIDN",
+          "code_bytes": 79,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 17,
+          "name": "VLGXYM",
+          "code_bytes": 63,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 18,
+          "name": "VLAT",
+          "code_bytes": 20,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 19,
+          "name": "VID2",
+          "code_bytes": 10,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 20,
+          "name": "VID34",
+          "code_bytes": 18,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 21,
+          "name": "VID56",
+          "code_bytes": 30,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 22,
+          "name": "VIDC",
+          "code_bytes": 14,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 23,
+          "name": "VID1",
+          "code_bytes": 27,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 24,
+          "name": "VID7",
+          "code_bytes": 184,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 25,
+          "name": "VID89",
+          "code_bytes": 69,
+          "data_bytes": 0
+        },
+        {
+          "library": "VLIB",
+          "ordinal": 26,
+          "name": "VIDAB",
+          "code_bytes": 154,
+          "data_bytes": 58
+        },
+        {
+          "library": "Z3LIB",
+          "ordinal": 87,
+          "name": "Z3GCRT",
+          "code_bytes": 12,
+          "data_bytes": 0
+        },
+        {
+          "library": "Z3LIB",
+          "ordinal": 131,
+          "name": "Z3INI",
+          "code_bytes": 4,
+          "data_bytes": 2
+        }
+      ],
+      "linked_sha256": "138288b95e6af5c8e66ab2563b9ef58f7ae09a036edaf240f9c6bb75eb954232"
+    }
+  },
+  "resident_tcap_bytes": 128,
+  "resident_environment_including_tcap_bytes": 256,
+  "accounting": "No CP/M record padding, REL encoding, application call sites/header, or preexisting platform BIOS included. DSEG and transitive library dependencies included. No function-level stripping inside modules.",
+  "cpu": {
+    "scope": "original linked library on full Z80 CPU; console BIOS leaf captured, not hardware qualification",
+    "checks": [
+      {
+        "routine": "Z3VINIT",
+        "HL": 20480,
+        "output_hex": "",
+        "steps": 493,
+        "observed_stack_bytes_including_entry_return": 14
+      },
+      {
+        "routine": "TINIT",
+        "HL": 0,
+        "output_hex": "1b5b306d",
+        "steps": 160,
+        "observed_stack_bytes_including_entry_return": 30
+      },
+      {
+        "routine": "CLS",
+        "HL": 0,
+        "output_hex": "1b5b324a",
+        "steps": 143,
+        "observed_stack_bytes_including_entry_return": 24
+      },
+      {
+        "routine": "EREOL",
+        "HL": 0,
+        "output_hex": "1b5b4b",
+        "steps": 113,
+        "observed_stack_bytes_including_entry_return": 24
+      },
+      {
+        "routine": "STNDOUT",
+        "HL": 0,
+        "output_hex": "1b5b376d",
+        "steps": 156,
+        "observed_stack_bytes_including_entry_return": 26
+      },
+      {
+        "routine": "STNDEND",
+        "HL": 0,
+        "output_hex": "1b5b306d",
+        "steps": 155,
+        "observed_stack_bytes_including_entry_return": 26
+      },
+      {
+        "routine": "DINIT",
+        "HL": 0,
+        "output_hex": "1b5b306d",
+        "steps": 159,
+        "observed_stack_bytes_including_entry_return": 30
+      },
+      {
+        "routine": "GOTOXY",
+        "HL": 257,
+        "output_hex": "1b5b313b3148",
+        "steps": 354,
+        "observed_stack_bytes_including_entry_return": 26
+      },
+      {
+        "routine": "GOTOXY",
+        "HL": 6224,
+        "output_hex": "1b5b32343b383048",
+        "steps": 430,
+        "observed_stack_bytes_including_entry_return": 30
+      },
+      {
+        "routine": "GOTOXY",
+        "HL": 25701,
+        "output_hex": "1b5b3130303b31303148",
+        "steps": 456,
+        "observed_stack_bytes_including_entry_return": 30
+      },
+      {
+        "routine": "GOTOXY",
+        "HL": 65535,
+        "output_hex": "1b5b3235353b32353548",
+        "steps": 488,
+        "observed_stack_bytes_including_entry_return": 30
+      },
+      {
+        "routine": "Z3VINIT",
+        "HL": 0,
+        "output_hex": "",
+        "steps": 164,
+        "observed_stack_bytes_including_entry_return": 10
+      },
+      {
+        "routine": "CLS",
+        "HL": 0,
+        "output_hex": "",
+        "steps": 11,
+        "observed_stack_bytes_including_entry_return": 6
+      },
+      {
+        "routine": "GOTOXY",
+        "HL": 257,
+        "output_hex": "",
+        "steps": 11,
+        "observed_stack_bytes_including_entry_return": 8
+      }
+    ],
+    "maximum_observed_stack_bytes": 30,
+    "fixture_tcap_allocated_bytes": 128,
+    "fixture_tcap_populated_bytes": 91
+  }
+}

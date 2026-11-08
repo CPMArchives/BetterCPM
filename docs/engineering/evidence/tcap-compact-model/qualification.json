@@ -1,0 +1,222 @@
+{
+  "status": "PASS private table-model cpmsim source-image lifecycle",
+  "model": "Z-System-style per-personality description and per-application library",
+  "permanent_tcap_bytes": 0,
+  "bios_or_loader_changes": false,
+  "helper": {
+    "code_bytes": 373,
+    "private_data_bytes": 170,
+    "total_bytes": 543
+  },
+  "profiles": {
+    "ANSI": {
+      "descriptor_bytes": 56,
+      "query_bytes": 10,
+      "payload_bytes": 1532,
+      "baseline_payload_bytes": 1466,
+      "allocated_bytes": 2048,
+      "baseline_allocated_bytes": 1792,
+      "extra_allocated_bytes": 256,
+      "relocation_words": 208,
+      "comparable_tcap_bytes": 799
+    },
+    "ADM3A": {
+      "descriptor_bytes": 33,
+      "query_bytes": 10,
+      "payload_bytes": 535,
+      "baseline_payload_bytes": 492,
+      "allocated_bytes": 1024,
+      "baseline_allocated_bytes": 768,
+      "extra_allocated_bytes": 256,
+      "relocation_words": 88,
+      "comparable_tcap_bytes": 799
+    },
+    "VT52": {
+      "descriptor_bytes": 29,
+      "query_bytes": 10,
+      "payload_bytes": 598,
+      "baseline_payload_bytes": 559,
+      "allocated_bytes": 1024,
+      "baseline_allocated_bytes": 1024,
+      "extra_allocated_bytes": 0,
+      "relocation_words": 97,
+      "comparable_tcap_bytes": 543
+    }
+  },
+  "probe_com_bytes": 730,
+  "helper_source_sha256": "7104accf3e96f0e12a3c8d7d7c8d6362fb3820a8f6f5fd9877cb68aa701dc078",
+  "checked_compatibility_id": "28b2bdb84db4ebae8ca93dd7d048aaa1",
+  "tested_maximum_com_bytes": 57344,
+  "builder_sha256": "875636e9ba298a6272027e2d243bae777e6221b76ce39966d845fff1b5fc669a",
+  "loaded_file_sha256": {
+    "ADM3A.RSX": "6bbad93bd35a1093d1a85cf20c306fe90faaeabdff009646c0e6cb1d6840fa24",
+    "ANSI.RSX": "cbb6118d36b047333518754b8ad0244f90f34e36a02bc67e7013633cc28a3717",
+    "ANSISCRN.RSX": "ff318767e26d86e09b6ddb44b3614dd091c284f0455efb8040cb4b64b6b4f85c",
+    "R3CACHE.RSX": "000ebb1413192348764488d7e83f6997da06650c14060b64fca6f9aa5632a5c0",
+    "R3PACK.RSX": "b9504edc03fb5892de304694ebcdf8c577c314d9f77a4bcbb96f7fd39a3d7535",
+    "VT52.RSX": "fa3f60753654192f72e14a2a3b947df81366f85addc02dd70d94397e474d33b5"
+  },
+  "system_image_sha256": "65b2e9f8677bea2f3f2c25ca1efd8793c312bccb778774927b92ff29420c5bcf",
+  "checks": [
+    {
+      "command": "BOUND",
+      "boundary": 57601
+    },
+    {
+      "command": "MAXCOM"
+    },
+    {
+      "command": "ABSENT"
+    },
+    {
+      "command": "RSX LOAD ANSISCRN"
+    },
+    {
+      "command": "BOUND",
+      "boundary": 54785
+    },
+    {
+      "command": "RSX LOAD ADM3A"
+    },
+    {
+      "command": "BOUND",
+      "boundary": 53761
+    },
+    {
+      "command": "TABLE",
+      "rendering": {
+        "text": "TCAP TEXT",
+        "row": 4,
+        "column": 9,
+        "bold": false,
+        "reverse": true
+      }
+    },
+    {
+      "command": "TABLE"
+    },
+    {
+      "command": "RSX UNLOAD ADM3A"
+    },
+    {
+      "command": "ABSENT"
+    },
+    {
+      "command": "BOUND",
+      "boundary": 54785
+    },
+    {
+      "command": "RSX LOAD ANSI"
+    },
+    {
+      "command": "BOUND",
+      "boundary": 52737
+    },
+    {
+      "command": "TABLE",
+      "rendering": {
+        "text": "TCAP TEXT",
+        "row": 4,
+        "column": 9,
+        "bold": true,
+        "reverse": false
+      }
+    },
+    {
+      "command": "TABLE"
+    },
+    {
+      "command": "RSX UNLOAD ANSI"
+    },
+    {
+      "command": "ABSENT"
+    },
+    {
+      "command": "BOUND",
+      "boundary": 54785
+    },
+    {
+      "command": "RSX LOAD VT52"
+    },
+    {
+      "command": "BOUND",
+      "boundary": 53761
+    },
+    {
+      "command": "TABLE",
+      "rendering": {
+        "text": "TCAP TEXT",
+        "row": 4,
+        "column": 9,
+        "bold": false,
+        "reverse": false
+      }
+    },
+    {
+      "command": "TABLE"
+    },
+    {
+      "command": "RSX UNLOAD VT52"
+    },
+    {
+      "command": "ABSENT"
+    },
+    {
+      "command": "BOUND",
+      "boundary": 54785
+    },
+    {
+      "command": "RSX LOAD ANSI"
+    },
+    {
+      "command": "BOUND",
+      "boundary": 52737
+    },
+    {
+      "command": "TABLE",
+      "rendering": {
+        "text": "TCAP TEXT",
+        "row": 4,
+        "column": 9,
+        "bold": true,
+        "reverse": false
+      }
+    },
+    {
+      "command": "TABLE"
+    },
+    {
+      "command": "RSX UNLOAD ANSI"
+    },
+    {
+      "command": "ABSENT"
+    },
+    {
+      "command": "BOUND",
+      "boundary": 54785
+    },
+    {
+      "command": "RSX UNLOAD ANSISCRN"
+    },
+    {
+      "command": "BOUND",
+      "boundary": 57601
+    },
+    {
+      "command": "MAXCOM"
+    },
+    {
+      "command": "ABSENT"
+    }
+  ],
+  "unloaded_boundary_before": 57601,
+  "unloaded_boundary_after": 57601,
+  "simulator_sha256": "981a69da751fb9dc5a25bcbd2dc56ccf270943605f463e9c5882b5e7811ef443",
+  "limitations": [
+    "not public ABI 1.0 conformance",
+    "no installation qualification",
+    "Model 4 and Model II not qualified",
+    "CRT route only",
+    "utility migrations and release assignment deferred"
+  ]
+}

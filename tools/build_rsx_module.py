@@ -34,8 +34,9 @@ def _v2_metadata(services: list[int], callable_services: list[tuple[bytes, int,
     if services:
         records.append(_record(RECORD_NUMERIC_SERVICES, bytes(services)))
     for service_id, major, minor, entry, capabilities in callable_services:
-        if (len(service_id) != 4 or any(not 0x20 <= byte <= 0x5A
-                                        for byte in service_id)
+        if (len(service_id) != 4 or not service_id.strip(b' ')
+                or any(byte != 0x20 and not 0x41 <= byte <= 0x5A
+                       for byte in service_id)
                 or not 0 <= major <= 255 or not 0 <= minor <= 255
                 or not 0 <= entry <= 0xFFFF
                 or not 0 <= capabilities <= 0xFFFF):
@@ -60,7 +61,8 @@ def make_module(*, name: str, version: tuple[int, int], services: list[int],
                 flags: int = 0, format_version: int = 2,
                 reconstruction_class: str = "STATELESS",
                 callable_services: list[tuple[bytes, int, int, int, int]] | None = None,
-                runtime_pointers: list[int] | None = None) -> bytes:
+                runtime_pointers: list[int] | None = None,
+                cache_footer_inline: bool = False) -> bytes:
     stem = name.upper().encode("ascii")
     if not 1 <= len(stem) <= 8 or any(not 0 <= service <= 255 for service in services):
         raise SystemExit("invalid RSX name or service number")
@@ -77,13 +79,14 @@ def make_module(*, name: str, version: tuple[int, int], services: list[int],
     if runtime_pointers != sorted(set(runtime_pointers)):
         raise SystemExit("runtime pointer slots must be sorted and unique")
     runtime_descriptor = 10 * len(callable_services)
-    runtime = (len(code) + runtime_descriptor + 0xFF) & ~0xFF
+    cache_bytes = 10 if cache_footer_inline else 0
+    runtime = (len(code) + runtime_descriptor + cache_bytes + 0xFF) & ~0xFF
     allocation = runtime if allocation is None else allocation
     if (not code or entry_offset >= len(code) or allocation < len(code)
             or allocation & 0xFF):
         raise SystemExit("invalid RSX code, entry, or allocation")
-    if allocation < len(code) + runtime_descriptor:
-        raise SystemExit("RSX allocation cannot hold runtime service descriptors")
+    if allocation < len(code) + runtime_descriptor + cache_bytes:
+        raise SystemExit("RSX allocation cannot hold runtime descriptors and opted-in cache footer")
     if entry_offset < 8 or any(
             service[3] < 8 or service[3] >= len(code)
             for service in callable_services):
@@ -104,7 +107,7 @@ def make_module(*, name: str, version: tuple[int, int], services: list[int],
     metadata = _v2_metadata(services, callable_services, runtime_pointers)
     header = bytearray(HEADER_SIZE)
     primary = services[0] if services else 0xFFFF
-    flags = flags | RECONSTRUCTION_CLASSES[reconstruction_class]
+    flags = flags | RECONSTRUCTION_CLASSES[reconstruction_class] | (4 if cache_footer_inline else 0)
     struct.pack_into("<4sBBBBHHHHHHHHHHHH8sBBBBHH", header, 0,
                      MAGIC, format_version, 2, 1, 0, flags, linked_base, len(code), allocation,
                      entry_offset, init_offset, shutdown_offset, len(relocations),

@@ -1,0 +1,810 @@
+; Combined ANSI personality with a bounded streaming grammar. Native renderers
+; implement reverse video and conceal; the host renderer retains full validated
+; SGR packets. Extended-color groups are validated atomically before publication.
+TYPEVT EQU 2
+BASE EQU 08000H
+        ASEG
+        ORG BASE
+D_NEXT: DW 5
+        DW D_CHAIN
+        DW 0,0
+D_CHAIN:
+        LD HL,(D_NEXT)
+        JP (HL)
+D_ENTRY:
+        CP 6
+        JR NC,D_UNSUP
+        IF M2BANK EQ 1
+        CP 1
+        JP Z,D_RAW
+        CP 2
+        JP Z,D_RAW
+        ENDIF
+D_CALL:
+        IF M2BANK EQ 1
+        JP D_MAP
+        ENDIF
+D_DISPATCH:
+        PUSH DE
+        LD L,A
+        LD H,0
+        ADD HL,HL
+        LD DE,D_TABLE
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        POP DE
+        JP (HL)
+D_TABLE:
+        DW D_OUTPUT,D_RAW,D_RAW,D_CURSOR,D_CLEAR,D_RESET
+        DW D_FACTS,D_CLEAR,D_TMOVE,D_EOL,D_ON,D_OFF,D_BASELINE,D_BASELINE
+D_OUTPUT:
+        PUSH BC
+        PUSH DE
+        CALL D_OUT
+        POP DE
+        POP BC
+        RET
+D_UNSUP:
+        LD A,255
+        RET
+D_RAW:
+        LD HL,(1)
+        LD DE,66
+        ADD HL,DE
+        JP (HL)
+D_CURSOR:
+        IF HOSTTERM EQ 1
+        XOR A
+        RET
+        ELSE
+        LD A,(D_VIS)
+        OR A
+        RET Z
+        LD A,C
+        OR A
+        LD A,1
+        RET Z
+        PUSH DE
+        SET 7,C
+        CALL A_PUTC
+        POP DE
+        LD A,1
+        RET
+        ENDIF
+D_RESET:
+        XOR A
+        LD (D_ESC),A
+        RET
+D_CLEAR:
+        CALL D_RESET
+        CALL D_HOME
+        JP D_EOS
+D_OUT:
+        LD A,C
+        AND 127
+        LD C,A
+        CP 24
+        JP Z,D_RESET
+        CP 26
+        JP Z,D_RESET
+        LD A,(D_ESC)
+        CP 4
+        JP Z,A_STRING
+        CP 5
+        JP Z,A_STESC
+        LD A,C
+        CP 27
+        JP Z,A_BEGIN
+        LD A,(D_ESC)
+        OR A
+        JR Z,A_NORMAL
+        DEC A
+        JR Z,A_ESCAPE
+        DEC A
+        JP Z,A_CSI
+A_DROP:
+        LD A,C
+        CP 40H
+        RET C
+        CP 7FH
+        RET NC
+        JP D_RESET
+A_NORMAL:
+        LD A,C
+        CP 127
+        RET Z
+        CP 32
+        JR C,A_CTRL
+        IF HOSTTERM EQ 0
+        LD A,(D_REV)
+        AND 64
+        JR Z,A_PUTC
+        LD C,32
+        ENDIF
+A_PUTC:
+        LD A,(A_WRAP)
+        OR A
+        JR Z,A_WRITE
+        PUSH BC
+        CALL D_CR
+        CALL A_INDEX
+        POP BC
+A_WRITE:
+        CALL D_PRINT
+        CALL D_GET
+        LD A,H
+        CP 79
+        JR Z,A_PENDING
+        INC H
+        JP D_SET
+A_PENDING:
+        LD A,1
+        LD (A_WRAP),A
+        RET
+A_CTRL:
+        CP 7
+        JP Z,D_BELL
+        CP 8
+        JR Z,A_BS
+        CP 9
+        JR Z,A_TAB
+        CP 10
+        JP Z,A_INDEX
+        CP 13
+        JP Z,D_CR
+        RET
+A_BS:
+        CALL D_GET
+        LD A,H
+        OR A
+        RET Z
+        DEC H
+        JP D_SET
+A_TAB:
+        CALL D_GET
+        LD A,H
+        AND 0F8H
+        ADD A,8
+        CP 80
+        JR C,A_TABSET
+        LD A,79
+A_TABSET:
+        LD H,A
+        JP D_SET
+A_BEGIN:
+        LD A,1
+        LD (D_ESC),A
+        LD (A_COUNT),A
+        RET
+A_ESCAPE:
+        CALL D_RESET
+        LD A,C
+        CP '['
+        JR Z,A_CSIBEG
+        CP ']'
+        JP Z,A_STRBEG
+        CP 'P'
+        JP Z,A_STRBEG
+        CP '7'
+        JP Z,A_SAVE
+        CP '8'
+        JP Z,A_RESTORE
+        CP 'D'
+        JP Z,A_INDEX
+        CP 'E'
+        JR Z,A_NEXTLINE
+        CP 'M'
+        JP Z,A_RINDEX
+        RET
+A_NEXTLINE:
+        CALL D_CR
+        JP A_INDEX
+A_CSIBEG:
+        LD HL,A_ACC
+        LD B,7
+        XOR A
+A_INIT:
+        LD (HL),A
+        INC HL
+        DJNZ A_INIT
+        IF HOSTTERM EQ 0
+        LD A,(D_REV)
+        LD (A_STAGE),A
+        ENDIF
+        LD A,2
+        LD (D_ESC),A
+        LD (A_COUNT),A
+        RET
+A_CSI:
+        LD A,(A_COUNT)
+        INC A
+        CP 33
+        JP NC,A_BAD
+        LD (A_COUNT),A
+        IF HOSTTERM EQ 1
+        DEC A
+        LD E,A
+        LD D,0
+        LD HL,A_WIRE
+        ADD HL,DE
+        LD (HL),C
+        ENDIF
+        LD A,C
+        CP '0'
+        JR C,A_NONDIG
+        CP ':'
+        JP C,A_NUMBER
+A_NONDIG:
+        CP ';'
+        JP Z,A_PARAM
+        CP '?'
+        JR Z,A_PRIVATE
+        CP 40H
+        JP C,A_BAD
+        CP 7FH
+        JP NC,A_BAD
+        LD (A_FINAL),A
+        CALL A_PARAM
+        OR A
+        JP NZ,D_RESET
+        CALL D_RESET
+        LD A,(A_PRIV)
+        OR A
+        JP NZ,A_VIS
+        LD A,(A_NPAR)
+        LD B,A
+        LD A,(A_FINAL)
+        CP 'm'
+        JP Z,A_RENDIT
+        CP 'H'
+        JR Z,A_CHECKTWO
+        CP 'f'
+        JR Z,A_CHECKTWO
+        CP 'r'
+        JR NZ,A_CHECKONE
+A_CHECKTWO:
+        LD A,B
+        CP 3
+        RET NC
+        JR A_DISPCMD
+A_CHECKONE:
+        LD A,B
+        CP 1
+        RET NZ
+A_DISPCMD:
+        LD A,(A_FINAL)
+        SUB 'A'
+        CP 4
+        JP C,A_MOVE
+        LD A,(A_FINAL)
+        CP 'H'
+        JP Z,A_POSITION
+        CP 'f'
+        JP Z,A_POSITION
+        CP 'J'
+        JP Z,A_SCREEN
+        CP 'K'
+        JP Z,A_LINE
+        CP 'r'
+        JP Z,A_MARGIN
+        CP 's'
+        JP Z,A_SAVE
+        CP 'u'
+        JP Z,A_RESTORE
+        RET
+A_PRIVATE:
+        LD A,(A_COUNT)
+        CP 3
+        JP NZ,A_BAD
+        LD (A_PRIV),A
+        RET
+A_NUMBER:
+        LD A,(A_ACC)
+        CP 25
+        JR C,A_TIMES10
+        JR NZ,A_SATURATE
+        LD A,C
+        CP '6'
+        JR NC,A_SATURATE
+        LD A,(A_ACC)
+A_TIMES10:
+        LD B,A
+        ADD A,A
+        ADD A,A
+        ADD A,B
+        ADD A,A
+        LD B,A
+        LD A,C
+        SUB '0'
+        ADD A,B
+        LD (A_ACC),A
+        RET
+A_SATURATE:
+        LD A,255
+        LD (A_ACC),A
+        LD (A_BIG),A
+        RET
+A_PARAM:
+        LD A,(A_NPAR)
+        CP 16
+        JR NC,A_TOOMANY
+        LD HL,A_P1
+        OR A
+        JR Z,A_STOREP
+        DEC A
+        JR NZ,A_SGRP
+        INC HL
+A_STOREP:
+        LD A,(A_ACC)
+        LD (HL),A
+A_SGRP:
+        CALL A_SGRVAL
+        LD HL,A_NPAR
+        INC (HL)
+        XOR A
+        LD (A_ACC),A
+        LD (A_BIG),A
+        RET
+A_BAD:
+        LD A,3
+        LD (D_ESC),A
+        JP A_DROP
+A_TOOMANY:
+        LD A,3
+        LD (D_ESC),A
+        RET
+A_SGRVAL:
+        LD A,(A_EXT)
+        OR A
+        JR Z,A_SIMPLE
+        CP 128
+        RET Z
+        CP 255
+        JR Z,A_SPACE
+        LD A,(A_BIG)
+        OR A
+        JR NZ,A_SGRBAD
+        LD HL,A_EXT
+        DEC (HL)
+        RET
+A_SPACE:
+        LD A,(A_BIG)
+        OR A
+        JR NZ,A_SGRBAD
+        LD A,(A_ACC)
+        CP 2
+        JR Z,A_RGB
+        CP 5
+        JR NZ,A_SGRBAD
+        LD A,1
+        JR A_EXTSET
+A_RGB:
+        LD A,3
+        JR A_EXTSET
+A_SGRBAD:
+        LD A,128
+        JR A_EXTSET
+A_SIMPLE:
+        LD A,(A_BIG)
+        OR A
+        RET NZ
+        LD A,(A_ACC)
+        IF HOSTTERM EQ 1
+        CP 6
+        JR NZ,A_EXTCHECK
+        ; The previous profile aliases rapid blink to ordinary blink.
+        LD A,(A_COUNT)
+        SUB 2
+        LD E,A
+        LD D,0
+        LD HL,A_WIRE
+        ADD HL,DE
+        LD (HL),'5'
+        LD A,6
+A_EXTCHECK:
+        ENDIF
+        CP 38
+        JR Z,A_EXTEND
+        CP 48
+        JR Z,A_EXTEND
+        IF HOSTTERM EQ 0
+        LD HL,A_STAGE
+        OR A
+        JR NZ,A_SGRFLAG
+        LD (HL),A
+        RET
+A_SGRFLAG:
+        CP 7
+        JR Z,A_REVON
+        CP 27
+        JR Z,A_REVOFF
+        CP 8
+        JR Z,A_CONON
+        CP 28
+        RET NZ
+        RES 6,(HL)
+        RET
+A_REVON:
+        SET 7,(HL)
+        RET
+A_REVOFF:
+        RES 7,(HL)
+        RET
+A_CONON:
+        SET 6,(HL)
+        RET
+        ELSE
+        RET
+        ENDIF
+A_EXTEND:
+        LD A,255
+A_EXTSET:
+        LD (A_EXT),A
+        RET
+A_RENDIT:
+        LD A,(A_EXT)
+        OR A
+        RET NZ
+        IF HOSTTERM EQ 0
+        LD A,(A_STAGE)
+        LD (D_REV),A
+        ENDIF
+        IF HOSTTERM EQ 1
+        LD A,(A_COUNT)
+        LD B,A
+        LD HL,A_WIRE
+A_FORWARD:
+        LD A,(HL)
+        OUT (1),A
+        INC HL
+        DJNZ A_FORWARD
+        ENDIF
+        XOR A
+        RET
+A_VIS:
+        LD A,(A_NPAR)
+        CP 1
+        RET NZ
+        LD A,(A_P1)
+        CP 25
+        RET NZ
+        LD A,(A_FINAL)
+        CP 'h'
+        LD A,1
+        JR Z,A_VISSET
+        LD A,(A_FINAL)
+        CP 'l'
+        RET NZ
+        XOR A
+A_VISSET:
+        LD (D_VIS),A
+        JP D_VISSET
+A_MOVE:
+        LD E,A
+        PUSH DE
+        LD A,(A_P1)
+        OR A
+        JR NZ,A_STEPOK
+        INC A
+A_STEPOK:
+        PUSH AF
+        CALL D_GET
+        POP AF
+        LD C,A
+        POP DE
+        LD B,24
+        LD A,L
+        BIT 1,E
+        JR Z,A_AXIS
+        LD B,80
+        LD A,H
+A_AXIS:
+        LD D,A
+        LD A,E
+        OR A
+        JP PO,A_ADD
+        LD A,D
+        SUB C
+        JR NC,A_MOVESET
+        XOR A
+        JR A_MOVESET
+A_ADD:
+        LD A,D
+        ADD A,C
+        JR C,A_CLAMP
+        CP B
+        JR C,A_MOVESET
+A_CLAMP:
+        LD A,B
+        DEC A
+A_MOVESET:
+        BIT 1,E
+        JR NZ,A_COLSET
+        IF HOSTTERM EQ 1
+        LD B,A
+        LD A,E
+        OR A
+        JR NZ,A_LIMITDOWN
+        LD A,(A_TOP)
+        CP B
+        JR C,A_ROWREADY
+        LD B,A
+        JR A_ROWREADY
+A_LIMITDOWN:
+        LD A,(A_BOTTOM)
+        CP B
+        JR NC,A_ROWREADY
+        LD B,A
+A_ROWREADY:
+        LD A,B
+        ENDIF
+        LD L,A
+        JP D_SET
+A_COLSET:
+        LD H,A
+        JP D_SET
+A_POSITION:
+        LD A,(A_P1)
+        OR A
+        JR Z,A_ROWZERO
+        DEC A
+A_ROWZERO:
+        CP 24
+        JR C,A_ROWOK
+        LD A,23
+A_ROWOK:
+        LD L,A
+        LD A,(A_P2)
+        OR A
+        JR Z,A_COLZERO
+        DEC A
+A_COLZERO:
+        CP 80
+        JR C,A_COLOK
+        LD A,79
+A_COLOK:
+        LD H,A
+        JP D_SET
+A_MARGIN:
+        LD A,(A_P1)
+        OR A
+        JR Z,A_TOPZERO
+        DEC A
+A_TOPZERO:
+        CP 24
+        IF HOSTTERM EQ 1
+        JR C,A_TOPVALID
+        LD A,(A_P2)
+        OR A
+        RET NZ
+        LD (A_TOP),A
+        LD A,23
+        LD (A_BOTTOM),A
+        JP D_HOME
+A_TOPVALID:
+        ELSE
+        RET NC
+        ENDIF
+        LD B,A
+        LD A,(A_P2)
+        OR A
+        JR NZ,A_BOTNON
+        LD A,24
+A_BOTNON:
+        DEC A
+        CP 24
+        IF HOSTTERM EQ 1
+        JR C,A_BOTRANGE
+        LD A,23
+A_BOTRANGE:
+        ELSE
+        RET NC
+        ENDIF
+        CP B
+        RET C
+        RET Z
+        LD (A_BOTTOM),A
+        LD A,B
+        LD (A_TOP),A
+        JP D_HOME
+A_INDEX:
+        XOR A
+        LD (A_WRAP),A
+        CALL D_GET
+        LD A,(A_BOTTOM)
+        CP L
+        JP Z,D_SCROLL
+        LD A,L
+        CP 23
+        RET Z
+        INC L
+        JP D_SET
+A_RINDEX:
+        XOR A
+        LD (A_WRAP),A
+        CALL D_GET
+        LD A,(A_TOP)
+        CP L
+        JP Z,D_RSCROL
+        LD A,L
+        OR A
+        RET Z
+        DEC L
+        JP D_SET
+A_SAVE:
+        CALL D_GET
+        LD (A_SAVED),HL
+        LD A,(D_REV)
+        LD (A_SAVREV),A
+        LD A,(A_WRAP)
+        LD (A_SAVWR),A
+        IF HOSTTERM EQ 1
+        LD C,'7'
+        JP H_SAVEREST
+        ELSE
+        RET
+        ENDIF
+A_RESTORE:
+        LD HL,(A_SAVED)
+        CALL D_SET
+        LD A,(A_SAVREV)
+        IF HOSTTERM EQ 1
+        CP 255
+        JP Z,D_OFF
+        ENDIF
+        LD (D_REV),A
+        LD A,(A_SAVWR)
+        LD (A_WRAP),A
+        IF HOSTTERM EQ 1
+        LD C,'8'
+        JP H_SAVEREST
+        ELSE
+        RET
+        ENDIF
+A_SCREEN:
+        LD B,1
+        JR A_ERASE
+A_LINE:
+        LD B,0
+A_ERASE:
+        LD A,(A_P1)
+        CP 3
+        RET NC
+        LD C,A
+        LD A,B
+        LD (A_FINAL),A
+        CALL D_GET
+        PUSH HL
+        LD A,C
+        OR A
+        JR Z,A_SUFFIX
+        CP 2
+        JR Z,A_ERALL
+        LD (A_EREND),HL
+        LD H,0
+        LD A,(A_FINAL)
+        OR A
+        JR Z,A_PREBEGIN
+        LD L,0
+A_PREBEGIN:
+        CALL D_SET
+A_PREFIX:
+        LD C,32
+        CALL D_PRINT
+        CALL D_GET
+        LD DE,(A_EREND)
+        OR A
+        SBC HL,DE
+        JR Z,A_ERDONE
+        CALL D_GET
+        INC H
+        LD A,H
+        CP 80
+        JR C,A_PREBEGIN
+        LD H,0
+        INC L
+        JR A_PREBEGIN
+A_ERALL:
+        LD H,0
+        LD A,(A_FINAL)
+        OR A
+        JR Z,A_FULLPOS
+        LD L,0
+A_FULLPOS:
+        CALL D_SET
+A_SUFFIX:
+        LD A,(A_FINAL)
+        OR A
+        JR Z,A_LINEEND
+        CALL D_EOS
+        JR A_ERDONE
+A_LINEEND:
+        CALL D_EOL
+A_ERDONE:
+        POP HL
+        JP D_SET
+A_STRBEG:
+        LD A,4
+        LD (D_ESC),A
+        RET
+A_STRING:
+        LD A,C
+        CP 7
+        JP Z,D_RESET
+        CP 27
+        RET NZ
+        LD A,5
+        LD (D_ESC),A
+        RET
+A_STESC:
+        LD A,C
+        CP 92
+        JP Z,D_RESET
+        CP 7
+        JP Z,D_RESET
+        CP 27
+        RET Z
+        JR A_STRBEG
+
+        INCLUDE display-renderer.inc
+D_TCAP:
+        CP 8
+        JP NC,D_UNSUP
+        ADD A,6
+        JP D_CALL
+D_BASELINE:
+        CALL D_OFF
+        JP D_RESET
+D_TMOVE:
+        LD A,B
+        CP 24
+        JR NC,D_BAD
+        LD A,C
+        CP 80
+        JR NC,D_BAD
+        LD H,C
+        LD L,B
+        JP D_SET
+D_BAD:
+        LD A,3
+        RET
+D_FACTS:
+        LD HL,D_DESC
+        XOR A
+        RET
+D_DESC: DB 'TC',2,8,24,80,15,2
+D_REV: DB 0
+D_VIS: DB 1
+D_ESC: DB 0
+A_ACC: DB 0
+A_P1: DB 0
+A_P2: DB 0
+A_NPAR: DB 0
+A_BIG: DB 0
+A_EXT: DB 0
+A_PRIV: DB 0
+        IF HOSTTERM EQ 0
+A_STAGE: DB 0
+        ENDIF
+A_COUNT: DB 0
+A_FINAL: DB 0
+A_WRAP: DB 0
+A_TOP: DB 0
+A_BOTTOM: DB 23
+A_SAVED: DW 0
+        IF HOSTTERM EQ 1
+A_SAVREV: DB 255
+        ELSE
+A_SAVREV: DB 0
+        ENDIF
+A_SAVWR: DB 0
+A_EREND: DW 0
+        IF HOSTTERM EQ 1
+A_WIRE: DB 27,'['
+        DS 30,0
+        ENDIF
+D_END:
+        END

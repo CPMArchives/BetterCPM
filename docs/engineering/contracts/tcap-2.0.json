@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "service": "TCAP",
+  "version": [
+    2,
+    0
+  ],
+  "status": "direct-operation engineering integration candidate; release deferred",
+  "advertisement_capabilities": 0,
+  "record_version": 2,
+  "record_bytes": 8,
+  "record_header": [
+    [
+      "magic",
+      0,
+      2
+    ],
+    [
+      "version",
+      2,
+      1
+    ],
+    [
+      "length",
+      3,
+      1
+    ],
+    [
+      "rows",
+      4,
+      1
+    ],
+    [
+      "columns",
+      5,
+      1
+    ],
+    [
+      "operations",
+      6,
+      1
+    ],
+    [
+      "strong",
+      7,
+      1
+    ]
+  ],
+  "operations": {
+    "0": "query",
+    "1": "clear",
+    "2": "position",
+    "3": "erase_line",
+    "4": "strong_begin",
+    "5": "strong_end",
+    "6": "initialize",
+    "7": "deinitialize"
+  },
+  "statuses": {
+    "0": "success",
+    "1": "helper_unavailable",
+    "2": "unsupported_operation",
+    "3": "invalid_arguments",
+    "255": "unknown_selector"
+  },
+  "same_provider_index_required": true,
+  "rediscover_after_layout_mutation": true,
+  "permanent_display_reservation_bytes": 0,
+  "full_path_limit_bytes": 1280,
+  "excluded": "generic RSX machinery only",
+  "utility_migrations": "deferred",
+  "release_assignment": "deferred",
+  "full_path_limit_bytes_by_personality": {
+    "ADM3A": 1280,
+    "VT52": 1280,
+    "ANSI": 1792
+  }
+}

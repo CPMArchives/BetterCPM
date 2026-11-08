@@ -1,0 +1,27 @@
+{
+  "status": "PASS private integrated Model II admission, overlay, stack and interrupt checks",
+  "checks": 256,
+  "load_addresses": [
+    24832,
+    37376
+  ],
+  "entry_stack_addresses": [
+    30720,
+    65264
+  ],
+  "interrupt_states": [
+    0,
+    3
+  ],
+  "payload_bytes": 746,
+  "resident_profile_bytes": 1024,
+  "helper_bytes": 159,
+  "full_budgeted_path_bytes": 1250,
+  "personality": "VT52",
+  "private_stack_bytes": 20,
+  "stack_guard_intact": true,
+  "inline_cache_ownership": true,
+  "carrier_sha256": "a6640286e48641e5bb82983bd85f1e94cf369f3818a62e01c2b6cefa9740ee69",
+  "compatibility_id": "60cc6612a58741d99d953536e16f745b",
+  "scope": "CPU and actual carrier/metadata validators; full-machine load/unload and installation remain unqualified"
+}

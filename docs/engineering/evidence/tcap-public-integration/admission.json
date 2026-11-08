@@ -1,0 +1,134 @@
+{
+  "status": "PASS real guest public admission, rejected mutations, foreign owner and complete unload",
+  "checks": [
+    {
+      "command": "RSX LOAD ANSISCRN",
+      "rejected": false
+    },
+    {
+      "command": "BOUND",
+      "rejected": false
+    },
+    {
+      "command": "RSX LOAD BADCRC",
+      "rejected": true
+    },
+    {
+      "command": "BOUND",
+      "rejected": false
+    },
+    {
+      "command": "RSX LOAD FOREIGN",
+      "rejected": true
+    },
+    {
+      "command": "BOUND",
+      "rejected": false
+    },
+    {
+      "command": "RSX LOAD BADTAB",
+      "rejected": false
+    },
+    {
+      "command": "TREFUSE 2",
+      "rejected": false
+    },
+    {
+      "command": "RSX UNLOAD BADTAB",
+      "rejected": false
+    },
+    {
+      "command": "RSX LOAD BADVER",
+      "rejected": false
+    },
+    {
+      "command": "TREFUSE 2",
+      "rejected": false
+    },
+    {
+      "command": "RSX UNLOAD BADVER",
+      "rejected": false
+    },
+    {
+      "command": "RSX LOAD NEWMAJOR",
+      "rejected": false
+    },
+    {
+      "command": "TREFUSE 1",
+      "rejected": false
+    },
+    {
+      "command": "RSX UNLOAD NEWMAJOR",
+      "rejected": false
+    },
+    {
+      "command": "RSX LOAD ORPHAN",
+      "rejected": false
+    },
+    {
+      "command": "TREFUSE 1",
+      "rejected": false
+    },
+    {
+      "command": "RSX UNLOAD ORPHAN",
+      "rejected": false
+    },
+    {
+      "command": "RSX LOAD ORPHAN",
+      "rejected": false
+    },
+    {
+      "command": "RSX LOAD LEGACY",
+      "rejected": false
+    },
+    {
+      "command": "TREFUSE 1",
+      "rejected": false
+    },
+    {
+      "command": "RSX UNLOAD LEGACY",
+      "rejected": false
+    },
+    {
+      "command": "RSX UNLOAD ORPHAN",
+      "rejected": false
+    },
+    {
+      "command": "RSX LOAD ADM3A",
+      "rejected": false
+    },
+    {
+      "command": "RSX LOAD ANSI",
+      "rejected": true
+    },
+    {
+      "command": "RSX UNLOAD ANSISCRN",
+      "rejected": true
+    },
+    {
+      "command": "TINFO",
+      "rejected": false
+    },
+    {
+      "command": "RSX UNLOAD ADM3A",
+      "rejected": false
+    },
+    {
+      "command": "RSX UNLOAD ANSISCRN",
+      "rejected": false
+    },
+    {
+      "command": "BOUND",
+      "rejected": false
+    },
+    {
+      "command": "MAXCOM",
+      "rejected": false
+    }
+  ],
+  "runner_sha256": "8f891943ccb17bf8d97cd804463439569729942b031efbdb141d4d18df0c4e6c",
+  "uncalled_halt_queries": [
+    "NEWMAJOR",
+    "ORPHAN"
+  ]
+}

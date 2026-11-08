@@ -1,0 +1,33 @@
+{
+  "status": "PASS integrated VT52 protocol, direct operations and ordered input",
+  "checks": 71636,
+  "cases": [
+    {
+      "backend": "crt",
+      "base": 24832,
+      "payload_bytes": 685,
+      "payload_sha256": "61d2becbb12623b162179c2af2f7383241b6cbccb771462457dd194aba13ae54"
+    },
+    {
+      "backend": "crt",
+      "base": 37376,
+      "payload_bytes": 685,
+      "payload_sha256": "61d2becbb12623b162179c2af2f7383241b6cbccb771462457dd194aba13ae54"
+    },
+    {
+      "backend": "host",
+      "base": 24832,
+      "payload_bytes": 741,
+      "payload_sha256": "b5cb319015a89bcef34e9b6900ce12eb0d59c3ab64597ae83c862da07cda1198"
+    },
+    {
+      "backend": "host",
+      "base": 37376,
+      "payload_bytes": 741,
+      "payload_sha256": "b5cb319015a89bcef34e9b6900ce12eb0d59c3ab64597ae83c862da07cda1198"
+    }
+  ],
+  "reply_queue_bytes": 4,
+  "contract": "seven-bit VT52; out-of-range address bytes clamp; newest whole reply refused when full",
+  "scope": "CPU behavioral qualification; full loader/install/native media are separate gates"
+}

@@ -289,6 +289,13 @@ RESERVE:
         INC HL
         LD D,(HL)
         LD (CFOOT),DE
+        ; CACHE_INLINE_1: permission bit 2 explicitly yields ten bytes before
+        ; the runtime descriptors. Old carriers still own all their padding.
+        LD HL,(CAND)
+        LD BC,8
+        ADD HL,BC
+        BIT 2,(HL)
+        JR NZ,INLINED
         ; The entire declared allocation belongs to the provider, including
         ; padding. Keep it intact; charge one extra 256-byte page for footer.
         LD HL,(CFOOT)
@@ -296,6 +303,26 @@ RESERVE:
         ADD HL,DE
         JP C,BAD
         EX DE,HL
+        JR ALLOCOK
+INLINED:
+        LD HL,(FACTS)
+        LD BC,17
+        ADD HL,BC
+        LD A,(HL)
+        LD B,A
+        ADD A,A
+        ADD A,A
+        ADD A,B
+        ADD A,A
+        ADD A,10
+        LD C,A
+        LD B,0
+        LD HL,(CFOOT)
+        OR A
+        SBC HL,BC
+        JP C,BAD
+        LD (CFOOT),HL                  ; exclusive provider-owned prefix bound
+        ; DE still holds the original allocation; no extra page is requested.
 ALLOCOK:
         LD HL,(FACTS)
         LD BC,4

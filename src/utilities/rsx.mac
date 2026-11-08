@@ -24,6 +24,11 @@ RSXFUNC         EQU     177
 ; -------------------------------------------------------------------------------
 
 START:                                  ; enter BRSX manager utility
+  ; A profile change can allocate across the incoming TPA-top stack. Preserve
+  ; the supplied warm-return address on our own stack below transaction RAM.
+        POP     HL
+        LD      SP,RS_STKTOP
+        PUSH    HL
         CALL    UV_CHECK                ; standalone utility identity
         CALL SD_INIT
         CALL    UT_NORMALIZE
@@ -342,20 +347,9 @@ RS_SPLOOP:                              ; pad request name with spaces
         RET
 
 RS_CONTROL:                             ; call BRSX control service
-        LD      HL,0
-        ADD     HL,SP
-        LD      BC,64
-        OR      A
-        SBC     HL,BC
-        LD      DE,(0006H)
-        PUSH    HL
-        OR      A
-        SBC     HL,DE
-        POP     HL
-        JR      C,RS_WHIGH
-        EX      DE,HL
+        LD      HL,(0006H)
 
-RS_WHIGH:                               ; bound scratch below TPA and stack
+RS_WHIGH:                               ; own stack lies below workspace low
         LD      (RS_REQ+16),HL
         LD      DE,RS_REQ
         LD      C,RSXFUNC
@@ -551,6 +545,9 @@ UT_TAIL:
 
 ; @utility-version RSX@
 
+RS_STACK:
+        DS      512,0
+RS_STKTOP:
 RS_END:
         .DEPHASE
         END     START

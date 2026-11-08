@@ -1,75 +1,31 @@
 #!/usr/bin/env python3
-"""Check the public design tables; does not implement or qualify TCAP."""
+"""Check compact public TCAP documentation and assigned record values."""
 import json
 from pathlib import Path
-import re
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def check():
-    schema = json.loads((ROOT / 'docs/engineering/contracts/tcap-1.0.json').read_text())
-    document = (ROOT / 'docs/engineering/TCAP-Public-ABI.md').read_text()
-    assert schema['schema'] == 1 and schema['service'] == 'TCAP'
-    assert schema['version'] == [1, 0]
-    for name, fields in schema['records'].items():
-        cursor = 0
-        names = set()
-        rows = []
-        for field in fields:
-            assert field['offset'] == cursor, (name, 'gap/overlap', field)
-            assert isinstance(field['bytes'], int) and field['bytes'] > 0
-            assert field['field'] not in names, (name, 'duplicate field')
-            names.add(field['field'])
-            cursor += field['bytes']
-            rows.append(f"| {field['offset']} | {field['bytes']} | `{field['field']}` |")
-        assert cursor == schema['record_sizes'][name], (name, cursor)
-        heading = f'### Wire record: {name} ({cursor} bytes)'
-        assert document.count(heading) == 1, heading
-        section = document.split(heading, 1)[1].split('\n##', 1)[0]
-        actual = re.findall(r'^\| \d+ \| \d+ \| `\w+` \|$', section, re.M)
-        assert actual == rows, (name, 'Markdown/schema divergence')
-    assert schema['record_sizes'] == {
-        'request': 32, 'snapshot': 64, 'eligibility': 96, 'token': 16,
-        'provider_requirements': 64, 'owner_header': 32,
-    }
-    assert schema['records']['eligibility'][0]['field'] == 'snapshot'
-    assert schema['records']['eligibility'][0]['bytes'] == schema['record_sizes']['snapshot']
-    assert [o['value'] for o in schema['operations']] == list(range(8))
-    assert len({o['name'] for o in schema['operations']}) == 8
-    for op in schema['operations']:
-        assert op['input_bytes'] in (0, 96) and op['output_bytes'] in (0, 64, 96)
-        row = (f"| {op['value']:02X}h | {op['name']} | {op['input_bytes']} | "
-               f"{op['output_bytes']} | {'16 bytes' if op['token'] else 'none'} |")
-        assert row in document, op['name']
-    assert list(map(int, schema['statuses'])) == list(range(21))
-    assert list(map(int, schema['states'])) == list(range(6)) + [255]
-    assert list(map(int, schema['modes'])) == list(range(7))
-    for enum in ('statuses', 'states', 'modes'):
-        assert len(set(schema[enum].values())) == len(schema[enum])
-    for enum in ('statuses', 'states', 'modes'):
-        for code, name in schema[enum].items():
-            assert f'| {int(code):02X}h | {name} |' in document, (enum, code)
-    for name, value in schema['masks'].items():
-        assert isinstance(value, int) and 0 < value <= 65535, name
-    for name, requirements in schema['implicit_requirements'].items():
-        assert requirements['operations'] & ~schema['masks']['operations'] == 0
-        assert requirements['cleanup'] & ~schema['masks']['cleanup'] == 0
-        row = f"{requirements['operations']:04X}h | {requirements['cleanup']:04X}h"
-        assert row in document, (name, 'implicit mask divergence')
-    metadata = schema['metadata']
-    assert metadata == {'major': 3, 'minor': 0, 'binding_type': 4,
-                        'binding_bytes': 18, 'requirements_type': 5,
-                        'requirements_bytes': 64, 'mcon': [1, 4]}
-    assert metadata['requirements_bytes'] == schema['record_sizes']['provider_requirements']
-    minimum_metadata = 12 + 2 + metadata['binding_bytes'] + 2 + metadata['requirements_bytes'] + 2 * 12
-    assert minimum_metadata == 122 and minimum_metadata < 512
-    assert schema['implicit_requirements']['takeover']['operations'] == 0x06BF
-    assert schema['implicit_requirements']['emphasis']['operations'] == 0x0640
-    return {'status': 'PASS', 'scope': 'structural documentation consistency only; no runtime conformance',
-            'records': len(schema['records']), 'operations': len(schema['operations']),
-            'statuses': len(schema['statuses']), 'states': len(schema['states']),
-            'minimum_metadata_bytes': minimum_metadata}
+    direct = json.loads((ROOT/'docs/engineering/contracts/tcap-2.0.json').read_text())
+    direct_doc = (ROOT/'docs/engineering/TCAP-Direct-ABI.md').read_text()
+    assert direct['version'] == [2,0] and direct['record_bytes'] == 8
+    assert direct['full_path_limit_bytes_by_personality'] == {'ADM3A':1280,'VT52':1280,'ANSI':1792}
+    cursor = 0
+    for name,offset,size in direct['record_header']:
+        assert offset == cursor and size > 0,name
+        cursor += size
+    assert cursor == 8 and set(direct['operations']) == set(map(str,range(8)))
+    assert direct['same_provider_index_required'] and direct['rediscover_after_layout_mutation']
+    assert direct['permanent_display_reservation_bytes'] == 0
+    assert direct['utility_migrations'] == direct['release_assignment'] == 'deferred'
+    for name,mask,strong in [('adm3a',15,2),('vt52',7,0),('ansi',15,2)]:
+        text=(ROOT/'src/rsx/compact'/(name+'.mac')).read_text()
+        assert "D_DESC: DB 'TC',2,8,24,80,%d,%d"%(mask,strong) in text,name
+        assert 'D_TCAP:' in text and 'D_ENTRY:' in text
+    assert 'TCAP 2.0' in direct_doc and 'same provider index' in ' '.join(direct_doc.split())
+    return {'status':'PASS','scope':'compact public documentation/schema consistency; runtime qualification separate',
+            'direct_header_bytes':8,'full_path_limits':direct['full_path_limit_bytes_by_personality']}
 
 
 if __name__ == '__main__':

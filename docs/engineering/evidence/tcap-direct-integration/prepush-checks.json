@@ -1,0 +1,16 @@
+{
+  "status": "PASS final cleanup checks",
+  "base_revision": "7c0eb6b9837c708a6ef8402f38173599e4b7aae1",
+  "rsx_regressions": {
+    "test_rsx_request_v2": "PASS",
+    "test_rsxcarrier": "PASS",
+    "test_rsx_disk_cache": "PASS",
+    "test_rsx_inline_cache": "PASS"
+  },
+  "rsx_regressions_log_sha256": "fc529258b41090433039fa3a88027f9beeab6cbbc345b25ace5a1d04aae0fa8d",
+  "documentation_contract": "PASS tools/check_tcap_contract.py",
+  "changed_documentation_links_checked": 104,
+  "changed_documentation_links": "PASS file targets and anchors",
+  "python_syntax": "PASS AST parsing for every changed Python file",
+  "scope": "Cleanup validation; platform and CPU runtime qualification are recorded separately."
+}

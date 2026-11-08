@@ -1,0 +1,533 @@
+{
+  "status": "PASS private compact helper CPU fixtures",
+  "checks": [
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 0,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 1,
+      "row": 0,
+      "column": 0,
+      "status": 0,
+      "output_hex": "1b5b313b3148",
+      "stack_bytes_including_entry_return": 12
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 1,
+      "row": 23,
+      "column": 79,
+      "status": 0,
+      "output_hex": "1b5b32343b383048",
+      "stack_bytes_including_entry_return": 16
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 1,
+      "row": 99,
+      "column": 100,
+      "status": 0,
+      "output_hex": "1b5b3130303b31303148",
+      "stack_bytes_including_entry_return": 16
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 1,
+      "row": 254,
+      "column": 254,
+      "status": 0,
+      "output_hex": "1b5b3235353b32353548",
+      "stack_bytes_including_entry_return": 16
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 1,
+      "row": 255,
+      "column": 0,
+      "status": 3,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 0,
+      "output_hex": "1b5b316d",
+      "stack_bytes_including_entry_return": 12
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 4,
+      "row": 0,
+      "column": 0,
+      "status": 0,
+      "output_hex": "1b5b32326d",
+      "stack_bytes_including_entry_return": 12
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 7,
+      "row": 0,
+      "column": 0,
+      "status": 3,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 0,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 1,
+      "row": 23,
+      "column": 79,
+      "status": 0,
+      "output_hex": "1b3d376f",
+      "stack_bytes_including_entry_return": 12
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 1,
+      "row": 24,
+      "column": 0,
+      "status": 3,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 1,
+      "row": 0,
+      "column": 80,
+      "status": 3,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 0,
+      "output_hex": "0f",
+      "stack_bytes_including_entry_return": 12
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 4,
+      "row": 0,
+      "column": 0,
+      "status": 0,
+      "output_hex": "0e",
+      "stack_bytes_including_entry_return": 12
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 7,
+      "row": 0,
+      "column": 0,
+      "status": 3,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 0,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 1,
+      "row": 23,
+      "column": 79,
+      "status": 0,
+      "output_hex": "1b59376f",
+      "stack_bytes_including_entry_return": 12
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 1,
+      "row": 24,
+      "column": 0,
+      "status": 3,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 1,
+      "row": 0,
+      "column": 80,
+      "status": 3,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 0,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 4,
+      "row": 0,
+      "column": 0,
+      "status": 0,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 7,
+      "row": 0,
+      "column": 0,
+      "status": 3,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 2,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 2,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 2,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 2,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 2,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 2,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 2,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    },
+    {
+      "routine": "TC_OPEN",
+      "argument": 0,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 4
+    },
+    {
+      "routine": "TC_EMIT",
+      "argument": 3,
+      "row": 0,
+      "column": 0,
+      "status": 1,
+      "output_hex": "",
+      "stack_bytes_including_entry_return": 6
+    }
+  ],
+  "runner_sha256": "07226c276a3610d81b82d83af5f141f9026144e3db3f2fc09c990b752051898f",
+  "maximum_observed_stack_bytes": 16,
+  "scope": "library and mocked BDOS leaf; platform BDOS/BIOS stack excluded",
+  "helper_image_sha256": "d4d6647864d4d4925fae00af916c7bc6fbf44bf19ce2388ebd3c5c6aae05ab0d",
+  "maximum_comparable_static_bytes": 799,
+  "diagnostic_plus_resident_and_observed_stack_bytes": 1002
+}

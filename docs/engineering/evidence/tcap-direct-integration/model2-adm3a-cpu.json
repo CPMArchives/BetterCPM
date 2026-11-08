@@ -1,0 +1,27 @@
+{
+  "status": "PASS private integrated Model II admission, overlay, stack and interrupt checks",
+  "checks": 240,
+  "load_addresses": [
+    24832,
+    37376
+  ],
+  "entry_stack_addresses": [
+    30720,
+    65264
+  ],
+  "interrupt_states": [
+    0,
+    3
+  ],
+  "payload_bytes": 699,
+  "resident_profile_bytes": 768,
+  "helper_bytes": 159,
+  "full_budgeted_path_bytes": 994,
+  "personality": "ADM3A",
+  "private_stack_bytes": 20,
+  "stack_guard_intact": true,
+  "inline_cache_ownership": true,
+  "carrier_sha256": "af142f6700ad9db481a8fc414fc2d447e877a5cddec3607a954e6d40c958ac4e",
+  "compatibility_id": "60cc6612a58741d99d953536e16f745b",
+  "scope": "CPU and actual carrier/metadata validators; full-machine load/unload and installation remain unqualified"
+}

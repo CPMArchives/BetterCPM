@@ -21,7 +21,7 @@ def load(cpu, directory, stem, base):
     return symbols(directory/(stem+'.lst'))
 
 
-def fixture(name, base, model4_bios=None, cpmsim_bios=None):
+def fixture(name, base, model4_bios=None, cpmsim_bios=None, terminal_size=(80,24)):
     cpu = Z80(b'')
     model4 = name == 'M4SCRN'
     directory = (model4_bios or ROOT/'build/bios') if model4 else (cpmsim_bios or ROOT/'build/z80pack')
@@ -32,7 +32,8 @@ def fixture(name, base, model4_bios=None, cpmsim_bios=None):
     cpu.setword(1, origin+3)
     syms = load(cpu, OUT, name, base)
     entry = syms['S_ENTRY' if model4 else 'SB_ENTRY']+base-0x8000
-    screen = pyte.Screen(80,24)
+    screen = pyte.Screen(*terminal_size)
+    cpu.terminal_screen=screen
     stream = pyte.Stream(screen)
     output = []
     def write(port, value):

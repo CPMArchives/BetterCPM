@@ -24,6 +24,13 @@ COLD_ONLY. Version 2 is the first supported BetterCP/M 1.0 carrier format.
 Version 1 was used only by pre-release in-tree modules, all of which have been
 converted; preserving it is not a release compatibility requirement.
 
+The engineering [inline cache-footer extension](RSX-Inline-Cache-Footer.md)
+defines flag bit 2 as explicit permission to reserve ten cache bytes before the
+callable records inside the declared allocation. It does not change the low-bit
+reconstruction class. Without that permission, existing provider padding remains
+owned by the provider and the cache adds its separate page. Older managers reject
+the new bit. Bits 3 through 15 remain reserved and zero.
+
 ## Typed metadata stream
 
 The word at carrier offset 30 points to a metadata envelope following the

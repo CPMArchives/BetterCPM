@@ -1,0 +1,249 @@
+; Integrated VT52 personality. Grammar and ordered replies live here;
+; native rendering is linked from the selected platform component.
+TYPEVT EQU 1
+BASE EQU 08000H
+        ASEG
+        ORG BASE
+D_NEXT: DW 5
+        DW D_CHAIN
+        DW 0,0
+D_CHAIN:
+        LD HL,(D_NEXT)
+        JP (HL)
+D_ENTRY:
+        CP 6
+        JR NC,D_UNSUP
+        CP 1
+        JP Z,VQ_STAT
+        CP 2
+        JP Z,VQ_INPUT
+D_CALL:
+        IF M2BANK EQ 1
+        JP D_MAP
+        ENDIF
+D_DISPATCH:
+        PUSH DE
+        LD L,A
+        LD H,0
+        ADD HL,HL
+        LD DE,D_TABLE
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        POP DE
+        JP (HL)
+D_TABLE:
+        DW D_OUTPUT,D_RAW,D_RAW,D_CURSOR,D_CLEAR,D_RESET
+        DW D_FACTS,D_CLEAR,D_TMOVE,D_EOL,D_NOSTR,D_NOSTR,D_BASELINE,D_BASELINE
+D_OUTPUT:
+        PUSH BC
+        PUSH DE
+        CALL D_OUT
+        POP DE
+        POP BC
+        RET
+D_UNSUP:
+        LD A,255
+        RET
+D_RAW:
+        LD HL,(1)
+        LD DE,66
+        ADD HL,DE
+        JP (HL)
+D_CURSOR:
+        LD A,C
+        OR A
+        LD A,1
+        RET Z
+        SET 7,C
+        PUSH DE
+        CALL D_PRINT
+        POP DE
+        LD A,1
+        RET
+D_RESET:
+        XOR A
+        LD (D_ESC),A
+        RET
+D_CLEAR:
+        CALL D_RESET
+        CALL D_HOME
+        JP D_EOS
+D_OUT:
+        LD A,(D_ESC)
+        OR A
+        JR Z,V_NORMAL
+        DEC A
+        JP Z,V_ESCAPE
+        DEC A
+        JR Z,V_ROW
+        LD A,C
+        SUB 32
+        CP 80
+        JR C,V_COL
+        LD A,79
+V_COL:  LD H,A
+        LD A,(D_PEND)
+        LD L,A
+        CALL D_RESET
+        JP D_SET
+V_ROW:
+        LD A,C
+        SUB 32
+        CP 24
+        JR C,V_KEEP
+        LD A,23
+V_KEEP:
+        LD (D_PEND),A
+        LD A,3
+        LD (D_ESC),A
+        RET
+V_NORMAL:
+        LD A,C
+        AND 127
+        LD C,A
+        CP 127
+        RET Z
+        CP 32
+        JP NC,D_PRINT
+        CP 27
+        JR Z,V_BEGIN
+        CP 7
+        JP Z,D_BELL
+        CP 8
+        JP Z,D_LEFT
+        CP 9
+        JP Z,D_TAB
+        CP 10
+        JP Z,D_LF
+        CP 13
+        JP Z,D_CR
+        RET
+V_BEGIN:
+        LD A,1
+        LD (D_ESC),A
+        RET
+V_ESCAPE:
+        CALL D_RESET
+        LD A,C
+        CP 'Z'
+        JP Z,VQ_IDENT
+        CP 'Y'
+        JR Z,V_ADDR
+        CP 'H'
+        JP Z,D_HOME
+        CP 'A'
+        JP Z,D_UP
+        CP 'B'
+        JP Z,D_DOWN
+        CP 'C'
+        JP Z,D_RIGHT
+        CP 'D'
+        JP Z,D_LEFT
+        CP 'I'
+        JR Z,V_RLF
+        CP 'J'
+        JP Z,D_EOS
+        CP 'K'
+        JP Z,D_EOL
+        RET
+V_ADDR:
+        LD A,2
+        LD (D_ESC),A
+        RET
+V_RLF:
+        CALL D_GET
+        LD A,L
+        OR A
+        JP NZ,D_UP
+        JP D_RSCROL
+VQ_STAT:
+        LD A,(VQ_COUNT)
+        OR A
+        JR NZ,VQ_READY
+        LD A,1
+        CALL D_RAW
+        OR A
+        RET Z
+        LD A,2
+        CALL D_RAW
+        LD (VQ_DATA),A
+        LD A,1
+        LD (VQ_COUNT),A
+VQ_READY:
+        LD A,255
+        RET
+VQ_INPUT:
+        LD A,(VQ_COUNT)
+        OR A
+        JR NZ,VQ_GET
+        LD A,2
+        JP D_RAW
+VQ_GET:
+        LD HL,VQ_DATA
+        LD A,(HL)
+        PUSH AF
+        LD DE,VQ_DATA
+        INC HL
+        LD BC,3
+        LDIR
+        LD HL,VQ_COUNT
+        DEC (HL)
+        POP AF
+        RET
+VQ_IDENT:
+        ; One complete three-byte reply plus a previously observed keyboard
+        ; byte. Refuse a new reply atomically when it cannot fit.
+        LD A,(VQ_COUNT)
+        CP 2
+        RET NC
+        LD E,A
+        LD D,0
+        LD HL,VQ_DATA
+        ADD HL,DE
+        LD (HL),27
+        INC HL
+        LD (HL),'/'
+        INC HL
+        LD (HL),'K'
+        ADD A,3
+        LD (VQ_COUNT),A
+        RET
+VQ_COUNT: DB 0
+VQ_DATA: DB 0,0,0,0
+D_NOSTR:
+        LD A,2
+        RET
+        INCLUDE display-renderer.inc
+D_TCAP:
+        CP 8
+        JP NC,D_UNSUP
+        ADD A,6
+        JP D_CALL
+D_BASELINE:
+        CALL D_OFF
+        JP D_RESET
+D_TMOVE:
+        LD A,B
+        CP 24
+        JR NC,D_BAD
+        LD A,C
+        CP 80
+        JR NC,D_BAD
+        LD H,C
+        LD L,B
+        JP D_SET
+D_BAD:
+        LD A,3
+        RET
+D_FACTS:
+        LD HL,D_DESC
+        XOR A
+        RET
+D_DESC: DB 'TC',2,8,24,80,7,0
+D_ESC: DB 0
+D_PEND: DB 0
+D_END:
+        END

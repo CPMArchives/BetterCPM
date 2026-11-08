@@ -1,0 +1,432 @@
+{
+  "status": "PASS public TCAP cpmsim source, installation, installed cold/warm lifecycle and unload",
+  "service": "TCAP 1.0",
+  "profile": "cpmsim-fullram",
+  "compatibility_id": "a985d0b1959a6106c5b2e00110cbdaa0",
+  "budgets": {
+    "ADM3A": {
+      "public_service": "TCAP 1.0",
+      "table_bytes": 33,
+      "query_bytes": 10,
+      "baseline_allocated_bytes": 768,
+      "allocated_bytes": 1024,
+      "extra_resident_bytes": 256,
+      "helper": {
+        "code_bytes": 574,
+        "data_bytes": 203,
+        "total_bytes": 777,
+        "source_sha256": "112e883eab8c9c01849087f6ab5e899e67b66ff10cd4fef9856f1b74c5bf97e0"
+      },
+      "static_tcap_bytes": 1033,
+      "call_site_allowance_bytes": 32,
+      "stack_allowance_bytes": 32,
+      "permanent_tcap_bytes": 0,
+      "limit_bytes": 1280,
+      "budgeted_bytes": 1097,
+      "example_com_bytes": 930,
+      "example_with_resident_and_stack_allowance_bytes": 1218
+    },
+    "ANSI": {
+      "public_service": "TCAP 1.0",
+      "table_bytes": 56,
+      "query_bytes": 10,
+      "baseline_allocated_bytes": 1792,
+      "allocated_bytes": 2048,
+      "extra_resident_bytes": 256,
+      "helper": {
+        "code_bytes": 574,
+        "data_bytes": 203,
+        "total_bytes": 777,
+        "source_sha256": "112e883eab8c9c01849087f6ab5e899e67b66ff10cd4fef9856f1b74c5bf97e0"
+      },
+      "static_tcap_bytes": 1033,
+      "call_site_allowance_bytes": 32,
+      "stack_allowance_bytes": 32,
+      "permanent_tcap_bytes": 0,
+      "limit_bytes": 1280,
+      "budgeted_bytes": 1097,
+      "example_com_bytes": 930,
+      "example_with_resident_and_stack_allowance_bytes": 1218
+    },
+    "VT52": {
+      "public_service": "TCAP 1.0",
+      "table_bytes": 29,
+      "query_bytes": 10,
+      "baseline_allocated_bytes": 1024,
+      "allocated_bytes": 1024,
+      "extra_resident_bytes": 0,
+      "helper": {
+        "code_bytes": 574,
+        "data_bytes": 203,
+        "total_bytes": 777,
+        "source_sha256": "112e883eab8c9c01849087f6ab5e899e67b66ff10cd4fef9856f1b74c5bf97e0"
+      },
+      "static_tcap_bytes": 777,
+      "call_site_allowance_bytes": 32,
+      "stack_allowance_bytes": 32,
+      "permanent_tcap_bytes": 0,
+      "limit_bytes": 1280,
+      "budgeted_bytes": 841,
+      "example_com_bytes": 930,
+      "example_with_resident_and_stack_allowance_bytes": 962
+    }
+  },
+  "simulator_sha256": "981a69da751fb9dc5a25bcbd2dc56ccf270943605f463e9c5882b5e7811ef443",
+  "runner_sha256": "5c32f29c2ac03697cbe546026c8d14be24181aaf975801a4b5d6edc0cc35927f",
+  "baseline_boundary": 57601,
+  "maximum_com_bytes": 57344,
+  "checks": {
+    "source-lifecycle": {
+      "commands": [
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "TREFUSE 1"
+        },
+        {
+          "command": "RSX LOAD ANSISCRN"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX LOAD ADM3A"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 53761
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500F02"
+        },
+        {
+          "command": "TPROBE"
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500F02"
+        },
+        {
+          "command": "RSX UNLOAD ADM3A"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX LOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 52737
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "00000F02"
+        },
+        {
+          "command": "TPROBE"
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "00000F02"
+        },
+        {
+          "command": "RSX UNLOAD ANSI"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX LOAD VT52"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 53761
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500700"
+        },
+        {
+          "command": "TPROBE"
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500700"
+        },
+        {
+          "command": "RSX UNLOAD VT52"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX LOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 52737
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "00000F02"
+        },
+        {
+          "command": "TPROBE"
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "00000F02"
+        },
+        {
+          "command": "RSX UNLOAD ANSI"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX UNLOAD ANSISCRN"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "TABSENT"
+        }
+      ],
+      "rendering": [
+        {
+          "personality": "ADM3A",
+          "text": "TCAP TEXT",
+          "reverse": true
+        },
+        {
+          "personality": "ANSI",
+          "text": "TCAP TEXT",
+          "reverse": true
+        },
+        {
+          "personality": "VT52",
+          "text": "TCAP TEXT",
+          "reverse": false
+        },
+        {
+          "personality": "ANSI",
+          "text": "TCAP TEXT",
+          "reverse": true
+        }
+      ],
+      "transcript_sha256": "8f0e0a9ab10a062cdc819ecaa17055efa1dd99db6121fb21f8051462f8a5be1a"
+    },
+    "installation": {
+      "invalid_package_rejected_before_write": true,
+      "decline_unchanged": true,
+      "normalized_protected_payload_matches_source": true,
+      "filesystem_unchanged": true,
+      "installed_image_sha256": "77d53ca6fa4f852f4532ef8e9fc6182ed9d14626606d7ce8d31d317f27d52314"
+    },
+    "installed-lifecycle": {
+      "commands": [
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "TREFUSE 1"
+        },
+        {
+          "command": "RSX LOAD ANSISCRN"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX LOAD ADM3A"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 53761
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500F02"
+        },
+        {
+          "command": "TPROBE"
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500F02"
+        },
+        {
+          "command": "RSX UNLOAD ADM3A"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX LOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 52737
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "00000F02"
+        },
+        {
+          "command": "TPROBE"
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "00000F02"
+        },
+        {
+          "command": "RSX UNLOAD ANSI"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX LOAD VT52"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 53761
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500700"
+        },
+        {
+          "command": "TPROBE"
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "18500700"
+        },
+        {
+          "command": "RSX UNLOAD VT52"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX LOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 52737
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "00000F02"
+        },
+        {
+          "command": "TPROBE"
+        },
+        {
+          "command": "TINFO",
+          "info_hex": "00000F02"
+        },
+        {
+          "command": "RSX UNLOAD ANSI"
+        },
+        {
+          "command": "TABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54785
+        },
+        {
+          "command": "RSX UNLOAD ANSISCRN"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "TABSENT"
+        }
+      ],
+      "rendering": [
+        {
+          "personality": "ADM3A",
+          "text": "TCAP TEXT",
+          "reverse": true
+        },
+        {
+          "personality": "ANSI",
+          "text": "TCAP TEXT",
+          "reverse": true
+        },
+        {
+          "personality": "VT52",
+          "text": "TCAP TEXT",
+          "reverse": false
+        },
+        {
+          "personality": "ANSI",
+          "text": "TCAP TEXT",
+          "reverse": true
+        }
+      ],
+      "transcript_sha256": "8f0e0a9ab10a062cdc819ecaa17055efa1dd99db6121fb21f8051462f8a5be1a"
+    }
+  },
+  "permanent_memory_loss_bytes": 0
+}
