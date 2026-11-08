@@ -1,7 +1,13 @@
 ; Resident help printer for the existing bounded UH_QUERY recognizer.
-; DE points to the metadata-owned /VER string, followed by three inline
+; DE points to the metadata-owned title string, followed by three inline
 ; dollar-terminated parts: purpose, usage and resident options. The engine preserves
 ; caller BC/DE/HL; no console input, provider or filesystem calls are used.
+; Standard /VER identification shares the title/purpose streams with help.
+RH_IDENT:
+        EX DE,HL
+        LD DE,RH_IDPARTS
+        LD B,4
+        JR RH_HLOOP
 RH_HELP:
         EX DE,HL
         LD DE,RH_PARTS
@@ -25,6 +31,8 @@ RH_HEND:
         DJNZ RH_HLOOP
         RET
 ; Alternating common/command streams use one relocation for all four frames.
+RH_IDPARTS: DB '  - - -',13,10,' | BetterCP/M Utilities',13,10,' | ','$'
+            DB 13,10,'$'
 RH_PARTS: DB '  - - -',13,10,' | ','$'
           DB 13,10,' |',13,10,' |   Usage: ','$'
           DB 13,10,13,10,'   Options:',13,10,'$'
@@ -35,7 +43,7 @@ RH_PARTS: DB '  - - -',13,10,' | ','$'
 ; The gateway has restored DE to the command's identification/inline parts.
 RH_BAD:
         LD DE,(RH_ACTIVE)
-        JP RH_SHORT
+        JR RH_SHORT
 RH_FILE:
         LD HL,(RH_ACTIVE)
         PUSH HL

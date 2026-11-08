@@ -92,6 +92,9 @@ def expand_versions(text):
         if resident:
             # Standalone tail wrapper is unused by RCP; keep carrier relocations bounded.
             query = query[query.index('\nUV_QUERY:') + 1:]
+            printer = '        LD C,9\n        CALL 00005H'
+            assert query.count(printer) == 1
+            query = query.replace(printer, '        CALL RH_IDENT')
             # These adjacent dispatch branches fit JR. Save eight repair words
             # for the resident help gate without enlarging the BCPX header.
             text, shortened = re.subn(r'JP      NC,(BC_TRY[A-Z]+)',

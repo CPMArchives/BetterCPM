@@ -34,6 +34,26 @@ def main():
         expected = EXPECTED if tail == "/BANNER" else (
             "\r\nBetterCP/M " + RELEASE + "\r\n" if not tail else "\r\n?\r\n")
         assert output(c) == expected, (tail, repr(output(c)))
+    # Issue #612: keep normal resident queries separate from VER.COM queries.
+    from test_resident_feature_hints import execute as resident_query
+    from test_utility_finalization import execute as transient_query
+    from test_utility_versions import expected_identification
+    from utility_help import text, resident_identification
+    from utility_versions import banner
+    for base in (0x4000, 0x8101, 0xA000):
+        for tail in ('/VER', '/ver', 'FILE /VER /BOGUS'):
+            actual,calls=resident_query('VER '+tail,base,strict=True,hostile=True)
+            assert actual==resident_identification('VER'),(base,tail,actual)
+            assert set(calls)=={9},(base,tail,calls)
+        for tail in ('/H', '/HELP', '/hElP', '/VER /HELP /BOGUS'):
+            actual,_=resident_query('VER '+tail,base,strict=True,hostile=True)
+            assert actual==text('VER',identity=banner('VER',True),resident=True),(base,tail,actual)
+        actual,_=resident_query('VER',base,strict=True)
+        assert actual=='\r\nBetterCP/M '+RELEASE+'\r\n',actual
+    for tail in ('/VER', '/ver', 'FILE /VER /BOGUS'):
+        assert transient_query('VER',tail)[0]==expected_identification('VER'),tail
+    for tail in ('/H', '/HELP', '/hElP', '/VER /HELP /BOGUS'):
+        assert transient_query('VER',tail)[0]==text('VER'),tail
     resident = (ROOT / "build/cpx/rcp.bin").read_bytes()
     listing = (ROOT / "build/cpx/rcp.lst").read_text()
     c = runner(resident, 0x8000)

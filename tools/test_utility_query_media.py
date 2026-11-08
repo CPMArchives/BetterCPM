@@ -10,6 +10,7 @@ from run_trs80_command import DEFAULT_EMULATOR
 from trs80gp_launch import run as launch
 from test_z80pack_sysgen_install import session
 from utility_versions import identities,banner
+from utility_help import resident_identification
 ROOT=Path(__file__).resolve().parents[1]
 sha=lambda b:hashlib.sha256(b).hexdigest()
 
@@ -126,7 +127,7 @@ def resident(a):
     cases=[]
     for name in RESIDENT_SCREENS:
         cases.extend([(name+' /H',text(name,identity=banner(name,True),resident=True)),
-                      (name+' /VER',banner(name,True)+'\r\n'),
+                      (name+' /VER',resident_identification(name)),
                       (name+' /HELPER','Invalid usage.')])
     cases += [('ERA A0:UIFILE.TXT /VER /HELP /BOGUS',text('ERA',identity=banner('ERA',True),resident=True)),
               ('COPY A0:UIFILE.TXT A0:BAD.TXT /VER /H',text('COPY',identity=banner('COPY',True),resident=True)),
