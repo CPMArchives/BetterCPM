@@ -10,7 +10,7 @@
       "system-model2",
       "utilities-model2"
     ],
-    "notice": "Both System disks ship the native BetterCP/M DISK.FDB. Historical format data, including the definitions recovered from CONFIG.COM, retain the notice \u201cdistribution rights undetermined\u201d. The Source and nested Utilities kits carry the editable BetterCP/M FDF v1 catalogue. The original Montezuma DISK.FDF is excluded. The release catalogue preserves the 91 external and 16 CONFIG compatibility entries, uses independent definitions for MMF017 and MMI008, and adds the native BetterCP/M 780K System format. No rightsholder grant has been verified. Montezuma utility binaries and disassemblies are excluded from the packages and their nested source kits."
+    "notice": "Both System disks ship the native BetterCP/M DISK.FDB. Historical format data, including the definitions recovered from CONFIG.COM, retain the notice \u201cdistribution rights undetermined\u201d. The separate Source package carries the editable BetterCP/M FDF v1 catalogue. The original Montezuma DISK.FDF is excluded. The release catalogue preserves the 91 external and 16 CONFIG compatibility entries, uses independent definitions for MMF017 and MMI008, and adds the native BetterCP/M 780K System format. No rightsholder grant has been verified. Montezuma utility binaries and disassemblies are excluded from the packages and their nested source kits."
   },
   {
     "work": "z80pack and the cpmsim support kit",
@@ -41,7 +41,7 @@
       "source",
       "utilities-model2"
     ],
-    "notice": "GPL-2.0-or-later. Preserve upstream notices, modification history, license texts and the corresponding source/build material for the shipped versions. Utilities provides BetterCPM-TED-SOURCE.tar.gz, ZSM4-SOURCE.tar.gz and their provenance in source/; Source carries the host companions in source/native-companions/. See licenses/third_party/ted/, licenses/third_party/zsm4/, TEDCOPY.TXT, ZSM4COPY.TXT and TOOLINFO.TXT."
+    "notice": "GPL-2.0-or-later. Preserve upstream notices, modification history, license texts and the corresponding source/build material for the shipped versions. The separate BetterCPM-1.1-Source.zip download carries BetterCPM-TED-SOURCE.tar.gz, ZSM4-SOURCE.tar.gz and their provenance in source/native-companions/. See licenses/third_party/ted/, licenses/third_party/zsm4/, TEDCOPY.TXT, ZSM4COPY.TXT and TOOLINFO.TXT."
   },
   {
     "work": "Richard Conn DASM and SIG/M volume 91",
@@ -61,7 +61,7 @@
       "source",
       "utilities-model2"
     ],
-    "notice": "Full source snapshots carry the seven COMs and TOOLS.DOC under third_party/cpm-tools/, including inside the Utilities source tarballs. These seven COMs are outside the selected System and Utilities disk inventories. The matching 66-file source/build companion is included and integrity-checked. Preserve the GPL text and corresponding source and build scripts at pin 3e5eee55cac154e125659aadaa865b2c66e7d06a wherever those binaries are conveyed. Source: https://github.com/CPMArchives/cpm-tools/tree/3e5eee55cac154e125659aadaa865b2c66e7d06a."
+    "notice": "Full source snapshots carry the seven COMs and TOOLS.DOC under third_party/cpm-tools/, including inside the Source package\u2019s native source companions. These seven COMs are outside the selected System and Utilities disk inventories. The matching 66-file source/build companion is included and integrity-checked. Preserve the GPL text and corresponding source and build scripts at pin 3e5eee55cac154e125659aadaa865b2c66e7d06a wherever those binaries are conveyed. Source: https://github.com/CPMArchives/cpm-tools/tree/3e5eee55cac154e125659aadaa865b2c66e7d06a."
   },
   {
     "work": "Historical documentation, evidence, fixtures and nested sources",
