@@ -77,7 +77,9 @@
     "docs/platform/SUPPORT-1.1.md",
     "docs/engineering/TCAP-Direct-ABI.md",
     "docs/releases/1.1-SCOPE-AND-ACCEPTANCE.md",
-    "docs/releases/RELEASE-NOTES-1.1.md"
+    "docs/releases/RELEASE-NOTES-1.1.md",
+    "docs/engineering/TCAP-Utility-Impact-Audit.md",
+    "docs/engineering/TCAP-Utility-Impact-Audit.json"
   ],
   "license_records": [
     "third_party/cpm-tools/LICENSE",

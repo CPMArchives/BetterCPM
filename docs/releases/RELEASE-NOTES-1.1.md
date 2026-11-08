@@ -1,5 +1,13 @@
 # BetterCP/M 1.1 — release notes (draft; not published)
 
+**Maintainer clarification, 8 November 2026:** TYPE, TED and HELP were illustrative
+consumers, not an exhaustive set of utilities needing TCAP assessment or changes.
+The [full utility impact audit](../engineering/TCAP-Utility-Impact-Audit.md) covers all 52 registered utilities and
+records a confirmed TED integration regression. Earlier three-name lists must
+not be used to infer migration policy. Broader consumer-adoption release scope
+is under clarification; compatibility checks apply to every affected utility.
+Publication remains held.
+
 **Release state: preparation only.** These notes describe the locked feature set, not a qualified binary release. The final source revision, package hashes, VER behavior and artifact acceptance must be filled in from the exact published candidates before publication. Do not attach this draft to an unverified release.
 
 BetterCP/M 1.1 builds on the released 1.0.1 line while preserving the CP/M 2.2 programming model, the shared system architecture and separately versioned utilities and subsystems.
