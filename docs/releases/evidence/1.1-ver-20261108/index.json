@@ -1,0 +1,23 @@
+{
+  "scope": "VER resident/transient observations; documented #612 limitation, not full UI conformance",
+  "targets": [
+    {
+      "target": "cpmsim",
+      "source_commit": "4e1cf07835700bfdb9f3cf271e64547c3248a1a9",
+      "image_sha256": "616ea8b654f089c272098834f8d7674b7bf7c069bb89632d27a18d8ccc3d9fba",
+      "receipt": "cpmsim/observations.json"
+    },
+    {
+      "target": "model2",
+      "source_commit": "4e1cf07835700bfdb9f3cf271e64547c3248a1a9",
+      "image_sha256": "a8e517bf928666be71142a73aabc5262bc73625fa63882fa1d4886086c2fbb65",
+      "receipt": "model2/observations.json"
+    },
+    {
+      "target": "model4",
+      "source_commit": "4e1cf07835700bfdb9f3cf271e64547c3248a1a9",
+      "image_sha256": "4aa153b399cb11450599cfddeb59c1fa667e10eab3cd84732ee7de5590a6058d",
+      "receipt": "model4/observations.json"
+    }
+  ]
+}

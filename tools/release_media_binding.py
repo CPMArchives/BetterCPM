@@ -30,7 +30,10 @@ def bind(image, platform, expected):
     hashes={}
     for name,data in expected.items():
         actual=observed[name]
-        if actual[:len(data)]!=data or len(actual)!=(len(data)+127)//128*128 or set(actual[len(data):])-{0,26}:
+        # cpmcp can preserve the exact byte length; native readers expose
+        # complete CP/M records. Both must contain the exact executable.
+        lengths={len(data),(len(data)+127)//128*128}
+        if actual[:len(data)]!=data or len(actual) not in lengths or set(actual[len(data):])-{0,26}:
             raise ValueError('on-media executable differs from qualification input: '+name)
         hashes[name]=hashlib.sha256(data).hexdigest()
     return {'source_commit':report['source']['revision'],'image':image.name,

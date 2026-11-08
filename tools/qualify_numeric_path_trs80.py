@@ -20,12 +20,13 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--prepare-only', action='store_true')
     parser.add_argument('--emulator', type=Path)
+    parser.add_argument('--release-image', type=Path, help='bind the release System before adding disposable PATH fixtures')
     args = parser.parse_args()
     build = args.build.resolve()
     work = args.output.resolve()
     work.mkdir(parents=True, exist_ok=False)
     m2 = args.model == '2'
-    if m2:
+    if m2 and not args.release_image:
         # Use the port snapshot responsible for these build products.
         sys.path.insert(0, str(build.parent / 'tools'))
     from run_trs80_command import DEFAULT_EMULATOR
@@ -35,12 +36,12 @@ def main():
     maximum = 57344 if m2 else 54272
     drive = 'B' if m2 else 'A'
     search = f'{drive}3: . {drive}0:'
-    xsub = 'B0:XSUB B0:' if m2 else 'A0:XSUB'
+    xsub = 'B0:XSUB B0:' if drive=='B' else 'A0:XSUB'
     sequence = [f'A0:PATH {search}', '5:', 'WHICH', 'FIT', 'BIG', 'WHICH',
                 xsub, 'INPUT', 'BATCHFULL', f'{drive}0:WHICH', 'A0:PATH']
-    if m2:
+    if m2 or args.release_image:
         sequence.insert(0, 'PATH')
-        sequence.extend(['A0:PATH A9:', 'A0:PATH /DEFAULT', 'PATH', 'B0:PTDONE'])
+        sequence.extend(['A0:PATH A9:', 'A0:PATH /DEFAULT', 'PATH', f'{drive}0:PTDONE'])
     fixtures = [
         ('PTEST.SUB', ('\r\n'.join(sequence)+'\r\n\x1a').encode(), 0),
         ('WHICH.COM', marker(f'FIRST IMAGE {drive}3'), 3),
@@ -53,7 +54,48 @@ def main():
     def built(folder, name):
         return (name, (build/folder/name).read_bytes(), 0)
 
-    if m2:
+    binding=None
+    if args.release_image:
+        from release_media_binding import bind
+        cohort={name:(build/folder/name).read_bytes() for folder,name in
+                [('utilities','PATH.COM'),('cpx','RCP.CPX'),('system','R3PACK.RSX'),('system','R3CACHE.RSX')]}
+        binding=bind(args.release_image,'model2' if m2 else 'model4',cohort)
+        disk=work/('Release-System.imd' if m2 else 'Release-System.dmk')
+        shutil.copyfile(args.release_image,disk)
+        batch=[built('utilities','SUBMIT.COM'),built('utilities','XSUB.COM'),built('rsx','BATCHIO.RSX'),
+               ('PTDONE.COM',marker('PACKAGED PATH DONE'),0)]
+        if m2:
+            companion=work/'PATH-Fixtures.imd'
+            from model2_media import image
+            companion.write_bytes(image(bytes(160*128),batch+fixtures,bootable=False))
+        else:
+            from build_montezuma_extended_790k import build as dmk
+            from add_cpm_file_to_dmk import extract_raw
+            from package_integrated_tcap import native_files
+            existing=native_files(disk,'model4')
+            original_startup=existing['STARTUP.SUB']
+            test_startup=original_startup.rstrip(b'\x00\x1a')+b'RSX UNLOAD ADM3A\r\nSUBMIT PTEST\r\n\x1a'
+            raw_path=work/'system.raw';original_raw=extract_raw(disk.read_bytes());raw_path.write_bytes(original_raw)
+            (work/'diskdefs').write_text('diskdef path-system\n seclen 512\n tracks 160\n sectrk 10\n blocksize 2048\n maxdir 128\n skew 1\n boottrk 4\n os 2.2\nend\n')
+            for name,data,user in batch+fixtures+[('STARTUP.SUB',test_startup,0)]:
+                if user==0 and name in existing and name!='STARTUP.SUB':
+                    actual=existing[name]
+                    if actual[:len(data)]!=data or set(actual[len(data):])-{0,26}:
+                        raise ValueError('different existing release file: '+name)
+                    continue
+                host=work/(str(user)+'-'+name);host.write_bytes(data)
+                if name=='STARTUP.SUB':
+                    subprocess.run(['cpmrm','-T','raw','-f','path-system',str(raw_path),'0:STARTUP.SUB'],cwd=work,check=True)
+                subprocess.run(['cpmcp','-T','raw','-f','path-system',str(raw_path),str(host),f'{user}:'+name],cwd=work,check=True)
+            updated_raw=raw_path.read_bytes()
+            if updated_raw[:20480]!=original_raw[:20480]:raise ValueError('release boot area changed by fixture setup')
+            disk.write_bytes(dmk(updated_raw))
+            after=native_files(disk,'model4')
+            if any(after.get(n)!=data for n,data in existing.items() if n!='STARTUP.SUB'):raise ValueError('release executable changed by fixture setup')
+            binding['path_fixture_boundary']='Model 4 fixtures added on disposable A; original boot area and all original files except STARTUP.SUB retained. Startup appends unload and test submission to the original commands. Model II uses intact A with disposable B.'
+            binding['startup_before_sha256']=hashlib.sha256(original_startup).hexdigest()
+            binding['startup_fixture_sha256']=hashlib.sha256(test_startup).hexdigest()
+    elif m2:
         from model2_media import image
         # Keep the assembled System disk intact. SUBMIT writes its queue on a
         # disposable copy. All test programs and the script come from drive B.
@@ -87,14 +129,19 @@ def main():
                 'INPUT OK', f'SECOND IMAGE {drive}0', f'PATH: {search}']
     command = [str(args.emulator or DEFAULT_EMULATOR), '-m'+args.model, '-batch', '-turbo', '-d0', str(disk),
                '-itime', '120000']
-    if m2:
-        command.extend(['-d1', str(companion), '-iw', 'A0>', '-i', 'B0:SUBMIT B:PTEST\r'])
+    if m2 or args.release_image:
+        if m2:command.extend(['-d1', str(companion)])
+        if args.release_image and not m2:
+            command.extend(['-ktx'])
+        else:
+            command.extend(['-iw','A0>','-i','B0:SUBMIT B:PTEST\r'])
         expected.insert(0, 'PATH: . A0:')
         expected.extend(['PATH: A9:', 'PATH: . A0:', 'PACKAGED PATH DONE'])
     for message in expected:
         command.extend(['-iw', message, '-id', '120', '-it'])
     command.append('-ix')
     report = {'model': args.model, 'disk_sha256': hashlib.sha256(disk.read_bytes()).hexdigest(),
+              'release_input':binding,
               'expected': expected, 'command': command, 'result': 'prepared'}
     receipt = work/'path-run.json'
     receipt.write_text(json.dumps(report, indent=2)+'\n')

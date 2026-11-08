@@ -10,4 +10,4 @@ Physical hardware, Models 12/16/16B, hard drives and other disk formats are unve
 TCAP 2.0 integrated personality/renderer modules: RSX LOAD ADM3A (or VT52/ANSI).
 No separate screen backend is required. RSX UNLOAD ADM3A removes the provider.
 Use only matching System and Utilities packages. Verify SHA256SUMS.txt and RELEASE.json.
-Keep all license, attribution and source companions. TYPE/TED/HELP migration is deferred.
+Keep all license, attribution and source companions. Existing SCRN/SCX clients retain their documented interfaces; HELP is not included.

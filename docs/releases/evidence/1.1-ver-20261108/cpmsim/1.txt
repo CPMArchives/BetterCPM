@@ -1,0 +1,24 @@
+                  CP/M 2.2 Compatible System
+
+                Type TYPE README.TXT for more
+|                                                            |
+ - - -                                                  - - -
+
+A0>VER
+
+BetterCP/M 1.1
+
+A0>VER /H
+VER 1.0 (019-dev, Resident RCP)
+  - - -
+ | Version Information
+ |
+ |   Usage: VER [/V]
+
+   Options:
+     /V                   Show subsystem versions.
+
+     /H /HELP       Display this help.
+     /VER           Display utility identification.
+
+A0>_

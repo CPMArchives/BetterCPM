@@ -294,6 +294,9 @@ def assemble(args):
             files['docs/engineering/BCPM780-Installation-Qualification.md']=tracked['docs/engineering/BCPM780-Installation-Qualification.md']
             files['docs/engineering/Model 4 Release Checklist.md']=tracked['docs/engineering/Model 4 Release Checklist.md']
             files['docs/releases/RELEASE-NOTES-'+version+'.md']=tracked['docs/releases/RELEASE-NOTES-'+version+'.md']
+            if version=='1.1':
+                files['docs/releases/1.1-VER-DISPOSITION.md']=tracked['docs/releases/1.1-VER-DISPOSITION.md']
+                files.update({n:data for n,data in tracked.items() if n.startswith('docs/releases/evidence/1.1-ver-20261108/')})
             evidence={'system':report}
             if platform=='cpmsim':
                 files.update({'host/BetterCPM/'+n:d for n,d in host.items()})

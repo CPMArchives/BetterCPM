@@ -35,6 +35,13 @@ class Release11(unittest.TestCase):
             with patch('package_integrated_tcap.native_files',return_value={'ANSI.RSX':b'old'.ljust(128,b'\x1a')}):
                 receipt=bind(image,'model2',{'ANSI.RSX':b'old'})
                 self.assertEqual(receipt['image_sha256'],report['sha256'])
+            with patch('package_integrated_tcap.native_files',return_value={'ANSI.RSX':b'old'}):
+                receipt=bind(image,'model2',{'ANSI.RSX':b'old'})
+                self.assertEqual(receipt['image_sha256'],report['sha256'])
+            for invalid in (b'old\x1a', b'old'.ljust(128,b'x')):
+                with patch('package_integrated_tcap.native_files',return_value={'ANSI.RSX':invalid}):
+                    with self.assertRaisesRegex(ValueError,'differs'):
+                        bind(image,'model2',{'ANSI.RSX':b'old'})
 
     def test_three_systems_select_existing_commands_and_own_install_package(self):
         manifest=json.loads((ROOT/'metadata/distribution.json').read_text())['system_disk']

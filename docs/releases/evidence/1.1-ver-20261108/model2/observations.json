@@ -1,0 +1,72 @@
+{
+  "status": "PASS_OBSERVATIONS_WITH_DOCUMENTED_LIMITATION",
+  "source_commit": "4e1cf07835700bfdb9f3cf271e64547c3248a1a9",
+  "image_sha256": "a8e517bf928666be71142a73aabc5262bc73625fa63882fa1d4886086c2fbb65",
+  "cases": [
+    {
+      "command": "VER",
+      "screen": "0.txt",
+      "witness": "BetterCP/M 1.1",
+      "sha256": "6f2dfbf7c8f6dd4e2b21cc0456169a10b1879eb19da48be1f2c9670227cf5db1",
+      "original_screen_sha256": "326ffa30bbdb920c873bd0a48348d123ff7ad11941a47d2e48bcfbc564a3913b"
+    },
+    {
+      "command": "VER /H",
+      "screen": "1.txt",
+      "witness": "Usage: VER [/V]",
+      "sha256": "88d797236b0ce254bbae6137bbefb7123be061a1dbb1f914784b477255829554",
+      "original_screen_sha256": "df42c328a6d450bd47d54700735a41e73b39b64eb1bdff455d08c873ed212e01"
+    },
+    {
+      "command": "VER /HELP",
+      "screen": "2.txt",
+      "witness": "Usage: VER [/V]",
+      "sha256": "4b06cccfd6a2b645a9063006a02060f62c9bf868b577b47d44c29b0454a53048",
+      "original_screen_sha256": "88fa3a3e8f978f02628d32a627a4f984bc4b745f231cfefe8843a810c9c380d1"
+    },
+    {
+      "command": "VER /VER",
+      "screen": "3.txt",
+      "witness": "Resident RCP",
+      "sha256": "ea054af3c4a88f3008e1010e2d31ff3498c44a35f05fa107150361f6c9822bde",
+      "original_screen_sha256": "d2bec85222d83451cdd2f80a9abe3f11a12c26e7de772ce1ae73a0aa7de201ba"
+    },
+    {
+      "command": ":VER",
+      "screen": "4.txt",
+      "witness": "BetterCP/M 1.1",
+      "sha256": "f5bea4458af2948b39d1c0dda2257e93ebc8098ead79b7d650afb23adfb6ded8",
+      "original_screen_sha256": "fbd43549ad9c253617cc1c97a2dfcd6102623e4e8d29e3faabf9a360fd36604c"
+    },
+    {
+      "command": ":VER /H",
+      "screen": "5.txt",
+      "witness": "Usage: VER [/BANNER]",
+      "sha256": "9d29160c41daf41ca9a83a9718c9e49b84d3354fcf6859473a7f05f68ebdf077",
+      "original_screen_sha256": "7a8cbf17e52f6e78cd4ded73e73451519c46d88236a877d1519c9cb482a6049e"
+    },
+    {
+      "command": ":VER /HELP",
+      "screen": "6.txt",
+      "witness": "Usage: VER [/BANNER]",
+      "sha256": "74850fb122318189715b5a7ea84f60ca10c959cbf7ff16d39bcdd82506ac4a9e",
+      "original_screen_sha256": "a37a480b1e93d05596a56ad564f098fa6a83f283b46045678ac4aa61ca73f201"
+    },
+    {
+      "command": ":VER /VER",
+      "screen": "7.txt",
+      "witness": "System Version Information",
+      "sha256": "5afda57e5f83b042b70560f5cf1f7f90c34ba36b681c13d695e56a95ccd052c0",
+      "original_screen_sha256": "14f5311748e1ec43e6dc57f52d17807632132d356bc4c95060d9684b961e70d4"
+    },
+    {
+      "command": "A0:VER /VER",
+      "screen": "8.txt",
+      "witness": "System Version Information",
+      "sha256": "fdd005388341e4082cf490da9cbe998068f6d864cffb3df6335b1272fff8fec4",
+      "original_screen_sha256": "222837aa9a5c008e7f2139e2be7e15efd0c70f6f9268f83f8506ea9fd1028db0"
+    }
+  ],
+  "limitation": "Resident /VER remains a one-line identity rather than the shared multi-line block; issue #612 remains open. /H and /HELP now work on resident and explicit transient paths.",
+  "screen_encoding": "Readable screen rows; trailing blanks and final empty rows removed. Original rendered-screen hashes retained separately."
+}

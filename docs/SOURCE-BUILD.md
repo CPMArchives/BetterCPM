@@ -1,6 +1,6 @@
 # BetterCP/M Source Build and Reconstruction Guide
 
-This is the build entry point supporting all four manuals. It describes reconstructing the locked 1.0 software from its matching Source download, native development and the separate documentation build. Original prose is CC BY 4.0; original reusable code examples are GPL-2.0-or-later. See [licensing](LICENSING.md).
+This is the build entry point supporting all four manuals. It covers 1.1 reconstruction, native development and documentation builds, and preserves separate instructions for the locked 1.0 and 1.0.1 Source downloads. Original prose is CC BY 4.0; original reusable code examples are GPL-2.0-or-later. See [licensing](LICENSING.md).
 
 ## 1.1 source and reconstruction
 
