@@ -1,4 +1,12 @@
-# Numeric command PATH for BetterCP/M 1.1
+# Numeric command PATH for BetterCP/M 1.1 and 1.1.1
+
+## Release scope
+
+Numeric PATH was introduced in 1.1. The unconditional current-DU search and
+incremental `/A` / `/ADD` and `/D` / `/DEL` operations are assigned to **1.1.1**.
+The operator contract below includes those 1.1.1 changes. In the 1.1 baseline,
+the configured list alone controls unqualified lookup, and PATH supports
+whole-list replacement and `/DEFAULT` without incremental editing.
 
 ## Using PATH
 
@@ -164,7 +172,7 @@ instruction, and NOAH's help-layout test expects the former help footer. The
 historical CCP acquisition script also requires local September disk fixtures.
 The public-prompt, loader and batch results above were obtained independently.
 
-## Current-DU precedence correction — 8 November 2026
+## 1.1.1 current-DU precedence correction — 8 November 2026
 
 The current DU is now an unconditional first candidate, even when the list
 contains only another DU such as `D0:`. This supersedes the earlier policy
