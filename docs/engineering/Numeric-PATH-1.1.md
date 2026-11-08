@@ -6,6 +6,8 @@
 |---|---|
 | `PATH` | Display the active list. |
 | `PATH . B0: B1: C0: A0:` | Replace the entire list in that order. |
+| `PATH /A B3:` or `PATH /ADD B3:` | Append one entry to the configured list. |
+| `PATH /D B3:` or `PATH /DEL B3:` | Delete one matching entry, preserving the order of the others. |
 | `PATH B3: A0:` | Search the current DU first, then B3 and A0, skipping entries matching the current DU. |
 | `A0:PATH /DEFAULT` | Reach the management utility directly and restore `. A0:`. |
 | `PATH /H`, `PATH /HELP`, `PATH /VER` | Show the command syntax or component identification. |
@@ -19,6 +21,15 @@ in a two-digit user is accepted and disappears on display. Whitespace between
 entries is a space. The editor validates the complete replacement before
 publishing. It reports invalid syntax, out-of-range users, duplicate entries
 (including repeated dots) and overflow. The old list survives each rejection.
+Incremental switches take exactly one location and precede it. An add rejects
+an existing entry or a full list; a delete rejects an absent entry or deletion
+of the final configured entry. Matching uses canonical numeric DU values, so
+`B03:` matches `B3:`; dot matches only a stored dot, not a fixed DU that happens
+to resolve to the caller. Editing the implicit default first stages `. A0:`.
+All failures preserve the complete live record. A zero count still selects the
+default, so there is no empty-list encoding. The current DU remains an
+unconditional first search regardless of incremental edits.
+
 Six entries accommodate the dynamic caller, a system DU, and four additional
 tool or application areas. An installation can name a currently unmounted DU.
 
@@ -172,3 +183,11 @@ EOF/error suites also pass. The CCP grows by four bytes to 5,603 bytes within
 the unchanged 5,632-byte allocation; the legacy carrier is 6,627 bytes.
 Public-prompt harness expectations are updated; new release media still need
 their normal qualification.
+
+Incremental-edit qualification executes the assembled PATH.COM with a recording
+BDOS. It covers all four edit switches, lowercase forms, implicit-default edits,
+first/middle/last deletion, canonical matching, duplicates, full capacity,
+missing entries, final-entry rejection, malformed options/operands, whole-list
+replacement, `/DEFAULT`, `/H` and `/VER`. Rejected edits preserve all 13 live
+bytes. Run `python3 tools/build_path.py` followed by
+`python3 tools/test_path_edits.py`.

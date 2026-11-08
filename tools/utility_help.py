@@ -44,8 +44,10 @@ SCREENS={
  'SYSBUILD':('Native System Build','SYSBUILD',[]),
  'RESPACK':('Resident Image Packaging','RESPACK',[]),
  'RLMBUILD':('Relocation Map Build','RLMBUILD',[]),
- 'PATH':('Numeric Command Search Path','PATH [location ... | /DEFAULT]',[
+ 'PATH':('Numeric Command Search Path','PATH [location ... | /A location | /D location | /DEFAULT]',[
  ('location', 'Current DU is always first; add DUs such as B3: or .'),
+ ('/A /ADD DU', 'Append one entry to the list.'),
+ ('/D /DEL DU', 'Delete one entry; at least one must remain.'),
  ('/DEFAULT','Restore . A0:.')]),
  'WARM':('Warm Boot','WARM',[]),
  'DDT':('Debugger','DDT [file]',[]),

@@ -145,6 +145,10 @@ FAIL:   DB 'INVOCATION FAILED',13,10,'$'
     check('PATH D0:', b'PATH: D0:')
     check('PATH', b'PATH: D0:')  # local PATH.COM remains reachable
     check('WHICH', b'A0 IMAGE')
+    check('PATH /ADD B3:', b'PATH: D0: B3:')
+    check('PATH /D D0:', b'PATH: B3:')
+    check('PATH /A A0:', b'PATH: B3: A0:')
+    check('PATH /DEL B3:', b'PATH: A0:')
     check('PATH B3: . A0:', b'PATH: B3: . A0:')
     check('WHICH', b'A0 IMAGE')
     check('A0:WHICH', b'A0 IMAGE')
@@ -182,7 +186,7 @@ FAIL:   DB 'INVOCATION FAILED',13,10,'$'
     log = session(simulator, disks, commands, work/'prompt.log')
     # Read the emitted help rows so a formatter change cannot move only one group.
     help_rows = log.split(b'   Options:\r\n', 1)[1].splitlines()
-    for index, label in enumerate((b'location', b'/DEFAULT', b'', b'/H /HELP', b'/VER')):
+    for index, label in enumerate((b'location', b'/A /ADD DU', b'/D /DEL DU', b'/DEFAULT', b'', b'/H /HELP', b'/VER')):
         row = help_rows[index]
         if label:
             assert row.startswith(b'     ' + label.ljust(15)) and row[20:21].isalpha(), row
