@@ -136,6 +136,28 @@ def lean_utilities(files, evidence, source_commit):
                   'corresponding_source':offer}
 
 
+def lean_system(files, evidence, source_commit, platform):
+    """Keep boot/use material, including the compact standalone cpmsim host kit."""
+    guide={'cpmsim':'CPMSIM-INSTALLATION.md','Model4':'MODEL4-INSTALLATION.md','Model2':'MODEL2-INSTALLATION.md'}[platform]
+    files={n:b for n,b in files.items() if n.startswith(('images/','licenses/'))
+           or platform=='cpmsim' and n.startswith('host/')
+           or n in ('README.txt','THIRD-PARTY-NOTICES.txt','SOURCE-IDENTITY.json',
+                    'docs/LICENSING.md','docs/platform/'+guide)}
+    offer={'filename':'BetterCPM-1.1-Source.zip','source_commit':source_commit,
+           'url':'https://github.com/CPMArchives/BetterCPM/releases/download/v1.1/BetterCPM-1.1-Source.zip',
+           'documentation_url':'https://github.com/CPMArchives/BetterCPM/releases/download/v1.1/BetterCPM-1.1-Documentation.zip',
+           'contents':'Full software source, developer interfaces, manuals and qualification evidence.'}
+    files['SOURCE-DOWNLOAD.json']=encoded(offer)
+    files['THIRD-PARTY-NOTICES.txt']+=('\nCorresponding source: '+offer['url']+'\n').encode()
+    from release_documentation import remap_links
+    name='docs/platform/'+guide
+    files[name]=remap_links(name,name,files[name],{n:n for n in files},source_commit,{})
+    report=evidence['system']
+    proof={'image':report['image'],'sha256':report['sha256'],'target':report['target']}
+    if 'work_image_sha256' in report:proof['work_image_sha256']=report['work_image_sha256']
+    return files,{'system':proof,'corresponding_source':offer}
+
+
 def package_license_files(tracked, package_id, version="1.0"):
     """Attach the first-party grants and notices for this independent download."""
     notices = json.loads(tracked['packaging/'+version+'/third-party-notices.json'])
@@ -155,7 +177,7 @@ def package_license_files(tracked, package_id, version="1.0"):
         sections.append(row['work'] + '\n' + row['notice'])
     files = project_license_files(tracked)
     files['THIRD-PARTY-NOTICES.txt'] = ('\n\n'.join(sections) + '\n').encode('utf-8')
-    if version=='1.1' and package_id.startswith('utilities-'):
+    if version=='1.1' and package_id.startswith(('utilities-','system-')):
         files['THIRD-PARTY-NOTICES.txt']=files['THIRD-PARTY-NOTICES.txt'].replace(
             b'texts, provenance and corresponding-source companions with each download.',
             b'texts and provenance with each download. Matching corresponding source is available in the separate Source download from the same release.')
@@ -313,8 +335,6 @@ def assemble(args):
             files['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']=tracked['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']
             files['docs/engineering/BCPM780-Installation-Qualification.md']=tracked['docs/engineering/BCPM780-Installation-Qualification.md']
             files['docs/engineering/Model 4 Release Checklist.md']=tracked['docs/engineering/Model 4 Release Checklist.md']
-            if version=='1.1':
-                files,evidence=lean_utilities(files,evidence,commit)
             files['docs/releases/RELEASE-NOTES-'+version+'.md']=tracked['docs/releases/RELEASE-NOTES-'+version+'.md']
             if version=='1.1':
                 files['docs/releases/1.1-VER-DISPOSITION.md']=tracked['docs/releases/1.1-VER-DISPOSITION.md']
@@ -374,6 +394,10 @@ def assemble(args):
         for name,data in tracked.items():
             if name.startswith('third_party/') and any(x in Path(name).name.lower() for x in ('license','permission','provenance','copying','notice')):
                 files['licenses/'+name]=data
+        if version=='1.1' and id.startswith('system-'):
+            files,evidence=lean_system(files,evidence,commit,asset['platforms'][0])
+        elif version=='1.1' and id.startswith('utilities-'):
+            files,evidence=lean_utilities(files,evidence,commit)
         verify_members(files, forbidden, inspected)
         record={'schema':1,'package':id,'version':version,'source_commit':commit,
                 'status':'CANDIDATE; NOT ACCEPTED','accepted_commit':None,'tag':None,
