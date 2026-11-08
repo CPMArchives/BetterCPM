@@ -26,8 +26,9 @@ def repack(original,index_path,output):
         template=(ROOT/('packaging/1.1/README-System-'+platform+'.txt')).read_text()
         files['README.txt']=template.replace('ASSEMBLY TEMPLATE — not a completed or accepted release package.\nRemove this notice only after the release acceptance checks pass.','Qualified 1.1 release package.').replace('CANDIDATE — NOT ACCEPTED FOR RELEASE.','Qualified 1.1 release package.').encode()
         assert images=={n:sha(b) for n,b in files.items() if n.startswith('images/')}
-        assert not any(n.startswith(('host/','src/','third_party/','evidence/')) for n in files)
-        proof={'status':'PASS_PACKAGING_ONLY','packaging_commit':revision,'previous_archive_sha256':asset['sha256'],'unchanged_images':images,'omitted_host_kit_hashes':host,'corresponding_source':offer}
+        assert not any(n.startswith(('src/','third_party/','evidence/')) for n in files)
+        assert host=={n:sha(b) for n,b in files.items() if n.startswith('host/')}
+        proof={'status':'PASS_PACKAGING_ONLY','packaging_commit':revision,'previous_archive_sha256':asset['sha256'],'unchanged_images':images,'unchanged_cpmsim_host_kit':host,'corresponding_source':offer}
         files['Provenance/PACKAGING-CORRECTION.json']=encoded(proof)
         record.update(evidence=evidence,packaging_commit=revision,packaging_revision='system-layout-correction-2026-11-08',files={n:sha(b) for n,b in sorted(files.items())})
         asset.update(write_package(output/asset['filename'],asset['archive_root'],files,record));results.append(proof)

@@ -78,21 +78,25 @@ and cpmsend, from the same pinned source.
 
 ## Build the patched runtime
 
-Use an existing qualified patched runtime, or download `BetterCPM-1.1-Source.zip`
-from the same release. The System ZIP contains disk images and operating
-instructions; host build tools and emulator sources are in the Source download.
+The independent cpmsim System ZIP contains a self-contained reconstruction kit
+at `host/BetterCPM/`. Use that directory as the source root for the commands
+below; its `dependencies/README.txt` describes offline restoration. The full
+Source download provides the same inputs under its documented source root.
 No Utilities download is needed to build the runtime or boot the System disk.
 
-From the Source ZIP's `source/BetterCPM/` directory:
+The cpmsim System ZIP contains the complete host kit in `host/BetterCPM/`.
+From that directory, build the runtime with the packaged tar as input:
 
 ```sh
 python3 tools/build_qualified_cpmsim.py \
-  --source ../dependencies/z80pack-cpmsim-91fd28eb04e675c2127df88ed3f40675e15282e2.tar \
+  --source dependencies/z80pack-cpmsim-91fd28eb04e675c2127df88ed3f40675e15282e2.tar \
   --output build/cpmsim-runtime --profile runtime
 ```
 
-Use a new output directory. The Source download contains the pinned upstream
-files, notices and matching BetterCP/M patches. Git is used locally to apply patches. The builder verifies the file
+For the Source ZIP, run the same command from `source/BetterCPM/` with
+`../dependencies/` in place of `dependencies/`. Use a new output directory.
+Both kits contain the same upstream files, notices and matching BetterCP/M
+patches. Git is used locally to apply patches. The builder verifies the file
 inventory and hashes before compiling. An existing local upstream Git
 repository containing the pinned commit can also be passed to `--source`.
 The extracted kit records the BetterCP/M revision from SOURCE-IDENTITY.json.

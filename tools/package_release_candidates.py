@@ -137,9 +137,10 @@ def lean_utilities(files, evidence, source_commit):
 
 
 def lean_system(files, evidence, source_commit, platform):
-    """Keep boot/use material; host builds and developer material live in Source."""
+    """Keep boot/use material, including the compact standalone cpmsim host kit."""
     guide={'cpmsim':'CPMSIM-INSTALLATION.md','Model4':'MODEL4-INSTALLATION.md','Model2':'MODEL2-INSTALLATION.md'}[platform]
     files={n:b for n,b in files.items() if n.startswith(('images/','licenses/'))
+           or platform=='cpmsim' and n.startswith('host/')
            or n in ('README.txt','THIRD-PARTY-NOTICES.txt','SOURCE-IDENTITY.json',
                     'docs/LICENSING.md','docs/platform/'+guide)}
     offer={'filename':'BetterCPM-1.1-Source.zip','source_commit':source_commit,
