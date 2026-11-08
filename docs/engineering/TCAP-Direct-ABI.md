@@ -1,9 +1,13 @@
 # TCAP 2.0 direct-operation ABI
 
-Engineering integration candidate, 8 November 2026. Release assignment and
-TYPE, TED and HELP migrations remain deferred. This contract explicitly revises
-the unreleased [TCAP 1.0 template candidate](TCAP-Template-ABI-Historical.md). A 2.0 provider
-does **not** advertise the incompatible 1.0 service.
+Engineering integration candidate qualified 8 November 2026, **subsequently
+selected for BetterCP/M 1.1 by explicit maintainer release assignment**.
+Final delivered-media acceptance remains separate from this contract's
+engineering qualification. TYPE, TED and HELP migrations remain deferred.
+This contract supersedes the abandoned, unreleased
+[TCAP 1.0 template candidate](TCAP-Template-ABI-Historical.md). A 2.0 provider
+does **not** advertise the incompatible 1.0 service. See the
+[1.1 scope and acceptance contract](../releases/1.1-SCOPE-AND-ACCEPTANCE.md).
 
 ## Display ownership and lifetime
 
