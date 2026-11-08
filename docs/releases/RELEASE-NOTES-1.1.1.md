@@ -67,3 +67,12 @@ and user. Regression checks execute the assembled COM with a recording BDOS
 for lowercase and uppercase drive/user, filename and keyword operands, context
 restoration, invalid-option isolation and query precedence. Existing filespec
 parser checks pass.
+
+## STAT logged-drive report labeling
+
+Bare STAT now heads its existing status/free-space list with `Logged-in drives:`.
+Help explains that the list includes logged-in drives only, warm boot resets
+that set, and `STAT B:` queries B directly. This is a presentation change: drive
+enumeration, disk accesses, login/reset semantics and explicit-drive output are
+unchanged. The compiled-code regression verifies the heading, an A/C login mask
+with B omitted, the absence of the heading on `STAT B:`, and the help text.

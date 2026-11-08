@@ -4,7 +4,7 @@ from test_bios import Z80
 from test_utility_finalization import execute, ROOT
 
 
-def run(tail):
+def run(tail, logged=1):
     c=Z80(b''); data=(ROOT/'build/utilities/STAT.COM').read_bytes()
     c.mem[256:256+len(data)]=data
     c.mem[5:8]=b'\xd3\x00\xc9'; c.mem[0:3]=b'\xc3\xfe\xff'
@@ -12,7 +12,6 @@ def run(tail):
     original=bytes(c.mem[128:256]); output=bytearray(); calls=[]
     c.mem[0x8002]=3
     drive=user=0
-    logged=1
     def service(port,value):
         nonlocal drive,user,logged
         calls.append(c.c)
@@ -38,6 +37,13 @@ def run(tail):
 
 
 def main():
+    text,calls,_=run('', logged=5)
+    assert text.count('Logged-in drives:')==1,text
+    assert 'A: R/W, Space:' in text and 'C: R/W, Space:' in text,text
+    assert 'B: R/W, Space:' not in text,text
+    assert 'Logged-in drives:' not in run('B:')[0]
+    help_text=execute('STAT','/HELP')[0]
+    assert 'logged-in drives only' in help_text and 'Warm boot resets' in help_text,help_text
     for tail in ('/BOGUS',' /bogus ','\t/bogus','MISSING.DAT /BOGUS','/'):
         text,calls,preserved=run(tail)
         assert 'Invalid option.' in text and 'Usage: STAT' in text,(tail,text)

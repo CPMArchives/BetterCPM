@@ -3688,7 +3688,9 @@ Here `d:` means a drive selection. Conventional operands also accept numeric use
 
 In 1.1.1, STAT operands are case-insensitive, including drive letters: `STAT b:`
 and `STAT B:` are equivalent. For 1.1, use uppercase drive letters. Bare STAT
-lists logged-in drives; a drive-only operand queries that drive directly.
+lists logged-in drives under a `Logged-in drives:` heading; a drive-only
+operand queries that drive directly. Warm boot resets the logged-in drive set,
+so the list can change after a program exits through warm boot.
 
 
 | Command | Information or action |

@@ -700,6 +700,8 @@ DISKSTATUS:                             ; report logged-in drive status
         LD      C,29
         CALL    BDOS
         LD      (ROVEC),HL
+        LD      DE,MLOGGED
+        CALL    PRINT
         XOR     A
         LD      (DRIVE),A
 
@@ -2688,6 +2690,7 @@ QUERYFOUND:     DB 0
 ; -------------------------------------------------------------------------------
 
 MCRLF:          DB 13,10,'$'            ; mcrlf
+MLOGGED:        DB 13,10,'Logged-in drives:',13,10,'$'
 MRSLASH:        DB ' R/$'               ; mrslash
 MSPACE:         DB ', Space: $'         ; mspace
 MKFREE:         DB 'K',13,10,'$'        ; mkfree

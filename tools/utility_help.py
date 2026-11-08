@@ -3,6 +3,9 @@ from utility_versions import banner
 
 SCREENS={
  'STAT':('System and File Statistics','STAT [drive: | filespec | request]',[
+ ('', 'No operand: report logged-in drives only.'),
+ ('d:', 'Query free space on that drive directly.'),
+ ('', 'Warm boot resets the logged-in drive set.'),
  ('VAL:', 'Show syntax and valid device assignments.'),
  ('DSK:', 'Show disk parameters for logged drives.'),
  ('USR:', 'Show user areas on the selected drive.'),
