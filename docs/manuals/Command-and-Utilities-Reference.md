@@ -1,12 +1,20 @@
-# BetterCP/M 1.0 Command and Utilities Reference
+# BetterCP/M 1.1 Command and Utilities Reference
 
 License: original prose/illustrations are CC BY 4.0; original reusable code examples are GPL-2.0-or-later. Third-party material retains its own terms. See [licensing and example boundaries](../LICENSING.md).
 
-This reference describes the locked BetterCP/M 1.0 software, not every buildable component on current main. [User's Guide](Users-Guide.md) supplies operating procedures and conceptual explanations. The [release lock](../releases/non-documentation-lock-1.0/README.md) fixes the five Source/System/Utilities packages at software source `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`; this manuscript has a separate documentation revision. No new execution qualification is claimed by restructuring it.
+This edition describes BetterCP/M 1.1 for patched cpmsim, TRS-80 Model 4 and the 64 KiB Model II under trs80gp 2.5.8. Use matching System and Utilities downloads from the same release. Package identity and exact source/image hashes come from RELEASE.json and the release index. The prior 1.0 and 1.0.1 downloads and locks remain unchanged. See the [1.1 scope](../releases/1.1-SCOPE-AND-ACCEPTANCE.md) and [platform boundaries](../platform/SUPPORT-1.1.md); engineering receipts are not acceptance of differently hashed final media.
 
-The normal combined arrangement is A: System, B: primary Utilities, C: Companion Utilities, D: work. Examples assume user zero unless stated otherwise. Keep original media unchanged and operate on writable copies. System and Utilities are separate downloads. Program availability comes from the locked [delivered contents](../releases/non-documentation-lock-1.0/CONTENTS.json), not a development build directory. Qualified installation and execution evidence is emulator-based; physical transfer and additional platforms have separate requirements.
+The normal combined arrangement is A: System, B: primary Utilities, C: Companion Utilities, D: work. Use writable copies of images. Each target has separate System and Utilities downloads; Model II uses BCM2SS IMDs. The [distribution inventory](../../metadata/distribution.json), target build reports and RELEASE.json define available programs, not a development build directory. Qualification is emulator-based; physical hardware is unverified.
 
 <a id="notation"></a>
+
+## 1.1 operating profile
+
+The unloaded complete-record COM limit is 57,344 bytes on cpmsim and Model II. Model 4 retains a 54,272-byte exception because of its keyboard/video reservation. Optional RSXs consume TPA while loaded; complete unload restores the unloaded limit. Read STAT MEM and the current page-zero gateway boundary instead of assuming a hard-coded size. The first RSX also incurs 1,024 bytes of general manager overhead. TCAP full-path accounting includes the renderer, personality, facts, descriptors, cache/alignment, caller helper, shared BIOS state and call/stack allowances: at most 1,280 bytes for ADM3A/VT52 and 1,792 for ANSI; there is no additional permanent display reservation.
+
+BetterCP/M 1.1 supplies integrated ADM3A, VT52 and ANSI personality/renderers implementing the independently versioned TCAP 2.0 direct API. Load one with `RSX LOAD ANSI`, unload it with `RSX UNLOAD ANSI`, and rediscover services after every layout mutation. No standalone screen backend is required by these integrated modules. Model 4 startup selects ADM3A; cpmsim and Model II start with the basic console. Separate ANSISCRN, M4SCRN and M2SCRN modules remain available to clients of SCRN/SCX, such as TED and DUMP paging. TYPE/TED/HELP have not been migrated to TCAP 2.0, and HELP is not shipped. The abandoned, unreleased TCAP 1.0/template designs are historical, not compatibility modes. The supported protocols are fixed 80x24 seven-bit paths, not arbitrary host geometry. See the [direct ABI and caller helper contract](../engineering/TCAP-Direct-ABI.md).
+
+Numeric PATH has up to six ordered drive/user entries, default `. A0:`. `.` tracks the caller. Use `PATH /H`, `/HELP` or `/VER`; `A0:PATH /DEFAULT` recovers the default. PATH is volatile: use the existing startup script to apply a preferred list after cold boot. Named directories and scripting are outside 1.1.
 
 ## Reading the entries
 
@@ -3057,7 +3065,7 @@ On cpmsim in a suitable ANSI host terminal, use ANSISCRN:
 RSX LOAD ANSISCRN
 ```
 
-These examples assume the backend is available in your current command environment. Use its actual drive/user-qualified location if necessary. Check `RSX LIST` first; the supplied Model 4 startup normally loads M4SCRN already.
+These examples assume the backend is available in your current command environment. Use its actual drive/user-qualified location if necessary. Check `RSX LIST` first; the supplied 1.1 startup does not load a standalone screen backend. Load M4SCRN explicitly for a SCRN client, M2SCRN on Model II, or ANSISCRN on cpmsim.
 
 DUMP calls the screen backend directly. You do not need to select a particular ADM-3A, VT52, or ANSI personality for DUMP; an existing personality may remain loaded. Other applications may still require that personality. Loaded RSXs consume transient program memory until unloaded; see the User’s Guide for RSX management.
 
@@ -6334,12 +6342,10 @@ normal startup loads screen personalities; before starting FDB, release them:
 
 ```
 RSX UNLOAD ADM3A
-RSX UNLOAD M4SCRN
 ```
 
 After quitting FDB, run `SUBMIT STARTUP` with the unmodified shipped startup
-script, or cold-boot, to restore the normal console. That script loads M4SCRN
-then ADM3A as one queued sequence before clearing the screen. If your startup
+script, or cold-boot, to restore the normal console. That script loads integrated ADM3A as one queued sequence before clearing the screen. If your startup
 script is customized, use your normal console startup sequence. If other
 extensions also consume memory, unload unneeded extensions or use a clean
 boot. FDB refuses insufficient memory without changing files.
@@ -6388,9 +6394,9 @@ Show help without opening files. Substitute the locations and filenames appropri
 
 #### Errors/Troubleshooting
 
-The locked main menu is headed `Working catalogue:` and prompts with `Choice:`. Use its displayed letters, Q or BREAK. The bracketed/grouped presentation and later usability changes belong to development 1.01; see [FDB presentation erratum](../releases/1.0-ERRATA.md#fdb-main-menu-presentation).
+FDB 1.01 uses the grouped main menu. Follow its displayed choices and use Q or BREAK to exit. The older Working catalogue/Choice presentation belongs to locked 1.0 binaries. Keep the viewer matched to the shipped FDB.COM.
 
-Interactive FDB needs the unloaded 53K environment. On Model 4 unload ADM3A, then M4SCRN. After FDB exits, restore with the unmodified `SUBMIT STARTUP` or cold boot. Queries work at normal startup allocation. Keep the matching viewer and retain any reported .BAK/.$$$ files after save failures.
+Interactive FDB needs the unloaded 53K environment. On Model 4 unload ADM3A and any separately loaded backend. After FDB exits, restore with the unmodified `SUBMIT STARTUP` or cold boot. Queries work at normal startup allocation. Keep the matching viewer and retain any reported .BAK/.$$$ files after save failures.
 
 #### See Also
 
@@ -7457,34 +7463,15 @@ The extension's documentation identifies these requirements.
 
 ##### Extension Dependencies
 
-Some RSXs depend on services provided by other extensions.
+Some RSXs depend on services provided by other extensions. The 1.1 ADM3A,
+VT52 and ANSI modules combine personality and renderer and need no separate
+screen backend. On every target, select ADM3A with `RSX LOAD ADM3A` and remove
+it with `RSX UNLOAD ADM3A`; unload it before selecting VT52 or ANSI.
 
-BetterCP/M's terminal-monitor system provides a common example.
-
-A terminal personality interprets the control sequences used by an application, while a screen backend communicates with the actual display environment.
-
-The backend must be loaded before the terminal personality.
-
-For example, on a TRS-80 Model 4:
-
-```text
-A0>RSX LOAD M4SCRN
-A0>RSX LOAD ADM3A
-```
-
-The first command loads the Model 4 screen backend.
-
-The second loads the ADM-3A terminal personality.
-
-On a system using the ANSI screen backend, the corresponding commands are:
-
-```text
-A0>RSX LOAD ANSISCRN
-A0>RSX LOAD ADM3A
-```
-
-These commands establish the supported ADM-3A display environment using the appropriate backend.
-
+Standalone SCRN/SCX clients retain their separate dependencies. TED requires
+ANSI plus ANSISCRN on cpmsim, M4SCRN on Model 4, or M2SCRN on Model II.
+DUMP paging requires the appropriate SCRN backend. This does not migrate
+these utilities to TCAP 2.0.
 
 ##### Unloading an RSX
 
@@ -8011,7 +7998,7 @@ SUBMIT STARTUP
 
 This executes `STARTUP.SUB`.
 
-[Section 7.3](Users-Guide.md#chapter-7--inspect-change-and-save-configuration) lists the supplied scripts in order. cpmsim displays the banner only; Model 4 already loads M4SCRN and ADM3A, clears the screen, then displays the banner. Edit `A0:STARTUP.SUB` to customize that sequence.
+[Section 7.3](Users-Guide.md#chapter-7--inspect-change-and-save-configuration) lists the supplied scripts in order. cpmsim displays the banner only; Model 4 already loads integrated ADM3A, clears the screen, then displays the banner. Edit `A0:STARTUP.SUB` to customize that sequence.
 
 The startup command is executed during a cold boot, not during an ordinary warm boot.
 
@@ -9102,10 +9089,11 @@ starting it, use `RSX LIST` to check what is loaded:
 
 | Target | Screen backend | Terminal module |
 | --- | --- | --- |
-| Model 4 / trs80gp | M4SCRN | ANSI |
-| z80pack / cpmsim with an ANSI host terminal | ANSISCRN | ANSI |
+| Model 4 / trs80gp | M4SCRN | integrated ANSI |
+| Model II / trs80gp | M2SCRN | integrated ANSI |
+| z80pack / cpmsim with an ANSI host terminal | ANSISCRN | integrated ANSI |
 
-Load the missing backend with `RSX LOAD M4SCRN` or `RSX LOAD ANSISCRN`.
+Load the missing SCRN backend with `RSX LOAD M4SCRN`, `RSX LOAD M2SCRN`, or `RSX LOAD ANSISCRN` for the selected target. TED still uses SCRN; the integrated ANSI module alone does not replace that client interface.
 Unload a conflicting terminal module, such as ADM3A, before `RSX LOAD ANSI`.
 TED does not load these modules itself. Keep the module configuration fixed
 while editing and keep the host terminal large enough for the 80-by-24 viewport.
@@ -10439,7 +10427,7 @@ ADMTST
 
 Run `ADMTST` and follow its displayed screen/input exercises. Compare cursor movement, erase, wrapping, modes and replies with the promised ADM3A behavior. A successful keyboard check does not by itself establish visual or audible correctness.
 
-On Model 4 the supplied startup already loads M4SCRN and ADM3A. For another personality, unload ADM3A first. On cpmsim load ANSISCRN before the personality. Do not unload a backend while its personality remains active.
+On Model 4 startup already selects integrated ADM3A. Unload it before loading another personality. On cpmsim and Model II load the selected integrated personality directly. Separate SCRN/SCX clients still need their documented backend.
 
 See the [terminal tasks](Users-Guide.md#chapter-9) and [monitor development reference](../programmers/Monitor%20RSX%20Development.md) for the test boundaries.
 
@@ -10484,7 +10472,7 @@ ANSITST
 
 Run `ANSITST` and follow its displayed screen/input exercises. Compare cursor movement, erase, wrapping, modes and replies with the promised ANSI behavior. A successful keyboard check does not by itself establish visual or audible correctness.
 
-On Model 4 the supplied startup already loads M4SCRN and ADM3A. For another personality, unload ADM3A first. On cpmsim load ANSISCRN before the personality. Do not unload a backend while its personality remains active.
+On Model 4 startup already selects integrated ADM3A. Unload it before loading another personality. On cpmsim and Model II load the selected integrated personality directly. Separate SCRN/SCX clients still need their documented backend.
 
 See the [terminal tasks](Users-Guide.md#chapter-9) and [monitor development reference](../programmers/Monitor%20RSX%20Development.md) for the test boundaries.
 
@@ -10680,7 +10668,7 @@ VT52TST
 
 Run `VT52TST` and follow its displayed screen/input exercises. Compare cursor movement, erase, wrapping, modes and replies with the promised VT52 behavior. A successful keyboard check does not by itself establish visual or audible correctness.
 
-On Model 4 the supplied startup already loads M4SCRN and ADM3A. For another personality, unload ADM3A first. On cpmsim load ANSISCRN before the personality. Do not unload a backend while its personality remains active.
+On Model 4 startup already selects integrated ADM3A. Unload it before loading another personality. On cpmsim and Model II load the selected integrated personality directly. Separate SCRN/SCX clients still need their documented backend.
 
 See the [terminal tasks](Users-Guide.md#chapter-9) and [monitor development reference](../programmers/Monitor%20RSX%20Development.md) for the test boundaries.
 

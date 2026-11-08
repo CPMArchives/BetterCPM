@@ -1,10 +1,18 @@
-# BetterCP/M Practical Porting Guide
+# BetterCP/M 1.1 Practical Porting Guide
 
 Original prose/illustrations are CC BY 4.0; original reusable examples are GPL-2.0-or-later. Third-party material retains its terms. See [licensing](../LICENSING.md).
 
 This guide takes a system programmer from target assessment through first boot, disk and memory integration, optional services, media installation and qualification. Technical reference appears where it supports a porting task. It assumes Z80 programming and CP/M familiarity. For application programming and complete API coverage use the [Programmer's Guide](Programmers-Guide.md).
 
-**Release boundary:** the existing 1.0 software and five Source/System/Utilities archives are locked at source `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`, with qualification accepted through `2842d0eb0732683d9280a38d576c3dba423cb893`. This guide neither changes those bytes nor adds a new qualified platform. New-target implementation, additional examples and further porting-manual expansion are separate workstreams and do not automatically become 1.0 release blockers. Follow the [lock](../releases/non-documentation-lock-1.0/README.md) before replacing any released artifact.
+This edition describes BetterCP/M 1.1 for patched cpmsim, TRS-80 Model 4 and the 64 KiB Model II under trs80gp 2.5.8. Use matching System and Utilities downloads from the same release. Package identity and exact source/image hashes come from RELEASE.json and the release index. The prior 1.0 and 1.0.1 downloads and locks remain unchanged. See the [1.1 scope](../releases/1.1-SCOPE-AND-ACCEPTANCE.md) and [platform boundaries](../platform/SUPPORT-1.1.md); engineering receipts are not acceptance of differently hashed final media.
+
+## 1.1 operating profile
+
+The unloaded complete-record COM limit is 57,344 bytes on cpmsim and Model II. Model 4 retains a 54,272-byte exception because of its keyboard/video reservation. Optional RSXs consume TPA while loaded; complete unload restores the unloaded limit. Read STAT MEM and the current page-zero gateway boundary instead of assuming a hard-coded size. The first RSX also incurs 1,024 bytes of general manager overhead. TCAP full-path accounting includes the renderer, personality, facts, descriptors, cache/alignment, caller helper, shared BIOS state and call/stack allowances: at most 1,280 bytes for ADM3A/VT52 and 1,792 for ANSI; there is no additional permanent display reservation.
+
+BetterCP/M 1.1 supplies integrated ADM3A, VT52 and ANSI personality/renderers implementing the independently versioned TCAP 2.0 direct API. Load one with `RSX LOAD ANSI`, unload it with `RSX UNLOAD ANSI`, and rediscover services after every layout mutation. No standalone screen backend is required by these integrated modules. Model 4 startup selects ADM3A; cpmsim and Model II start with the basic console. Separate ANSISCRN, M4SCRN and M2SCRN modules remain available to clients of SCRN/SCX, such as TED and DUMP paging. TYPE/TED/HELP have not been migrated to TCAP 2.0, and HELP is not shipped. The abandoned, unreleased TCAP 1.0/template designs are historical, not compatibility modes. The supported protocols are fixed 80x24 seven-bit paths, not arbitrary host geometry. See the [direct ABI and caller helper contract](../engineering/TCAP-Direct-ABI.md).
+
+Numeric PATH has up to six ordered drive/user entries, default `. A0:`. `.` tracks the caller. Use `PATH /H`, `/HELP` or `/VER`; `A0:PATH /DEFAULT` recovers the default. PATH is volatile: use the existing startup script to apply a preferred list after cold boot. Named directories and scripting are outside 1.1.
 
 ## Contents
 
@@ -23,7 +31,7 @@ This guide takes a system programmer from target assessment through first boot, 
 
 ## 1. Assess the target and define a first milestone
 
-Before adapting code, create a target sheet. Separate the hardware you have from features you hope to support. A serial-console, one-boot-device milestone can be useful, but it is not permission to silently reduce the accepted 53K complete-record baseline or redefine a released target.
+Before adapting code, create a target sheet. Separate the hardware you have from features you hope to support. A serial-console, one-boot-device milestone can be useful, but it is not permission to silently reduce the accepted 56 KiB ordinary flat-64K baseline and the explicit Model 4 exception or redefine a released target.
 
 | Area | Record | Design consequence |
 | --- | --- | --- |
@@ -163,7 +171,7 @@ Assign ownership and lifetime before addresses. Start from the matching generate
 
 The 1.0 PDS is only the fixed 192-byte built-in history object. It is not an allocator for your new platform state. Keep BIOS tables/stacks and manager records with their natural owners. Do not borrow history work bytes, padding in another subsystem or a former BASIC/RCP slot without an explicit ownership change. BCPM-AUD-003's malformed-history limitation remains documented; this porting work does not claim a fix.
 
-The default contract is a 53 KiB complete-record COM ceiling when optional modules are unloaded. A map containing 54,273 addressable bytes is consistent with only 54,272 loadable record-aligned bytes. Test both the maximum image and an oversized image without overwriting protected state. Account for code/data, alignment, service descriptors and the manager slot when RSXs are active; CPX code is reclaimable and should not be charged as permanently protected TPA loss.
+The unloaded complete-record COM limit is 57,344 bytes on cpmsim and Model II. Model 4 retains a 54,272-byte exception because of its keyboard/video reservation. Optional RSXs consume TPA while loaded; complete unload restores the unloaded limit. Read STAT MEM and the current page-zero gateway boundary instead of assuming a hard-coded size. The first RSX also incurs 1,024 bytes of general manager overhead. TCAP full-path accounting includes the renderer, personality, facts, descriptors, cache/alignment, caller helper, shared BIOS state and call/stack allowances: at most 1,280 bytes for ADM3A/VT52 and 1,792 for ANSI; there is no additional permanent display reservation.
 
 ### Overlay discipline
 
@@ -232,7 +240,7 @@ Quit the emulator fully, mount the target alone as physical 0 and cold boot it. 
 
 For cpmsim use its own [installation/reconstruction guide](../platform/CPMSIM-INSTALLATION.md), raw-image geometry and runtime helpers. The emulator's MOUNT changes an attachment, not the BIOS binding or running OS. Replacing A can immediately break warm-boot/overlay reads; it is not a cold boot. Model 4 .dmk and cpmtools logical .img representations are not interchangeable by suffix rename.
 
-When experimenting with FDB on normal Model 4 startup, unload ADM3A then M4SCRN to reach its required 53K environment. Keep FDB 1.0 (001) with the matching viewer; restore the unmodified SUBMIT STARTUP or cold boot afterward. Workbench catalogue edits/active application do not format media or save cold defaults. The development 1.01 workbench is outside locked installation.
+For interactive FDB on Model 4, unload ADM3A and any additional screen modules to recover the 54,272-byte unloaded limit. Keep FDB 1.01 and its matching viewer together. Restore the unmodified startup or cold boot after exit. Catalogue edits and live binding changes do not format media or save cold defaults.
 
 **Exit checkpoint:** independent readback confirms image geometry, ordinary files and installed system; a cold boot of the installed target succeeds without the source/temporary helper environment; saved defaults are reconstructed without requiring catalogue reinterpretation. These results qualify the exact tested images and configuration only.
 

@@ -1,10 +1,18 @@
-# BetterCP/M 1.0 Programmer's Guide
+# BetterCP/M 1.1 Programmer's Guide
 
 Original prose/illustrations are CC BY 4.0; original reusable examples are GPL-2.0-or-later. Third-party works retain their terms. See [licensing and example boundaries](../LICENSING.md).
 
 This guide is for programmers writing CP/M applications, BetterCP/M command extensions and resident services. It assumes familiarity with Z80 assembly, registers, memory and ordinary CP/M operation. For command syntax use the [Command and Utilities Reference](Command-and-Utilities-Reference.md); for hardware adaptation use the [Practical Porting Guide](Practical-Porting-Guide.md).
 
-The software baseline is locked source `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`, qualified through merge `2842d0eb0732683d9280a38d576c3dba423cb893`. These new chapters and examples are documentation expansion with their own revision; they neither modify the five locked archives nor create additional 1.0 release blockers. The [reference status ledger](../programmers/REFERENCE-STATUS.md) separates implemented contracts, retained history, provisional interfaces and further writing. Examples are outside release disk membership.
+This edition describes BetterCP/M 1.1 for patched cpmsim, TRS-80 Model 4 and the 64 KiB Model II under trs80gp 2.5.8. Use matching System and Utilities downloads from the same release. Package identity and exact source/image hashes come from RELEASE.json and the release index. The prior 1.0 and 1.0.1 downloads and locks remain unchanged. See the [1.1 scope](../releases/1.1-SCOPE-AND-ACCEPTANCE.md) and [platform boundaries](../platform/SUPPORT-1.1.md); engineering receipts are not acceptance of differently hashed final media.
+
+## 1.1 operating profile
+
+The unloaded complete-record COM limit is 57,344 bytes on cpmsim and Model II. Model 4 retains a 54,272-byte exception because of its keyboard/video reservation. Optional RSXs consume TPA while loaded; complete unload restores the unloaded limit. Read STAT MEM and the current page-zero gateway boundary instead of assuming a hard-coded size. The first RSX also incurs 1,024 bytes of general manager overhead. TCAP full-path accounting includes the renderer, personality, facts, descriptors, cache/alignment, caller helper, shared BIOS state and call/stack allowances: at most 1,280 bytes for ADM3A/VT52 and 1,792 for ANSI; there is no additional permanent display reservation.
+
+BetterCP/M 1.1 supplies integrated ADM3A, VT52 and ANSI personality/renderers implementing the independently versioned TCAP 2.0 direct API. Load one with `RSX LOAD ANSI`, unload it with `RSX UNLOAD ANSI`, and rediscover services after every layout mutation. No standalone screen backend is required by these integrated modules. Model 4 startup selects ADM3A; cpmsim and Model II start with the basic console. Separate ANSISCRN, M4SCRN and M2SCRN modules remain available to clients of SCRN/SCX, such as TED and DUMP paging. TYPE/TED/HELP have not been migrated to TCAP 2.0, and HELP is not shipped. The abandoned, unreleased TCAP 1.0/template designs are historical, not compatibility modes. The supported protocols are fixed 80x24 seven-bit paths, not arbitrary host geometry. See the [direct ABI and caller helper contract](../engineering/TCAP-Direct-ABI.md).
+
+Numeric PATH has up to six ordered drive/user entries, default `. A0:`. `.` tracks the caller. Use `PATH /H`, `/HELP` or `/VER`; `A0:PATH /DEFAULT` recovers the default. PATH is volatile: use the existing startup script to apply a preferred list after cold boot. Named directories and scripting are outside 1.1.
 
 ## Contents
 
@@ -49,7 +57,7 @@ Cross-development can assemble the same source after the established ASEG/ORG co
 
 ## Manage execution and memory
 
-A normal COM image begins at 0100h. The word at 0006h is the exclusive upper boundary of transient memory, not necessarily the core BDOS address. Page-zero 0005h routes through the current RSX chain. The unloaded 1.0 complete-record image ceiling is 54,272 bytes (53 KiB); normal Model 4 startup's M4SCRN/ADM3A allocation reports 50K. Read the current ceiling rather than compiling either figure into an application.
+A normal COM image begins at 0100h. The word at 0006h is the exclusive upper boundary of transient memory, not necessarily the core BDOS address. Page-zero 0005h routes through the current RSX chain. The unloaded complete-record COM limit is 57,344 bytes on cpmsim and Model II. Model 4 retains a 54,272-byte exception because of its keyboard/video reservation. Optional RSXs consume TPA while loaded; complete unload restores the unloaded limit. Read STAT MEM and the current page-zero gateway boundary instead of assuming a hard-coded size. The first RSX also incurs 1,024 bytes of general manager overhead. TCAP full-path accounting includes the renderer, personality, facts, descriptors, cache/alignment, caller helper, shared BIOS state and call/stack allowances: at most 1,280 bytes for ADM3A/VT52 and 1,792 for ANSI; there is no additional permanent display reservation.
 
 The CCP and CPX code below the protected gateway may be overwritten by a transient. Fixed core/BIOS state, installed RSXs and the bounded history object are protected. On ordinary warm return the command environment is reconstructed from its carriers; RSXs/history retain their supported live state. Cold entry starts a new lifetime. An application cannot borrow a CCP string buffer merely because it happens to be readable before loading a larger image.
 
@@ -152,7 +160,7 @@ A resident frontend needs a lower-service call path which avoids reintercepting 
 
 ## Terminal and clock providers
 
-For a terminal personality, choose the application's incoming protocol first. Parse that protocol into SCRN operations; keep hardware-specific encoding in the backend. Portable MCON 1.1/1.2 has a manager-bound backend word at payload +12; never relocate it as a self-pointer. The ordinary BDOS-chain entry still passes unclaimed requests. Query/draw cursor operations advance; a write-and-hold assumption breaks redraw logic.
+BetterCP/M 1.1 supplies integrated ADM3A, VT52 and ANSI personality/renderers implementing the independently versioned TCAP 2.0 direct API. Load one with `RSX LOAD ANSI`, unload it with `RSX UNLOAD ANSI`, and rediscover services after every layout mutation. No standalone screen backend is required by these integrated modules. Model 4 startup selects ADM3A; cpmsim and Model II start with the basic console. Separate ANSISCRN, M4SCRN and M2SCRN modules remain available to clients of SCRN/SCX, such as TED and DUMP paging. TYPE/TED/HELP have not been migrated to TCAP 2.0, and HELP is not shipped. The abandoned, unreleased TCAP 1.0/template designs are historical, not compatibility modes. The supported protocols are fixed 80x24 seven-bit paths, not arbitrary host geometry. See the [direct ABI and caller helper contract](../engineering/TCAP-Direct-ABI.md). The old split MCON/SCRN descriptions below remain relevant to standalone backends and historical implementations; do not treat their backend-pointer requirements as prerequisites for the integrated 1.1 modules.
 
 Callbacks are non-reentrant and must not call BDOS, load overlays, allocate, change profiles or recurse through routed console output. Return status without consuming input. Keep incomplete sequences and replies bounded; command return resets parser continuation while retaining normal display/modes and keyboard semantics. Load backend first and unload personality first. A private host MCON 1.0 table template is not portable scaffolding merely after changing one capability bit.
 

@@ -5,9 +5,10 @@ Welcome to BetterCP/M, a CP/M-compatible operating system for Z80
 computers. It keeps the familiar CP/M 2.2 programming model while adding
 shared file-selection syntax, loadable extensions and modern build tools.
 
-This is the BetterCP/M 1.0.1 System Disk.
+This is the BetterCP/M 1.1 System Disk.
 See the accompanying release notes for changes and known limitations.
-The current targets are z80pack/cpmsim and the TRS-80 Model 4/trs80gp.
+Targets: patched cpmsim, TRS-80 Model 4 and 64K Model II under trs80gp.
+Model II uses BCM2SS single-sided IMDs; physical hardware is unverified.
 
 GETTING STARTED
 
@@ -70,8 +71,21 @@ build instructions and the distribution manifest:
 
   https://github.com/CPMArchives/BetterCPM
 
-The user guide is docs/user/users_guide.md. Packaging notes are under
+The user guide is docs/manuals/Users-Guide.md. Packaging notes are under
 docs/releases/. PIP and ED are included on the System Disk. Search for files
-with :DIR /WHEREIS filespec. A full-screen editor is planned for the Utilities
-Disk; it is not part of this System Disk.
+with :DIR /WHEREIS filespec. TED is on the Utilities Disk; HELP is not shipped.
+
+NUMERIC PATH AND TCAP 2.0
+
+PATH shows up to six numeric drive/user search locations. The default
+is . A0: ; A0:PATH /DEFAULT restores it. Use PATH /HELP for syntax.
+
+RSX LOAD ADM3A (or VT52 or ANSI) selects an integrated TCAP 2.0
+personality/renderer. No separate screen backend is required for these
+modules. Unload the active personality before selecting another.
+Standalone screen backends remain for separate SCRN/SCX clients.
+TYPE and TED have not been migrated to the TCAP 2.0 API.
+
+Unloaded COM limits: cpmsim and Model II 57344 bytes; Model 4 54272.
+Optional RSXs consume TPA while loaded. Complete unload restores it.
 

@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 from package_release_candidates import ROOT, read_report, sha, package_license_files, documentation_members
 from release_source import source_files
 
@@ -20,6 +21,28 @@ class Release11(unittest.TestCase):
         files,evidence=documentation_members(tracked,'a'*40,'1.1')
         self.assertEqual(len(evidence['manuals']),4)
         self.assertTrue(any('TCAP-Direct-ABI' in n for n in files))
+
+    def test_release_binding_rejects_substituted_on_media_carrier(self):
+        from release_media_binding import bind
+        with tempfile.TemporaryDirectory() as tmp:
+            image=Path(tmp)/'system.imd';image.write_bytes(b'image')
+            report={'image':image.name,'sha256':sha(b'image'),'target':'trs80m2',
+                    'source':{'revision':'a'*40}}
+            (image.parent/'report.json').write_text(json.dumps(report))
+            with patch('package_integrated_tcap.native_files',return_value={'ANSI.RSX':b'new'.ljust(128,b'\x1a')}):
+                with self.assertRaisesRegex(ValueError,'differs'):
+                    bind(image,'model2',{'ANSI.RSX':b'old'})
+            with patch('package_integrated_tcap.native_files',return_value={'ANSI.RSX':b'old'.ljust(128,b'\x1a')}):
+                receipt=bind(image,'model2',{'ANSI.RSX':b'old'})
+                self.assertEqual(receipt['image_sha256'],report['sha256'])
+
+    def test_three_systems_select_existing_commands_and_own_install_package(self):
+        manifest=json.loads((ROOT/'metadata/distribution.json').read_text())['system_disk']
+        for target in ('z80pack','trs80gp','trs80m2'):
+            rows=[r for r in manifest if target in r['targets'] and r['status']=='implemented']
+            names=[r['name'] for r in rows]
+            self.assertEqual(len(names),len(set(names)))
+            self.assertTrue({'PIP.COM','TYPE.COM','VER.COM','ED.COM','PATH.COM','SYSTEM.SYS'} <= set(names))
 
     def test_model2_requires_native_gates_and_exact_bytes(self):
         with tempfile.TemporaryDirectory() as tmp:

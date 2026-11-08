@@ -95,7 +95,7 @@ class DistributionGates(unittest.TestCase):
         self.assertEqual(len(entries),1)
         self.assertEqual(entries[0]['status'],'implemented')
         self.assertEqual(entries[0]['artifact'],'build/utilities/ED.COM')
-        self.assertEqual(set(entries[0]['targets']),{'z80pack','trs80gp'})
+        self.assertEqual(set(entries[0]['targets']),{'z80pack','trs80gp','trs80m2'})
 
     def test_config_fingerprint_manifest(self):
         root=Path(__file__).resolve().parents[1]

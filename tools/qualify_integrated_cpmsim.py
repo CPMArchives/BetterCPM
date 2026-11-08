@@ -20,6 +20,7 @@ from tcap_test_support import Guest
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('workspace',type=Path)
+    p.add_argument('--release-image',type=Path,help='bind the campaign to an exact constructed release image')
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--personality',choices=('ADM3A','VT52','ANSI'),default='ADM3A')
     p.add_argument('--inline-cache',action='store_true')
@@ -41,16 +42,23 @@ def main():
     for name,relative in [('RCP.CPX','build/cpx/RCP.CPX'),('R3PACK.RSX','build/system/R3PACK.RSX'),
         ('R3CACHE.RSX','build/system/R3CACHE.RSX'),('HELLO.RSX','build/rsx/HELLO.RSX'),
         ('SYSTEM.SYS','build/z80pack/system-package/SYSTEM.SYS')]:files[name]=(workspace/relative).read_bytes()
-    for name in ('RSX','SYSGEN'):files[name+'.COM']=(workspace/'build/utilities'/(name+'.COM')).read_bytes()
+    for name in ('RSX','SYSGEN','PATH'):files[name+'.COM']=(workspace/'build/utilities'/(name+'.COM')).read_bytes()
+    from integrated_display_qualification import owner_refusal_fixture
+    files['ECHO.RSX']=owner_refusal_fixture(workspace)
+    release_binding=None
+    if a.release_image:
+        from release_media_binding import bind
+        cohort={n:d for n,d in files.items() if n in {p+'.RSX' for p in budgets}|{'RCP.CPX','R3PACK.RSX','R3CACHE.RSX','SYSTEM.SYS','RSX.COM','SYSGEN.COM'}}
+        release_binding=bind(a.release_image,'cpmsim',cohort)
     source=out/'source';source.mkdir();shutil.copytree(platform/'disks',source/'disks')
     shutil.copy2(platform/'diskdefs',source/'diskdefs')
     def put(folder,name,data,drive='a'):
         path=folder/name;path.write_bytes(data)
         subprocess.run(['cpmcp','-f','bettercpm-default',str(folder/'disks'/('drive'+drive+'.dsk')),
             str(path),'0:'+name],cwd=folder,check=True,capture_output=True)
-    for name,data in files.items():put(source,name,data)
+    for name,data in files.items():put(source,name,data,'b' if name=='MAXCOM.COM' else 'a')
     report={'status':'RUNNING','platform':'cpmsim','service':'TCAP 2.0','budget':budget,
-        'budgets':budgets,
+        'budgets':budgets,'release_input':release_binding,
         'baseline_boundary':baseline,'maximum_com_bytes':maximum,'checks':{},
         'simulator_sha256':sha(a.simulator),'core_package_sha256':sha(source/'SYSTEM.SYS')}
     def save():(out/'qualification.json').write_text(json.dumps(report,indent=2)+'\n')
@@ -61,7 +69,7 @@ def main():
         guest=Guest(a.simulator.resolve(),case/'disks',case)
         boundaries=[];records=[];frames=[];active=None
         try:
-            guest.prompt()
+            guest.prompt();guest.prompt('PATH . B0: A0:')
             for command in sequence:
                 if command.startswith('RSX LOAD ') and command.split()[-1] in budgets:active=command.split()[-1]
                 if command.startswith('RSX UNLOAD ') and command.split()[-1] in budgets:active=None

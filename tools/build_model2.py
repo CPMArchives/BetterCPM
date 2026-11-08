@@ -36,8 +36,9 @@ def build():
     OUT.mkdir(parents=True, exist_ok=True)
 
     def tool(name):
-        subprocess.run([sys.executable, '-B', str(ROOT/'tools'/f'build_{name}.py'),
-                        '--assembler', str(ASM)], cwd=ROOT, check=True)
+        command=[sys.executable,'-B',str(ROOT/'tools'/f'build_{name}.py')]
+        if name!='fdb':command+=['--assembler',str(ASM)]
+        subprocess.run(command,cwd=ROOT,check=True)
 
     def read(name):
         return (ROOT/name).read_text(encoding='ascii')
@@ -144,8 +145,14 @@ def build():
     files=[('RCP.CPX',(ROOT/'build/cpx/RCP.CPX').read_bytes()),('R3PACK.RSX',(system/'R3PACK.RSX').read_bytes()),
            ('R3CACHE.RSX',(system/'R3CACHE.RSX').read_bytes()),('DISK.FDB',compile_file(SOURCE)),('SYSTEM.SYS',package)]
     for builder in ('rsx_utilities','cpx_utility','disk_utilities','hello_rsx',
-                    'screen_backends','adm3a','vt52','ansi'):
+                    'screen_backends','adm3a','vt52','ansi','fdb','rcp_transients',
+                    'era','ren','type','pip','batch'):
         tool(builder)
+    # Assemble the same existing command collection selected by the other
+    # release targets. This completes distribution membership, not OS scope.
+    tool('ed')
+    tool('p2dos_rsx')
+    (OUT/'DISK.FDB').write_bytes(compile_file(SOURCE))
     util = ROOT/'build/utilities'
     # Use the selected target for component provenance and development identity.
     from build_path import build as path_command
@@ -161,7 +168,11 @@ def build():
     for name in ('M2SCRN','ADM3A','VT52','ANSI'):
         filename=name+'.RSX'
         files.append((filename,(ROOT/'build/rsx'/filename).read_bytes()))
-    media = image(payload,files + programs)
+    from build_distribution import selected_files
+    manifest=json.loads((ROOT/'metadata/distribution.json').read_text())
+    selection,_=selected_files(manifest,'trs80m2',ROOT)
+    files=[(row['name'],data) for row,data in selection]
+    media = image(payload,files)
     utilities = image(bytes(160*128),programs + [('DISK.FDB',compile_file(SOURCE))],bootable=False)
     (OUT/'Model-II-Utilities-candidate.imd').write_bytes(utilities)
     if selected_contract(ASM) != contract:

@@ -1,6 +1,6 @@
 # Installing BetterCP/M on a TRS-80 Model 4
 
-These reconciled instructions describe the [five-package locked 1.0 baseline](../releases/non-documentation-lock-1.0/README.md). Installation, populated-file preservation and cold boot have recorded qualification for the exact emulator artifacts. This edit claims no new runtime/hardware trial. Physical media transfer and additional machines remain separately scoped.
+These instructions describe the BetterCP/M 1.1 Model 4 packages. Use matching System and Utilities from one source cut. See the [platform limits](SUPPORT-1.1.md) and release acceptance ledger for exact qualified bytes. Earlier 1.0 and 1.0.1 packages remain unchanged; physical hardware is unverified.
 
 [Documentation index](../README.md) · [User's Guide](../manuals/Users-Guide.md) · [Command Reference](../manuals/Command-and-Utilities-Reference.md) · [current errata](../releases/1.0-ERRATA.md). Updated documentation is separate from the historical manuals embedded in the unchanged ZIPs.
 
@@ -46,7 +46,7 @@ matching blank data disks instead. FreHD is optional: use the emulator's FreHD
 configuration only when testing that provider. Its presence is not required
 for ordinary disk/console operation.
 
-The supplied startup script loads M4SCRN, then ADM3A, clears the display and
+The supplied startup script loads integrated ADM3A, clears the display and
 shows the banner. A clock provider is not loaded automatically. Wait for the
 A0 prompt, inspect the System Disk and confirm its identity:
 
@@ -78,12 +78,16 @@ installation and hardware-specific transfer steps require their own validation.
 
 For a new installation investigation, record package/image/component hashes, trs80gp version, drive setup, commands and actual outcomes. Preserve historical checklists/results as dated evidence rather than treating every earlier pending item as still open. The exact-hash lock and its qualification links identify completed release checks.
 
-Keep FDB.COM 1.0 (001) and FDBVIEW.OVL matched. Interactive FDB requires 53K: unload ADM3A, then M4SCRN; after exit restore the unmodified SUBMIT STARTUP or cold boot. Queries work at the normal 50K allocation. The 1.01 development workbench is not supplied.
+Keep FDB.COM 1.01 and FDBVIEW.OVL matched. Interactive FDB requires 53K: unload ADM3A and any additional backend; after exit restore the unmodified SUBMIT STARTUP or cold boot. Queries do not require the full interactive allocation.
 
-XSUB.COM and BATCHIO.RSX are on primary Utilities. From A0 on a writable System copy with Utilities in B, copy `B:BATCHIO.RSX` to `A:BATCHIO.RSX` before `B0:XSUB`; retain matching A0:R3PACK.RSX. [XSUB erratum](../releases/1.0-ERRATA.md#xsub-companion-must-be-copied-to-a0).
+XSUB.COM and BATCHIO.RSX are on primary Utilities. With that disk in B, use `B0:XSUB B0:`. Keep matching R3PACK.RSX and R3CACHE.RSX on System A0. The older copy-to-A0 workaround applies only to locked 1.0 binaries.
 
 P2DOS.RSX is supplied in A0 for optional compatibility with Functions 200/201.
 Load the platform’s native clock provider before `RSX LOAD P2DOS`; startup
 loads neither. T104C3/T104Z8 are deferred and are not supplied in locked 1.0.
 
 When replacing mounted images, finish writes, fully quit trs80gp, remount the intended copies and cold boot. A warm boot does not start a replacement machine image.
+
+The integrated ADM3A/VT52/ANSI modules need no standalone M4SCRN. Load M4SCRN
+explicitly for SCRN/SCX clients such as TED or DUMP paging. Complete optional
+module unload restores 54,272 loadable COM bytes; this target is not a 56 KiB system.

@@ -8,7 +8,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -17,7 +18,8 @@
       "artifact": "src/distribution/STARTUP.SUB",
       "status": "implemented",
       "targets": [
-        "z80pack"
+        "z80pack",
+        "trs80m2"
       ],
       "user": 0,
       "role": "editable cold-boot startup script"
@@ -49,7 +51,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0,
       "features": [
@@ -62,7 +65,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -72,7 +76,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -82,7 +87,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -92,7 +98,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -102,7 +109,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -112,7 +120,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -122,7 +131,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -132,7 +142,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -142,7 +153,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -152,7 +164,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -162,7 +175,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -172,7 +186,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -182,7 +197,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -192,7 +208,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0,
       "role": "Native catalogue workbench"
@@ -203,7 +220,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0,
       "role": "Required matching FDB detail/comparison viewer"
@@ -224,7 +242,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -253,7 +272,8 @@
       "role": "scratch-only RSX carrier-cache and overlay-reader runtime",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -264,7 +284,8 @@
       "role": "runtime dependency",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0
     },
@@ -273,7 +294,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "artifact": "build/utilities/PIP.COM",
       "user": 0
@@ -283,7 +305,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0,
       "artifact": "build/utilities/ED.COM"
@@ -303,7 +326,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0,
       "role": "Integrated TCAP 2.0 personality/renderer; no separate screen backend required"
@@ -314,7 +338,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0,
       "role": "ADM-3A monitor test utility"
@@ -325,7 +350,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0,
       "role": "Integrated TCAP 2.0 personality/renderer; no separate screen backend required"
@@ -336,7 +362,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0,
       "role": "VT52 monitor test utility"
@@ -347,7 +374,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0,
       "role": "Integrated TCAP 2.0 personality/renderer; no separate screen backend required"
@@ -358,7 +386,8 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0,
       "role": "ANSI/VT100 monitor test utility"
@@ -416,10 +445,61 @@
       "status": "implemented",
       "targets": [
         "z80pack",
-        "trs80gp"
+        "trs80gp",
+        "trs80m2"
       ],
       "user": 0,
       "role": "Optional-to-load P2DOS clock frontend; not loaded by default startup"
+    },
+    {
+      "name": "DISK.FDB",
+      "artifact": "build/trs80m2/DISK.FDB",
+      "status": "implemented",
+      "targets": [
+        "trs80m2"
+      ],
+      "user": 0,
+      "role": "Qualified BCM2SS catalogue only"
+    },
+    {
+      "name": "M2SCRN.RSX",
+      "artifact": "build/rsx/M2SCRN.RSX",
+      "status": "implemented",
+      "targets": [
+        "trs80m2"
+      ],
+      "user": 0,
+      "role": "Separate Model II SCRN/SCX backend; integrated TCAP personalities do not depend on it"
+    },
+    {
+      "name": "SYSTEM.SYS",
+      "artifact": "build/z80pack/system-package/SYSTEM.SYS",
+      "status": "implemented",
+      "targets": [
+        "z80pack"
+      ],
+      "user": 0,
+      "role": "Matching install/export package"
+    },
+    {
+      "name": "SYSTEM.SYS",
+      "artifact": "build/trs80/system-package/SYSTEM.SYS",
+      "status": "implemented",
+      "targets": [
+        "trs80gp"
+      ],
+      "user": 0,
+      "role": "Matching install/export package"
+    },
+    {
+      "name": "SYSTEM.SYS",
+      "artifact": "build/trs80m2/SYSTEM.SYS",
+      "status": "implemented",
+      "targets": [
+        "trs80m2"
+      ],
+      "user": 0,
+      "role": "Matching install/export package"
     }
   ],
   "cold_start_command": "SUBMIT STARTUP"

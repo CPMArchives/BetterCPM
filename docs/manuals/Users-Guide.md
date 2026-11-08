@@ -1,10 +1,18 @@
-# BetterCP/M 1.0 User's Guide
+# BetterCP/M 1.1 User's Guide
 
 License: original prose/illustrations are CC BY 4.0; original reusable code examples are GPL-2.0-or-later. Third-party material retains its own terms. See [licensing and example boundaries](../LICENSING.md).
 
 This guide assumes that you can operate a computer and are familiar with CP/M drives, user areas, 8.3 filenames and COM programs. Part I concentrates on useful BetterCP/M tasks. Part II explains the system behind those tasks. Look up complete syntax, switches and diagnostics in the separate [Command and Utilities Reference](Command-and-Utilities-Reference.md).
 
-The instructions describe the [locked 1.0 software](../releases/non-documentation-lock-1.0/README.md), source `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`. Current development features are not automatically release features. Five Source/System/Utilities archives remain unchanged, including their embedded documentation; this reconciled guide belongs to the separately revised Documentation collection. Final documentation/package approval and publication are separate from the software lock.
+This edition describes BetterCP/M 1.1 for patched cpmsim, TRS-80 Model 4 and the 64 KiB Model II under trs80gp 2.5.8. Use matching System and Utilities downloads from the same release. Package identity and exact source/image hashes come from RELEASE.json and the release index. The prior 1.0 and 1.0.1 downloads and locks remain unchanged. See the [1.1 scope](../releases/1.1-SCOPE-AND-ACCEPTANCE.md) and [platform boundaries](../platform/SUPPORT-1.1.md); engineering receipts are not acceptance of differently hashed final media.
+
+## 1.1 operating profile
+
+The unloaded complete-record COM limit is 57,344 bytes on cpmsim and Model II. Model 4 retains a 54,272-byte exception because of its keyboard/video reservation. Optional RSXs consume TPA while loaded; complete unload restores the unloaded limit. Read STAT MEM and the current page-zero gateway boundary instead of assuming a hard-coded size. The first RSX also incurs 1,024 bytes of general manager overhead. TCAP full-path accounting includes the renderer, personality, facts, descriptors, cache/alignment, caller helper, shared BIOS state and call/stack allowances: at most 1,280 bytes for ADM3A/VT52 and 1,792 for ANSI; there is no additional permanent display reservation.
+
+BetterCP/M 1.1 supplies integrated ADM3A, VT52 and ANSI personality/renderers implementing the independently versioned TCAP 2.0 direct API. Load one with `RSX LOAD ANSI`, unload it with `RSX UNLOAD ANSI`, and rediscover services after every layout mutation. No standalone screen backend is required by these integrated modules. Model 4 startup selects ADM3A; cpmsim and Model II start with the basic console. Separate ANSISCRN, M4SCRN and M2SCRN modules remain available to clients of SCRN/SCX, such as TED and DUMP paging. TYPE/TED/HELP have not been migrated to TCAP 2.0, and HELP is not shipped. The abandoned, unreleased TCAP 1.0/template designs are historical, not compatibility modes. The supported protocols are fixed 80x24 seven-bit paths, not arbitrary host geometry. See the [direct ABI and caller helper contract](../engineering/TCAP-Direct-ABI.md).
+
+Numeric PATH has up to six ordered drive/user entries, default `. A0:`. `.` tracks the caller. Use `PATH /H`, `/HELP` or `/VER`; `A0:PATH /DEFAULT` recovers the default. PATH is volatile: use the existing startup script to apply a preferred list after cold boot. Named directories and scripting are outside 1.1.
 
 ## Contents
 
@@ -53,7 +61,7 @@ BetterCP/M preserves the CP/M 2.2 application environment while improving everyd
 
 Ordinary CP/M programs use the familiar BDOS/BIOS interfaces. Programs that patch private OS addresses, assume a particular terminal or address hardware directly may require adaptation. [Appendix E](#appendix-e) describes the compatibility boundary and how to investigate a problem.
 
-The four-manual collection consists of this User's Guide, the [Command and Utilities Reference](Command-and-Utilities-Reference.md), the [Programmer's Guide](Programmers-Guide.md) covering applications/extensions/APIs, and the [Practical Porting Guide](Practical-Porting-Guide.md). Existing programmer and architecture references remain available behind those guides; the [coverage/evidence ledger](../programmers/REFERENCE-STATUS.md) records their stability and expansion boundaries. Their new expansion does not add software or platforms to the 1.0 release boundary.
+The four-manual collection consists of this User's Guide, the [Command and Utilities Reference](Command-and-Utilities-Reference.md), the [Programmer's Guide](Programmers-Guide.md) covering applications/extensions/APIs, and the [Practical Porting Guide](Practical-Porting-Guide.md). Existing programmer and architecture references remain available behind those guides; the [coverage/evidence ledger](../programmers/REFERENCE-STATUS.md) records their stability and expansion boundaries. The 1.1 platform and feature boundaries are recorded above.
 
 <a id="chapter-2"></a>
 
@@ -89,9 +97,9 @@ RSX LIST
 STAT MEM
 ```
 
-cpmsim startup displays the banner without loading a terminal personality or clock. Model 4 startup loads M4SCRN, then ADM3A, clears the display and shows the banner. The supplied startup command is `SUBMIT STARTUP`; its script invokes the transient banner as `:VER /BANNER`. Neither startup script loads a clock provider or P2DOS.
+cpmsim startup displays the banner without loading a personality or clock. Model 4 startup loads integrated ADM3A, clears the display and shows the banner. Model II starts with its basic console; its supplied STARTUP.SUB may be run explicitly. The banner script invokes `:VER /BANNER`. None of these starts a clock provider or P2DOS.
 
-The unloaded default environment reports 53K TPA. Model 4's normal loaded startup reports 50K. This is a program-memory difference, not missing machine RAM. [Chapter 8](#chapter-8) explains how to recover the unloaded environment for FDB or another large program.
+The unloaded complete-record COM limit is 57,344 bytes on cpmsim and Model II. Model 4 retains a 54,272-byte exception because of its keyboard/video reservation. Optional RSXs consume TPA while loaded; complete unload restores the unloaded limit. Read STAT MEM and the current page-zero gateway boundary instead of assuming a hard-coded size. The first RSX also incurs 1,024 bytes of general manager overhead. TCAP full-path accounting includes the renderer, personality, facts, descriptors, cache/alignment, caller helper, shared BIOS state and call/stack allowances: at most 1,280 bytes for ADM3A/VT52 and 1,792 for ANSI; there is no additional permanent display reservation.
 
 If Utilities are mounted normally, `B0:DUMP A0:README.TXT` inspects a System file without changing the working drive. For a first ordinary text display, use `TYPE A0:README.TXT`. Consult the [command reference](Command-and-Utilities-Reference.md) for exact options.
 
@@ -144,7 +152,7 @@ The first uses resident DIR if RCP is loaded. The second selects DIR.COM. Unsupp
 
 Unqualified transients are searched in the current DU, then A0. A qualified invocation such as `B0:DUMP` searches only B0. The program's file operands retain their own defaults; finding a program in A0 does not move your work there. Carrier loading by CPX/RSX is a different mechanism and uses A0.
 
-For 1.1 development builds, see [Numeric PATH commands and cold-start setup](../engineering/Numeric-PATH-1.1.md#using-path).
+For 1.1, see [Numeric PATH commands and cold-start setup](../engineering/Numeric-PATH-1.1.md#using-path).
 
 For help, use the command's documented query. BetterCP/M-owned utilities generally supply `/H`, `/HELP` and `/VER`; ZSM4 and LINK retain their original interfaces. Quoted SEARCH patterns and PIP bracket strings remain data even when they contain apparent query tokens. Read the [query conventions](Command-and-Utilities-Reference.md#query-conventions) instead of assuming every program parses switches alike.
 
@@ -163,9 +171,9 @@ Run `SUBMIT D0:LISTING D0:*.TXT`. SUBMIT substitutes its parameters and queues t
 
 Keep A0 writable. SUBMIT and XSUB use `A0:$$$.SUB` even when the script lives elsewhere and commands change the working DU. Do not treat a same-named file in another user as the authoritative queue. Ordinary command/program warm returns are part of batch execution, not necessarily cancellation.
 
-XSUB feeds submitted lines to compatible programs using buffered console-input services. It is not a universal keyboard emulator and does not cover programs reading raw hardware or other input paths. The primary Utilities disk supplies XSUB.COM and BATCHIO.RSX; the locked loader searches A0 for the carrier. From A0 on a writable System copy with Utilities in B, run `COPY B:BATCHIO.RSX A:BATCHIO.RSX`, then `B0:XSUB`. Keep the matching R3PACK.RSX on A0. Help/version queries do not prove activation. This is the [1.0 workaround](../releases/1.0-ERRATA.md#xsub-companion-must-be-copied-to-a0), not a loader change. Follow the [XSUB reference](Command-and-Utilities-Reference.md#xsub) before supplying input to an application.
+XSUB feeds submitted lines to compatible programs using buffered console input; it is not a universal keyboard emulator. With Utilities in B, use `B0:XSUB B0:` so its matching BATCHIO.RSX is loaded from B0. Keep matching R3PACK.RSX and R3CACHE.RSX on System A0. Help/version queries do not activate it. The copy-to-A0 workaround in the 1.0 erratum applies only to those older locked binaries.
 
-The supplied STARTUP.SUB is itself a practical batch example. Keep an unchanged copy before customizing it, especially if you use `SUBMIT STARTUP` to restore the Model 4 console after unloading modules. Extended flow-control scripting remains outside 1.0.
+The supplied STARTUP.SUB is itself a practical batch example. Keep an unchanged copy before customizing it, especially if you use `SUBMIT STARTUP` to restore the Model 4 console after unloading modules. Extended flow-control scripting remains outside 1.1.
 
 <a id="chapter-7"></a>
 
@@ -209,23 +217,23 @@ Interactive FDB needs the unloaded 53K environment. From normal Model 4 startup,
 
 ```text
 RSX UNLOAD ADM3A
-RSX UNLOAD M4SCRN
 FDB
 ```
 
-After quitting FDB, use the unmodified `SUBMIT STARTUP` or cold boot to restore the supplied environment. Other loaded extensions can also consume headroom. FDB help/version queries work at normal startup allocation. Keep FDB.COM 1.0 (001) with its matching FDBVIEW.OVL; development 1.01 behavior is outside these instructions.
+After quitting FDB, use the unmodified `SUBMIT STARTUP` on Model 4 or cold boot to restore its supplied console. Unload any additional optional RSXs if needed. FDB queries do not need the interactive workbench allocation. Keep FDB.COM 1.01 with its matching FDBVIEW.OVL; component revisions are independent of the package version.
 
 <a id="chapter-9"></a>
 <a id="host-terminal-size-and-recovery"></a>
 
 ### Chapter 9 — Match a terminal personality to an application
 
-Select the personality expected by the application, then configure the application accordingly. A personality interprets application control sequences; a backend renders them on the machine or host. Load the backend before its personality and unload the personality first. Only one active personality is supported.
+Select the personality expected by the application, then configure the application for that protocol. The supplied 1.1 modules combine personality and renderer. Only one active personality is supported; unload it before selecting another.
 
 | Environment | Backend | Initial personality |
 | --- | --- | --- |
-| Model 4 startup | M4SCRN | ADM3A |
-| cpmsim startup | Basic console; ANSISCRN available to load | None |
+| Model 4 startup | Integrated renderer | ADM3A |
+| cpmsim startup | Basic console | None |
+| Model II startup | Basic console | None |
 
 To use ANSI on normal Model 4 startup:
 
@@ -235,11 +243,11 @@ RSX LOAD ANSI
 RSX LIST
 ```
 
-M4SCRN is already loaded. On cpmsim with a suitable ANSI host terminal, load ANSISCRN before ANSI. Keep the host window at least 80 columns by 24 rows with a normal full-screen scrolling region; the locked 1.0 launcher does not enforce it. The [v1.0.1 source launch check](../platform/CPMSIM-INSTALLATION.md#v101-source-launch-check) refuses undersized cpmsim windows at launch. If a menu is garbled after a resize, exit normally, enlarge the window and restart the utility to redraw. Use VT52 instead when the application's terminal installation expects VT52. ADM3A, VT52 and ANSI have dedicated ADMTST, VT52TST and ANSITST exercises. Visual, keyboard and audible checks are separate observations.
+On cpmsim and Model II, load ANSI directly; no ANSISCRN or M2SCRN prerequisite is required by the integrated personality. Keep a cpmsim host terminal at least 80 columns by 24 rows. The launcher refuses undersized windows. After a resize, exit and restart applications to redraw. Use VT52 if the application is installed for VT52. Visual, keyboard and audible checks remain distinct observations.
 
 TED requires an 80-by-24 backend and ANSI personality and does not load them itself. Use its [reference entry](Command-and-Utilities-Reference.md#ted) before starting. ANSI provides a defined VT100-compatible subset, not every VT100 facility. A general terminal-capability database and arbitrary application hardware access are outside this mechanism.
 
-If output is misplaced, check application terminal selection, loaded personality, backend and host dimensions before changing escape codes. Restore the unmodified startup environment after experimentation; do not unload a backend still in use by a personality.
+If output is misplaced, check the application protocol, selected personality and host dimensions. Standalone SCRN/SCX clients need their documented screen backend in addition to the integrated console personality. Unload an optional backend only after its clients have exited.
 
 <a id="chapter-10"></a>
 <a id="editing-disk-format-definitions"></a>
@@ -263,7 +271,7 @@ SYSGEN can save an installed system to a named package, such as `SYSGEN A: D:BAC
 
 For Model 4, temporarily replace normal B: Utilities with the prepared System-format target and follow [the installation guide](../platform/MODEL4-INSTALLATION.md). A release System copy has the BCPM780 reserved area; an 800K DATA Work disk does not. Fully quit/remount and cold boot the destination before validating it.
 
-Locked FDB shows `Working catalogue:` and `Choice:` with letter choices; the newer grouped/bracketed menu presentation belongs to the 1.01 work. Use Q or BREAK to exit as displayed. FDB edits the 108-entry DISK.FDB catalogue and can apply a validated definition to B–D. Editor work, RAM catalogue edits, saved catalogue and active drive assignment are separate states. Applying a drive neither formats it nor saves cold-boot defaults. Use [FDB](Command-and-Utilities-Reference.md#fdb) for its 53K workflow, text conversion, viewer and recoverable-save rules.
+FDB 1.01 supplies the grouped main menu and matching viewer. Follow the displayed choices and use Q or BREAK to exit. Model II supplies only its qualified BCM2SS catalogue; the other targets retain their catalogue and separately bounded supplement. Editing a catalogue, applying a drive binding, formatting media and saving cold defaults are separate operations.
 
 Catalogue admission means structural validity, not successful interchange on every physical controller. The release-media layouts are CCS 332K, Model 4 800K DATA and BetterCP/M 780K System. Optional historical MMI012 790K is different from BCPM780. Preserve format provenance and rights notices when redistributing catalogues.
 
@@ -297,7 +305,7 @@ Start with a nonmutating inspection. Preserve original media, exact error text, 
 | Resident option rejected | Use the explicitly selected transient if its file is supplied | [Command reference](Command-and-Utilities-Reference.md) |
 | `CPX?` on return | CPX profile versus actual A0 carrier; remove rejected optional name or replace its matched file | [CPX](Command-and-Utilities-Reference.md#cpx) |
 | A large program refuses to start | STAT MEM and protected RSX allocations | [Chapter 8](#chapter-8) |
-| FDB fails at normal Model 4 startup | Matching viewer; unload ADM3A then M4SCRN; restore afterward | [FDB](Command-and-Utilities-Reference.md#fdb) |
+| FDB fails at normal Model 4 startup | Matching viewer; unload ADM3A and any separately loaded screen backend; restore afterward | [FDB](Command-and-Utilities-Reference.md#fdb) |
 | Full-screen output is wrong | Application terminal choice, personality/backend order, host dimensions | [Chapter 9](#chapter-9) |
 | Disk unavailable or wrong directory | Attachment, physical capabilities, logical binding, inserted format | [CONFIG](Command-and-Utilities-Reference.md#config) |
 | Disk full despite free data space | Directory-entry limit as well as allocation blocks | [STAT](Command-and-Utilities-Reference.md#stat) |
@@ -343,7 +351,7 @@ Ordinary COM programs begin at 0100h in the Transient Program Area. Page zero re
 | Built-in history | Fixed bounded persistent object | Preserved | Emptied |
 | Saved disk configuration | Installed defaults remain on media | Distinct from live state | Loaded into runtime bindings |
 
-The unloaded release baseline has a maximum complete-record COM image of 54,272 bytes, or 53 KiB. Model 4 startup's backend/personality reduces reported TPA to 50K. STAT MEM distinguishes the live map and the maximum loadable image. CPX code occupies command memory but can be overwritten and restored; RSX allocation remains unavailable while applications run.
+The unloaded complete-record COM limit is 57,344 bytes on cpmsim and Model II. Model 4 retains a 54,272-byte exception because of its keyboard/video reservation. Optional RSXs consume TPA while loaded; complete unload restores the unloaded limit. Read STAT MEM and the current page-zero gateway boundary instead of assuming a hard-coded size. The first RSX also incurs 1,024 bytes of general manager overhead. TCAP full-path accounting includes the renderer, personality, facts, descriptors, cache/alignment, caller helper, shared BIOS state and call/stack allowances: at most 1,280 bytes for ADM3A/VT52 and 1,792 for ANSI; there is no additional permanent display reservation.
 
 SAVE belongs in the CCP because loading another transient would destroy the memory image it saves. GET loads without execution; GO establishes ordinary entry at 0100h, while JUMP transfers to a chosen address under its documented contract. Use their [reference entries](Command-and-Utilities-Reference.md#get) for exact operands and entry-state differences.
 
@@ -359,7 +367,7 @@ Unqualified transient lookup checks the current DU and then A0. Qualified lookup
 
 Editing and history operate at the command line. They do not impose the same keys on every application. Warm boot reconstructs CCP/CPX code and preserves the bounded history object. The history's warm lifetime does not mean it is a disk-based history file or a separately loaded HISTORY.RSX.
 
-Batch execution is another command source. SUBMIT constructs the authoritative A0 queue; compatible XSUB buffered input consumes submitted application lines through its service. These mechanisms do not provide general conditionals, named-directory lookup, PATH or universal keyboard injection in 1.0.
+Batch execution is another command source. SUBMIT constructs the authoritative A0 queue; compatible XSUB buffered input consumes submitted application lines through its service. These mechanisms do not provide general conditionals, named-directory lookup, universal keyboard injection. Numeric PATH is provided separately in 1.1.
 
 RCP is the normal command package but can be removed. A CPX name retained in the four-entry profile may lack a usable carrier. Distinguish configuration, successful loading and actual command availability when diagnosing a missing command. There is no general automatic resident-to-transient option handoff.
 
@@ -383,13 +391,13 @@ Formatting writes physical media, copying duplicates data, and SYSGEN installs o
 
 CP/M applications can use cooked character services, direct console services, logical reader/punch/list devices or BIOS calls. Those routes differ in echo, control-character handling, polling and redirection. An application's private hardware accesses can bypass the portable console path entirely.
 
-BetterCP/M's monitor layer separates the application's terminal protocol from rendering. ADM3A, VT52 or ANSI interprets incoming control bytes; M4SCRN or ANSISCRN performs backend operations. The host terminal is a further layer in cpmsim. Matching only one layer does not guarantee correct application output.
+BetterCP/M 1.1 supplies integrated ADM3A, VT52 and ANSI personality/renderers implementing the independently versioned TCAP 2.0 direct API. Load one with `RSX LOAD ANSI`, unload it with `RSX UNLOAD ANSI`, and rediscover services after every layout mutation. No standalone screen backend is required by these integrated modules. Model 4 startup selects ADM3A; cpmsim and Model II start with the basic console. Separate ANSISCRN, M4SCRN and M2SCRN modules remain available to clients of SCRN/SCX, such as TED and DUMP paging. TYPE/TED/HELP have not been migrated to TCAP 2.0, and HELP is not shipped. The abandoned, unreleased TCAP 1.0/template designs are historical, not compatibility modes. The supported protocols are fixed 80x24 seven-bit paths, not arbitrary host geometry. See the [direct ABI and caller helper contract](../engineering/TCAP-Direct-ABI.md).
 
 The personality owns protocol state such as an incomplete sequence; the backend owns hardware rendering and its limits. Command return discards unfinished parsing according to the monitor contract without treating that reset as a request to clear the screen or discard ordinary keyboard input. Backend dependencies must remain satisfied while a personality is active.
 
 IOBYTE selects logical character routes where the platform supplies them. PIP's physical aliases temporarily select appropriate routes; unavailable devices fail explicitly. A device name in a historical manual is not proof that the locked BIOS implements that device on both targets.
 
-ANSI/VT100 support is a bounded subset. Keyboard mappings also depend on the original machine, emulator and host terminal. Use the actual application installation, personality tests and [keyboard notes](#appendix-c) to diagnose a mismatch. A general TCAP redesign remains post-1.0.
+ANSI/VT100 support is a bounded subset. Keyboard mappings also depend on the original machine, emulator and host terminal. Use the actual application installation, personality tests and [keyboard notes](#appendix-c) to diagnose a mismatch. TCAP 2.0 supplies the bounded direct API; additional terminal geometry and utility migrations remain deferred.
 
 <a id="understanding-extensions"></a>
 
@@ -403,7 +411,7 @@ Service discovery and service operation are separate contracts. The native clock
 
 Carrier formats and ABIs are independent of the distribution number. Production RSXs use BRSX v2; BRSX v1 is history. CPX carriers use BCPX v1. Public private-namespace services occupy assigned Functions 176–183; reserved/test selectors are not extra application APIs. The [Programmer's Guide](Programmers-Guide.md) consolidates current calling contracts from the existing [extension reference](../programmers/RSX%20and%20CPX%20Programmer%27s%20Guide.md) and focused specifications.
 
-User-facing extension management remains bounded: fixed A0 carrier lookup, configured profile limits, explicit terminal dependencies and supported warm lifetime. Named directories, PATH, general PDS allocation and a general dependency framework are not implied by the mechanism.
+User-facing extension management remains bounded: fixed A0 carrier lookup, configured profile limits, explicit terminal dependencies and supported warm lifetime. Named directories, general PDS allocation and a general dependency framework are not implied by the mechanism.
 
 <a id="understanding-portability"></a>
 

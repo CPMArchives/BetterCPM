@@ -1,6 +1,6 @@
 # Installing BetterCP/M on z80pack / cpmsim
 
-This is the reconciled operating guide for the [locked cpmsim System](../releases/non-documentation-lock-1.0/README.md), with separate documentation provenance. Earlier embedded copies remain unchanged. See the [four-manual index](../README.md), [Source Build guide](../SOURCE-BUILD.md), [Command Reference](../manuals/Command-and-Utilities-Reference.md) and [errata](../releases/1.0-ERRATA.md).
+This is the operating guide for the 1.1 cpmsim System package, using its full-RAM checked profile and matching Utilities. The locked 1.0 and 1.0.1 downloads remain unchanged. See the [four manuals](../README.md), [Source Build guide](../SOURCE-BUILD.md), and [1.1 platform limits](SUPPORT-1.1.md). Historical 1.0 notes below apply only where explicitly labelled.
 
 
 BetterCP/M requires a patched cpmsim with geometry interface version 2.
@@ -10,7 +10,7 @@ with the checksums of the BetterCP/M images you run.
 
 ## Terminal display size
 
-Before using ANSISCRN with a terminal personality such as ANSI, set the host
+Before using an integrated terminal personality such as ANSI, set the host
 terminal to **at least 80 columns by 24 rows**. Keep that size while drawing
 menus or running full-screen applications; some applications need more rows.
 The ordinary console displaying text successfully in a smaller window does
@@ -265,6 +265,6 @@ loads neither. T104C3/T104Z8 are deferred and are not supplied in locked 1.0.
 
 ## Extension prerequisites and matching components
 
-The primary Utilities disk supplies XSUB.COM and BATCHIO.RSX. From A0 on a writable System copy with Utilities in B, run `COPY B:BATCHIO.RSX A:BATCHIO.RSX`, then `B0:XSUB`. Keep matching A0:R3PACK.RSX. Queries do not prove activation; [the 1.0 erratum](../releases/1.0-ERRATA.md#xsub-companion-must-be-copied-to-a0) is unchanged.
+The primary Utilities disk supplies XSUB.COM and BATCHIO.RSX. With Utilities in B, use `B0:XSUB B0:`. Keep matching R3PACK.RSX and R3CACHE.RSX on System A0. Queries do not activate the provider. The old copy-to-A0 workaround applies only to locked 1.0 binaries.
 
-Keep FDB.COM 1.0 (001) and its matching viewer together. Interactive work needs the unloaded 53K environment. If optional personalities/backends are loaded, unload personality before backend and restore your normal startup after FDB. Current development FDB 1.01 and deferred 56K/checked profiles are not substitutes for the locked image.
+Keep FDB.COM 1.01 and its matching viewer together. The unloaded 1.1 cpmsim limit is 57,344 bytes; unload optional modules if an interactive utility lacks memory. Integrated ADM3A/VT52/ANSI modules need no ANSISCRN; load ANSISCRN separately for SCRN/SCX clients such as TED or DUMP paging.
