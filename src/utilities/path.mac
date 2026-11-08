@@ -34,16 +34,68 @@ READY:  XOR     A
         POP     HL
         LD      A,(HL)
         OR      A
-        JR      Z,DISPLAY
+        JP      Z,DISPLAY
         PUSH    HL
         LD      DE,DEFKEY
         CALL    EXACT
         POP     HL
-        JR      NZ,PARSE
+        JP      NZ,OPTIONS
         XOR     A
         LD      (LY_PATH),A
-        JR      DISPLAY
-PARSE:  CALL    ENTRY                   ; DE = drive (1..16) and user, or 0/0
+        JP      DISPLAY
+; Incremental edits stage the effective list, including the implicit default.
+OPTIONS:LD      A,(HL)
+        CP      '/'
+        JP      NZ,PARSE
+        INC     HL
+        LD      A,(HL)
+        INC     HL
+        CP      'A'
+        JR      Z,OPTADD
+        CP      'D'
+        JP      NZ,BADOPT
+        LD      A,2
+        LD      (MODE),A
+        LD      DE,DELKEY
+        JR      OPTTAIL
+OPTADD: LD      A,1
+        LD      (MODE),A
+        LD      DE,ADDKEY
+OPTTAIL:LD      A,(HL)
+        CP      ' '
+        JR      Z,OPARG
+        OR      A
+        JP      Z,BADOPT
+OPLONG: LD      A,(DE)
+        OR      A
+        JR      Z,OPBOUND
+        CP      (HL)
+        JP      NZ,BADOPT
+        INC     HL
+        INC     DE
+        JR      OPLONG
+OPBOUND:LD      A,(HL)
+        CP      ' '
+        JP      NZ,BADOPT
+        JR      OPARG
+OPARG:  CALL    SPACES
+        OR      A
+        JP      Z,BADOPT
+        PUSH    HL
+        LD      HL,LY_PATH
+        LD      A,(HL)
+        OR      A
+        JR      NZ,STLIVE
+        LD      HL,DEFAULT
+        LD      A,2
+STLIVE: CP      PATHMAX+1
+        JP      NC,BADLIVE
+        LD      DE,CNT
+        LD      C,1+2*PATHMAX
+        LD      B,0
+        LDIR
+        POP     HL
+PARSE:  CALL    ENTRY                   ; DE = drive (0=current) and user (FF=current)
         LD      A,(CNT)
         LD      B,A
         LD      A,(HL)
@@ -51,7 +103,18 @@ PARSE:  CALL    ENTRY                   ; DE = drive (1..16) and user, or 0/0
         JR      Z,DELIM
         CP      ' '
         JP      NZ,BADDU
-DELIM:  PUSH    HL
+DELIM:  LD      A,(MODE)
+        OR      A
+        JR      Z,STAGE
+        PUSH    HL
+        CALL    SPACES
+        OR      A
+        JP      NZ,BADOPT
+        POP     HL
+        LD      A,(MODE)
+        CP      2
+        JP      Z,REMOVE
+STAGE:  PUSH    HL
         LD      HL,ITEMS
         LD      A,B
         OR      A
@@ -77,10 +140,41 @@ APPEND: LD      A,(CNT)
         CALL    SPACES
         OR      A
         JR      NZ,PARSE
-        LD      HL,CNT
+PUBLISH:LD      HL,CNT
         LD      DE,LY_PATH
         LD      BC,1+2*PATHMAX
         LDIR
+        JP      DISPLAY
+REMOVE: LD      HL,ITEMS
+RMNEXT: LD      A,(HL)
+        INC     HL
+        CP      D
+        LD      A,(HL)
+        INC     HL
+        JR      NZ,RMNO
+        CP      E
+        JR      Z,RMFOUND
+RMNO:   DJNZ    RMNEXT
+        LD      DE,MMISSING
+        JP      FINISH
+RMFOUND:LD      A,(CNT)
+        CP      1
+        JP      Z,LASTERR
+        DEC     A
+        LD      (CNT),A
+        DEC     B
+        LD      A,B
+        OR      A
+        JP      Z,PUBLISH
+        ADD     A,A
+        LD      C,A
+        LD      B,0
+        LD      D,H
+        LD      E,L
+        DEC     DE
+        DEC     DE
+        LDIR
+        JP      PUBLISH
 DISPLAY:
         LD      DE,TITLE
         CALL    PUTS
@@ -90,8 +184,9 @@ DISPLAY:
         LD      A,B
         OR      A
         JR      NZ,SHOW
-        LD      DE,DFTEXT
-        JR      FINISH
+        LD      HL,DEFAULT+1
+        LD      B,2
+        JR      SHNEXT
 SHOW:   CP      PATHMAX+1
         JP      NC,BADLIVE
 SHNEXT: LD      A,' '
@@ -100,13 +195,18 @@ SHNEXT: LD      A,' '
         INC     HL
         OR      A
         JR      NZ,SHFIX
-        LD      A,'.'
+        LD      A,24H                  ; dollar in drive position
         CALL    PUTCH
-        JR      SHDONE
+        JR      SHUSER
 SHFIX:  ADD     A,'A'-1
         CALL    PUTCH
-        LD      A,(HL)
-        LD      D,'0'
+SHUSER: LD      A,(HL)
+        CP      0FFH
+        JR      NZ,SHNUM
+        LD      A,24H
+        CALL    PUTCH
+        JR      SHCOL
+SHNUM:  LD      D,'0'
 TENS:   CP      10
         JR      C,UNITS
         SUB     10
@@ -119,7 +219,7 @@ UNITS:  LD      E,A
         LD      A,E
         ADD     A,'0'
         CALL    PUTCH
-        LD      A,':'
+SHCOL:  LD      A,':'
         CALL    PUTCH
 SHDONE: INC     HL
         DJNZ    SHNEXT
@@ -134,7 +234,7 @@ LOCATE: LD      HL,(1)
         SBC     HL,DE
         RET     NZ
         LD      HL,(LY_PDSD)
-        LD      DE,04D42H               ; BM, ECB version 1 plus PATH capability
+        LD      DE,04D42H               ; BM, ECB version 1 plus symbolic PATH capability
         OR      A
         SBC     HL,DE
         RET     NZ
@@ -142,22 +242,27 @@ LOCATE: LD      HL,(1)
         CP      1
         RET     NZ
         LD      A,(LY_PDSD+3)
-        AND     2
-        CP      2
+        AND     4
+        CP      4
         RET
 
 ENTRY:  LD      A,(HL)
         INC     HL
         LD      DE,0
-        CP      '.'
-        RET     Z
+        CP      24H
+        JR      Z,ENUSER
         SUB     'A'
         CP      16
         JP      NC,BADDU
         INC     A
         LD      D,A
-        LD      A,(HL)
-        SUB     '0'
+ENUSER: LD      A,(HL)
+        CP      24H
+        JR      NZ,ENUM
+        INC     HL
+        LD      E,0FFH
+        JR      ENEND
+ENUM:   SUB     '0'
         CP      10
         JP      NC,BADUSER
         LD      E,A
@@ -165,6 +270,10 @@ ENTRY:  LD      A,(HL)
         LD      A,(HL)
         CP      ':'
         JR      Z,COLON
+        CP      ' '
+        RET     Z
+        OR      A
+        RET     Z
         SUB     '0'
         CP      10
         JP      NC,BADUSER
@@ -179,9 +288,14 @@ ENTRY:  LD      A,(HL)
         JP      NC,BADUSER
         LD      E,A
         INC     HL
-        LD      A,(HL)
+ENEND:  LD      A,(HL)
         CP      ':'
-        JP      NZ,BADUSER
+        JR      Z,COLON
+        CP      ' '
+        RET     Z
+        OR      A
+        RET     Z
+        JP      BADUSER
 COLON:  INC     HL
         RET
 SPACES: LD      A,(HL)
@@ -212,6 +326,10 @@ PUTCH:  PUSH    HL
         POP     DE
         POP     HL
         RET
+BADOPT: LD      DE,MOPT
+        JP      FINISH
+LASTERR:LD      DE,MLAST
+        JP      FINISH
 BADDU:  LD      DE,MDU
         JR      FINISH2
 BADUSER:LD      DE,MUSER
@@ -226,16 +344,23 @@ BADLIVE:LD      DE,MLIVE
         JR      FINISH2
 FINISH2:JP      FINISH
 DEFKEY: DB '/DEFAULT',0
+ADDKEY: DB 'DD',0
+DELKEY: DB 'EL',0
+DEFAULT:DB 2,0,0FFH,1,0
+        DS 8
+MOPT:   DB 'Use PATH /A /ADD location or /D /DEL location.',13,10,'$'
+MMISSING:DB 'PATH entry not found.',13,10,'$'
+MLAST:  DB 'Cannot delete the last PATH entry.',13,10,'$'
 TITLE:  DB 'PATH:$'
-DFTEXT: DB ' . A0:',13,10,'$'
 EOL:    DB 13,10,'$'
-MDU:    DB 'Invalid PATH entry. Use . or A0: through P31:.',13,10,'$'
-MUSER:  DB 'Invalid PATH user. Use 0 through 31 followed by a colon.',13,10,'$'
+MDU:    DB 'Invalid PATH entry. Use a Z-System DU entry.',13,10,'$'
+MUSER:  DB 'Invalid PATH user. Use 0 through 31 or a dollar.',13,10,'$'
 MDUP:   DB 'Duplicate PATH entry.',13,10,'$'
 MFULL:  DB 'PATH accepts up to six entries.',13,10,'$'
 MSYS:   DB 'PATH requires a matching BetterCP/M numeric PATH system.',13,10,'$'
 MLIVE:  DB 'Invalid live PATH. Use A0:PATH /DEFAULT.',13,10,'$'
 ; @utility-version PATH@
+MODE:   DB 0
 CNT:    DB 0
 ITEMS:  DS 2*PATHMAX
 TAIL:   DS 128

@@ -1,5 +1,5 @@
 utility	version	build
-STAT	1.0	7
+STAT	1.0	9
 COPY	1.0	14
 DIR	1.0	17
 CONFIG	1.0	20
@@ -50,4 +50,4 @@ FDB	1.01	3
 R	1.0	6
 W	1.0	6
 MOUNT	1.0	3
-PATH	1.0	2
+PATH	1.0	5

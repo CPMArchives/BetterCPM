@@ -31,6 +31,7 @@ ECB             EQU     LY_SYS+080H
 START:                                  ; enter STAT utility
         CALL    UV_CHECK                ; standalone utility identity
         CALL    CHECKSLASH              ; reject unknown slash options first
+        CALL    FOLDTAIL                ; CCP preserves original command-tail case
         XOR     A
         LD      (SETMODE),A
         LD      (OLDSP),SP
@@ -128,6 +129,27 @@ MSLASH: DB      13,10,'STAT: Invalid option.',13,10,'$'
 ; -------------------------------------------------------------------------------
 ; Command-Tail Trimming
 ; -------------------------------------------------------------------------------
+
+  ; All STAT operands are case-insensitive CP/M names, keywords or attributes.
+  ; Query/invalid-option paths return before folding so their tails stay intact.
+FOLDTAIL:
+        LD      A,(TAIL)
+        LD      B,A
+        LD      HL,TAIL+1
+        OR      A
+        RET     Z
+FOLDNEXT:
+        LD      A,(HL)
+        CP      'a'
+        JR      C,FOLDSKIP
+        CP      'z'+1
+        JR      NC,FOLDSKIP
+        AND     05FH
+        LD      (HL),A
+FOLDSKIP:
+        INC     HL
+        DJNZ    FOLDNEXT
+        RET
 
 ; Extended scopes are inspection-only; conventional commands keep their path.
 SETCHECK:
@@ -678,6 +700,8 @@ DISKSTATUS:                             ; report logged-in drive status
         LD      C,29
         CALL    BDOS
         LD      (ROVEC),HL
+        LD      DE,MLOGGED
+        CALL    PRINT
         XOR     A
         LD      (DRIVE),A
 
@@ -2666,6 +2690,7 @@ QUERYFOUND:     DB 0
 ; -------------------------------------------------------------------------------
 
 MCRLF:          DB 13,10,'$'            ; mcrlf
+MLOGGED:        DB 13,10,'Logged-in drives:',13,10,'$'
 MRSLASH:        DB ' R/$'               ; mrslash
 MSPACE:         DB ', Space: $'         ; mspace
 MKFREE:         DB 'K',13,10,'$'        ; mkfree

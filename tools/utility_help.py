@@ -3,6 +3,9 @@ from utility_versions import banner
 
 SCREENS={
  'STAT':('System and File Statistics','STAT [drive: | filespec | request]',[
+ ('', 'No operand: report logged-in drives only.'),
+ ('d:', 'Query free space on that drive directly.'),
+ ('', 'Warm boot resets the logged-in drive set.'),
  ('VAL:', 'Show syntax and valid device assignments.'),
  ('DSK:', 'Show disk parameters for logged drives.'),
  ('USR:', 'Show user areas on the selected drive.'),
@@ -44,9 +47,11 @@ SCREENS={
  'SYSBUILD':('Native System Build','SYSBUILD',[]),
  'RESPACK':('Resident Image Packaging','RESPACK',[]),
  'RLMBUILD':('Relocation Map Build','RLMBUILD',[]),
- 'PATH':('Numeric Command Search Path','PATH [location ... | /DEFAULT]',[
- ('location', 'Use . for the current DU or a fixed DU such as B3:.'),
- ('/DEFAULT','Restore . A0:.')]),
+ 'PATH':('Numeric Command Search Path','PATH [location ... | /A location | /D location | /DEFAULT]',[
+ ('location', 'Z-System DU entry; current DU is always first.'),
+ ('/A /ADD DU', 'Append one entry to the list.'),
+ ('/D /DEL DU', 'Delete one entry; at least one must remain.'),
+ ('/DEFAULT','Restore current DU followed by A0:.')]),
  'WARM':('Warm Boot','WARM',[]),
  'DDT':('Debugger','DDT [file]',[]),
  'PIP':('File and Device Transfer','PIP [destination=source[,source...]]',[

@@ -13,7 +13,7 @@
       "builders": [
         "tools/build_stat.py"
       ],
-      "revision": 7,
+      "revision": 9,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -693,7 +693,7 @@
         "tools/build_ccpreload.py",
         "tools/build_checked_command_loader.py"
       ],
-      "revision": 3,
+      "revision": 4,
       "api_version": "2.0",
       "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -794,7 +794,7 @@
       "builders": [
         "tools/build_adm3a.py"
       ],
-      "revision": 1,
+      "revision": 2,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -809,7 +809,7 @@
       "builders": [
         "tools/build_vt52.py"
       ],
-      "revision": 1,
+      "revision": 2,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -824,7 +824,7 @@
       "builders": [
         "tools/build_ansi.py"
       ],
-      "revision": 1,
+      "revision": 2,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -1169,7 +1169,7 @@
       "builders": [
         "tools/build_path.py"
       ],
-      "revision": 2,
+      "revision": 5,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "selected input map",

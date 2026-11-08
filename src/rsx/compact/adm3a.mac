@@ -185,5 +185,11 @@ D_REV: DB 0
 D_VIS: DB 1
 D_ESC: DB 0
 D_PEND: DB 0
+; Fresh activation preserves cells and moves to the bottom (fixed 80x24).
+; The CCP's normal return CR/LF then scrolls a blank row for its prompt.
+; STATEFUL relocation and warm returns do not invoke this initializer.
+D_ACTIVATE:
+        LD HL,23                      ; column 0, last row
+        JP D_SET
 D_END:
         END

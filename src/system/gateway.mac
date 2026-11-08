@@ -195,7 +195,7 @@ ECB_VERSION:                            ; extension-control-block version
         DB      1
 
 ECB_FLAGS:                              ; extension-control flags
-        DB      3                       ; bit 0: static PDS, bit 1: numeric PATH v1
+        DB      5                       ; bit 0: PDS, bit 2: symbolic PATH (v1 bit clear)
 
 ECB_RSXHEAD:                            ; live RSX-chain head
         DW      0

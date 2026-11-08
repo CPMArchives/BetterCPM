@@ -48,7 +48,7 @@ def build(workspace,out,platform,personality='ADM3A',assembler=None,inline_cache
     labels=symbols(out/'native.lst')
     carrier=make_module(name=personality,version=module_version(personality),services=[],linked_base=0x8000,code=code,
         relocations=relocation_offsets(code,alternate,0x101),reconstruction_class='STATEFUL',
-        init_offset=labels['D_HOME']-0x8000 if personality in ('VT52','ANSI') else 0xffff,
+        init_offset=labels['D_ACTIVATE']-0x8000,
         cache_footer_inline=inline_cache,
         callable_services=[(b'MCON',1,0,labels['D_ENTRY']-0x8000,2 if host else 4 if m2 else 1),
                            (b'TCAP',2,0,labels['D_TCAP']-0x8000,0)])

@@ -2987,10 +2987,10 @@ CCP_LOPEN:
         CALL    BDOS
         INC     A
         LD      (CCP_LDRV),A            ; caller drive in FCB numbering
-        XOR     A
-        LD      (CCP_LUTRG),A           ; caller DU not yet searched
-        INC     A
+        LD      A,1
         LD      (CCP_LUACT),A           ; arm before any temporary selection
+        CALL    CCP_LOP                ; unqualified FCB uses the caller DU
+        RET     NZ                     ; local match wins, including load failures
         LD      HL,LY_PATH
         LD      B,(HL)
         INC     HL
@@ -3005,33 +3005,30 @@ CCP_LDEF:
         LD      HL,CCP_DEFP
         LD      B,2
 CCP_LENT:
-        LD      D,(HL)                  ; drive 1..16, zero = dynamic DU
+        LD      D,(HL)                  ; drive 1..16, zero = current drive
         INC     HL
-        LD      E,(HL)                  ; user 0..31
+        LD      E,(HL)                  ; user 0..31, FF = current user
         INC     HL
         PUSH    HL
         PUSH    BC
         LD      A,D
         OR      A
+        JR      NZ,CCP_LUSER
         LD      A,(CCP_LDRV)
-        JR      NZ,CCP_LFIX
         LD      D,A
+CCP_LUSER:
+        LD      A,E
+        INC     A
+        JR      NZ,CCP_LFIX
         LD      A,(CCP_LUSAV)
         LD      E,A
-        JR      CCP_LLOCAL
 CCP_LFIX:
+        LD      A,(CCP_LDRV)
         CP      D
         JR      NZ,CCP_LTRY
         LD      A,(CCP_LUSAV)
         CP      E
-        JR      NZ,CCP_LTRY
-CCP_LLOCAL:
-        LD      A,(CCP_LUTRG)
-        OR      A
-        JR      NZ,CCP_LNEXT
-        INC     A
-        LD      (CCP_LUTRG),A
-        LD      D,0                     ; current drive FCB spelling
+        JR      Z,CCP_LNEXT              ; caller was already searched first
 CCP_LTRY:
         LD      A,D
         LD      (CCP_FCB),A
@@ -3075,7 +3072,7 @@ CCP_LOP:
         INC     A
         RET
 CCP_DEFP:
-        DB      0,0,1,0                 ; dynamic caller, A0
+        DB      0,0FFH,1,0              ; dynamic caller, A0
 CCP_LREPORT:
         PUSH    DE
         CALL    CCP_LURST

@@ -14,7 +14,7 @@ The unloaded complete-record COM limit is 57,344 bytes on cpmsim and Model II. M
 
 BetterCP/M 1.1 supplies integrated ADM3A, VT52 and ANSI personality/renderers implementing the independently versioned TCAP 2.0 direct API. Load one with `RSX LOAD ANSI`, unload it with `RSX UNLOAD ANSI`, and rediscover services after every layout mutation. No standalone screen backend is required by these integrated modules. Model 4 startup selects ADM3A; cpmsim and Model II start with the basic console. Separate ANSISCRN, M4SCRN and M2SCRN modules remain available to clients of SCRN/SCX, such as TED and DUMP paging. TYPE/TED/HELP have not been migrated to TCAP 2.0, and HELP is not shipped. TYPE, TED and HELP are examples, not the complete affected-utility set; see the [full impact audit](../engineering/TCAP-Utility-Impact-Audit.md). The abandoned, unreleased TCAP 1.0/template designs are historical, not compatibility modes. The supported protocols are fixed 80x24 seven-bit paths, not arbitrary host geometry. See the [direct ABI and caller helper contract](../engineering/TCAP-Direct-ABI.md).
 
-Numeric PATH has up to six ordered drive/user entries, default `. A0:`. `.` tracks the caller. Use `PATH /H`, `/HELP` or `/VER`; `A0:PATH /DEFAULT` recovers the default. PATH is volatile: use the existing startup script to apply a preferred list after cold boot. Named directories and scripting are outside 1.1.
+For BetterCP/M 1.1.1, unqualified transient commands always search the current drive/user first. Numeric PATH supplies up to six ordered additional drive/user entries, default `$$: A0:`. Z-System syntax uses `$$` for the current DU, `$0` for user 0 on the current drive, and `A$` for the current user on drive A. A trailing colon is optional; `.` is no longer a PATH entry. Double literal dollars in SUBMIT source files. Use `PATH /A DU:` or `/ADD DU:` to append one entry, and `PATH /D DU:` or `/DEL DU:` to remove one. Duplicate additions, missing deletions and deletion of the final entry are rejected without changing the list. Use `PATH /H`, `/HELP` or `/VER`; `A0:PATH /DEFAULT` recovers the default. PATH is volatile: use the existing startup script to apply a preferred list after cold boot. Named directories and scripting are outside 1.1.
 
 ## Reading the entries
 
@@ -3685,6 +3685,13 @@ STAT target:
 ```
 
 Here `d:` means a drive selection. Conventional operands also accept numeric user selectors such as `5:` and `C3:`. Temporary selections are restored before STAT returns. The alternatives inside square brackets on the filespec line are optional file options; type just the option you need, without those brackets or vertical bars.
+
+In 1.1.1, STAT operands are case-insensitive, including drive letters: `STAT b:`
+and `STAT B:` are equivalent. For 1.1, use uppercase drive letters. Bare STAT
+lists logged-in drives under a `Logged-in drives:` heading; a drive-only
+operand queries that drive directly. Warm boot resets the logged-in drive set,
+so the list can change after a program exits through warm boot.
+
 
 | Command | Information or action |
 |---|---|

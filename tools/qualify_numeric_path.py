@@ -141,41 +141,54 @@ FAIL:   DB 'INVOCATION FAILED',13,10,'$'
 
     check('PATH /HELP', b'Usage: PATH')
     check('PATH /VER', b'Numeric Command Search Path')
-    check('PATH', b'PATH: . A0:')
-    check('PATH B3: . A0:', b'PATH: B3: . A0:')
-    check('WHICH', b'B3 IMAGE')
+    check('PATH', b'PATH: $$: A0:')
+    check('PATH D0:', b'PATH: D0:')
+    check('PATH', b'PATH: D0:')  # local PATH.COM remains reachable
+    check('WHICH', b'A0 IMAGE')
+    check('PATH /ADD $0', b'PATH: D0: $0:')
+    check('PATH /DEL $00:', b'PATH: D0:')
+    check('PATH /ADD B3:', b'PATH: D0: B3:')
+    check('PATH /D D0:', b'PATH: B3:')
+    check('PATH /A A0:', b'PATH: B3: A0:')
+    check('PATH /DEL B3:', b'PATH: A0:')
+    check('PATH B3: $$: A0:', b'PATH: B3: $$: A0:')
+    check('WHICH', b'A0 IMAGE')
     check('A0:WHICH', b'A0 IMAGE')
+    check('B3:WHICH', b'B3 IMAGE')
     check('B3:WHI?H', b'B3 IMAGE')  # preserve the existing qualified FCB Open
     check('C2:WHICH', b'\n?')
     check('C4:', b'C4>_ ', b'C4>_ ')
+    check('WHICH', b'B3 IMAGE', b'C4>_ ')
     check('CALLER One.txt tWo.Dat', b'INVOCATION OK', b'C4>_ ')
     check('P:WHICH', b'\n?', b'C4>_ ')
     check('A0:', b'A0>_ ')
     check('PATH B3: B03:', b'Duplicate PATH entry')
     check('PATH C32:', b'Invalid PATH user')
     check('PATH TOOLS:', b'Invalid PATH')
-    check('PATH . A0: A1: B1: B2: B3: B4:', b'up to six')
-    check('PATH', b'PATH: B3: . A0:')
-    check('EMPTY', b'EMPTY PROGRAM')
-    check('BIG', b'FILE WILL NOT FIT')
-    check('FIT', b'FULL TPA EXECUTED')
-    check('PATH', b'PATH: B3: . A0:')
+    check('PATH $$: A0: A1: B1: B2: B3: B4:', b'up to six')
+    check('PATH', b'PATH: B3: $$: A0:')
+    check('C4:', b'C4>_ ', b'C4>_ ')
+    check('EMPTY', b'EMPTY PROGRAM', b'C4>_ ')
+    check('BIG', b'FILE WILL NOT FIT', b'C4>_ ')
+    check('FIT', b'FULL TPA EXECUTED', b'C4>_ ')
+    check('A0:', b'A0>_ ')
+    check('PATH', b'PATH: B3: $$: A0:')
     check('DIR', b'PATH     COM')
     check(':DIR', b'TRANSIENT DIR')
     check('PATH P31: A0:', b'PATH: P31: A0:')
-    check('WHICH', b'DRIVE UNAVAILABLE')
-    check('A0:PATH /DEFAULT', b'PATH: . A0:')
+    check('ABSENT', b'DRIVE UNAVAILABLE')
+    check('A0:PATH /DEFAULT', b'PATH: $$: A0:')
     check('B3:', b'B3>_ ', b'B3>_ ')
     check('WHICH', b'B3 IMAGE', b'B3>_ ')
     check('A2:', b'A2>_ ', b'A2>_ ')
     check('WHICH', b'A0 IMAGE', b'A2>_ ')
     check('A0:', b'A0>_ ')
     commands += [(b'SUBMIT PTEST\r', b'INPUT OK', 60),
-                 (b'', b'B3 IMAGE', 30), (b'', b'A0>_ ', 30)]
+                 (b'', b'A0 IMAGE', 30), (b'', b'A0>_ ', 30)]
     log = session(simulator, disks, commands, work/'prompt.log')
     # Read the emitted help rows so a formatter change cannot move only one group.
     help_rows = log.split(b'   Options:\r\n', 1)[1].splitlines()
-    for index, label in enumerate((b'location', b'/DEFAULT', b'', b'/H /HELP', b'/VER')):
+    for index, label in enumerate((b'location', b'/A /ADD DU', b'/D /DEL DU', b'/DEFAULT', b'', b'/H /HELP', b'/VER')):
         row = help_rows[index]
         if label:
             assert row.startswith(b'     ' + label.ljust(15)) and row[20:21].isalpha(), row
@@ -183,7 +196,7 @@ FAIL:   DB 'INVOCATION FAILED',13,10,'$'
             assert not row, row
     assert b'INPUT FAILED' not in log and b'WRONG FALLBACK EXECUTED' not in log
     # Separate process and same disks prove cold defaults after a custom list.
-    check_cold = [(b'PATH\r', b'PATH: . A0:', 30)]
+    check_cold = [(b'PATH\r', b'PATH: $$: A0:', 30)]
     session(simulator, disks, check_cold, work/'cold.log')
     # An absent supported drive reaches the real media-error prompt. Ctrl-C
     # abandons Open, before the ordinary restoration code could run.
