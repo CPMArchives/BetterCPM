@@ -1,4 +1,5 @@
 """Release heading preserves its fixed field and honest development fallback."""
+import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -21,8 +22,10 @@ class ReleaseHeadingTests(unittest.TestCase):
                 self.assertEqual(image[-1:], b'\xc9')
                 images.append(image)
             self.assertEqual(len(images[0]), len(images[1]))
-            self.assertTrue(images[0].startswith(b'\r\nBetterCP/M 1.0\r\n$'))
-            self.assertTrue(images[1].startswith(b'\r\nBetterCP/M development (after core 1.0)\r\n$'))
+            release=json.loads((Path(__file__).resolve().parents[1]/'metadata/release-package.json').read_text())['version']
+            self.assertTrue(images[0].startswith(('\r\nBetterCP/M '+release+'\r\n$').encode()))
+            expected='BetterCP/M '+release if release=='1.1' else 'BetterCP/M development (after core 1.0)'
+            self.assertTrue(images[1].startswith(('\r\n'+expected+'\r\n$').encode()))
 
 
 if __name__ == '__main__':

@@ -27,10 +27,22 @@ def main():
     disks = work / 'disks'
     shutil.copytree(args.image_dir / 'disks', disks)
     shutil.copy2(args.image_dir / 'diskdefs', work / 'diskdefs')
+    # B is a scratch fixture volume, not the nearly full Utilities disk.
+    scratch=disks/'driveb.dsk'
+    scratch.write_bytes(bytes([0xe5])*scratch.stat().st_size)
     simulator = args.simulator.resolve()
     build = args.build.resolve()
 
     def install(drive, user, filename, data):
+        existing=work/'readback.tmp'
+        result=subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',
+                               str(disks/f'drive{drive}.dsk'),f'{user}:{filename}',str(existing)],
+                              cwd=work,capture_output=True)
+        if result.returncode==0 and existing.exists():
+            observed=existing.read_bytes();existing.unlink()
+            if observed[:len(data)]==data and set(observed[len(data):]) <= {0,26}:
+                return  # Exercise the packaged bytes without replacing them.
+            raise ValueError('packaged input differs from qualification build: '+filename)
         source = work / filename
         source.write_bytes(data)
         subprocess.run(['cpmcp', '-T', 'raw', '-f', 'bettercpm-default',

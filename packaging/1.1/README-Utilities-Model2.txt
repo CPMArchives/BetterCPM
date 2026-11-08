@@ -4,9 +4,9 @@ BetterCP/M Utilities 1.1 — Model II
 ASSEMBLY TEMPLATE — not a completed or accepted release package.
 Remove this notice only after the release acceptance checks pass.
 
-Contains only the 800K DMK primary and companion .dmk images for Model II, with the Utilities Manual and required shared corresponding-source/provenance companions.
+Contains only the 584K BCM2SS primary and companion IMD images for Model II, with the Utilities Manual and required shared corresponding-source/provenance companions.
 
-Use this download with the Model II System package. The other platform has a separate Utilities download. Mount primary Utilities as B: and companion as C: beside System A: and work D:. The companion retains the BetterCPM-NOAH name and contains NOAH, PATCH, COMPARE and the four-format SUPPDISK supplement. CRCKSUM and MD5SUM are on the primary disk. Keep NOAH.COM and NOAH.OVL matched.
+Use this download with the Model II System package. Each of the other platforms has a separate Utilities download. Mount primary Utilities as B: and companion as C: beside System A: and work D:. The companion retains the BetterCPM-NOAH name and contains NOAH, PATCH, COMPARE and the optional SUPPDISK supplement. Inclusion of that supplement does not qualify its formats on Model II; use only BCM2SS on this target. CRCKSUM and MD5SUM are on the primary disk. Keep NOAH.COM and NOAH.OVL matched.
 
 Consult the Utilities Manual for per-program requirements. These disks are not bootable replacements for the System Disk.
 

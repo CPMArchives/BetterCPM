@@ -1,0 +1,577 @@
+{
+  "status": "PASS integrated TCAP 2.0 source/install/cold/warm/load/run/unload",
+  "platform": "cpmsim",
+  "service": "TCAP 2.0",
+  "budget": {
+    "personality": "ADM3A",
+    "platform": "cpmsim",
+    "service": "TCAP 2.0",
+    "payload_bytes": 746,
+    "resident_profile_bytes": 1024,
+    "helper_code_bytes": 113,
+    "helper_data_bytes": 46,
+    "helper_bytes": 159,
+    "shared_bios_state_bytes": 0,
+    "call_site_allowance_bytes": 32,
+    "stack_allowance_bytes": 32,
+    "full_path_limit_bytes": 1280,
+    "full_budgeted_path_bytes": 1247,
+    "generic_rsx_bytes_excluded": 1024,
+    "permanent_display_reservation_bytes": 0,
+    "cache_footer_bytes": 10,
+    "inline_cache_ownership": true,
+    "compatibility_id": "200c7887228d1522d7bf1a24db5c3c35",
+    "payload_sha256": "5012f043dbbb486ddb574781c82c737f155210ed523da2138bbd535be906854f",
+    "carrier_sha256": "35e177c068f3fbd76574dfcea79a6dea98dcaad6ef92e89252b0267519e837c2",
+    "expanded_source_sha256": "42c9e712fdf7e47878e81da10374fc4bbe767628baf38922175ece0da676a8e9"
+  },
+  "budgets": {
+    "ADM3A": {
+      "personality": "ADM3A",
+      "platform": "cpmsim",
+      "service": "TCAP 2.0",
+      "payload_bytes": 746,
+      "resident_profile_bytes": 1024,
+      "helper_code_bytes": 113,
+      "helper_data_bytes": 46,
+      "helper_bytes": 159,
+      "shared_bios_state_bytes": 0,
+      "call_site_allowance_bytes": 32,
+      "stack_allowance_bytes": 32,
+      "full_path_limit_bytes": 1280,
+      "full_budgeted_path_bytes": 1247,
+      "generic_rsx_bytes_excluded": 1024,
+      "permanent_display_reservation_bytes": 0,
+      "cache_footer_bytes": 10,
+      "inline_cache_ownership": true,
+      "compatibility_id": "200c7887228d1522d7bf1a24db5c3c35",
+      "payload_sha256": "5012f043dbbb486ddb574781c82c737f155210ed523da2138bbd535be906854f",
+      "carrier_sha256": "35e177c068f3fbd76574dfcea79a6dea98dcaad6ef92e89252b0267519e837c2",
+      "expanded_source_sha256": "42c9e712fdf7e47878e81da10374fc4bbe767628baf38922175ece0da676a8e9"
+    },
+    "VT52": {
+      "personality": "VT52",
+      "platform": "cpmsim",
+      "service": "TCAP 2.0",
+      "payload_bytes": 741,
+      "resident_profile_bytes": 1024,
+      "helper_code_bytes": 113,
+      "helper_data_bytes": 46,
+      "helper_bytes": 159,
+      "shared_bios_state_bytes": 0,
+      "call_site_allowance_bytes": 32,
+      "stack_allowance_bytes": 32,
+      "full_path_limit_bytes": 1280,
+      "full_budgeted_path_bytes": 1247,
+      "generic_rsx_bytes_excluded": 1024,
+      "permanent_display_reservation_bytes": 0,
+      "cache_footer_bytes": 10,
+      "inline_cache_ownership": true,
+      "compatibility_id": "200c7887228d1522d7bf1a24db5c3c35",
+      "payload_sha256": "b5cb319015a89bcef34e9b6900ce12eb0d59c3ab64597ae83c862da07cda1198",
+      "carrier_sha256": "d976783b536de012da3de3b178c02b7883dc080a0b1ac356f4be6d29d2958fd7",
+      "expanded_source_sha256": "5e8b3495434c4e5b25817d73ce404275c0bee731b30ec81c2a17fe73f04782ee"
+    },
+    "ANSI": {
+      "personality": "ANSI",
+      "platform": "cpmsim",
+      "service": "TCAP 2.0",
+      "payload_bytes": 1499,
+      "resident_profile_bytes": 1536,
+      "helper_code_bytes": 113,
+      "helper_data_bytes": 46,
+      "helper_bytes": 159,
+      "shared_bios_state_bytes": 0,
+      "call_site_allowance_bytes": 32,
+      "stack_allowance_bytes": 32,
+      "full_path_limit_bytes": 1792,
+      "full_budgeted_path_bytes": 1759,
+      "generic_rsx_bytes_excluded": 1024,
+      "permanent_display_reservation_bytes": 0,
+      "cache_footer_bytes": 10,
+      "inline_cache_ownership": true,
+      "compatibility_id": "200c7887228d1522d7bf1a24db5c3c35",
+      "payload_sha256": "1572f5ebbe29b5fb76e43d9f7069b869639f5c663adcbb1c815ec42ffa4b8f0c",
+      "carrier_sha256": "6de6dfaff34113fcabdd05410d34abe0885dd7e1f8823b0d09bd3207b3e9aeb0",
+      "expanded_source_sha256": "39362717e9093800caae5aaa8037b42c9a815af90e74eb09e935b49a35f828de"
+    }
+  },
+  "baseline_boundary": 57601,
+  "maximum_com_bytes": 57344,
+  "checks": {
+    "source-lifecycle": {
+      "commands": [
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD ADM3A"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 55553
+        },
+        {
+          "command": "LADM3A"
+        },
+        {
+          "command": "DEMO 1"
+        },
+        {
+          "command": "RSX LOAD HELLO"
+        },
+        {
+          "command": "DEMO 2"
+        },
+        {
+          "command": "RSX UNLOAD HELLO"
+        },
+        {
+          "command": "DEMO 3"
+        },
+        {
+          "command": "RSX LIST"
+        },
+        {
+          "command": "RSX UNLOAD ADM3A"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD ADM3A"
+        },
+        {
+          "command": "DEMO 4"
+        },
+        {
+          "command": "RSX UNLOAD ADM3A"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD VT52"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 55553
+        },
+        {
+          "command": "LVT52"
+        },
+        {
+          "command": "DEMO 1"
+        },
+        {
+          "command": "RSX LOAD HELLO"
+        },
+        {
+          "command": "DEMO 2"
+        },
+        {
+          "command": "RSX UNLOAD HELLO"
+        },
+        {
+          "command": "DEMO 3"
+        },
+        {
+          "command": "RSX LIST"
+        },
+        {
+          "command": "RSX UNLOAD VT52"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD VT52"
+        },
+        {
+          "command": "DEMO 4"
+        },
+        {
+          "command": "RSX UNLOAD VT52"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 55041
+        },
+        {
+          "command": "LANSI"
+        },
+        {
+          "command": "DEMO 1"
+        },
+        {
+          "command": "RSX LOAD HELLO"
+        },
+        {
+          "command": "DEMO 2"
+        },
+        {
+          "command": "RSX UNLOAD HELLO"
+        },
+        {
+          "command": "DEMO 3"
+        },
+        {
+          "command": "RSX LIST"
+        },
+        {
+          "command": "RSX UNLOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD ANSI"
+        },
+        {
+          "command": "DEMO 4"
+        },
+        {
+          "command": "RSX UNLOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        }
+      ],
+      "boundaries": [
+        57601,
+        55553,
+        57601,
+        57601,
+        57601,
+        55553,
+        57601,
+        57601,
+        57601,
+        55041,
+        57601,
+        57601
+      ],
+      "cold_boot": true,
+      "warm_returns": true,
+      "exact_unload_restoration": true,
+      "transcript_sha256": "eeb36eb5f017e79df5532c6ad52d901e16f814513ab6298e409c243655b55069"
+    },
+    "installation": {
+      "invalid_package_rejected_before_write": true,
+      "decline_unchanged": true,
+      "filesystem_unchanged": true,
+      "installed_core_matches_source": true,
+      "installed_image_sha256": "12dbc94ba7e5e956e4d951c5ccf12e60c407c41c259296f85e40ec1b537cedc5"
+    },
+    "installed-lifecycle": {
+      "commands": [
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD ADM3A"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 55553
+        },
+        {
+          "command": "LADM3A"
+        },
+        {
+          "command": "DEMO 1"
+        },
+        {
+          "command": "RSX LOAD HELLO"
+        },
+        {
+          "command": "DEMO 2"
+        },
+        {
+          "command": "RSX UNLOAD HELLO"
+        },
+        {
+          "command": "DEMO 3"
+        },
+        {
+          "command": "RSX LIST"
+        },
+        {
+          "command": "RSX UNLOAD ADM3A"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD ADM3A"
+        },
+        {
+          "command": "DEMO 4"
+        },
+        {
+          "command": "RSX UNLOAD ADM3A"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD VT52"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 55553
+        },
+        {
+          "command": "LVT52"
+        },
+        {
+          "command": "DEMO 1"
+        },
+        {
+          "command": "RSX LOAD HELLO"
+        },
+        {
+          "command": "DEMO 2"
+        },
+        {
+          "command": "RSX UNLOAD HELLO"
+        },
+        {
+          "command": "DEMO 3"
+        },
+        {
+          "command": "RSX LIST"
+        },
+        {
+          "command": "RSX UNLOAD VT52"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD VT52"
+        },
+        {
+          "command": "DEMO 4"
+        },
+        {
+          "command": "RSX UNLOAD VT52"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 55041
+        },
+        {
+          "command": "LANSI"
+        },
+        {
+          "command": "DEMO 1"
+        },
+        {
+          "command": "RSX LOAD HELLO"
+        },
+        {
+          "command": "DEMO 2"
+        },
+        {
+          "command": "RSX UNLOAD HELLO"
+        },
+        {
+          "command": "DEMO 3"
+        },
+        {
+          "command": "RSX LIST"
+        },
+        {
+          "command": "RSX UNLOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD ANSI"
+        },
+        {
+          "command": "DEMO 4"
+        },
+        {
+          "command": "RSX UNLOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 57601
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        }
+      ],
+      "boundaries": [
+        57601,
+        55553,
+        57601,
+        57601,
+        57601,
+        55553,
+        57601,
+        57601,
+        57601,
+        55041,
+        57601,
+        57601
+      ],
+      "cold_boot": true,
+      "warm_returns": true,
+      "exact_unload_restoration": true,
+      "transcript_sha256": "eeb36eb5f017e79df5532c6ad52d901e16f814513ab6298e409c243655b55069"
+    }
+  },
+  "simulator_sha256": "0f6b256cd6beea2ab7bf0eab8a9cc2a5241ed772408e811150c3f6e0f5cff4e8",
+  "core_package_sha256": "4c238c82a2d3abf9c642943089fef916d0b6db183b76a22e1bc94b0d2a73a978",
+  "permanent_memory_loss_bytes": 0
+}

@@ -1,0 +1,12 @@
+{
+  "status": "PASS identity binding; not final release acceptance",
+  "source_commit": "caf18b38f51d6c7977f30a49dac083db310686c7",
+  "system_sha256": "57bb5617f52c521dba8dd741b8957b4cdf5d620b15e7aba593db4e8c30d534f1",
+  "tcap_carriers": {
+    "ADM3A": "35e177c068f3fbd76574dfcea79a6dea98dcaad6ef92e89252b0267519e837c2",
+    "VT52": "d976783b536de012da3de3b178c02b7883dc080a0b1ac356f4be6d29d2958fd7",
+    "ANSI": "6de6dfaff34113fcabdd05410d34abe0885dd7e1f8823b0d09bd3207b3e9aeb0"
+  },
+  "qualification_sha256": "6e15d6af8d11053b8e943410a5ed7105b1f03ee8d4c7dc394a8826f533bb1c5b",
+  "scope": "Same carrier bytes on candidate System disk and TCAP source/install campaign. Campaign adds fixtures on disposable media; final package acceptance pending."
+}

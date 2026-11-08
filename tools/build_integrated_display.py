@@ -14,6 +14,7 @@ from build_rsx_module import make_module
 from build_z80pack_image import symbols
 from checked_build_contract import load_contract
 from checked_carriers import rsx_metadata
+from component_registry import module_version
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -45,7 +46,7 @@ def build(workspace,out,platform,personality='ADM3A',assembler=None,inline_cache
     code=assemble(assembler,text,out/'native.bin',out/'native.lst',0x8000)
     alternate=assemble(assembler,text.replace('08000H','08101H'),out/'alternate.bin',out/'alternate.lst',0x8101)
     labels=symbols(out/'native.lst')
-    carrier=make_module(name=personality,version=(0,1),services=[],linked_base=0x8000,code=code,
+    carrier=make_module(name=personality,version=module_version(personality),services=[],linked_base=0x8000,code=code,
         relocations=relocation_offsets(code,alternate,0x101),reconstruction_class='STATEFUL',
         init_offset=labels['D_HOME']-0x8000 if personality in ('VT52','ANSI') else 0xffff,
         cache_footer_inline=inline_cache,

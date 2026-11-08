@@ -1,0 +1,47 @@
+{
+  "status": "NOT ACCEPTED; publication prohibited",
+  "tested_source_commit": "caf18b38f51d6c7977f30a49dac083db310686c7",
+  "system_image": {
+    "cpmsim": {
+      "sha256": "57bb5617f52c521dba8dd741b8957b4cdf5d620b15e7aba593db4e8c30d534f1",
+      "acceptance": {
+        "cases": 23,
+        "unloaded_tpa": 57344,
+        "screen_pair_tpa": 53504,
+        "status": "PASS",
+        "shipped_startup_tpa": 57344
+      }
+    }
+  },
+  "checks": {
+    "cpmsim_source_build": "PASS",
+    "cpmsim_tcap_candidate": "PASS",
+    "cpmsim_system_utilities_submit_xsub": "PASS",
+    "cpmsim_numeric_path_32_commands": "PASS",
+    "model2_first_guest_gates": "PASS",
+    "utilities_independent_inventory_cpmsim_model4": "PASS",
+    "pinned_cpmsim_runtime_reconstruction": "PASS"
+  },
+  "limitations": [
+    "Receipts predate the final release-heading and registered TCAP carrier-version corrections. They are not final artifact acceptance.",
+    "Model 4 build boot checks completed but source mutation guard correctly refused generation promotion.",
+    "Model II native first gates passed, then release record rejected engineering TCAP carrier versions; builder correction requires fresh qualified artifacts.",
+    "Model 4 TCAP campaign on superseded source remains an engineering campaign, not release acceptance."
+  ],
+  "unverified": [
+    "Clean final source cut and fresh three-platform System/Utilities pairs",
+    "Eight-archive assembly and readback, release-wide checksum index",
+    "Exact final image TCAP 2.0 campaigns on all platforms",
+    "Final PATH and memory limits on all platforms",
+    "Final compatibility/card accounting, DUP, media recovery and source reconstruction",
+    "Resident/transient VER /H /HELP /VER disposition for issue #612",
+    "Four-manual 1.1 reconciliation and final documentation/license audit",
+    "Publication, tag and independent uploaded-asset verification"
+  ],
+  "receipt_files": {
+    "cpmsim-tcap.json": "6e15d6af8d11053b8e943410a5ed7105b1f03ee8d4c7dc394a8826f533bb1c5b",
+    "cpmsim-tcap-image-binding.json": "9faf96bec5ad2316677ceab7ad671ae48074af2cfd6181c30eb242b6d4d76d8d",
+    "utilities-inventory.json": "3f9b07590eea369667c3e762d25ca9a94939d06b5ab7ceca311370edf5c58ab0",
+    "model2-first-guest-gates.json": "9da43964fc9a950811d45c144f9fdbac7c21e9ca9277f065f6c455692ef2e0c4"
+  }
+}
