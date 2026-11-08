@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "name": "BetterCP/M release package",
-  "version": "1.1",
-  "status": "release preparation; exact package acceptance pending",
-  "notes": "Frozen three-platform release including numeric PATH, memory policy and TCAP 2.0. Exact-artifact acceptance pending. Preserve 1.0 and 1.0.1 locks."
+  "version": "1.1.1",
+  "status": "maintainer-approved patch publication",
+  "notes": "Patch release containing PRs #671 and #672. Maintainer authorized publication without a new engineering test campaign; prior focused checks are recorded in the release notes. Earlier published releases remain unchanged."
 }

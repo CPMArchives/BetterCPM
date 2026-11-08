@@ -1,7 +1,10 @@
 # BetterCP/M 1.1.1 release notes
 
-Status: Planned; changes implemented locally, not yet published or qualified
-on final release media.
+Status: Maintainer-approved publication, 8 November 2026. PRs #671 and #672
+are merged. Existing focused assembled-code checks are recorded below. At the
+maintainer's explicit direction, publication does not start another engineering
+test campaign. Packaging verifies archive readback, file inventories and hashes;
+this does not claim a fresh three-platform guest qualification campaign.
 
 ## Command search and PATH
 

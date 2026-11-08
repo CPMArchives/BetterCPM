@@ -12,10 +12,10 @@ BCV_DESC:                               ; version descriptor header
         DW      BV_D_ID,BV_D_API,BV_D_IMP
         DW      BV_I_ID,BV_I_API,BV_I_IMP
 BCV_SYSTEM:     DB      'System','$'    ; system name
-BCV_RELEASE:    DB      '1.1','$'       ; core OS version
+BCV_RELEASE:    DB      '1.1.1','$'     ; core OS version
 BV_C_ID:       DB      'CCP','$'        ; CCP subsystem identifier
 BV_C_API:      DB      '2.0','$'        ; CCP API version
-BV_C_IMP:      DB      '2.0','$'        ; CCP implementation version
+BV_C_IMP       EQU     BV_C_API         ; CCP identical API/implementation text
 BV_D_ID:       DB      'BDOS','$'       ; BDOS subsystem identifier
 BV_D_API:      DB      '1.2','$'        ; BDOS API version
 BV_D_IMP:      DB      '1.10','$'       ; BDOS implementation version

@@ -78,8 +78,11 @@ def render() -> str:
                       f"{row['component']} subsystem identifier"),
             annotated(f"BV_{stem}_API:      DB      {quoted(row['interface_version'])}",
                       f"{row['component']} API version"),
-            annotated(f"BV_{stem}_IMP:      DB      {quoted(row['implementation_version'])}",
-                      f"{row['component']} implementation version"),
+            (annotated(f"BV_{stem}_IMP       EQU     BV_{stem}_API",
+                       f"{row['component']} identical API/implementation text")
+             if row['implementation_version'] == row['interface_version'] else
+             annotated(f"BV_{stem}_IMP:      DB      {quoted(row['implementation_version'])}",
+                       f"{row['component']} implementation version")),
         ))
     return "\n".join(lines) + "\n"
 

@@ -1236,9 +1236,9 @@
       "component": "BetterCP/M",
       "identity": "Core OS",
       "interface_version": "-",
-      "implementation_version": "1.1",
-      "status": "release candidate",
-      "notes": "Frozen BetterCP/M 1.1 core; exact release-media acceptance remains pending. Component and TCAP API versions are independent."
+      "implementation_version": "1.1.1",
+      "status": "released patch",
+      "notes": "Maintainer-approved 1.1.1 patch. Component and TCAP API versions remain independent; no new engineering campaign requested."
     },
     {
       "component": "CCP",
