@@ -151,7 +151,7 @@ def lean_system(files, evidence, source_commit, platform):
     files['THIRD-PARTY-NOTICES.txt']+=('\nCorresponding source: '+offer['url']+'\n').encode()
     from release_documentation import remap_links
     name='docs/platform/'+guide
-    files[name]=remap_links(name,name,files[name],{n:n for n in files},source_commit)
+    files[name]=remap_links(name,name,files[name],{n:n for n in files},source_commit,{})
     report=evidence['system']
     proof={'image':report['image'],'sha256':report['sha256'],'target':report['target']}
     if 'work_image_sha256' in report:proof['work_image_sha256']=report['work_image_sha256']
