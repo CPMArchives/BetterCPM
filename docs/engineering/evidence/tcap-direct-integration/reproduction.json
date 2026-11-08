@@ -1,0 +1,77 @@
+{
+  "status": "PASS all nine canonical builds are binary identical to qualification modules",
+  "modules": [
+    {
+      "platform": "cpmsim",
+      "personality": "ADM3A",
+      "carrier_sha256": "0b1a9d914a350bd9da1b78ec1862fd23d4378851c071c93d40adc6fcc32b742c",
+      "expanded_source_sha256": "42c9e712fdf7e47878e81da10374fc4bbe767628baf38922175ece0da676a8e9",
+      "full_budgeted_path_bytes": 1247,
+      "binary_identical_to_tested_module": true
+    },
+    {
+      "platform": "cpmsim",
+      "personality": "VT52",
+      "carrier_sha256": "17e36f2413dc045f17f1f6a455588f3351e2118baf3f53efd48489e9df6876e4",
+      "expanded_source_sha256": "5e8b3495434c4e5b25817d73ce404275c0bee731b30ec81c2a17fe73f04782ee",
+      "full_budgeted_path_bytes": 1247,
+      "binary_identical_to_tested_module": true
+    },
+    {
+      "platform": "cpmsim",
+      "personality": "ANSI",
+      "carrier_sha256": "cf901d8140dfd1f61cdecb847220b852d18d45867a12071b16d5c713bcca2491",
+      "expanded_source_sha256": "39362717e9093800caae5aaa8037b42c9a815af90e74eb09e935b49a35f828de",
+      "full_budgeted_path_bytes": 1759,
+      "binary_identical_to_tested_module": true
+    },
+    {
+      "platform": "model4",
+      "personality": "ADM3A",
+      "carrier_sha256": "5ef9cca1976927f7361ff24cf09141df1f5e6ecb2ab5e75ee26d7db12eef3194",
+      "expanded_source_sha256": "c47147c21d7eea90ca3f6af87b501f5f6d0cceb1beb11c2ea78445aa7b749684",
+      "full_budgeted_path_bytes": 994,
+      "binary_identical_to_tested_module": true
+    },
+    {
+      "platform": "model4",
+      "personality": "VT52",
+      "carrier_sha256": "b800352040f8b4eae535124bee696cc0ce547b4e5c7293bce89940b7cd7251f4",
+      "expanded_source_sha256": "e26c50fd433899fd88ba2ceaf30cabef374e5a8704780900a16b08fe3ed5df2c",
+      "full_budgeted_path_bytes": 994,
+      "binary_identical_to_tested_module": true
+    },
+    {
+      "platform": "model4",
+      "personality": "ANSI",
+      "carrier_sha256": "1a0ded9f0b0cdcb9865f3bb34dc254b1f6f1c6e2b6afdf2423b4d470e863e9bc",
+      "expanded_source_sha256": "981ef3e6b1042495e8fbaa6299ff54948443e39a8385f863f72360c5f29a8495",
+      "full_budgeted_path_bytes": 1762,
+      "binary_identical_to_tested_module": true
+    },
+    {
+      "platform": "model2",
+      "personality": "ADM3A",
+      "carrier_sha256": "decc008c2b964047436fe8a97a66efb5373be57df80fcfee7c9abde1c906b561",
+      "expanded_source_sha256": "0fd5efe3b1b833ddfebf579f1d15f495f3d210bd6cac4f05c826107535ecda59",
+      "full_budgeted_path_bytes": 994,
+      "binary_identical_to_tested_module": true
+    },
+    {
+      "platform": "model2",
+      "personality": "VT52",
+      "carrier_sha256": "62fbb86544b96df1bd03a97e5838b098e8dd57619e3484ba57a72ab6654264b7",
+      "expanded_source_sha256": "0eb05f67707b7c5dc6de7ddf85f46a0cc051d1750beb436827de52596951eef8",
+      "full_budgeted_path_bytes": 1250,
+      "binary_identical_to_tested_module": true
+    },
+    {
+      "platform": "model2",
+      "personality": "ANSI",
+      "carrier_sha256": "1c310b84eb5c9ba453a2365fdb27b9c9b9fb54798d407d4723dba50c861ff199",
+      "expanded_source_sha256": "2c1697e77d4b16dc73515f82c8f48530a8f235ffb6c0693df6965fe319e3e729",
+      "full_budgeted_path_bytes": 1762,
+      "binary_identical_to_tested_module": true
+    }
+  ]
+}

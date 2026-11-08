@@ -1,0 +1,19 @@
+{
+  "scope": "public compact TCAP integration sources; other existing build/profile work is not enumerated",
+  "sha256": {
+    "src/rsx/adm3a.mac": "05db72e9b530d2e07a9699e8112c87642aa4158e5e317e22c44a6b96acb6f647",
+    "src/rsx/ansi.mac": "4d3634d62a4043349f6e8b22b31049c20247bd22ffccdb7982ede30cd4ea0448",
+    "src/rsx/vt52.mac": "2f98ccb6d73f950bcb652e63e4c4c06c1bb8dff1b36987fee02bc1a1ac3a230d",
+    "src/system/r3meta.mac": "388797b6a181eb12794c9b825287a1704b0724354369a0d494ee852382c8d76b",
+    "src/utilities/common/tcap.inc": "112e883eab8c9c01849087f6ab5e899e67b66ff10cd4fef9856f1b74c5bf97e0",
+    "src/examples/tcap-demo.mac": "d80007ac436cbcf626cc5f10d77711eba4b4c579572165885fe91e46325d4a23",
+    "tools/tcap_profile.py": "852957a006e62468ef6ab4d85a45101a6e89a56eaa8eed761408ee76c08c1a84",
+    "tools/tcap_qualification.py": "705506284817e9f3f2c76ef790eff3e2b9db456f9c9366ff9e179b051b766775",
+    "tools/test_tcap_public.py": "271074e7ed009145343503d16d3de52e4494d520407337a133f411f372f6e57a",
+    "tools/qualify_tcap_cpmsim.py": "5c32f29c2ac03697cbe546026c8d14be24181aaf975801a4b5d6edc0cc35927f",
+    "tools/qualify_tcap_trs80.py": "46ae97d2ba7b5a46fbc55755fe72909155c9ce46e7772be4db894e0463f136f4",
+    "tools/qualify_tcap_admission.py": "8f891943ccb17bf8d97cd804463439569729942b031efbdb141d4d18df0c4e6c",
+    "tools/check_tcap_contract.py": "659bc7c6a8cda6501c7a235f5e9659dd74f1438f5af4ccf47a5c731eaa857cb0",
+    "docs/engineering/contracts/tcap-1.0.json": "6e95490b568f5019b0b85b33a8185ca30e878d863d4743df59c445bc4929db65"
+  }
+}

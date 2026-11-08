@@ -399,7 +399,7 @@ RD_V2CLASS:                             ; decode the reconstruction class
         OR      A
         JP      NZ,RD_BAD
         LD      A,E
-        AND     0FCH
+        AND     0F8H                    ; inline cache permission is not a class bit
         JP      NZ,RD_BAD
         LD      A,E
         AND     3

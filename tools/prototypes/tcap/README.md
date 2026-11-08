@@ -1,5 +1,18 @@
 # Private TCAP feasibility campaign
 
+Current implementation, 8 November 2026: use
+`tools/build_integrated_display.py` and the
+[combined display design](../../../docs/engineering/TCAP-Integrated-Display-Redesign.md).
+Its public service is TCAP 2.0. Full-path ceilings are 1,280 bytes for ADM3A/VT52
+and 1,792 for ANSI, excluding general RSX machinery. No permanent display
+reservation, utility migration or release assignment is introduced.
+
+The measured Z-System campaigns (`measure_zsystem.py`, `zsystem_model.py`,
+`zsystem_client.inc`, `zsystem_model_cpu.py`) record the benchmark. Transaction
+experiments below are retained historical diagnostics. The abandoned
+`public_tcap=True` core profiles and their engine hooks are not shipped by the
+compact implementation; use the ordinary full-RAM profiles for the new path.
+
 Experimental XTCP 0.1 slice, not the proposed public TCAP request ABI. This is
 an isolated CPU/model campaign; it never edits production source or packages a
 release. Generated binaries, listings, a private environment and reports live

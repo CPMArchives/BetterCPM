@@ -1,0 +1,28 @@
+{
+  "status": "PASS cleanup preserves qualified Model 4 runtime and package bytes",
+  "reuse_reason": "No new Model 4 native run: the clean-built core, runtime workers and carriers are byte-identical to the earlier passing run, and the packaged boot image is identical to its capacity-tested image. cpmsim and Model II checked identities changed and were rerun.",
+  "model4_qualification": "model4.json",
+  "model4_qualified_runtime_sha256": {
+    "SYSTEM.SYS": "603c8c4e48b4a0aef6e3626e665390f0e8e3a95d2ccc3caee7284e2edbfebcc7",
+    "RCP.CPX": "1a1259e676bca8db69d881393a141ea08d31c78248fc490473771d8fcfc3ffa2",
+    "R3PACK.RSX": "a9131c1122419d094eeda77e4c728a1232c47a5f9eceabcd7f27f1258f68e7f1",
+    "R3CACHE.RSX": "4180da6be712028035485af0d3572663efe9d4fe120006de3cdb512ac747f26b",
+    "RSX.COM": "c77d85bb4969588d3c1adc2bf3745ef74bdce082314f797055389e5c3bd853aa",
+    "SYSGEN.COM": "877633f7d51556db415a590a19a21940ecb2cfe88026bc82bb107cf6db32def1",
+    "CONFIG.COM": "0fd9f5d8c99cc96acef226a3d8cef3dfd6de1a2308549f3cdf8f923cf2d472e9",
+    "STAT.COM": "6f9d160cfae643303b8085eefae2fd8d8acbe3e0a97dcea69e09d2e4f753fe0c",
+    "SUBMIT.COM": "f7d2449bae144fa45ed7ad308c5458dc2d729bfa3c31da88a1aefe4cd7633157"
+  },
+  "model4_packaged_image_sha256": "b33de7e8b1e701dcc608d6e43121cbd11da93d5e45bb45de9672ca502b1dee83",
+  "excluded_experiments": "Retired transaction/template runtime hooks and permanent reservation variants are excluded. Normal core profiles are unchanged.",
+  "cpu_receipt_scope": "CPU receipts retain their own carrier identity and allocation scope. Model II CPU receipts are reused after comparing rendering payloads and validator code bytes; the current full-machine receipts exercise all three actual carriers with the rebuilt binding.",
+  "model2_cpu_binary_reuse": {
+    "r3metadata.bin": "fed1c0b2041d0d42391bc750f6b28921f26bb3255a1a19d809641bc89821e672",
+    "r3carrier.bin": "df6ace2d4c528b4b3c9f0a09857a0edf77436c3f526ae9b1bb0acf62a31c9185",
+    "r3cache.bin": "a266729980f35d845a115bb2877b48abb0d6341b49d7c7ad4a586dc54d3449eb",
+    "rsxresolver.bin": "709d21254b704f454777d111c02269e95de8eafbfe1c725a98361cb3456a98be",
+    "ADM3A-payload": "3d0ff9c17ae8a6b164f106ba753a5cfccd97c0ac0c445a31b12515ec6bd1f209",
+    "VT52-payload": "b23cc66b10cf4e02e27320b52e3048039b0d425a0d0acc019b679f60bcda49af",
+    "ANSI-payload": "ae9eb62779c461c6f483547a3c60242a56c83848c3fdae5169bef9c6f54b9392"
+  }
+}

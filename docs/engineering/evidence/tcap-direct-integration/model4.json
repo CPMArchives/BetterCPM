@@ -1,0 +1,806 @@
+{
+  "status": "PASS public TCAP source, installation, installed cold/warm lifecycle and unload",
+  "platform": "model4",
+  "service": "TCAP 2.0",
+  "identity": "7c0eb6b9837c708a6ef8402f38173599e4b7aae1",
+  "baseline_boundary": 54529,
+  "maximum_com_bytes": 54272,
+  "budgets": {
+    "ADM3A": {
+      "personality": "ADM3A",
+      "platform": "model4",
+      "service": "TCAP 2.0",
+      "payload_bytes": 628,
+      "resident_profile_bytes": 768,
+      "helper_code_bytes": 113,
+      "helper_data_bytes": 46,
+      "helper_bytes": 159,
+      "shared_bios_state_bytes": 3,
+      "call_site_allowance_bytes": 32,
+      "stack_allowance_bytes": 32,
+      "full_path_limit_bytes": 1280,
+      "full_budgeted_path_bytes": 994,
+      "generic_rsx_bytes_excluded": 1024,
+      "permanent_display_reservation_bytes": 0,
+      "cache_footer_bytes": 10,
+      "inline_cache_ownership": true,
+      "compatibility_id": null,
+      "payload_sha256": "829d51e54eb978ba3199f82bcd6bcccc5b7472eefcccba1463fbc15b798f7921",
+      "carrier_sha256": "5ef9cca1976927f7361ff24cf09141df1f5e6ecb2ab5e75ee26d7db12eef3194",
+      "expanded_source_sha256": "c47147c21d7eea90ca3f6af87b501f5f6d0cceb1beb11c2ea78445aa7b749684"
+    },
+    "VT52": {
+      "personality": "VT52",
+      "platform": "model4",
+      "service": "TCAP 2.0",
+      "payload_bytes": 685,
+      "resident_profile_bytes": 768,
+      "helper_code_bytes": 113,
+      "helper_data_bytes": 46,
+      "helper_bytes": 159,
+      "shared_bios_state_bytes": 3,
+      "call_site_allowance_bytes": 32,
+      "stack_allowance_bytes": 32,
+      "full_path_limit_bytes": 1280,
+      "full_budgeted_path_bytes": 994,
+      "generic_rsx_bytes_excluded": 1024,
+      "permanent_display_reservation_bytes": 0,
+      "cache_footer_bytes": 10,
+      "inline_cache_ownership": true,
+      "compatibility_id": null,
+      "payload_sha256": "48bcba4fa5a3392daad5950b20505a97d6e93152f74f236923358de9f47882a2",
+      "carrier_sha256": "b800352040f8b4eae535124bee696cc0ce547b4e5c7293bce89940b7cd7251f4",
+      "expanded_source_sha256": "e26c50fd433899fd88ba2ceaf30cabef374e5a8704780900a16b08fe3ed5df2c"
+    },
+    "ANSI": {
+      "personality": "ANSI",
+      "platform": "model4",
+      "service": "TCAP 2.0",
+      "payload_bytes": 1427,
+      "resident_profile_bytes": 1536,
+      "helper_code_bytes": 113,
+      "helper_data_bytes": 46,
+      "helper_bytes": 159,
+      "shared_bios_state_bytes": 3,
+      "call_site_allowance_bytes": 32,
+      "stack_allowance_bytes": 32,
+      "full_path_limit_bytes": 1792,
+      "full_budgeted_path_bytes": 1762,
+      "generic_rsx_bytes_excluded": 1024,
+      "permanent_display_reservation_bytes": 0,
+      "cache_footer_bytes": 10,
+      "inline_cache_ownership": true,
+      "compatibility_id": null,
+      "payload_sha256": "dd549742727f74a52404b794a827d69327c77dbf873d2eb34c8b49d55826c1f0",
+      "carrier_sha256": "1a0ded9f0b0cdcb9865f3bb34dc254b1f6f1c6e2b6afdf2423b4d470e863e9bc",
+      "expanded_source_sha256": "bbeecfd726b19c98005876bc3444e42779863e174e80862a1cdf9ad555f5c18c"
+    }
+  },
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "runner_sha256": "eef9a712c627cce4e5bf746ed3c539986268c285dbcc0c626e6f8adfbc3af09a",
+  "checks": {
+    "source-lifecycle": {
+      "commands": [
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD ADM3A"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 52737
+        },
+        {
+          "command": "LADM3A"
+        },
+        {
+          "command": "DEMO 1"
+        },
+        {
+          "command": "RSX LOAD HELLO"
+        },
+        {
+          "command": "DEMO 2"
+        },
+        {
+          "command": "RSX UNLOAD HELLO"
+        },
+        {
+          "command": "DEMO 3"
+        },
+        {
+          "command": "RSX LIST"
+        },
+        {
+          "command": "RSX UNLOAD ADM3A"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD ADM3A"
+        },
+        {
+          "command": "DEMO 4"
+        },
+        {
+          "command": "RSX UNLOAD ADM3A"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD VT52"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 52737
+        },
+        {
+          "command": "LVT52"
+        },
+        {
+          "command": "DEMO 1"
+        },
+        {
+          "command": "RSX LOAD HELLO"
+        },
+        {
+          "command": "DEMO 2"
+        },
+        {
+          "command": "RSX UNLOAD HELLO"
+        },
+        {
+          "command": "DEMO 3"
+        },
+        {
+          "command": "RSX LIST"
+        },
+        {
+          "command": "RSX UNLOAD VT52"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD VT52"
+        },
+        {
+          "command": "DEMO 4"
+        },
+        {
+          "command": "RSX UNLOAD VT52"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 51969
+        },
+        {
+          "command": "LANSI"
+        },
+        {
+          "command": "DEMO 1"
+        },
+        {
+          "command": "RSX LOAD HELLO"
+        },
+        {
+          "command": "DEMO 2"
+        },
+        {
+          "command": "RSX UNLOAD HELLO"
+        },
+        {
+          "command": "DEMO 3"
+        },
+        {
+          "command": "RSX LIST"
+        },
+        {
+          "command": "RSX UNLOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD ANSI"
+        },
+        {
+          "command": "DEMO 4"
+        },
+        {
+          "command": "RSX UNLOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        }
+      ],
+      "rendering": [
+        {
+          "personality": "ADM3A",
+          "reverse": true,
+          "capture": "trs80-text-7.bin"
+        },
+        {
+          "personality": "ADM3A",
+          "reverse": true,
+          "capture": "trs80-text-10.bin"
+        },
+        {
+          "personality": "ADM3A",
+          "reverse": true,
+          "capture": "trs80-text-13.bin"
+        },
+        {
+          "personality": "ADM3A",
+          "reverse": true,
+          "capture": "trs80-text-21.bin"
+        },
+        {
+          "personality": "VT52",
+          "reverse": false,
+          "capture": "trs80-text-33.bin"
+        },
+        {
+          "personality": "VT52",
+          "reverse": false,
+          "capture": "trs80-text-36.bin"
+        },
+        {
+          "personality": "VT52",
+          "reverse": false,
+          "capture": "trs80-text-39.bin"
+        },
+        {
+          "personality": "VT52",
+          "reverse": false,
+          "capture": "trs80-text-47.bin"
+        },
+        {
+          "personality": "ANSI",
+          "reverse": true,
+          "capture": "trs80-text-59.bin"
+        },
+        {
+          "personality": "ANSI",
+          "reverse": true,
+          "capture": "trs80-text-62.bin"
+        },
+        {
+          "personality": "ANSI",
+          "reverse": true,
+          "capture": "trs80-text-65.bin"
+        },
+        {
+          "personality": "ANSI",
+          "reverse": true,
+          "capture": "trs80-text-73.bin"
+        }
+      ],
+      "captures": {
+        "trs80-text-0.bin": "7e3c80fbf51fd9d28b6fadcdbfa3cd430ef35b6624d088c3611ef71d727771bb",
+        "trs80-text-1.bin": "d08c766dfcaaab38ae673c8a0aff19dbf8d40a3a81456193bdc9cc047ce1c7b3",
+        "trs80-text-2.bin": "3ae311b2d9babcd650424d0eaae8ebc885af9b3ad89d3124b03e8757f9d2e99f",
+        "trs80-text-3.bin": "e5fd87ff97208dd580964f793d3c4fba4a243c1c95f43444bfc21cb8684e88fd",
+        "trs80-text-4.bin": "f04c75a38400b6cdde9f547db82ab463ef9f1d6dd663b035df3d9ea6ff67767f",
+        "trs80-text-5.bin": "f1c6d598cf8dbf59904a70c97d4da0fc620644ea07e7066805516be3bd2f6fa7",
+        "trs80-text-6.bin": "f35779986696c9dd7b249476c7aeb3dd73787b00be1f17c36e7e09b6db56c790",
+        "trs80-text-7.bin": "a74a9b786bdcdfc32587644db5e82c476658bf88659cbfc00c2453ab12dd9ee8",
+        "trs80-text-8.bin": "3f2d1369b0c71bceea483f629ed07538dc84250b4583f1cf79486e1780e99698",
+        "trs80-text-9.bin": "1aad5c661010ec0c41b8375b3ed73eba24ac07c2b38f27b9560f229b94411884",
+        "trs80-text-10.bin": "dd633d1f238b65b2b78fa2014944373e39e0fb361d81766dd79104b7643b6cc6",
+        "trs80-text-11.bin": "cd4e56834d8a7afcc8726617f211021758408fdd4bbc4af3ac1d175a8ea615e3",
+        "trs80-text-12.bin": "2e3d61f6bdade5c57abef6c15f14b99a6e893ca4223f25f235fbed453ff3f846",
+        "trs80-text-13.bin": "b9d6f7f7aef44a0353355c951d0c8c64ff2734b4d2989cdcb31439d251646194",
+        "trs80-text-14.bin": "f3af60a6bf186a6efd58f234c5c259d1569c0d969cbc443c34326acb568468ae",
+        "trs80-text-15.bin": "1289d7405d1ba5ff2783b9d13d0db44a3fee5248f9b5020e8d26473618b9b83d",
+        "trs80-text-16.bin": "a83fe7e0acffffe96e2d393cb6e8f82335d293e1d72a71d8b8ae33cffcd19921",
+        "trs80-text-17.bin": "266d671b05a9a54accbf7a9295e0b910f9296e8b76a8c15a3e00cbf6911e8ea0",
+        "trs80-text-18.bin": "2f450d30dc80323cd3a6fc682825f51397939fb499910bc02858c4a8c51929d3",
+        "trs80-text-19.bin": "386f3dbeffbcb45f351b7d56895c89239272828d9a6ae38074abf79b9f175949",
+        "trs80-text-20.bin": "2ce95c27763eb119e1f1323086a808f75891877fd43b20ea5b0b18cc3de01022",
+        "trs80-text-21.bin": "f12ea145d5b387b6e89d9c6c9dbc3aa606e0711c429ef0aeabdb2016beca0ab6",
+        "trs80-text-22.bin": "aa255f773874e6080b020964459ad633d515f5c7ad672c2212a2806a4312b96e",
+        "trs80-text-23.bin": "17b6efcb5b1f1e7d8a3408e514e837b10bd67bfbd5bdca7fc051827bcfe0ae7c",
+        "trs80-text-24.bin": "9f1d73f6f32cf45ec993f556a5d7cc211cc6d077aaea2a42084c8461c19ab737",
+        "trs80-text-25.bin": "e7b9360fc2bcb2abfd85df77146ff3ec237d417ef9639226dfa155d617c1a318",
+        "trs80-text-26.bin": "520169e83fec1a196325d170da10f06270d888e4e31905395baa699bcd8d37ae",
+        "trs80-text-27.bin": "38241be3c2b14f335558c69bcf62d6555166f53e71e2f7133f4fc020205e769c",
+        "trs80-text-28.bin": "a063ede08a9e86dae86ca67db27e652c4de8d3a2452fb0e31bf39184f317aab1",
+        "trs80-text-29.bin": "552a4055f58c664a071e97fa53d6124c107a0e296e9b921064db0322020057a1",
+        "trs80-text-30.bin": "9d83f07603b6056729faa32d1ce77a2a99c08f5d6d781b43c104487df8f7a49b",
+        "trs80-text-31.bin": "2004afc03eef53487cf551d52e48b9e267f3703d653c2b18aaab6d80db46fc58",
+        "trs80-text-32.bin": "3fd5abe302ba50b3a906ac7e5726048b3275112238ede5e49b7b75f97d68fe4c",
+        "trs80-text-33.bin": "0d356d9b2835182c9e1df7e41e3e5eb395a4fdbe3e8cc35d83572661a225b82d",
+        "trs80-text-34.bin": "9187e358b5c3e459a4e77a17627872917354c4ae10827cce7fcfdbc0b5563c69",
+        "trs80-text-35.bin": "7ea2782697c27a53e7070d38f312187f46f2b82c52cfc64319bea152b503fee0",
+        "trs80-text-36.bin": "cfa8bee4d06de785575547e38991acc0ead1c0b210cdc3604b59d66678783abe",
+        "trs80-text-37.bin": "871325ec2c89c55d79c91e4dc52dee5635b549e7ec088fab8e7afa27c5a1d8a3",
+        "trs80-text-38.bin": "1b4f16b5a3a64d156aefc430a5f36011ac9babceeca3246109efc4a862139bd1",
+        "trs80-text-39.bin": "73ac8825ddfaab95b23aed2864bb49b51b6668fbb60a4d4e9395871beb6535cc",
+        "trs80-text-40.bin": "8bed900e9898e6652685c688dd97803b9f67a43d4c6944ca923dec38e0c2e001",
+        "trs80-text-41.bin": "9a0bc321681fb8be889551b3f08852e7ba5a97036ada75665e2ada062c2da0e0",
+        "trs80-text-42.bin": "b5460c2b258ffb9b626e88c3bbbf95218c34a3cda1fd6653f6b2cca3e2e8d9dd",
+        "trs80-text-43.bin": "83c7f19099c9fdb3cac45d204937023580dcc3ab7a38eb783c16fcca8af0c2f6",
+        "trs80-text-44.bin": "2a11028cd173b28d466ed5d3e63563effe7be9c053f98a17a6288e9ac8bac3c5",
+        "trs80-text-45.bin": "f04dba31f01cf30857273fc683d33759a8a4b8ec8752dc86655a3449c1df5614",
+        "trs80-text-46.bin": "f1ab5c07b4ec342ec23b2a75607184312468f56b4c3c960e072118d0ba132c88",
+        "trs80-text-47.bin": "d4509db26001378a424526db16b9dc66966c95616269b82641677892511315f5",
+        "trs80-text-48.bin": "d3ef34926358b3a3f67d9e908462b69d8c0215308948e123bb7bbafa9ba120d4",
+        "trs80-text-49.bin": "4f4384e5f47ad8cb93ccc6d4389501dac834af5faec1b5130abf0559c745e117",
+        "trs80-text-50.bin": "4845f7fd9dedc66f675c3cdda34e14e87e16031c7d76f46767644cbf786391b6",
+        "trs80-text-51.bin": "fa10031093d616f5ddd098ecc522d58beee82b8d87b8daf8a77001c54ed600a4",
+        "trs80-text-52.bin": "a066fad481159909ac56471071c31adfba4a0dd9f4395431d3d0882a190a065e",
+        "trs80-text-53.bin": "d438b243602d9de335a0c4019a47633e0d42f48bd43331fca9800b23a2e1e1a3",
+        "trs80-text-54.bin": "e2d4aa00c230189bcce12db0ab0d5b28be4bb0c4ec61ae04763b242f67962499",
+        "trs80-text-55.bin": "7bdef573c564729ea67ce45f806ec2fa058adf620cec501d233c593f95a48059",
+        "trs80-text-56.bin": "f8f5df8d655eb55fee0cf571a09941766693f24fa1d1ec721566c3457da47bb0",
+        "trs80-text-57.bin": "f4012258e710e6a607d7277655b36547ef176c0f0e3d41291bf5c70e03acf508",
+        "trs80-text-58.bin": "6c7224da8ec48530e4581ad4f6347f0c84c9fa878984e99056e06c8515f38e2b",
+        "trs80-text-59.bin": "a74a9b786bdcdfc32587644db5e82c476658bf88659cbfc00c2453ab12dd9ee8",
+        "trs80-text-60.bin": "910b55c51d422988922510d26b343caa9c7f2ddb86c8ef33d7493b893789ce07",
+        "trs80-text-61.bin": "b38932800bec10d19acde7f2e0e541f6e0993ab96b9bfa88aea81c79daca831b",
+        "trs80-text-62.bin": "dd633d1f238b65b2b78fa2014944373e39e0fb361d81766dd79104b7643b6cc6",
+        "trs80-text-63.bin": "447bc652e2e096316ea650aa5cdf1818117dca3cccf7bc774c43d040d591b60e",
+        "trs80-text-64.bin": "785c78831e523394a8d5a303e9034f6c9e1dbf050ab1704807ec53ae9f2087cc",
+        "trs80-text-65.bin": "b9d6f7f7aef44a0353355c951d0c8c64ff2734b4d2989cdcb31439d251646194",
+        "trs80-text-66.bin": "65b082e216099293dd7f9466e43a3fd0d0031aaee4507562aeaceceb3c449c41",
+        "trs80-text-67.bin": "cc78b5a0ab3e9889706db976c2d535303b7f4379d5f7a817b9a2c3acbe173a76",
+        "trs80-text-68.bin": "8a7db8d6c40ff079b416b8a27744df64e100f7d2af531ee92a70622ede864cdd",
+        "trs80-text-69.bin": "101afa0029331d7cdb02607422c5327caa9900d4e4ae6377118753e487f03429",
+        "trs80-text-70.bin": "2e9cce4f1e4399dac243906aaebb9266028fdac2127cf4bb3e39a5d45590e6f2",
+        "trs80-text-71.bin": "3dcf011c2e5a11d6cbe0d8adfcc2560bebf7ebdad94c53bbd017d9a28f1ff003",
+        "trs80-text-72.bin": "6aaae0f18a88c9f85fb6dd26b60e3509d99fd1bb5400568ca9cb23a40d9c6d75",
+        "trs80-text-73.bin": "f12ea145d5b387b6e89d9c6c9dbc3aa606e0711c429ef0aeabdb2016beca0ab6",
+        "trs80-text-74.bin": "13c0c215195cf20fc40c3e15d13c797dd779a2de68a0160bd19f3a50c59cc081",
+        "trs80-text-75.bin": "11a22925c73da49d4a9ef309ea25c6f9c096467ce1913d581bfdf294eb3d273d",
+        "trs80-text-76.bin": "f6cce97524dc09b3033f5655fa6c3b247342b95a84ce22e2a1cc459b405a9029",
+        "trs80-text-77.bin": "3f7c36c88a69537fcb70bd9f8df142cd91c0c9523bb189b11f23373918ef8633",
+        "trs80-text-78.bin": "df49e059dad2f4a3f1eda22efc86ae635bef3d52a3b2ba0fdba3e2b622965a74"
+      },
+      "workflow_image_sha256": "44798594b61c33091a2a0f680650232bdb14e7870471a7412e6a4dd8571c41bf",
+      "consumer_helper_bytes": 159
+    },
+    "installation": {
+      "filesystem_unchanged": true,
+      "installed_image_sha256": "e5fac2391fcc70f60c6fad86889358986a78921951a9ffab21c623adbf152a9b"
+    },
+    "installed-lifecycle": {
+      "commands": [
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD ADM3A"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 52737
+        },
+        {
+          "command": "LADM3A"
+        },
+        {
+          "command": "DEMO 1"
+        },
+        {
+          "command": "RSX LOAD HELLO"
+        },
+        {
+          "command": "DEMO 2"
+        },
+        {
+          "command": "RSX UNLOAD HELLO"
+        },
+        {
+          "command": "DEMO 3"
+        },
+        {
+          "command": "RSX LIST"
+        },
+        {
+          "command": "RSX UNLOAD ADM3A"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD ADM3A"
+        },
+        {
+          "command": "DEMO 4"
+        },
+        {
+          "command": "RSX UNLOAD ADM3A"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD VT52"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 52737
+        },
+        {
+          "command": "LVT52"
+        },
+        {
+          "command": "DEMO 1"
+        },
+        {
+          "command": "RSX LOAD HELLO"
+        },
+        {
+          "command": "DEMO 2"
+        },
+        {
+          "command": "RSX UNLOAD HELLO"
+        },
+        {
+          "command": "DEMO 3"
+        },
+        {
+          "command": "RSX LIST"
+        },
+        {
+          "command": "RSX UNLOAD VT52"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD VT52"
+        },
+        {
+          "command": "DEMO 4"
+        },
+        {
+          "command": "RSX UNLOAD VT52"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 51969
+        },
+        {
+          "command": "LANSI"
+        },
+        {
+          "command": "DEMO 1"
+        },
+        {
+          "command": "RSX LOAD HELLO"
+        },
+        {
+          "command": "DEMO 2"
+        },
+        {
+          "command": "RSX UNLOAD HELLO"
+        },
+        {
+          "command": "DEMO 3"
+        },
+        {
+          "command": "RSX LIST"
+        },
+        {
+          "command": "RSX UNLOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        },
+        {
+          "command": "RSX LOAD ANSI"
+        },
+        {
+          "command": "DEMO 4"
+        },
+        {
+          "command": "RSX UNLOAD ANSI"
+        },
+        {
+          "command": "BOUND",
+          "boundary": 54529
+        },
+        {
+          "command": "MAXCOM"
+        },
+        {
+          "command": "ABSENT"
+        }
+      ],
+      "rendering": [
+        {
+          "personality": "ADM3A",
+          "reverse": true,
+          "capture": "trs80-text-7.bin"
+        },
+        {
+          "personality": "ADM3A",
+          "reverse": true,
+          "capture": "trs80-text-10.bin"
+        },
+        {
+          "personality": "ADM3A",
+          "reverse": true,
+          "capture": "trs80-text-13.bin"
+        },
+        {
+          "personality": "ADM3A",
+          "reverse": true,
+          "capture": "trs80-text-21.bin"
+        },
+        {
+          "personality": "VT52",
+          "reverse": false,
+          "capture": "trs80-text-33.bin"
+        },
+        {
+          "personality": "VT52",
+          "reverse": false,
+          "capture": "trs80-text-36.bin"
+        },
+        {
+          "personality": "VT52",
+          "reverse": false,
+          "capture": "trs80-text-39.bin"
+        },
+        {
+          "personality": "VT52",
+          "reverse": false,
+          "capture": "trs80-text-47.bin"
+        },
+        {
+          "personality": "ANSI",
+          "reverse": true,
+          "capture": "trs80-text-59.bin"
+        },
+        {
+          "personality": "ANSI",
+          "reverse": true,
+          "capture": "trs80-text-62.bin"
+        },
+        {
+          "personality": "ANSI",
+          "reverse": true,
+          "capture": "trs80-text-65.bin"
+        },
+        {
+          "personality": "ANSI",
+          "reverse": true,
+          "capture": "trs80-text-73.bin"
+        }
+      ],
+      "captures": {
+        "trs80-text-0.bin": "7e3c80fbf51fd9d28b6fadcdbfa3cd430ef35b6624d088c3611ef71d727771bb",
+        "trs80-text-1.bin": "d08c766dfcaaab38ae673c8a0aff19dbf8d40a3a81456193bdc9cc047ce1c7b3",
+        "trs80-text-2.bin": "3ae311b2d9babcd650424d0eaae8ebc885af9b3ad89d3124b03e8757f9d2e99f",
+        "trs80-text-3.bin": "e5fd87ff97208dd580964f793d3c4fba4a243c1c95f43444bfc21cb8684e88fd",
+        "trs80-text-4.bin": "f04c75a38400b6cdde9f547db82ab463ef9f1d6dd663b035df3d9ea6ff67767f",
+        "trs80-text-5.bin": "f1c6d598cf8dbf59904a70c97d4da0fc620644ea07e7066805516be3bd2f6fa7",
+        "trs80-text-6.bin": "f35779986696c9dd7b249476c7aeb3dd73787b00be1f17c36e7e09b6db56c790",
+        "trs80-text-7.bin": "a74a9b786bdcdfc32587644db5e82c476658bf88659cbfc00c2453ab12dd9ee8",
+        "trs80-text-8.bin": "3f2d1369b0c71bceea483f629ed07538dc84250b4583f1cf79486e1780e99698",
+        "trs80-text-9.bin": "1aad5c661010ec0c41b8375b3ed73eba24ac07c2b38f27b9560f229b94411884",
+        "trs80-text-10.bin": "dd633d1f238b65b2b78fa2014944373e39e0fb361d81766dd79104b7643b6cc6",
+        "trs80-text-11.bin": "cd4e56834d8a7afcc8726617f211021758408fdd4bbc4af3ac1d175a8ea615e3",
+        "trs80-text-12.bin": "2e3d61f6bdade5c57abef6c15f14b99a6e893ca4223f25f235fbed453ff3f846",
+        "trs80-text-13.bin": "b9d6f7f7aef44a0353355c951d0c8c64ff2734b4d2989cdcb31439d251646194",
+        "trs80-text-14.bin": "f3af60a6bf186a6efd58f234c5c259d1569c0d969cbc443c34326acb568468ae",
+        "trs80-text-15.bin": "1289d7405d1ba5ff2783b9d13d0db44a3fee5248f9b5020e8d26473618b9b83d",
+        "trs80-text-16.bin": "a83fe7e0acffffe96e2d393cb6e8f82335d293e1d72a71d8b8ae33cffcd19921",
+        "trs80-text-17.bin": "266d671b05a9a54accbf7a9295e0b910f9296e8b76a8c15a3e00cbf6911e8ea0",
+        "trs80-text-18.bin": "2f450d30dc80323cd3a6fc682825f51397939fb499910bc02858c4a8c51929d3",
+        "trs80-text-19.bin": "386f3dbeffbcb45f351b7d56895c89239272828d9a6ae38074abf79b9f175949",
+        "trs80-text-20.bin": "2ce95c27763eb119e1f1323086a808f75891877fd43b20ea5b0b18cc3de01022",
+        "trs80-text-21.bin": "f12ea145d5b387b6e89d9c6c9dbc3aa606e0711c429ef0aeabdb2016beca0ab6",
+        "trs80-text-22.bin": "aa255f773874e6080b020964459ad633d515f5c7ad672c2212a2806a4312b96e",
+        "trs80-text-23.bin": "17b6efcb5b1f1e7d8a3408e514e837b10bd67bfbd5bdca7fc051827bcfe0ae7c",
+        "trs80-text-24.bin": "9f1d73f6f32cf45ec993f556a5d7cc211cc6d077aaea2a42084c8461c19ab737",
+        "trs80-text-25.bin": "e7b9360fc2bcb2abfd85df77146ff3ec237d417ef9639226dfa155d617c1a318",
+        "trs80-text-26.bin": "520169e83fec1a196325d170da10f06270d888e4e31905395baa699bcd8d37ae",
+        "trs80-text-27.bin": "38241be3c2b14f335558c69bcf62d6555166f53e71e2f7133f4fc020205e769c",
+        "trs80-text-28.bin": "a063ede08a9e86dae86ca67db27e652c4de8d3a2452fb0e31bf39184f317aab1",
+        "trs80-text-29.bin": "552a4055f58c664a071e97fa53d6124c107a0e296e9b921064db0322020057a1",
+        "trs80-text-30.bin": "9d83f07603b6056729faa32d1ce77a2a99c08f5d6d781b43c104487df8f7a49b",
+        "trs80-text-31.bin": "2004afc03eef53487cf551d52e48b9e267f3703d653c2b18aaab6d80db46fc58",
+        "trs80-text-32.bin": "3fd5abe302ba50b3a906ac7e5726048b3275112238ede5e49b7b75f97d68fe4c",
+        "trs80-text-33.bin": "0d356d9b2835182c9e1df7e41e3e5eb395a4fdbe3e8cc35d83572661a225b82d",
+        "trs80-text-34.bin": "9187e358b5c3e459a4e77a17627872917354c4ae10827cce7fcfdbc0b5563c69",
+        "trs80-text-35.bin": "7ea2782697c27a53e7070d38f312187f46f2b82c52cfc64319bea152b503fee0",
+        "trs80-text-36.bin": "cfa8bee4d06de785575547e38991acc0ead1c0b210cdc3604b59d66678783abe",
+        "trs80-text-37.bin": "871325ec2c89c55d79c91e4dc52dee5635b549e7ec088fab8e7afa27c5a1d8a3",
+        "trs80-text-38.bin": "1b4f16b5a3a64d156aefc430a5f36011ac9babceeca3246109efc4a862139bd1",
+        "trs80-text-39.bin": "73ac8825ddfaab95b23aed2864bb49b51b6668fbb60a4d4e9395871beb6535cc",
+        "trs80-text-40.bin": "8bed900e9898e6652685c688dd97803b9f67a43d4c6944ca923dec38e0c2e001",
+        "trs80-text-41.bin": "9a0bc321681fb8be889551b3f08852e7ba5a97036ada75665e2ada062c2da0e0",
+        "trs80-text-42.bin": "b5460c2b258ffb9b626e88c3bbbf95218c34a3cda1fd6653f6b2cca3e2e8d9dd",
+        "trs80-text-43.bin": "83c7f19099c9fdb3cac45d204937023580dcc3ab7a38eb783c16fcca8af0c2f6",
+        "trs80-text-44.bin": "2a11028cd173b28d466ed5d3e63563effe7be9c053f98a17a6288e9ac8bac3c5",
+        "trs80-text-45.bin": "f04dba31f01cf30857273fc683d33759a8a4b8ec8752dc86655a3449c1df5614",
+        "trs80-text-46.bin": "f1ab5c07b4ec342ec23b2a75607184312468f56b4c3c960e072118d0ba132c88",
+        "trs80-text-47.bin": "d4509db26001378a424526db16b9dc66966c95616269b82641677892511315f5",
+        "trs80-text-48.bin": "d3ef34926358b3a3f67d9e908462b69d8c0215308948e123bb7bbafa9ba120d4",
+        "trs80-text-49.bin": "4f4384e5f47ad8cb93ccc6d4389501dac834af5faec1b5130abf0559c745e117",
+        "trs80-text-50.bin": "4845f7fd9dedc66f675c3cdda34e14e87e16031c7d76f46767644cbf786391b6",
+        "trs80-text-51.bin": "fa10031093d616f5ddd098ecc522d58beee82b8d87b8daf8a77001c54ed600a4",
+        "trs80-text-52.bin": "a066fad481159909ac56471071c31adfba4a0dd9f4395431d3d0882a190a065e",
+        "trs80-text-53.bin": "d438b243602d9de335a0c4019a47633e0d42f48bd43331fca9800b23a2e1e1a3",
+        "trs80-text-54.bin": "e2d4aa00c230189bcce12db0ab0d5b28be4bb0c4ec61ae04763b242f67962499",
+        "trs80-text-55.bin": "7bdef573c564729ea67ce45f806ec2fa058adf620cec501d233c593f95a48059",
+        "trs80-text-56.bin": "f8f5df8d655eb55fee0cf571a09941766693f24fa1d1ec721566c3457da47bb0",
+        "trs80-text-57.bin": "f4012258e710e6a607d7277655b36547ef176c0f0e3d41291bf5c70e03acf508",
+        "trs80-text-58.bin": "6c7224da8ec48530e4581ad4f6347f0c84c9fa878984e99056e06c8515f38e2b",
+        "trs80-text-59.bin": "a74a9b786bdcdfc32587644db5e82c476658bf88659cbfc00c2453ab12dd9ee8",
+        "trs80-text-60.bin": "910b55c51d422988922510d26b343caa9c7f2ddb86c8ef33d7493b893789ce07",
+        "trs80-text-61.bin": "b38932800bec10d19acde7f2e0e541f6e0993ab96b9bfa88aea81c79daca831b",
+        "trs80-text-62.bin": "dd633d1f238b65b2b78fa2014944373e39e0fb361d81766dd79104b7643b6cc6",
+        "trs80-text-63.bin": "447bc652e2e096316ea650aa5cdf1818117dca3cccf7bc774c43d040d591b60e",
+        "trs80-text-64.bin": "785c78831e523394a8d5a303e9034f6c9e1dbf050ab1704807ec53ae9f2087cc",
+        "trs80-text-65.bin": "b9d6f7f7aef44a0353355c951d0c8c64ff2734b4d2989cdcb31439d251646194",
+        "trs80-text-66.bin": "65b082e216099293dd7f9466e43a3fd0d0031aaee4507562aeaceceb3c449c41",
+        "trs80-text-67.bin": "cc78b5a0ab3e9889706db976c2d535303b7f4379d5f7a817b9a2c3acbe173a76",
+        "trs80-text-68.bin": "8a7db8d6c40ff079b416b8a27744df64e100f7d2af531ee92a70622ede864cdd",
+        "trs80-text-69.bin": "101afa0029331d7cdb02607422c5327caa9900d4e4ae6377118753e487f03429",
+        "trs80-text-70.bin": "2e9cce4f1e4399dac243906aaebb9266028fdac2127cf4bb3e39a5d45590e6f2",
+        "trs80-text-71.bin": "3dcf011c2e5a11d6cbe0d8adfcc2560bebf7ebdad94c53bbd017d9a28f1ff003",
+        "trs80-text-72.bin": "6aaae0f18a88c9f85fb6dd26b60e3509d99fd1bb5400568ca9cb23a40d9c6d75",
+        "trs80-text-73.bin": "f12ea145d5b387b6e89d9c6c9dbc3aa606e0711c429ef0aeabdb2016beca0ab6",
+        "trs80-text-74.bin": "13c0c215195cf20fc40c3e15d13c797dd779a2de68a0160bd19f3a50c59cc081",
+        "trs80-text-75.bin": "11a22925c73da49d4a9ef309ea25c6f9c096467ce1913d581bfdf294eb3d273d",
+        "trs80-text-76.bin": "f6cce97524dc09b3033f5655fa6c3b247342b95a84ce22e2a1cc459b405a9029",
+        "trs80-text-77.bin": "3f7c36c88a69537fcb70bd9f8df142cd91c0c9523bb189b11f23373918ef8633",
+        "trs80-text-78.bin": "df49e059dad2f4a3f1eda22efc86ae635bef3d52a3b2ba0fdba3e2b622965a74"
+      },
+      "workflow_image_sha256": "8249bd9397de00b8ffb07b215923a8ce2625466571233956cdcbcc97ef34d597",
+      "consumer_helper_bytes": 159
+    }
+  },
+  "permanent_memory_loss_bytes": 0
+}

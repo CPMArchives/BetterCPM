@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify that RSX.COM supplies the Function 177 v2 workspace contract."""
+"""Verify RSX.COM's current Function 177 request and isolated workspace."""
 from __future__ import annotations
 
 import re
@@ -21,11 +21,11 @@ def invoke(command: bytes, ceiling: int = 0xD000) -> tuple[bytes, int]:
     # Capture the Function 177 request; every other BDOS call returns normally.
     cpu.mem[ceiling:ceiling + 0x12] = bytes((
         0x79, 0xFE, 0xB1, 0x20, 0x0B, 0xEB, 0x11, 0x00, 0x70,
-        0x01, 0x12, 0x00, 0xED, 0xB0, 0xAF, 0xC9, 0xAF, 0xC9,
+        0x01, 0x14, 0x00, 0xED, 0xB0, 0xAF, 0xC9, 0xAF, 0xC9,
     ))
     cpu.sp = 0xD000
     cpu.run(0x100, limit=20000)
-    return bytes(cpu.mem[CAPTURE:CAPTURE + 18]), cpu.sp
+    return bytes(cpu.mem[CAPTURE:CAPTURE + 20]), cpu.sp
 
 
 def main() -> None:
@@ -36,17 +36,19 @@ def main() -> None:
     low = int(match[1], 16)
     for command, operation in ((b"LOAD HELLO", 1), (b"UNLOAD HELLO", 2)):
         request, final_sp = invoke(command)
-        assert request[:4] == bytes((2, operation, 0, 0))
+        assert request[:4] == bytes((3, operation, 1, 0))
         assert request[4:12] == b"HELLO   "
         assert int.from_bytes(request[12:14], "little") == 0
         assert int.from_bytes(request[14:16], "little") == low
         high = int.from_bytes(request[16:18], "little")
-        assert low < high <= 0xD000 and high + 64 < 0xD000
-        assert final_sp == 0xD000
+        assert low < high == 0xD000
+        # RET reaches the original warm-return target using the utility's own
+        # stack, which is entirely below the advertised transaction workspace.
+        assert final_sp == low
     request, _ = invoke(b"LOAD HELLO", ceiling=0xC800)
     assert int.from_bytes(request[16:18], "little") == 0xC800
-    print("RSX.COM emits Function 177 v2 load/unload requests with workspace "
-          "bounded by its image end and live stack")
+    print("RSX.COM emits Function 177 v3 load/unload requests with workspace "
+          "above its private stack and bounded by the image end and live TPA")
 
 
 if __name__ == "__main__":

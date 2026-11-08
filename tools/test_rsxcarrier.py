@@ -91,6 +91,13 @@ def main() -> None:
         cpu.word(FACTS + 10), cpu.word(FACTS + 12),
         cpu.word(FACTS + 18), cpu.mem[FACTS + 17], cpu.mem[FACTS + 21],
         SNAPSHOT, cpu.word(FACTS + 8), 0xCC)
+    # This isolated normalization/snapshot unit has no transaction coordinator
+    # or disk cache. Stub only its footer-pack gateway (including the inline
+    # selector byte). test_rsx_disk_cache and test_rsx_inline_cache execute that
+    # production worker through real complete transactions and reconstruction.
+    gateway = LAYOUT['FILE'] + 109 + 33
+    cpu.mem[gateway:gateway + 3] = bytes.fromhex('c3 00 5e')
+    cpu.mem[0x5E00:0x5E04] = bytes.fromhex('af e1 23 e9')
     run_phase(cpu, "R3SNAP.RSX", request)
     assert cpu.a == 0 and cpu.mem[REQUEST + 22] == 1
     relocations = [word(carrier, 48 + 2 * index)

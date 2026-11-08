@@ -1,0 +1,36 @@
+{
+  "status": "PASS combined ANSI CPU differential and public operations",
+  "checks": 64942,
+  "cases": [
+    {
+      "backend": "crt",
+      "base": 36864,
+      "payload_bytes": 1427,
+      "relocation_words": 204,
+      "payload_sha256": "dd549742727f74a52404b794a827d69327c77dbf873d2eb34c8b49d55826c1f0"
+    },
+    {
+      "backend": "crt",
+      "base": 40961,
+      "payload_bytes": 1427,
+      "relocation_words": 204,
+      "payload_sha256": "dd549742727f74a52404b794a827d69327c77dbf873d2eb34c8b49d55826c1f0"
+    },
+    {
+      "backend": "host",
+      "base": 36864,
+      "payload_bytes": 1499,
+      "relocation_words": 222,
+      "payload_sha256": "1572f5ebbe29b5fb76e43d9f7069b869639f5c663adcbb1c815ec42ffa4b8f0c"
+    },
+    {
+      "backend": "host",
+      "base": 40961,
+      "payload_bytes": 1499,
+      "relocation_words": 222,
+      "payload_sha256": "1572f5ebbe29b5fb76e43d9f7069b869639f5c663adcbb1c815ec42ffa4b8f0c"
+    }
+  ],
+  "maximum_external_stack_bytes": 22,
+  "scope": "fixed 80x24 seven-bit ANSI; historical eight-bit raw-BIOS bypass is outside the terminal protocol; real boot/install are separate gates"
+}

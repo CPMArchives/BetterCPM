@@ -1,0 +1,23 @@
+{
+  "status": "PASS integrated host ADM3A differential rendering",
+  "checks": 62358,
+  "payload_bytes": 746,
+  "resident_profile_bytes": 1024,
+  "application_helper_bytes": 159,
+  "shared_bios_state_bytes": 0,
+  "call_site_allowance_bytes": 32,
+  "stack_allowance_bytes": 32,
+  "full_budgeted_path_bytes": 1247,
+  "payload_sha256": "5012f043dbbb486ddb574781c82c737f155210ed523da2138bbd535be906854f",
+  "terminal_sizes": [
+    [
+      80,
+      24
+    ],
+    [
+      100,
+      30
+    ]
+  ],
+  "scope": "CPU differential rendering; real boot/loader/install qualification is separate"
+}

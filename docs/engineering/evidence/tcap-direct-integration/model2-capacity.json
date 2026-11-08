@@ -1,0 +1,48 @@
+{
+  "status": "PASS packaged cold boot and actual maximum COM loads with each profile",
+  "platform": "model2",
+  "maximum_com_bytes": {
+    "MAXBASE": 57344,
+    "MAXADM": 55552,
+    "MAXVT": 55296,
+    "MAXANSI": 54784
+  },
+  "packaged_image_sha256": "da9fe889755afd517128e0ea816b9c5e2e5fc46257d3d7de40660b71b5812820",
+  "checks": [
+    "RSX LIST",
+    "MAXBASE",
+    "RSX LOAD ADM3A",
+    "MAXADM",
+    "RSX UNLOAD ADM3A",
+    "RSX LOAD VT52",
+    "MAXVT",
+    "RSX UNLOAD VT52",
+    "RSX LOAD ANSI",
+    "MAXANSI",
+    "RSX UNLOAD ANSI",
+    "MAXBASE",
+    "RSX LIST"
+  ],
+  "complete_com_bytes_verified_on_disk": true,
+  "every_loaded_padding_byte_checked": true,
+  "padding_cleared_before_warm_return": true,
+  "fixture_drive": "A:",
+  "captures": {
+    "trs80-text-0.bin": "885c9c76e80e945c722ad668e4f82ed37fc4548f35a83e41a55dbbc10bd88a5e",
+    "trs80-text-1.bin": "a0d9c88bee3ba5e57832a46abdb41d89c17b1736bf539185747386fc2f429158",
+    "trs80-text-2.bin": "0cf0d05cc199d34b220b1cb85e29e555198cc5e748954cce8978923d34b94d19",
+    "trs80-text-3.bin": "555a1c7527761aab9e0cb80769f4ae6d48e3ac17c736d520711608f29bc5f191",
+    "trs80-text-4.bin": "021b871e2ac77821155e8d0f815e27e6f8b8b26e2ecfaef2ff81800eff563353",
+    "trs80-text-5.bin": "4ae0634f51d4979dc1e3af3eefebec65205773b2f5baac65e8c72558f2841e07",
+    "trs80-text-6.bin": "3494f82de09bc82c933f21cd2a99683fa79c64a3611f661820488d07ad4e04f2",
+    "trs80-text-7.bin": "61725256c2edba84a3453a04024daf77577e6c118c6ed84478b1da63216e9f5b",
+    "trs80-text-8.bin": "2205664f4920fffe0b739d95255054cfa964efd6fb2989ae9f01eb2364e23d64",
+    "trs80-text-9.bin": "d817ec202bb64c2bf8fc7b92cae26fcb6d295ebf03ad5e8d97a97b08aa0a880c",
+    "trs80-text-10.bin": "57370e33e42682875ff5699306d7613ff49ba6bc4e7f82709c23ecf0cfd0f192",
+    "trs80-text-11.bin": "2170f285426bf8e9f3f6e4386bd65285852b457f1261540bf03cfb067835b3b4",
+    "trs80-text-12.bin": "64204bbaf7b0fb70e69c92f012ada8b1d079eeb35d989ab49020ecc2ae47a367",
+    "trs80-text-13.bin": "9dbe18124331399796593d08c963173f8b59833b0866601e08ca84cd3fa03759",
+    "trs80-text-14.bin": "0d3f51540c751a4e288c20adf9157d4c9b44e284957529f144ad8bb833d3807a"
+  },
+  "permanent_memory_loss_bytes": 0
+}

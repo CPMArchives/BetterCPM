@@ -1,0 +1,32 @@
+{
+  "status": "PASS packaged cold boot and actual maximum COM loads with each profile",
+  "platform": "cpmsim",
+  "maximum_com_bytes": {
+    "MAXBASE": 57344,
+    "MAXADM": 55296,
+    "MAXVT": 55296,
+    "MAXANSI": 54784
+  },
+  "packaged_image_sha256": "9e93abdc4fcc1a5d3b32c85bdaea9e03e8bdd65d9e3fb81d845d34b18ae17dc5",
+  "checks": [
+    "RSX LIST",
+    "B0:MAXBASE",
+    "RSX LOAD ADM3A",
+    "B0:MAXADM",
+    "RSX UNLOAD ADM3A",
+    "RSX LOAD VT52",
+    "B0:MAXVT",
+    "RSX UNLOAD VT52",
+    "RSX LOAD ANSI",
+    "B0:MAXANSI",
+    "RSX UNLOAD ANSI",
+    "B0:MAXBASE",
+    "RSX LIST"
+  ],
+  "complete_com_bytes_verified_on_disk": true,
+  "every_loaded_padding_byte_checked": true,
+  "padding_cleared_before_warm_return": true,
+  "fixture_drive": "B:",
+  "transcript_sha256": "38a33fc6a838d89e759e2c6de382ae2be04cc2b576b9278235f8e3d7932883d3",
+  "permanent_memory_loss_bytes": 0
+}

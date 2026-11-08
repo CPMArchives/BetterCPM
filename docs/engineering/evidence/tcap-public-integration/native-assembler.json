@@ -1,0 +1,80 @@
+[
+  {
+    "name": "VT52",
+    "bytes": 598,
+    "parity": true,
+    "evidence": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/BetterCPM-tcap-roadmap-1.1/build/vt52-development/native/VT52-8s_wzko1"
+  },
+  {
+    "name": "ADM3A",
+    "bytes": 535,
+    "parity": true,
+    "evidence": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/BetterCPM-tcap-roadmap-1.1/build/vt52-development/native/ADM3A-im7wn6vh"
+  },
+  {
+    "name": "ANSI",
+    "bytes": 1532,
+    "parity": true,
+    "evidence": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/BetterCPM-tcap-roadmap-1.1/build/vt52-development/native/ANSI-7s3itzuu"
+  },
+  {
+    "name": "M4SCRN",
+    "bytes": 1182,
+    "parity": true,
+    "evidence": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/BetterCPM-tcap-roadmap-1.1/build/vt52-development/native/M4SCRN-q34zmvlr"
+  },
+  {
+    "name": "ANSISCRN",
+    "bytes": 1374,
+    "parity": true,
+    "evidence": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/BetterCPM-tcap-roadmap-1.1/build/vt52-development/native/ANSISCRN-ts9t7mt3"
+  },
+  {
+    "name": "R3KPRE",
+    "bytes": 908,
+    "parity": true,
+    "evidence": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/BetterCPM-tcap-roadmap-1.1/build/vt52-development/native/R3KPRE-iginuy7d"
+  },
+  {
+    "name": "R3FINAL",
+    "bytes": 982,
+    "parity": true,
+    "evidence": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/BetterCPM-tcap-roadmap-1.1/build/vt52-development/native/R3FINAL-e3nosv1v"
+  },
+  {
+    "name": "R3SCHED",
+    "bytes": 496,
+    "parity": true,
+    "evidence": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/BetterCPM-tcap-roadmap-1.1/build/vt52-development/native/R3SCHED-q6tuax92"
+  },
+  {
+    "name": "R3META",
+    "bytes": 959,
+    "parity": true,
+    "evidence": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/BetterCPM-tcap-roadmap-1.1/build/vt52-development/native/R3META-30am35a1"
+  },
+  {
+    "name": "R3SLOTS",
+    "bytes": 923,
+    "parity": true,
+    "evidence": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/BetterCPM-tcap-roadmap-1.1/build/vt52-development/native/R3SLOTS-ysqveibr"
+  },
+  {
+    "name": "R3PROF",
+    "bytes": 998,
+    "parity": true,
+    "evidence": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/BetterCPM-tcap-roadmap-1.1/build/vt52-development/native/R3PROF-qgzaga4j"
+  },
+  {
+    "name": "R3KCTX",
+    "bytes": 479,
+    "parity": true,
+    "evidence": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/BetterCPM-tcap-roadmap-1.1/build/vt52-development/native/R3KCTX-64bjx2po"
+  },
+  {
+    "name": "R3DROP",
+    "bytes": 975,
+    "parity": true,
+    "evidence": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/BetterCPM-tcap-roadmap-1.1/build/vt52-development/native/R3DROP-gd4lvfl5"
+  }
+]

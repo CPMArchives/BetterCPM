@@ -1,0 +1,189 @@
+; Compact native ADM3A personality. Original BetterCP/M implementation.
+; Grammar and renderer are linked into one ordinary STATEFUL allocation.
+; TCAP 2.0 uses direct operations; TCAP 1.x templates are not advertised.
+TYPEVT EQU 0
+BASE EQU 08000H
+        ASEG
+        ORG BASE
+D_NEXT: DW 5
+        DW D_CHAIN
+        DW 0,0
+D_CHAIN:
+        LD HL,(D_NEXT)
+        JP (HL)
+D_ENTRY:
+        CP 6
+        JR NC,D_UNSUP
+        IF M2BANK EQ 1
+        CP 1
+        JP Z,D_RAW
+        CP 2
+        JP Z,D_RAW
+        ENDIF
+D_CALL:
+        IF M2BANK EQ 1
+        JP D_MAP
+        ENDIF
+D_DISPATCH:
+        PUSH DE
+        LD L,A
+        LD H,0
+        ADD HL,HL
+        LD DE,D_TABLE
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        POP DE
+        JP (HL)
+D_TABLE:
+        DW D_OUTPUT,D_RAW,D_RAW,D_CURSOR,D_CLEAR,D_RESET
+        DW D_FACTS,D_CLEAR,D_TMOVE,D_EOL,D_ON,D_OFF,D_BASELINE,D_BASELINE
+D_OUTPUT:
+        PUSH BC
+        PUSH DE
+        CALL D_OUT
+        POP DE
+        POP BC
+        RET
+D_UNSUP:
+        LD A,255
+        RET
+D_RAW:
+        LD HL,(1)
+        LD DE,66
+        ADD HL,DE
+        JP (HL)
+D_CURSOR:
+        LD A,(D_VIS)
+        OR A
+        RET Z
+        LD A,C
+        OR A
+        LD A,1
+        RET Z
+        SET 7,C
+        PUSH DE
+        CALL D_PRINT
+        POP DE
+        LD A,1
+        RET
+D_RESET:
+        XOR A
+        LD (D_ESC),A
+        RET
+D_CLEAR:
+        CALL D_RESET
+        CALL D_HOME
+        JP D_EOS
+D_OUT:
+        LD A,(D_ESC)
+        OR A
+        JR Z,D_NORMAL
+        DEC A
+        JR Z,D_ESCAPE
+        DEC A
+        JR Z,D_ROWCHAR
+        LD A,C
+        SUB 32
+        CP 80
+        JR C,D_COL
+        LD A,79
+D_COL:
+        LD H,A
+        LD A,(D_PEND)
+        LD L,A
+        CALL D_RESET
+        JP D_SET
+D_ROWCHAR:
+        LD A,C
+        SUB 32
+D_ROW:
+        CP 24
+        JR C,D_ROWOK
+        LD A,23
+D_ROWOK:
+        LD (D_PEND),A
+        LD A,3
+        LD (D_ESC),A
+        RET
+D_ESCAPE:
+        CALL D_RESET
+        LD A,C
+        CP '='
+        JR Z,D_ADDR
+        SUB '0'
+        CP 2
+        RET NC
+        LD (D_VIS),A
+        JP D_VISSET
+D_ADDR:
+        LD A,2
+        LD (D_ESC),A
+        RET
+D_NORMAL:
+        LD A,C
+        CP 32
+        JR NC,D_PRINT
+        CP 7
+        RET C
+        SUB 7
+        CP 9
+        JR C,D_INDEX
+        SUB 14
+        CP 10
+        RET NC
+        ADD A,9
+D_INDEX:
+        LD L,A
+        LD H,0
+        ADD HL,HL
+        LD DE,D_CODES
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        JP (HL)
+D_CODES:
+        DW D_BELL
+        DW D_LEFT,D_TAB,D_DOWN,D_UP,D_RIGHT,D_CR,D_OFF,D_ON
+        DW D_EOL,D_TOGGLE,D_EOS,D_EOL,D_EOS,D_CLEAR,D_BEGIN,D_INSERT,D_DELETE,D_HOME
+D_BEGIN:
+        LD A,1
+        LD (D_ESC),A
+        RET
+        INCLUDE display-renderer.inc
+D_TCAP:
+        CP 8
+        JP NC,D_UNSUP
+        ADD A,6
+        JP D_CALL
+D_BASELINE:
+        CALL D_OFF
+        JP D_RESET
+D_TMOVE:
+        LD A,B
+        CP 24
+        JR NC,D_BAD
+        LD A,C
+        CP 80
+        JR NC,D_BAD
+        LD H,C
+        LD L,B
+        JP D_SET
+D_BAD:
+        LD A,3
+        RET
+D_FACTS:
+        LD HL,D_DESC
+        XOR A
+        RET
+D_DESC: DB 'TC',2,8,24,80,15,2
+D_REV: DB 0
+D_VIS: DB 1
+D_ESC: DB 0
+D_PEND: DB 0
+D_END:
+        END

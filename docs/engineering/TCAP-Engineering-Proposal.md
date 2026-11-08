@@ -1,7 +1,22 @@
 # TCAP engineering proposal for TYPE, TED and HELP
 
-Status: engineering proposal with completed public ABI/admission design,
-7 November 2026. The [public contract 1.0](TCAP-Public-ABI.md) is authoritative
+Current disposition, 8 November 2026: the
+[direct-operation TCAP 2.0 candidate](TCAP-Direct-ABI.md) and
+[combined display design](TCAP-Integrated-Display-Redesign.md) supersede the
+unreleased transaction engine and the intervening 1.x protocol-template
+candidate. The complete personality/renderer path is counted against the
+maintainer's 1,280-byte ADM3A/VT52 and 1,792-byte ANSI ceilings, excluding only
+generic RSX machinery. No permanent display allocation is introduced.
+The [Z-System benchmark](TCAP-ZSystem-Benchmark.md) and
+[full Model 4 comparison](TCAP-Model4-Display-Cost-Comparison.md) explain the
+accounting correction. The older
+[public integration results](TCAP-Public-Integration-Results.md) remain evidence
+for the larger portable-stack candidate, not qualification of this replacement.
+The audit below remains historical reference. Utility migrations, HELP delivery,
+further personalities and release assignment remain deferred.
+
+Historical status: engineering proposal with completed public ABI/admission design,
+7 November 2026. The [historical public contract 1.0](TCAP-Transaction-ABI-Historical.md) is authoritative
 for the assigned design values and admission rules. The audit and historical
 review dispositions below retain their original baselines. Private feasibility
 and native-package evidence do not establish public runtime conformance.
@@ -442,10 +457,11 @@ release assignment remain deferred.
 
 ## Public ABI and admission closure after PR #661
 
-The [public TCAP contract 1.0](TCAP-Public-ABI.md) completes the wire layouts,
+The [historical public TCAP contract 1.0](TCAP-Transaction-ABI-Historical.md) completes the wire layouts,
 selector/result/state/mode namespaces, memory and token rules, exact stream and
 baseline models, and loader/system admission contract. Its
-[wire schema](contracts/tcap-1.0.json) is structurally checked alongside the prose.
+[wire schema](contracts/tcap-1.0.json) records those historical assigned values;
+the current structural checker validates the replacement TCAP 2.0 contract.
 It preserves Function 182, MCON 0–5 and SCRN/SCX, requires a fail-closed BMET 3
 matching-system binding with public MCON 1.4, and never promotes XTCP by renaming.
 Explicit essentials remain mandatory; optional emphasis is independent of spatial
