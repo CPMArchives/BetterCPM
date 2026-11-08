@@ -32,3 +32,22 @@ The public-prompt harness has been updated; final media qualification remains
 pending. These changes belong to 1.1.1 rather than the 1.1 release baseline.
 
 See the [numeric PATH contract](../engineering/Numeric-PATH-1.1.md).
+
+## Console personality activation
+
+Loading ADM3A, VT52 or ANSI moves the cursor to column 1 of the last row of
+the supported 80x24 screen. It preserves the displayed cells. The CCP's normal
+return CR/LF then scrolls a blank row for the prompt, including when the load
+command was entered on the last row. This replaces the misleading jump to the
+top of the old display. No cursor-position query or screen clear is used.
+
+The operation is a fresh-load initializer. Ordinary warm returns and retained
+STATEFUL relocation do not repeat it. Explicit application cursor-home and
+clear operations retain their existing behavior. The change applies to cpmsim,
+Model 4 and Model II, with no increase in resident allocations.
+
+Assembled-code checks cover all nine personality/platform combinations:
+activation leaves screen cells intact, the return newline scrolls to a blank
+bottom row, and explicit home remains available. cpmsim module budgets remain
+1,247 bytes for ADM3A/VT52 and 1,759 bytes for ANSI, including caller allowances.
+Final release-media qualification remains pending.
