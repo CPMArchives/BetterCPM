@@ -41,7 +41,7 @@ Exception cells retain the utility-specific specification; they do not waive dat
 | PATH | C | C | C | N | N | N | N | N | N | N | Command-tail utility. Bare PATH displays the list. Exact help and version queries precede edits. Invalid replacements preserve the old list. See [numeric PATH qualification](Numeric-PATH-1.1.md#qualification). |
 | PIP | C | C | C | E | E | E | N | E | N | N | replacement binding only; command/data language |
 | R | E | E | E | N | N | N | N | N | N | N | staged cpmsim host helper; separate query/8080 ABI; source review only |
-| RCP | O | C | O | E | E | E | E | E | E | E | resident DIR/ERA/TYPE/REN/CLS/USER/VER/COPY/MOVE; version dispatch checked; standard help missing; resident tail review outstanding |
+| RCP | C | C | O | E | E | E | E | E | E | E | compiled relocated help and full identification for all nine resident commands; see 1.1.1 issue #612 scope below; broader tail review remains bounded |
 | REN | C | C | C | E | E | E | N | E | N | N | compat append/choice; cooked transport boundary |
 | RESPACK | C | C | O | N | N | N | N | N | N | N | command-tail operation; no generic prompted field; registry/development command, not current disk membership |
 | RLMBUILD | C | C | O | N | N | N | N | N | N | N | command-tail operation; no generic prompted field; registry/development command, not current disk membership |
@@ -190,3 +190,21 @@ R/W currently use version-over-help precedence in the pinned host-transfer patch
 ## Maintenance
 
 `python3 tools/test_utility_ui_inventory.py` checks complete, unique matrix coverage against current System/Utilities/companion projections and the utility registry, and rejects unknown classifications. Add/update rows with any membership or behavior change; retain per-requirement proof and outstanding statuses.
+
+## 1.1.1 issue #612: VER query presentation
+
+On 8 November 2026, compiled tests confirmed that current RCP already handles
+`VER /H` and `/HELP`; its `/VER` still emitted a title alone. The resident
+version printer now shares title/purpose streams with help to emit the standard
+identification block. This applies consistently to all nine resident commands.
+The `/HELP` and `/VER` cells above supersede the earlier outstanding help and
+title-only identification observations for this candidate, not for frozen media.
+
+`tools/test_resident_feature_hints.py` exercises 735 relocated help/version/
+rejection cases, hostile console BDOS clobbering, page-zero/FCB/tail/stack guards
+and 84 transient query cases. `tools/test_ver_banner.py` separately checks
+resident VER at three bases and transient VER.COM queries, concise VER, the
+transient `/BANNER`, and the resident `/BANNER` feature hint. No final-media or
+new emulator-platform acceptance is claimed by these compiled host checks.
+
+See [VER issue #612 implementation and limits](VER-UI-612-1.1.1.md).
