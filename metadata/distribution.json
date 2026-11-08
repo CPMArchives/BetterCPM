@@ -306,7 +306,7 @@
         "trs80gp"
       ],
       "user": 0,
-      "role": "Portable MM-style ADM-3A personality; requires the matching screen backend"
+      "role": "Integrated TCAP 2.0 personality/renderer; no separate screen backend required"
     },
     {
       "name": "ADMTST.COM",
@@ -328,7 +328,7 @@
         "trs80gp"
       ],
       "user": 0,
-      "role": "Portable VT52 personality; requires the matching unloadable screen backend"
+      "role": "Integrated TCAP 2.0 personality/renderer; no separate screen backend required"
     },
     {
       "name": "VT52TST.COM",
@@ -350,7 +350,7 @@
         "trs80gp"
       ],
       "user": 0,
-      "role": "Portable bounded ANSI/VT100 monitor personality"
+      "role": "Integrated TCAP 2.0 personality/renderer; no separate screen backend required"
     },
     {
       "name": "ANSITST.COM",

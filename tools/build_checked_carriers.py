@@ -28,6 +28,8 @@ def main():
     for component in COMPONENTS:
         subprocess.run([sys.executable, str(ROOT/'tools'/f'build_{component}.py'),
                         '--assembler', str(a.assembler)], cwd=ROOT, check=True)
+    from build_release_tcap import release_modules
+    release_modules('cpmsim',a.assembler)
     files = [ROOT/'build/ccp/ccp.rlm', *sorted((ROOT/'build/cpx').glob('*.CPX')),
              *sorted((ROOT/'build/rsx').glob('*.RSX'))]
     if selected_contract(a.assembler) != contract:

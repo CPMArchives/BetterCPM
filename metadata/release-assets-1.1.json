@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "release_title": "BetterCP/M 1.1",
+  "version": "1.1",
+  "status": "release preparation; not published",
+  "accepted_commit": null,
+  "tag": null,
+  "specification": "docs/releases/1.1-SCOPE-AND-ACCEPTANCE.md",
+  "release_index": "BetterCPM-1.1-RELEASE.json",
+  "release_checksums": "BetterCPM-1.1-SHA256SUMS.txt",
+  "assets": [
+    {
+      "id": "system-cpmsim",
+      "title": "BetterCP/M 1.1 System \u2014 cpmsim",
+      "filename": "BetterCPM-1.1-System-cpmsim.zip",
+      "archive_root": "BetterCPM-1.1-System-cpmsim",
+      "platforms": [
+        "cpmsim"
+      ],
+      "readme_template": "packaging/1.1/README-System-cpmsim.txt",
+      "status": "candidate preparation"
+    },
+    {
+      "id": "system-model4",
+      "title": "BetterCP/M 1.1 System \u2014 Model 4",
+      "filename": "BetterCPM-1.1-System-Model4.zip",
+      "archive_root": "BetterCPM-1.1-System-Model4",
+      "platforms": [
+        "Model4"
+      ],
+      "readme_template": "packaging/1.1/README-System-Model4.txt",
+      "status": "candidate preparation"
+    },
+    {
+      "id": "utilities-cpmsim",
+      "title": "BetterCP/M Utilities 1.1 \u2014 cpmsim",
+      "filename": "BetterCPM-Utilities-1.1-cpmsim.zip",
+      "archive_root": "BetterCPM-Utilities-1.1-cpmsim",
+      "platforms": [
+        "cpmsim"
+      ],
+      "readme_template": "packaging/1.1/README-Utilities-cpmsim.txt",
+      "status": "candidate preparation"
+    },
+    {
+      "id": "utilities-model4",
+      "title": "BetterCP/M Utilities 1.1 \u2014 Model 4",
+      "filename": "BetterCPM-Utilities-1.1-Model4.zip",
+      "archive_root": "BetterCPM-Utilities-1.1-Model4",
+      "platforms": [
+        "Model4"
+      ],
+      "readme_template": "packaging/1.1/README-Utilities-Model4.txt",
+      "status": "candidate preparation"
+    },
+    {
+      "id": "system-model2",
+      "title": "BetterCP/M 1.1 System \u2014 Model II",
+      "filename": "BetterCPM-1.1-System-Model2.zip",
+      "archive_root": "BetterCPM-1.1-System-Model2",
+      "platforms": [
+        "Model2"
+      ],
+      "readme_template": "packaging/1.1/README-System-Model2.txt",
+      "status": "candidate preparation"
+    },
+    {
+      "id": "utilities-model2",
+      "title": "BetterCP/M Utilities 1.1 \u2014 Model II",
+      "filename": "BetterCPM-Utilities-1.1-Model2.zip",
+      "archive_root": "BetterCPM-Utilities-1.1-Model2",
+      "platforms": [
+        "Model2"
+      ],
+      "readme_template": "packaging/1.1/README-Utilities-Model2.txt",
+      "status": "candidate preparation"
+    },
+    {
+      "id": "source",
+      "title": "BetterCP/M 1.1 Source",
+      "filename": "BetterCPM-1.1-Source.zip",
+      "archive_root": "BetterCPM-1.1-Source",
+      "platforms": [],
+      "readme_template": "packaging/1.1/README-Source.txt",
+      "status": "candidate preparation"
+    },
+    {
+      "id": "documentation",
+      "title": "BetterCP/M 1.1 Documentation",
+      "filename": "BetterCPM-1.1-Documentation.zip",
+      "archive_root": "BetterCPM-1.1-Documentation",
+      "platforms": [],
+      "readme_template": "packaging/1.1/README-Documentation.txt",
+      "status": "candidate preparation"
+    }
+  ]
+}

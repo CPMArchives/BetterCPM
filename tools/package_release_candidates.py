@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assemble six review-only ZIPs from exact source and validated media receipts.
+"""Assemble versioned review-only ZIPs from exact source and validated media receipts.
 
 No emulator launches, baseline promotions, tags or uploads. Model 4 execution
 and fresh-package installation remain explicit acceptance gates.
@@ -49,6 +49,13 @@ def read_report(folder, commit):
     data=(folder/name).read_bytes()
     if sha(data)!=report['sha256']:
         raise ValueError('System image differs from receipt')
+    if report['target']=='trs80m2':
+        validation=report['validation']
+        if validation.get('boot',{}).get('status')!='PASS' or any(
+                validation.get('inventory',{}).get(g)!='PASS'
+                for g in ('exact_membership','independent_record_readback','allocation')):
+            raise ValueError('Model II construction/boot gates missing')
+        return report,data
     for gate in ('filesystem','file_integrity','config_fingerprint'):
         if report['validation'].get(gate)!='PASS':
             raise ValueError('System construction gate missing: '+gate)
@@ -92,7 +99,7 @@ def source_files():
 
 def utilities_members(platform, sums, images, reports, inventory):
     """Keep matching disk images/receipts and the complete shared source kit."""
-    target={'cpmsim':'z80pack','Model4':'trs80gp'}[platform]
+    target={'cpmsim':'z80pack','Model4':'trs80gp','Model2':'trs80m2'}[platform]
     selected={name for name,owner in images.items() if owner==platform}
     if len(selected)!=2:
         raise ValueError('Utilities package requires primary and companion images')
@@ -154,7 +161,10 @@ def documentation_members(tracked, commit, version):
 
 def assemble(args):
     version=getattr(args,'version','1.0')
-    if version not in ('1.0','1.0.1'):
+    pending=(['Exact-artifact three-platform acceptance', 'TCAP 2.0 on delivered media',
+              'Offline reconstruction', 'Final documentation and license reconciliation',
+              'Release acceptance ledger'] if version=='1.1' else PENDING)
+    if version not in ('1.0','1.0.1','1.1'):
         raise ValueError('unsupported release version')
     if version=='1.0' and (ROOT / 'docs/releases/non-documentation-lock-1.0/LOCK.json').exists():
         raise ValueError('Five 1.0 packages are locked; use build_documentation.py. Do not rebuild the six-package set during documentation sync.')
@@ -234,7 +244,8 @@ def assemble(args):
         raise ValueError('independent Utilities inventory has not passed')
     images={}
     util_reports={}
-    for platform,target in [('cpmsim','z80pack'),('Model4','trs80gp')]:
+    for platform,target in ([('cpmsim','z80pack'),('Model4','trs80gp')] +
+                            ([('Model2','trs80m2')] if version=='1.1' else [])):
         row=inventory['platforms'][target]
         for proof in (row,row['noah_companion']):
             name=proof['image'];data=sums[name]
@@ -254,23 +265,25 @@ def assemble(args):
         template=template.replace('ASSEMBLY TEMPLATE — not a completed or accepted release package.\nRemove this notice only after the release acceptance checks pass.',
                                   'CANDIDATE — assembled for review; NOT ACCEPTED FOR RELEASE.')
         files['README.txt']=template.encode()
-        if id in ('system-cpmsim','system-model4'):
-            platform='cpmsim' if id=='system-cpmsim' else 'Model4'
-            folder=args.cpmsim_system if platform=='cpmsim' else args.model4_system
+        if id in ('system-cpmsim','system-model4','system-model2'):
+            platform={'system-cpmsim':'cpmsim','system-model4':'Model4','system-model2':'Model2'}[id]
+            folder={'cpmsim':args.cpmsim_system,'Model4':args.model4_system,'Model2':getattr(args,'model2_system',None)}[platform]
+            if folder is None: raise ValueError('1.1 requires --model2-system')
             report,data=read_report(folder,commit)
-            expected='z80pack' if platform=='cpmsim' else 'trs80gp'
+            expected={'cpmsim':'z80pack','Model4':'trs80gp','Model2':'trs80m2'}[platform]
             if report['target']!=expected:
                 raise ValueError('wrong System platform receipt')
             if platform=='cpmsim' and report['validation'].get('boot')!='PASS':
                 raise ValueError('cpmsim candidate requires its own boot evidence')
             files['images/'+report['image']]=data
             files['evidence/system-report.json']=(folder/'report.json').read_bytes()
-            files['images/diskdefs']=(folder/'diskdefs').read_bytes()
-            work=(folder/'work-image').read_bytes()
-            if sha(work)!=report['work_image_sha256']:
-                raise ValueError('work image differs from preparation receipt')
-            files['images/'+('BetterCPM-Work-332K.dsk' if platform=='cpmsim' else 'BetterCPM-Work-800K.dmk')]=work
-            guide='CPMSIM-INSTALLATION.md' if platform=='cpmsim' else 'MODEL4-INSTALLATION.md'
+            if platform!='Model2':
+                files['images/diskdefs']=(folder/'diskdefs').read_bytes()
+                work=(folder/'work-image').read_bytes()
+                if sha(work)!=report['work_image_sha256']:
+                    raise ValueError('work image differs from preparation receipt')
+                files['images/'+('BetterCPM-Work-332K.dsk' if platform=='cpmsim' else 'BetterCPM-Work-800K.dmk')]=work
+            guide={'cpmsim':'CPMSIM-INSTALLATION.md','Model4':'MODEL4-INSTALLATION.md','Model2':'MODEL2-INSTALLATION.md'}[platform]
             files['docs/platform/'+guide]=tracked['docs/platform/'+guide]
             if platform=='cpmsim':
                 files['third_party/z80pack/README.md']=tracked['third_party/z80pack/README.md']
@@ -293,7 +306,7 @@ def assemble(args):
                     files['host/guest-tools/'+name.upper()+'.COM']=payload
 
                 evidence['emulator']=runtime
-        elif id in ('utilities-cpmsim','utilities-model4'):
+        elif id in ('utilities-cpmsim','utilities-model4','utilities-model2'):
             selected,evidence=utilities_members(asset['platforms'][0],sums,images,
                                                 util_reports,inventory)
             files.update(selected)
@@ -311,10 +324,10 @@ def assemble(args):
             files['source/dependencies/'+upstream_name]=upstream
             files['source/dependencies/README.txt']=restore
             for name,data in sums.items():
-                if name not in images and not name.endswith('.dmk.json') and not name.endswith('.dsk.json'):
+                if name not in images and not name.endswith('.dmk.json') and not name.endswith('.dsk.json') and not name.endswith('.imd.json'):
                     files['source/native-companions/'+name]=data
         else:
-            if version=='1.0.1':
+            if version in ('1.0.1','1.1'):
                 selected,evidence=documentation_members(tracked,commit,version)
                 files.update(selected)
             else:
@@ -326,6 +339,12 @@ def assemble(args):
                 files['CONTENTS.md']=tracked['packaging/'+version+'/DOCUMENTATION-CONTENTS.md']
                 files['third_party/z80pack/README.md']=tracked['third_party/z80pack/README.md']
                 evidence['generated_editions']='PDF/DOCX omitted pending source-to-edition reconciliation'
+        if version=='1.1':
+            for name in ('docs/engineering/TCAP-Direct-ABI.md',
+                         'docs/engineering/contracts/tcap-2.0.json',
+                         'src/utilities/common/tcap2.inc',
+                         'docs/platform/SUPPORT-1.1.md'):
+                files[name]=tracked[name]
         # Retain tracked licensing/permission and provenance files in each ZIP.
         for name,data in tracked.items():
             if name.startswith('third_party/') and any(x in Path(name).name.lower() for x in ('license','permission','provenance','copying','notice')):
@@ -333,12 +352,12 @@ def assemble(args):
         verify_members(files, forbidden, inspected)
         record={'schema':1,'package':id,'version':version,'source_commit':commit,
                 'status':'CANDIDATE; NOT ACCEPTED','accepted_commit':None,'tag':None,
-                'platforms':asset['platforms'],'pending':PENDING,'evidence':evidence,
+                'platforms':asset['platforms'],'pending':pending,'evidence':evidence,
                 'files':{n:sha(d) for n,d in sorted(files.items())}}
         filename=asset['filename'][:-4]+'-candidate.zip'
         packages.append(write_package(output/filename,asset['archive_root']+'-candidate',files,record))
     index={'schema':1,'status':'CANDIDATE; NOT ACCEPTED','source_commit':commit,
-           'accepted_commit':None,'tag':None,'assets':packages,'pending':PENDING}
+           'accepted_commit':None,'tag':None,'assets':packages,'pending':pending}
     (output/('BetterCPM-'+version+'-CANDIDATE.json')).write_bytes(encoded(index))
     (output/'SHA256SUMS.txt').write_text(''.join(f'{p["sha256"]}  {p["filename"]}\n' for p in packages)+
          f'{sha(encoded(index))}  BetterCPM-{version}-CANDIDATE.json\n')
@@ -348,7 +367,8 @@ def assemble(args):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--version',choices=('1.0','1.0.1'),default='1.0')
+    p.add_argument('--version',choices=('1.0','1.0.1','1.1'),default='1.0')
+    p.add_argument('--model2-system',type=Path)
     for name in ('cpmsim-system','model4-system','utilities','inventory','upstream','runtime-manifest','output'):
         p.add_argument('--'+name,type=Path,required=True)
     assemble(p.parse_args())

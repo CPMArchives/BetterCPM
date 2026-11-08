@@ -156,6 +156,8 @@ def build():
     files.append(('PATH.COM', path_command(ASM, util, target='trs80m2', identity_state='development')))
     names = ('STAT.COM','TIME.COM','RSX.COM','CPX.COM','CONFIG.COM','DUP.COM','SYSGEN.COM')
     programs = [(name,(util/name).read_bytes()) for name in names]
+    from build_release_tcap import release_modules
+    release_modules('model2', ASM)
     for name in ('M2SCRN','ADM3A','VT52','ANSI'):
         filename=name+'.RSX'
         files.append((filename,(ROOT/'build/rsx'/filename).read_bytes()))
