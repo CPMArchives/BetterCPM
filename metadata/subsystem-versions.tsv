@@ -1,5 +1,5 @@
 component	identity	interface_version	implementation_version	status	notes
-BetterCP/M	Core OS	-	1.0	completed baseline	Last frozen core milestone only: 3b2d2d7; current subsystem rows are post-1.0 development and do not redefine core 1.0; next core version and package core selection undecided
+BetterCP/M	Core OS	-	1.1	release candidate	Frozen BetterCP/M 1.1 core; exact release-media acceptance remains pending. Component and TCAP API versions are independent.
 CCP	Command environment	2.0	2.0	completed	Checked BCM2 carrier and streaming command reload; command calling convention unchanged; legacy format retained in default profile
 CPX	Command Processor Extension facility	2.0	2.0	completed	Checked BCPX2 carrier admission with CRC and public/private build binding; BCPX1 retained in default profile
 BDOS	Basic Disk Operating System	1.2	1.10	completed	Make distinguishes physical extents by EXM/S2; sequential writes eagerly prepare the next extent at CR=128 for DRI LINK; public interface unchanged

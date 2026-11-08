@@ -69,7 +69,7 @@
   "full_path_limit_bytes": 1280,
   "excluded": "generic RSX machinery only",
   "utility_migrations": "deferred",
-  "release_assignment": "deferred",
+  "release_assignment": "BetterCP/M 1.1",
   "full_path_limit_bytes_by_personality": {
     "ADM3A": 1280,
     "VT52": 1280,

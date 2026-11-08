@@ -1198,7 +1198,7 @@ TE_TAIL: ds 129
 TE_STATUS: ds 80
 TE_FIELDLEN: db 0
 TE_FIELD: ds 96
-TE_MCONREQ: db 1,20,0,0,'MCON',1,2,0,0,0,0
+TE_MCONREQ: db 1,20,0,0,'MCON',1,0,0,0,0,0
  dw 0
  db 0,0,0,0,0,0
 TE_REQ: db 1,20,0,0,'SCRN',1,1,0,0,0,0
@@ -1215,7 +1215,7 @@ TE_CMDLABEL: db 'TED> ',0
 TE_ERRORMSG: db 'Operation refused or failed; document retained.',0
 TE_RECOVERYMSG: db 'Workspace cleanup failed; retain the exact checkpoint for recovery.',0
 TE_LOWMSG: db 'TED: insufficient transient memory.',13,10,'$'
-TE_SCREENMSG: db 'TED requires SCRN 1.1, 80x24; select ANSI with M4SCRN/ANSISCRN.',13,10,'$'
+TE_SCREENMSG: db 'TED requires SCRN 1.1, 80x24, and an active console personality.',13,10,'$'
 TE_HELP_TOKEN: db '/HELP',0
 TE_VER_TOKEN: db '/VER',0
 ; @ted-version@

@@ -2,6 +2,37 @@
 
 This is the build entry point supporting all four manuals. It describes reconstructing the locked 1.0 software from its matching Source download, native development and the separate documentation build. Original prose is CC BY 4.0; original reusable code examples are GPL-2.0-or-later. See [licensing](LICENSING.md).
 
+## 1.1 source and reconstruction
+
+Use `BetterCPM-1.1-Source.zip`, its SOURCE-IDENTITY.json and SOURCE-FILES.json.
+The source tree is `source/BetterCPM/`; `source/dependencies/` contains the pinned
+offline cpmsim tar. Preserve all notices and per-package source companions.
+Package 1.1 and TCAP API 2.0 are independent of utility/component revisions.
+
+Rebuild the patched runtime with `tools/build_qualified_cpmsim.py --source`
+pointing to the packaged tar, `--profile runtime`, and a fresh `--output`.
+Build the three Systems with `tools/build_distribution.py --target all`, a
+fresh `--work` and `--output`, and `--simulator` pointing to that runtime.
+The selected profiles are cpmsim-fullram, the Model 4 layout, and model2-fullram.
+The legacy 53 KiB cpmsim profile is only an engineering rejection fixture.
+Use the TCAP test Python environment with pyte/wcwidth; native trs80gp 2.5.8
+requires normal application/LaunchServices access on macOS.
+
+Build the ordinary Utilities set with `tools/build_utilities_disk.py --build`.
+Build Model II Utilities separately using `--model2-system` pointing to its
+qualified System generation. Combine the output sets only after refusing
+conflicting same-name companions and independently verifying all six Utilities
+image inventories. `tools/prepare_release_11_media.py` stages matching System
+outputs and adds inspected blank cpmsim/Model 4 work media without changing
+System image bytes. Assemble the eight review archives with
+`tools/package_release_candidates.py --version 1.1`, all three System paths,
+the combined Utilities/inventory, pinned upstream source and runtime receipt.
+
+Fresh builds must be compared with the accepted source, image, carrier and
+member hashes. Repeat the exact-image guest, install, DUP, compatibility and
+TCAP gates; success of an engineering candidate is not final acceptance.
+Never rebuild or overwrite the locked 1.0 or 1.0.1 packages during this process.
+
 ## 1.0.1 source and reconstruction
 
 Use the matching `BetterCPM-1.0.1-Source.zip` and its `SOURCE-IDENTITY.json`,

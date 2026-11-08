@@ -1034,6 +1034,17 @@ reconciliation gate precede the corresponding implementation program.
   interface to provisional Model 4-only terminal operations, preserving
   `CLR` behavior. Track broader personality emulation, terminal replies and
   provider lifecycle in the [terminal architecture outline](docs/engineering/POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md).
+- [ ] **Explore a shared developer paging library, with TCAP-aware display.**
+  Assess reuse across utilities such as TYPE, DUMP, COMPARE and DIR; these are
+  examples, not a closed consumer list. Distinguish ordinary forward pause
+  prompts from bidirectional page replay/redraw. Let callers supply content
+  retrieval/replay while sharing geometry, page boundaries, navigation and
+  optional TCAP display operations, with usable non-TCAP behavior. Never replay
+  file-changing actions to reconstruct a page. Measure code, buffer and stack
+  costs and preserve each utility's existing semantics. Future exploration
+  only; this entry adds no implementation or 1.1 release requirement. See the
+  [paging research agenda](docs/engineering/POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md#shared-paging-library-exploration)
+  and [utility impact audit](docs/engineering/TCAP-Utility-Impact-Audit.md).
 - [ ] Assemble a library of terminal-personality RSXs after the 1.0 monitor
   support is available. Begin by researching the Z-System TCAP library as a
   source of terminal definitions and provenance; distinguish capability

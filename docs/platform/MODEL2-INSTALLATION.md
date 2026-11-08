@@ -48,16 +48,14 @@ When `A0>` appears, enter each command on its own line.
 | `CONFIG /SHOW` | The saved drive bindings. The default maps A through D to units 0 through 3. |
 
 The basic console is ready at startup. Applications using a terminal personality
-can load the Model II screen backend and one of the supplied ADM3A, VT52 or
-ANSI modules. For VT52 use the following commands before and after the
+can load one supplied integrated ADM3A, VT52 or ANSI module directly.
+No separate screen backend is required by these TCAP 2.0 personalities. For VT52 use the following commands before and after the
 application.
 
 ```text
-RSX LOAD M2SCRN
 RSX LOAD VT52
 RSX LIST
 RSX UNLOAD VT52
-RSX UNLOAD M2SCRN
 ```
 
 ## Mount the full Utilities set
@@ -102,3 +100,7 @@ data tracks. Other Model II images can have the same CP/M logical track size
 and still require different physical reads. Use BCM2SS for all mounted disks
 in this configuration. Low-level formatting, double-sided media and Model
 12/16/16B configurations are outside the supported configuration.
+
+Standalone SCRN/SCX clients such as TED or DUMP paging still require M2SCRN.
+The basic-console startup leaves the full unloaded TPA available. To display
+the release banner explicitly, use `:VER /BANNER` or `SUBMIT STARTUP`.

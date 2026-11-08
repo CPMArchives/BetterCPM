@@ -672,3 +672,20 @@ application and rendered-screen qualification. Record each provider's historical
 target, provenance, required/optional/unsupported features and qualification
 status. This is post-1.0 library work and does not expand the two initial 1.0
 provider targets or freeze the eventual TCAP format or ABI.
+
+## Shared paging library exploration
+
+Future exploration requested by the maintainer, 8 November 2026. Investigate a
+reusable developer library for paging across utilities, with optional TCAP-aware
+display. TYPE, DUMP, COMPARE, DIR and other consumers are examples, not a fixed
+migration set. Ordinary forward paging can work without TCAP; bidirectional
+replay/redraw can benefit from shared geometry and display operations.
+
+Separate content retrieval/replay callbacks from page policy, navigation and
+rendering. Preserve cancellation and utility semantics, including completion
+of comparison totals after display cancellation. Reconstruct earlier content
+without repeating file-changing actions. Evaluate caller-owned state, bounded
+buffers, code/stack cost, absent-provider fallback and qualification shared by
+multiple consumers. The current implementations are utility-specific, not a
+documented general-purpose paging API. This is a future design investigation,
+not implementation authorization or an additional 1.1 publication gate.

@@ -1,0 +1,77 @@
+[
+  {
+    "work": "Montezuma Micro disk-format data and reference software",
+    "packages": [
+      "system-cpmsim",
+      "system-model4",
+      "utilities-cpmsim",
+      "utilities-model4",
+      "source",
+      "system-model2",
+      "utilities-model2"
+    ],
+    "notice": "Both System disks ship the native BetterCP/M DISK.FDB. Historical format data, including the definitions recovered from CONFIG.COM, retain the notice \u201cdistribution rights undetermined\u201d. The Source and nested Utilities kits carry the editable BetterCP/M FDF v1 catalogue. The original Montezuma DISK.FDF is excluded. The release catalogue preserves the 91 external and 16 CONFIG compatibility entries, uses independent definitions for MMF017 and MMI008, and adds the native BetterCP/M 780K System format. No rightsholder grant has been verified. Montezuma utility binaries and disassemblies are excluded from the packages and their nested source kits."
+  },
+  {
+    "work": "z80pack and the cpmsim support kit",
+    "packages": [
+      "system-cpmsim",
+      "source"
+    ],
+    "notice": "Udo Munk and other contributors. The cpmsim System and Source kits carry selected upstream source from commit 91fd28eb04e675c2127df88ed3f40675e15282e2. Preserve the upstream LICENSE, module COPYING files and embedded notices in the source tar, together with the BetterCP/M patch series and offline-inputs.json inventory."
+  },
+  {
+    "work": "DRI CP/M material",
+    "packages": [
+      "system-cpmsim",
+      "system-model4",
+      "utilities-cpmsim",
+      "utilities-model4",
+      "source",
+      "system-model2",
+      "utilities-model2"
+    ],
+    "notice": "Digital Research. Keep the 2001 permission and 2022 clarification and component provenance under licenses/third_party/dri-*/. The system contains BetterCP/M ED and PIP implementations. Utilities contains the DDT/DUMP implementations and the separate unmodified DRI LINK 1.3. Retained original references and reproduction tools in full source snapshots have their own provenance. The project applies the CP/M grant to LINK as documented in licenses/third_party/dri-link/provenance.json. No separate LINK-specific grant is asserted. Keep LINKCOPY.TXT and the host LINK permission with Utilities."
+  },
+  {
+    "work": "Hector Peraza TED adaptation and ZSM4 assembler",
+    "packages": [
+      "utilities-cpmsim",
+      "utilities-model4",
+      "source",
+      "utilities-model2"
+    ],
+    "notice": "GPL-2.0-or-later. Preserve upstream notices, modification history, license texts and the corresponding source/build material for the shipped versions. Utilities provides BetterCPM-TED-SOURCE.tar.gz, ZSM4-SOURCE.tar.gz and their provenance in source/; Source carries the host companions in source/native-companions/. See licenses/third_party/ted/, licenses/third_party/zsm4/, TEDCOPY.TXT, ZSM4COPY.TXT and TOOLINFO.TXT."
+  },
+  {
+    "work": "Richard Conn DASM and SIG/M volume 91",
+    "packages": [
+      "utilities-cpmsim",
+      "utilities-model4",
+      "source",
+      "utilities-model2"
+    ],
+    "notice": "Preserve Conn, Barker and Christensen credits, DASMCOPY.TXT and the BetterCPM-DASM-SOURCE.tar.gz companion. See licenses/third_party/dasm/provenance.json for the historical SIG/M distribution basis accepted by the maintainer. The generic unsigned submission form is not an author-specific grant. No modern license is assigned to the historical import."
+  },
+  {
+    "work": "CPMArchives CP/M Tools snapshot",
+    "packages": [
+      "utilities-cpmsim",
+      "utilities-model4",
+      "source",
+      "utilities-model2"
+    ],
+    "notice": "Full source snapshots carry the seven COMs and TOOLS.DOC under third_party/cpm-tools/, including inside the Utilities source tarballs. These seven COMs are outside the selected System and Utilities disk inventories. The matching 66-file source/build companion is included and integrity-checked. Preserve the GPL text and corresponding source and build scripts at pin 3e5eee55cac154e125659aadaa865b2c66e7d06a wherever those binaries are conveyed. Source: https://github.com/CPMArchives/cpm-tools/tree/3e5eee55cac154e125659aadaa865b2c66e7d06a."
+  },
+  {
+    "work": "Historical documentation, evidence, fixtures and nested sources",
+    "packages": [
+      "utilities-cpmsim",
+      "utilities-model4",
+      "source",
+      "documentation",
+      "utilities-model2"
+    ],
+    "notice": "Keep work-specific credits, provenance, permissions and applicable texts with third-party quotations, illustrations, reference disks, software and scans. See docs/LICENSING.md for the component index and licenses/third_party/ for the individual records. The project manual license applies only to original BetterCP/M manual content. Review selected artifacts and nested archives before publication. Candidate inclusion alone establishes no new redistribution grant."
+  }
+]

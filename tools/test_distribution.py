@@ -11,7 +11,7 @@ class DistributionGates(unittest.TestCase):
     def test_default_identity_distinguishes_development_from_frozen_core(self):
         from unittest.mock import patch
         release = json.loads((Path(__file__).resolve().parents[1]/'metadata/release-package.json').read_text())['version']
-        for development, expected in ((True,'BetterCP/M development (after core 1.0)'),
+        for development, expected in ((True,'BetterCP/M '+release if release=='1.1' else 'BetterCP/M development (after core 1.0)'),
                                       (False,'BetterCP/M '+release)):
             with patch('utility_versions.display_development',return_value=development):
                 self.assertEqual(development_identity(),expected)
@@ -74,9 +74,8 @@ class DistributionGates(unittest.TestCase):
             self.assertEqual(b'RSX LOAD ADM3A' in data,expected)
             for name in ['ADM3A.RSX','ADMTST.COM']:
                 self.assertTrue(any(e['name']==name for e in entries))
-            self.assertEqual(b'RSX LOAD M4SCRN' in data,expected)
+            self.assertNotIn(b'RSX LOAD M4SCRN',data)
             if expected:
-                self.assertLess(data.index(b'RSX LOAD M4SCRN'),data.index(b'RSX LOAD ADM3A'))
                 self.assertLess(data.index(b'RSX LOAD ADM3A'),data.index(b'CLS'))
                 self.assertLess(data.index(b'CLS'),data.index(b':VER /BANNER'))
 
@@ -96,7 +95,7 @@ class DistributionGates(unittest.TestCase):
         self.assertEqual(len(entries),1)
         self.assertEqual(entries[0]['status'],'implemented')
         self.assertEqual(entries[0]['artifact'],'build/utilities/ED.COM')
-        self.assertEqual(set(entries[0]['targets']),{'z80pack','trs80gp'})
+        self.assertEqual(set(entries[0]['targets']),{'z80pack','trs80gp','trs80m2'})
 
     def test_config_fingerprint_manifest(self):
         root=Path(__file__).resolve().parents[1]

@@ -51,13 +51,16 @@ def inspect(raw,fmt,files):
 
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--artifacts',type=Path,required=True);p.add_argument('--images',type=Path,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('--model2-artifacts',type=Path);p.add_argument('--model2-images',type=Path);p.add_argument('--artifacts',type=Path,required=True);p.add_argument('--images',type=Path,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
     files={n:(a.artifacts/path).read_bytes() for n,path in COMPONENTS.items()};result={'status':'PASS','platforms':{}}
     for native,target in ((False,'z80pack'),(True,'trs80gp')):
         fmt=select_fdf(ROOT/'metadata/DISK.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)' if native else DEFAULT_FORMAT)
         path=a.images/('BetterCPM-Utilities-'+target+('-80T-DS-800K.dmk' if native else '-332K.dsk'));image=path.read_bytes();raw=dmk_to_raw(image,fmt) if native else image
         if native:assert raw_to_dmk(raw,fmt)==image
-        r=inspect(raw,fmt,files);r.update(image=path.name,image_sha256=sha(image),raw_bytes=len(raw),files_sha256={n:sha(b) for n,b in files.items()});result['platforms'][target]=r
+        expected_primary=dict(files)
+        if target=='z80pack':
+            expected_primary['BATCHIO.RSX']=(a.artifacts/'build/cpmsim-fullram/rsx/BATCHIO.RSX').read_bytes()
+        r=inspect(raw,fmt,expected_primary);r.update(image=path.name,image_sha256=sha(image),raw_bytes=len(raw),files_sha256={n:sha(b) for n,b in expected_primary.items()});result['platforms'][target]=r
         from noah_distribution import COMPONENTS as NOAH_FILES, image_name
         path=a.images/image_name(target);image=path.read_bytes()
         raw=dmk_to_raw(image,fmt) if native else image
@@ -66,6 +69,27 @@ def main():
         extra=inspect(raw,fmt,expected)
         extra.update(image=path.name,image_sha256=sha(image),files_sha256={n:sha(b) for n,b in expected.items()})
         result['platforms'][target]['noah_companion']=extra
+    if bool(a.model2_artifacts)!=bool(a.model2_images):
+        p.error('--model2-artifacts and --model2-images are required together')
+    if a.model2_images:
+        from model2_media import geometry
+        from test_model2_release_media import decoded
+        from noah_distribution import COMPONENTS as companion
+        fmt=geometry();rows=[]
+        for label,components in (('Utilities',COMPONENTS),('NOAH',companion)):
+            name=f'BetterCPM-{label}-trs80m2-77T-SS-584K.imd'
+            image=(a.model2_images/name).read_bytes();raw=decoded(image)[2]
+            boot=fmt.boot_psectors*fmt.boot_secsize
+            raw=raw[:boot]+bytes(fmt.raw_track_bytes-boot)+raw[boot:]
+            expected={n:(a.model2_artifacts/path).read_bytes() for n,path in components.items()}
+            if label=='Utilities':
+                expected['BATCHIO.RSX']=(a.model2_artifacts/'build/model2-fullram/rsx/BATCHIO.RSX').read_bytes()
+                expected['SUBMIT.COM']=(a.model2_artifacts/'build/utilities/SUBMIT.COM').read_bytes()
+            row=inspect(raw,fmt,expected)
+            row.update(image=name,image_sha256=sha(image),files_sha256={n:sha(b) for n,b in expected.items()})
+            rows.append(row)
+        rows[0]['noah_companion']=rows[1]
+        result['platforms']['trs80m2']=rows[0]
     a.output.write_text(json.dumps(result,indent=2)+'\n');print('PASS exact Utilities inventory, user placement, independent file bytes, allocations and native conversion')
 
 

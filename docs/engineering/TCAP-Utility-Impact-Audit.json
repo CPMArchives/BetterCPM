@@ -1,0 +1,535 @@
+{
+  "status": "source impact audit; not utility runtime acceptance",
+  "date": "2026-11-08",
+  "scope": "All 52 registered utilities, their shared/resident paths, plus separate notes for HELPs held reader and third-party applications. TYPE/TED/HELP were illustrative consumers, not an exhaustive migration set.",
+  "reviewed_source_commit": "9cdb1eb3",
+  "groups": {
+    "direct_scrn_clients": [
+      "DUMP",
+      "TED"
+    ],
+    "internal_display_helpers": [
+      "CONFIG",
+      "DUP",
+      "SYSGEN",
+      "FDB",
+      "CLS",
+      "RCP"
+    ],
+    "page_or_layout_assumptions": [
+      "TYPE",
+      "ED"
+    ],
+    "bounded_line_editor": [
+      "DDT"
+    ],
+    "protocol_test_clients": [
+      "ADMTST",
+      "VT52TST",
+      "ANSITST"
+    ],
+    "ordinary_console_or_host_tools": [
+      "STAT",
+      "COPY",
+      "TIME",
+      "SUBMIT",
+      "XSUB",
+      "CPX",
+      "RSX",
+      "USER",
+      "VER",
+      "SYSBUILD",
+      "RESPACK",
+      "RLMBUILD",
+      "REN",
+      "PIP",
+      "SQ",
+      "USQ",
+      "CR",
+      "UNCR",
+      "LZH",
+      "UNLZH",
+      "BYE",
+      "MOVE",
+      "WARM",
+      "DASM",
+      "DSYM",
+      "DLINK",
+      "CRCKSUM",
+      "MD5SUM",
+      "PATCH",
+      "R",
+      "W",
+      "MOUNT",
+      "PATH"
+    ],
+    "forward_paging_modes": [
+      "COMPARE",
+      "ERA",
+      "SEARCH",
+      "NOAH",
+      "DIR"
+    ]
+  },
+  "utilities": [
+    {
+      "utility": "STAT",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/stat.mac": "ad6b6b4e412ead0c36a6ac044447e48e6e31cd3a06e8a56c9ac802e8e56892b8"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "COPY",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "DIR",
+      "classification": "forward_paging_modes",
+      "evidence": {
+        "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "CONFIG",
+      "classification": "internal_display_helpers",
+      "evidence": {
+        "src/utilities/config.mac": "56631de3b084166af84afc4cc5354b2f45fac15bb7908dcefe6112630612be89",
+        "src/utilities/disk/common.inc": "fcfc7ce8bf6c86b73e9e2e52d264544588be56ad98f4b4b8d9116a24b9bd7a49",
+        "src/utilities/common/configinput.inc": "4dfc1f267bdfa217e9326a62e83749c6ea7cafc2d13ae7dea684483a93bfb891"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "DUP",
+      "classification": "internal_display_helpers",
+      "evidence": {
+        "src/utilities/dup.mac": "485fe596bd95b22d3aad6b01537d98983752bf782e302416819b69f904f1605e",
+        "src/utilities/disk/common.inc": "fcfc7ce8bf6c86b73e9e2e52d264544588be56ad98f4b4b8d9116a24b9bd7a49"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "TIME",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/time.mac": "ff913832916a5e6462a949dac8ad1714554d25f3606b5ac9d0b1c6de25e910f0"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "SYSGEN",
+      "classification": "internal_display_helpers",
+      "evidence": {
+        "src/utilities/sysgen.mac": "3893367b94318f05cbb160704ea15771403040a1ce49f3aa8e8f2280aeb4f3d4",
+        "src/utilities/common/monitorconsole.inc": "bfa01ac854919893852c2f7418638765f53fe7d430f8bfca2ae536c150e56639"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "SUBMIT",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/submit.mac": "425f7fa80355d3eded88d5052954e463c0a21c887fb0ddd30143f5bb65780c5a"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "XSUB",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/xsub.mac": "e0042a80007483c8f1b7c178db25aa1883da6b8d00401519853dcc8d6b5699ea"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "CPX",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/cpx.mac": "d845438eeb1cd6bdaf55fc30f1fb10094414d45121634d331369f6d1c031af44"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "RSX",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/rsx.mac": "55a0472291964c3deba443c091a9de82af0864e7c1ea8de6d6a2b11251e5f9a5"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "USER",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "CLS",
+      "classification": "internal_display_helpers",
+      "evidence": {
+        "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "VER",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "RCP",
+      "classification": "internal_display_helpers",
+      "evidence": {
+        "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
+        "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "SYSBUILD",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/sysbuild.mac": "d0ccf1ce311d5dc14cb4b5588b4d1eb8c1df5c229a3e3e7ad4ea866ddfb7f0c9"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "RESPACK",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/respack.mac": "54310bc129db8d607fd41732f0b4ab5167e5f533bea96180317600cc66fc226f"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "RLMBUILD",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/rlmbuild.mac": "8590484499566a8d20b8a4d627e60eafbab9240f8c835c254441f261a05d0120"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "ERA",
+      "classification": "forward_paging_modes",
+      "evidence": {
+        "src/utilities/era.mac": "1258552338b75e51e0c56aa9c6d9ed6b71ae7acee859d3f9e16ef6f91ef541ec"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "REN",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/ren.mac": "01ec410b6d967b39da6f7cc0311d9e4e5c32f5e5065bb316a09fd75c52fccd2a"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "TYPE",
+      "classification": "page_or_layout_assumptions",
+      "evidence": {
+        "src/utilities/common/typepage.inc": "46b1afea333aca238be248fd0925391388b0e1fa7a303985a9eaa494c856ee27",
+        "src/cpx/type-select.inc": "72ee2c568e6cfba7b290f7bebfeb03d372e9a25024399fd0e7e46a8ef1a40b68"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "PIP",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/pip.mac": "37056cd0883a5d297566ebc640f4ed551f2127364ed968d6925acdee7746c0b0"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "ADMTST",
+      "classification": "protocol_test_clients",
+      "evidence": {
+        "src/utilities/admtst.mac": "fcfc275b32cf7a747e9f784a17853f84a95247c92981df600ac57f639284ca66"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "VT52TST",
+      "classification": "protocol_test_clients",
+      "evidence": {
+        "src/utilities/vt52tst.mac": "28bf947d79460c6872eb134d982cfe0090934aca49e8bff69f1f3f988db60bf0"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "ANSITST",
+      "classification": "protocol_test_clients",
+      "evidence": {
+        "src/utilities/ansitst.mac": "dc3e99befe060bc26af39ee1cce1860d8c56de52ae9feac614e90a2a6bebcfba"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "ED",
+      "classification": "page_or_layout_assumptions",
+      "evidence": {
+        "src/utilities/common/ed-page.inc": "db287da14a8d29e60851256a52c849ea94b6affdd9dc2ef86e824b69ab46a36f"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "DUMP",
+      "classification": "direct_scrn_clients",
+      "evidence": {
+        "src/utilities/common/dumpview.inc": "a2a1c0317eaa364193f801e08aaeea8ee9d0761b7fb65fc0dec791c981b451bd",
+        "src/utilities/dump.mac": "a263e6fa8c29e7ee28e1f9c1fe1096e31422935ddad6862ace5302807b5ff5c2"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "DDT",
+      "classification": "bounded_line_editor",
+      "evidence": {
+        "src/utilities/common/ddtinput.inc": "12af6ff657ca74d41ca4f87929c9b0d0524876481a5c1f51edffc81f8dde1f15"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "SQ",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/sq.mac": "4c1d1b768e2c22feb8cd4034f1e895beb83bf57a685cfd4775a38987e622e485"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "USQ",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/usq.mac": "0a70923ffdba62518ebe6c30015fdb511589f55175dad37e87fddd4f311372b0"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "CR",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/cr.mac": "c82905f28b10be7ce360ddd60d0e241df41627f4143d59fe3f52470daa70f950"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "UNCR",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/uncr.mac": "fd68e215ea0a63dfac7eeee518a74c692e8345e14a1f298f6ee50e767d7a9a82"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "LZH",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/lzh.mac": "791ff5336f124ece802927552db6cdbc831236a39dbfb77006f1020c4a2afba4"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "UNLZH",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/unlzh.mac": "c0317078f55989af7e4945da9eff5b1b205635db3a82f49885368a6353e049aa"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "NOAH",
+      "classification": "forward_paging_modes",
+      "evidence": {
+        "src/utilities/common/noahwrite.inc": "ddb131d7aff51b6fd3decc31aa8cafe12c72553d8ec1d228727acf4d6299080b"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "BYE",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/platform/z80pack/bye.mac": "89f14e56f215073003c656aef1b941610b4d2785915cfc0d3bc27bb12874d144"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "MOVE",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "WARM",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/warm.mac": "7f04c4d6a4740cfa3b1824331deb59f49825726a9fa1e7b1f2d92ef7752fec18"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "DASM",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/dasm.mac": "930daa050c23f8df9f41f0fbf4b88e1c5c707b020d64d8ce17a2678c5b79f1b0"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "DSYM",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/dsym.mac": "fa84cc7e9abd745fabd5c74ef54117c48eb734fe04a163f511ea21705ddb13b8"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "DLINK",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/dlink.mac": "e84620810f0e57bcccdc84b988ea655f640b945c27b0a3dad927d0b646e48f7c"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "TED",
+      "classification": "direct_scrn_clients",
+      "evidence": {
+        "src/utilities/ted/frontend.mac": "49435b01827a03535f70aeb02adfeaf42c64c44625546c25d30b1769d07dba5d",
+        "tools/build_integrated_display.py": "9b77a7e697c958e94145a5f17c8ee2acff2af3e831d08523678582f5478b6856"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "COMPARE",
+      "classification": "forward_paging_modes",
+      "evidence": {
+        "src/utilities/compare.mac": "41effffcb01d2c3a30884364de62dca76e3cb12e19b8125a1161b6297aa0fb88",
+        "src/utilities/common/comparedisplay.inc": "c579948be173533dd0f2e2dbded0e158df29e87f25548c70dd545ba57591dc58"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "SEARCH",
+      "classification": "forward_paging_modes",
+      "evidence": {
+        "src/utilities/search/display.inc": "792d8c01acb6cd4d2f9dbf2ca94388ba986991e8aea1f2a53701350392982eeb"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "CRCKSUM",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/crc.mac": "ea5789ce7e896ef7d668e65100a01f0934e0a18fd3dc65bc65561cd601c9b9f7",
+        "src/utilities/crc/algorithms.inc": "9b2fb89eed4226eba854a938c553c2c4bfbc6109c7b92673de64235d52d80c1b",
+        "src/utilities/crc/command.inc": "008875a5cfe2bb38992e69bd34d576dfd46794941b75c6e07dfc2513f8b6c52b",
+        "src/utilities/crc/list-parser.inc": "91da56327b1381ece3cade21064eaff16d967fa123d496a53c3cb072dee5a86e",
+        "src/utilities/crc/lists.inc": "6583bb869a8a5161834e38c690378e9c2c9079e04075f917064aee794d559ca1",
+        "src/utilities/crc/output.inc": "c30918eca66c4ec0b7c7b9bfc25576ff90992dbf2f853bf354cf9cf81333e780",
+        "src/utilities/crc/render.inc": "55d106a3460b79972d31d738cc6908f50a9a3b1c22e9b8a70f294039ad7dd844",
+        "src/utilities/crc/support.inc": "fc523b27b676d8a68d00ea34974f0fcd57a3f13142389ce1b9b1ca77fdc163c4",
+        "src/utilities/crc/traverse.inc": "b03677743a690c3a3289ba882d8b5f19512b289e1f8862d578b876f2ff680c9e"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "MD5SUM",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/md5sum.mac": "3f5f995281380cc4aa4bb80ac4df33e48b1d9b790030473823b506c5269d5046",
+        "src/utilities/md5sum/algorithms.inc": "703112f9689d2cabfdb076547ba13081475c50642bf3933b7a05b45d2442494a",
+        "src/utilities/md5sum/candidates.inc": "de59df18ea22698aa6dbdd7d5456528eb17babb505614b5160d92a95df0b0516",
+        "src/utilities/md5sum/command.inc": "69c17e4ac2869b6ece1f1f5e071e031259391988c6a2ed91baec2e9ba0b627bc",
+        "src/utilities/md5sum/list-parser.inc": "1cb596fbe0bb81506688de9168dcc1c068cad8afdc5f58015a63cd20d9d982c4",
+        "src/utilities/md5sum/render.inc": "4f3f8030d71e02fc34d621baa37e25c6bedd303da8afa1b4f3c82cbf11585da7",
+        "src/utilities/md5sum/reference.inc": "90590db45706cfd80e23a02206f1693db3fb24ca1aa409b1a10a90af16bda557"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "PATCH",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/patch.mac": "f1dc5beb8943d032fbd9bad97da3621c101fe61a3b5e2dbdfa956434e18a1633",
+        "src/utilities/patch/command.inc": "ee2fc6f93ccc98744d689142965aeff6863d8e50f62f36bc50efc632461ca545",
+        "src/utilities/patch/engine.inc": "25a426338b145ef126a4198ef99700a8b6a204a1c90c98d42d119f0247a903ce",
+        "src/utilities/patch/scan.inc": "1ff5d4ee84650e5517dbe87545639e8fdf7eb41982aee25531210bf6726b634a",
+        "src/utilities/patch/transaction.inc": "27dacd83a8f3dea71bc7d48e419394bc68995990a49972939cf8ddde98035649"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "FDB",
+      "classification": "internal_display_helpers",
+      "evidence": {
+        "src/utilities/disk/common.inc": "fcfc7ce8bf6c86b73e9e2e52d264544588be56ad98f4b4b8d9116a24b9bd7a49",
+        "src/utilities/disk/fdbview.inc": "1195e847ad74b88e97153992b2f2ade86def46351b1919c2286be3ab08828f36"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "R",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "tools/build_qualified_cpmsim.py": "fef1692fd17d3491a4e8d1fbf011588db0b823fb8a7d4b463ff7ad2ef7c7ce29"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "W",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "tools/build_qualified_cpmsim.py": "fef1692fd17d3491a4e8d1fbf011588db0b823fb8a7d4b463ff7ad2ef7c7ce29"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "MOUNT",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "tools/build_qualified_cpmsim.py": "fef1692fd17d3491a4e8d1fbf011588db0b823fb8a7d4b463ff7ad2ef7c7ce29"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    },
+    {
+      "utility": "PATH",
+      "classification": "ordinary_console_or_host_tools",
+      "evidence": {
+        "src/utilities/path.mac": "20a58e0d46b436790c93fd02a954ca62b559e928c163b6794117299e58b6a6c2"
+      },
+      "migration_release_assignment": "not inferred from illustrative examples"
+    }
+  ],
+  "confirmed_integration_blocker": {
+    "utility": "TED",
+    "failure": "TED requests MCON 1.2; integrated ANSI advertises MCON 1.0. Interactive startup refuses the new integrated stack even with ANSISCRN loaded.",
+    "probe_transcript_sha256": "bea1a06a103d65ee1d7d9d67c334f2ea7eb1a2a40b358faad114166bd982d416",
+    "correction": "TED minimum MCON request corrected to 1.0; SCRN 1.1 rendering and checks retained. Final paired-media acceptance pending."
+  },
+  "release_scope_decision": "Shared paging library recorded as future exploration; 1.1 compatibility corrections continue across all affected utilities. No exhaustive migration list inferred.",
+  "clarifications": [
+    "TYPE/TED/HELP were examples, not an exhaustive consumer set.",
+    "Functioning without TCAP does not mean a utility cannot benefit from adoption.",
+    "Ordinary forward paging does not need TCAP; bidirectional TYPE paging is the geometry/clear/reposition use case.",
+    "Paging consumers include DUMP and COMPARE; absence of a direct display API dependency is not absence of a potential TCAP benefit."
+  ],
+  "coverage_note": "All registry entries accounted for. Mode assessment expanded beyond direct screen API searches; forward pagers are recorded even though they have no direct SCRN/TCAP dependency.",
+  "paging_library": "No documented general-purpose developer paging library identified; existing implementations are utility-specific."
+}

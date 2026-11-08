@@ -23,6 +23,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('workspace', type=Path)
     p.add_argument('--platform', choices=('model4','model2'), required=True)
+    p.add_argument('--release-image',type=Path,help='bind the campaign to an exact constructed release image')
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--emulator', type=Path, default=DEFAULT_EMULATOR)
     p.add_argument('--resume', action='store_true', help='audit complete retained captures and continue remaining gates')
@@ -97,6 +98,13 @@ def main():
     files['KEEP.TXT'] = b'PRESERVE FILES DURING TCAP INSTALLATION\r\n'
     for name in ('RSX','SYSGEN','CONFIG','STAT'):
         files[name+'.COM'] = (workspace/'build/utilities'/(name+'.COM')).read_bytes()
+    from integrated_display_qualification import owner_refusal_fixture
+    files['ECHO.RSX']=owner_refusal_fixture(workspace)
+    release_binding=None
+    if a.release_image:
+        from release_media_binding import bind
+        cohort={n:d for n,d in files.items() if n in {p+'.RSX' for p in budgets}|{'RCP.CPX','R3PACK.RSX','R3CACHE.RSX','SYSTEM.SYS','RSX.COM','SYSGEN.COM'}}
+        release_binding=bind(a.release_image,a.platform,cohort)
     marker_source = """        ASEG
         ORG 0100H
         LD DE,MSG
@@ -151,7 +159,7 @@ READ:   LD C,1
     from integrated_display_qualification import commands as direct_commands,audit as direct_audit
     commands=direct_sequence if a.all_personalities else direct_commands(a.personality)
     report = {'status':'RUNNING','platform':a.platform,'service':'TCAP 2.0','identity':identity,
-              'baseline_boundary':baseline,'maximum_com_bytes':maximum,'budgets':budgets,
+              'release_input':release_binding,'baseline_boundary':baseline,'maximum_com_bytes':maximum,'budgets':budgets,
               'emulator_sha256':sha(emu),'runner_sha256':sha(Path(__file__)),'checks':{}}
     def save(): (out/'qualification.json').write_text(json.dumps(report, indent=2)+'\n')
     def launch(disk, folder, second=None):

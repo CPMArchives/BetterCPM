@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "name": "BetterCP/M release package",
-  "version": "1.0.1",
+  "version": "1.1",
   "status": "release preparation; exact package acceptance pending",
-  "notes": "Maintenance release including approved PIP selectors and four optional supplemental formats; checksum expansion and ATONSS/ATONDS/PT2SS deferred to 1.1 consideration. Preserve the locked 1.0 packages."
+  "notes": "Frozen three-platform release including numeric PATH, memory policy and TCAP 2.0. Exact-artifact acceptance pending. Preserve 1.0 and 1.0.1 locks."
 }

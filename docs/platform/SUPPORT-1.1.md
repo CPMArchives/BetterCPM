@@ -64,5 +64,5 @@ screen backend or packaged utilities, run the relevant Model II checks on the
 resulting media. Identify the actual paired System/Utilities hashes in the
 release record. Use the controller, console and external tests when changing
 those boundaries. Final 1.1 release qualification must include the 1.1 features
-available at release freeze. The independent HELP/TCAP workstream retains its
-own engineering and release decisions.
+available at release freeze. TCAP 2.0 is included in frozen 1.1 scope and requires exact-image acceptance
+on all three targets. HELP and TYPE/TED migrations remain deferred.

@@ -32,21 +32,12 @@ def build_system(work, out, identity, emulator, reuse, repo):
     system_hash = digest(binary)
     if manifest['files'][system.name]!=system_hash or manifest['profile']!=profile.name:
         raise ValueError('mismatched Model II System Disk or profile')
-    files = {}
-    origins = {}
-    def add(name, directory):
-        path = directory/name
-        files[name] = path.read_bytes()
-        origins[name] = str(path.relative_to(staged))
-    add('SYSTEM.SYS',media)
-    add('RCP.CPX',artifacts/'cpx')
-    for name in ('R3PACK','R3CACHE'):
-        add(name+'.RSX',artifacts/'system')
-    for name in ('M2SCRN','ADM3A','VT52','ANSI'):
-        add(name+'.RSX',artifacts/'rsx')
-    for name in ('PATH','STAT','TIME','RSX','CPX','CONFIG','DUP','SYSGEN'):
-        add(name+'.COM',artifacts/'utilities')
-    files['DISK.FDB'] = compile_file(staged/'src/platform/trs80m2/BCM2SS.FDF')
+    from build_distribution import selected_files
+    selection,omitted=selected_files(json.loads((staged/'metadata/distribution.json').read_text()),target,staged)
+    files={row['name']:data for row,data in selection}
+    origins={row['name']:row['artifact'] for row,data in selection}
+    files['SYSTEM.SYS']=(media/'SYSTEM.SYS').read_bytes()
+    origins['SYSTEM.SYS']='build/trs80m2/SYSTEM.SYS'
     fmt = geometry()
     raw = decoded(binary)[2]
     fm_length = fmt.boot_psectors*fmt.boot_secsize
@@ -76,7 +67,7 @@ def build_system(work, out, identity, emulator, reuse, repo):
     included = [{'name':name,'bytes':len(value),'sha256':digest(value),'user':0,
                  **({'artifact':origins[name]} if name in origins else {})} for name,value in files.items()]
     report = {'target':target,'profile':profile.name,'format':'BCM2SS','image':image.name,
-              'sha256':system_hash,'source':identity,'included':included,'omitted':[],
+              'sha256':system_hash,'source':identity,'included':included,'omitted':omitted,
               'free_bytes':inventory['free_blocks']*fmt.block_bytes,
               'package_sha256':digest(files['SYSTEM.SYS']),'compatibility_id':manifest['compatibility_id'],
               'validation':{'boot':boot,'inventory':inventory}}

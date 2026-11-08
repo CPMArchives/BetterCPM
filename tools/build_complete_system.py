@@ -25,6 +25,8 @@ if __name__ == "__main__":
     for component in COMPONENTS:
         subprocess.run([sys.executable, str(ROOT / "tools" / f"build_{component}.py")],
                        cwd=ROOT, check=True)
+    from build_release_tcap import release_modules
+    release_modules('model4')
     # The ROM/RAM ownership inventory is tied to emitted symbol addresses. Run
     # its drift check only after every resident listing has been regenerated.
     subprocess.run([sys.executable,

@@ -18,7 +18,8 @@ def check():
     assert cursor == 8 and set(direct['operations']) == set(map(str,range(8)))
     assert direct['same_provider_index_required'] and direct['rediscover_after_layout_mutation']
     assert direct['permanent_display_reservation_bytes'] == 0
-    assert direct['utility_migrations'] == direct['release_assignment'] == 'deferred'
+    assert direct['utility_migrations'] == 'deferred'
+    assert direct['release_assignment'] == 'BetterCP/M 1.1'
     for name,mask,strong in [('adm3a',15,2),('vt52',7,0),('ansi',15,2)]:
         text=(ROOT/'src/rsx/compact'/(name+'.mac')).read_text()
         assert "D_DESC: DB 'TC',2,8,24,80,%d,%d"%(mask,strong) in text,name

@@ -1,0 +1,15 @@
+{
+  "status": "PASS experimental admission correction",
+  "checks": [
+    "TED>",
+    "^Z command",
+    "Xriginal line",
+    "^K...",
+    "replace? (Y/N) [N]:",
+    "Saved.",
+    "^K..."
+  ],
+  "saved_sha256": "6e410ad3282d866573b686ea67b8691ea630aae200d70e6a5bfb0fc1e771c307",
+  "binary_sha256": "7f596780ee0ad00bacf0bb0c5244f01f77f67e57cb57383967047df2f05d2276",
+  "limitation": "Isolated candidate, not final release acceptance. Only MCON minimum and error text changed; rendering remains SCRN 1.1."
+}

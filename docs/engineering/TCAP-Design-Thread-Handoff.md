@@ -1,5 +1,13 @@
 # BetterCP/M — Portable terminal capabilities (TCAP)
 
+**Maintainer clarification, 8 November 2026:** TYPE, TED and HELP were illustrative
+consumers, not an exhaustive set of utilities needing TCAP assessment or changes.
+The [full utility impact audit](TCAP-Utility-Impact-Audit.md) covers all 52 registered utilities and
+records a confirmed TED integration regression. Earlier three-name lists must
+not be used to infer migration policy. The shared paging library is future exploration; compatibility checks apply
+to every affected utility in 1.1. No exhaustive migration set is inferred.
+Publication remains held.
+
 ## Why this thread exists
 
 Bring TCAP forward as a **system-wide design priority during 1.1 planning**.

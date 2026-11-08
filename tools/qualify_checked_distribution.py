@@ -39,8 +39,8 @@ def qualify(root,image,out,simulator):
         return w
     def put(w,name,data,drive='a'):
         path=w/name;path.write_bytes(data);disk=w/'disks'/f'drive{drive}.dsk'
-        subprocess.run(['cpmrm','-f','bettercpm-default',str(disk),'0:'+name],cwd=w,capture_output=True)
-        subprocess.run(['cpmcp','-f','bettercpm-default',str(disk),str(path),'0:'+name],cwd=w,check=True,capture_output=True)
+        subprocess.run(['cpmrm','-T','raw','-f','bettercpm-default',str(disk),'0:'+name],cwd=w,capture_output=True)
+        subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disk),str(path),'0:'+name],cwd=w,check=True,capture_output=True)
     def run(w,commands,stem='transcript',initial=b'A0>_ '):
         steps=[(c.encode()+b'\r',b'A0>_ ',30) if isinstance(c,str) else c for c in commands]
         raw=session(simulator,w/'disks',steps,w/(stem+'.bin'),initial_prompt=initial)
@@ -51,6 +51,10 @@ def qualify(root,image,out,simulator):
         return assemble(Path.home()/'bin/z80asm','        ASEG\n        ORG 0100H\n'+textwrap.dedent(text)+'\n        END\n',w/(name+'.bin'),w/(name+'.lst'),0x100)
 
     w=case('boundary')
+    # Large test COMs belong on an empty scratch volume. Keep the actual
+    # delivered System contents on A, including its new install package.
+    scratch=w/'disks/driveb.dsk'
+    scratch.write_bytes(bytes([0xe5])*scratch.stat().st_size)
     records=(L['TPA']-256)//128
     s=f'''        LD HL,(6)
             LD DE,0{L['TPA']:04X}H
@@ -89,9 +93,9 @@ def qualify(root,image,out,simulator):
     '''
     code=asm(w,'FIT',s);assert len(code)<=128
     payload=code.ljust(128,b'\0')+b''.join(bytes([i&255])*128 for i in range(1,records))
-    put(w,'FIT.COM',payload);put(w,'OVER.COM',payload+bytes([records&255])*128,'b')
+    put(w,'FIT.COM',payload,'b');put(w,'OVER.COM',payload+bytes([records&255])*128,'b')
     for name,code in [('JPZERO',b'\xc3\0\0'),('FNZERO',b'\x0e\0\xcd\x05\0\x76'),('BIOSWB',b'\x2a\x01\0\xe9')]:put(w,name+'.COM',code)
-    t=run(w,['STAT MEM','FIT','STAT MEM','B:OVER','STAT MEM','FIT','JPZERO','FNZERO','BIOSWB','CPX /V','STAT MEM'])
+    t=run(w,['STAT MEM','B:FIT','STAT MEM','B:OVER','STAT MEM','B:FIT','JPZERO','FNZERO','BIOSWB','CPX /V','STAT MEM'])
     assert t.count('FULLRAM FIT PASS')==2 and 'FULLRAM FIT FAILED' not in t
     assert 'FULLRAM FIT' not in t.split('A0>B:OVER \n',1)[1].split('BetterCP/M Memory Map',1)[0]
     m=maps(t);assert len(m)==4 and all(x==expected for x in m)
@@ -105,14 +109,25 @@ def qualify(root,image,out,simulator):
     assert 'Hello from HELLO.CPX' in t and 'RSX module or profile error' in t and maps(t)[-1]==expected
     save('stateful',checks=5,public_cpx=True,missing_rejected=True,unloaded_tpa=expected)
     w=case('monitor')
-    t=run(w,['RSX LOAD ANSISCRN','STAT MEM',(b'RSX LOAD ADM3A\r',b'\x1b[7m \x1b[0m ',30),(b'STAT MEM\r',b'\x1b[7m \x1b[0m ',30),(b'RSX UNLOAD ADM3A\r',b'A0>_ ',30),'RSX UNLOAD ANSISCRN','STAT MEM'])
+    # Integrated TCAP renderers emit cursor positioning between prompt cells.
+    # Observe the completed editor row, rather than a legacy contiguous escape
+    # sequence; retain every byte and the same memory/recovery assertions.
+    from tcap_test_support import Guest
+    guest=Guest(simulator,w/'disks',w)
+    try:
+        guest.prompt();chunks=[]
+        for command in ('RSX LOAD ANSISCRN','STAT MEM','RSX LOAD ADM3A',
+                        'STAT MEM','RSX UNLOAD ADM3A','RSX UNLOAD ANSISCRN','STAT MEM'):
+            chunks.append(guest.prompt(command))
+        t=re.sub(rb'\x1b\[[0-?]*[ -/]*[@-~]',b'',b''.join(chunks)).decode('ascii',errors='replace')
+    finally:guest.close()
     screen_bytes, personality_bytes = (
         int.from_bytes((root/'build/rsx'/name).read_bytes()[14:16], 'little')
         for name in ('ANSISCRN.RSX', 'ADM3A.RSX'))
     # The first RSX installs the shared 1 KiB manager. Each provider also
-    # owns one 256-byte cache metadata page.
+    # owns a 256-byte cache page unless its carrier opts into inline ownership.
     backend_tpa = expected - 1024 - screen_bytes - 256
-    screen_pair_tpa = backend_tpa - personality_bytes - 256
+    screen_pair_tpa = backend_tpa - personality_bytes
     assert screen_bytes > 0 and personality_bytes > 0
     assert maps(t) == [backend_tpa, screen_pair_tpa, expected], maps(t)
     save('monitor',screen_pair_tpa=screen_pair_tpa,unloaded_tpa=expected)

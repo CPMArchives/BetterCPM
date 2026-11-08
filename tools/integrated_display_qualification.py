@@ -64,6 +64,10 @@ FAIL: DB 'INTEGRATED ABSENT FAIL',13,10,'$'
         CALL T2_EMIT
         OR A
         JR NZ,FAIL
+        LD A,3
+        CALL T2_EMIT
+        OR A
+        JR NZ,FAIL
         LD A,4
         CALL T2_EMIT
         LD DE,TEXT
@@ -129,11 +133,49 @@ TEXT: DB 'LEGACY TEXT',14,13,10
             "CONTROL: DB 27,'[0m',27,'[2J',27,'[5;10H',27,'[7m'\nCONTROL_END:")
         legacy=legacy.replace("TEXT: DB 'LEGACY TEXT',14,13,10", "TEXT: DB 'LEGACY TEXT',27,'[0m',13,10")
     program('LEGACY',legacy)
+    helper=(ROOT/'src/utilities/common/tcap2.inc').read_text()
+    for name,want,caption in (('ADMIT',0,'ADMISSION'),('REFUSE',1,'OWNER REFUSAL')):
+        program(name,f'''        CALL T2_OPEN
+        CP {want}
+        LD DE,BAD
+        JR NZ,SHOW
+        LD DE,GOOD
+SHOW:   LD C,9
+        CALL 5
+        JP 0
+GOOD: DB 'TCAP {caption} PASS',13,10,'$'
+BAD: DB 'TCAP {caption} FAIL',13,10,'$'
+'''+helper)
+    program('ROUTE','''        LD A,(3)
+        PUSH AF
+        AND 0FCH
+        OR 2
+        LD (3),A
+        CALL T2_OPEN
+        LD (RESULT),A
+        POP AF
+        LD (3),A
+        LD A,(RESULT)
+        CP 1
+        JR NZ,FAILED
+        CALL T2_OPEN
+        OR A
+        JR NZ,FAILED
+        LD DE,GOOD
+        JR SHOW
+FAILED: LD DE,BAD
+SHOW:   LD C,9
+        CALL 5
+        JP 0
+RESULT: DB 0
+GOOD: DB 'TCAP ROUTE REFUSAL PASS',13,10,'$'
+BAD: DB 'TCAP ROUTE REFUSAL FAIL',13,10,'$'
+'''+helper)
     return result
 
 
 def commands(personality='ADM3A'):
-    result=['BOUND','MAXCOM','ABSENT','RSX LOAD ADM3A','BOUND','LEGACY','DEMO 1',
+    result=['BOUND','MAXCOM','ABSENT','RSX LOAD ECHO','RSX LOAD ADM3A','REFUSE','RSX UNLOAD ECHO','BOUND','ADMIT','ROUTE','LEGACY','DEMO 1',
         'RSX LOAD HELLO','DEMO 2','RSX UNLOAD HELLO','DEMO 3','RSX LIST',
         'RSX UNLOAD ADM3A','BOUND','MAXCOM','ABSENT',
         'RSX LOAD ADM3A','DEMO 4','RSX UNLOAD ADM3A','BOUND','MAXCOM','ABSENT']
@@ -153,6 +195,7 @@ def audit(commands,frames,budgets,baseline):
             assert boundary==expected,(command,active,boundary,expected)
             boundaries.append(boundary);item['boundary']=boundary
         for cmd,caption in [('MAXCOM','MAXIMUM COM PASS'),('ABSENT','INTEGRATED ABSENT PASS'),
+            ('ADMIT','TCAP ADMISSION PASS'),('REFUSE','TCAP OWNER REFUSAL PASS'),('ROUTE','TCAP ROUTE REFUSAL PASS'),
             ('DEMO','INTEGRATED DEMO PASS'),('LEGACY','INTEGRATED LEGACY PASS')]:
             if command==cmd or (cmd=='DEMO' and command.startswith('DEMO ')) or (cmd=='LEGACY' and command.startswith('L') and command[1:] in budgets):
                 assert caption in text,(command,text)
@@ -171,4 +214,19 @@ def collection(workspace,out,platform,maximum,personalities,inline_cache=False,h
         programs['L'+name+'.COM']=programs.pop('LEGACY.COM')
         files.update(programs);files[name+'.RSX']=carrier;budgets[name]=budget
         sequence.extend('L'+name if c=='LEGACY' else c for c in commands(name))
+    files['ECHO.RSX']=owner_refusal_fixture(workspace)
     return files,budgets,sequence
+
+
+def owner_refusal_fixture(workspace):
+    from build_rsx_module import make_module
+    from checked_carriers import rsx_metadata
+    from checked_build_contract import load_contract
+    carrier=make_module(name='ECHO',version=(1,0),services=[],linked_base=0x8000,
+                        code=bytes.fromhex('05000880000000002a0080e93e01c9'),relocations=[2,9],
+                        callable_services=[(b'TCAP',2,0,12,0)],cache_footer_inline=True)
+    context=Path(workspace)/'build/profile/context.json'
+    if context.exists() and carrier[4]==2:
+        item=bytearray(carrier);at=int.from_bytes(item[30:32],'little');item[4]=3
+        carrier=bytes(item[:at])+rsx_metadata('ECHO',bytes(item[at:]),load_contract(Path(workspace),Path.home()/'bin/z80asm'))
+    return carrier

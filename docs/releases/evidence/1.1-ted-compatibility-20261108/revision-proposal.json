@@ -1,0 +1,29 @@
+{
+  "candidate_artifact_sha256": "49ac4308f72ed02a11d6dd4439aeb0a9dafbc064a5f05a65d2c4500c7e3b148c",
+  "candidate_identity": {
+    "revision": 5,
+    "version": "1.0"
+  },
+  "candidate_input_fingerprint": "164eb7f638debcf94c54e00fc37742fb71aa8f0e8fb8ff124a5b26d20ed94978",
+  "candidate_report_sha256": "279e44879d6ec42a9ecf278b68a5208bc7e81a485e2b4d7f726e629d1cbc45f5",
+  "component": "utility:TED",
+  "executable_changed": true,
+  "proposed_identity": {
+    "revision": 6,
+    "version": "1.0"
+  },
+  "reference_artifact_sha256": "44e1f1d61aef52c7b3ac286bb5932427d5c8402d68782193157e3563af74276a",
+  "reference_identity": {
+    "revision": 5,
+    "version": "1.0"
+  },
+  "reference_report_sha256": "086f4916032f8e5ff06bbbf2ad351210acc79b1fe43f18dec1c290223cd079fe",
+  "schema": 1,
+  "selected_inputs_changed": true,
+  "status": "revision-proposal; not acceptance",
+  "variant": {
+    "build_mode": "cross",
+    "profile": "default",
+    "target": "z80pack"
+  }
+}

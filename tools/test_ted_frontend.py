@@ -77,6 +77,11 @@ class Frontend(Commands):
         if fn==14:self.drive=(de&255)+1;return 0
         if fn==182:
             self.providers.append(bytes(self.mem[de+4:de+10]))
+            available=getattr(self,'service_versions',{b'MCON':(1,2),b'SCRN':(1,1)})
+            version=available.get(bytes(self.mem[de+4:de+8]))
+            requested=tuple(self.mem[de+8:de+10])
+            if version is None or version[0]!=requested[0] or version[1]<requested[1]:
+                return 1
             self.mem[de+12:de+14]=(0x40).to_bytes(2,'little')
             return 0
         return super().bdos(fn,de)
@@ -133,6 +138,18 @@ def tests(m):
             from utility_help import text
             assert text('TED').encode() in m.console
         cases.append('query without provider/file operations '+tail.decode())
+    for minor in (0,2):
+        m.service_versions={b'MCON':(1,minor),b'SCRN':(1,1)}
+        m.execute(keys=b'EX\r')
+        assert b'TED requires' not in m.console
+        assert m.providers[:2]==[b'MCON\x01\x00',b'SCRN\x01\x01']
+        cases.append(f'integrated/legacy MCON 1.{minor} with SCRN 1.1 admission')
+    for available in ({b'MCON':(1,0)}, {b'SCRN':(1,1)}, {b'MCON':(1,0),b'SCRN':(1,0)}):
+        m.service_versions=available
+        m.execute()
+        assert b'TED requires SCRN 1.1' in m.console and not m.mutations
+        cases.append('missing or insufficient display service refused '+repr(available))
+    del m.service_versions
     original=padded(b'Original\t spaces  \r\nLF\nCR\rend  ')
     m.execute(b'INPUT.TXT',b'S\rX\x0bSY\x0bQ',files={(1,7,'INPUT.TXT'):original})
     assert m.files[(1,7,'INPUT.TXT')].data==b'X'+original[1:]
