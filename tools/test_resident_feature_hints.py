@@ -55,7 +55,7 @@ def execute(command,base,*,strict=False,hostile=False,details=None,claimed=True)
  return ''.join(output),calls
 
 def main():
- from utility_help import RESIDENT_SCREENS,text
+ from utility_help import RESIDENT_SCREENS,text,resident_identification
  from utility_versions import banner
  count=0;peak=0
  for base in (0x4000,0x8101,0xA000):
@@ -76,7 +76,7 @@ def main():
     peak=max(peak,details['stack_bytes']);count+=1
    for tail in ('/VER','/ver','/HELPER /VER','/VER FILE /BOGUS','\t/VER\t'):
     out,_=execute(name+' '+tail,base,strict=True,hostile=True)
-    assert out==banner(name,True)+'\r\n',(name,tail,out);count+=1
+    assert out==resident_identification(name),(name,tail,out);count+=1
    for tail in ('/BOGUS','/HELPER','/HELP.X','/VER=1','/VERIFY','/','FILE /BOGUS'):
     out,_=execute(name+' '+tail,base,strict=True,hostile=True)
     assert out.startswith('Invalid usage.\r\n') and 'Use '+name+' /HELP for help.' in out,(name,tail,out)
@@ -110,7 +110,7 @@ def main():
      assert not any(f not in (2,9) for f in calls),(command,calls)
   for command in ('DIR','ERA','TYPE','REN','COPY','MOVE','USER','CLS','VER'):
    out,_=execute(command+' /VER',base)
-   assert out==banner(command,True)+'\r\n',(command,out)
+   assert out==resident_identification(command),(command,out)
   for text in ('DIR /C=3','DIR /S=X','DIR /AAA','ERA /DRV','TYPE /CTLX','TYPE /BAD','DIR B3:F*A.TXT'):
    out,_=execute(text,base)
    assert 'Use :' not in out,(text,out)

@@ -62,9 +62,10 @@ def main():
     listing=(ROOT/'build/cpx/rcp.lst').read_text()
     for name in ['DIR','ERA','TYPE','REN','CLS','USER','VER','COPY','MOVE']:
         for arguments in ['/VER','X /VER Y','/VER /VER']:
-            c=runner(image,0x8000);tail=(name+' '+arguments).encode();c.mem[0x6000:0x6000+len(tail)]=tail
-            c.de=0x6000;c.b=len(tail);c.run(address(listing,'BC_COMMAND'),limit=100000)
-            assert output(c)==banner(name,True)+'\r\n' and c.carry,(name,arguments);count+=1
+            from test_resident_feature_hints import execute as resident_query
+            from utility_help import resident_identification
+            actual,_=resident_query(name+' '+arguments,0x8000,strict=True)
+            assert actual==resident_identification(name),(name,arguments,actual);count+=1
     for tail in ['', 'A0:*.COM', '/VERIFY', '/VERBOSE','X/VER','/VER=X',' /B A:FOO B: ']:
         c=runner(image,0x8000);data=tail.encode();c.mem[0x6000:0x6000+len(data)]=data
         c.hl=0x6000;c.bc=len(data)*256+77;c.de=0x4567

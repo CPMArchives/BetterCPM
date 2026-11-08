@@ -99,6 +99,11 @@ def text(name,identity=None,resident=False):
 def source(name,label,identity=None):
  return label+':\n'+''.join("        DB '"+line.replace("'","''")+"',13,10\n" if line else '        DB 13,10\n' for line in text(name,identity).splitlines())+"        DB '$'\n"
 
+def resident_identification(name):
+ """Standard identification using the resident command's own title and purpose."""
+ purpose=RESIDENT_SCREENS[name][0]
+ return (banner(name,True)+'\r\n  - - -\r\n | BetterCP/M Utilities\r\n | '+purpose+'\r\n')
+
 def resident_parts():
  """Inline variable parts; share framing without relocated pointer tables."""
  def literal(value):
