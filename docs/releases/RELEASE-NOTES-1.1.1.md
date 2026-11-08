@@ -51,3 +51,19 @@ activation leaves screen cells intact, the return newline scrolls to a blank
 bottom row, and explicit home remains available. cpmsim module budgets remain
 1,247 bytes for ADM3A/VT52 and 1,759 bytes for ANSI, including caller allowances.
 Final release-media qualification remains pending.
+
+## STAT operand case handling
+
+STAT now folds operand letters to uppercase before parsing. The CCP preserves
+the original command-tail case, and 1.1 STAT incorrectly rejected lowercase
+drive operands such as `STAT b:` as invalid filespecs. Lowercase and mixed-case
+drive/user prefixes, filenames, attributes, device names and keywords now use
+the same parser behavior as uppercase operands. Help/version and invalid-option
+query paths retain their existing command-tail preservation.
+
+Bare STAT continues to report logged-in drives. Explicit `STAT B:` selects
+and logs in B before querying its free space, then restores the caller's drive
+and user. Regression checks execute the assembled COM with a recording BDOS
+for lowercase and uppercase drive/user, filename and keyword operands, context
+restoration, invalid-option isolation and query precedence. Existing filespec
+parser checks pass.

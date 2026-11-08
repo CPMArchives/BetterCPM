@@ -3686,6 +3686,11 @@ STAT target:
 
 Here `d:` means a drive selection. Conventional operands also accept numeric user selectors such as `5:` and `C3:`. Temporary selections are restored before STAT returns. The alternatives inside square brackets on the filespec line are optional file options; type just the option you need, without those brackets or vertical bars.
 
+In 1.1.1, STAT operands are case-insensitive, including drive letters: `STAT b:`
+and `STAT B:` are equivalent. For 1.1, use uppercase drive letters. Bare STAT
+lists logged-in drives; a drive-only operand queries that drive directly.
+
+
 | Command | Information or action |
 |---|---|
 | `STAT` | Read/write status and free space for logged drives |
