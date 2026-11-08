@@ -9975,10 +9975,10 @@
     },
     "utility:TED|z80pack|default|cross": {
       "assigned_identity": {
-        "revision": 5,
+        "revision": 6,
         "version": "1.0"
       },
-      "fingerprint": "5756191a7d7c1a0c63d237e55ed29949c7f450c88be3ea94a8b73d58cc2b7bd4",
+      "fingerprint": "164eb7f638debcf94c54e00fc37742fb71aa8f0e8fb8ff124a5b26d20ed94978",
       "inputs": {
         "component": "utility:TED",
         "configuration": {
@@ -10017,7 +10017,7 @@
           "src/utilities/ted/errors.inc": "21e3ba74c18717de438340e709e621447c1493a506bcdd533609029576f5ff82",
           "src/utilities/ted/fcb.inc": "0353dba9411d86f7b115389546df215994e2a6bedd6b519837fdb432c7c82042",
           "src/utilities/ted/fileio.mac": "c6b71b45e8731ff37a8a7f25f803923c40e952895060f9b27ab55ba8ffb421ce",
-          "src/utilities/ted/frontend.mac": "49435b01827a03535f70aeb02adfeaf42c64c44625546c25d30b1769d07dba5d",
+          "src/utilities/ted/frontend.mac": "a6fcc299ee6b79f0389d5cc099581024d7eee77db551605fb85316b261044ee7",
           "src/utilities/ted/inline.mac": "f2ba49f847c42edaffe6b950e620be7f2ffeccd4b22f3fca7623b2df8d86d293",
           "src/utilities/ted/lines.mac": "edc7ceb6cd709e72076ead33f5ca9de9ce662a68a270ed4fbaa156687605b681",
           "src/utilities/ted/main.mac": "a0a2603f027d97bb5c00b28f4496a3f418ecfbafa214afd0c5add7d83b70ea86",
@@ -10068,8 +10068,8 @@
           "tools/component_inputs.py": "f55a82990c0322910d952208177c869df7977eaf19b62a81f61098e6e7277312",
           "tools/component_registry.py": "2d8710a8e72edcfb1e429df66a1690ea5c0a1aa6be375aa77a3615c36fdb5962",
           "tools/shared_ui.py": "6076bd42926e84550bee8a3fec8162adfabf60b67f9e41c10525dd1cdec79d5c",
-          "tools/utility_help.py": "025462fe1cffa59a5dc9ea5ec7e668ab39e94a03ed61c56b06361ff104a8729e",
-          "tools/utility_versions.py": "08521a1a15e9221964b556a252a2394f38ae58dc7a0a5a8b2150ff52ea652aa5"
+          "tools/utility_help.py": "e4accbc19de733a3f11b0a799f77a9657bcdad87c129e2b80985bab156add0de",
+          "tools/utility_versions.py": "e4c646ad4ed2c7e94c5b1cc2a8ca418c321e2878fac4024d96dea86410359a41"
         },
         "identity_fields": {
           "api_version": null,
