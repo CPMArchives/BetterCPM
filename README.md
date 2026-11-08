@@ -156,13 +156,13 @@ Follow the [Model II installation guide](docs/platform/MODEL2-INSTALLATION.md). 
 
 ### Patched z80pack / cpmsim
 
-Follow the [cpmsim installation guide](docs/platform/CPMSIM-INSTALLATION.md), including host prerequisites. Stock upstream cpmsim is insufficient. The System ZIP includes everything needed to reconstruct the pinned runtime offline; no Utilities or full Source download is needed to boot it.
+Follow the [cpmsim installation guide](docs/platform/CPMSIM-INSTALLATION.md), including host prerequisites. Stock upstream cpmsim is insufficient. Use an existing qualified patched runtime or reconstruct it from the separate Source download. No Utilities download is needed to boot the System image.
 
-From the extracted System package's `host/BetterCPM/` directory, build into a new output directory:
+From the Source download's `source/BetterCPM/` directory, build into a new output directory:
 
 ```sh
 python3 tools/build_qualified_cpmsim.py \
-  --source dependencies/z80pack-cpmsim-91fd28eb04e675c2127df88ed3f40675e15282e2.tar \
+  --source ../dependencies/z80pack-cpmsim-91fd28eb04e675c2127df88ed3f40675e15282e2.tar \
   --output build/cpmsim-runtime --profile runtime
 ```
 
