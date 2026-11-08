@@ -226,6 +226,14 @@ is supplied through loadable CPXs rather than added to the core CCP.
 
 ### Enhanced command automation and scripting
 
+- [ ] **Flow-control subsystem: tentative BetterCP/M 1.3 candidate.** Record
+  scope and syntax as investigation, not approved design or promised delivery.
+  Follow the [roadmap entry](docs/releases/1.0-ROADMAP.md#later-1x-candidates)
+  and [investigation agenda](specifications/BATCH-FLOW-CONTROL.md#tentative-13-flow-control-investigation).
+  Extend the existing scripting investigation below; preserve loadable CPX
+  flow logic, shipped SUBMIT/XSUB compatibility and BATCHIO input behavior.
+  Keep MCL independently useful for sequential commands without scripting.
+
 - [ ] **Post-1.0 investigation.** Compare Z-System and ZEX automation with the
   [proposed SUBMIT.CPX and FLOW.CPX design](specifications/BATCH-FLOW-CONTROL.md#modules).
   Evaluate conditional execution (including `IF...THEN` alongside the proposed
