@@ -45,7 +45,7 @@ SCREENS={
  'RESPACK':('Resident Image Packaging','RESPACK',[]),
  'RLMBUILD':('Relocation Map Build','RLMBUILD',[]),
  'PATH':('Numeric Command Search Path','PATH [location ... | /DEFAULT]',[
- ('location', 'Use . for the current DU or a fixed DU such as B3:.'),
+ ('location', 'Current DU is always first; add DUs such as B3: or .'),
  ('/DEFAULT','Restore . A0:.')]),
  'WARM':('Warm Boot','WARM',[]),
  'DDT':('Debugger','DDT [file]',[]),

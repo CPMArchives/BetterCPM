@@ -51,7 +51,7 @@ OPEN:   LD HL,(07504H)
 current = (0, 7)
 default = [current, (1, 0)]
 custom = [(2, 3), (0, 0), (3, 7), (1, 0), (2, 1), (4, 31)]
-resolved = [(2, 3), current, (1, 0), (2, 1), (4, 31)]
+resolved = [current, (2, 3), (1, 0), (2, 1), (4, 31)]
 
 for command, entries, hit, expected in [
     ('HELLO', [], 1, default[:1]), ('HELLO', [], 2, default),
@@ -61,7 +61,12 @@ for command, entries, hit, expected in [
     ('FOO', custom, 1, resolved[:1]), ('FOO', custom, 5, resolved),
     ('FOO', custom, 0, resolved), ('FOO', [(3, 7), (0, 0)], 0, [current]),
     ('FOO', [(0, 0), (3, 7)], 0, [current]),
-    ('FOO', [(2, 3), (1, 0)], 0, [(2, 3), (1, 0)]),
+    ('FOO', [(2, 3), (1, 0)], 0, [current, (2, 3), (1, 0)]),
+    ('PATH', [(4, 0)], 1, [current]),
+    ('FOO', [(4, 0)], 0, [current, (4, 0)]),
+    (':FOO', [(4, 0)], 1, [current]),
+    ('.FOO', [(4, 0)], 0, [current, (4, 0)]),
+    ('FOO', [(2, 3), (1, 0)], 2, [current, (2, 3)]),
 ]:
     m = cpu()
     install_bdos(m, provider)

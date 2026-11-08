@@ -2987,10 +2987,11 @@ CCP_LOPEN:
         CALL    BDOS
         INC     A
         LD      (CCP_LDRV),A            ; caller drive in FCB numbering
-        XOR     A
-        LD      (CCP_LUTRG),A           ; caller DU not yet searched
-        INC     A
+        LD      A,1
+        LD      (CCP_LUTRG),A           ; caller DU is always searched first
         LD      (CCP_LUACT),A           ; arm before any temporary selection
+        CALL    CCP_LOP                ; unqualified FCB uses the caller DU
+        RET     NZ                     ; local match wins, including load failures
         LD      HL,LY_PATH
         LD      B,(HL)
         INC     HL

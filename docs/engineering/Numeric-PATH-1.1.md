@@ -6,11 +6,14 @@
 |---|---|
 | `PATH` | Display the active list. |
 | `PATH . B0: B1: C0: A0:` | Replace the entire list in that order. |
-| `PATH B3: A0:` | Search B3 first, then A0. The caller DU is included only if one of those entries resolves to it. |
+| `PATH B3: A0:` | Search the current DU first, then B3 and A0, skipping entries matching the current DU. |
 | `A0:PATH /DEFAULT` | Reach the management utility directly and restore `. A0:`. |
 | `PATH /H`, `PATH /HELP`, `PATH /VER` | Show the command syntax or component identification. |
 
-A single dot follows the logged drive **and** user. Fixed entries take a drive
+The current drive/user is always searched first, independently of the list.
+PATH displays and replaces only the configured additional locations. A single
+dot follows the logged drive **and** user; it remains accepted for compatibility
+and does not cause another local search. Fixed entries take a drive
 A–P, a decimal user 0–31 and a colon. Input is case-insensitive. A leading zero
 in a two-digit user is accepted and disappears on display. Whitespace between
 entries is a space. The editor validates the complete replacement before
@@ -30,7 +33,7 @@ line gets the same diagnostic and leaves the preceding policy in force.
 Navigation, core commands and CPXs run before unqualified transient search.
 A force prefix (`:FOO` or `.FOO`) skips those stages as in 1.0. `B:FOO`,
 `3:FOO` and `B3:FOO` use exact addressing, including after a force prefix.
-Missing implicit candidates advance in order. A resolved duplicate of the
+After a local miss, missing implicit candidates advance in list order. A resolved duplicate of the
 caller DU costs no second Open. Exhaustion prints the usual `?`.
 A failed Open on a fixed FCB drive uses the existing preserved-context login
 adapter to distinguish an unavailable location. `DRIVE UNAVAILABLE` stops
@@ -149,3 +152,23 @@ tree and the PATH branch. The old system-console stub stops on an unmodeled IN
 instruction, and NOAH's help-layout test expects the former help footer. The
 historical CCP acquisition script also requires local September disk fixtures.
 The public-prompt, loader and batch results above were obtained independently.
+
+## Current-DU precedence correction — 8 November 2026
+
+The current DU is now an unconditional first candidate, even when the list
+contains only another DU such as `D0:`. This supersedes the earlier policy
+that let a fixed entry precede or exclude the caller. A local match wins even
+if loading it fails; explicit qualifiers still search exactly one location.
+Existing dot entries and fixed entries resolving to the caller are skipped
+after the local attempt. The list encoding, default and six-entry limit are
+unchanged. The historical qualification and timing observations above describe
+the earlier implementation; they do not establish the revised lookup order.
+
+The revised assembled recording-provider suite passes local-only hits with a
+D0-only list, local precedence over fixed-first lists, local misses followed
+by ordered fallback, both force prefixes, exact qualifiers, duplicate caller
+entries and caller restoration. The CCP parsing/dispatch and protected-loader
+EOF/error suites also pass. The CCP grows by four bytes to 5,603 bytes within
+the unchanged 5,632-byte allocation; the legacy carrier is 6,627 bytes.
+Public-prompt harness expectations are updated; new release media still need
+their normal qualification.

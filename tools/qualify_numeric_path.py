@@ -142,12 +142,17 @@ FAIL:   DB 'INVOCATION FAILED',13,10,'$'
     check('PATH /HELP', b'Usage: PATH')
     check('PATH /VER', b'Numeric Command Search Path')
     check('PATH', b'PATH: . A0:')
+    check('PATH D0:', b'PATH: D0:')
+    check('PATH', b'PATH: D0:')  # local PATH.COM remains reachable
+    check('WHICH', b'A0 IMAGE')
     check('PATH B3: . A0:', b'PATH: B3: . A0:')
-    check('WHICH', b'B3 IMAGE')
+    check('WHICH', b'A0 IMAGE')
     check('A0:WHICH', b'A0 IMAGE')
+    check('B3:WHICH', b'B3 IMAGE')
     check('B3:WHI?H', b'B3 IMAGE')  # preserve the existing qualified FCB Open
     check('C2:WHICH', b'\n?')
     check('C4:', b'C4>_ ', b'C4>_ ')
+    check('WHICH', b'B3 IMAGE', b'C4>_ ')
     check('CALLER One.txt tWo.Dat', b'INVOCATION OK', b'C4>_ ')
     check('P:WHICH', b'\n?', b'C4>_ ')
     check('A0:', b'A0>_ ')
@@ -156,14 +161,16 @@ FAIL:   DB 'INVOCATION FAILED',13,10,'$'
     check('PATH TOOLS:', b'Invalid PATH')
     check('PATH . A0: A1: B1: B2: B3: B4:', b'up to six')
     check('PATH', b'PATH: B3: . A0:')
-    check('EMPTY', b'EMPTY PROGRAM')
-    check('BIG', b'FILE WILL NOT FIT')
-    check('FIT', b'FULL TPA EXECUTED')
+    check('C4:', b'C4>_ ', b'C4>_ ')
+    check('EMPTY', b'EMPTY PROGRAM', b'C4>_ ')
+    check('BIG', b'FILE WILL NOT FIT', b'C4>_ ')
+    check('FIT', b'FULL TPA EXECUTED', b'C4>_ ')
+    check('A0:', b'A0>_ ')
     check('PATH', b'PATH: B3: . A0:')
     check('DIR', b'PATH     COM')
     check(':DIR', b'TRANSIENT DIR')
     check('PATH P31: A0:', b'PATH: P31: A0:')
-    check('WHICH', b'DRIVE UNAVAILABLE')
+    check('ABSENT', b'DRIVE UNAVAILABLE')
     check('A0:PATH /DEFAULT', b'PATH: . A0:')
     check('B3:', b'B3>_ ', b'B3>_ ')
     check('WHICH', b'B3 IMAGE', b'B3>_ ')
@@ -171,7 +178,7 @@ FAIL:   DB 'INVOCATION FAILED',13,10,'$'
     check('WHICH', b'A0 IMAGE', b'A2>_ ')
     check('A0:', b'A0>_ ')
     commands += [(b'SUBMIT PTEST\r', b'INPUT OK', 60),
-                 (b'', b'B3 IMAGE', 30), (b'', b'A0>_ ', 30)]
+                 (b'', b'A0 IMAGE', 30), (b'', b'A0>_ ', 30)]
     log = session(simulator, disks, commands, work/'prompt.log')
     # Read the emitted help rows so a formatter change cannot move only one group.
     help_rows = log.split(b'   Options:\r\n', 1)[1].splitlines()
