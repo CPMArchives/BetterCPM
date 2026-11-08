@@ -72,7 +72,7 @@ status; all current testing is emulator-based.
 
 ## Current downloads — 1.1
 
-Choose matching System and Utilities packages. Each Utilities ZIP includes primary and NOAH companion media and source companions.
+Choose matching System and Utilities packages. Each Utilities ZIP includes primary and NOAH companion media, instructions and license notices. Corresponding source is in the separate Source download.
 
 | Platform | System | Utilities |
 | --- | --- | --- |

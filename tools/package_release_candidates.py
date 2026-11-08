@@ -97,7 +97,7 @@ def source_files():
     return selected_source_files(ROOT)
 
 
-def utilities_members(platform, sums, images, reports, inventory):
+def utilities_members(platform, sums, images, reports, inventory, include_sources=True):
     """Keep matching disk images/receipts and the complete shared source kit."""
     target={'cpmsim':'z80pack','Model4':'trs80gp','Model2':'trs80m2'}[platform]
     selected={name for name,owner in images.items() if owner==platform}
@@ -112,12 +112,28 @@ def utilities_members(platform, sums, images, reports, inventory):
             destination=('images/'+platform+'/'+name if name in images
                          else 'evidence/'+name)
         else:
+            if not include_sources:
+                continue
             destination='source/'+name
         files[destination]=data
     proof={**inventory,'platforms':{target:inventory['platforms'][target]}}
     files['evidence/independent-inventory.json']=encoded(proof)
     return files,{'images':{name:reports[name] for name in sorted(selected)},
                   'independent_inventory':proof}
+
+
+def lean_utilities(files, evidence, source_commit):
+    """Keep operator material; source and full build evidence live in Source."""
+    files={n:b for n,b in files.items() if n.startswith(('images/','licenses/','Provenance/'))
+           or n in ('README.txt','THIRD-PARTY-NOTICES.txt','SOURCE-IDENTITY.json',
+                    'docs/LICENSING.md','docs/manuals/Command-and-Utilities-Reference.md')}
+    offer={'filename':'BetterCPM-1.1-Source.zip','source_commit':source_commit,
+           'url':'https://github.com/CPMArchives/BetterCPM/releases/download/v1.1/BetterCPM-1.1-Source.zip',
+           'contents':'Complete matching source, build scripts, notices and native source companions.'}
+    files['SOURCE-DOWNLOAD.json']=encoded(offer)
+    files['THIRD-PARTY-NOTICES.txt']+=('\n\nCorresponding source and native source companions are supplied in the separate '+offer['filename']+' download at '+offer['url']+'. Keep the applicable license and attribution notices.\n').encode()
+    return files,{'images':{n:{'sha256':r['sha256']} for n,r in evidence['images'].items()},
+                  'corresponding_source':offer}
 
 
 def package_license_files(tracked, package_id, version="1.0"):
@@ -139,6 +155,10 @@ def package_license_files(tracked, package_id, version="1.0"):
         sections.append(row['work'] + '\n' + row['notice'])
     files = project_license_files(tracked)
     files['THIRD-PARTY-NOTICES.txt'] = ('\n\n'.join(sections) + '\n').encode('utf-8')
+    if version=='1.1' and package_id.startswith('utilities-'):
+        files['THIRD-PARTY-NOTICES.txt']=files['THIRD-PARTY-NOTICES.txt'].replace(
+            b'texts, provenance and corresponding-source companions with each download.',
+            b'texts and provenance with each download. Matching corresponding source is available in the separate Source download from the same release.')
     return files
 
 
@@ -293,6 +313,8 @@ def assemble(args):
             files['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']=tracked['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']
             files['docs/engineering/BCPM780-Installation-Qualification.md']=tracked['docs/engineering/BCPM780-Installation-Qualification.md']
             files['docs/engineering/Model 4 Release Checklist.md']=tracked['docs/engineering/Model 4 Release Checklist.md']
+            if version=='1.1':
+                files,evidence=lean_utilities(files,evidence,commit)
             files['docs/releases/RELEASE-NOTES-'+version+'.md']=tracked['docs/releases/RELEASE-NOTES-'+version+'.md']
             if version=='1.1':
                 files['docs/releases/1.1-VER-DISPOSITION.md']=tracked['docs/releases/1.1-VER-DISPOSITION.md']
@@ -311,7 +333,7 @@ def assemble(args):
                 evidence['emulator']=runtime
         elif id in ('utilities-cpmsim','utilities-model4','utilities-model2'):
             selected,evidence=utilities_members(asset['platforms'][0],sums,images,
-                                                util_reports,inventory)
+                                                util_reports,inventory,include_sources=version!='1.1')
             files.update(selected)
             files['docs/manuals/Command-and-Utilities-Reference.md']=tracked['docs/manuals/Command-and-Utilities-Reference.md']
             files['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']=tracked['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']
