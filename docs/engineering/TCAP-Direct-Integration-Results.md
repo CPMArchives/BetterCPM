@@ -2,9 +2,12 @@
 
 Status: engineering candidate qualified, 8 November 2026. TCAP 2.0 is implemented
 in one unloadable personality/renderer module on cpmsim, Model 4 and Model II.
-Utility migrations, further personalities, HELP delivery and release assignment
-remain deferred. This report qualifies the compact replacement, not the retired
-transaction engine or the intervening 1.x template implementation.
+**Later on 8 November, the maintainer assigned TCAP 2.0 to BetterCP/M 1.1**
+as part of its frozen feature set. This report remains evidence for the
+engineering candidate, not acceptance of the final 1.1 distribution bytes.
+Utility migrations, further personalities and HELP delivery remain deferred.
+This report qualifies the compact replacement, not the retired transaction
+engine or the intervening 1.x template implementation.
 
 ## Full display-path cost
 
@@ -74,7 +77,9 @@ SYSTEM.SYS and RSX workers, ADM3A/VT52/ANSI modules, a qualified DEMO consumer,
 startup dependencies, accounting manifests and qualification receipts. From a
 booted image, use `RSX LOAD ANSI`, `DEMO 1`, press `1` at READY, and
 `RSX UNLOAD ANSI`. Select ADM3A or VT52 in the same way. No separate screen-backend
-load is required. The package is an engineering candidate, not a release assignment.
+load is required. The recorded package was an engineering candidate. Its
+qualification predates the separate 1.1 release assignment and must be checked
+again against the final distribution media.
 
 The public interface is the [TCAP 2.0 direct-operation contract](TCAP-Direct-ABI.md).
 It is intentionally incompatible with the unreleased template ABI and does not
