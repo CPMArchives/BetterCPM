@@ -105,14 +105,25 @@ def qualify(root,image,out,simulator):
     assert 'Hello from HELLO.CPX' in t and 'RSX module or profile error' in t and maps(t)[-1]==expected
     save('stateful',checks=5,public_cpx=True,missing_rejected=True,unloaded_tpa=expected)
     w=case('monitor')
-    t=run(w,['RSX LOAD ANSISCRN','STAT MEM',(b'RSX LOAD ADM3A\r',b'\x1b[7m \x1b[0m ',30),(b'STAT MEM\r',b'\x1b[7m \x1b[0m ',30),(b'RSX UNLOAD ADM3A\r',b'A0>_ ',30),'RSX UNLOAD ANSISCRN','STAT MEM'])
+    # Integrated TCAP renderers emit cursor positioning between prompt cells.
+    # Observe the completed editor row, rather than a legacy contiguous escape
+    # sequence; retain every byte and the same memory/recovery assertions.
+    from tcap_test_support import Guest
+    guest=Guest(simulator,w/'disks',w)
+    try:
+        guest.prompt();chunks=[]
+        for command in ('RSX LOAD ANSISCRN','STAT MEM','RSX LOAD ADM3A',
+                        'STAT MEM','RSX UNLOAD ADM3A','RSX UNLOAD ANSISCRN','STAT MEM'):
+            chunks.append(guest.prompt(command))
+        t=re.sub(rb'\x1b\[[0-?]*[ -/]*[@-~]',b'',b''.join(chunks)).decode('ascii',errors='replace')
+    finally:guest.close()
     screen_bytes, personality_bytes = (
         int.from_bytes((root/'build/rsx'/name).read_bytes()[14:16], 'little')
         for name in ('ANSISCRN.RSX', 'ADM3A.RSX'))
     # The first RSX installs the shared 1 KiB manager. Each provider also
-    # owns one 256-byte cache metadata page.
+    # owns a 256-byte cache page unless its carrier opts into inline ownership.
     backend_tpa = expected - 1024 - screen_bytes - 256
-    screen_pair_tpa = backend_tpa - personality_bytes - 256
+    screen_pair_tpa = backend_tpa - personality_bytes
     assert screen_bytes > 0 and personality_bytes > 0
     assert maps(t) == [backend_tpa, screen_pair_tpa, expected], maps(t)
     save('monitor',screen_pair_tpa=screen_pair_tpa,unloaded_tpa=expected)

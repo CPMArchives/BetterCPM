@@ -57,7 +57,10 @@ def main():
         fmt=select_fdf(ROOT/'metadata/DISK.FDF','Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)' if native else DEFAULT_FORMAT)
         path=a.images/('BetterCPM-Utilities-'+target+('-80T-DS-800K.dmk' if native else '-332K.dsk'));image=path.read_bytes();raw=dmk_to_raw(image,fmt) if native else image
         if native:assert raw_to_dmk(raw,fmt)==image
-        r=inspect(raw,fmt,files);r.update(image=path.name,image_sha256=sha(image),raw_bytes=len(raw),files_sha256={n:sha(b) for n,b in files.items()});result['platforms'][target]=r
+        expected_primary=dict(files)
+        if target=='z80pack':
+            expected_primary['BATCHIO.RSX']=(a.artifacts/'build/cpmsim-fullram/rsx/BATCHIO.RSX').read_bytes()
+        r=inspect(raw,fmt,expected_primary);r.update(image=path.name,image_sha256=sha(image),raw_bytes=len(raw),files_sha256={n:sha(b) for n,b in expected_primary.items()});result['platforms'][target]=r
         from noah_distribution import COMPONENTS as NOAH_FILES, image_name
         path=a.images/image_name(target);image=path.read_bytes()
         raw=dmk_to_raw(image,fmt) if native else image
@@ -80,7 +83,8 @@ def main():
             raw=raw[:boot]+bytes(fmt.raw_track_bytes-boot)+raw[boot:]
             expected={n:(a.model2_artifacts/path).read_bytes() for n,path in components.items()}
             if label=='Utilities':
-                expected['BATCHIO.RSX']=(a.model2_artifacts/'build/rsx/BATCHIO.RSX').read_bytes()
+                expected['BATCHIO.RSX']=(a.model2_artifacts/'build/model2-fullram/rsx/BATCHIO.RSX').read_bytes()
+                expected['SUBMIT.COM']=(a.model2_artifacts/'build/utilities/SUBMIT.COM').read_bytes()
             row=inspect(raw,fmt,expected)
             row.update(image=name,image_sha256=sha(image),files_sha256={n:sha(b) for n,b in expected.items()})
             rows.append(row)
