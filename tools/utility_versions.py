@@ -46,7 +46,7 @@ def expand_versions(text):
         old = 'BetterCP/M development (after core 1.0)'
         # Package 1.1 selects its core explicitly. Component development
         # markers remain independent; the package heading must not claim 1.0.
-        heading = ('BetterCP/M '+version if version=='1.1' else
+        heading = ('BetterCP/M '+version if re.fullmatch(r'1\.1(?:\.[0-9]+)?',version) else
                    old if display_development('utility:RCP') else 'BetterCP/M '+version)
         if len(heading) > len(old):
             raise ValueError('distribution heading exceeds its fixed field')
