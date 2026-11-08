@@ -56,9 +56,14 @@ records the accepted command UI, DIR and XSUB limitations.
   SCRN and SCX interfaces. Use the [1.1 engineering specification](docs/engineering/1.1-ENGINEERING-SPECIFICATION.md#portable-terminal-capabilities-tcap)
   for sequencing and the [terminal design agenda](docs/engineering/POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md#early-11-design-work)
   for the three consumer cases.
-  The [public ABI/admission design](docs/engineering/TCAP-Public-ABI.md) is complete;
-  this closes the design task only. Public implementation, measured qualification,
-  utility migrations, HELP delivery and release assignment remain deferred.
+  The original [TCAP 1.0 design](docs/engineering/TCAP-Public-ABI.md)
+  was abandoned without release. The [TCAP 2.0 direct interface](docs/engineering/TCAP-Direct-ABI.md)
+  and its [cross-platform engineering qualification](docs/engineering/TCAP-Direct-Integration-Results.md)
+  superseded it in PR #664. The maintainer explicitly included TCAP 2.0
+  in the [frozen 1.1 release scope](docs/releases/1.1-SCOPE-AND-ACCEPTANCE.md)
+  on 8 November 2026. Final release-media installation, hashes, and
+  acceptance remain pending. TYPE/TED migration, HELP delivery and additional
+  personalities remain deferred.
 
 ## Immediate priorities
 

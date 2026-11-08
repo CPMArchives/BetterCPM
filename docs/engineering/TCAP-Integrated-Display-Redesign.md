@@ -1,8 +1,10 @@
 # Integrated unloadable display path
 
-Engineering integration candidate, 8 November 2026. Utility migrations, further
-personalities, HELP delivery and release assignment remain deferred. This is the
-follow-up to the [full Model 4 display comparison](TCAP-Model4-Display-Cost-Comparison.md).
+Engineering integration candidate, 8 November 2026, subsequently
+**assigned to BetterCP/M 1.1** by explicit maintainer decision. Exact release-media
+qualification remains outstanding. Utility migrations, further personalities
+and HELP delivery remain deferred. This is the follow-up to the
+[full Model 4 display comparison](TCAP-Model4-Display-Cost-Comparison.md).
 
 ## Budget and architecture
 
@@ -122,7 +124,9 @@ returns, adding/removing a second RSX, repeated unload/reload, real SYSGEN
 installation, installed cold boot and exact original maximum COM loads. Each
 receipt identifies the actual modules and core. Passing an older 1.x campaign
 does not qualify a new 2.0 module. The generated engineering package keeps the
-matching system/cache workers and modules together; it is not a release assignment.
+matching system/cache workers and modules together; the archived candidate
+receipt predates release assignment and does not establish acceptance of final
+1.1 package bytes.
 
 Builders and shared guest fixtures are `tools/build_integrated_display.py` and
 `tools/integrated_display_qualification.py`. Full runners are
