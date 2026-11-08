@@ -1,14 +1,8 @@
-# BetterCP/M 1.1 — release notes (draft; not published)
+# BetterCP/M 1.1 — release notes
 
-**Maintainer clarification, 8 November 2026:** TYPE, TED and HELP were illustrative
-consumers, not an exhaustive set of utilities needing TCAP assessment or changes.
-The [full utility impact audit](../engineering/TCAP-Utility-Impact-Audit.md) covers all 52 registered utilities and
-records a confirmed TED integration regression. Earlier three-name lists must
-not be used to infer migration policy. The shared paging library is future exploration; compatibility checks apply
-to every affected utility in 1.1. No exhaustive migration set is inferred.
-Publication remains held.
-
-**Release state: preparation only.** These notes describe the locked feature set, not a qualified binary release. The final source revision, package hashes, VER behavior and artifact acceptance must be filled in from the exact published candidates before publication. Do not attach this draft to an unverified release.
+Qualification, exact source identity and artifact hashes are recorded in the
+release index, RELEASE.json and acceptance evidence delivered with qualified
+packages. Candidate archives remain unqualified until that acceptance passes.
 
 BetterCP/M 1.1 builds on the released 1.0.1 line while preserving the CP/M 2.2 programming model, the shared system architecture and separately versioned utilities and subsystems.
 
@@ -34,6 +28,14 @@ BetterCP/M 1.1 adds the 64 KiB Radio Shack/Tandy TRS-80 Model II as a maintained
 
 ## Compatibility and delivery boundaries
 
+The utility impact audit covers the existing utility inventory; earlier TYPE,
+TED and HELP examples do not define an exhaustive consumer set. Existing
+SCRN/SCX clients retain their documented interfaces. TED accepts MCON 1.0
+while retaining its SCRN 1.1 checks, correcting its demonstrated admission
+regression with the integrated ANSI module. This is a compatibility correction,
+not a new editor interface or a TCAP migration.
+
+
 Use System and Utilities disks built for the **same 1.1 target and component identities**; private carriers, system packages and disk layouts are not interchangeable with 1.0.x. Current published 1.0 and 1.0.1 archives are not modified by this release.
 
 The Model II commitment does **not** cover physical hardware, Models 12/16/16B, hard drives, double-sided formats, floppy formatting, or real serial/printer hardware. The Model 4 memory exception remains. The patched cpmsim binary is required; the stock upstream emulator is not an equivalent qualified runtime.
@@ -42,10 +44,25 @@ HELP.COM and the HELP.LBR corpus are not shipped. Named-directory search, multip
 
 Three CP/M 2.2 Model II acceptance-card differences are documented: BetterCP/M retains original command-tail case (card 0020), and configured numeric PATH/explicit DU lookup differs from strict single-drive/current-user assumptions (cards 0493 and 0494). Those are known, bounded divergences rather than claims of strictly identical DRI behavior.
 
-## Pending final-release verification
+## Qualification record and known limitation
 
-The open resident/transient VER command query discrepancy (#612) requires a final candidate check and release disposition. No fresh **1.1 release-media** success is claimed here for it or for the promoted TCAP 2.0 modules: their earlier engineering qualification is recorded, but exact delivered package identities need independent acceptance. Final System/Utilities hashes, native install/conformance receipts, offline reconstruction, documentation reconciliation and release checksum archive still need sign-off under the [publication checklist](1.1-PUBLICATION-CHECKLIST.md).
+The [exact-image VER disposition](1.1-VER-DISPOSITION.md) records all nine resident/transient queries on all three targets. Resident `/H` and `/HELP` work, but resident `/VER` remains a one-line identity rather than the shared multi-line block; issue #612 remains open as a documented UI limitation. This bounded observation does not certify the full release. The promoted TCAP 2.0 modules and every final delivered image must pass their remaining exact-artifact acceptance gates. The release acceptance ledger must identify final System/Utilities hashes, native install/conformance receipts, offline reconstruction, documentation reconciliation and archive checksums under the [publication checklist](1.1-PUBLICATION-CHECKLIST.md). Engineering evidence applies only to its recorded bytes.
 
 ## Packages
 
-**Proposed:** System packages for cpmsim, Model 4 and Model II; matching Utilities packages for those three platforms (Model II primary and companion images), with the qualified TCAP 2.0 personalities and interface material included in the applicable release media; a matching Source package; and four-manual Documentation. Definitive download filenames, verified SHA-256 sums and source revision belong to the final release index, not this draft.
+The eight independent downloads are:
+
+- `BetterCPM-1.1-System-cpmsim.zip`
+- `BetterCPM-1.1-System-Model4.zip`
+- `BetterCPM-Utilities-1.1-cpmsim.zip`
+- `BetterCPM-Utilities-1.1-Model4.zip`
+- `BetterCPM-1.1-System-Model2.zip`
+- `BetterCPM-Utilities-1.1-Model2.zip`
+- `BetterCPM-1.1-Source.zip`
+- `BetterCPM-1.1-Documentation.zip`
+
+Each platform needs its matching System and Utilities packages. Utilities
+packages include primary and NOAH companion images. Source includes pinned
+offline runtime dependencies; Documentation contains the four maintained
+Markdown manuals and supporting references. PDF and DOCX editions are not
+included. Verify the release index and SHA-256 sums before use.

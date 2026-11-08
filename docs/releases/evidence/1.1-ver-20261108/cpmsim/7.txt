@@ -1,0 +1,24 @@
+ |   Usage: VER [/BANNER]
+
+   Options:
+     /H /HELP       Display this help.
+     /VER           Display utility identification.
+
+A0>:VER /HELP
+VER 1.0 (013-dev)
+  - - -
+ | Version Information
+ |
+ |   Usage: VER [/BANNER]
+
+   Options:
+     /H /HELP       Display this help.
+     /VER           Display utility identification.
+
+A0>:VER /VER
+VER 1.0 (013-dev)
+  - - -
+ | BetterCP/M Utilities
+ | System Version Information
+
+A0>_

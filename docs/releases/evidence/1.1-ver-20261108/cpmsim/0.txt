@@ -1,0 +1,24 @@
+
+CPU speed is unlimited, CPU executes undocumented instructions
+
+Booting...
+
+
+A0>:VER /BANNER
+
+ - - -                                                  - - -
+|                                                            |
+|                         BetterCP/M                         |
+                         Core OS 1.1
+
+                  CP/M 2.2 Compatible System
+
+                Type TYPE README.TXT for more
+|                                                            |
+ - - -                                                  - - -
+
+A0>VER
+
+BetterCP/M 1.1
+
+A0>_
