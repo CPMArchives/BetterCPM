@@ -18,8 +18,7 @@
     ],
     "page_or_layout_assumptions": [
       "TYPE",
-      "ED",
-      "DIR"
+      "ED"
     ],
     "bounded_line_editor": [
       "DDT"
@@ -42,7 +41,6 @@
       "SYSBUILD",
       "RESPACK",
       "RLMBUILD",
-      "ERA",
       "REN",
       "PIP",
       "SQ",
@@ -51,15 +49,12 @@
       "UNCR",
       "LZH",
       "UNLZH",
-      "NOAH",
       "BYE",
       "MOVE",
       "WARM",
       "DASM",
       "DSYM",
       "DLINK",
-      "COMPARE",
-      "SEARCH",
       "CRCKSUM",
       "MD5SUM",
       "PATCH",
@@ -67,6 +62,13 @@
       "W",
       "MOUNT",
       "PATH"
+    ],
+    "forward_paging_modes": [
+      "COMPARE",
+      "ERA",
+      "SEARCH",
+      "NOAH",
+      "DIR"
     ]
   },
   "utilities": [
@@ -88,10 +90,9 @@
     },
     {
       "utility": "DIR",
-      "classification": "page_or_layout_assumptions",
+      "classification": "forward_paging_modes",
       "evidence": {
-        "src/cpx/rcp.mac": "41c93f466a7d3b6adf6915abfd43c095ca9af09236a24b658dc0aa1309c78798",
-        "src/cpx/dir-select.inc": "f96d11ea80ee8de80b8281842e7edb3d4f31ddaa419ba204646837d50fd6804f"
+        "src/utilities/dir-paging.inc": "fb8110553559bad6581d58b0c09b5cdf53050c0a5b3ce739b85bd4d8eac1e033"
       },
       "migration_release_assignment": "not inferred from illustrative examples"
     },
@@ -222,7 +223,7 @@
     },
     {
       "utility": "ERA",
-      "classification": "ordinary_console_or_host_tools",
+      "classification": "forward_paging_modes",
       "evidence": {
         "src/utilities/era.mac": "1258552338b75e51e0c56aa9c6d9ed6b71ae7acee859d3f9e16ef6f91ef541ec"
       },
@@ -352,9 +353,9 @@
     },
     {
       "utility": "NOAH",
-      "classification": "ordinary_console_or_host_tools",
+      "classification": "forward_paging_modes",
       "evidence": {
-        "src/utilities/noah.mac": "46c46c12736a4471b1d2dadf913d91f5f114a52b86491dd1f9517ca30d4e6ed8"
+        "src/utilities/common/noahwrite.inc": "ddb131d7aff51b6fd3decc31aa8cafe12c72553d8ec1d228727acf4d6299080b"
       },
       "migration_release_assignment": "not inferred from illustrative examples"
     },
@@ -417,24 +418,17 @@
     },
     {
       "utility": "COMPARE",
-      "classification": "ordinary_console_or_host_tools",
+      "classification": "forward_paging_modes",
       "evidence": {
         "src/utilities/compare.mac": "41effffcb01d2c3a30884364de62dca76e3cb12e19b8125a1161b6297aa0fb88",
-        "src/utilities/common/compareparse.inc": "686c6c10e8301485a2d3ae812906355a2f43273fb55dcca22c68f9a8feed2621",
-        "src/utilities/common/compareio.inc": "b7c88700ca4d42f7e5fb3aa579744bc8052708564fff6796b1af3c341667b9e3",
         "src/utilities/common/comparedisplay.inc": "c579948be173533dd0f2e2dbded0e158df29e87f25548c70dd545ba57591dc58"
       },
       "migration_release_assignment": "not inferred from illustrative examples"
     },
     {
       "utility": "SEARCH",
-      "classification": "ordinary_console_or_host_tools",
+      "classification": "forward_paging_modes",
       "evidence": {
-        "src/utilities/search.mac": "3c1e4cc89908b96279a7c84b2cca18a983e3ff9e8374dd9d607bbbc3fa841e38",
-        "src/utilities/search/parser.inc": "e6c76fc4151726a88c7b2aab6168841d6823b15f76fc5f90d9a92eae29cd301e",
-        "src/utilities/search/matcher.inc": "d6638b5f1a456aeeb108a2ba84fbae3ec2728e479337460def8f84f4fbf4bb5d",
-        "src/utilities/search/state.inc": "02100b8d929612b7f9b368b620a10703f2326f569ef96ef74870ed1a5fd3930c",
-        "src/utilities/search/scan.inc": "fc4f88488ab6e661c3f19bb428b8de7520d63ddd09cc4576030adb6825e7f9c7",
         "src/utilities/search/display.inc": "792d8c01acb6cd4d2f9dbf2ca94388ba986991e8aea1f2a53701350392982eeb"
       },
       "migration_release_assignment": "not inferred from illustrative examples"
@@ -526,7 +520,16 @@
   "confirmed_integration_blocker": {
     "utility": "TED",
     "failure": "TED requests MCON 1.2; integrated ANSI advertises MCON 1.0. Interactive startup refuses the new integrated stack even with ANSISCRN loaded.",
-    "probe_transcript_sha256": "bea1a06a103d65ee1d7d9d67c334f2ea7eb1a2a40b358faad114166bd982d416"
+    "probe_transcript_sha256": "bea1a06a103d65ee1d7d9d67c334f2ea7eb1a2a40b358faad114166bd982d416",
+    "correction": "TED minimum MCON request corrected to 1.0; SCRN 1.1 rendering and checks retained. Final paired-media acceptance pending."
   },
-  "release_scope_decision": "pending clarification; do not infer either blanket migration or blanket deferral"
+  "release_scope_decision": "Shared paging library recorded as future exploration; 1.1 compatibility corrections continue across all affected utilities. No exhaustive migration list inferred.",
+  "clarifications": [
+    "TYPE/TED/HELP were examples, not an exhaustive consumer set.",
+    "Functioning without TCAP does not mean a utility cannot benefit from adoption.",
+    "Ordinary forward paging does not need TCAP; bidirectional TYPE paging is the geometry/clear/reposition use case.",
+    "Paging consumers include DUMP and COMPARE; absence of a direct display API dependency is not absence of a potential TCAP benefit."
+  ],
+  "coverage_note": "All registry entries accounted for. Mode assessment expanded beyond direct screen API searches; forward pagers are recorded even though they have no direct SCRN/TCAP dependency.",
+  "paging_library": "No documented general-purpose developer paging library identified; existing implementations are utility-specific."
 }
