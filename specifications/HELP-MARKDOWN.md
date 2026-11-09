@@ -2,8 +2,8 @@
 
 **Design draft for review, 9 November 2026.** A subject is a human-editable
 ASCII Markdown file. The same markup applies to a loose file and to a
-decoded LBR or ARK member. The opening-page rule and the navigation keys below are
-settled. The remaining dialect and interaction details are under review.
+decoded LBR or ARK member. Direct section access by command or cross-file
+link is part of the 1.2 design. The fragment spelling below is proposed.
 See the [system specification](../docs/engineering/HELP-1.2-Specification.md)
 for topic lookup, the utility footer and the bare-`HELP` index and menu rules.
 
@@ -29,6 +29,7 @@ The examples use the [command reference](../docs/manuals/Command-and-Utilities-R
 | Three backticks on a line | Start or end a literal block. Accept an optional `text` tag on the opening fence so examples can be copied from the manuals. Preserve line breaks and spaces. Markup and heading recognition are suspended until the closing fence. |
 | `**text**` | Standard Markdown strong emphasis in prose. On a plain console display the enclosed words. |
 | `[label](COPY.HLP)` | Selectable reference to the logical subject COPY in any supported encoding. From a loose file, use ordinary topic lookup. From an archive member, try that archive first, then ordinary lookup. An archive explicitly selected with `/SOURCE=` supplies all link targets. On a miss, identify the target and leave the originating topic available. |
+| `[PIP selectors](PIP.HLP#selectors)` | Resolve PIP by the same rules as a whole-topic link, then open its `## Selectors` section directly. |
 
 On CP/M media, use ASCII and CR/LF; recognize a text EOF (1Ah) or the
 logical end of the loose file or decoded member. Markdown is interpreted
@@ -71,19 +72,25 @@ The same menu at 40 columns:
 2  Examples
 ```
 
-| Request | Proposed result |
+| Request | Result in the worked subjects |
 | --- | --- |
 | `HELP PIP` | Show the Level 1 title, then the command synopsis, then a menu of all Level 2 headings: **Syntax**, **Selectors**, **Examples**. Omitting the synopsis yields a title-and-menu opening. Section bodies appear upon selection. |
 | `HELP PIP SELECTORS` | Open **Selectors** directly and display **Duplicate names** within it. |
-| `HELP COPY` | Display the topic immediately. Its link to PIP is available without creating an empty section menu. |
+| `HELP COPY` | Display the short topic. Its PIP links lead directly to **Syntax** and **Selectors**. |
 | `HELP` using the sample index | Render the authored index as a normal subject with two selectable links. `HELP PIP` also finds PIP independently of the index. |
 
-Use the complete `##` heading as the direct-section name. Compare the remaining
-command-tail words case-insensitively, treating runs of spaces or tabs as
-one separator. This also permits `## File attributes` to be addressed as
+Use the complete `##` heading as the direct-section name. Compare the
+section operand case-insensitively, treating runs of spaces or tabs as
+one separator. This permits `## File attributes` to be addressed as
 `HELP DIR FILE ATTRIBUTES`. Require section names to be unique after that
 normalization. Selection keys are local to the display. Examples and references
 may use a section's name even after its menu position changes.
+
+For link fragments, the proposed spelling uses lowercase letters and a
+hyphen between words. For example, `[File attributes](DIR.HLP#file-attributes)`
+addresses the same heading as `HELP DIR FILE ATTRIBUTES`. Generate the
+fragment from the complete heading. If the chosen subject lacks the linked
+section, identify the missing section and leave the originating topic available.
 
 ## Navigation keys
 
@@ -126,8 +133,8 @@ unknown geometry still need an explicit pager policy.
 
 ## Choices to review before freezing the format
 
-Direct addressing of a section by name and the role of `###` within the section
-remain under review. Other review points are link selection
+Review fragment spelling for punctuation and headings that would produce
+the same fragment. Other review points are the role of `###`, link selection
 on a plain terminal, return position after following a link, the top level
 for a direct command-line request, behavior at the first and last page,
 long literal lines on a narrow display and the handling of malformed input.

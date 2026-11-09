@@ -185,10 +185,17 @@ first, then ordinary topic lookup on a miss. An explicitly selected archive
 keeps links within that archive. From a loose file, including one opened
 with `/S=`, use ordinary topic lookup for the linked subject.
 
+**Direct section access.** `HELP PIP SELECTORS` opens `## Selectors`
+directly in the selected PIP topic. Match the full Level 2 heading
+case-insensitively, including all words of a multiword heading. The 16-character
+menu label is only for display. A link in another help file can target the
+same section. The proposed Markdown spelling is `[PIP selectors](PIP.HLP#selectors)`.
+Resolve the subject using the link's normal source rules, then locate the
+section inside that copy.
+
 **Proposed for review.** Use `###` for a local subheading. Add paragraphs,
-simple lists, inline code, fenced examples that preserve spacing, and links
-between subjects. A topic with no selectable sections could display immediately.
-A command such as `HELP PIP SELECTORS` could go directly to a section.
+simple lists, inline code and fenced examples that preserve spacing.
+A topic with no selectable sections could display immediately.
 Z-System's menus, preformatted examples, cross-file navigation and frames
 informed these proposals. Compatibility with historical files, the final
 Markdown grammar and the remaining navigation details are open.
@@ -225,8 +232,8 @@ nine resident RCP commands.
    and state restoration. Use the shared facility across supported platforms.
 2. Define diagnostics for a missing default archive, an archive with no
    index or topics, a damaged member or index, and insufficient decoder TPA.
-3. Freeze the Markdown subset, section and link naming, behavior for absent
-   linked subjects, direct-section lookup, wrapping and page boundaries.
+3. Freeze the Markdown subset, section fragment spelling, behavior for
+   missing link targets, wrapping and page boundaries.
    Use a short topic and a multi-section topic at narrow and wide
    console widths to review the result.
 4. Integrate the reader and measure startup, member access, decoder workspace,
