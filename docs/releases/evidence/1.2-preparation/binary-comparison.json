@@ -1,0 +1,120 @@
+{
+  "reference_report": "/Users/nathanael/.codex/.chatgpt-projects/g-p-6a682f002be881918281554d644daf48/BetterCPM-help-1.2/build/help-integration/qualified-cpmsim/release-eb6b08a6d829-f4973b172218/z80pack/report.json",
+  "reference_source": "eb6b08a6d829881d589b34d1392c5e6f67ec4246",
+  "build_source": "dc16a08543ba7a377dd04912ece0485894e134bc",
+  "unchanged": [
+    "STARTUP.SUB",
+    "HELP.COM",
+    "NDR.COM",
+    "NDR.RSX",
+    "PATH.COM",
+    "ERA.COM",
+    "TYPE.COM",
+    "REN.COM",
+    "DUP.COM",
+    "TIME.COM",
+    "SUBMIT.COM",
+    "CPX.COM",
+    "RSX.COM",
+    "FDB.COM",
+    "FDBVIEW.OVL",
+    "DISK.FDB",
+    "PIP.COM",
+    "ED.COM",
+    "BYE.COM",
+    "ADMTST.COM",
+    "VT52TST.COM",
+    "ANSITST.COM",
+    "MOUNT.COM",
+    "R.COM",
+    "W.COM"
+  ],
+  "changed": [
+    {
+      "name": "README.TXT",
+      "before": "20796afd0ae959d41d595097fb8fc1b58e133ebee6611afab4c1285bfa909c87",
+      "after": "88ae59bf51912a63a954fdd14c759f43fc8958aab6420ee5d4dec09ee74e6412"
+    },
+    {
+      "name": "DIR.COM",
+      "before": "ab53b7fc2c738452e6931f1a1b5f686a45d4b561e08dfcd65c9359442c96118d",
+      "after": "db94d3280420f71d471eb647e4ac5ad02c54aae4f49fa6b636f3e9ec367d5cd6"
+    },
+    {
+      "name": "VER.COM",
+      "before": "7e27fcd93dbee5b791ff742c38621b5c8782c4d6e9393156cb8bfc17876edbeb",
+      "after": "d5f9c0b165ea6583317747d22156d3e436917dda27008526bc271e7a07f915b2"
+    },
+    {
+      "name": "COPY.COM",
+      "before": "6009dd72de2d62cb9458e27f3205d94e58298731561eafd029cce7ee733ddeaf",
+      "after": "b7c94953d0b72c5b575e67ade11b0f3c1edd6cc8a058157b554546c6d4397d15"
+    },
+    {
+      "name": "CONFIG.COM",
+      "before": "237e716cd02003658eb0aa5437a70bf613d750f519b28f7d4db8f561ad2a9387",
+      "after": "8516f066956005641c9bfb7e0415f04e6d80385977ec2a84458fcb89fb082a57"
+    },
+    {
+      "name": "SYSGEN.COM",
+      "before": "3e20051972575da900334e0c35e85d66316b2bf734a4b572e72e03a8e7c7687b",
+      "after": "fa84bf80cf4d4361a156914d8688a20021dd3e378bce53db6651b56bb365c630"
+    },
+    {
+      "name": "STAT.COM",
+      "before": "b53a73664cafedeefd75946f559757a0c5b2b1bed35246277138e872ff632a75",
+      "after": "1aeb196a9488ba138178a2d49fe4e35afa1b28de7e20f9cc6413cc6b0f51aecf"
+    },
+    {
+      "name": "RCP.CPX",
+      "before": "d4342e1980792f9b54ed850b2307d51ff6a0f2fc8ce46ef89defb31e4ba737fd",
+      "after": "9f2951d4056144e18280b1da47c54810537dcb33f3788c151f44eb4b06f3a2ff"
+    },
+    {
+      "name": "ZPRTC.RSX",
+      "before": "8019ce8a595ce94e086b9b2f9d8cdfe9b5fcdb95c4e45ab6eda2eb51ec2e7fe6",
+      "after": "bb7e4ead1c72256ec6d77dbfec5d62ca093f93f563dcb10b707cf262dd4b0c1f"
+    },
+    {
+      "name": "R3CACHE.RSX",
+      "before": "6757caed5bc51981435486633252babd49180989c7cdfdb17497d198d5135b64",
+      "after": "6996c8218b5299e618be7cdeacdc6c301b058a9b5e71a83a8c9ee12f636253fd"
+    },
+    {
+      "name": "R3PACK.RSX",
+      "before": "afc37ee045d45d225f65d91170495cda1110258424e3a91fdc3185eaf01d5694",
+      "after": "c2b29b841d11a165450f00af77e70a4a19a832b3a23b6c2294f8be32f556ea40"
+    },
+    {
+      "name": "ADM3A.RSX",
+      "before": "4e74a4093f946df1ca98377dd03447d51eb8a8bdce3263a9deb7ef1c4634b9c2",
+      "after": "210bb60dbd8f1fabc8f9b75754cbecd048d7bbc9291dd5fd7073355e12eb125d"
+    },
+    {
+      "name": "VT52.RSX",
+      "before": "504e30f9a65c2be74746ad5f33e33e9769159466a7f169f7ae6eb1f39b768427",
+      "after": "c20c7f7d7ece3233da8d9df60de7b04924aa678311336277a330191d67cce121"
+    },
+    {
+      "name": "ANSI.RSX",
+      "before": "4b159fb90889aa2ff232b9a8743ef1d0ca314007c960b701a062c2c6cd69675c",
+      "after": "8f4697cb75a280c1e226ea33fdc38dc772b18d1dca3f15f30469978d41cf2b0a"
+    },
+    {
+      "name": "ANSISCRN.RSX",
+      "before": "6a465b3a20b85a205e538000aa0f645a797670a3999e654ed4ab682d11b70c85",
+      "after": "8b4f61c858877bc75665504d6b567e56e6669d7e2e93a043bbc0c96ef7c2a232"
+    },
+    {
+      "name": "P2DOS.RSX",
+      "before": "2044b2b6a79c96a70e18db2ff1e4d62fedd592779fd52cc8d2eb3bd511339cc4",
+      "after": "4b5de38e703eba1caa82296011c4a60de40aa6bcbb969ede7681e6e5b9a7a4a0"
+    },
+    {
+      "name": "SYSTEM.SYS",
+      "before": "498bd1cf324ec0b717b00039c44a46abb446f6a1609c0dd0f7564391a7a331e5",
+      "after": "5beba317202159a1d932985e2083c44000b32ac7ae12a5b45c5a2d7027ce28e7"
+    }
+  ],
+  "boundary": "Reference predates merged NOAH carry-forward. This comparison is an inventory, not independent functional requalification. Functional-source delta audit identifies release-only changes from frozen main."
+}

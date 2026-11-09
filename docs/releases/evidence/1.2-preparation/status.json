@@ -1,0 +1,16 @@
+{
+  "status": "PASS_FOCUSED_RELEASE_PREPARATION",
+  "feature_freeze_commit": "d7a11e2e4b5b10cc50042af5d38d7d5bec2ba825",
+  "build_source_commit": "dc16a08543ba7a377dd04912ece0485894e134bc",
+  "automated_builds": "PASS three System targets and six Utilities images",
+  "archives": "PASS eight candidate ZIPs, source identity, ledgers and checksums",
+  "smoke": {
+    "cpmsim": "PASS matched media, including actual HELP topic",
+    "Model2": "PASS including actual HELP topic",
+    "Model4": "PASS boot/startup TPA, NDR assignment and named-DU use, annotated PATH, actual HELP topic and ordinary transient"
+  },
+  "publication_performed": false,
+  "tag_created": false,
+  "superseded_candidates": "Earlier 2d5edfef candidates retain stale core metadata and are not the release set.",
+  "smoke_boundary": "Short integration smoke only. Native keyboard/capture pacing was corrected; the named-use check changes only private startup input/text fixtures, with candidate binaries unchanged."
+}

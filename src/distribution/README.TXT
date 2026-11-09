@@ -73,7 +73,7 @@ build instructions and the distribution manifest:
 
 The user guide is docs/manuals/Users-Guide.md. Packaging notes are under
 docs/releases/. PIP and ED are included on the System Disk. Search for files
-with :DIR /WHEREIS filespec. TED is on the Utilities Disk; HELP is not shipped.
+with :DIR /WHEREIS filespec. TED is on the Utilities Disk; HELP and HELP.LBR are supplied.
 
 NUMERIC PATH AND TCAP 2.0
 

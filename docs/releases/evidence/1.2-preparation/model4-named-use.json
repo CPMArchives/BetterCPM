@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "scope": "NDR load/name/use and annotated PATH using only a private startup-input fixture to avoid keyboard pacing",
+  "original_system_sha256": "17e412df72a2d9167115abec3812ddcfe7b4f4514596aec9522a163e6bdea8b6",
+  "fixture_sha256": "0cdf4603718d6af6a93ef8c9465bc7d41fa796fa4be02d1e222c90930e034e8a",
+  "changed_disk_files": [
+    "STARTUP.SUB",
+    "DONE.TXT"
+  ],
+  "functional_binaries": "unchanged from release candidate"
+}

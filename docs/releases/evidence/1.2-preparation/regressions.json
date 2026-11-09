@@ -1,0 +1,38 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "check": "test_release_12_packaging.py",
+      "cases": 3
+    },
+    {
+      "check": "test_release_11_packaging.py",
+      "cases": 4
+    },
+    {
+      "check": "test_release_candidate_packaging.py",
+      "cases": 9
+    },
+    {
+      "check": "test_package_licenses.py",
+      "cases": 3
+    },
+    {
+      "check": "test_component_registry.py",
+      "cases": 9
+    },
+    {
+      "check": "test_release_identity_heading.py",
+      "cases": 1
+    },
+    {
+      "check": "test_ver_banner.py",
+      "scope": "exact banner, concise output, invalid combinations and startup script; staged built tree"
+    },
+    {
+      "check": "component_registry.py --check",
+      "scope": "authoritative projections"
+    }
+  ],
+  "reused_noah": "PR #681 retained 36 PATH, 51 codec, 38 LBR-write, 181 command/adapter and nine CCP/BDOS cases; no broad rerun."
+}

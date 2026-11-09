@@ -38,7 +38,7 @@ def checked_name(name):
     return name
 
 
-def read_report(folder, commit):
+def read_report(folder, commit, *, allow_pending_smoke=False):
     folder=Path(folder)
     report=json.loads((folder/'report.json').read_text())
     if report['source']['revision']!=commit:
@@ -49,9 +49,11 @@ def read_report(folder, commit):
     data=(folder/name).read_bytes()
     if sha(data)!=report['sha256']:
         raise ValueError('System image differs from receipt')
-    if report['target']=='trs80m2':
+    if report.get('target')=='trs80m2':
         validation=report['validation']
-        if validation.get('boot',{}).get('status')!='PASS' or any(
+        if (validation.get('boot',{}).get('status') != 'PASS' and not (
+                allow_pending_smoke and report.get('release_policy') == '1.2-focused'
+                and validation.get('boot',{}).get('status') == 'PENDING_SMOKE')) or any(
                 validation.get('inventory',{}).get(g)!='PASS'
                 for g in ('exact_membership','independent_record_readback','allocation')):
             raise ValueError('Model II construction/boot gates missing')
@@ -122,13 +124,13 @@ def utilities_members(platform, sums, images, reports, inventory, include_source
                   'independent_inventory':proof}
 
 
-def lean_utilities(files, evidence, source_commit):
+def lean_utilities(files, evidence, source_commit, version='1.1'):
     """Keep operator material; source and full build evidence live in Source."""
     files={n:b for n,b in files.items() if n.startswith(('images/','licenses/','Provenance/'))
            or n in ('README.txt','THIRD-PARTY-NOTICES.txt','SOURCE-IDENTITY.json',
                     'docs/LICENSING.md','docs/manuals/Command-and-Utilities-Reference.md')}
-    offer={'filename':'BetterCPM-1.1-Source.zip','source_commit':source_commit,
-           'url':'https://github.com/CPMArchives/BetterCPM/releases/download/v1.1/BetterCPM-1.1-Source.zip',
+    offer={'filename':f'BetterCPM-{version}-Source.zip','source_commit':source_commit,
+           'url':f'https://github.com/CPMArchives/BetterCPM/releases/download/v{version}/BetterCPM-{version}-Source.zip',
            'contents':'Complete matching source, build scripts, notices and native source companions.'}
     files['SOURCE-DOWNLOAD.json']=encoded(offer)
     files['THIRD-PARTY-NOTICES.txt']+=('\n\nCorresponding source and native source companions are supplied in the separate '+offer['filename']+' download at '+offer['url']+'. Keep the applicable license and attribution notices.\n').encode()
@@ -136,16 +138,16 @@ def lean_utilities(files, evidence, source_commit):
                   'corresponding_source':offer}
 
 
-def lean_system(files, evidence, source_commit, platform):
+def lean_system(files, evidence, source_commit, platform, version='1.1'):
     """Keep boot/use material, including the compact standalone cpmsim host kit."""
     guide={'cpmsim':'CPMSIM-INSTALLATION.md','Model4':'MODEL4-INSTALLATION.md','Model2':'MODEL2-INSTALLATION.md'}[platform]
     files={n:b for n,b in files.items() if n.startswith(('images/','licenses/'))
            or platform=='cpmsim' and n.startswith('host/')
            or n in ('README.txt','THIRD-PARTY-NOTICES.txt','SOURCE-IDENTITY.json',
                     'docs/LICENSING.md','docs/platform/'+guide)}
-    offer={'filename':'BetterCPM-1.1-Source.zip','source_commit':source_commit,
-           'url':'https://github.com/CPMArchives/BetterCPM/releases/download/v1.1/BetterCPM-1.1-Source.zip',
-           'documentation_url':'https://github.com/CPMArchives/BetterCPM/releases/download/v1.1/BetterCPM-1.1-Documentation.zip',
+    offer={'filename':f'BetterCPM-{version}-Source.zip','source_commit':source_commit,
+           'url':f'https://github.com/CPMArchives/BetterCPM/releases/download/v{version}/BetterCPM-{version}-Source.zip',
+           'documentation_url':f'https://github.com/CPMArchives/BetterCPM/releases/download/v{version}/BetterCPM-{version}-Documentation.zip',
            'contents':'Full software source, developer interfaces, manuals and qualification evidence.'}
     files['SOURCE-DOWNLOAD.json']=encoded(offer)
     files['THIRD-PARTY-NOTICES.txt']+=('\nCorresponding source: '+offer['url']+'\n').encode()
@@ -177,7 +179,7 @@ def package_license_files(tracked, package_id, version="1.0"):
         sections.append(row['work'] + '\n' + row['notice'])
     files = project_license_files(tracked)
     files['THIRD-PARTY-NOTICES.txt'] = ('\n\n'.join(sections) + '\n').encode('utf-8')
-    if version=='1.1' and package_id.startswith(('utilities-','system-')):
+    if version in ('1.1','1.2') and package_id.startswith(('utilities-','system-')):
         files['THIRD-PARTY-NOTICES.txt']=files['THIRD-PARTY-NOTICES.txt'].replace(
             b'texts, provenance and corresponding-source companions with each download.',
             b'texts and provenance with each download. Matching corresponding source is available in the separate Source download from the same release.')
@@ -205,8 +207,10 @@ def assemble(args):
     version=getattr(args,'version','1.0')
     pending=(['Exact-artifact three-platform acceptance', 'TCAP 2.0 on delivered media',
               'Offline reconstruction', 'Final documentation and license reconciliation',
-              'Release acceptance ledger'] if version=='1.1' else PENDING)
-    if version not in ('1.0','1.0.1','1.1'):
+              'Release acceptance ledger'] if version in ('1.1','1.2') else PENDING)
+    if version == '1.2':
+        pending = ['Automated build/package audit', 'Smoke-only validation on three platforms', 'Maintainer release acceptance']
+    if version not in ('1.0','1.0.1','1.1','1.2'):
         raise ValueError('unsupported release version')
     if version=='1.0' and (ROOT / 'docs/releases/non-documentation-lock-1.0/LOCK.json').exists():
         raise ValueError('Five 1.0 packages are locked; use build_documentation.py. Do not rebuild the six-package set during documentation sync.')
@@ -287,7 +291,7 @@ def assemble(args):
     images={}
     util_reports={}
     for platform,target in ([('cpmsim','z80pack'),('Model4','trs80gp')] +
-                            ([('Model2','trs80m2')] if version=='1.1' else [])):
+                            ([('Model2','trs80m2')] if version in ('1.1','1.2') else [])):
         row=inventory['platforms'][target]
         for proof in (row,row['noah_companion']):
             name=proof['image'];data=sums[name]
@@ -311,11 +315,13 @@ def assemble(args):
             platform={'system-cpmsim':'cpmsim','system-model4':'Model4','system-model2':'Model2'}[id]
             folder={'cpmsim':args.cpmsim_system,'Model4':args.model4_system,'Model2':getattr(args,'model2_system',None)}[platform]
             if folder is None: raise ValueError('1.1 requires --model2-system')
-            report,data=read_report(folder,commit)
+            report,data=read_report(folder,commit,allow_pending_smoke=version=='1.2')
             expected={'cpmsim':'z80pack','Model4':'trs80gp','Model2':'trs80m2'}[platform]
             if report['target']!=expected:
                 raise ValueError('wrong System platform receipt')
-            if platform=='cpmsim' and report['validation'].get('boot')!='PASS':
+            if platform=='cpmsim' and report['validation'].get('boot')!='PASS' and not (
+                    version=='1.2' and report.get('release_policy')=='1.2-focused'
+                    and report['validation'].get('boot')=='PENDING_SMOKE'):
                 raise ValueError('cpmsim candidate requires its own boot evidence')
             files['images/'+report['image']]=data
             files['evidence/system-report.json']=(folder/'report.json').read_bytes()
@@ -353,7 +359,7 @@ def assemble(args):
                 evidence['emulator']=runtime
         elif id in ('utilities-cpmsim','utilities-model4','utilities-model2'):
             selected,evidence=utilities_members(asset['platforms'][0],sums,images,
-                                                util_reports,inventory,include_sources=version!='1.1')
+                                                util_reports,inventory,include_sources=version not in ('1.1','1.2'))
             files.update(selected)
             files['docs/manuals/Command-and-Utilities-Reference.md']=tracked['docs/manuals/Command-and-Utilities-Reference.md']
             files['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']=tracked['docs/platform/MODEL4-SHIPPED-INSTALLATION.txt']
@@ -372,7 +378,7 @@ def assemble(args):
                 if name not in images and not name.endswith('.dmk.json') and not name.endswith('.dsk.json') and not name.endswith('.imd.json'):
                     files['source/native-companions/'+name]=data
         else:
-            if version in ('1.0.1','1.1'):
+            if version in ('1.0.1','1.1','1.2'):
                 selected,evidence=documentation_members(tracked,commit,version)
                 files.update(selected)
             else:
@@ -384,20 +390,20 @@ def assemble(args):
                 files['CONTENTS.md']=tracked['packaging/'+version+'/DOCUMENTATION-CONTENTS.md']
                 files['third_party/z80pack/README.md']=tracked['third_party/z80pack/README.md']
                 evidence['generated_editions']='PDF/DOCX omitted pending source-to-edition reconciliation'
-        if version=='1.1':
+        if version in ('1.1','1.2'):
             for name in ('docs/engineering/TCAP-Direct-ABI.md',
                          'docs/engineering/contracts/tcap-2.0.json',
                          'src/utilities/common/tcap2.inc',
-                         'docs/platform/SUPPORT-1.1.md'):
+                         'docs/platform/SUPPORT-'+version+'.md'):
                 files[name]=tracked[name]
         # Retain tracked licensing/permission and provenance files in each ZIP.
         for name,data in tracked.items():
             if name.startswith('third_party/') and any(x in Path(name).name.lower() for x in ('license','permission','provenance','copying','notice')):
                 files['licenses/'+name]=data
-        if version=='1.1' and id.startswith('system-'):
-            files,evidence=lean_system(files,evidence,commit,asset['platforms'][0])
-        elif version=='1.1' and id.startswith('utilities-'):
-            files,evidence=lean_utilities(files,evidence,commit)
+        if version in ('1.1','1.2') and id.startswith('system-'):
+            files,evidence=lean_system(files,evidence,commit,asset['platforms'][0],version)
+        elif version in ('1.1','1.2') and id.startswith('utilities-'):
+            files,evidence=lean_utilities(files,evidence,commit,version)
         verify_members(files, forbidden, inspected)
         record={'schema':1,'package':id,'version':version,'source_commit':commit,
                 'status':'CANDIDATE; NOT ACCEPTED','accepted_commit':None,'tag':None,
@@ -416,7 +422,7 @@ def assemble(args):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--version',choices=('1.0','1.0.1','1.1'),default='1.0')
+    p.add_argument('--version',choices=('1.0','1.0.1','1.1','1.2'),default='1.0')
     p.add_argument('--model2-system',type=Path)
     for name in ('cpmsim-system','model4-system','utilities','inventory','upstream','runtime-manifest','output'):
         p.add_argument('--'+name,type=Path,required=True)

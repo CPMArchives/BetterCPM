@@ -1,0 +1,24 @@
+PIP - File and device transfer
+
+PIP destination=source[,source...]
+
+0  Syntax           1  Selectors        2  Examples
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0-2 Select  Q Exit

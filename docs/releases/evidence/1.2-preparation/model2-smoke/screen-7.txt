@@ -1,0 +1,24 @@
+Named directories updated (not saved).
+
+A0 [SYSTEM]> SYSTEM:
+
+A0 [SYSTEM]> PATH
+PATH: $$: | A0:[SYSTEM]
+
+A0 [SYSTEM]> HELP PIP /REPORT
+A0:HELP.LBR (PIP.HLP)
+
+A0 [SYSTEM]> DIR
+
+A0: README   TXT : STARTUP  SUB : HELP     COM : HELP     LBR
+A0: NDR      COM : NDR      RSX : PATH     COM : DIR      COM
+A0: ERA      COM : TYPE     COM : REN      COM : VER      COM
+A0: COPY     COM : CONFIG   COM : DUP      COM : TIME     COM
+A0: SYSGEN   COM : STAT     COM : SUBMIT   COM : CPX      COM
+A0: RSX      COM : FDB      COM : FDBVIEW  OVL : RCP      CPX
+A0: R3CACHE  RSX : R3PACK   RSX : PIP      COM : ED       COM
+A0: ADM3A    RSX : ADMTST   COM : VT52     RSX : VT52TST  COM
+A0: ANSI     RSX : ANSITST  COM : P2DOS    RSX : DISK     FDB
+A0: M2SCRN   RSX : SYSTEM   SYS : $$RSX00  RSC
+
+A0 [SYSTEM]>

@@ -1,0 +1,21 @@
+
+A0> :VER /BANNER
+
+ - - -                                                  - - -
+|                                                            |
+|                         BetterCP/M                         |
+                         Core OS 1.2
+
+                  CP/M 2.2 Compatible System
+
+                Type TYPE README.TXT for more
+|                                                            |
+ - - -                                                  - - -
+
+A0> RSX LOAD NDR
+
+A0> NDR SYSTEM A0:
+Named directories updated (not saved).
+
+A0 [SYSTEM]> PATH
+PATH: $$: | A0:[SYSTEM]

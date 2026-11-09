@@ -1,0 +1,15 @@
+
+A0> :VER /BANNER
+
+ - - -                                                  - - -
+|                                                            |
+|                         BetterCP/M                         |
+                         Core OS 1.2
+
+                  CP/M 2.2 Compatible System
+
+                Type TYPE README.TXT for more
+|                                                            |
+ - - -                                                  - - -
+
+A0>

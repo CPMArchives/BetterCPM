@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "scope": "boot with 1.2 banner and STAT MEM on shipped startup profile",
+  "startup_tpa": 52480,
+  "unloaded_platform_tpa": 54272,
+  "system_sha256": "17e412df72a2d9167115abec3812ddcfe7b4f4514596aec9522a163e6bdea8b6"
+}
