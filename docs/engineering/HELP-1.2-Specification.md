@@ -300,8 +300,12 @@ inventory found changes in the explanatory quick-help text of three shipped
 transients (PIP, RSX and XSUB), and implementation-specific screens for the
 nine resident RCP commands.
 
-## Remaining qualification
+## Integrated disk checks
 
-Record the two native guest results for the candidate disk hashes before
-release. The full-screen reader and plain-console fallback have been exercised
-on cpmsim. Floppy access timing on physical machines remains unmeasured.
+The Model 4 and Model II System disks passed the full-screen PIP menu, section,
+back/exit and /REPORT checks in trs80gp. The cpmsim System disk passed its
+distribution acceptance, full-screen and sequential reader checks. The packaged
+utilities and RCP commands passed both quick-help switches with the optional
+files removed. The [integration results](evidence/help-1.2/integration.json)
+identify the exact images. Floppy access timing on physical hardware remains
+unmeasured.
