@@ -43,6 +43,19 @@ remains literal. PATH stores the resolved numeric locations immediately; later
 name changes do not alter the saved live PATH list. Numeric PATH works without
 NDR. Compound/bracket selectors continue to use numeric DU syntax.
 
+Bare `PATH` displays the configured entries with current NDR annotations:
+
+```text
+PATH: $$: | A0:[ROOT] | B3: | C$: | B0:[UTILS]
+```
+
+Fixed DUs show the first matching live name, or just their numeric spelling
+when unnamed or NDR is unloaded. Symbolic entries retain their spelling.
+Name changes update annotations without changing the stored search locations.
+Long lists wrap between complete entries, with continuation entries aligned
+under the first. TCAP supplies the display width when known; otherwise PATH
+uses 80 columns.
+
 Manage names with:
 
 ```text

@@ -64,7 +64,7 @@ atomic; an unresolved named operand cannot partially publish the list.
 
 ### Approved PATH display
 
-The approved 1.2 display format is recorded here pending implementation:
+PATH.COM uses the approved 1.2 display format:
 
 ```text
 PATH: $$: | A0:[ROOT] | B3: | C$: | B0:[UTILS]
@@ -81,7 +81,11 @@ Symbolic entries such as `$$:` and `C$:` retain their symbolic spelling
 without a name annotation. Names are looked up for display; changing or
 deleting a name can change an annotation but cannot retarget the stored PATH.
 Wrap between complete entries when needed, indenting continuation lines
-beneath the first entry.
+beneath the first entry. A wrapped separator precedes its entry, with the DU
+aligned in column 7. TCAP 2.0 supplies the column count when available; absent
+or unknown geometry uses 80 columns. Output avoids the terminal's final column.
+The entry buffer and geometry state are transient. PATH adds no protected
+storage or new NDR service, and copies borrowed names before console output.
 
 ## Memory contract and benchmark
 

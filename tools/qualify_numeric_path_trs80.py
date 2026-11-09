@@ -126,7 +126,7 @@ def main():
         disk.write_bytes(dmk(raw))
 
     expected = [f'FIRST IMAGE {drive}3', f'FIT {maximum} OK', 'FILE WILL NOT FIT',
-                'INPUT OK', f'SECOND IMAGE {drive}0', f'PATH: {search}']
+                'INPUT OK', f'SECOND IMAGE {drive}0', 'PATH: '+search.replace(' ', ' | ')]
     command = [str(args.emulator or DEFAULT_EMULATOR), '-m'+args.model, '-batch', '-turbo', '-d0', str(disk),
                '-itime', '120000']
     if m2 or args.release_image:
@@ -135,8 +135,8 @@ def main():
             command.extend(['-ktx'])
         else:
             command.extend(['-iw','A0>','-i','B0:SUBMIT B:PTEST\r'])
-        expected.insert(0, 'PATH: $$: A0:')
-        expected.extend(['PATH: A9:', 'PATH: $$: A0:', 'PACKAGED PATH DONE'])
+        expected.insert(0, 'PATH: $$: | A0:')
+        expected.extend(['PATH: A9:', 'PATH: $$: | A0:', 'PACKAGED PATH DONE'])
     for message in expected:
         command.extend(['-iw', message, '-id', '120', '-it'])
     command.append('-ix')

@@ -11,6 +11,8 @@ ROOT = Path(__file__).resolve().parents[1]
 @recorded_build('utility:PATH')
 def build(assembler, output):
     source = (ROOT / 'src/utilities/path.mac').read_text(encoding='ascii')
+    source = source.replace('; @path-tcap@',
+        (ROOT / 'src/utilities/common/tcap2.inc').read_text(encoding='ascii'))
     return assemble(assembler, source, output / 'PATH.COM', output / 'path.lst', 0x100)
 
 

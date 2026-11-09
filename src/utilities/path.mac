@@ -177,8 +177,21 @@ RMFOUND:LD      A,(CNT)
         LDIR
         JP      PUBLISH
 DISPLAY:
+        LD      A,80
+        LD      (SHWIDTH),A
+        CALL    T2_OPEN
+        JR      NZ,SHSTART
+        LD      DE,5
+        ADD     HL,DE
+        LD      A,(HL)
+        OR      A
+        JR      Z,SHSTART
+        LD      (SHWIDTH),A
+SHSTART:
         LD      DE,TITLE
         CALL    PUTS
+        LD      A,5
+        LD      (SHCOLUMN),A
         LD      HL,LY_PATH
         LD      B,(HL)
         INC     HL
@@ -190,22 +203,39 @@ DISPLAY:
         JR      SHNEXT
 SHOW:   CP      PATHMAX+1
         JP      NC,BADLIVE
-SHNEXT: LD      A,' '
-        CALL    PUTCH
-        LD      A,(HL)
+SHNEXT: PUSH    BC
+        PUSH    HL
+        CALL    SHTEXT
+        CALL    SHEMIT
+        POP     HL
+        POP     BC
         INC     HL
+        INC     HL
+        DJNZ    SHNEXT
+        LD      DE,EOL
+FINISH: CALL    PUTS
+        JP      0
+
+; Build one complete entry before deciding whether it fits on this line.
+SHTEXT: LD      DE,SHBUFFER
+        LD      (SHEND),DE
+        LD      D,(HL)
+        INC     HL
+        LD      E,(HL)
+        LD      (SHDU),DE
+        LD      A,D
         OR      A
         JR      NZ,SHFIX
         LD      A,24H                  ; dollar in drive position
-        CALL    PUTCH
+        CALL    SHCHAR
         JR      SHUSER
 SHFIX:  ADD     A,'A'-1
-        CALL    PUTCH
-SHUSER: LD      A,(HL)
+        CALL    SHCHAR
+SHUSER: LD      A,(SHDU)
         CP      0FFH
         JR      NZ,SHNUM
         LD      A,24H
-        CALL    PUTCH
+        CALL    SHCHAR
         JR      SHCOL
 SHNUM:  LD      D,'0'
 TENS:   CP      10
@@ -216,17 +246,87 @@ TENS:   CP      10
 UNITS:  LD      E,A
         LD      A,D
         CP      '0'
-        CALL    NZ,PUTCH
+        CALL    NZ,SHCHAR
         LD      A,E
         ADD     A,'0'
-        CALL    PUTCH
+        CALL    SHCHAR
 SHCOL:  LD      A,':'
+        CALL    SHCHAR
+        LD      DE,(SHDU)
+        LD      A,D
+        OR      A
+        JR      Z,SHDONE
+        LD      A,E
+        CP      0FFH
+        JR      Z,SHDONE
+        CALL    CN_LOOK
+        JR      NZ,SHDONE
+        LD      DE,(SHDU)
+        LD      A,1
+        CALL    CN_CALL
+        OR      A
+        JR      NZ,SHDONE
+        ; Copy the borrowed eight-byte name before any further BDOS calls.
+        LD      A,'['
+        CALL    SHCHAR
+        LD      B,8
+SHNAME: LD      A,(HL)
+        CP      ' '
+        JR      Z,SHCLOSE
+        CALL    SHCHAR
+        INC     HL
+        DJNZ    SHNAME
+SHCLOSE:LD      A,']'
+        CALL    SHCHAR
+SHDONE: XOR     A
+        JP      SHCHAR
+SHCHAR: PUSH    HL
+        LD      HL,(SHEND)
+        LD      (HL),A
+        INC     HL
+        LD      (SHEND),HL
+        POP     HL
+        RET
+
+SHEMIT: LD      HL,(SHEND)
+        LD      DE,SHBUFFER+1
+        OR      A
+        SBC     HL,DE
+        LD      A,L
+        LD      (SHLENGTH),A
+        LD      C,A
+        LD      A,(SHCOLUMN)
+        CP      5
+        JR      Z,SHFIRST
+        ADD     A,3
+        JR      C,SHWRAP
+        ADD     A,C
+        JR      C,SHWRAP
+        LD      HL,SHWIDTH
+        CP      (HL)
+        JR      NC,SHWRAP
+        LD      DE,SHSEP
+        CALL    PUTS
+        LD      A,(SHCOLUMN)
+        ADD     A,3
+        JR      SHPRINT
+SHWRAP: LD      DE,SHCONT
+        CALL    PUTS
+        LD      A,6
+        JR      SHPRINT
+SHFIRST:LD      A,' '
         CALL    PUTCH
-SHDONE: INC     HL
-        DJNZ    SHNEXT
-        LD      DE,EOL
-FINISH: CALL    PUTS
-        JP      0
+        LD      A,6
+SHPRINT:LD      HL,SHLENGTH
+        ADD     A,(HL)
+        LD      (SHCOLUMN),A
+        LD      HL,SHBUFFER
+SHOUT:  LD      A,(HL)
+        OR      A
+        RET     Z
+        CALL    PUTCH
+        INC     HL
+        JR      SHOUT
 
 ; Validate the live layout before using the profile's protected address.
 LOCATE: LD      HL,(1)
@@ -365,6 +465,8 @@ MMISSING:DB 'PATH entry not found.',13,10,'$'
 MLAST:  DB 'Cannot delete the last PATH entry.',13,10,'$'
 TITLE:  DB 'PATH:$'
 EOL:    DB 13,10,'$'
+SHSEP:  DB ' | $'
+SHCONT: DB 13,10,'    | $'
 MDU:    DB 'Invalid PATH entry. Use a Z-System DU entry.',13,10,'$'
 MUSER:  DB 'Invalid PATH user. Use 0 through 31 or a dollar.',13,10,'$'
 MDUP:   DB 'Duplicate PATH entry.',13,10,'$'
@@ -376,5 +478,12 @@ MODE:   DB 0
 CNT:    DB 0
 ITEMS:  DS 2*PATHMAX
 TAIL:   DS 128
+SHDU:   DW 0
+SHEND:  DW 0
+SHWIDTH:DB 80
+SHCOLUMN:DB 0
+SHLENGTH:DB 0
+SHBUFFER:DS 15
 ; @ndr-client@
+; @path-tcap@
         END

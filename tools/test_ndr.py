@@ -48,9 +48,10 @@ class Guest:
         c = self.cpu
         fn, de = c.c, c.de
         if fn == 182:
-            c.hl = self.base+self.entry_off if self.loaded else 0
+            available = self.loaded and bytes(c.mem[de+4:de+8]) == b'NDR '
+            c.hl = self.base+self.entry_off if available else 0
             c.setword(de+12, c.hl)
-            c.a = 0 if self.loaded else 1
+            c.a = 0 if available else 1
         elif fn == 6:
             c.a = 13  # finish the isolated editor redraw
         elif fn == 178:
