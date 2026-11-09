@@ -1298,8 +1298,8 @@
       "identity": "Core OS",
       "interface_version": "-",
       "implementation_version": "1.2",
-      "status": "feature frozen; release preparation",
-      "notes": "Core OS 1.2 release identity. Component revisions and TCAP API versions remain independent. Focused release checks reuse existing engineering qualification."
+      "status": "qualified release",
+      "notes": "Core OS 1.2. Independent component revisions and TCAP API versions retained; focused release checks and three-platform smoke passed."
     },
     {
       "component": "CCP",

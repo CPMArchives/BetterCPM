@@ -2,6 +2,6 @@
   "schema": 1,
   "name": "BetterCP/M release package",
   "version": "1.2",
-  "status": "feature frozen; focused release preparation",
-  "notes": "Feature freeze at d7a11e2e4b5b10cc50042af5d38d7d5bec2ba825. Only release metadata, documentation, packaging corrections and genuine blockers. Reuse existing engineering qualification; manual validation is smoke-only."
+  "status": "qualified 1.2 release",
+  "notes": "Feature freeze d7a11e2e; PR #682 merged after review. Focused builds, package checks and three-platform smoke passed. Existing engineering qualification reused. Final archive identities are recorded in the v1.2 release index."
 }
