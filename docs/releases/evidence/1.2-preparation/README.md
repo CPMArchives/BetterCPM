@@ -52,3 +52,6 @@ The candidate manifests intentionally remain review-only and retain the gates
 that were pending when assembled. The hash-bound smoke and audit sidecars record
 the subsequent observations; this does not retroactively rewrite those manifests.
 Maintainer acceptance, final naming/tagging and publication remain separate.
+
+Text capture projections omit trailing screen padding and blank rows; original
+binary captures and raw transcripts remain in the local smoke folders.

@@ -16,8 +16,3 @@ A0> RSX LOAD NDR
 
 A0> NDR SYSTEM A0:
 Named directories updated (not saved).
-
-
-
-
-

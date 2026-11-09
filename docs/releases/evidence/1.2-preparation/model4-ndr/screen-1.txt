@@ -19,5 +19,3 @@ Named directories updated (not saved).
 
 A0 [SYSTEM]> PATH
 PATH: $$: | A0:[SYSTEM]
-
-
