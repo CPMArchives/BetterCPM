@@ -1297,9 +1297,9 @@
       "component": "BetterCP/M",
       "identity": "Core OS",
       "interface_version": "-",
-      "implementation_version": "1.1.1",
-      "status": "released patch",
-      "notes": "Maintainer-approved 1.1.1 patch. Component and TCAP API versions remain independent; no new engineering campaign requested."
+      "implementation_version": "1.2",
+      "status": "feature frozen; release preparation",
+      "notes": "Core OS 1.2 release identity. Component revisions and TCAP API versions remain independent. Focused release checks reuse existing engineering qualification."
     },
     {
       "component": "CCP",
