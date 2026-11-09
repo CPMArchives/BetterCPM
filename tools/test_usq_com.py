@@ -172,6 +172,8 @@ class Command:
         self.dma, self.console, self.exception = 0x80, "", None
         self.mem[:] = bytes(65536)
         self.mem[0x100:0x100 + len(self.image)] = self.image
+        for address, data in getattr(self, "system_memory", {}).items():
+            self.mem[address:address + len(data)] = data
         self.mem[5] = 0xC9               # BDOS returns through a real RET
         if tpa is not None:
             self.mem[6:8] = tpa.to_bytes(2, 'little')

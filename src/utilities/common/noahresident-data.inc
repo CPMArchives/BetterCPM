@@ -18,7 +18,10 @@ NR_DESCRIPTOR: DW 0
 NR_RECORD: DW 0
 NR_CRC: DS 4
 NR_DMA: DS 128
-NR_FAILURE_TEXT: DB 'NOAH: NOAH.OVL unavailable or invalid; operation stopped.',13,10,'$'
+NR_DEFPATH: DB 1,0
+; @noah-path-layouts@
+NR_MISSING_TEXT: DB 'NOAH: NOAH.OVL not found; operation stopped.',13,10,'$'
+NR_FAILURE_TEXT: DB 'NOAH: NOAH.OVL invalid or incompatible; operation stopped.',13,10,'$'
 NR_SELECTED: DB 0
 NR_ARC_MODE: DB 0
 NR_PHASEUSER: DB 0
