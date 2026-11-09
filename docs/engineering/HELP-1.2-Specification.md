@@ -13,7 +13,8 @@ TCAP behavior for paging and strong emphasis.
 - `HELP.COM` is a general, read-only transient reader. It runs in the TPA,
   returns to the caller's DU and incurs zero unloaded resident-memory cost.
   Topic lookup and display require no HELP-specific CCP, CPX, RSX or PDS
-  allocation. Numeric PATH may locate the executable. HELP owns data lookup.
+  allocation. The CCP may locate `HELP.COM` through PATH. HELP itself uses
+  the same effective PATH to look up topics and archives.
 - BetterCP/M supplies curated help for operating the system and using its
   packaged utilities. Include system concepts and procedures that span
   commands, such as when SUBMIT also needs XSUB. The manuals carry the full
@@ -59,16 +60,26 @@ the encoding for release media. [LBR reader](../../src/archive/lbr.mac) · [ARK 
 
 ## Default topic lookup
 
-For `HELP TOPIC`, stop at the first successful step. The same rules apply
-to supplied and user-built collections.
+For `HELP TOPIC`, make these passes in order. Each pass starts at the
+caller's current drive/user (DU), then follows the configured PATH in
+order. Resolve symbolic entries against the caller's original DU and skip
+entries that would repeat that DU. HELP applies this policy to its own
+file opens. [Numeric PATH](Numeric-PATH-1.1.md#using-path)
 
-1. Look for the loose file `TOPIC.HLP`. If found, open it directly.
-2. Look for `TOPIC.H?P` inside `HELP.LBR` or `HELP.ARK`. A matching
-   member opens directly, even if the authored index omits it.
-3. If the topic is absent, display an archived `_INDEX.H?P` if available.
-4. If neither the topic nor an archived index was found, print
-   `No help for TOPIC was found.` and return to CP/M. Substitute the requested
-   topic name, for example, `No help for BOGUS was found.`
+| Pass | Search across PATH | Result |
+| --- | --- | --- |
+| 1 | Loose `TOPIC.H?P` | Open the first matching DU's plain, squeezed or crunched topic. |
+| 2 | `HELP.LBR` | Open `TOPIC.H?P` if found inside. |
+| 3 | `HELP.ARK` | Open `TOPIC.H?P` if found inside. |
+
+For example, from `A0:` with `B0:` on PATH, loose `B0:PIP.HQP` wins
+over PIP in `A0:HELP.LBR`. If there is no loose PIP, PIP in
+`B0:HELP.LBR` wins over PIP in `A0:HELP.ARK`.
+
+If all topic passes miss, display an archived `_INDEX.H?P`, checking LBR
+before ARK. An LBR index therefore cannot hide a topic in ARK. If there
+is no archived index either, print `No help for TOPIC was found.` with
+the requested name substituted and return to CP/M.
 
 Bare `HELP` displays the archived `_INDEX.H?P` if present. In an archive
 without an index, bare `HELP` generates a menu from the available help
@@ -76,8 +87,10 @@ members. The menu presents logical subject names, so `PIP.HQP` appears as
 `PIP`. Thus `_INDEX` is optional. A damaged or unreadable file or archive
 requires a diagnostic distinct from a lookup miss.
 
-When both default archives exist, their precedence and whether to consult
-both remain open. The DU search policy also remains open.
+Two tie cases remain open. If several encodings of the loose topic share a
+DU, their precedence needs a rule. If several DUs contain the same archive
+filename, lookup needs a rule for whether a member miss in the first such
+archive continues to later copies of that archive.
 
 ## Authoring and presentation
 
@@ -151,9 +164,9 @@ nine resident RCP commands.
 1. Review the [delivered TCAP 2.0 direct ABI](TCAP-Direct-ABI.md). Establish what HELP can rely on for
    geometry, unknown dimensions, semantic standout, plain output, cancellation
    and state restoration. Use the shared facility across supported platforms.
-2. Settle the DU search policy, behavior when both default archives exist,
-   invocation for an explicitly named custom library, and precedence if
-   several encodings of the same subject coexist. Define the bare-`HELP`
+2. Settle handling of repeated archive filenames along PATH, invocation
+   for an explicitly named custom library, and precedence if several
+   encodings of a subject coexist in one DU or archive. Define the bare-`HELP`
    diagnostic when neither archive exists and errors for a damaged member
    or index and insufficient decoder TPA.
 3. Freeze the Markdown subset, section and link naming, behavior for absent
