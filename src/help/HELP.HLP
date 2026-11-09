@@ -1,0 +1,42 @@
+# HELP - Browse online help
+
+```text
+HELP [topic [section]] [/S=filespec] [/R]
+```
+
+## Reading topics
+
+Type `HELP` to open the default archive. An authored index opens first.
+When the archive has no index, choose a topic from its member list.
+
+`HELP PIP` opens the PIP topic. `HELP PIP SELECTORS` opens
+[PIP selectors](PIP.HLP#selectors) directly.
+
+Press the digit or letter shown beside a section or link. Within a topic,
+`.` or `>` advances one page and `,` or `<` goes back one page.
+Press Q or Ctrl-C to return one level. At the top level either key exits
+to the command prompt.
+
+## Finding a topic
+
+A named request searches the current drive/user and [PATH](PATH.HLP) for
+loose help files, then checks the first HELP.LBR and the first HELP.ARK.
+Within a location, plain HLP takes precedence over squeezed HQP and
+crunched HZP. To see the actual source, type:
+
+```text
+HELP PIP /REPORT
+```
+
+## Choosing a source
+
+`/S=` is short for `/SOURCE=`. Specify an archive to browse its contents
+or a loose file to read that exact copy.
+
+```text
+HELP /S=A15:HELP.ARK
+HELP PIP /S=A15:HELP.ARK /R
+HELP /S=B3:PIP.HQP
+```
+
+You can [build a custom help library](NOAH.HLP#help-libraries) from your own topics.

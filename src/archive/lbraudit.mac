@@ -1,3 +1,37 @@
+LBR_CRC_CODE MACRO
+; XMODEM/CCITT CRC: DE=initial CRC, HL=bytes, BC=count; DE=result.
+; Polynomial 1021h, init 0000h, no reflection/final xor. Zero count is legal.
+LBR_CRC16:
+        LD A,B
+        OR C
+        RET Z
+LA_CRC_BYTE:
+        LD A,(HL)
+        XOR D
+        LD D,A
+        INC HL
+        PUSH BC
+        LD B,8
+LA_CRC_BIT:
+        SLA E
+        RL D
+        JR NC,LA_CRC_BIT_NEXT
+        LD A,D
+        XOR 10H
+        LD D,A
+        LD A,E
+        XOR 21H
+        LD E,A
+LA_CRC_BIT_NEXT:
+        DJNZ LA_CRC_BIT
+        POP BC
+        DEC BC
+        LD A,B
+        OR C
+        JR NZ,LA_CRC_BYTE
+        RET
+        ENDM
+
 LBR_AUDIT_CODE MACRO
 LBR_AUDIT:
         LD HL,0
@@ -309,35 +343,5 @@ LA_CRC_UNKNOWN:
 LA_UNKNOWN_COUNTED:
         OR A
         RET
-; XMODEM/CCITT CRC: DE=initial CRC, HL=bytes, BC=count; DE=result.
-; Polynomial 1021h, init 0000h, no reflection/final xor. Zero count is legal.
-LBR_CRC16:
-        LD A,B
-        OR C
-        RET Z
-LA_CRC_BYTE:
-        LD A,(HL)
-        XOR D
-        LD D,A
-        INC HL
-        PUSH BC
-        LD B,8
-LA_CRC_BIT:
-        SLA E
-        RL D
-        JR NC,LA_CRC_BIT_NEXT
-        LD A,D
-        XOR 10H
-        LD D,A
-        LD A,E
-        XOR 21H
-        LD E,A
-LA_CRC_BIT_NEXT:
-        DJNZ LA_CRC_BIT
-        POP BC
-        DEC BC
-        LD A,B
-        OR C
-        JR NZ,LA_CRC_BYTE
-        RET
+        LBR_CRC_CODE
         ENDM

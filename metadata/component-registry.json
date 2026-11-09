@@ -1208,6 +1208,29 @@
       "api_version": "1.0",
       "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending"
+    },
+    "utility:HELP": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "1.2 development media",
+      "roots": [
+        "src/utilities/help.mac",
+        "src/utilities/help/help-args.inc",
+        "src/utilities/help/help-decode.inc",
+        "src/utilities/help/help-files.inc",
+        "src/utilities/help/help-render.inc",
+        "src/utilities/help/help-view.inc",
+        "src/utilities/help/help-work.inc"
+      ],
+      "builders": [
+        "tools/build_help.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "development reader",
+      "display_format": "numeric",
+      "description": "Topic Help Reader"
     }
   },
   "legacy_utility_order": [
@@ -1263,7 +1286,8 @@
     "W",
     "MOUNT",
     "PATH",
-    "NDR"
+    "NDR",
+    "HELP"
   ],
   "legacy_subsystem_rows": [
     {

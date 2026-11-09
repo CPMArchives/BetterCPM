@@ -1,0 +1,8 @@
+# BetterCP/M Help
+
+- [COPY](COPY.HLP) copies files using source-first syntax.
+- [PIP](PIP.HLP) transfers files and device streams.
+- [DIR](DIR.HLP) lists files by drive and user area.
+- [PATH](PATH.HLP) displays and edits the search path.
+- [NOAH](NOAH.HLP) manages archives and builds custom help libraries.
+- [HELP](HELP.HLP) explains navigation, source selection and reporting.

@@ -5734,6 +5734,69 @@
         "tools/utility_help.py",
         "tools/utility_versions.py"
       ]
+    },
+    "utility:HELP": {
+      "status": "tracked-conservative",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp",
+        "trs80m2"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "origin": 256,
+        "assembler_flags": [
+          "-e32",
+          "-sn",
+          "-fb"
+        ]
+      },
+      "registry_fields": [
+        "display_format",
+        "description"
+      ],
+      "files": [
+        "src/archive/archive.inc",
+        "src/archive/ark.inc",
+        "src/archive/ark.mac",
+        "src/archive/cpmfile.inc",
+        "src/archive/cpmfile.mac",
+        "src/archive/lbr.mac",
+        "src/archive/lbraudit.mac",
+        "src/codec/codec.inc",
+        "src/codec/codec.mac",
+        "src/codec/uncr.inc",
+        "src/codec/uncr.mac",
+        "src/codec/usq.inc",
+        "src/codec/usq.mac",
+        "src/system/layout.inc",
+        "src/utilities/common/duselect.inc",
+        "src/utilities/common/filespec.inc",
+        "src/utilities/common/ndr-client.inc",
+        "src/utilities/common/noahark-decode.inc",
+        "src/utilities/common/noahark-huffman.inc",
+        "src/utilities/common/noahlzw-phase.inc",
+        "src/utilities/common/tcap2.inc",
+        "src/utilities/common/version.inc",
+        "src/utilities/help.mac",
+        "src/utilities/help/help-args.inc",
+        "src/utilities/help/help-decode.inc",
+        "src/utilities/help/help-files.inc",
+        "src/utilities/help/help-render.inc",
+        "src/utilities/help/help-view.inc",
+        "src/utilities/help/help-work.inc",
+        "tools/build_help.py",
+        "tools/build_profiles.py",
+        "tools/component_build.py",
+        "tools/component_development.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_registry.py",
+        "tools/utility_help.py",
+        "tools/utility_versions.py"
+      ]
     }
   }
 }

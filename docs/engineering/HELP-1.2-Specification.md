@@ -2,10 +2,10 @@
 
 **Release target: BetterCP/M 1.2 (maintainer decision, 9 November 2026).**
 This design originated during 1.1 planning. BetterCP/M 1.1 shipped TCAP 2.0
-and deferred HELP. Implementation and qualification of the reader are pending.
-The resumed design review covers the [proposed Markdown dialect and worked
-subjects](../../specifications/HELP-MARKDOWN.md), including the delivered
-TCAP behavior for paging and strong emphasis.
+and deferred HELP. The first development build includes the transient reader
+and a starter collection. It has run on BetterCP/M 1.1.1 under cpmsim.
+The [Markdown dialect and worked subjects](../../specifications/HELP-MARKDOWN.md)
+describe the input format.
 [BetterCP/M 1.1 release notes](../releases/RELEASE-NOTES-1.1.md)
 
 ## Reader, content and utility independence
@@ -137,7 +137,7 @@ For ordinary reading with an explicit archive, that archive supplies the
 topic, its usual index fallback, and the targets of links. If an explicit
 source cannot be opened, identify its filespec and return to CP/M.
 
-For a redundant topic operand, the proposed rule accepts
+For a redundant topic operand, the first build accepts
 `HELP PIP /S=A4:PIP.HQP`. If the operand differs from the loose file's
 basename, as in `HELP COPY /S=A4:PIP.HQP`, report the mismatch.
 
@@ -161,8 +161,7 @@ navigation and pagination. Preserve ordinary console behavior and restore
 normal rendition after HELP-owned emphasis and on exit. TCAP 2.0 offers
 strong begin/end; its end operation selects normal rendition and cannot
 restore arbitrary inherited attributes.
-Completion of TCAP is a development dependency. Once shipped, HELP must
-still be readable on a plain console when optional enhancements are absent.
+HELP renders readable plain text when optional enhancements are absent.
 [Terminal architecture, section 22](POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md#22-optional-utility-presentation-and-ascii-fallback)
 
 **Opening page for a sectioned topic.** Display the `#` title, render the
@@ -175,7 +174,7 @@ characters per menu label and show the full heading inside the section.
 exiting to CP/M from the top level. Within a multi-page section, `,` or
 `<` goes to the previous page and `.` or `>` goes to the next.
 
-**Proposed menu keys.** Assign choices `0` through `9`, then `A` through
+**Menu keys in the first build.** Assign choices `0` through `9`, then `A` through
 `Z`, skipping `Q` to preserve its navigation meaning. A single keystroke
 opens a choice. This gives 35 keys per menu page. For a longer menu, use the
 paging keys and assign keys afresh to the visible choices on each page.
@@ -189,18 +188,63 @@ with `/S=`, use ordinary topic lookup for the linked subject.
 directly in the selected PIP topic. Match the full Level 2 heading
 case-insensitively, including all words of a multiword heading. The 16-character
 menu label is only for display. A link in another help file can target the
-same section. The proposed Markdown spelling is `[PIP selectors](PIP.HLP#selectors)`.
+same section with `[PIP selectors](PIP.HLP#selectors)`.
 Resolve the subject using the link's normal source rules, then locate the
 section inside that copy.
 
-**Proposed for review.** Use `###` for a local subheading. Add paragraphs,
-simple lists, inline code and fenced examples that preserve spacing.
-A topic with no selectable sections could display immediately.
+**Markup in the first build.** Use `###` for a local subheading. The reader
+renders paragraphs, simple lists, inline code and fenced examples that
+preserve spacing. A topic with no selectable sections displays immediately.
 Z-System's menus, preformatted examples, cross-file navigation and frames
 informed these proposals. Compatibility with historical files, the final
 Markdown grammar and the remaining navigation details are open.
 
 ## Evidence already available
+
+### First executable build
+
+From the repository root, run `python3 tools/build_help.py --disk`. The
+builder requires z80pack's `z80asm`. The optional data disks also require
+`cpmcp`. The outputs in `build/help/` are `HELP.COM`, `HELP.LBR` and
+`BetterCPM-1.2-HELP` images in DSK (cpmsim), DMK (Model 4) and IMD
+(Model II) formats. Mount the appropriate data disk as B on a running
+system, type `B:`, then `HELP`. The source collection contains COPY, DIR,
+HELP, NOAH, PATH and PIP plus an authored index. New loose subjects can be
+tried immediately with `HELP /S=filespec`. A custom directory of ASCII
+`.HLP` sources can be packaged with `--subjects directory`.
+[Reader source](../../src/utilities/help.mac) · [Topic sources](../../src/help/)
+
+`python3 tools/qualify_help.py --system disk.raw --simulator cpmsim --console`
+boots copies of cpmsim media. Supply the System image with its matching
+`diskdefs`. The console checks also use `pyte`. The guest exercises PATH
+and source selection, report-only misses, both types of index, single-key
+menus, direct sections, cross-file links, backward paging, and nested
+Ctrl-C. Independent fixtures cover plain, squeezed and crunched subjects
+and ARK methods 1 through 9, including compressed help files inside a
+compressed ARK member. The data images are compared byte-for-byte after
+the plain-console run. Rendered checks use the shipped 80-column ANSI
+provider and a disposable copy advertising a 40-column viewport.
+The cpmsim 1.2 NDR candidate also resolved `/S=HFILES:HELP.LBR` and a
+named PATH entry. Released NOAH verified the CRCs of all seven starter
+library members on the mountable cpmsim disk. Extracting the COM and LBR
+from the Model 4 and Model II images reproduced the development binaries
+with ordinary CP/M record padding.
+
+The reader holds one decoded subject in the available TPA. Compressed input
+and its decoder workspace must also fit during decoding. HELP reports
+insufficient memory when a topic exceeds the applicable limit. Plain files
+can use the whole topic buffer. Navigation retains up to 16 parent views
+with their source, section and page. Following a link releases the previous
+topic's buffer and returning reopens its source. Without usable TCAP facts,
+the initial layout assumes 80 columns and 24 rows and uses plain text.
+At page boundaries, further travel in that direction keeps the current page.
+A directly requested section is the top level for that invocation.
+
+The broader reference corpus, quick-help footers across the distribution,
+Model 4 and Model II execution checks, and release-media integration are
+still outstanding.
+
+### Earlier prototypes
 
 The 1.0.1 cpmsim storage experiment used four real subjects (COPY, PIP, XSUB
 and FILES) and a 40-subject growth fixture plus index. The latter used 82 KiB
@@ -236,9 +280,8 @@ nine resident RCP commands.
    missing link targets, wrapping and page boundaries.
    Use a short topic and a multi-section topic at narrow and wide
    console widths to review the result.
-4. Integrate the reader and measure startup, member access, decoder workspace,
-   forward and backward navigation on floppy-oriented media. Verify plain
-   topics can run without reserving the Crunch workspace.
+4. Measure startup and member access on floppy-oriented media. Assess
+   whole-topic buffering and return-to-parent read costs with a larger corpus.
 5. Review the final corpus, footer coverage, source-to-help conversion and
    disk placement. Qualify the reader, console fallback, read-only behavior,
    caller-state preservation and release media on cpmsim, TRS-80 Model 4 and

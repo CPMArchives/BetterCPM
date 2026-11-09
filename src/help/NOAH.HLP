@@ -1,0 +1,25 @@
+# NOAH - Archive utility
+
+Run NOAH from the drive/user containing NOAH.COM and its matching NOAH.OVL.
+
+## Help libraries
+
+To create a help library from the loose subjects in D0, use:
+
+```text
+NOAH /ADD D0:TOOLS.LBR D0:*.HLP
+NOAH /TEST D0:TOOLS.LBR
+HELP /S=D0:TOOLS.LBR
+```
+
+Include an _INDEX.HLP for an authored menu. If you omit it, HELP lists
+the topics in archive order. See [choosing a help source](HELP.HLP#choosing-a-source).
+
+## Listing members
+
+```text
+NOAH /LIST D0:TOOLS.LBR
+NOAH /LIST D0:HELP.ARK
+```
+
+Use `/TEST` to check archive data and `/HELP` for the command summary.
