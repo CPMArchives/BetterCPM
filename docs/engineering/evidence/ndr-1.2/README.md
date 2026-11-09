@@ -71,3 +71,8 @@ visually verified. Model II repeats the same smoke sequence and additionally run
 through SUBMIT, visibly confirming eight rows in four columns and the full-table
 usage count. The [native guest receipt](native-guests.json) records both targets.
 These are private engineering media, not published release images.
+
+
+Embedded `/DEFAULT` is qualified separately in [NDR startup-default checks](../ndr-defaults/README.md).
+Those receipts supersede the earlier NDR.COM size for the extended utility;
+the resident provider and the BNDR set format are unchanged.

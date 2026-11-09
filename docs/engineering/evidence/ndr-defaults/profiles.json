@@ -1,0 +1,35 @@
+[
+  {
+    "profile": "model4-default",
+    "status": "PASS",
+    "default_cases": 86,
+    "existing_ndr_checks": "PASS",
+    "ndr_com_bytes": 7216,
+    "ndr_com_sha256": "9a9007fec104ebcbe953b68f1d331898d8be0678c5565d570ca7aaf1920ec36b",
+    "ndr_provider_payload_bytes": 478,
+    "ndr_provider_allocation": 512,
+    "ndr_provider_payload_sha256": "27228defa80f71b3d2c58d788470cff9d347d168b19856554a9fb1b8559a53db"
+  },
+  {
+    "profile": "cpmsim-fullram",
+    "status": "PASS",
+    "default_cases": 86,
+    "existing_ndr_checks": "PASS",
+    "ndr_com_bytes": 7216,
+    "ndr_com_sha256": "9a9007fec104ebcbe953b68f1d331898d8be0678c5565d570ca7aaf1920ec36b",
+    "ndr_provider_payload_bytes": 478,
+    "ndr_provider_allocation": 512,
+    "ndr_provider_payload_sha256": "27228defa80f71b3d2c58d788470cff9d347d168b19856554a9fb1b8559a53db"
+  },
+  {
+    "profile": "model2-fullram",
+    "status": "PASS",
+    "default_cases": 86,
+    "existing_ndr_checks": "PASS",
+    "ndr_com_bytes": 7216,
+    "ndr_com_sha256": "9a9007fec104ebcbe953b68f1d331898d8be0678c5565d570ca7aaf1920ec36b",
+    "ndr_provider_payload_bytes": 478,
+    "ndr_provider_allocation": 512,
+    "ndr_provider_payload_sha256": "27228defa80f71b3d2c58d788470cff9d347d168b19856554a9fb1b8559a53db"
+  }
+]

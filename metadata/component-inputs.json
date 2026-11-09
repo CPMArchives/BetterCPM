@@ -5703,6 +5703,10 @@
         "origin": 256,
         "assembler_flags": [
           "-fb"
+        ],
+        "default_provider_version": [
+          1,
+          0
         ]
       },
       "registry_fields": [
@@ -5710,9 +5714,11 @@
         "description"
       ],
       "files": [
+        "src/rsx/ndr.mac",
         "src/system/layout.inc",
         "src/utilities/common/filespec.inc",
         "src/utilities/common/ndr-client.inc",
+        "src/utilities/common/ndr-default.inc",
         "src/utilities/common/rsxsource.inc",
         "src/utilities/common/version.inc",
         "src/utilities/ndr.mac",
