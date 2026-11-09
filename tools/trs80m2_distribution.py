@@ -14,7 +14,7 @@ SYSTEM_NAME = 'BetterCPM-Distribution-trs80m2-77T-SS-System.imd'
 LIFECYCLE = Path('docs/engineering/evidence/2026-11-07-model2-acceptance/lifecycle.json')
 
 
-def build_system(work, out, identity, emulator, reuse, repo):
+def build_system(work, out, identity, emulator, reuse, repo, *, pending_smoke=False):
     from build_distribution import digest, prepare_profile, profile_inputs, run
     from release_metadata import disk_record
 
@@ -52,6 +52,8 @@ def build_system(work, out, identity, emulator, reuse, repo):
             and prior.get('compatibility_id')==manifest['compatibility_id']):
         boot = {'status':'PASS','source':str(LIFECYCLE),'receipt_sha256':digest(receipt.read_bytes()),
                 'emulator_sha256':prior['emulator_sha256']}
+    elif pending_smoke:
+        boot = {'status':'PENDING_SMOKE','source':'1.2 focused release policy'}
     else:
         # New executable bytes get a fresh native lifecycle test. Only exact
         # previously qualified media can take the receipt path on a headless host.
@@ -71,6 +73,8 @@ def build_system(work, out, identity, emulator, reuse, repo):
               'free_bytes':inventory['free_blocks']*fmt.block_bytes,
               'package_sha256':digest(files['SYSTEM.SYS']),'compatibility_id':manifest['compatibility_id'],
               'validation':{'boot':boot,'inventory':inventory}}
+    if pending_smoke:
+        report['release_policy'] = '1.2-focused'
     report['release_record'] = disk_record(report,binary,root=staged)
     from package_release_candidates import write_package
     kit_name = 'BetterCPM-1.1-Model-II-System.zip'

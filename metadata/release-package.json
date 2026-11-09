@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "name": "BetterCP/M release package",
-  "version": "1.1.1",
-  "status": "maintainer-approved patch publication",
-  "notes": "Patch release containing PRs #671 and #672. Maintainer authorized publication without a new engineering test campaign; prior focused checks are recorded in the release notes. Earlier published releases remain unchanged."
+  "version": "1.2",
+  "status": "feature frozen; focused release preparation",
+  "notes": "Feature freeze at d7a11e2e4b5b10cc50042af5d38d7d5bec2ba825. Only release metadata, documentation, packaging corrections and genuine blockers. Reuse existing engineering qualification; manual validation is smoke-only."
 }

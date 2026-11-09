@@ -66,7 +66,7 @@ class ReleaseCandidateTests(unittest.TestCase):
     def test_rejects_image_drift_and_wrong_commit(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);(root/'system.dsk').write_bytes(b'original')
-            report={'source':{'revision':'a'*40},'image':'system.dsk','sha256':sha(b'original'),
+            report={'target':'z80pack','source':{'revision':'a'*40},'image':'system.dsk','sha256':sha(b'original'),
                     'validation':dict.fromkeys(('filesystem','file_integrity','config_fingerprint'),'PASS')}
             (root/'report.json').write_bytes(encoded(report))
             read_report(root,'a'*40)
@@ -77,7 +77,7 @@ class ReleaseCandidateTests(unittest.TestCase):
     def test_rejects_missing_construction_gate(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);(root/'system.dsk').write_bytes(b'x')
-            report={'source':{'revision':'a'*40},'image':'system.dsk','sha256':sha(b'x'),
+            report={'target':'z80pack','source':{'revision':'a'*40},'image':'system.dsk','sha256':sha(b'x'),
                     'validation':{'filesystem':'PASS'}}
             (root/'report.json').write_bytes(encoded(report))
             with self.assertRaises(ValueError):read_report(root,'a'*40)
