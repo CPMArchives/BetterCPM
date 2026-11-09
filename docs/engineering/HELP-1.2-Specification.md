@@ -3,8 +3,9 @@
 **Release target: BetterCP/M 1.2 (maintainer decision, 9 November 2026).**
 This design originated during 1.1 planning. BetterCP/M 1.1 shipped TCAP 2.0
 and deferred HELP. Implementation and qualification of the reader are pending.
-The first step when work resumes is to check the delivered terminal capabilities
-against HELP's paging, emphasis and plain-console requirements.
+The resumed design review covers the [proposed Markdown dialect and worked
+subjects](../../specifications/HELP-MARKDOWN.md), including the delivered
+TCAP behavior for paging and strong emphasis.
 [BetterCP/M 1.1 release notes](../releases/RELEASE-NOTES-1.1.md)
 
 ## Reader, content and utility independence
@@ -87,7 +88,9 @@ whether to render bold, its supported standout style, or ordinary text
 without the delimiters. Literal examples preserve their characters. TCAP
 owns capability discovery and safe rendition changes; HELP owns parsing,
 navigation and pagination. Preserve ordinary console behavior and restore
-the previous presentation when returning from emphasis or leaving HELP.
+normal rendition after HELP-owned emphasis and on exit. TCAP 2.0 offers
+strong begin/end; its end operation selects normal rendition and cannot
+restore arbitrary inherited attributes.
 Completion of TCAP is a development dependency. Once shipped, HELP must
 still be readable on a plain console when optional enhancements are absent.
 [Terminal architecture, section 22](POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md#22-optional-utility-presentation-and-ascii-fallback)

@@ -1,0 +1,14 @@
+# COPY - Copy files
+
+To keep the original file in A0 and make a copy in D0:
+
+```
+COPY A0:README.TXT D0:
+```
+
+Resident COPY refuses to replace an existing destination unless you give
+`/O`. Keep a separate copy of important data before replacing a file.
+
+For verified copies, use the transient command, for example
+`:COPY A0:README.TXT D0: /V`. For destination-first syntax or device
+transfers, see [PIP](PIP.HLP).

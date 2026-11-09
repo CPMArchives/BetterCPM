@@ -1,0 +1,47 @@
+# PIP - File and device transfer
+
+Put the **destination** to the left of the equals sign. For example, copy
+all the COM files from A to D with this command:
+
+```text
+PIP D:=A:*.COM
+```
+
+## Syntax
+
+```
+PIP destination=source[,source...]
+```
+
+Type `PIP` alone to open the `*` prompt. Enter an assignment there without
+repeating the command name. Press Enter on an empty line to leave PIP.
+
+## Selectors
+
+To copy COM files from every user area on B into user 4 on A:
+
+```
+PIP A4:=B[-]:*.COM
+```
+
+### Duplicate names
+
+A selector can match up to 64 source files. If two distinct selected files
+would produce the same destination name, PIP reports the conflict before
+copying any of them.
+
+## Examples
+
+1. Copy one file and verify the result:
+
+```
+PIP D:BACKUP.COM=A:PROGRAM.COM[V]
+```
+
+2. Join two text files in the stated order:
+
+```
+PIP D:ALL.TXT=D:ONE.TXT,D:TWO.TXT
+```
+
+For source-first syntax, see [COPY](COPY.HLP).

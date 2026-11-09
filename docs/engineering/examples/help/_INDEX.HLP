@@ -1,0 +1,6 @@
+# File transfers
+
+Choose the command that matches your task.
+
+- [COPY](COPY.HLP) copies files using source-first syntax.
+- [PIP](PIP.HLP) transfers files and device streams using destination-first syntax.
