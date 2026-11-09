@@ -1,0 +1,21 @@
+{
+  "status": "REUSED_ENGINEERING_EVIDENCE",
+  "pull_requests": [
+    675,
+    678,
+    679,
+    680,
+    681
+  ],
+  "records": {
+    "docs/engineering/evidence/ndr-1.2/memory-and-profiles.json": "a00474264cc6bdca1e0d5fce481b08f16037cfba090a3ddaf85fe53194e9c9cc",
+    "docs/engineering/evidence/ndr-1.2/booted-cpmsim.json": "587dde177ffc3ba6736a4f45a23b44ae8669d71ab263b5ae3704230e9adb68c8",
+    "docs/engineering/evidence/ndr-1.2/native-guests.json": "b8b80d377d4f0035956384009c388f61a566861d3f7ac903c6cf3c70fc932b59",
+    "docs/engineering/evidence/ndr-1.2/README.md": "a7a501c201e59e3de013508079779c87fde140a3725eb13f40094bb19701d10a",
+    "docs/engineering/evidence/ndr-1.2/command-manager.json": "ea96db41d48d0eade1be1bed5294bb0361418a92b598e17841836cf6b9ae2366",
+    "docs/engineering/evidence/help-1.2/integration.json": "27eb8a4a5fbfbfa1874ea245c0216cc90b8d6c404bbde16b5aa4822f0ec6df78",
+    "docs/engineering/Numeric-PATH-1.1.md": "32a91e245558ad385d08f3dcfb9c3f4f5fbefaf3e6835950f2d515bca72b8efa",
+    "docs/engineering/NOAH-Overlay-PATH-1.1.2.md": "4ce6ccdbcca48e72735d6104c66287cd3cc61cfffd882360a61a9fe7b36329b7"
+  },
+  "boundary": "Reuse component/engineering qualification. This does not claim the old campaigns were rerun on final media."
+}

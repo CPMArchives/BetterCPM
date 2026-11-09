@@ -1,0 +1,24 @@
+                                                                                
+A0> RSX LOAD NDR  ited, CPU executes undocumented instructions                  
+                                                                                
+A0> RSX LIST                                                                    
+                                                                                
+ADM3A : BDOS 255                                                                
+NDR : BDOS 255:                                                                 
+TPA available: 53KC0:                                                           
+                                                                                
+A0>   ER /BANNER                                                                
+                                                                                
+ - - -                                                  - - -                   
+|                                                            |                  
+|                         BetterCP/M                         |                  
+                         Core OS 1.2                                            
+                                                                                
+                  CP/M 2.2 Compatible System                                    
+                                                                                
+                Type TYPE README.TXT for more                                   
+|                                                            |                  
+ - - -                                                  - - -                   
+                                                                                
+A0> RSX LOAD ADM3A                                                              
+                                                                                

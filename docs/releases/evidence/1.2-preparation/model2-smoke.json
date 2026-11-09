@@ -1,0 +1,69 @@
+{
+  "status": "PASS",
+  "scope": "one short release smoke session",
+  "system_sha256": "cf23c2e07bee49364fcf5b07aa200f13e60486decc867f74580036fecea2aa62",
+  "checks": [
+    {
+      "capture": 0,
+      "expected": [
+        "A0>"
+      ],
+      "status": "PASS"
+    },
+    {
+      "capture": 1,
+      "expected": [
+        "57344",
+        "A0>"
+      ],
+      "status": "PASS"
+    },
+    {
+      "capture": 2,
+      "expected": [
+        "A0>"
+      ],
+      "status": "PASS"
+    },
+    {
+      "capture": 3,
+      "expected": [
+        "updated",
+        "A0 [SYSTEM]>"
+      ],
+      "status": "PASS"
+    },
+    {
+      "capture": 4,
+      "expected": [
+        "A0 [SYSTEM]>"
+      ],
+      "status": "PASS"
+    },
+    {
+      "capture": 5,
+      "expected": [
+        "SYSTEM",
+        "A0 [SYSTEM]>"
+      ],
+      "status": "PASS"
+    },
+    {
+      "capture": 6,
+      "expected": [
+        "PIP",
+        "A0 [SYSTEM]>"
+      ],
+      "status": "PASS"
+    },
+    {
+      "capture": 7,
+      "expected": [
+        "COM",
+        "A0 [SYSTEM]>"
+      ],
+      "status": "PASS"
+    }
+  ],
+  "initial_oracle_issue": "Capture 0 expected the Model 4 banner on Model II; the basic Model II startup presents A0> without a banner. Retained capture was re-audited against that expected startup."
+}

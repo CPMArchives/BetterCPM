@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "scope": "boot 1.2, expected TPA, NDR name/use, annotated PATH, DIR, one actual PIP HELP topic and exit; matched System/Utilities/Companion media",
+  "system_sha256": "ff79e7b37691bf895d164c3f643d8e9349459a29775062462b4d77fab17de7fc",
+  "paired_images": {
+    "b": "6d4534f7d3234c054fc6e317e0ee71ba26829ba6d1610b4aab9528fe7128b5bc",
+    "c": "d3aabb59435f51d8377e1dba143a5542c05cd654fe2065913187eb280ff30f84"
+  }
+}

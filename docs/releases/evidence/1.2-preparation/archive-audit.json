@@ -1,0 +1,63 @@
+{
+  "status": "PASS",
+  "assets": [
+    {
+      "filename": "BetterCPM-1.2-System-cpmsim-candidate.zip",
+      "sha256": "74402635c12c20aec536b282d62c0a55723349b7e3ded16979b94ae7ee13b806",
+      "bytes": 551293,
+      "members": 71,
+      "status": "PASS"
+    },
+    {
+      "filename": "BetterCPM-1.2-System-Model4-candidate.zip",
+      "sha256": "baf595b26d678af8b4848543c9d921f35288d8ee75138a17a784254b7367a03e",
+      "bytes": 270674,
+      "members": 36,
+      "status": "PASS"
+    },
+    {
+      "filename": "BetterCPM-Utilities-1.2-cpmsim-candidate.zip",
+      "sha256": "7c145cbacaa9f9b5fe5b3287fde228684a0fb986379866be6f6f0a934440ebe5",
+      "bytes": 351510,
+      "members": 35,
+      "status": "PASS"
+    },
+    {
+      "filename": "BetterCPM-Utilities-1.2-Model4-candidate.zip",
+      "sha256": "14250f336128216d5d059c94fb5748b7b1e9c6ea028db217a5d968041f8723f3",
+      "bytes": 369309,
+      "members": 35,
+      "status": "PASS"
+    },
+    {
+      "filename": "BetterCPM-1.2-System-Model2-candidate.zip",
+      "sha256": "3946dfc7ce44f36c49de9c00907674bfebbfa0ebc64e8aed0789654ba9b88716",
+      "bytes": 229781,
+      "members": 34,
+      "status": "PASS"
+    },
+    {
+      "filename": "BetterCPM-Utilities-1.2-Model2-candidate.zip",
+      "sha256": "115f654d31d5cc819ea7cfe095140412d8afe17340d33e8cce24977d48d22b66",
+      "bytes": 333925,
+      "members": 35,
+      "status": "PASS"
+    },
+    {
+      "filename": "BetterCPM-1.2-Source-candidate.zip",
+      "sha256": "07d9288be8f4967ed967b00c15ac74f3910c727b674830f08c4f9f13fc7c1dcb",
+      "bytes": 142133755,
+      "members": 3371,
+      "status": "PASS"
+    },
+    {
+      "filename": "BetterCPM-1.2-Documentation-candidate.zip",
+      "sha256": "8999b5dc334675ad780c6d1463c9a211484c6f3a67818ebe65b302bbbe9fd7e0",
+      "bytes": 694492,
+      "members": 175,
+      "status": "PASS"
+    }
+  ],
+  "source_commit": "dc16a08543ba7a377dd04912ece0485894e134bc",
+  "package_directory": "/Users/nathanael/.codex/worktrees/noah-1-2-integration/BetterCPM/build/release-1.2/rc-packages/candidates/dc16a08543ba7a377dd04912ece0485894e134bc"
+}
