@@ -98,8 +98,9 @@ still be readable on a plain console when optional enhancements are absent.
 **Proposed for review on resumption.** Use `#` for a title, `##` for a
 selectable section and `###` for a local subheading. Add paragraphs, simple
 lists, inline code, fenced examples that preserve spacing, and links between
-subjects. A short topic could display immediately. A longer one could show
-an overview and section menu, with direct access such as `HELP PIP SELECTORS`.
+subjects. A topic with no selectable sections could display immediately.
+A sectioned topic could open with its title, an optional short synopsis and
+the menu of all Level 2 headings, with direct access such as `HELP PIP SELECTORS`.
 Z-System's menus, preformatted examples, cross-file navigation and frames
 informed these proposals. Compatibility with historical files, the final
 Markdown grammar and the navigation keys are open.

@@ -8,7 +8,7 @@ for the agreed library lookup, footer, authored index and menu fallback.
 
 ## Worked subjects
 
-[PIP.HLP](../docs/engineering/examples/help/PIP.HLP) has an overview, three
+[PIP.HLP](../docs/engineering/examples/help/PIP.HLP) has a one-line synopsis, three
 sections and a local subheading. [COPY.HLP](../docs/engineering/examples/help/COPY.HLP)
 shows a short subject. Both are reachable by ordinary subject name and from
 the links in the sample [_INDEX.HLP](../docs/engineering/examples/help/_INDEX.HLP).
@@ -19,7 +19,8 @@ The examples use the [command reference](../docs/manuals/Command-and-Utilities-R
 | Construct | Proposed meaning |
 | --- | --- |
 | `# Title` | First nonblank line. The title is display text. The CP/M member basename supplies the subject name for lookup. |
-| Text before the first `##` | Overview displayed immediately on entry. Blank lines separate paragraphs. Join adjacent prose lines with a space and wrap to the usable width. |
+| Content between the title and the first `##` | Optional synopsis on the section menu. An author can give a command form in a fenced block, write a brief description or omit the synopsis. Keep longer explanations under a section heading. |
+| Paragraphs | Blank lines separate paragraphs. Join adjacent prose lines with a space and wrap to the usable width. |
 | `## Heading` | A named, selectable section. The reader builds a menu from section headings in source order. A section ends at the next `##` or end of subject. |
 | `### Heading` | A local heading displayed as part of its section. |
 | `- item` or `1. item` | A simple one-level list. Preserve ordered-list numbers and indent wrapped continuations. |
@@ -41,7 +42,7 @@ dialect. Aligned material can be represented by a fenced block.
 
 | Request | Proposed result |
 | --- | --- |
-| `HELP PIP` | Show the title, overview and first command example. Offer **Syntax**, **Selectors**, and **Examples** in that order. |
+| `HELP PIP` | Show the Level 1 title, then the command synopsis, then a menu of all Level 2 headings: **Syntax**, **Selectors**, **Examples**. Omitting the synopsis yields a title-and-menu opening. Section bodies appear upon selection. |
 | `HELP PIP SELECTORS` | Open **Selectors** directly and display **Duplicate names** within it. |
 | `HELP COPY` | Display the topic immediately. Its link to PIP is available without creating an empty section menu. |
 | `HELP` using the sample index | Render the authored index as a normal subject with two selectable links. `HELP PIP` also finds PIP independently of the index. |

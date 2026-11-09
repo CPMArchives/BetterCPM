@@ -1,16 +1,16 @@
 # PIP - File and device transfer
 
-Put the **destination** to the left of the equals sign. For example, copy
-all the COM files from A to D with this command:
-
 ```text
-PIP D:=A:*.COM
+PIP destination=source[,source...]
 ```
 
 ## Syntax
 
+Put the **destination** to the left of the equals sign. For example, copy
+all the COM files from A to D with this command:
+
 ```
-PIP destination=source[,source...]
+PIP D:=A:*.COM
 ```
 
 Type `PIP` alone to open the `*` prompt. Enter an assignment there without
