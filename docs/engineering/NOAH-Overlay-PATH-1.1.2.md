@@ -79,3 +79,31 @@ executed on the Z80 core with modeled BDOS, not as new hardware/emulator media
 qualification. No broader release engineering was performed. The branch starts
 at locally cached `origin/main` commit `3fcb4c79`; an upstream refresh failed
 because github.com could not be resolved in this session.
+
+
+## Carry-forward into 1.2
+
+Integrated against main `48d229002bc12b9e49d180fa70cfb7e74f4388ff` from
+release/1.1.2 commits `73c9a754` and `c5b7be7a`. No changes from the
+1.1.2 packaging commit `2270f180` were imported. Existing NDR, annotated
+PATH and HELP implementation is preserved. The preceding v1.1.1 media
+references describe historical patch verification, not 1.2 installation requirements.
+
+Validation on 10 November 2026:
+
+- 36 focused production-binary PATH cases passed, now also asserting that the
+  independent address fixtures and generated NOAH tuples match the current
+  canonical layout and platform profiles used by PATH.
+- 51 codec/overlay transactions, 38 LBR-write cases and 181 command/adapter
+  cases passed; deterministic build confirmed.
+- Nine component-registry tests passed; registry and TSV both assign NOAH 1.0
+  revision 21. NOAH query coverage is included in the command/adapter suite.
+- Nine real CCP/BDOS guest cases passed using the existing 1.2 HELP-integrated
+  cpmsim image under `build/help-integration/qualified-cpmsim/` with newly built
+  NOAH. Guest transcripts are in `build/noah-1.2-path-guest-r3/`.
+  The harness removes additional unrelated utilities and the old NOAH pair
+  only on its disposable A disk to fit the fixtures. PATH, NDR and boot/CCP
+  carriers remain intact.
+- The optional all-utility version suite could not run because unrelated
+  prebuilt `build/utilities/STAT.COM` was absent; no broad utility rebuild or
+  release qualification was undertaken.

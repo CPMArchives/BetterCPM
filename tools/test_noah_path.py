@@ -4,6 +4,7 @@
 BDOS remains an exact-DU file provider: only NOAH can perform PATH searches.
 The separate guest test exercises launch through the real CCP.
 """
+from pathlib import Path
 from test_noah_write import machine
 from test_usq_com import diskkey, padded
 from test_lbr import archive, entry, with_crcs
@@ -17,6 +18,18 @@ LAYOUTS = ((0xe994, 0xd644, 0xe42a),       # Model 4 / conventional
 
 
 def tests(m):
+    # The inherited literal fixtures must still match current 1.2's contract,
+    # including all platform profiles used by PATH.COM and the NOAH builder.
+    from build_profiles import PROFILES, profile_inputs, symbols
+    from noah_overlays import path_layouts
+    source = Path(__file__).resolve().parents[1] / 'src/system/layout.inc'
+    text = source.read_text()
+    assert 'LY_LERR         EQU     LY_EXT-17' in text
+    assert 'LY_PATH         EQU     LY_LERR+1' in text
+    layouts = [symbols(text)]
+    layouts += [profile_inputs(p, source)[0]['symbols'] for p in PROFILES.values()]
+    current = {(v['LY_BIOS'] + 3, v['LY_SYS'] + 0x80, v['LY_EXT'] - 16) for v in layouts}
+    assert current == set(LAYOUTS) == set(path_layouts()), current
     provider = m.bdos
     attempts = []
     fault = {"read": False}

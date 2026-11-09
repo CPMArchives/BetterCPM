@@ -44,9 +44,11 @@ def main():
         shutil.copy2(a.diskdefs, case / 'diskdefs')
         shutil.copy2(a.system_image, disks / 'drivea.dsk')
         # Make room only on the disposable boot copy. These unrelated tools
-        # are not used by the test; PATH and all boot/CCP carriers stay intact.
+        # are not used by the test; remove the old NOAH pair before installing
+        # fixtures too. PATH, NDR and all boot/CCP carriers stay intact.
         subprocess.run(['cpmrm', '-T', 'raw', '-f', 'bettercpm-default',
-                        str(disks/'drivea.dsk'), '0:ED.COM', '0:FDB.COM'],
+                        str(disks/'drivea.dsk'), '0:ED.COM', '0:FDB.COM', '0:HELP.HLP', '0:HELP.COM',
+                        '0:PIP.COM', '0:CONFIG.COM', '0:NOAH.COM', '0:NOAH.OVL'],
                        cwd=case, check=True)
         for drive in 'bcd':
             (disks / f'drive{drive}.dsk').write_bytes(b'\xe5' * a.system_image.stat().st_size)
