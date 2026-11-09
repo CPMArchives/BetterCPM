@@ -12,6 +12,9 @@ NDR SOURCE C2:
 NDR
 ```
 
+With no operands, NDR lists the live assignments and reports how many of the
+32 entries are in use, including an explicit zero count for an empty table.
+
 Names ignore case. Numeric directory spellings such as `A`, `B2` and `31` are
 reserved. Names are aliases; they do not create filesystem directories or
 protect files. If several names refer to the current location, the first live

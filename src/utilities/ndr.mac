@@ -44,18 +44,19 @@ NM_READY:
         CP '/'
         JR NZ,NM_ASSIGN
         INC HL
+        LD (NM_OPTION),HL
         LD DE,NM_DKEY
         CALL NM_KEY
         JP Z,NM_DELETE
-        LD HL,NM_TAIL+1
+        LD HL,(NM_OPTION)
         LD DE,NM_CKEY
         CALL NM_KEY
         JR Z,NM_CLEAR
-        LD HL,NM_TAIL+1
+        LD HL,(NM_OPTION)
         LD DE,NM_LKEY
         CALL NM_KEY
         JP Z,NM_LOAD
-        LD HL,NM_TAIL+1
+        LD HL,(NM_OPTION)
         LD DE,NM_SKEY
         CALL NM_KEY
         JP Z,NM_SAVE
@@ -120,10 +121,13 @@ NM_ZENTRY:
         INC HL
         DJNZ NM_ZENTRY
 NM_PUBLISH:
+        LD DE,NM_OK
+NM_COMMIT:
+        PUSH DE
         LD HL,NM_TABLE
         LD A,3
         CALL CN_CALL
-        LD DE,NM_OK
+        POP DE
         JP NM_PRINT
 
 ; NAME is padded to eight bytes. All validation precedes resident publication.
@@ -306,12 +310,17 @@ NM_KEND:
         RET
 
 NM_LIST:
+        XOR A
+        LD (NM_INUSE),A
         LD HL,NM_TABLE
         LD B,32
 NM_LNEXT:
         LD A,(HL)
         OR A
         JR Z,NM_LSKIP
+        LD A,(NM_INUSE)
+        INC A
+        LD (NM_INUSE),A
         PUSH BC
         PUSH HL
         LD B,8
@@ -327,6 +336,22 @@ NM_LNAME:
         CALL NM_CHAR
         INC HL
         LD A,(HL)
+        CALL NM_NUMBER
+        LD DE,NM_COLON
+        CALL NM_PUTS
+        POP HL
+        POP BC
+NM_LSKIP:
+        LD DE,10
+        ADD HL,DE
+        DJNZ NM_LNEXT
+        LD DE,NM_COUNTMSG
+        CALL NM_PUTS
+        LD A,(NM_INUSE)
+        CALL NM_NUMBER
+        LD DE,NM_CAPMSG
+        JP NM_PRINT
+NM_NUMBER:
         LD B,'0'
 NM_TENS:
         CP 10
@@ -341,16 +366,7 @@ NM_UNITS:
         CALL NZ,NM_CHAR
         POP AF
         ADD A,'0'
-        CALL NM_CHAR
-        LD DE,NM_COLON
-        CALL NM_PUTS
-        POP HL
-        POP BC
-NM_LSKIP:
-        LD DE,10
-        ADD HL,DE
-        DJNZ NM_LNEXT
-        JP NM_EXIT
+        JP NM_CHAR
 NM_CHAR:
         PUSH HL
         PUSH BC
@@ -519,7 +535,8 @@ NM_READ:
         JP Z,NM_IOERR
         CALL NM_VALIDATE
         JP C,NM_BADSET
-        JP NM_PUBLISH
+        LD DE,NM_LOADED
+        JP NM_COMMIT
 NM_LFAIL:
         CALL NM_CLOSE
         JP NM_BADSET
@@ -685,6 +702,9 @@ NM_FULL: DB 'NDR is full (32 names).',13,10,'$'
 NM_OK: DB 'Named directories updated (not saved).',13,10,'$'
 NM_COLON: DB ':',13,10,'$'
 NM_SAVED: DB 'Named-directory set saved.',13,10,'$'
+NM_LOADED: DB 'Named-directory set loaded.',13,10,'$'
+NM_COUNTMSG: DB 'NDR: $'
+NM_CAPMSG: DB ' of 32 names in use.',13,10,'$'
 NM_FILEEXISTS: DB 'File exists. Choose another name or erase it first.',13,10,'$'
 NM_DISKERR: DB 'NDR disk operation failed.',13,10,'$'
 NM_INVALID: DB 'Invalid or incomplete NDR set; live names unchanged.',13,10,'$'
@@ -693,6 +713,8 @@ NM_HEADER: DB 'BNDR',1,32,8,10
         DB 0
         ENDM
 NM_ORIGUSER: DB 0
+NM_INUSE: DB 0
+NM_OPTION: DW 0
 NM_DPAIR: DW 0
 NM_CHECK: DW 0
 NM_NAMEBUF: DS 8

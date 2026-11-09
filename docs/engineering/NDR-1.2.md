@@ -133,7 +133,10 @@ of ten zero bytes. There is no separate live count or duplicate resident index.
 
 ## Saved sets and management
 
-`NDR.COM` lists, assigns, deletes, clears, loads and saves. It provides standard
+`NDR.COM` lists assignments and their in-use count, assigns, deletes, clears,
+loads and saves. Command tails accept ordinary leading blanks and case-insensitive
+operation keywords. Successful loads are reported separately from unsaved edits.
+It provides standard
 `/H`, `/HELP`, and `/VER` queries. All edits use a transient snapshot and publish
 only a complete validated candidate. File operations restore the caller's user.
 

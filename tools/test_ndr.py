@@ -90,11 +90,11 @@ class Guest:
         else:
             raise AssertionError(f'unexpected BDOS {fn}')
 
-    def run(self, tail, program='NDR'):
+    def run(self, tail, program='NDR', leading_space=True):
         c = self.cpu
         image = (ROOT/f'build/utilities/{program}.COM').read_bytes()
         c.mem[0x100:0x100+len(image)] = image
-        data = tail.encode('ascii')
+        data = (' '+tail if tail and leading_space else tail).encode('ascii')
         c.mem[0x80] = len(data)
         c.mem[0x81:0x81+len(data)] = data
         self.reset_console()
@@ -125,6 +125,32 @@ class Guest:
         self.base = newbase
 
 def main():
+    # CP/M supplies a blank-prefixed tail for ordinary command invocation.
+    # Also accept raw tails and multiple blanks, including mixed-case options.
+    cli = Guest()
+    for i, prefix in enumerate(('', ' ', '   ')):
+        cli.loaded = False
+        for query in ('/H', '/HELP', '/VER'):
+            before = cli.table()
+            output = cli.run(prefix+query, leading_space=False)
+            assert 'Named Directory Management' in output, (prefix, query, output)
+            assert cli.table() == before
+        cli.loaded = True
+        assert 'updated' in cli.run(prefix+'/clear', leading_space=False)
+        assert '0 of 32 names in use' in cli.run(prefix, leading_space=False)
+        name, filename = f'MIX{i}', f'WS{i}'
+        assert 'updated' in cli.run(prefix+name.lower()+'   P31:  ', leading_space=False)
+        assert '1 of 32 names in use' in cli.run(prefix, leading_space=False)
+        before = cli.table()
+        assert 'saved' in cli.run(prefix+'/save   '+filename+'  ', leading_space=False)
+        assert 'updated' in cli.run(prefix+'/clear', leading_space=False)
+        assert 'loaded' in cli.run(prefix+'/load   '+filename+'  ', leading_space=False)
+        assert cli.table() == before
+        assert 'updated' in cli.run(prefix+'/del   '+name.lower(), leading_space=False)
+        before = cli.table()
+        for invalid in ('/CLEAR extra', '/DEL', '/LOA WS0', '/SAVEX WS0', '/LOAD WS0 extra'):
+            cli.run(prefix+invalid, leading_space=False)
+            assert cli.table() == before, (prefix, invalid)
     g = Guest()
     assert '/LOAD' in g.run('/HELP')
     assert 'Named Directory Management' in g.run('/VER')
@@ -143,7 +169,7 @@ def main():
     assert 'File exists' in g.run('/SAVE TEST')
     assert 'updated' in g.run('/CLEAR')
     assert not any(g.table())
-    assert 'updated' in g.run('/LOAD TEST')
+    assert 'loaded' in g.run('/LOAD TEST')
     assert g.table() == before
     key = next(iter(saved))
     for invalid in (saved[key][:-128], saved[key]+bytes(128), b'BAD!'+saved[key][4:]):
@@ -167,7 +193,7 @@ def main():
     # Saved sets honor DU-qualified filenames and restore caller context.
     assert 'saved' in g.run('/SAVE B31:MY_SET')
     assert g.user == 0
-    assert 'updated' in g.run('/LOAD B31:MY_SET')
+    assert 'loaded' in g.run('/LOAD B31:MY_SET')
     assert g.user == 0
     # Same DU may have multiple aliases; reverse lookup uses first live slot.
     for i in range(28):

@@ -9,7 +9,10 @@ Executed checks:
 - `tools/test_ndr.py`: assembled management and shell/PATH code, name limits,
   duplicate/reserved names, saved sets, returning write errors, invalid loads,
   relocation, prompt output, file operands, quoted text, command-line bounds,
-  caller-user restoration and numeric PATH capture. Run for all three layouts.
+  caller-user restoration and numeric PATH capture. Ordinary blank-prefixed CP/M
+  command tails, raw tails, repeated blanks, mixed-case management keywords and
+  provider-independent help/version queries are exercised explicitly. Run for all
+  three layouts.
 - `tools/test_path_edits.py`: existing numeric PATH edits and rejection atomicity;
   run for all three layouts, with absent NDR.
 - `tools/test_ccp.py`: existing CCP behavior, default layout.

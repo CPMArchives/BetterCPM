@@ -1,0 +1,41 @@
+[
+  {
+    "profile": "model4-default",
+    "ndr_com_bytes": 3700,
+    "ndr_com_sha256": "f756b7ef884e7ff62192edcfdd609f5154944d8bf359f490bc93f66585f0599b",
+    "ndr_provider_payload_sha256": "27228defa80f71b3d2c58d788470cff9d347d168b19856554a9fb1b8559a53db",
+    "command_tails": [
+      "no leading blank",
+      "one leading blank",
+      "multiple leading blanks"
+    ],
+    "management_checks": "PASS",
+    "provider_allocation": 512
+  },
+  {
+    "profile": "cpmsim-fullram",
+    "ndr_com_bytes": 3700,
+    "ndr_com_sha256": "f756b7ef884e7ff62192edcfdd609f5154944d8bf359f490bc93f66585f0599b",
+    "ndr_provider_payload_sha256": "27228defa80f71b3d2c58d788470cff9d347d168b19856554a9fb1b8559a53db",
+    "command_tails": [
+      "no leading blank",
+      "one leading blank",
+      "multiple leading blanks"
+    ],
+    "management_checks": "PASS",
+    "provider_allocation": 512
+  },
+  {
+    "profile": "model2-fullram",
+    "ndr_com_bytes": 3700,
+    "ndr_com_sha256": "f756b7ef884e7ff62192edcfdd609f5154944d8bf359f490bc93f66585f0599b",
+    "ndr_provider_payload_sha256": "27228defa80f71b3d2c58d788470cff9d347d168b19856554a9fb1b8559a53db",
+    "command_tails": [
+      "no leading blank",
+      "one leading blank",
+      "multiple leading blanks"
+    ],
+    "management_checks": "PASS",
+    "provider_allocation": 512
+  }
+]
