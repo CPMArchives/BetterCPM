@@ -1,0 +1,42 @@
+# NOAH - Archive utility
+
+Keep NOAH.COM and its matching NOAH.OVL together. On the experimental
+set, enter C0: before running the following commands.
+
+## Help libraries
+
+To create a help library from the loose subjects in D0, use:
+
+```text
+NOAH /ADD D0:TOOLS.LBR D0:*.HLP
+NOAH /TEST D0:TOOLS.LBR
+A0:HELP /S=D0:TOOLS.LBR
+```
+
+Include an _INDEX.HLP for an authored menu. If you omit it, HELP lists
+the topics in archive order. See [choosing a help source](HELP.HLP#choosing-a-source).
+
+## Listing members
+
+```text
+NOAH /LIST D0:TOOLS.LBR
+NOAH /LIST D0:HELP.ARK
+```
+
+Use /TEST to check archive data. To extract to another user area, type:
+
+```text
+NOAH /EXTRACT D0:TOOLS.LBR D3:
+```
+
+## Updating members
+
+```text
+NOAH /ADD D0:TOOLS.LBR D0:FOO.HLP
+NOAH /REMOVE D0:TOOLS.LBR OLD.HLP
+NOAH /COMPACT D0:TOOLS.LBR
+```
+
+/ADD inserts a subject or offers to replace an existing member.
+/COMPACT reclaims unused archive space. Keep any recovery files
+reported after an interrupted update.

@@ -1,0 +1,21 @@
+# VER - Identify the running system
+
+```text
+VER
+VER /V
+```
+
+## Identify versions
+
+VER displays the OS identification. /V adds subsystem information. A
+utility's own /VER identifies that utility, for example HELP /VER.
+
+## Show the banner
+
+```text
+:VER /BANNER
+```
+
+The leading colon selects VER.COM, which prints the startup banner. An
+experimental disk can carry a newer utility while the banner still
+reports the core release.

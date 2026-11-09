@@ -1,0 +1,21 @@
+# UNCR - Restore a crunched file
+
+```text
+UNCR [drive:]file [destination-drive:]
+```
+
+## Restore a file
+
+```text
+B0:UNCR A:REPORT.TZT D:
+```
+
+The CRUNCH header supplies the restored name. Use a destination drive
+where that name is free. UNCR checks the additive checksum before
+publishing the output and retains the compressed input.
+
+## Historical files
+
+UNCR reads supported CRUNCH 2.x streams, including those written by
+[CR](CR.HLP). It rejects 1.x streams. Use [USQ](USQ.HLP) for squeezed
+files and [UNLZH](UNLZH.HLP) for CrLZH files.

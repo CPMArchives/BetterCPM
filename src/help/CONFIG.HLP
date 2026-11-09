@@ -1,0 +1,33 @@
+# CONFIG - Configure startup and disk bindings
+
+```text
+CONFIG
+CONFIG /SHOW
+```
+
+## Inspect settings
+
+/SHOW displays the configuration. Run CONFIG without an argument to
+enter its menus. A logical drive binding associates a CP/M letter with a
+physical drive and a disk format. Match the format to the mounted media
+before accessing it.
+
+## Cold startup
+
+```text
+CONFIG /STARTUP="SUBMIT STARTUP"
+```
+
+This selects A0:STARTUP.SUB as the command procedure for cold boot. Edit
+its commands with a text editor. Use CONFIG's save menu to write the
+settings for a subsequent cold boot. See [SUBMIT](SUBMIT.HLP) for
+command-file syntax.
+
+## Bind a drive
+
+```text
+CONFIG /LOGICAL=D /PHYSICAL=3 /FORMAT="DRI 8-inch CP/M Standard 77T SS"
+```
+
+The example binds D to physical unit 3. Use the exact format name from
+your catalogue and the physical unit for your machine.

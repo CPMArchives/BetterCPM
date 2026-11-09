@@ -1,0 +1,20 @@
+# BYE - Exit cpmsim
+
+```text
+BYE [/Y]
+```
+
+## Return to host
+
+Save your work and return to the CP/M prompt before entering BYE. Press
+Y at the confirmation to exit the emulator. N or Enter cancels. BYE is
+supplied on the cpmsim System disk.
+
+## Batch exit
+
+```text
+BYE /Y
+```
+
+This skips confirmation. Put it last in a procedure that should shut
+down cpmsim after all file operations have finished.

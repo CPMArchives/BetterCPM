@@ -1,0 +1,25 @@
+# TED - Edit text on screen
+
+```text
+B0:TED D0:NOTES.TXT
+```
+
+## Start the editor
+
+TED uses the ANSI personality and an 80-by-24 screen backend. Select
+ANSISCRN on cpmsim, M4SCRN on Model 4, or M2SCRN on Model II. Check RSX
+LIST first. On cpmsim, after unloading any conflicting personality:
+
+```text
+RSX LOAD ANSISCRN
+RSX LOAD ANSI
+B0:TED D0:NOTES.TXT
+```
+
+## Edit and save
+
+At TED>, S enters screen mode. Ctrl-S/D moves left/right, Ctrl-E/X moves
+up/down, and Ctrl-V switches between overwrite and insert. Ctrl-Z
+returns to command mode. For a named file, W at TED> writes the document
+and EX exits. In screen mode Ctrl-K then S saves and continues. TED.TXT
+on the Utilities disk lists the editing keys.

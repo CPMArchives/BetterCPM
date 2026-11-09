@@ -1,0 +1,34 @@
+# RSX - Manage resident extensions
+
+```text
+RSX LIST
+RSX LOAD [DU:]name
+RSX UNLOAD name
+```
+
+## Select a terminal
+
+RSX LIST identifies loaded extensions. If ADM3A is active and you want
+ANSI, replace the personality before starting the application.
+
+```text
+RSX UNLOAD ADM3A
+RSX LOAD ANSI
+HELP PIP
+```
+
+HELP discovers the active personality. For an ADM3A screen test, load
+ADM3A and run [ADMTST](ADMTST.HLP).
+
+## Other services
+
+```text
+RSX LOAD NDR
+NDR
+STAT MEM
+```
+
+The first command installs the named-directory provider. A program can
+return to CP/M while the provider stays loaded. [STAT](STAT.HLP) shows
+available transient memory. Save wanted [NDR](NDR.HLP) assignments
+before unloading NDR.

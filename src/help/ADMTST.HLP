@@ -1,0 +1,18 @@
+# ADMTST - Exercise the ADM3A personality
+
+```text
+ADMTST
+```
+
+## Run the test
+
+Use RSX LIST to check the active personality. Load ADM3A if needed, then
+run ADMTST. Observe the cursor, cleared regions and bell as you follow
+the prompts.
+
+## Keyboard check
+
+Type uppercase A, colon, left bracket and right bracket when prompted.
+Each key is read immediately. A pass confirms that key sequence. Check
+the displayed pages and audible bell separately. See
+[RSX](RSX.HLP#select-a-terminal) to switch personalities.

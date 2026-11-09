@@ -1,0 +1,24 @@
+# CR - Crunch one file
+
+```text
+CR [drive:]file [destination-drive:]
+```
+
+## Crunch a file
+
+```text
+B0:CR A:REPORT.TXT D:
+```
+
+CR writes a CRUNCH stream to D:REPORT.TZT and retains the source. Supply
+one exact filename in the current user area. If you omit the
+destination, output goes to the logged drive.
+
+## Crunch a topic
+
+```text
+B0:CR A:PIP.HLP D:
+```
+
+The resulting PIP.HZP can go directly into a help library. To recover
+the source text before editing, use [UNCR](UNCR.HLP).

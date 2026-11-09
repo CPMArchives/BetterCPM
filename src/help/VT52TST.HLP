@@ -1,0 +1,17 @@
+# VT52TST - Exercise the VT52 personality
+
+```text
+VT52TST
+```
+
+## Identification
+
+Activate VT52.RSX, then run VT52TST. It asks the personality to identify
+itself. A successful reply permits the visual tests to proceed.
+
+## Inspect pages
+
+Check the position marker and tab stop. At the right edge A and C should
+occupy the last two columns on the marked row. On the erase page, KEEP
+should remain on both lines. Press a key at each prompt. See
+[RSX](RSX.HLP) for personality selection.

@@ -1,0 +1,28 @@
+# STAT - Disk, file and memory status
+
+```text
+STAT [drive: | filespec | MEM]
+```
+
+## Disk space
+
+STAT lists free space for drives logged into this session. Name a drive
+to request its space directly. DSK: with a drive shows its disk
+characteristics.
+
+```text
+STAT
+STAT B:
+STAT B:DSK:
+```
+
+## Files and memory
+
+```text
+STAT B3:*.COM
+STAT MEM
+```
+
+The filespec selects directory entries in B3. MEM reports transient
+memory and the maximum COM size available with the current extensions
+loaded. Use [RSX](RSX.HLP) to identify loaded providers.

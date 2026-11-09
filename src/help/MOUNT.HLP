@@ -1,0 +1,26 @@
+# MOUNT - Mount a host image in cpmsim
+
+```text
+MOUNT drive: host-image
+MOUNT /LIST [selector:]
+```
+
+## Inspect and mount
+
+```text
+MOUNT /LIST
+MOUNT D: "Work Disk.dsk"
+```
+
+Use a readable raw disk image and one drive letter. Relative host paths
+start in the emulator's working directory. The guest drive's format must
+match the image; see [CONFIG](CONFIG.HLP). MOUNT is specific to cpmsim.
+
+## Detach an image
+
+```text
+MOUNT /UNMOUNT D:
+```
+
+Close files on the guest drive before changing its image. For individual
+file transfers, use [R](R.HLP) or [W](W.HLP).

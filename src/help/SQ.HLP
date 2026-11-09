@@ -1,0 +1,22 @@
+# SQ - Squeeze one file
+
+```text
+SQ [drive:]file [destination-drive:]
+```
+
+## Squeeze a file
+
+```text
+B0:SQ A:NOTES.TXT D:
+```
+
+SQ reads the source twice and writes NOTES.TQT on D. Keep the source
+unchanged until both passes finish. Select one exact filename in the
+current user area. Without a destination drive, output goes to the
+logged drive.
+
+## Squeeze a topic
+
+For PIP.HLP the compressed name is PIP.HQP. HELP can read it loose or as
+an LBR member. Use [USQ](USQ.HLP) to restore an editable copy or
+[NOAH](NOAH.HLP#help-libraries) to build a library.

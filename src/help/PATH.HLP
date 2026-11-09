@@ -1,0 +1,35 @@
+# PATH - Command search path
+
+Type `PATH` to display the configured search locations.
+
+## Search order
+
+The current drive/user is searched first. After a local miss, the
+configured entries are tried in order. A dollar sign stands for the
+caller's drive or user in that position.
+
+```text
+PATH B3: A0:
+```
+
+This sets the additional search locations to B3 followed by A0.
+Use [HELP source reporting](HELP.HLP#finding-a-topic) to see which copy
+of a help topic is selected.
+
+## Editing PATH
+
+```text
+PATH /A C4:
+PATH /D C4:
+PATH /DEFAULT
+```
+
+The first command appends C4. The second removes that entry. The third
+restores the default path.
+
+## Named locations
+
+A fixed entry such as A0:[ROOT] shows the live name for that location.
+Symbolic entries keep their dollar signs. PATH resolves a named location
+when you add it; changing the name later keeps the same numeric search
+location. See [named directories](NDR.HLP).

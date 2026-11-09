@@ -1,0 +1,25 @@
+# LINK - Link relocatable object modules
+
+```text
+B0:LINK output=module[,module...][A]
+```
+
+## Link one module
+
+```text
+B0:LINK PROGRAM[A]
+```
+
+Run this from the work disk containing PROGRAM.REL. The [A] option
+requests an absolute COM file. Use [ZSM4](ZSM4.HLP) to assemble a .MAC
+source into a .REL module.
+
+## Several modules
+
+```text
+B0:LINK CHECK=MAIN,PART[A]
+```
+
+This links MAIN.REL and PART.REL into CHECK.COM. Look for undefined
+symbols before running it. For checked output and a saved report, use
+[DLINK](DLINK.HLP).

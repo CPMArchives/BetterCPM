@@ -1,0 +1,24 @@
+# MD5SUM - Make or verify an MD5 list
+
+```text
+MD5SUM [options] [filespec ...]
+```
+
+## Record digests
+
+Give a filespec to display an MD5 digest for each match. /LOCAL writes
+the list beside the selected files. /FILE= names a master list.
+
+```text
+B0:MD5SUM D0:*.COM /LOCAL=MD5SUM.LST
+```
+
+## Check a disk
+
+```text
+B0:MD5SUM /CHECK D0:
+```
+
+Run the check against the saved list after copying or restoring files.
+If a digest differs, use [COMPARE](COMPARE.HLP) with the original copy
+for a byte-level report.

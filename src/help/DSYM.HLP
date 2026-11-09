@@ -1,0 +1,27 @@
+# DSYM - Convert a linker report to DASM symbols
+
+```text
+B0:DSYM [DU:]base.LOG [destination-DU:]
+```
+
+## Make symbols
+
+```text
+B0:DLINK PROGRAM
+B0:DSYM PROGRAM.LOG
+```
+
+DSYM uses the completed checked report from [DLINK](DLINK.HLP) to
+produce PROGRAM.DSY. A bare .SYM file lacks the link completion
+information DSYM needs.
+
+## Load the symbols
+
+```text
+B0:DASM
+RPROGRAM.COM
+RPROGRAM.DSY
+```
+
+The last two lines are [DASM](DASM.HLP) commands. Use the binary from
+the same link so the addresses match the program you are inspecting.

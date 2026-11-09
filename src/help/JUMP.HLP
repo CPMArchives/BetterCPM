@@ -1,0 +1,14 @@
+# JUMP - Execute at a chosen address
+
+```text
+JUMP hex-address [command tail]
+```
+
+JUMP transfers control to the given hexadecimal address. The memory
+there must contain executable code assembled for that location. For a
+normal COM image use [GET](GET.HLP) followed by [GO](GO.HLP).
+
+```text
+GET D0:TEST.COM
+JUMP 0100
+```

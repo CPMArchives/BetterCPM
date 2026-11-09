@@ -1,0 +1,24 @@
+# USQ - Restore a squeezed file
+
+```text
+USQ [drive:]file [destination-drive:]
+```
+
+## Restore a file
+
+```text
+B0:USQ A:NOTES.TQT D:
+```
+
+USQ reads the original name from the squeezed header, checks the stored
+checksum and writes NOTES.TXT on D. An existing file of that name blocks
+restoration. The compressed input stays in place.
+
+## Restore help text
+
+```text
+B0:USQ A:PIP.HQP D:
+```
+
+This makes the [SQ](SQ.HLP) version editable again. HELP can also read a
+.HQP directly. For a crunched .HZP use [UNCR](UNCR.HLP).

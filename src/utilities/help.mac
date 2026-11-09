@@ -1,0 +1,322 @@
+; BetterCP/M transient Markdown help reader. All disk access is read-only.
+BDOS EQU 5
+ ASEG
+ ORG 100H
+        JP HELP_START
+ INCLUDE archive.inc
+ INCLUDE cpmfile.inc
+ INCLUDE ark.inc
+ INCLUDE codec.inc
+ INCLUDE usq.inc
+ INCLUDE uncr.inc
+
+HELP_START:
+        ; Queries precede all environment, TCAP, archive and codec operations.
+        LD A,(80H)
+        CP 128
+        JR C,query_length
+        LD A,127
+query_length:
+        LD B,A
+        LD HL,81H
+        LD DE,help_usage
+        CALL UH_QUERY
+        JP C,0
+        LD DE,help_version
+        CALL UV_QUERY
+        JP C,0
+        LD HL,(6)
+        LD DE,arena+128
+        OR A
+        SBC HL,DE
+        JP C,early_space
+        LD SP,stack_end
+        LD HL,bss
+        LD DE,bss+1
+        LD BC,arena-bss-1
+        XOR A
+        LD (HL),A
+        LDIR
+        LD C,25
+        CALL BDOS
+        INC A
+        LD (home_drive),A
+        LD E,255
+        LD C,32
+        CALL BDOS
+        LD (home_user),A
+        CALL read_args
+        JP C,bad_usage
+        CALL init_path
+        CALL resolve_command
+        JP C,lookup_failure
+        LD A,(report_only)
+        OR A
+        JP NZ,report_hit
+        CALL screen_init
+        JP enter_view
+
+early_space:
+        LD DE,small_message
+        LD C,9
+        CALL BDOS
+        JP 0
+bad_usage:
+        LD HL,invalid_message
+        JR print_exit
+lookup_failure:
+        CP AS_END
+        JP NZ,read_failure
+        LD A,(explicit_file)
+        OR A
+        JR Z,ordinary_miss
+        LD A,(source_missing)
+        OR A
+        JR Z,ordinary_miss
+        LD HL,source_message
+        CALL puts
+        LD HL,source_spec
+        CALL print_spec
+        CALL newline
+        JP finish
+ordinary_miss:
+        LD A,(requested)
+        CP ' '
+        JR NZ,missing_topic
+        LD HL,no_library
+        JR print_exit
+missing_topic:
+        LD HL,missing_prefix
+        CALL puts
+        LD HL,requested
+        LD B,8
+        CALL print_field
+        LD HL,missing_suffix
+print_exit:
+        PUSH HL
+        CALL leave_frame
+        POP HL
+        CALL puts
+        JP finish
+read_failure:
+        CP AS_RANGE
+        LD HL,memory_message
+        JR Z,print_exit
+        CP AS_UNSUPPORTED
+        LD HL,method_message
+        JR Z,print_exit
+        LD HL,damage_message
+        JR print_exit
+report_hit:
+        LD HL,view_file
+        CALL print_spec
+        LD A,(view_member)
+        OR A
+        JR Z,report_eol
+        LD HL,member_prefix
+        CALL puts
+        LD HL,view_member
+        CALL print_name
+        LD A,')'
+        CALL putc
+report_eol:
+        CALL newline
+finish:
+        CALL close_file
+        LD A,(home_user)
+        CALL select_user
+        LD DE,80H
+        LD C,26
+        CALL BDOS
+        JP 0
+
+; Preserve live registers around the CP/M console and user calls.
+putc:   PUSH AF
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD E,A
+        LD C,2
+        CALL BDOS
+        POP HL
+        POP DE
+        POP BC
+        POP AF
+        RET
+newline:
+        LD A,13
+        CALL putc
+        LD A,10
+        JP putc
+puts:   LD A,(HL)
+        OR A
+        RET Z
+        CALL putc
+        INC HL
+        JR puts
+print_field:
+        LD A,(HL)
+        CP ' '
+        CALL NZ,putc
+        INC HL
+        DJNZ print_field
+        RET
+print_name:
+        LD B,8
+        CALL print_field
+        LD A,'.'
+        CALL putc
+        LD B,3
+        JP print_field
+print_spec:
+        LD A,(HL)
+        ADD A,'A'-1
+        CALL putc
+        INC HL
+        LD A,(HL)
+        LD B,'0'
+print_tens:
+        CP 10
+        JR C,print_units
+        SUB 10
+        INC B
+        JR print_tens
+print_units:
+        LD C,A
+        LD A,B
+        CP '0'
+        CALL NZ,putc
+        LD A,C
+        ADD A,'0'
+        CALL putc
+        LD A,':'
+        CALL putc
+        INC HL
+        JP print_name
+upper:  CP 'a'
+        RET C
+        CP 'z'+1
+        RET NC
+        SUB 32
+        RET
+same_bytes:
+        LD A,(DE)
+        CP (HL)
+        RET NZ
+        INC DE
+        INC HL
+        DJNZ same_bytes
+        RET
+strlen: PUSH HL
+        LD B,0
+strlen_loop:
+        LD A,(HL)
+        OR A
+        JR Z,strlen_end
+        INC HL
+        INC B
+        JR strlen_loop
+strlen_end:
+        POP HL
+        RET
+select_user:
+        LD E,A
+        LD C,32
+        JP AC_BDOS
+
+ INCLUDE help-args.inc
+ INCLUDE help-files.inc
+ INCLUDE help-decode.inc
+ INCLUDE help-view.inc
+ INCLUDE help-screen.inc
+ INCLUDE help-render.inc
+ INCLUDE tcap2.inc
+ INCLUDE queries.inc
+DU_MAP: DS 64
+DU_WORK: DS 12
+ INCLUDE duselect.inc
+ INCLUDE ndr-client.inc
+ INCLUDE filespec.inc
+ INCLUDE lbr.mac
+ INCLUDE ark.mac
+ INCLUDE lbraudit.mac
+ INCLUDE cpmfile.mac
+ INCLUDE codec.mac
+ INCLUDE usq.mac
+ INCLUDE uncr.mac
+ LBR_CODE
+ ARK_CODE
+ LBR_CRC_CODE
+ ARCHIVE_CPM_CODE
+ CODEC_CODE
+ USQ_CODE
+ UNCR_CODE
+
+ INCLUDE help-identity.inc
+ INCLUDE help-title.inc
+ DB '  - - -',13,10,' | Topic Help Reader',13,10,' |',13,10
+ DB ' |   Usage: HELP [topic [section]] [options]',13,10,13,10,'   Options:',13,10
+ DB '     /S= /SOURCE=   Read an exact help file or archive.',13,10
+ DB '     /R /REPORT     Report where a topic was found.',13,10,13,10
+ DB '     /H /HELP       Display this help.',13,10,'     /VER           Display utility identification.',13,10
+ DB 'For detailed help, see HELP HELP',13,10,'$'
+small_message: DB 'HELP: Insufficient memory.',13,10,'$'
+invalid_message: DB 'Invalid HELP usage. See HELP /H.',13,10,0
+source_message: DB 'Help source was not found: ',0
+missing_prefix: DB 'No help for ',0
+missing_suffix: DB ' was found.',13,10,0
+no_library: DB 'No help archive was found.',13,10,0
+memory_message: DB 'HELP: Insufficient memory for this topic.',13,10,0
+method_message: DB 'HELP: Unsupported archive or compression method.',13,10,0
+damage_message: DB 'HELP: Damaged or unreadable help data.',13,10,0
+member_prefix: DB ' (',0
+extensions: DB 'HLPHQPHZPLBRARK'
+def_lbr: DB 'HELP    LBR'
+def_ark: DB 'HELP    ARK'
+index_name: DB '_INDEX  '
+default_path: DB 1,1,0
+layout_table:
+ INCLUDE help-layouts.inc
+
+; File descriptors consist of drive (1..16), user and space-padded 8.3.
+; View snapshots retain file and member identity when a link changes source.
+bss:
+home_drive: DS 1
+home_user: DS 1
+path_list: DS 14
+path_count: DS 1
+path_index: DS 1
+requested: DS 8
+section_arg: DS 129
+tail_buf: DS 130
+section_write: DS 2
+explicit_file: DS 1
+archive_lock: DS 1
+report_only: DS 1
+source_missing: DS 1
+source_spec: DS 13
+candidate: DS 13
+best_rank: DS 1
+best_member: DS 11
+active_format: DS 1
+lookup_kind: DS 1
+view_start:
+view_file: DS 13
+view_member: DS 11
+view_mode: DS 1
+view_section: DS 2
+view_page: DS 2
+view_end:
+frame_size EQU view_end-view_start
+view_stack: DS frame_size*16
+depth: DS 1
+NH_CONTEXT:
+context: DS AS_CONTEXT_SIZE
+adapter: DS AP_SIZE
+ INCLUDE help-work.inc
+stack_area: DS 512
+stack_end:
+arena:
+X_TABLE EQU arena
+X_CHAIN EQU X_TABLE+12288
+ END

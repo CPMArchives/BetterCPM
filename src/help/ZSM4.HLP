@@ -1,0 +1,28 @@
+# ZSM4 - Assemble a Z80 source file
+
+```text
+B0:ZSM4 output=source
+```
+
+## Assemble
+
+Place PROGRAM.MAC on your writable work disk and log onto that disk. The
+left operand names the output and the right operand names the source.
+For relocatable code use CSEG.
+
+```text
+B0:ZSM4 PROGRAM=PROGRAM
+```
+
+Check for Errors: 0 before using PROGRAM.REL. Include files resolve on
+the output drive.
+
+## Link the object
+
+```text
+B0:LINK PROGRAM[A]
+```
+
+[LINK](LINK.HLP) converts the relocatable object into PROGRAM.COM. ZSM4
+uses its native V4.7 interface. Its manual accompanies the Utilities
+package.
