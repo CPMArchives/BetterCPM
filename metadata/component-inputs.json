@@ -5671,6 +5671,7 @@
       "files": [
         "src/system/layout.inc",
         "src/utilities/common/ndr-client.inc",
+        "src/utilities/common/tcap2.inc",
         "src/utilities/common/version.inc",
         "src/utilities/path.mac",
         "tools/build_ccp.py",
