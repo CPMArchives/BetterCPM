@@ -1,0 +1,26 @@
+# PATCH - Apply a verified binary patch
+
+```text
+PATCH patchfile [/INPUT=file] [/OUTPUT=file]
+```
+
+## Apply a patch
+
+A patch file supplies the input and output names or you can override
+them. PATCH checks the expected bytes before creating a separate output
+file, then reads back the patched copy.
+
+```text
+C0:PATCH FIX.PAT /INPUT=D0:OLD.COM /OUTPUT=D0:NEW.COM
+```
+
+## Read an instruction
+
+```text
+0120: CD 05 00 C9 -> 00 00
+```
+
+At hexadecimal file offset 0120 the four original bytes must match.
+PATCH replaces the first two, leaving 00 C9 in place. A mismatch stops
+the operation. Use [DUMP](DUMP.HLP) to inspect the input at the reported
+offset.

@@ -1,0 +1,25 @@
+# CRCKSUM - Calculate and check file checksums
+
+```text
+CRCKSUM [options] [filespec ...]
+```
+
+## Make a list
+
+The default calculation reports eight check values per file. /LOCAL
+writes a list in each selected drive/user. /FILE= writes a single master
+list.
+
+```text
+B0:CRCKSUM D0:*.COM /LOCAL=CRC.LST
+```
+
+## Verify files
+
+```text
+B0:CRCKSUM /CHECK D0:
+```
+
+Use the same files and algorithm columns for later checks. A mismatch
+identifies a changed file. To locate the changed bytes when both copies
+are available, use [COMPARE](COMPARE.HLP).

@@ -1,0 +1,27 @@
+# REN - Rename files in place
+
+```text
+REN newname=oldname
+```
+
+## Single file
+
+Both names refer to the same drive and user. This changes the directory
+name and keeps the file data in place.
+
+```text
+REN REPORT.BAK=D0:REPORT.TXT
+```
+
+## Change extensions
+
+The source-first form accepts a destination template. With the transient
+command, /DRY previews the proposed names before changing any directory
+entries.
+
+```text
+:REN /DRY D0:*.DOC *.TXT
+```
+
+Check for collisions before repeating without /DRY. To transfer a file
+to another drive or user, see [MOVE](MOVE.HLP).

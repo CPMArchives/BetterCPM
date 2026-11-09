@@ -1,0 +1,25 @@
+# COMPARE - Compare two files byte by byte
+
+```text
+COMPARE file1 file2 [options]
+```
+
+## Find differences
+
+The default report lists up to 20 differences. /SUM gives totals,
+/COUNT=n sets a display limit, and /SIDE shows paired bytes. Both inputs
+remain available for inspection.
+
+```text
+C0:COMPARE D0:OLD.COM D0:NEW.COM /SIDE
+```
+
+## Compare a range
+
+/FROM and /FROM2 specify starting offsets in the first and second file.
+/LEN limits the comparison. These three values are hexadecimal byte
+counts or offsets.
+
+```text
+C0:COMPARE D0:OLD.COM D0:NEW.COM /FROM=100 /FROM2=100 /LEN=20
+```

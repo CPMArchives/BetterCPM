@@ -1,0 +1,26 @@
+# SEARCH - Find text or bytes in files
+
+```text
+SEARCH "pattern" filespec [options]
+```
+
+## Text search
+
+Keep the quotes around the pattern. /NOCASE ignores letter case. /NOHEX
+limits the search to text. The result identifies each matching file and
+line.
+
+```text
+B0:SEARCH "error" D0:*.TXT /NOCASE /NOHEX
+```
+
+## Byte search
+
+/NOTEXT interprets the pattern as hexadecimal bytes. Byte matches report
+file offsets. A drive/user selector can cover a range of users.
+
+```text
+B0:SEARCH "41 42" D[1-3]:*.COM /NOTEXT
+```
+
+Use [DUMP](DUMP.HLP) to inspect bytes around a match.

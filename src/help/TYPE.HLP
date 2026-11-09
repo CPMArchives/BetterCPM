@@ -1,0 +1,26 @@
+# TYPE - Display a text file
+
+```text
+TYPE [DU:]filename [/P]
+```
+
+## Read a file
+
+TYPE sends text to the console. Add /P to pause during a long listing.
+Ctrl-C stops the display and returns to the command prompt.
+
+```text
+TYPE A0:README.TXT /P
+```
+
+## Browse pages
+
+A leading colon selects TYPE.COM. Its paged viewer can go back to an
+earlier page as well as advance.
+
+```text
+:TYPE A0:README.TXT /P
+```
+
+For a file containing binary data, use [DUMP](DUMP.HLP) to see the
+stored bytes and their offsets.
