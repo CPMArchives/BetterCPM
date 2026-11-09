@@ -2,7 +2,8 @@
 
 Target: BetterCP/M v1.1.2. Classification: maintenance/integration bug fix.
 Status: implemented, focused checks passed and maintainer authorized v1.1.2
-publication, 9 November 2026. NOAH identification revision: 1.0 (021).
+publication, 9 November 2026. NOAH identification revision: 1.0 (021). The authoritative component registry
+and its legacy TSV projection both assign revision 21.
 
 ## Cause and correction
 
