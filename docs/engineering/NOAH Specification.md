@@ -616,10 +616,20 @@ The logical contract here is not a claim that a measured binary ABI exists yet.
 ## 13. Overlay loader and memory
 
 One `NOAH.OVL` contains format and codec modules. Load only needed code; direct
-linking of shared routines remains available to other applications. Lookup uses
-the captured invocation DU, then A0: as the standard fallback, with clear missing/
-mismatch diagnostics; do not scan arbitrary drives/users or overwrite modules.
-Document this search and test launching NOAH from a different DU than its files.
+linking of shared routines remains available to other applications. Starting with
+the v1.1.2 maintenance fix, lookup searches the captured invocation DU first,
+then the configured system PATH in order. Dynamic drive/user fields resolve
+against the captured invocation DU. A zero PATH count selects the standard
+current-DU/A0 default. On systems without compatible BetterCP/M PATH support,
+retain the historical current-DU/A0 fallback. Do not append A0 to an explicit
+PATH or scan arbitrary drives/users.
+
+Continue searching only when Open reports absence. Once an overlay opens,
+invalid/incompatible content or a read/validation failure stops the operation;
+never skip it to find another build. Missing overlays have a distinct diagnostic.
+Restore the caller drive/user and default DMA on success and failure. Keep
+`NOAH.COM` with its matching `NOAH.OVL`; the current interfaces do not publish
+the executable's load DU. See the [v1.1.2 fix and focused evidence](NOAH-Overlay-PATH-1.1.2.md).
 
 Validate signature, file-format/ABI version, matching build ID, index/module bounds,
 entry addresses and CRC-32/ISO-HDLC coverage before executing code. Cover index

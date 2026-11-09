@@ -187,9 +187,12 @@ NR_FATAL:
  CALL NR_RECOVERY_CLOSE
  POP AF
  CP 7
- LD DE,NR_FAILURE_TEXT
- JR NZ,NR_FATAL_REPORT
  LD DE,NR_LOW_TEXT
+ JR Z,NR_FATAL_REPORT
+ CP 14
+ LD DE,NR_MISSING_TEXT
+ JR Z,NR_FATAL_REPORT
+ LD DE,NR_FAILURE_TEXT
 NR_FATAL_REPORT:
  CALL NR_PRINT
  CALL NR_RECOVERY_NAMES
@@ -201,7 +204,7 @@ NR_LOW_MEMORY:
 ; A module ID. Exact expected header binds signature, ABI, build identity,
 ; offsets, entries, capacities, record length and all reserved/index bytes.
 ; CRC32 covers the complete companion, including header with CRC field zero.
-; Every load reopens/revalidates; the invocation DU wins over A0 fallback.
+; Every load reopens/revalidates; the invocation DU wins over system PATH.
 NR_LOAD:
  LD (NR_MODULE),A
  DEC A
@@ -233,42 +236,8 @@ NR_LOAD:
  JP C,NR_LOW_MEMORY
  XOR A
  LD (NR_OPENED),A
- LD HL,NR_FCB
- LD DE,NR_FCB+1
- LD BC,35
- LD (HL),0
- LDIR
- LD HL,NR_OVL_NAME
- LD DE,NR_FCB+1
- LD BC,11
- LDIR
- LD A,(NR_DRIVE)
- INC A
- LD (NR_FCB),A
- LD A,(NR_USER)
- LD (NR_OVL_USER),A
- LD E,A
- LD C,32
- CALL NR_BDOS
- LD DE,NR_FCB
- LD C,15
- CALL NR_BDOS
- CP 255
- JR NZ,NR_LOAD_OPEN
- XOR A
- LD (NR_FCB),A
- INC A
- LD (NR_FCB),A
- XOR A
- LD (NR_OVL_USER),A
- LD E,A
- LD C,32
- CALL NR_BDOS
- LD DE,NR_FCB
- LD C,15
- CALL NR_BDOS
- CP 255
- JP Z,NR_BAD_RESTORE
+ CALL NR_OPEN
+ JP Z,NR_MISS_RESTORE
 NR_LOAD_OPEN:
  LD A,1
  LD (NR_OPENED),A
@@ -398,6 +367,11 @@ NR_CRC_CHECK:
  CALL NR_RESTORE
  OR A
  RET
+NR_MISS_RESTORE:
+ CALL NR_RESTORE
+ LD A,14
+ SCF
+ RET
 NR_LOAD_BAD:
  CALL NR_CLOSE
 NR_BAD_RESTORE:
@@ -405,6 +379,137 @@ NR_BAD_RESTORE:
 NR_BAD:
  LD A,13
  SCF
+ RET
+; Open only: a found file is validated by NR_LOAD and never falls through
+; to another candidate on an invalid header, CRC, length or read failure.
+NR_OPEN:
+ LD A,(NR_DRIVE)
+ INC A
+ LD D,A
+ LD A,(NR_USER)
+ LD E,A
+ CALL NR_TRY
+ RET NZ
+ PUSH IX
+ CALL NR_PATH
+ POP IX
+ ; No compatible PATH system: preserve the historical current-DU, A0 search.
+ JR NZ,NR_DEFAULT
+ LD A,(HL)
+ INC HL
+ OR A
+ JR Z,NR_DEFAULT
+ CP 7
+ JR NC,NR_NOT_FOUND
+ LD B,A
+ JR NR_PATH_NEXT
+NR_DEFAULT:
+ LD HL,NR_DEFPATH
+ LD B,1
+NR_PATH_NEXT:
+ LD D,(HL)
+ INC HL
+ LD E,(HL)
+ INC HL
+ LD A,D
+ CP 17
+ JR NC,NR_NOT_FOUND
+ OR A
+ JR NZ,NR_PATH_USER
+ LD A,(NR_DRIVE)
+ INC A
+ LD D,A
+NR_PATH_USER:
+ LD A,E
+ CP 255
+ JR NZ,NR_PATH_FIXED
+ LD A,(NR_USER)
+ LD E,A
+NR_PATH_FIXED:
+ CP 32
+ JR NC,NR_NOT_FOUND
+ LD A,(NR_DRIVE)
+ INC A
+ CP D
+ JR NZ,NR_PATH_TRY
+ LD A,(NR_USER)
+ CP E
+ JR Z,NR_PATH_SKIP
+NR_PATH_TRY:
+ PUSH HL
+ PUSH BC
+ CALL NR_TRY
+ POP BC
+ POP HL
+ RET NZ
+NR_PATH_SKIP:
+ DJNZ NR_PATH_NEXT
+NR_NOT_FOUND:
+ XOR A
+ RET
+; D=FCB drive, E=user. Reset all FCB scratch before every Open.
+NR_TRY:
+ LD A,D
+ LD (NR_FCB),A
+ LD A,E
+ LD (NR_OVL_USER),A
+ LD C,32
+ CALL NR_BDOS
+ LD HL,NR_FCB+1
+ LD DE,NR_FCB+2
+ LD BC,34
+ LD (HL),0
+ LDIR
+ LD HL,NR_OVL_NAME
+ LD DE,NR_FCB+1
+ LD BC,11
+ LDIR
+ LD DE,NR_FCB
+ LD C,15
+ CALL NR_BDOS
+ CP 255
+ RET
+; Same admission as PATH.COM: known BIOS WBOOT plus BM v1 capability bit 2.
+; The generated tuples cover the established Model 4, cpmsim and Model II
+; layouts, keeping one portable NOAH binary. No speculative memory scan.
+; NZ=unsupported; Z and HL=count address=compatible symbolic numeric PATH.
+NR_PATH:
+ LD IX,NR_LAYOUTS
+ LD B,NR_LAYOUT_COUNT
+NR_PATH_LAYOUT:
+ LD HL,(1)
+ LD E,(IX+0)
+ LD D,(IX+1)
+ OR A
+ SBC HL,DE
+ JR Z,NR_PATH_MATCH
+ LD DE,6
+ ADD IX,DE
+ DJNZ NR_PATH_LAYOUT
+ LD A,1
+ OR A
+ RET
+NR_PATH_MATCH:
+ LD L,(IX+2)
+ LD H,(IX+3)
+ LD A,(HL)
+ CP 'B'
+ RET NZ
+ INC HL
+ LD A,(HL)
+ CP 'M'
+ RET NZ
+ INC HL
+ LD A,(HL)
+ CP 1
+ RET NZ
+ INC HL
+ LD A,(HL)
+ AND 4
+ CP 4
+ RET NZ
+ LD L,(IX+4)
+ LD H,(IX+5)
  RET
 NR_CLOSE:
  LD A,(NR_OPENED)

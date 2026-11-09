@@ -124,7 +124,8 @@ old PATH.COM on the new kernel and the new PATH.COM on an old kernel. The
 13-byte allocation is unchanged, but entry encoding is revised for 1.1.1;
 matching kernel/CCP/utility builds must ship together.
 The CCP and the utility share one layout contract. General BDOS file searches
-and module loaders never consult these bytes. A future shell interface can
+do not consult these bytes. The v1.1.2 [NOAH companion-loader fix](NOAH-Overlay-PATH-1.1.2.md)
+explicitly reads the validated list for its own overlay lookup. A future shell interface can
 expose the same state. Fixed locations already contain the canonical result
 that a future NDR resolver would provide. PATH neither grants nor restricts
 access to any DU.
