@@ -61,6 +61,27 @@ the namespace cannot retarget the stored list. Numeric and symbolic-current
 PATH input continues to work with no NDR loaded. PATH edits remain staged and
 atomic; an unresolved named operand cannot partially publish the list.
 
+### Approved PATH display
+
+The approved 1.2 display format is recorded here pending implementation:
+
+```text
+PATH: $$: | A0:[ROOT] | B3: | C$: | B0:[UTILS]
+```
+
+Separate entries with one space, a vertical bar and one space. Fixed entries
+retain their canonical DU spelling and append the current NDR name in square
+brackets immediately after the colon. Reverse lookup uses the first live
+matching NDR entry, as the command prompt does. An unnamed fixed DU displays
+only its numeric spelling. With NDR unloaded, all fixed entries display
+numerically.
+
+Symbolic entries such as `$$:` and `C$:` retain their symbolic spelling
+without a name annotation. Names are looked up for display; changing or
+deleting a name can change an annotation but cannot retarget the stored PATH.
+Wrap between complete entries when needed, indenting continuation lines
+beneath the first entry.
+
 ## Memory contract and benchmark
 
 The target is 512 bytes for the complete protected NDR provider, allowing at

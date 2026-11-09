@@ -9,6 +9,11 @@ The operator contract below includes those 1.1.1 changes. In the 1.1 baseline,
 the configured list alone controls unqualified lookup, and PATH supports
 whole-list replacement and `/DEFAULT` without incremental editing.
 
+The approved 1.2 [NDR display format](NDR-1.2.md#approved-path-display) adds
+current name annotations to fixed DUs and separates entries with ` | `.
+That presentation change is pending implementation and leaves the stored
+numeric and symbolic entries intact.
+
 ## Using PATH
 
 | Command | Effect |
