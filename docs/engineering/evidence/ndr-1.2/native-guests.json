@@ -1,0 +1,56 @@
+[
+  {
+    "target": "model4",
+    "status": "PASS",
+    "scope": "native trs80gp private development media; visual smoke check",
+    "commands": [
+      "RSX LOAD NDR",
+      "NDR COMMANDS A0:",
+      "NDR /SAVE DEMO",
+      "NDR /CLEAR",
+      "NDR /LOAD DEMO",
+      "COMMANDS:NDPROBE"
+    ],
+    "observed": [
+      "named prompt retained during command input",
+      "save succeeded",
+      "clear removed prompt annotation",
+      "load restored prompt annotation",
+      "named command printed NDR PATH PROBE PASSED"
+    ],
+    "artifacts": {
+      "build/ccp/ccp.bin": "7b3fffa33748c787c8e39b7b0235c2cb90fb6f914742bf5ecdefc7e9491b2942",
+      "build/ccp/ccp.rlm": "4642da2163db8f9a39cc330c8ba0430f6969bdbea854ba73c994e05e549415c8",
+      "build/utilities/NDR.COM": "df2ec0dad7165d94dc801f27e776cf448cb295f73f5bac1c693da8d9bfdb4397",
+      "build/rsx/NDR.RSX": "0ca02a253c5d888d540e61a033940952c204ea43acaac9ca5a6fcdc5b966caf6"
+    }
+  },
+  {
+    "target": "model2",
+    "status": "PASS",
+    "scope": "native trs80gp private development media; visual smoke check",
+    "commands": [
+      "RSX LOAD NDR",
+      "NDR COMMANDS A0:",
+      "NDR /SAVE DEMO",
+      "NDR /CLEAR",
+      "NDR /LOAD DEMO",
+      "COMMANDS:NDPROBE",
+      "SUBMIT FILL (32 assignments and NDR listing)"
+    ],
+    "observed": [
+      "named prompt retained during command input",
+      "save succeeded",
+      "clear removed prompt annotation",
+      "load restored prompt annotation",
+      "named command printed NDR PATH PROBE PASSED",
+      "eight rows and four columns; NDR: 32 of 32 names in use."
+    ],
+    "artifacts": {
+      "build/ccp/ccp.bin": "3ac8f4a6268b4a48ff1cd340ffe272ea3c5fe0f5be2b83bb3974094eacd34cbe",
+      "build/ccp/ccp.rlm": "5d0477ea34faf9962dab639d5b0c4130bbcf7c8938c938d4ba3e72337357f63b",
+      "build/utilities/NDR.COM": "df2ec0dad7165d94dc801f27e776cf448cb295f73f5bac1c693da8d9bfdb4397",
+      "build/rsx/NDR.RSX": "108f682f22e7fd1b93336bb76c07bda05b5449a77d6833aa2988d63ccfabc665"
+    }
+  }
+]

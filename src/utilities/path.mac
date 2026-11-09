@@ -1,3 +1,4 @@
+BDOS EQU 5
 ; Numeric transient command-search policy. Parse into a private candidate.
 ; No BDOS calls or recoverable errors occur during publication.
         INCLUDE layout.inc
@@ -246,7 +247,18 @@ LOCATE: LD      HL,(1)
         CP      4
         RET
 
-ENTRY:  LD      A,(HL)
+ENTRY:  PUSH HL
+        PUSH BC
+        LD B,127
+        ; Bound the named-prefix scan at the first space or NUL.
+        CALL CN_PREFIX
+        POP BC
+        JR NC,ENNUMERIC
+        POP BC
+        RET
+ENNUMERIC:
+        POP HL
+        LD      A,(HL)
         INC     HL
         LD      DE,0
         CP      24H
@@ -364,4 +376,5 @@ MODE:   DB 0
 CNT:    DB 0
 ITEMS:  DS 2*PATHMAX
 TAIL:   DS 128
+; @ndr-client@
         END

@@ -1,0 +1,50 @@
+[
+  {
+    "profile": "model4-default",
+    "baseline": "v1.1.1",
+    "baseline_source_sha256": "24fdcc186f425bef2091f5cbcc5d70bae58b2f474276850740c30c80c68c75aa",
+    "baseline_ccp_bytes": 5593,
+    "baseline_ccp_allocation": 5632,
+    "ccp_bytes": 5874,
+    "ccp_allocation": 5888,
+    "ccp_increase": 256,
+    "ndr_allocation": 512,
+    "total_increase": 768,
+    "ndr_target": 512,
+    "ndr_ceiling": 768,
+    "status": "PASS",
+    "provider_payload_sha256": "27228defa80f71b3d2c58d788470cff9d347d168b19856554a9fb1b8559a53db"
+  },
+  {
+    "profile": "cpmsim-fullram",
+    "baseline": "v1.1.1",
+    "baseline_source_sha256": "24fdcc186f425bef2091f5cbcc5d70bae58b2f474276850740c30c80c68c75aa",
+    "baseline_ccp_bytes": 5593,
+    "baseline_ccp_allocation": 5632,
+    "ccp_bytes": 5874,
+    "ccp_allocation": 5888,
+    "ccp_increase": 256,
+    "ndr_allocation": 512,
+    "total_increase": 768,
+    "ndr_target": 512,
+    "ndr_ceiling": 768,
+    "status": "PASS",
+    "provider_payload_sha256": "27228defa80f71b3d2c58d788470cff9d347d168b19856554a9fb1b8559a53db"
+  },
+  {
+    "profile": "model2-fullram",
+    "baseline": "v1.1.1",
+    "baseline_source_sha256": "24fdcc186f425bef2091f5cbcc5d70bae58b2f474276850740c30c80c68c75aa",
+    "baseline_ccp_bytes": 5593,
+    "baseline_ccp_allocation": 5632,
+    "ccp_bytes": 5874,
+    "ccp_allocation": 5888,
+    "ccp_increase": 256,
+    "ndr_allocation": 512,
+    "total_increase": 768,
+    "ndr_target": 512,
+    "ndr_ceiling": 768,
+    "status": "PASS",
+    "provider_payload_sha256": "27228defa80f71b3d2c58d788470cff9d347d168b19856554a9fb1b8559a53db"
+  }
+]

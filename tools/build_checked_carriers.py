@@ -10,7 +10,7 @@ from checked_carriers import selected_contract
 
 ROOT = Path(__file__).resolve().parents[1]
 COMPONENTS = ('ccp', 'rcp_cpx', 'hello_cpx', 'hello_rsx', 'echo_rsx',
-              'batch', 'fdf_rsx', 'p2dos_rsx', 'zprtc_rsx', 'test_service_rsx',
+              'batch', 'ndr', 'fdf_rsx', 'p2dos_rsx', 'zprtc_rsx', 'test_service_rsx',
               'stateful_test_rsx', 'adm3a', 'screen_backends', 'vt52', 'ansi')
 
 

@@ -1,0 +1,65 @@
+[
+  {
+    "profile": "model4-default",
+    "ndr_com_bytes": 3886,
+    "ndr_com_sha256": "df2ec0dad7165d94dc801f27e776cf448cb295f73f5bac1c693da8d9bfdb4397",
+    "ndr_provider_payload_sha256": "27228defa80f71b3d2c58d788470cff9d347d168b19856554a9fb1b8559a53db",
+    "command_tails": [
+      "no leading blank",
+      "one leading blank",
+      "multiple leading blanks"
+    ],
+    "management_checks": "PASS",
+    "provider_allocation": 512,
+    "listing": {
+      "order": "column-major",
+      "entries_per_column": 8,
+      "maximum_columns": 4,
+      "field_width": 13,
+      "column_gap": 4,
+      "maximum_row_width": 64
+    }
+  },
+  {
+    "profile": "cpmsim-fullram",
+    "ndr_com_bytes": 3886,
+    "ndr_com_sha256": "df2ec0dad7165d94dc801f27e776cf448cb295f73f5bac1c693da8d9bfdb4397",
+    "ndr_provider_payload_sha256": "27228defa80f71b3d2c58d788470cff9d347d168b19856554a9fb1b8559a53db",
+    "command_tails": [
+      "no leading blank",
+      "one leading blank",
+      "multiple leading blanks"
+    ],
+    "management_checks": "PASS",
+    "provider_allocation": 512,
+    "listing": {
+      "order": "column-major",
+      "entries_per_column": 8,
+      "maximum_columns": 4,
+      "field_width": 13,
+      "column_gap": 4,
+      "maximum_row_width": 64
+    }
+  },
+  {
+    "profile": "model2-fullram",
+    "ndr_com_bytes": 3886,
+    "ndr_com_sha256": "df2ec0dad7165d94dc801f27e776cf448cb295f73f5bac1c693da8d9bfdb4397",
+    "ndr_provider_payload_sha256": "27228defa80f71b3d2c58d788470cff9d347d168b19856554a9fb1b8559a53db",
+    "command_tails": [
+      "no leading blank",
+      "one leading blank",
+      "multiple leading blanks"
+    ],
+    "management_checks": "PASS",
+    "provider_allocation": 512,
+    "listing": {
+      "order": "column-major",
+      "entries_per_column": 8,
+      "maximum_columns": 4,
+      "field_width": 13,
+      "column_gap": 4,
+      "maximum_row_width": 64
+    }
+  }
+]

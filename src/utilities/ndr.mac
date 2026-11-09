@@ -1,0 +1,802 @@
+; Named-directory management is transient. The sole live table is NDR.RSX.
+BDOS EQU 5
+        ASEG
+        ORG 0100H
+        CALL UV_CHECK
+        CALL SD_INIT
+        LD A,(SD_USER)
+        LD (NM_ORIGUSER),A
+        LD HL,0081H
+        LD A,(0080H)
+        CP 128
+        JP NC,NM_BAD
+        LD B,A
+        LD DE,NM_TAIL
+        OR A
+        JR Z,NM_READY
+NM_FOLD:
+        LD A,(HL)
+        CP ' '
+        JP C,NM_BAD
+        CP 'a'
+        JR C,NM_FNEXT
+        CP 'z'+1
+        JR NC,NM_FNEXT
+        SUB 32
+NM_FNEXT:
+        LD (DE),A
+        INC HL
+        INC DE
+        DJNZ NM_FOLD
+NM_READY:
+        XOR A
+        LD (DE),A
+        CALL CN_LOOK
+        LD DE,NM_ABSENT
+        JP NZ,NM_PRINT
+        LD HL,NM_TABLE
+        LD A,2
+        CALL CN_CALL
+        LD HL,NM_TAIL
+        CALL NM_SPACES
+        OR A
+        JP Z,NM_LIST
+        CP '/'
+        JR NZ,NM_ASSIGN
+        INC HL
+        LD (NM_OPTION),HL
+        LD DE,NM_DKEY
+        CALL NM_KEY
+        JP Z,NM_DELETE
+        LD HL,(NM_OPTION)
+        LD DE,NM_CKEY
+        CALL NM_KEY
+        JR Z,NM_CLEAR
+        LD HL,(NM_OPTION)
+        LD DE,NM_LKEY
+        CALL NM_KEY
+        JP Z,NM_LOAD
+        LD HL,(NM_OPTION)
+        LD DE,NM_SKEY
+        CALL NM_KEY
+        JP Z,NM_SAVE
+        JP NM_BAD
+NM_CLEAR:
+        CALL NM_END
+        LD HL,NM_TABLE
+        LD DE,NM_TABLE+1
+        LD BC,319
+        XOR A
+        LD (HL),A
+        LDIR
+        JP NM_PUBLISH
+NM_ASSIGN:
+        CALL NM_NAME
+        JP C,NM_BAD
+        CALL NM_RESERVE
+        JP C,NM_BAD
+        CALL NM_SPACES
+        CALL NM_DU
+        JP C,NM_BAD
+        LD (NM_DPAIR),DE
+        CALL NM_END
+        CALL NM_FIND
+        LD DE,NM_EXISTS
+        JP Z,NM_PRINT
+        LD HL,NM_TABLE
+        LD B,32
+NM_FREE:
+        LD A,(HL)
+        OR A
+        JR Z,NM_INSERT
+        LD DE,10
+        ADD HL,DE
+        DJNZ NM_FREE
+        LD DE,NM_FULL
+        JP NM_PRINT
+NM_INSERT:
+        EX DE,HL
+        LD HL,NM_NAMEBUF
+        LD BC,8
+        LDIR
+        LD HL,(NM_DPAIR)
+        LD A,H
+        LD (DE),A
+        INC DE
+        LD A,L
+        LD (DE),A
+        JP NM_PUBLISH
+NM_DELETE:
+        CALL NM_SPACES
+        CALL NM_NAME
+        JP C,NM_BAD
+        CALL NM_END
+        CALL NM_FIND
+        LD DE,NM_MISSING
+        JP NZ,NM_PRINT
+        LD B,10
+        XOR A
+NM_ZENTRY:
+        LD (HL),A
+        INC HL
+        DJNZ NM_ZENTRY
+NM_PUBLISH:
+        LD DE,NM_OK
+NM_COMMIT:
+        PUSH DE
+        LD HL,NM_TABLE
+        LD A,3
+        CALL CN_CALL
+        POP DE
+        JP NM_PRINT
+
+; NAME is padded to eight bytes. All validation precedes resident publication.
+NM_NAME:
+        LD DE,NM_NAMEBUF
+        LD B,8
+        LD A,' '
+NM_NFILL:
+        LD (DE),A
+        INC DE
+        DJNZ NM_NFILL
+        LD DE,NM_NAMEBUF
+        LD C,0
+NM_NCHAR:
+        LD A,(HL)
+        OR A
+        JR Z,NM_NEND
+        CP ' '
+        JR Z,NM_NEND
+        CALL NM_ALNUM
+        RET C
+        INC C
+        LD A,C
+        CP 9
+        JR NC,NM_FAIL
+        LD A,(HL)
+        LD (DE),A
+        INC DE
+        INC HL
+        JR NM_NCHAR
+NM_NEND:
+        LD A,C
+        OR A
+        JR Z,NM_FAIL
+        OR A
+        RET
+NM_ALNUM:
+        CP '0'
+        JR C,NM_FAIL
+        CP '9'+1
+        JR C,NM_AOK
+        CP 'A'
+        JR C,NM_FAIL
+        CP 'Z'+1
+        CCF
+        RET
+NM_AOK:
+        OR A
+        RET
+NM_FAIL:
+        SCF
+        RET
+; Reserve all numeric strings and A..P optionally followed only by digits.
+NM_RESERVE:
+        PUSH HL
+        LD HL,NM_NAMEBUF
+        LD B,8
+        LD A,(HL)
+        CP 'A'
+        JR C,NM_RNUM
+        CP 'P'+1
+        JR NC,NM_RGOOD
+        INC HL
+        DEC B
+NM_RNUM:
+NM_RLOOP:
+        LD A,(HL)
+        CP ' '
+        JR Z,NM_RBAD
+        OR A
+        JR Z,NM_RBAD
+        CP '0'
+        JR C,NM_RGOOD
+        CP '9'+1
+        JR NC,NM_RGOOD
+        INC HL
+        DJNZ NM_RLOOP
+NM_RBAD:
+        POP HL
+        SCF
+        RET
+NM_RGOOD:
+        POP HL
+        OR A
+        RET
+NM_DU:
+        LD A,(HL)
+        SUB 'A'-1
+        CP 1
+        JR C,NM_FAIL
+        CP 17
+        JR NC,NM_FAIL
+        LD D,A
+        INC HL
+        LD E,0
+        LD B,0
+NM_UDIGIT:
+        LD A,(HL)
+        CP ':'
+        JR Z,NM_UEND
+        SUB '0'
+        CP 10
+        JR NC,NM_FAIL
+        LD C,A
+        INC B
+        LD A,B
+        CP 3
+        JR NC,NM_FAIL
+        LD A,E
+        ADD A,A
+        ADD A,A
+        ADD A,E
+        ADD A,A
+        ADD A,C
+        CP 32
+        JR NC,NM_FAIL
+        LD E,A
+        INC HL
+        JR NM_UDIGIT
+NM_UEND:
+        LD A,B
+        OR A
+        JR Z,NM_FAIL
+        INC HL
+        OR A
+        RET
+NM_FIND:
+        LD HL,NM_TABLE
+        LD B,32
+NM_FLOOP:
+        PUSH BC
+        PUSH HL
+        LD DE,NM_NAMEBUF
+        LD B,8
+NM_FCHAR:
+        LD A,(DE)
+        CP (HL)
+        JR NZ,NM_FNO
+        INC HL
+        INC DE
+        DJNZ NM_FCHAR
+        POP HL
+        POP BC
+        XOR A
+        RET
+NM_FNO:
+        POP HL
+        POP BC
+        LD DE,10
+        ADD HL,DE
+        DJNZ NM_FLOOP
+        LD A,1
+        OR A
+        RET
+NM_SPACES:
+        LD A,(HL)
+        CP ' '
+        RET NZ
+        INC HL
+        JR NM_SPACES
+NM_END:
+        CALL NM_SPACES
+        OR A
+        RET Z
+        JP NM_BAD
+NM_KEY:
+        LD A,(DE)
+        OR A
+        JR Z,NM_KEND
+        CP (HL)
+        RET NZ
+        INC HL
+        INC DE
+        JR NM_KEY
+NM_KEND:
+        LD A,(HL)
+        OR A
+        RET Z
+        CP ' '
+        RET
+
+NM_LIST:
+        ; Keep live-slot order, skipping deleted entries without changing the
+        ; snapshot. Each column contains eight entries, at a 17-character pitch.
+        XOR A
+        LD (NM_INUSE),A
+        LD HL,NM_TABLE
+        LD DE,NM_LPTRS
+        LD B,32
+NM_LSCAN:
+        LD A,(HL)
+        OR A
+        JR Z,NM_LSKIP
+        LD A,(NM_INUSE)
+        INC A
+        LD (NM_INUSE),A
+        LD A,L
+        LD (DE),A
+        INC DE
+        LD A,H
+        LD (DE),A
+        INC DE
+NM_LSKIP:
+        PUSH DE
+        LD DE,10
+        ADD HL,DE
+        POP DE
+        DJNZ NM_LSCAN
+        LD A,(NM_INUSE)
+        OR A
+        JP Z,NM_SUMMARY
+        XOR A
+        LD (NM_ROW),A
+NM_LROW:
+        LD A,(NM_ROW)
+        LD (NM_LINDEX),A
+NM_LCOL:
+        LD A,(NM_LINDEX)
+        LD L,A
+        LD H,0
+        ADD HL,HL
+        LD DE,NM_LPTRS
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        CALL NM_LENTRY
+        LD A,(NM_LINDEX)
+        ADD A,8
+        LD C,A
+        LD A,(NM_INUSE)
+        CP C
+        JR Z,NM_LEND
+        JR C,NM_LEND
+        LD A,C
+        LD (NM_LINDEX),A
+        LD A,(NM_GAP)
+        LD B,A
+NM_LSPACE:
+        LD A,' '
+        CALL NM_CHAR
+        DJNZ NM_LSPACE
+        JR NM_LCOL
+NM_LEND:
+        LD DE,NM_NEWLINE
+        CALL NM_PUTS
+        LD A,(NM_ROW)
+        INC A
+        LD (NM_ROW),A
+        CP 8
+        JR NC,NM_SUMMARY
+        LD C,A
+        LD A,(NM_INUSE)
+        CP C
+        JR Z,NM_SUMMARY
+        JR C,NM_SUMMARY
+        JR NM_LROW
+NM_SUMMARY:
+        LD DE,NM_COUNTMSG
+        CALL NM_PUTS
+        LD A,(NM_INUSE)
+        CALL NM_NUMBER
+        LD DE,NM_CAPMSG
+        JP NM_PRINT
+NM_LENTRY:
+        LD B,8
+NM_LNAME:
+        LD A,(HL)
+        CALL NM_CHAR
+        INC HL
+        DJNZ NM_LNAME
+        LD A,' '
+        CALL NM_CHAR
+        LD A,(HL)
+        ADD A,'A'-1
+        CALL NM_CHAR
+        INC HL
+        LD A,(HL)
+        CALL NM_NUMBER
+        ; Duu: occupies four bytes; Du: needs one padding byte before the
+        ; four-space inter-column gap. Do not pad the last column of a row.
+        LD A,(HL)
+        CP 10
+        LD A,4
+        JR NC,NM_LPAD
+        INC A
+NM_LPAD:
+        LD (NM_GAP),A
+        LD A,':'
+        JP NM_CHAR
+NM_NUMBER:
+        LD B,'0'
+NM_TENS:
+        CP 10
+        JR C,NM_UNITS
+        SUB 10
+        INC B
+        JR NM_TENS
+NM_UNITS:
+        PUSH AF
+        LD A,B
+        CP '0'
+        CALL NZ,NM_CHAR
+        POP AF
+        ADD A,'0'
+        JP NM_CHAR
+NM_CHAR:
+        PUSH HL
+        PUSH BC
+        PUSH DE
+        LD E,A
+        LD C,2
+        CALL BDOS
+        POP DE
+        POP BC
+        POP HL
+        RET
+NM_PUTS:
+        LD C,9
+        JP BDOS
+NM_PRINT:
+        CALL NM_PUTS
+NM_EXIT:
+        LD A,(NM_ORIGUSER)
+        LD E,A
+        LD C,32
+        CALL BDOS
+        JP 0
+NM_BAD:
+        LD DE,NM_USAGE
+        JP NM_PRINT
+
+; Saved sets: three 128-byte CP/M records. Header is 64 bytes, table is 320.
+; Validate the entire file (including EOF) before changing the live namespace.
+NM_FILE:
+        CALL NM_SPACES
+        PUSH HL
+        LD B,0
+NM_FCOUNT:
+        LD A,(HL)
+        OR A
+        JR Z,NM_FREADY
+        CP ' '
+        JR Z,NM_FREADY
+        INC B
+        INC HL
+        JR NM_FCOUNT
+NM_FREADY:
+        POP HL
+        CALL SD_PARSE
+        JP NZ,NM_BAD
+        PUSH HL
+        PUSH BC
+        XOR A
+        CALL FP_VALIDATE
+        POP BC
+        POP HL
+        JP C,NM_BAD
+        PUSH HL
+        LD A,(SD_USER)
+        LD E,A
+        LD C,32
+        CALL BDOS
+        POP HL
+        LD DE,NM_FCB
+        LD B,36
+        XOR A
+NM_FZERO:
+        LD (DE),A
+        INC DE
+        DJNZ NM_FZERO
+        LD DE,NM_FCB+1
+        LD B,11
+        LD A,' '
+NM_FSPACE:
+        LD (DE),A
+        INC DE
+        DJNZ NM_FSPACE
+        LD A,(SD_DRIVE)
+        INC A
+        LD (NM_FCB),A
+        LD DE,NM_FCB+1
+        LD B,8
+NM_FILENAME:
+        LD A,(HL)
+        OR A
+        JP Z,NM_BAD
+        CP ' '
+        JP Z,NM_BAD
+NM_FNLOOP:
+        LD A,(HL)
+        OR A
+        JR Z,NM_FNEND
+        CP ' '
+        JR Z,NM_FNEND
+        CP '.'
+        JR Z,NM_EXT
+        LD A,B
+        OR A
+        JP Z,NM_BAD
+        LD A,(HL)
+        LD (DE),A
+        INC DE
+        INC HL
+        DEC B
+        JR NM_FNLOOP
+NM_EXT:
+        LD A,(NM_FCB+1)
+        CP ' '
+        JP Z,NM_BAD
+        LD DE,NM_FCB+9
+        LD A,(DE)
+        CP ' '
+        JP NZ,NM_BAD
+        LD B,3
+        INC HL
+        LD A,(HL)
+        JR NM_FNLOOP
+NM_FNEND:
+        CALL NM_END
+        LD A,(NM_FCB+9)
+        CP ' '
+        RET NZ
+        LD HL,NM_EXTNAME
+        LD DE,NM_FCB+9
+        LD BC,3
+        LDIR
+        RET
+NM_OPEN:
+        LD DE,NM_FCB
+        LD C,15
+        CALL BDOS
+        INC A
+        RET
+NM_CLOSE:
+        LD DE,NM_FCB
+        LD C,16
+        CALL BDOS
+        INC A
+        RET
+NM_LOAD:
+        CALL NM_FILE
+        CALL NM_OPEN
+        JP Z,NM_IOERR
+        LD HL,NM_IMAGE
+        LD B,3
+NM_READ:
+        PUSH BC
+        PUSH HL
+        EX DE,HL
+        LD C,26
+        CALL BDOS
+        LD DE,NM_FCB
+        LD C,20
+        CALL BDOS
+        POP HL
+        POP BC
+        OR A
+        JR NZ,NM_LFAIL
+        LD DE,128
+        ADD HL,DE
+        DJNZ NM_READ
+        LD DE,NM_EXTRA
+        LD C,26
+        CALL BDOS
+        LD DE,NM_FCB
+        LD C,20
+        CALL BDOS
+        CP 1
+        JR NZ,NM_LFAIL
+        CALL NM_CLOSE
+        JP Z,NM_IOERR
+        CALL NM_VALIDATE
+        JP C,NM_BADSET
+        LD DE,NM_LOADED
+        JP NM_COMMIT
+NM_LFAIL:
+        CALL NM_CLOSE
+        JP NM_BADSET
+NM_SAVE:
+        CALL NM_FILE
+        CALL NM_OPEN
+        JR Z,NM_CREATE
+        CALL NM_CLOSE
+        LD DE,NM_FILEEXISTS
+        JP NM_PRINT
+NM_CREATE:
+        LD DE,NM_FCB
+        LD C,22
+        CALL BDOS
+        INC A
+        JP Z,NM_IOERR
+        LD HL,NM_HEADER
+        LD DE,NM_IMAGE
+        LD BC,64
+        LDIR
+        LD HL,NM_IMAGE
+        LD B,3
+NM_WRITE:
+        PUSH BC
+        PUSH HL
+        EX DE,HL
+        LD C,26
+        CALL BDOS
+        LD DE,NM_FCB
+        LD C,21
+        CALL BDOS
+        POP HL
+        POP BC
+        OR A
+        JR NZ,NM_SFAIL
+        LD DE,128
+        ADD HL,DE
+        DJNZ NM_WRITE
+        CALL NM_CLOSE
+        JP Z,NM_SFAIL
+        LD DE,NM_SAVED
+        JP NM_PRINT
+NM_SFAIL:
+        CALL NM_CLOSE
+        LD DE,NM_FCB
+        LD C,19
+        CALL BDOS
+NM_IOERR:
+        LD DE,NM_DISKERR
+        JP NM_PRINT
+NM_BADSET:
+        LD DE,NM_INVALID
+        JP NM_PRINT
+NM_VALIDATE:
+        LD HL,NM_IMAGE
+        LD DE,NM_HEADER
+        LD B,64
+NM_VHEADER:
+        LD A,(DE)
+        CP (HL)
+        JP NZ,NM_FAIL
+        INC HL
+        INC DE
+        DJNZ NM_VHEADER
+        LD B,32
+NM_VENTRY:
+        PUSH BC
+        PUSH HL
+        LD A,(HL)
+        OR A
+        JR Z,NM_VEMPTY
+        LD DE,NM_NAMEBUF
+        LD C,0
+        LD B,8
+NM_VNAME:
+        LD A,(HL)
+        LD (DE),A
+        CP ' '
+        JR Z,NM_VPAD
+        CALL NM_ALNUM
+        JR C,NM_VBAD
+        LD A,C
+        OR A
+        JR NZ,NM_VBAD
+        JR NM_VNEXT
+NM_VPAD:
+        LD C,1
+NM_VNEXT:
+        INC HL
+        INC DE
+        DJNZ NM_VNAME
+        LD A,(HL)
+        DEC A
+        CP 16
+        JR NC,NM_VBAD
+        INC HL
+        LD A,(HL)
+        CP 32
+        JR NC,NM_VBAD
+        CALL NM_RESERVE
+        JR C,NM_VBAD
+        ; Reject duplicate names by searching only the preceding entries.
+        POP HL
+        PUSH HL
+        LD (NM_CHECK),HL
+        LD HL,NM_TABLE
+NM_VDUP:
+        LD DE,(NM_CHECK)
+        OR A
+        SBC HL,DE
+        ADD HL,DE
+        JR Z,NM_VDONE
+        PUSH HL
+        LD DE,NM_NAMEBUF
+        LD B,8
+NM_VCMP:
+        LD A,(DE)
+        CP (HL)
+        JR NZ,NM_VDIFF
+        INC HL
+        INC DE
+        DJNZ NM_VCMP
+        POP HL
+        JR NM_VBAD
+NM_VDIFF:
+        POP HL
+        LD DE,10
+        ADD HL,DE
+        JR NM_VDUP
+NM_VEMPTY:
+        LD B,10
+NM_VZERO:
+        LD A,(HL)
+        OR A
+        JR NZ,NM_VBAD
+        INC HL
+        DJNZ NM_VZERO
+NM_VDONE:
+        POP HL
+        POP BC
+        LD DE,10
+        ADD HL,DE
+        DEC B
+        JP NZ,NM_VENTRY
+        OR A
+        RET
+NM_VBAD:
+        POP HL
+        POP BC
+        SCF
+        RET
+
+NM_DKEY: DB 'DEL',0
+NM_CKEY: DB 'CLEAR',0
+NM_LKEY: DB 'LOAD',0
+NM_SKEY: DB 'SAVE',0
+NM_EXTNAME: DB 'NDR'
+NM_ABSENT: DB 'NDR.RSX is not loaded. Use RSX LOAD NDR.',13,10,'$'
+NM_USAGE: DB 'Use NDR /HELP for named-directory syntax.',13,10,'$'
+NM_EXISTS: DB 'Name exists. Delete it before reassignment.',13,10,'$'
+NM_MISSING: DB 'Name not found.',13,10,'$'
+NM_FULL: DB 'NDR is full (32 names).',13,10,'$'
+NM_OK: DB 'Named directories updated (not saved).',13,10,'$'
+NM_NEWLINE: DB 13,10,'$'
+NM_SAVED: DB 'Named-directory set saved.',13,10,'$'
+NM_LOADED: DB 'Named-directory set loaded.',13,10,'$'
+NM_COUNTMSG: DB 'NDR: $'
+NM_CAPMSG: DB ' of 32 names in use.',13,10,'$'
+NM_FILEEXISTS: DB 'File exists. Choose another name or erase it first.',13,10,'$'
+NM_DISKERR: DB 'NDR disk operation failed.',13,10,'$'
+NM_INVALID: DB 'Invalid or incomplete NDR set; live names unchanged.',13,10,'$'
+NM_HEADER: DB 'BNDR',1,32,8,10
+        REPT 56
+        DB 0
+        ENDM
+NM_ORIGUSER: DB 0
+NM_INUSE: DB 0
+NM_ROW: DB 0
+NM_LINDEX: DB 0
+NM_GAP: DB 0
+NM_LPTRS: DS 64
+NM_OPTION: DW 0
+NM_DPAIR: DW 0
+NM_CHECK: DW 0
+NM_NAMEBUF: DS 8
+NM_TAIL: DS 128
+NM_FCB: DS 36
+NM_IMAGE: DS 64
+NM_TABLE: DS 320
+NM_EXTRA: DS 128
+; @bounded-filespec@
+; @rsx-source-parser@
+; @ndr-client@
+; @utility-version NDR@
+        END

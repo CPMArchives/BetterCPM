@@ -146,7 +146,7 @@ def build():
            ('R3CACHE.RSX',(system/'R3CACHE.RSX').read_bytes()),('DISK.FDB',compile_file(SOURCE)),('SYSTEM.SYS',package)]
     for builder in ('rsx_utilities','cpx_utility','disk_utilities','hello_rsx',
                     'screen_backends','adm3a','vt52','ansi','fdb','rcp_transients',
-                    'era','ren','type','pip','batch'):
+                    'era','ren','type','pip','batch','ndr'):
         tool(builder)
     # Assemble the same existing command collection selected by the other
     # release targets. This completes distribution membership, not OS scope.

@@ -35,6 +35,28 @@
       "role": "editable cold-boot startup script"
     },
     {
+      "name": "NDR.COM",
+      "artifact": "build/utilities/NDR.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp",
+        "trs80m2"
+      ],
+      "user": 0
+    },
+    {
+      "name": "NDR.RSX",
+      "artifact": "build/rsx/NDR.RSX",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp",
+        "trs80m2"
+      ],
+      "user": 0
+    },
+    {
       "name": "PATH.COM",
       "artifact": "build/utilities/PATH.COM",
       "status": "implemented",

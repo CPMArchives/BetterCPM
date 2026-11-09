@@ -148,6 +148,18 @@ Prepare all fallible disk reads, validation, snapshots and placement before comm
 
 To qualify a new provider, test load, call, unknown-call chaining, duplicate rejection, forced movement both directions, state/pointer preservation, lookup rediscovery, WBOOT, unload and a preparation failure preserving the old profile. Keep test carriers outside locked distribution membership. The [prepared transaction record](../engineering/151%20Stage%203%20Prepared%20Profile%20Commit.md) documents the final path; earlier staged callbacks/rebuilders are historical.
 
+## Named-directory service (1.2 development)
+
+NDR.RSX owns the 32-entry live map in a 512-byte STATEFUL allocation; it does
+not use PDS storage. Discover service `NDR `, ABI 1.0, through Function 182 and
+use the returned entry immediately. Rediscover after every manager mutation;
+reverse-lookup pointers are borrowed. Operations provide forward/reverse
+lookup, a 320-byte snapshot and complete-table replacement. Replacement is a
+trusted management interface: the caller must validate names, duplicates,
+padding and DU ranges before publishing. It is not a security boundary.
+See the [exact register contract and saved-set format](../engineering/NDR-1.2.md).
+Transient tools can use [the existing discovery helper](../../src/utilities/common/ndr-client.inc).
+
 ## Discover and call a service
 
 The [TIMEQ.MAC example](../programmers/examples/TIMEQ.MAC) makes a 20-byte Function-182 LOOKUP for TIME ABI 1.0, then invokes its entry with a ten-byte native request. It distinguishes absent/incompatible service from failed GET and prints the five returned bytes as hexadecimal. The hour/minute/second bytes are packed BCD, so valid BCD bytes have a familiar decimal appearance without performing calendar conversion. The day count remains hexadecimal low/high bytes, not a Gregorian date string.

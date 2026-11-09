@@ -1,0 +1,140 @@
+; NDR callable ABI 1.0. STATEFUL: all data lives in this allocation.
+; A=0: HL -> name, B=length 1..8 (case insensitive); DE <- drive 1..16/user.
+; A=1: DE=drive 1..16/user; HL <- matching name (borrowed until next manager call).
+; A=2: HL -> 320-byte snapshot destination. A=3: HL -> validated replacement.
+; A=0 success, FF not found/unsupported. BC/DE/HL/flags are scratch.
+; Replacement is a trusted management operation: NDR.COM validates the complete
+; candidate before invoking it. No BDOS calls or failures during the copy.
+RSXBASE         EQU     08000H
+NDR_CAPACITY    EQU     32
+NDR_ENTRY_SIZE  EQU     10
+NDR_BYTES       EQU     NDR_CAPACITY*NDR_ENTRY_SIZE
+        CSEG
+        .PHASE  RSXBASE
+NR_NEXT: DW 5
+        DW NR_CHAIN
+        DB 0,0
+        DW 0
+NR_CHAIN:
+        LD HL,(NR_NEXT)
+        JP (HL)
+NR_SERVICE:
+        OR A
+        JR Z,NR_FIND
+        DEC A
+        JR Z,NR_REVERSE
+        DEC A
+        JR Z,NR_READ
+        DEC A
+        JR NZ,NR_MISS
+        LD DE,NR_TABLE
+        JR NR_COPY
+NR_READ:
+        EX DE,HL
+        LD HL,NR_TABLE
+NR_COPY:
+        LD BC,NDR_BYTES
+        LDIR
+        XOR A
+        RET
+NR_FIND:
+        LD A,B
+        DEC A
+        CP 8
+        JR NC,NR_MISS
+        LD DE,NR_TABLE
+        LD C,NDR_CAPACITY
+NR_SCAN:
+        PUSH HL
+        PUSH DE
+        PUSH BC
+NR_COMPARE:
+        LD A,(HL)
+        CP 'a'
+        JR C,NR_CASE
+        CP 'z'+1
+        JR NC,NR_CASE
+        SUB 32
+NR_CASE:
+        EX DE,HL
+        CP (HL)
+        EX DE,HL
+        JR NZ,NR_NEXTNAME
+        INC HL
+        INC DE
+        DJNZ NR_COMPARE
+        POP BC
+        PUSH BC
+        LD A,B
+        CP 8
+        JR Z,NR_MATCH
+        LD A,(DE)
+        CP ' '
+        JR NZ,NR_NEXTNAME
+        LD A,8
+        SUB B
+        ADD A,E
+        LD E,A
+        JR NC,NR_MATCH
+        INC D
+NR_MATCH:
+        LD A,(DE)
+        OR A
+        JR Z,NR_NEXTNAME
+        INC DE
+        EX DE,HL
+        LD E,(HL)
+        LD D,A
+        POP BC
+        POP HL
+        POP HL
+        XOR A
+        RET
+NR_NEXTNAME:
+        POP BC
+        POP DE
+        POP HL
+        PUSH HL
+        LD HL,NDR_ENTRY_SIZE
+        ADD HL,DE
+        EX DE,HL
+        POP HL
+        DEC C
+        JR NZ,NR_SCAN
+NR_MISS:
+        LD A,255
+        OR A
+        RET
+NR_REVERSE:
+        LD HL,NR_TABLE+8
+        LD B,NDR_CAPACITY
+NR_RSCAN:
+        LD A,(HL)
+        CP D
+        JR NZ,NR_RNEXT
+        INC HL
+        LD A,(HL)
+        DEC HL
+        CP E
+        JR Z,NR_RFOUND
+NR_RNEXT:
+        LD A,10
+        ADD A,L
+        LD L,A
+        JR NC,NR_RSKIP
+        INC H
+NR_RSKIP:
+        DJNZ NR_RSCAN
+        JR NR_MISS
+NR_RFOUND:
+        LD DE,8
+        OR A
+        SBC HL,DE
+        XOR A
+        RET
+NR_TABLE:
+        REPT NDR_BYTES
+        DB 0
+        ENDM
+        .DEPHASE
+        END

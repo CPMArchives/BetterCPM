@@ -118,18 +118,17 @@ def main() -> None:
         raise SystemExit("CCP relocation directory exceeds its header")
     from checked_carriers import selected_contract, command_carrier
     contract = selected_contract(args.assembler)
-    payload = data
-    if contract:
-        # The checked loader reserves allocation_size separately. Stack storage
-        # is written by PUSH/CALL before use and needs no bytes on disk.
-        from build_z80pack_image import symbols
-        labels = symbols(BUILD / "ccp.lst")
-        stack = labels["CCP_STACK"] - LINK_BASE
-        if (labels["CCP_STKTOP"] != LINK_BASE + len(data) or
-                not 0 < stack < len(data) or any(data[stack:]) or
-                any(offset + 2 > stack for offset in offsets)):
-            raise ValueError("CCP stack must be trailing, empty and free of relocation sites")
-        payload = data[:stack]
+    # Command input, RAW/POKE staging and stack are write-before-read workspace. Keep their
+    # allocation, but omit their trailing zero bytes from both carrier forms.
+    # This also keeps the Model 4 bootstrap carrier inside its 13-sector slot.
+    from build_z80pack_image import symbols
+    labels = symbols(BUILD / "ccp.lst")
+    workspace = labels["CCP_DATA"] - LINK_BASE
+    if (labels["CCP_STKTOP"] != LINK_BASE + len(data) or
+            not 0 < workspace < len(data) or any(data[workspace:]) or
+            any(offset + 2 > workspace for offset in offsets)):
+        raise ValueError("CCP workspace must be trailing, zero and free of relocation sites")
+    payload = data[:workspace]
     header = bytearray(MODULE_HEADER_SIZE)
     header[:16] = struct.pack("<4sBBHHHHH", b"BCM1", 1, 2, LINK_BASE,
                               len(payload), allocation_size, 0, len(offsets))
@@ -137,8 +136,11 @@ def main() -> None:
         struct.pack_into("<H", header, 16 + index * 2, offset)
     module = BUILD / "ccp.rlm"
     carrier = bytes(header) + payload
-    module.write_bytes(command_carrier(carrier, 'CCP', 'ccp', contract)
-                       if contract else carrier)
+    if contract:
+        carrier = command_carrier(carrier, 'CCP', 'ccp', contract)
+    if len(carrier) > 13 * 512:
+        raise SystemExit("CCP bootstrap carrier exceeds its 13-sector disk slot")
+    module.write_bytes(carrier)
     print(f"{hashlib.sha256(data).hexdigest()}  {output.relative_to(ROOT)}")
     print(f"CCP bytes: {len(data)}")
     print(f"CCP allocation: {allocation_size} bytes; calculated base: "

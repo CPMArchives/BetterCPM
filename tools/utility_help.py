@@ -2,6 +2,13 @@
 from utility_versions import banner
 
 SCREENS={
+ 'NDR':('Named Directory Management','NDR [name DU: | operation]',[
+ ('name DU:', 'Assign a name (1..8 letters/digits).'),
+ ('/DEL name', 'Delete a name before reassignment.'),
+ ('/CLEAR', 'Discard all live names.'),
+ ('/LOAD [DU:]file', 'Replace names from a saved .NDR set.'),
+ ('/SAVE [DU:]file', 'Save names to a new .NDR file.'),
+ ('', 'List names: up to four columns, eight per column.')]),
  'STAT':('System and File Statistics','STAT [drive: | filespec | request]',[
  ('', 'No operand: report logged-in drives only.'),
  ('d:', 'Query free space on that drive directly.'),
@@ -48,7 +55,8 @@ SCREENS={
  'RESPACK':('Resident Image Packaging','RESPACK',[]),
  'RLMBUILD':('Relocation Map Build','RLMBUILD',[]),
  'PATH':('Numeric Command Search Path','PATH [location ... | /A location | /D location | /DEFAULT]',[
- ('location', 'Z-System DU entry; current DU is always first.'),
+ ('location', 'Numeric DU or NAME:; current DU is always first.'),
+ ('NAME:', 'Resolve once through the loaded NDR provider.'),
  ('/A /ADD DU', 'Append one entry to the list.'),
  ('/D /DEL DU', 'Delete one entry; at least one must remain.'),
  ('/DEFAULT','Restore current DU followed by A0:.')]),

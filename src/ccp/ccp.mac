@@ -81,16 +81,15 @@ CCP_LOOP:                               ; prompt for and dispatch next command
         LD      DE,CCP_PROMPT
         LD      C,9
         CALL    BDOS
-        CALL    CCP_DUPROMPT
-        LD      E,'>'
-        LD      C,2
-        CALL    BDOS
+        CALL    CCP_INPUTPROMPT
         CALL    CCP_READLN
 
 CCP_DISPATCH:                           ; dispatch acquired or cold-start command
         LD      A,(CCP_COUNT)
         OR      A
         JR      Z,CCP_LOOP
+        CALL    CN_NORMAL
+        JR      C,CCP_LOOP
         CALL    CCP_UPPER
         JR      Z,CCP_LOOP              ; SPACE-only input is an empty command
 
@@ -127,7 +126,7 @@ CCP_BAD:                                ; fall through to transient command load
         LD      DE,CCP_UNKNOWN
         LD      C,9
         CALL    BDOS
-        JP      CCP_LOOP
+        JR      CCP_LOOP
 
 ; -------------------------------------------------------------------------------
 ; Cold-Startup Command
@@ -368,6 +367,17 @@ CCP_DUPTEN:                             ; convert user-number tens digit
 CCP_DUPONE:                             ; print user-number units digit
         ADD     A,'0'
         LD      E,A
+        LD      C,2
+        JP      BDOS
+
+; Keep the initial prompt, editor redraws and completed line identical.
+CCP_INPUTPROMPT:
+        CALL    CCP_DUPROMPT
+        CALL    CN_PROMPT
+        LD      E,'>'
+        LD      C,2
+        CALL    BDOS
+        LD      E,' '
         LD      C,2
         JP      BDOS
 
@@ -995,7 +1005,7 @@ CCP_DWNOCOPY:                           ; finish word deletion without copy
         LD      HL,CCP_HSKIP
         SUB     (HL)
         LD      (CCP_COUNT),A
-        JP      CCP_EDDRAW
+        JR      CCP_EDDRAW
 
 CCP_EDBS:                               ; delete character left of cursor
         LD      A,(CCP_EDCUR)
@@ -1040,7 +1050,7 @@ CCP_EDUP:                               ; recall previous history entry
         INC     (HL)
         SUB     (HL)                    ; zero-based oldest-to-newest record index
         CALL    CCP_HGET
-        JP      CCP_EDDRAW
+        JR      CCP_EDDRAW
 
 CCP_EDDOWN:                             ; recall next history entry
         LD      A,(CCP_HPOS)
@@ -1053,14 +1063,14 @@ CCP_EDDOWN:                             ; recall next history entry
         LD      A,(HISTBASE+3)
         SUB     B
         CALL    CCP_HGET
-        JP      CCP_EDDRAW
+        JR      CCP_EDDRAW
 
 CCP_HCLEAR:                             ; restore live line after history
         XOR     A
         LD      (CCP_COUNT),A
         LD      (CCP_EDCUR),A
         LD      (CCP_HPOS),A
-        JP      CCP_EDDRAW
+        JR      CCP_EDDRAW
 
   ; Redraw the whole logical line with the character under the cursor in the
   ; platform cursor presentation. Unsupported platforms get an inserted visible
@@ -1075,10 +1085,7 @@ CCP_EDDRAW:                             ; redraw edited command line
         LD      E,13
         LD      C,2
         CALL    BDOS
-        CALL    CCP_DUPROMPT
-        LD      E,'>'
-        LD      C,2
-        CALL    BDOS
+        CALL    CCP_INPUTPROMPT
         LD      A,(CCP_EDCUR)
         LD      B,A
         LD      HL,CCP_DATA
@@ -1140,10 +1147,7 @@ CCP_CLLOOP:                             ; clear one stale display cell
         LD      E,13
         LD      C,2
         CALL    BDOS
-        CALL    CCP_DUPROMPT
-        LD      E,'>'
-        LD      C,2
-        CALL    BDOS
+        CALL    CCP_INPUTPROMPT
         LD      A,(CCP_EDCUR)
         LD      B,A
         LD      HL,CCP_DATA
@@ -1213,10 +1217,7 @@ CCP_EDFIN:                              ; finish command-line editing
         LD      E,13
         LD      C,2
         CALL    BDOS
-        CALL    CCP_DUPROMPT
-        LD      E,'>'
-        LD      C,2
-        CALL    BDOS
+        CALL    CCP_INPUTPROMPT
         LD      A,(CCP_COUNT)
         LD      B,A
         LD      HL,CCP_DATA
@@ -1233,7 +1234,7 @@ CCP_EDFIN:                              ; finish command-line editing
         LD      A,(CCP_COUNT)
         OR      A
         RET     Z
-        JP      CCP_HADD
+        JR      CCP_HADD
 
   ; Persistent packed command history. The protected history region contains a
   ; nine-byte control header followed by length-prefixed complete command lines. New
@@ -1860,36 +1861,36 @@ CCP_GPARSE:                             ; parse GET file specification
 CCP_GWILD:                              ; reject wildcard GET filename
         LD      A,(HL)
         CP      '?'
-        JP      Z,CCP_GSYNTAX
+        JR      Z,CCP_GSYNTAX
         INC     HL
         DJNZ    CCP_GWILD
         LD      DE,CCP_FCB
         LD      C,35
         CALL    BDOS
         CP      0FFH
-        JP      Z,CCP_GNOFILE
+        JR      Z,CCP_GNOFILE
         LD      A,(CCP_FCB+35)
         OR      A
-        JP      NZ,CCP_GBIG
+        JR      NZ,CCP_GBIG
         LD      A,(CCP_FCB+34)
         CP      2
-        JP      NC,CCP_GBIG
+        JR      NC,CCP_GBIG
         LD      HL,(CCP_FCB+33)
         LD      (CCP_GRECS),HL
         LD      B,7
 
 CCP_GMUL:                               ; compute GET load extent
         ADD     HL,HL
-        JP      C,CCP_GBIG
+        JR      C,CCP_GBIG
         DJNZ    CCP_GMUL
         LD      DE,(CCP_TADDR)
         ADD     HL,DE
-        JP      C,CCP_GBIG
+        JR      C,CCP_GBIG
         EX      DE,HL
         LD      HL,(LY_SYS+08CH)        ; live bottom of the reconstructible CCP
         OR      A
         SBC     HL,DE
-        JP      C,CCP_GBIG
+        JR      C,CCP_GBIG
         LD      DE,CCP_FCB
         LD      C,15
         CALL    BDOS
@@ -3313,6 +3314,9 @@ PFCLRL:                                 ; clear parsed FCB fields
   ; This compact A:..P: prefix recognizer occupies the final 21 bytes below the
   ; fixed ED00h physical-sector buffer; CCP_STKTOP now ends exactly at ED00h.
 
+        LD      A,B
+        CP      2
+        JR      C,PFNODRV              ; no look-ahead past a one-character token
         LD      A,(HL)
         SUB     'A'-1
         CP      17
@@ -3482,28 +3486,18 @@ CCP_MSPACE:    DB      13,10,'NO SPACE',13,10,'$' ; disk-full message
 ; Command and Editor Storage
 ; -------------------------------------------------------------------------------
 
-CCP_BUFFER:                             ; command buffer base
-        DB      127
-CCP_COUNT:                              ; command-line length
-        DB      0
-CCP_DATA:                               ; command-line text
-        REPT    127
-        DB      0
-        ENDM
-; Original spelling for transient tails; dispatch and default FCBs use DATA.
-; POKE consumes folded DATA and returns directly to the prompt. The saved
-; spelling is dead after the core accepts it, so the staging areas can overlap.
-CCP_PBUF:
-CCP_RAW:
-        REPT    127
-        DB      0
-        ENDM
+; @ndr-ccp@
+
 CCP_EDCUR:                              ; logical editor cursor position
         DB      0
 CCP_EDINS:                              ; editor insert-mode flag
         DB      1
 CCP_EDCHR:                              ; editor character scratch byte
         DB      0
+; Function 182 output bytes overlap the idle FCB. Queries run only at the
+; prompt or before command parsing, and the first 12 request bytes are fixed.
+CN_REQUEST: DB 1,20,0,0,'NDR ',1,0
+        DW 0
 CCP_FCB:                                ; CCP working FCB
         REPT    36
         DB      0
@@ -3574,6 +3568,23 @@ CCP_NEWLINE:                            ; shared CR/LF string
 ; -------------------------------------------------------------------------------
 
   ; Explicit bytes keep host and native links identical; DS fill is tool-specific.
+
+CCP_BUFFER:                             ; command buffer base
+        DB      127
+CCP_COUNT:                              ; command-line length
+        DB      0
+CCP_DATA:                               ; command-line text
+        REPT    127
+        DB      0
+        ENDM
+; Original spelling for transient tails; dispatch and default FCBs use DATA.
+; POKE consumes folded DATA and returns directly to the prompt. The saved
+; spelling is dead after the core accepts it, so the staging areas can overlap.
+CCP_PBUF:
+CCP_RAW:
+        REPT    127
+        DB      0
+        ENDM
 
 CCP_STACK:                              ; CCP stack storage
         REPT    128

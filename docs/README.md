@@ -21,6 +21,10 @@ The [maintained platforms and qualification matrix](platform/SUPPORT-1.1.md) cov
 - Rights and attribution: [licensing boundaries](LICENSING.md), [component/package inventory](LICENSING-INVENTORY.md), and supplied notices/source companions.
 - Publication: [formats, documentation selection and separate provenance](releases/DOCUMENTATION-PUBLICATION.md).
 
+## 1.2 development
+
+- [Named directories: operator guide](user/NDR.md) and [engineering/memory contract](engineering/NDR-1.2.md). This is development work, separate from the published 1.1 release.
+
 ## Authority and history
 
 The [non-documentation lock](releases/non-documentation-lock-1.0/README.md) fixes the five Source/System/Utilities archives, including embedded documentation. Updated manuals and external notes explain obsolete embedded guidance; they do not rewrite those archives or override licenses/known limitations. Source is locked at `30b24a021cc3a90eb725cc3d1760dfe0dc31daa8`, qualification through `2842d0eb0732683d9280a38d576c3dba423cb893`.

@@ -5670,11 +5670,58 @@
       ],
       "files": [
         "src/system/layout.inc",
+        "src/utilities/common/ndr-client.inc",
         "src/utilities/common/version.inc",
         "src/utilities/path.mac",
         "tools/build_ccp.py",
         "tools/build_path.py",
         "tools/build_profiles.py",
+        "tools/checked_build_contract.py",
+        "tools/checked_carriers.py",
+        "tools/component_build.py",
+        "tools/component_development.py",
+        "tools/component_identity.py",
+        "tools/component_inputs.py",
+        "tools/component_registry.py",
+        "tools/rsx_container.py",
+        "tools/system_layout.py",
+        "tools/utility_help.py",
+        "tools/utility_versions.py"
+      ]
+    },
+    "utility:NDR": {
+      "status": "tracked-conservative",
+      "target": "z80pack",
+      "targets": [
+        "z80pack",
+        "trs80gp",
+        "trs80m2"
+      ],
+      "profile": "default",
+      "build_mode": "cross",
+      "configuration": {
+        "origin": 256,
+        "assembler_flags": [
+          "-fb"
+        ]
+      },
+      "registry_fields": [
+        "display_format",
+        "description"
+      ],
+      "files": [
+        "src/system/layout.inc",
+        "src/utilities/common/filespec.inc",
+        "src/utilities/common/ndr-client.inc",
+        "src/utilities/common/rsxsource.inc",
+        "src/utilities/common/version.inc",
+        "src/utilities/ndr.mac",
+        "tools/build_ccp.py",
+        "tools/build_cpx_module.py",
+        "tools/build_ndr.py",
+        "tools/build_profiles.py",
+        "tools/build_rsx_module.py",
+        "tools/build_stateful_test_rsx.py",
         "tools/checked_build_contract.py",
         "tools/checked_carriers.py",
         "tools/component_build.py",
