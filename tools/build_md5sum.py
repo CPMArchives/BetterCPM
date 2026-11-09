@@ -117,7 +117,8 @@ def expanded_source():
         '     /CHECK[=name] Verify a list in each target DU.\n'
         '     /40         Narrow screen display.\n\n'
         '     /H /HELP    Display this help.\n'
-        '     /VER        Display utility identification.\n')
+        '     /VER        Display utility identification.\n'
+        'For detailed help, see HELP MD5SUM\n')
     def string(label,value):
         return label+':\n'+''.join("        DB '"+line.replace("'","''")+"',13,10\n" if line else '        DB 13,10\n'
                                   for line in value.splitlines())+'        DB 0\n'

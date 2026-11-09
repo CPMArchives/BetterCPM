@@ -31,7 +31,8 @@ def help_text(development=None):
             '   Options:\r\n'
             '     /Y          Exit without confirmation.\r\n\r\n'
             '     /H /HELP    Display this help.\r\n'
-            '     /VER        Display utility identification.\r\n')
+            '     /VER        Display utility identification.\r\n'
+            'For detailed help, see HELP BYE\r\n')
 
 
 def build(assembler=Path.home() / 'bin/z80asm', output=None, *, baseline=None, identity_state='auto'):

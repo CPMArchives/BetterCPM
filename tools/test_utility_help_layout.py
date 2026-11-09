@@ -7,7 +7,8 @@ def main():
     expected=help_text();lines=expected.splitlines()
     assert len(lines)<=23 and all(len(s)<=79 for s in lines)
     assert lines[1:4]==['  - - -',' | Archive Utility',' |']
-    assert lines[-2:]==['     /HELP              Display this help.','     /VER               Display utility identification.']
+    assert lines[-3:]==['     /H /HELP           Display this help.','     /VER               Display utility identification.',
+                        'For detailed help, see HELP NOAH']
     for tail in ('/HELP','/help /VER BAD','/VER /HELP /BOGUS'):
         text=m.run(tail,{})
         assert expected.strip() in text,text

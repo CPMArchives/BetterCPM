@@ -31,9 +31,10 @@ def expanded_source(generated_root=None):
         '     Physical: /TYPE /TRACKS /SIDES /STEP /SPINUP /SETTLE',
         '     Edit: /PHYSICAL /SPT /BSH /BLM /EXM /DSM /DRM /AL0 /AL1',
         '           /CKS /OFF /CYLINDERS /SECTORS /SIZE /FLAGS /SIZEMAP',
-        '           /SLOT /ID /CODE   (all fields use =value)', '',
+        '           /SLOT /ID /CODE   (all fields use =value)',
         '     /H /HELP              Display this help.',
-        '     /VER                  Display utility identification.']
+        '     /VER                  Display utility identification.',
+        'For detailed help, see HELP CONFIG']
  help_data='CQ_TEXT:\n'+''.join(
      ("        DB '"+line.replace("'","''")+"',13,10\n") if line else
      '        DB 13,10\n' for line in lines)+"        DB '$'\n"

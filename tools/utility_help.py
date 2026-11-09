@@ -11,9 +11,8 @@ SCREENS={
  ('/DEFAULT [DU:]file.RSX', 'Embed names for the next provider load.'),
  ('', 'List names: up to four columns, eight per column.')]),
  'STAT':('System and File Statistics','STAT [drive: | filespec | request]',[
- ('', 'No operand: report logged-in drives only.'),
+ ('', 'No operand: drives logged since warm boot.'),
  ('d:', 'Query free space on that drive directly.'),
- ('', 'Warm boot resets the logged-in drive set.'),
  ('VAL:', 'Show syntax and valid device assignments.'),
  ('DSK:', 'Show disk parameters for logged drives.'),
  ('USR:', 'Show user areas on the selected drive.'),
@@ -102,6 +101,8 @@ def text(name,identity=None,resident=False):
  for opt,desc in options:lines.append('     '+opt.ljust(option_width)+desc)
  if options:lines.append('')
  lines+=['     '+ '/H /HELP'.ljust(query_width)+'Display this help.','     '+ '/VER'.ljust(query_width)+'Display utility identification.']
+ if name not in ('SYSBUILD','RESPACK','RLMBUILD','WARM'):
+  lines.append('For detailed help, see HELP '+name)
  assert len(lines)<=23 and max(map(len,lines))<=79
  return '\r\n'.join(lines)+'\r\n'
 
@@ -126,7 +127,7 @@ def resident_parts():
  for name,(purpose,usage,options) in RESIDENT_SCREENS.items():
   option_text=''.join('     '+o.ljust(21)+d+'\r\n' for o,d in options)
   if options:option_text+='\r\n'
-  records[name]=''.join(literal(v) for v in (purpose,usage,option_text))
+  records[name]=''.join(literal(v) for v in (purpose,usage,option_text,name+'\r\n'))
  return records
 
 def query_source(root):

@@ -34,7 +34,8 @@ def query_texts():
         '     FDB in.FDF out.FDB    Compile FDF text to a catalogue.\r\n\r\n'
         '   Options:\r\n'
         '     /H /HELP    Display this help.\r\n'
-        '     /VER        Display utility identification.\r\n')
+        '     /VER        Display utility identification.\r\n'
+        'For detailed help, see HELP FDB\r\n')
     assert len(help_text.splitlines()) <= 23
     assert max(map(len, help_text.splitlines())) <= 79
     return version_text, help_text

@@ -5570,7 +5570,8 @@
         "third_party/z80pack/patches/0004-live-media.patch",
         "third_party/z80pack/patches/0005-host-transfer.patch",
         "third_party/z80pack/patches/0006-guest-mount.patch",
-        "third_party/z80pack/patches/0007-mount-help.patch"
+        "third_party/z80pack/patches/0007-mount-help.patch",
+        "third_party/z80pack/patches/0008-guest-help-topics.patch"
       ],
       "registry_fields": [
         "display_format",
@@ -5605,7 +5606,8 @@
         "third_party/z80pack/patches/0004-live-media.patch",
         "third_party/z80pack/patches/0005-host-transfer.patch",
         "third_party/z80pack/patches/0006-guest-mount.patch",
-        "third_party/z80pack/patches/0007-mount-help.patch"
+        "third_party/z80pack/patches/0007-mount-help.patch",
+        "third_party/z80pack/patches/0008-guest-help-topics.patch"
       ],
       "registry_fields": [
         "display_format",
@@ -5640,7 +5642,8 @@
         "third_party/z80pack/patches/0004-live-media.patch",
         "third_party/z80pack/patches/0005-host-transfer.patch",
         "third_party/z80pack/patches/0006-guest-mount.patch",
-        "third_party/z80pack/patches/0007-mount-help.patch"
+        "third_party/z80pack/patches/0007-mount-help.patch",
+        "third_party/z80pack/patches/0008-guest-help-topics.patch"
       ],
       "registry_fields": [
         "display_format",

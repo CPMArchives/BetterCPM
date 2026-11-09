@@ -97,7 +97,8 @@ def qualify(root,image,out,simulator):
     for name,code in [('JPZERO',b'\xc3\0\0'),('FNZERO',b'\x0e\0\xcd\x05\0\x76'),('BIOSWB',b'\x2a\x01\0\xe9')]:put(w,name+'.COM',code)
     t=run(w,['STAT MEM','B:FIT','STAT MEM','B:OVER','STAT MEM','B:FIT','JPZERO','FNZERO','BIOSWB','CPX /V','STAT MEM'])
     assert t.count('FULLRAM FIT PASS')==2 and 'FULLRAM FIT FAILED' not in t
-    assert 'FULLRAM FIT' not in t.split('A0>B:OVER \n',1)[1].split('BetterCP/M Memory Map',1)[0]
+    rejected = re.search(r'A0> ?B:OVER \n(.*?)A0>', t, re.S)
+    assert rejected and 'FILE WILL NOT FIT' in rejected[1] and 'FULLRAM FIT' not in rejected[1]
     m=maps(t);assert len(m)==4 and all(x==expected for x in m)
     save('boundary',fit_bytes=len(payload),rejected_bytes=len(payload)+128,returns=['RET','JP 0','BDOS 0','BIOS WBOOT'],maps=m)
 

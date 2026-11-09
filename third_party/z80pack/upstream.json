@@ -31,6 +31,10 @@
     {
       "file": "0007-mount-help.patch",
       "sha256": "128f278e4d32c149a965d9f2084caee3e82b13db613bb5de7063ca9eff556d72"
+    },
+    {
+      "file": "0008-guest-help-topics.patch",
+      "sha256": "de20d1a059b5fc99362c8c10275e7bf4abb8ac876b36dde3a8dc2df691311598"
     }
   ],
   "profiles": {
@@ -40,7 +44,8 @@
       "0004-live-media.patch",
       "0005-host-transfer.patch",
       "0006-guest-mount.patch",
-      "0007-mount-help.patch"
+      "0007-mount-help.patch",
+      "0008-guest-help-topics.patch"
     ],
     "qualification": [
       "0001-disk-geometry.patch",
@@ -49,7 +54,8 @@
       "0004-live-media.patch",
       "0005-host-transfer.patch",
       "0006-guest-mount.patch",
-      "0007-mount-help.patch"
+      "0007-mount-help.patch",
+      "0008-guest-help-topics.patch"
     ]
   }
 }

@@ -43,7 +43,8 @@ def expanded_source():
         '     /P            Pause detailed output.\n'
         '     /40           Narrow /SIDE display.\n\n'
         '     /H /HELP      Display this help.\n'
-        '     /VER          Display utility identification.\n')
+        '     /VER          Display utility identification.\n'
+        'For detailed help, see HELP COMPARE\n')
     help_source='HELPTEXT:\n'+''.join("        DB '"+line+"',13,10\n" if line else '        DB 13,10\n' for line in help_text.splitlines())+'        DB 0\n'
     return text.replace('; @compare-version@', version).replace('; @compare-help@',help_source)
 

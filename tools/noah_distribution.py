@@ -40,14 +40,20 @@ def acceptance_proof(target, files, image, receipt, acceptance, system_sha256=No
     return proof
 
 
+def companion_components(target):
+    if target == 'z80pack':
+        return {**COMPONENTS, 'HELP.LBR': 'build/help/HELP.LBR'}
+    return COMPONENTS
+
+
 def media(artifacts, acceptance=None):
     root = Path(artifacts)
-    files = {name:(root/path).read_bytes() for name,path in COMPONENTS.items()}
-    if not all(files.values()):
-        raise ValueError('empty NOAH companion artifact')
     receipt = json.loads(acceptance.read_text()) if acceptance else None
     reports = []
     for target in ('z80pack','trs80gp'):
+        files = {name:(root/path).read_bytes() for name,path in companion_components(target).items()}
+        if not all(files.values()):
+            raise ValueError('empty companion artifact')
         native = target=='trs80gp'
         fmt = select_fdf(root/'metadata/DISK.FDF',
                         'Montezuma Micro 80T DS DATA (80T, DS, DD, 800K)' if native else DEFAULT_FORMAT)

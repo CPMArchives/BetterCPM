@@ -39,7 +39,7 @@ this directory.
 ## HELP development build
 
 The 1.2 HELP development reader has a separate builder. Run
-`python3 tools/build_help.py --disk` to produce `HELP.COM`, the starter
+`python3 tools/build_help.py --disk` to produce `HELP.COM`, the 57-topic
 `HELP.LBR` and mountable cpmsim, Model 4 and Model II data disks in `build/help/`.
 [HELP specification](../../docs/engineering/HELP-1.2-Specification.md)
 

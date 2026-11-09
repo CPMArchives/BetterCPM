@@ -23,6 +23,7 @@ BUILDERS = (
     "fdb",                  # FDB.COM and matching FDBVIEW.OVL
     "disk_utilities",       # CONFIG.COM, DUP.COM, SYSGEN.COM, SYSBUILD.COM
     "ndr",                  # NDR.COM and its portable NDR.RSX provider
+    "help",                 # Topic reader and editable library
     "path",                 # Numeric command-search policy
     "cpx_utility",          # CPX.COM
     "rsx_utilities",        # RSX.COM and its diagnostic companions

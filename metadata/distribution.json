@@ -15,10 +15,19 @@
     },
     {
       "name": "STARTUP.SUB",
+      "artifact": "src/distribution/z80pack/STARTUP.SUB",
+      "status": "implemented",
+      "targets": [
+        "z80pack"
+      ],
+      "user": 0,
+      "role": "editable cold-boot startup script"
+    },
+    {
+      "name": "STARTUP.SUB",
       "artifact": "src/distribution/STARTUP.SUB",
       "status": "implemented",
       "targets": [
-        "z80pack",
         "trs80m2"
       ],
       "user": 0,
@@ -33,6 +42,27 @@
       ],
       "user": 0,
       "role": "editable cold-boot startup script"
+    },
+    {
+      "name": "HELP.COM",
+      "artifact": "build/help/HELP.COM",
+      "status": "implemented",
+      "targets": [
+        "z80pack",
+        "trs80gp",
+        "trs80m2"
+      ],
+      "user": 0
+    },
+    {
+      "name": "HELP.LBR",
+      "artifact": "build/help/HELP.LBR",
+      "status": "implemented",
+      "targets": [
+        "trs80gp",
+        "trs80m2"
+      ],
+      "user": 0
     },
     {
       "name": "NDR.COM",

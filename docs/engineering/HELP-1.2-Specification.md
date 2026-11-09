@@ -2,8 +2,8 @@
 
 **Release target: BetterCP/M 1.2 (maintainer decision, 9 November 2026).**
 This design originated during 1.1 planning. BetterCP/M 1.1 shipped TCAP 2.0
-and deferred HELP. The first development build includes the transient reader
-and a starter collection. It has run on BetterCP/M 1.1.1 under cpmsim.
+and deferred HELP. The 1.2 implementation includes the reader, indexed 57-topic library and
+quick-reference footers. The reader runs on the integrated cpmsim System disk.
 The [Markdown dialect and worked subjects](../../specifications/HELP-MARKDOWN.md)
 describe the input format.
 [BetterCP/M 1.1 release notes](../releases/RELEASE-NOTES-1.1.md)
@@ -212,8 +212,8 @@ section inside that copy.
 renders paragraphs, simple lists, inline code and fenced examples that
 preserve spacing. A topic with no selectable sections displays immediately.
 Z-System's menus, preformatted examples, cross-file navigation and frames
-informed these proposals. Compatibility with historical files, the final
-Markdown grammar and the remaining navigation details are open.
+informed the design. The implemented grammar is documented in the
+[Markdown specification](../../specifications/HELP-MARKDOWN.md).
 
 ## Evidence already available
 
@@ -231,7 +231,7 @@ index groups the 57 subjects by task. New loose subjects can be tried with
 Run `python3 tools/test_help_corpus.py` to check the supplied index, disk
 inventories and cross-references.
 
-The full-library experimental boot sets keep HELP.COM on A0. On cpmsim,
+Distribution System disks keep HELP.COM on A0. On cpmsim,
 STARTUP.SUB appends C0 to PATH and the companion disk holds HELP.LBR.
 The Model 4 and Model II System disks have space for the library on A0.
 `HELP PIP /R` reports the archive selected by the current setup.
@@ -264,9 +264,16 @@ the initial layout assumes 80 columns and 24 rows and uses plain text.
 At page boundaries, further travel in that direction keeps the current page.
 A directly requested section is the top level for that invocation.
 
-The broader reference corpus, quick-help footers across the distribution,
-Model 4 and Model II execution checks, and release-media integration are
-still outstanding.
+The distribution builders include the full collection. The cpmsim footer check
+runs both quick-help switches for HELP with its library removed and for 45 other
+packaged utilities and all nine resident RCP commands with HELP.COM also removed.
+The two third-party programs, ZSM4 and LINK, retain their native interfaces.
+
+To check Model 4 and Model II execution together, run
+`python3 tools/qualify_help_trs80.py --model4 SYSTEM.dmk --model2 SYSTEM.imd --output results`
+from a Terminal with access to trs80gp. The check uses private image copies
+and records the tested hashes after validating the title, footer, section,
+return navigation and archive source.
 
 ### Earlier prototypes
 
@@ -293,20 +300,8 @@ inventory found changes in the explanatory quick-help text of three shipped
 transients (PIP, RSX and XSUB), and implementation-specific screens for the
 nine resident RCP commands.
 
-## Resuming HELP work for 1.2
+## Remaining qualification
 
-1. Review the [delivered TCAP 2.0 direct ABI](TCAP-Direct-ABI.md). Establish what HELP can rely on for
-   geometry, unknown dimensions, semantic standout, plain output, cancellation
-   and state restoration. Use the shared facility across supported platforms.
-2. Define diagnostics for a missing default archive, an archive with no
-   index or topics, a damaged member or index, and insufficient decoder TPA.
-3. Freeze the Markdown subset, section fragment spelling, behavior for
-   missing link targets, wrapping and page boundaries.
-   Use a short topic and a multi-section topic at narrow and wide
-   console widths to review the result.
-4. Measure startup and member access on floppy-oriented media. Assess
-   whole-topic buffering and return-to-parent read costs with a larger corpus.
-5. Review the final corpus, footer coverage, source-to-help conversion and
-   disk placement. Qualify the reader, console fallback, read-only behavior,
-   caller-state preservation and release media on cpmsim, TRS-80 Model 4 and
-   the maintained TRS-80 Model II target.
+Record the two native guest results for the candidate disk hashes before
+release. The full-screen reader and plain-console fallback have been exercised
+on cpmsim. Floppy access timing on physical machines remains unmeasured.

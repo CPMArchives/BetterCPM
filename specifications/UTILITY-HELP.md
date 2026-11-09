@@ -46,6 +46,12 @@ Do not repeat query invocation forms under Usage or add an Example section.
 Examples, naming rules, detailed defaults, restrictions and safety explanations
 belong in the manual. The purpose and syntax should make the operation clear.
 
+For BetterCP/M 1.2 the built-in quick reference of each packaged, project-owned
+utility and each resident RCP command ends with `For detailed help, see HELP NAME`.
+Use the uppercase topic name and a trailing CR/LF. This line is ordinary
+console text. The /H and /HELP paths work with both HELP files removed.
+Third-party ZSM4 and LINK retain their native interfaces and have online topics.
+
 Use CR/LF-terminated plain ASCII text. No ANSI sequences, color, cursor control,
 terminal personality, decorative full borders or interactive paging are needed.
 Simple utilities must fit one 80-column, 24-line screen, reserving a line for
@@ -95,6 +101,7 @@ SQ 1.0 (Build 004)
    Options:
      /HELP       Display this help.
      /VER        Display utility identification.
+For detailed help, see HELP SQ
 ```
 
 A utility with more switches would use the following layout. TOOL and its

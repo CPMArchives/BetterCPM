@@ -317,7 +317,7 @@ def main():
     if a.model2_system and a.output == ROOT/'build/utilities-disks':
         a.output = ROOT/'build/model2-utilities-disks'
     if a.build or a.model2_system:
-        for name in ['dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh','dasm','dsym','dlink','ted','noah','search','crc','md5sum','patch','compare']:
+        for name in ['help','dump','ddt','batch','sq','usq','uncr','cr','unlzh','lzh','dasm','dsym','dlink','ted','noah','search','crc','md5sum','patch','compare']:
             command=[sys.executable,str(a.artifacts.resolve()/'tools'/f'build_{name}.py')]
             # TED defaults to its development directory; packaging consumes the
             # binary, native source and build records together in utilities.

@@ -32,7 +32,8 @@ def expanded_source():
                  '     /NOCASE    Ignore ASCII letter case in TEXT.\n'
                  '     /P         Page results forward.\n\n'
                  '     /H /HELP   Display this help.\n'
-                 '     /VER       Display utility identification.\n')
+                 '     /VER       Display utility identification.\n'
+                 'For detailed help, see HELP SEARCH\n')
     text = (ROOT/'src/utilities/search.mac').read_text()
     text = text.replace('; @search-modules@', development_source())
     text = text.replace('; @search-display@', (ROOT/'src/utilities/search/display.inc').read_text())
