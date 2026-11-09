@@ -55,6 +55,11 @@ For example, `Some really, really, long title that doesn't fit` appears as
 `Some really, rea`. Display the complete heading when the section opens.
 Two sections whose first 16 characters coincide remain separately selectable.
 
+On a full-screen console the first row holds the title and the last row
+holds the available keys. A section page keeps its subject and heading at
+the top while the body pages independently. HELP supplies both rows from
+the existing topic and navigation state.
+
 Example at 80 columns
 
 ```text

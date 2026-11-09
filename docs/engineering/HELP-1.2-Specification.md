@@ -174,6 +174,22 @@ characters per menu label and show the full heading inside the section.
 exiting to CP/M from the top level. Within a multi-page section, `,` or
 `<` goes to the previous page and `.` or `>` goes to the next.
 
+**Full-screen browsing.** With known geometry and TCAP clear and absolute
+positioning, HELP reserves the first and last rows. The top row shows the
+topic title, `subject - section`, or `Help topics` for a generated archive
+menu. A heading too wide to fit, or containing a selectable link, also
+appears in the body so its complete contents remain accessible.
+The footer lists the available selection keys, the applicable paging
+directions and `Q Back` or `Q Exit`. On a diagnostic it uses a compact key
+legend and the remaining width for the message. HELP leaves the bottom-right
+cell free to avoid scrolling and clears the display on normal full-screen exit.
+
+The fixed layout requires at least three rows and twelve columns. Smaller
+or unknown geometry, unavailable TCAP and refused cursor positioning select
+the sequential reader. A provider with a clear-screen operation can still
+clear between pages in that mode. Utility queries and location reports use
+ordinary command output.
+
 **Menu keys in the first build.** Assign choices `0` through `9`, then `A` through
 `Z`, skipping `Q` to preserve its navigation meaning. A single keystroke
 opens a choice. This gives 35 keys per menu page. For a longer menu, use the
@@ -222,8 +238,9 @@ menus, direct sections, cross-file links, backward paging, and nested
 Ctrl-C. Independent fixtures cover plain, squeezed and crunched subjects
 and ARK methods 1 through 9, including compressed help files inside a
 compressed ARK member. The data images are compared byte-for-byte after
-the plain-console run. Rendered checks use the shipped 80-column ANSI
-provider and a disposable copy advertising a 40-column viewport.
+the plain-console run. Rendered checks cover the shipped 80-column ADM3A,
+ANSI and VT52 providers, a 40-column ANSI fixture, and sequential fallback
+with missing geometry, missing positioning, or a refused position operation.
 The cpmsim 1.2 NDR candidate also resolved `/S=HFILES:HELP.LBR` and a
 named PATH entry. Released NOAH verified the CRCs of all seven starter
 library members on the mountable cpmsim disk. Extracting the COM and LBR

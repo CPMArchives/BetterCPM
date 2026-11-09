@@ -1219,6 +1219,7 @@
         "src/utilities/help/help-decode.inc",
         "src/utilities/help/help-files.inc",
         "src/utilities/help/help-render.inc",
+        "src/utilities/help/help-screen.inc",
         "src/utilities/help/help-view.inc",
         "src/utilities/help/help-work.inc"
       ],

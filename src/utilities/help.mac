@@ -93,6 +93,9 @@ missing_topic:
         CALL print_field
         LD HL,missing_suffix
 print_exit:
+        PUSH HL
+        CALL leave_frame
+        POP HL
         CALL puts
         JP finish
 read_failure:
@@ -225,6 +228,7 @@ select_user:
  INCLUDE help-files.inc
  INCLUDE help-decode.inc
  INCLUDE help-view.inc
+ INCLUDE help-screen.inc
  INCLUDE help-render.inc
  INCLUDE tcap2.inc
  INCLUDE queries.inc

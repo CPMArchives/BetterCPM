@@ -87,6 +87,8 @@ def prepare(disks, built):
     install("b", 0, "TWINS.HLP", topic("Long headings",
             "## File selection by name\r\nName form.\r\n"
             "## File selection by drive\r\nDrive form."))
+    install("b", 0, "FRAME.HLP", topic("Reading [PIP](PIP.HLP) on a forty-column terminal display",
+            "## A section heading that runs beyond forty columns\r\nBody text."))
     install("b", 0, "LARGE.HLP", topic("Large topic") + b"x" * 47000)
     # The first default archive controls bare HELP even if another archive
     # on PATH has an authored index; the loose names never enter its menu.
@@ -215,54 +217,134 @@ def exercise(simulator, disks, transcript):
 
 
 def check_console(simulator, disks, built):
-    """Use the shipped ANSI provider and a disposable 40-column facts fixture."""
+    """Read back full HELP screens from shipped personalities and altered TCAP fixtures."""
     from tcap_test_support import Guest
 
     work = disks.parent
     original = work / "shipped-ansi.rsx"
     subprocess.run(["cpmcp", "-T", "raw", "-f", "bettercpm-default",
                     str(disks / "drivea.dsk"), "0:ANSI.RSX", str(original)], cwd=work, check=True)
-    narrow = bytearray(original.read_bytes())
-    facts = b"TC\x02\x08\x18\x50\x0f\x02"
-    assert narrow.count(facts) == 1
-    narrow[narrow.index(facts) + 5] = 40
-    start, size = struct.unpack_from("<H", narrow, 24)[0], struct.unpack_from("<H", narrow, 12)[0]
-    struct.pack_into("<H", narrow, 44, sum(narrow[start:start + size]) & 65535)
-    put(disks, "b", 0, "ANSI.RSX", bytes(narrow))
+    def ansi_fixture(user, width, capabilities=15, rows=24):
+        image = bytearray(original.read_bytes())
+        facts = b"TC\x02\x08\x18\x50\x0f\x02"
+        assert image.count(facts) == 1
+        pos = image.index(facts)
+        image[pos + 4:pos + 7] = bytes((rows, width, capabilities))
+        start = struct.unpack_from("<H", image, 24)[0]
+        size = struct.unpack_from("<H", image, 12)[0]
+        struct.pack_into("<H", image, 44, sum(image[start:start + size]) & 65535)
+        put(disks, "b", user, "ANSI.RSX", bytes(image))
 
-    for width, source in ((80, "A0:ANSI"), (40, "B0:ANSI")):
-        folder = work / f"console-{width}"
+    for width, source in ((80, "A0:ADM3A"), (80, "A0:ANSI"), (40, "B0:ANSI"), (80, "A0:VT52")):
+        if width == 40:
+            ansi_fixture(0, 40)
+        personality = source.split(":")[1]
+        folder = work / f"console-{personality}-{width}"
+        folder.mkdir()
+        guest = Guest(simulator, disks, folder)
+        def send(keys):
+            os.write(guest.terminal, keys.encode("ascii"))
+        def frame(title, footer, marker):
+            guest.expect(marker.encode(), rendered=True)
+            guest.expect(footer.encode(), rendered=True)
+            rows = [row.rstrip() for row in guest.screen.display]
+            assert rows[0] == title and rows[-1] == footer, rows
+            assert all(len(row) <= width for row in rows), rows
+            return rows
+        def quit_reader():
+            send("Q")
+            guest.prompt()
+            assert not any("Q Exit" in row for row in guest.screen.display)
+        try:
+            guest.prompt()
+            guest.prompt("RSX LOAD " + source)
+            send("B0:HELP PIP /S=B0:HELP.LBR\r")
+            title = "PIP - File and device transfer"
+            menu = "0  Syntax           1  Selectors"
+            rows = frame(title, "0-2 Select  Q Exit", menu)
+            if width == 40:
+                assert rows[rows.index(menu) + 1] == "2  Examples", rows
+            else:
+                assert menu + "        2  Examples" in rows, rows
+            send("0")
+            rows = frame("PIP - Syntax", "Q Back", "Put the")
+            row = next(i for i, line in enumerate(rows) if "destination" in line)
+            col = rows[row].index("destination")
+            cells = guest.screen.buffer[row]
+            standout = personality != "VT52"
+            assert all(cells[n].reverse == standout for n in range(col, col + len("destination")))
+            assert not cells[col + len("destination")].reverse
+            send("Q")
+            frame(title, "0-2 Select  Q Exit", menu)
+            quit_reader()
+
+            send("B0:HELP LONG RECORDS /S=B0:LONG.HLP\r")
+            rows = frame("LONG - Records", "> Next  Q Exit", "Record 21")
+            assert rows[1] == "Record 00" and rows[-2] == "Record 21", rows
+            send(".")
+            rows = frame("LONG - Records", "< Prev  > Next  Q Exit", "Record 43")
+            assert rows[1] == "Record 22" and rows[-2] == "Record 43", rows
+            send(">")
+            frame("LONG - Records", "< Prev  Q Exit", "Record 64")
+            send("<")
+            frame("LONG - Records", "< Prev  > Next  Q Exit", "Record 22")
+            quit_reader()
+
+            send("B0:HELP /S=B0:MENU.LBR\r")
+            frame("Help topics", "0-6 Select  Q Exit", "3. COMMAND")
+            send("3")
+            frame("Crunched command", "Q Back", "Crunched command")
+            send("\x03")
+            frame("Help topics", "0-6 Select  Q Exit", "6. CMD2")
+            quit_reader()
+
+            if width == 40:
+                send("B0:HELP /S=B0:SECTIONS.HLP\r")
+                frame("Many sections", "0-P,R-Z Select  > Next  Q Exit", "Z  Item 34")
+                send(">")
+                frame("Many sections", "0-4 Select  < Prev  Q Exit", "0  Item 35")
+                quit_reader()
+                send("B0:HELP /S=B0:LINKS.HLP\r")
+                frame("Link tests", "0-2 Select  Q Exit", "absent")
+                send("2")
+                frame("Link tests", "0-2 Q Link not found: BOGUS.HLP", "Link not found")
+                quit_reader()
+                send("B0:HELP /S=B0:FRAME.HLP\r")
+                long_title = "Reading PIP on a forty-column terminal display"
+                rows = frame(long_title[:40].rstrip(), "0-1 Select  Q Exit", "1  A section")
+                assert any("[0] PIP" in row for row in rows[1:-1])
+                send("1")
+                heading = "A section heading that runs beyond forty columns"
+                rows = frame(("FRAME - " + heading)[:40].rstrip(), "Q Back", "Body text.")
+                assert heading in " ".join(row for row in rows[1:-1] if row)
+                send("Q")
+                frame(long_title[:40].rstrip(), "0-1 Select  Q Exit", "1  A section")
+                quit_reader()
+        finally:
+            guest.close()
+        shutil.copyfile(folder / "transcript.bin", built / f"cpmsim-help-{personality}-{width}.log")
+        print(f"PASS: {personality} at {width} columns, fixed header/footer, paging, selection and return.")
+
+    for user, (name, width, capabilities, height) in enumerate((
+            ("unknown-width", 0, 15, 24), ("no-position", 80, 13, 24),
+            ("refused-position", 80, 15, 25)), 1):
+        ansi_fixture(user, width, capabilities, height)
+        folder = work / name
         folder.mkdir()
         guest = Guest(simulator, disks, folder)
         try:
             guest.prompt()
-            guest.prompt("RSX LOAD " + source)
+            guest.prompt(f"RSX LOAD B{user}:ANSI")
             os.write(guest.terminal, b"B0:HELP PIP /S=B0:HELP.LBR\r")
             guest.expect(PROMPT.rstrip(), rendered=True)
-            rows = [row.rstrip() for row in guest.screen.display]
-            menu = "0  Syntax           1  Selectors"
-            if width == 40:
-                pos = rows.index(menu)
-                assert rows[pos + 1] == "2  Examples", rows
-            else:
-                assert menu + "        2  Examples" in rows, rows
-            os.write(guest.terminal, b"0")
-            guest.expect(b"Put the", rendered=True)
-            guest.expect(PROMPT.rstrip(), rendered=True)
-            row = next(i for i, line in enumerate(guest.screen.display) if "destination" in line)
-            col = guest.screen.display[row].index("destination")
-            cells = guest.screen.buffer[row]
-            assert all(cells[n].reverse for n in range(col, col + len("destination")))
-            assert not cells[col + len("destination")].reverse
-            assert all(len(line.rstrip()) <= width for line in guest.screen.display)
-            os.write(guest.terminal, b"Q")
-            guest.expect(b"0  Syntax", rendered=True)
+            rows = [row.strip() for row in guest.screen.display]
+            assert "PIP - File and device transfer" in rows, (name, rows)
+            assert PROMPT.decode().strip() in rows[:-1], rows
             os.write(guest.terminal, b"Q")
             guest.prompt()
         finally:
             guest.close()
-        shutil.copyfile(folder / "transcript.bin", built / f"cpmsim-help-{width}.log")
-        print(f"PASS: {width}-column section menu, wrapping and TCAP strong rendition.")
+        print(f"PASS: {name} uses sequential browsing.")
 
 
 def main():

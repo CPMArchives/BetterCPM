@@ -234,22 +234,32 @@ draw_page:
         LD (need_space),A
         LD (indent),A
         CALL page_visibility
+        LD A,1
+        LD (heading_in_body),A
+        LD A,(footer_row)
+        OR A
+        JR Z,draw_sequential
+        CALL draw_header
+        JR draw_content
+draw_sequential:
         LD A,(screen_ops)
         AND 1
-        JR Z,draw_content
-        LD A,1
-        CALL T2_EMIT
+        CALL NZ,T2_EMIT                  ; clear-only terminals still page cleanly
 draw_content:
         LD A,(view_mode)
         CP 2
         JP Z,draw_catalog
         CP 1
         JR Z,draw_section
+        LD A,(heading_in_body)
+        OR A
+        JR Z,draw_synopsis
         LD HL,(title_ptr)
         INC HL
         INC HL
         CALL inline_line
         CALL end_paragraph
+draw_synopsis:
         LD HL,(body_ptr)
         CALL render_part
         LD HL,(first_section)
@@ -269,6 +279,9 @@ draw_sections:
         JP end_grid
 draw_section:
         LD HL,(view_section)
+        LD A,(heading_in_body)
+        OR A
+        JR Z,draw_section_body
         INC HL
         INC HL
         INC HL
@@ -276,6 +289,7 @@ draw_section:
         CALL inline_line
         CALL end_paragraph
         POP HL
+draw_section_body:
         CALL next_line
         JP render_part
 draw_catalog:
@@ -599,6 +613,12 @@ link_paren:
         LD HL,(link_ptr)
         CALL parse_link_target
         JP C,link_literal
+        LD A,(header_pass)
+        OR A
+        JR Z,inline_link_key
+        LD (heading_in_body),A           ; keep the selectable link in the body
+        JR inline_link_label
+inline_link_key:
         CALL word_flush
         LD A,(line_len)
         ADD A,5
@@ -618,6 +638,7 @@ link_paren:
         CALL word_flush
         LD A,1
         LD (need_space),A
+inline_link_label:
         POP HL
         INC HL
 link_label:
@@ -679,6 +700,9 @@ word_flush:
         OR A
         JR Z,word_indent
         LD C,A
+        LD A,(header_pass)
+        OR A
+        JR NZ,word_separator             ; clip the pinned line at the margin
         LD A,(need_space)
         ADD A,C
         JR C,word_wrap
@@ -688,6 +712,7 @@ word_flush:
         LD A,(screen_cols)
         CP C
         JR C,word_wrap
+word_separator:
         LD A,(need_space)
         OR A
         JR Z,word_copy
@@ -748,10 +773,24 @@ flush_line:
         PUSH HL
         PUSH DE
         PUSH BC
+        LD A,(header_pass)
+        OR A
+        JR Z,flush_body
+        CALL header_line
+        JR flush_reset
+flush_body:
         CALL ensure_page
         LD A,(visible)
         OR A
         JR Z,flush_count
+        LD A,(footer_row)
+        OR A
+        JR Z,flush_text
+        LD A,(row_no)
+        INC A                           ; row zero belongs to the header
+        CALL frame_row
+        JR NZ,flush_count
+flush_text:
         LD HL,line_buf
         LD A,(line_len)
         OR A
@@ -769,10 +808,11 @@ flush_char:
         XOR A
         CALL set_style
 flush_eol:
-        CALL newline
+        CALL navigation_break
 flush_count:
         LD HL,row_no
         INC (HL)
+flush_reset:
         XOR A
         LD (line_len),A
         POP BC

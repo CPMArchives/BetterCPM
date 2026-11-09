@@ -9,10 +9,13 @@ screen_init:
         JR NZ,screen_grid
         LD DE,4
         ADD HL,DE
+        LD B,0
         LD A,(HL)
         CP 3
         JR C,screen_width
-        SUB 2
+        DEC A
+        LD B,A                          ; zero-based last row
+        DEC A
         LD (page_rows),A
 screen_width:
         INC HL
@@ -21,9 +24,18 @@ screen_width:
         JR Z,screen_caps
         LD (screen_cols),A
 screen_caps:
+        LD C,(HL)                       ; actual columns, zero if unknown
         INC HL
         LD A,(HL)
         LD (screen_ops),A
+        AND 3                           ; clear and absolute positioning
+        CP 3
+        JR NZ,screen_grid
+        LD A,C
+        CP 12                           ; room for the compact key legend
+        JR C,screen_grid
+        LD A,B
+        LD (footer_row),A
 screen_grid:
         LD A,(screen_cols)
         LD B,0
@@ -121,6 +133,9 @@ section_found:
         LD (section_arg),A
 show_view:
         CALL draw_page
+        LD A,(frame_error)
+        OR A
+        JR NZ,stream_redraw
         LD HL,(current_page)
         LD DE,(view_page)
         OR A
@@ -131,6 +146,21 @@ show_view:
         LD (view_page),HL
         JR show_view
 view_status:
+        LD A,(footer_row)
+        OR A
+        JR Z,stream_status
+        CALL draw_footer
+        JR NZ,stream_redraw
+        CALL forget_status
+        JR wait_key
+stream_redraw:
+        XOR A
+        LD (footer_row),A
+        LD (frame_error),A
+        LD (frame_started),A
+        CALL newline
+        JR show_view
+stream_status:
         LD HL,(status_message)
         LD A,H
         OR L
@@ -143,9 +173,7 @@ view_status:
         CALL puts
         CALL newline
 view_status_done:
-        LD HL,0
-        LD (status_message),HL
-        LD (status_detail),HL
+        CALL forget_status
 view_prompt:
         LD HL,prompt
         CALL puts
@@ -196,7 +224,7 @@ key_hit:
         EX DE,HL
         PUSH AF
         PUSH HL
-        CALL newline
+        CALL navigation_break
         CALL push_view
         POP HL
         POP BC
@@ -222,17 +250,18 @@ page_next:
         INC HL
 page_change:
         LD (view_page),HL
-        CALL newline
+        CALL navigation_break
         JP show_view
 go_back:
         LD A,(depth)
         OR A
         JR Z,leave_reader
-        CALL newline
+        CALL navigation_break
         CALL pop_view
         JP enter_view
 leave_reader:
-        CALL newline
+        CALL navigation_break
+        CALL leave_frame
         JP finish
 too_deep:
         LD HL,depth_message
@@ -460,7 +489,7 @@ link_ext: DB 'HLP'
 empty_archive: DB 'No help topics in this archive.',13,10,0
 section_missing: DB 'No such section: ',0
 section_ambiguous: DB 'Ambiguous section: ',0
-link_message: DB 'Help link target was not found: ',0
+link_message: DB 'Link not found: ',0
 source_gone: DB 'Selected help source or member was not found.',13,10,0
 depth_message: DB 'HELP: Navigation history is full.',13,10,0
 prompt: DB 'Choice (< > Q): ',0

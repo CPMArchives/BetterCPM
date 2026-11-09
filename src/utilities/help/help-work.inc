@@ -17,6 +17,13 @@ fragment_mode: DS 1
 screen_ops: DS 1
 screen_cols: DS 1
 page_rows: DS 1
+footer_row: DS 1                        ; zero selects sequential console output
+frame_error: DS 1
+frame_started: DS 1
+header_pass: DS 1                       ; 1 first line, 2 subsequent header lines
+heading_in_body: DS 1
+footer_left: DS 1
+compact_keys: DS 1
 grid_cols: DS 1
 current_page: DS 2
 row_no: DS 1

@@ -17,6 +17,10 @@ Press the digit or letter shown beside a section or link. Within a topic,
 Press Q or Ctrl-C to return one level. At the top level either key exits
 to the command prompt.
 
+With a screen personality such as ADM3A loaded, HELP keeps the title at
+the top and the available keys at the bottom. On a plain console the
+prompt follows the text.
+
 ## Finding a topic
 
 A named request searches the current drive/user and [PATH](PATH.HLP) for
