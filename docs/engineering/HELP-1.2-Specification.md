@@ -97,8 +97,8 @@ still be readable on a plain console when optional enhancements are absent.
 
 **Opening page for a sectioned topic.** Display the `#` title, render the
 optional synopsis before the first `##`, then present the numbered `##`
-section choices horizontally in source order. Continue left to right across
-additional rows as needed to fit the viewport. Use up to 16 visible heading
+section choices in source order, left to right, two per row at 40 columns
+and four per row at 80 columns. Continue numbering across rows. Use up to 16 visible heading
 characters per menu label and show the full heading inside the section.
 
 **Proposed for review.** Use `###` for a local subheading. Add paragraphs,
