@@ -1,0 +1,32 @@
+# DASM - Disassemble a Z80 binary
+
+```text
+B0:DASM
+```
+
+## Read and list
+
+At DASM's prompt, R reads a file and H lists commands. N sets the
+logical length in hex, excluding CP/M record padding. For a program
+known to contain five bytes at 0100H:
+
+```text
+RPROGRAM.COM
+N5
+P100,105
+```
+
+## Write source
+
+```text
+SREBUILD.ASM
+P100,105
+QL100,105
+Z
+G
+```
+
+S names the staged output. P emits the prologue and equates. QL lists
+into the output, Z finishes it and G leaves DASM. Use the actual address
+bounds of your input. A .DSY produced by [DSYM](DSYM.HLP) supplies
+symbol names.

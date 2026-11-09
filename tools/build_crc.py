@@ -38,8 +38,9 @@ def expanded_source():
                  '     /CHECK[=name] Verify against a list in each target DU.\n'
                  '     /40         Grouped table display.\n\n'
                  '     /H /HELP    Display this help.\n'
-                 '     /VER        Display utility identification.\n')
-    assert len(help_text.splitlines())<=21 and max(map(len,help_text.splitlines()))<=79
+                 '     /VER        Display utility identification.\n'
+                 'For detailed help, see HELP CRCKSUM\n')
+    assert len(help_text.splitlines())<=23 and max(map(len,help_text.splitlines()))<=79
     def assembly_string(label, value):
         return label+':\n'+''.join(("        DB '"+line.replace("'", "''")+"',13,10\n")
                                     if line else '        DB 13,10\n'

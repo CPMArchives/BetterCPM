@@ -1,0 +1,17 @@
+# POKE - Change bytes in memory
+
+```text
+POKE address byte [byte ...]
+```
+
+Load a disposable program image with [GET](GET.HLP) before editing its
+bytes. Addresses and values are hexadecimal. This writes 00 and C9 at
+0100H and 0101H and reads them back:
+
+```text
+POKE 0100 00 C9
+PEEK 0100 0101
+```
+
+The edit changes memory immediately. Use [SAVE](SAVE.HLP) with a new
+filename to keep the edited image.

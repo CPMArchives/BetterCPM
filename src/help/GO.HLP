@@ -1,0 +1,14 @@
+# GO - Execute a program at 0100H
+
+```text
+GO [command tail]
+```
+
+Load the program with [GET](GET.HLP). GO enters it at 0100H and supplies
+the optional tail as program arguments. Run the two commands
+consecutively so the loaded image is still in memory.
+
+```text
+GET D0:TEST.COM
+GO INPUT.TXT
+```

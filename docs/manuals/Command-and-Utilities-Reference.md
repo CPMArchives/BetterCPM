@@ -39,6 +39,15 @@ Current main may describe development work beyond the lock. In particular, this 
 The file-specification chapter and shared messages follow the command sections. A shared grammar is available only where a command accepts it. All references to engineering reports retain their recorded version/platform scope; a historical component result is not new release-wide qualification.
 
 
+### Online topics in BetterCP/M 1.2
+
+Enter `HELP` for the topic index, `HELP PIP` for a command, or
+`HELP PIP SELECTORS` for a section. Q goes back one level and exits at the
+top. The utility's own /H screen gives its syntax even without HELP.
+HELP.COM is on the System disk. On cpmsim, mount the companion disk as C
+for its HELP.LBR. Both TRS-80 System disks include the library in A0.
+Use `HELP PIP /R` to see which copy was found.
+
 ## Contents
 
 - [NDR — named directories (1.2 development)](#ndr)

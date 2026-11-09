@@ -1,0 +1,17 @@
+# ANSITST - Exercise the ANSI personality
+
+```text
+ANSITST
+```
+
+## Run the test
+
+With ANSI.RSX active, run ANSITST and press a key when prompted. The
+position marker belongs at row 5, column 10 (zero-based). The word
+Reverse should stand out between the normal samples.
+
+## Erase and reset
+
+The suffix after KEEP should disappear. The reset exercise should leave
+readable text after an incomplete address sequence. If escape characters
+print as text, check the active personality with [RSX](RSX.HLP).

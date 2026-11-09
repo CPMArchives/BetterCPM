@@ -32,6 +32,10 @@ def qualify(root,image,out,simulator):
         w=out/name;(w/'disks').mkdir(parents=True)
         shutil.copy2(root/'build/z80pack/diskdefs',w/'diskdefs')
         for drive in 'abcd':
+            if drive in 'cd':
+                # Writable data volumes for exported and corrupt package fixtures.
+                (w/'disks'/f'drive{drive}.dsk').write_bytes(b'\xe5'*fmt.image_bytes)
+                continue
             data=bytearray(image.read_bytes())
             # Tests isolate preservation from SUBMIT's temporary-file writes.
             rawput(data,1,startup_record(':VER /BANNER',system_base=L['SYSTEM']))
@@ -97,7 +101,8 @@ def qualify(root,image,out,simulator):
     for name,code in [('JPZERO',b'\xc3\0\0'),('FNZERO',b'\x0e\0\xcd\x05\0\x76'),('BIOSWB',b'\x2a\x01\0\xe9')]:put(w,name+'.COM',code)
     t=run(w,['STAT MEM','B:FIT','STAT MEM','B:OVER','STAT MEM','B:FIT','JPZERO','FNZERO','BIOSWB','CPX /V','STAT MEM'])
     assert t.count('FULLRAM FIT PASS')==2 and 'FULLRAM FIT FAILED' not in t
-    assert 'FULLRAM FIT' not in t.split('A0>B:OVER \n',1)[1].split('BetterCP/M Memory Map',1)[0]
+    rejected = re.search(r'A0> ?B:OVER \n(.*?)A0>', t, re.S)
+    assert rejected and 'FILE WILL NOT FIT' in rejected[1] and 'FULLRAM FIT' not in rejected[1]
     m=maps(t);assert len(m)==4 and all(x==expected for x in m)
     save('boundary',fit_bytes=len(payload),rejected_bytes=len(payload)+128,returns=['RET','JP 0','BDOS 0','BIOS WBOOT'],maps=m)
 
@@ -160,9 +165,9 @@ def qualify(root,image,out,simulator):
         shutil.copy2(target,w/'disks/drivea.dsk');cold=run(w,['STAT MEM'],'cold')
         assert maps(cold)[-1]==expected
         save('install-'+mode,filesystem_unchanged=True,cold_boot=True,tpa=expected)
-    w=case('export');t=run(w,['SYSGEN A: B:EXPORTED.SYS']);assert 'Package exported and verified.' in t
+    w=case('export');t=run(w,['SYSGEN A: C:EXPORTED.SYS']);assert 'Package exported and verified.' in t
     exported=w/'EXPORTED.SYS'
-    subprocess.run(['cpmcp','-f','bettercpm-default',str(w/'disks/driveb.dsk'),'0:EXPORTED.SYS',str(exported)],cwd=w,check=True,capture_output=True)
+    subprocess.run(['cpmcp','-f','bettercpm-default',str(w/'disks/drivec.dsk'),'0:EXPORTED.SYS',str(exported)],cwd=w,check=True,capture_output=True)
     assert exported.read_bytes()==make(raw_payload(root,w/'disks/drivea.dsk'),contract)
     save('export',exact_host_package=True)
     for kind in ('identity','old-format','truncated','binding','stage2'):
@@ -174,8 +179,8 @@ def qualify(root,image,out,simulator):
         else:
             bad[128+84*128]^=1;bad[96:98]=binascii.crc_hqx(bad[128:],65535).to_bytes(2,'little')
         if kind!='truncated':bad[126:128]=binascii.crc_hqx(bad[:126],65535).to_bytes(2,'little')
-        put(w,'BAD.SYS',bad);target=w/'disks/driveb.dsk';before=target.read_bytes()
-        t=run(w,['SYSGEN BAD.SYS B:']);assert 'system package is invalid' in t and target.read_bytes()==before
+        put(w,'BAD.SYS',bad,'c');target=w/'disks/driveb.dsk';before=target.read_bytes()
+        t=run(w,['SYSGEN C:BAD.SYS B:']);assert 'system package is invalid' in t and target.read_bytes()==before
         save('reject-package-'+kind,target_unchanged=True)
     for kind in ('missing-rcp','changed-pack','missing-cache','decline'):
         w=case(kind);target=w/'disks/driveb.dsk'

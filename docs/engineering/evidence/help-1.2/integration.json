@@ -1,0 +1,48 @@
+{
+  "system_disks": {
+    "cpmsim": {
+      "image_sha256": "757e98ef9c1f9cba5fa6c92b7df9795eaece52e57010e5680610ca6a544ae7cd",
+      "status": "PASS",
+      "distribution_acceptance": {
+        "cases": 23,
+        "unloaded_tpa": 57344,
+        "screen_pair_tpa": 53504,
+        "status": "PASS",
+        "shipped_startup_tpa": 57344
+      }
+    },
+    "model4": {
+      "image_sha256": "a8207b031229c6a011d2ace8702d8807fdaab2e95419e1155b9f944545a86dfc",
+      "status": "PASS"
+    },
+    "model2": {
+      "image_sha256": "e4e0204d08c85d2c6f3c44598de3a1f3788455d5a1e3ec5ff50601187f7fb90a",
+      "status": "PASS"
+    }
+  },
+  "collection": {
+    "subjects": 57,
+    "packaged_programs": 48,
+    "index_and_cross_references_checked": 129,
+    "help_sha256": "108bed21d5646f4efff8a418216c064fab98f5cdf3694159a948444f7d31e14d",
+    "library_sha256": "62cc960e6114ec7cdd7453cdfa5d5dec6cfe157a3725dc72297a27575264436c"
+  },
+  "cpmsim_footers": {
+    "owned_external_programs_including_help": 46,
+    "resident_rcp_commands": 9,
+    "queries": [
+      "/H",
+      "/HELP"
+    ],
+    "third_party_native_interfaces": [
+      "LINK",
+      "ZSM4"
+    ]
+  },
+  "trs80_checks": [
+    "HELP PIP: full-screen title, section menu and bottom key row",
+    "1: Selectors section and Q Back",
+    "Q: topic menu restored",
+    "Q: return to CCP; HELP PIP /R resolves A0:HELP.LBR (PIP.HLP)"
+  ]
+}

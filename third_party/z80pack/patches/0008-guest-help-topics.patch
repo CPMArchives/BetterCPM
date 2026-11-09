@@ -1,0 +1,22 @@
+--- a/cpmtools/r.asm
++++ b/cpmtools/r.asm
+@@ -538,3 +538,4 @@
+         db '   Default CP/M location is the current drive and user.',CR,LF
+         db '   Existing destination files are overwritten.',CR,LF
++        db 'For detailed help, see HELP R',CR,LF
+         db '$'
+--- a/cpmtools/w.asm
++++ b/cpmtools/w.asm
+@@ -524,3 +524,4 @@
+         db '   Default CP/M location is the current drive and user.',CR,LF
+         db '   Existing destination files are overwritten.',CR,LF
++        db 'For detailed help, see HELP W',CR,LF
+         db '$'
+--- a/cpmtools/mount.asm
++++ b/cpmtools/mount.asm
+@@ -145,4 +145,5 @@
+         db '   Relative paths use the emulator working directory.',13,10
+         db '   Changing A: requires confirmation; no reboot is performed.',13,10
++        db 'For detailed help, see HELP MOUNT',13,10
+         db '$'
+ warning:db '** WARNING: Changing A: while the system is running may cause',13,10

@@ -1,0 +1,23 @@
+# CPX - Manage command processor extensions
+
+```text
+CPX LIST
+CPX LOAD name
+CPX UNLOAD name
+```
+
+## Inspect commands
+
+CPX LIST shows active command packages in search order. The standard RCP
+package supplies resident commands including DIR, COPY and MOVE. To run
+a transient explicitly, put a colon before its name, as in :DIR.
+
+## Load a package
+
+```text
+CPX LOAD RCP
+CPX LIST
+```
+
+Use LOAD to restore RCP if it has been unloaded. Keep RCP.CPX accessible
+in A0. For resident terminal or clock services, use [RSX](RSX.HLP).

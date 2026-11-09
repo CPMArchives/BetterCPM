@@ -44,7 +44,8 @@ def expanded_source():
         '     /OUTPUT=file Override separate output.\n'
         '     /VERBOSE     Show instruction validation details.\n\n'
         '     /H /HELP     Display this help.\n'
-        '     /VER         Display utility identification.\n')
+        '     /VER         Display utility identification.\n'
+        'For detailed help, see HELP PATCH\n')
     def string(label,value):
         return label+':\n'+''.join("        DB '"+line.replace("'","''")+"',13,10\n" if line else '        DB 13,10\n' for line in value.splitlines())+'        DB 0\n'
     return text.replace('; @identity@',string('VERSIONTEXT',identity)+string('HELPTEXT',helptext))

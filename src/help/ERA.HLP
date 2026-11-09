@@ -1,0 +1,26 @@
+# ERA - Erase selected files
+
+```text
+ERA filespec
+:ERA /C filespec
+```
+
+## Select files
+
+Inspect the same filespec with [DIR](DIR.HLP) before erasing it. A
+wildcard can select several files. A drive/user prefix confines the
+operation to that location.
+
+```text
+DIR D3:*.BAK
+ERA D3:OLD.BAK
+```
+
+## Confirm each file
+
+Use the transient command to review a group one file at a time. Answer
+each prompt to erase or keep that file.
+
+```text
+:ERA /C D3:*.BAK
+```

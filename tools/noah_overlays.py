@@ -141,7 +141,8 @@ def production_build(assembler,out,flat_builder):
     lzw_body=(ROOT/'src/utilities/common/noahlzw-phase.inc').read_text()
     needed=set(re.findall(r'\b[A-Z_][A-Z_0-9]*\b',lzw_body,re.I))
     lzw_imports=''.join(f'{n} EQU {v}\n' for n,v in rs.items() if n in needed and n not in constant_names and n!='NR_WINDOW')
-    lzw_text=f' ORG {window}\nNR_WINDOW EQU {window}\n'+constants+lzw_imports+lzw_body+'\n END\n'
+    lzw_layout=f' ORG {window}\nX_TABLE EQU {window+4096}\nX_CHAIN EQU X_TABLE+12288\n'
+    lzw_text=lzw_layout+constants+lzw_imports+lzw_body+'\n END\n'
     lzw_raw,_=assemble(assembler,out,'NCLZW',lzw_text)
     # The phase must leave NR_CONTEXT intact while replacing the CLI window.
     assert len(lzw_raw)<=2048, len(lzw_raw)

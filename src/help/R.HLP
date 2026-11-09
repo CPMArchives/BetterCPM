@@ -1,0 +1,20 @@
+# R - Import a host file into cpmsim
+
+```text
+R host-file [CP/M-filespec]
+```
+
+## Import a file
+
+```text
+R "My assembly source.asm" D0:SOURCE.ASM
+```
+
+Put the host file in the emulator's working directory. Quote spaces and
+preserve host filename case. Provide an explicit 8.3 destination when
+the host name is long. The example writes to user 0 on D.
+
+## Transfer back
+
+Use [W](W.HLP) to export the edited copy. R and W operate on individual
+files on cpmsim. For a whole disk image, use [MOUNT](MOUNT.HLP).

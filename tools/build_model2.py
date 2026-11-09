@@ -151,6 +151,7 @@ def build():
     # Assemble the same existing command collection selected by the other
     # release targets. This completes distribution membership, not OS scope.
     tool('ed')
+    tool('help')
     tool('p2dos_rsx')
     (OUT/'DISK.FDB').write_bytes(compile_file(SOURCE))
     util = ROOT/'build/utilities'

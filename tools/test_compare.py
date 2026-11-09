@@ -127,7 +127,8 @@ def main():
     assert lines[:5]==[title('COMPARE',version,revision,development=display_development('utility:COMPARE')),'  - - -',' | Binary File Comparison',' |',' |   Usage: COMPARE [options] file1 file2 [options]']
     assert len(lines)<=23 and max(map(len,lines))<=79
     assert 'BetterCP/M Utilities' not in help_result
-    assert lines[-2:]==['     /H /HELP      Display this help.','     /VER          Display utility identification.']
+    assert lines[-3:]==['     /H /HELP      Display this help.','     /VER          Display utility identification.',
+                        'For detailed help, see HELP COMPARE']
     for tail in ('/VER /h /BOGUS','/H', '/VER /HELP /BOGUS', '/HELP /VER /BOGUS',
                  '/BOGUS /VER /HELP', 'BAD /help /VER'):
         r=run(tail=tail)

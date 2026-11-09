@@ -1,0 +1,17 @@
+# PEEK - Inspect memory in hexadecimal
+
+```text
+PEEK first [last]
+```
+
+PEEK shows memory bytes and their ASCII equivalents. Both addresses are
+hexadecimal. With one address it displays 256 bytes. Two addresses
+select an inclusive range. P is the short command name.
+
+```text
+GET D0:TEST.COM
+PEEK 0100 011F
+```
+
+Use [DUMP](DUMP.HLP) to inspect bytes on disk without loading a program
+image.

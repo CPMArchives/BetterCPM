@@ -1,0 +1,40 @@
+# NDR - Name drive and user locations
+
+```text
+RSX LOAD NDR
+NDR name DU:
+```
+
+## Assign a name
+
+```text
+NDR ROOT A0:
+NDR WORK D3:
+WORK:
+DIR ROOT:*.COM
+```
+
+Type NDR alone to list the names. Each names one drive/user, and several
+names can refer to the same location. Delete an existing name with NDR
+/DEL name before reassigning it. [PATH](PATH.HLP) resolves a name when
+you add the entry.
+
+## Save names
+
+```text
+NDR /SAVE D0:WORKSET
+NDR /LOAD D0:WORKSET
+```
+
+/SAVE creates a new .NDR file. /LOAD replaces the live table with the
+saved set. Use this pair to keep alternate configurations.
+
+## Startup defaults
+
+```text
+NDR /DEFAULT A0:NDR.RSX
+```
+
+This embeds the current names in that writable provider file. The next
+fresh load starts with those names. Use /CLEAR to empty the live table.
+A warm boot retains live names while the provider is installed.

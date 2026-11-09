@@ -1,0 +1,30 @@
+# DIR - Directory listing
+
+```text
+DIR [DU:][filespec]
+```
+
+## Resident DIR
+
+Type `DIR` at the command prompt to list files in the current drive and
+user area. Supply a drive/user or a wildcard to narrow the listing.
+
+```text
+DIR B3:*.ASM
+DIR B[-]:*.COM
+```
+
+The first command lists assembly sources in B3. The second lists COM
+files across the user areas on B.
+
+## Transient DIR
+
+Use `:DIR` to run DIR.COM. To page through a long listing or locate a
+particular filename, use:
+
+```text
+:DIR /P
+:DIR /WHEREIS ED.COM
+```
+
+Use `:DIR /H` for the transient command's option summary.

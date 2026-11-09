@@ -1,0 +1,28 @@
+# DUP - Check, format or copy a disk
+
+```text
+DUP
+DUP /CHECK drive:
+```
+
+## Check a disk
+
+DUP works on whole disks. /CHECK reads the selected disk for unreadable
+sectors. Set the correct disk format with [CONFIG](CONFIG.HLP) before
+checking.
+
+```text
+DUP /CHECK D:
+```
+
+## Copy or format
+
+```text
+DUP /COPY A: D:
+DUP /FORMAT D:
+```
+
+/COPY writes the contents of the first disk onto the second disk.
+/FORMAT prepares the named disk for use. Both replace data on the
+destination. Check the mounted destination before confirming. Use
+[COPY](COPY.HLP) for individual files.

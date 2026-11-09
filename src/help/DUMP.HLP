@@ -1,0 +1,22 @@
+# DUMP - Inspect file bytes
+
+```text
+DUMP file [/P] [/FROM=offset] [/LEN=count]
+```
+
+## Display a range
+
+DUMP shows file offsets, hexadecimal bytes and printable characters.
+/FROM and /LEN are hexadecimal. This displays 16 bytes starting at
+offset 20H.
+
+```text
+B0:DUMP D0:IMAGE.COM /FROM=20 /LEN=10
+```
+
+## Browse and find
+
+/P opens the paged viewer with a supported screen backend. G goes to an
+offset. F asks for a search pattern and its type (hex bytes or ASCII).
+After a find, period repeats it forward and comma repeats it backward.
+/40 selects the narrow layout.

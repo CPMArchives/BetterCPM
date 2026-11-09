@@ -61,11 +61,11 @@ def main():
         if target=='z80pack':
             expected_primary['BATCHIO.RSX']=(a.artifacts/'build/cpmsim-fullram/rsx/BATCHIO.RSX').read_bytes()
         r=inspect(raw,fmt,expected_primary);r.update(image=path.name,image_sha256=sha(image),raw_bytes=len(raw),files_sha256={n:sha(b) for n,b in expected_primary.items()});result['platforms'][target]=r
-        from noah_distribution import COMPONENTS as NOAH_FILES, image_name
+        from noah_distribution import companion_components, image_name
         path=a.images/image_name(target);image=path.read_bytes()
         raw=dmk_to_raw(image,fmt) if native else image
         if native:assert raw_to_dmk(raw,fmt)==image
-        expected={n:(a.artifacts/relative).read_bytes() for n,relative in NOAH_FILES.items()}
+        expected={n:(a.artifacts/relative).read_bytes() for n,relative in companion_components(target).items()}
         extra=inspect(raw,fmt,expected)
         extra.update(image=path.name,image_sha256=sha(image),files_sha256={n:sha(b) for n,b in expected.items()})
         result['platforms'][target]['noah_companion']=extra

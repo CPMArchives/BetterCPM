@@ -1,0 +1,25 @@
+# MOVE - Move files between locations
+
+```text
+MOVE source destination
+```
+
+## Move a file
+
+Give the destination drive/user to keep the filename, or supply a new
+name. The resident command copies to the destination before erasing the
+original. An existing destination blocks the move.
+
+```text
+MOVE A0:NOTES.TXT D3:
+```
+
+## Move a group
+
+```text
+DIR B1:*.DOC
+MOVE B1:*.DOC D3:
+```
+
+Inspect the selection first. Moving a group processes individual files.
+Use [COPY](COPY.HLP) when the originals should stay where they are.

@@ -1,0 +1,23 @@
+# DDT - Debug an 8080 program
+
+```text
+B0:DDT PROGRAM.COM
+```
+
+## Inspect a program
+
+At the dash prompt, D displays bytes and L lists 8080 instructions.
+Addresses are hexadecimal. These commands examine the first 32 bytes of
+a COM file, list instructions at its entry and show the registers:
+
+```text
+D100,11F
+L100,10F
+X
+```
+
+## Trace and leave
+
+T traces one instruction. Use G when ready to execute the code. G0
+returns to CP/M. Escape abandons the current interactive command. Use
+[DASM](DASM.HLP) for Z80 disassembly.

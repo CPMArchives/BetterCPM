@@ -1,0 +1,18 @@
+# ED - Edit text with the line editor
+
+```text
+ED filespec [output-DU:]
+```
+
+## Create a file
+
+For a new file, start ED D0:NOTE.TXT and type I followed by Enter. Type
+your text, then press Ctrl-Z to return to command mode. B moves to the
+beginning of the buffer and #T types the remaining lines.
+
+## Edit and save
+
+For an existing file, #A reads as much source text as fits into the
+buffer. Make your edits and enter E alone to finish and save. Q alone
+abandons unpublished edits immediately. For a full-screen editor, see
+[TED](TED.HLP).

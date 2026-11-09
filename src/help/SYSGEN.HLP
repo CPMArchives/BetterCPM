@@ -1,0 +1,29 @@
+# SYSGEN - Install or export a boot system
+
+```text
+SYSGEN source: destination:
+SYSGEN package destination:
+```
+
+## Install a system
+
+Prepare the destination disk with the correct format for the target
+machine. Write a matching system package to its reserved tracks. The
+ordinary startup files still need to be on the disk.
+
+```text
+SYSGEN A:SYSTEM.SYS D:
+```
+
+Check the target drive before confirming. Use [DUP](DUP.HLP) when you
+want a complete disk copy.
+
+## Export an installed system
+
+```text
+SYSGEN A: D:SAVED.SYS
+```
+
+Read the installed system tracks on A and save them as a package on D.
+With no arguments, SYSGEN guides you through source and destination
+selection.

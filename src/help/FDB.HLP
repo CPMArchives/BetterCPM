@@ -1,0 +1,26 @@
+# FDB - Edit the disk format catalogue
+
+```text
+FDB [file.FDB]
+```
+
+## Work with entries
+
+FDB opens a catalogue for inspection or editing. L lists entries, D
+opens details, and P compares entries. S saves changes. Keep the
+matching FDBVIEW.OVL beside FDB.COM for the detail and comparison views.
+
+```text
+FDB A0:DISK.FDB
+```
+
+## Convert formats
+
+```text
+FDB D0:WORK.FDB D0:WORK.FDF
+FDB D0:WORK.FDF D0:NEW.FDB
+```
+
+FDB is the binary catalogue used by [CONFIG](CONFIG.HLP). FDF is its
+editable text exchange format. Supply separate input and output
+filenames for conversion.

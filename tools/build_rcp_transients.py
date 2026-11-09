@@ -74,7 +74,8 @@ def copy_source(text: str) -> str:
                   '     /V       Verify copied data by reading it back.',
                   '     /BACKUP  Clear source archive flag after backup.', '',
                   '     /H /HELP Display this help.',
-                  '     /VER     Display utility identification.']
+                  '     /VER     Display utility identification.',
+                  'For detailed help, see HELP COPY']
     usage = "CT_USAGE: DB 13,10\n" + ''.join(
         ("        DB '" + line.replace("'", "''") + "',13,10\n") if line else "        DB 13,10\n" for line in help_lines)
     usage += "        DB '$'"

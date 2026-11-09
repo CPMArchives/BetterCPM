@@ -37,7 +37,8 @@ def help_text():
         '     /R /SYS            Enable protected-file questions.\r\n'
         '     /Q /QUIET          Suppress routine progress.\r\n\r\n'
         '     /H /HELP           Display this help.\r\n'
-        '     /VER               Display utility identification.\r\n')
+        '     /VER               Display utility identification.\r\n'
+        'For detailed help, see HELP NOAH\r\n')
 
 
 def build_flat(assembler, destination, source_only=False):

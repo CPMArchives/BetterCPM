@@ -92,7 +92,8 @@ def help_text(command):
             f' |   Usage: {command} [drive:]file [destination-drive:]\r\n\r\n'
             '   Options:\r\n'
             '     /H /HELP    Display this help.\r\n'
-            '     /VER        Display utility identification.\r\n')
+            '     /VER        Display utility identification.\r\n'
+            f'For detailed help, see HELP {command}\r\n')
 
 
 def prepare_version(command, work):

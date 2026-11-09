@@ -1,6 +1,6 @@
 ; Resident help printer for the existing bounded UH_QUERY recognizer.
-; DE points to the metadata-owned title string, followed by three inline
-; dollar-terminated parts: purpose, usage and resident options. The engine preserves
+; DE points to the metadata-owned title string, followed by four inline
+; dollar-terminated parts: purpose, usage, resident options and topic name. The engine preserves
 ; caller BC/DE/HL; no console input, provider or filesystem calls are used.
 ; Standard /VER identification shares the title/purpose streams with help.
 RH_IDENT:
@@ -11,7 +11,7 @@ RH_IDENT:
 RH_HELP:
         EX DE,HL
         LD DE,RH_PARTS
-        LD B,8
+        LD B,9
 RH_HLOOP:
         PUSH BC
         PUSH DE
@@ -37,7 +37,8 @@ RH_PARTS: DB '  - - -',13,10,' | ','$'
           DB 13,10,' |',13,10,' |   Usage: ','$'
           DB 13,10,13,10,'   Options:',13,10,'$'
           DB '     /H /HELP       Display this help.',13,10
-          DB '     /VER           Display utility identification.',13,10,'$'
+          DB '     /VER           Display utility identification.',13,10
+          DB 'For detailed help, see HELP ','$'
 
 ; Malformed option or missing operand: short syntax plus the common help hint.
 ; The gateway has restored DE to the command's identification/inline parts.

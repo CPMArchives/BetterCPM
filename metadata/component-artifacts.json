@@ -204,6 +204,9 @@
       "z80pack": [
         "staged-host-tools/MOUNT.COM"
       ]
-    }
+    },
+    "utility:HELP": [
+      "build/help/HELP.COM"
+    ]
   }
 }

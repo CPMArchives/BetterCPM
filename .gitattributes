@@ -14,3 +14,4 @@ src/distribution/COMPARE.TXT -text whitespace=cr-at-eol
 
 src/distribution/README.TXT -text whitespace=cr-at-eol
 src/distribution/SUPPDISK.TXT -text whitespace=cr-at-eol
+src/distribution/**/STARTUP.SUB -text whitespace=cr-at-eol

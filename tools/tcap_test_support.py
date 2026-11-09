@@ -80,7 +80,10 @@ class Guest:
             data=bytes(self.transcript[start:])
             row=self.screen.display[self.screen.cursor.y].strip()
             echoed=re.sub(rb'\x1b\[[0-?]*[ -/]*[@-~]',b'',data)
-            if self.screen.cursor.x==3 and row.startswith('A0>') and (command is None or command.encode() in echoed):
+            # Older consoles leave the cursor on column 3; NDR-era CCPs
+            # add a space. A new personality can leave stale text to the right.
+            prefix=self.screen.display[self.screen.cursor.y][:self.screen.cursor.x]
+            if prefix in ('A0>', 'A0> ') and (command is None or command.encode() in echoed):
                 # A redraw can briefly stop after printing only the prefix.
                 # Drain further output before accepting an idle editor.
                 if not select.select([self.terminal],[],[],.02)[0]:return data
