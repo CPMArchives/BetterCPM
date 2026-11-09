@@ -86,6 +86,9 @@ CCP_LOOP:                               ; prompt for and dispatch next command
         LD      E,'>'
         LD      C,2
         CALL    BDOS
+        LD      E,' '
+        LD      C,2
+        CALL    BDOS
         CALL    CCP_READLN
 
 CCP_DISPATCH:                           ; dispatch acquired or cold-start command
@@ -3316,6 +3319,9 @@ PFCLRL:                                 ; clear parsed FCB fields
   ; This compact A:..P: prefix recognizer occupies the final 21 bytes below the
   ; fixed ED00h physical-sector buffer; CCP_STKTOP now ends exactly at ED00h.
 
+        LD      A,B
+        CP      2
+        JR      C,PFNODRV              ; no look-ahead past a one-character token
         LD      A,(HL)
         SUB     'A'-1
         CP      17
@@ -3487,14 +3493,6 @@ CCP_MSPACE:    DB      13,10,'NO SPACE',13,10,'$' ; disk-full message
 
 ; @ndr-ccp@
 
-CCP_BUFFER:                             ; command buffer base
-        DB      127
-CCP_COUNT:                              ; command-line length
-        DB      0
-CCP_DATA:                               ; command-line text
-        REPT    127
-        DB      0
-        ENDM
 CCP_EDCUR:                              ; logical editor cursor position
         DB      0
 CCP_EDINS:                              ; editor insert-mode flag
@@ -3576,6 +3574,14 @@ CCP_NEWLINE:                            ; shared CR/LF string
 
   ; Explicit bytes keep host and native links identical; DS fill is tool-specific.
 
+CCP_BUFFER:                             ; command buffer base
+        DB      127
+CCP_COUNT:                              ; command-line length
+        DB      0
+CCP_DATA:                               ; command-line text
+        REPT    127
+        DB      0
+        ENDM
 ; Original spelling for transient tails; dispatch and default FCBs use DATA.
 ; POKE consumes folded DATA and returns directly to the prompt. The saved
 ; spelling is dead after the core accepts it, so the staging areas can overlap.

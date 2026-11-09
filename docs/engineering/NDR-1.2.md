@@ -45,8 +45,8 @@ transient-dispatch prefixes remain intact. Bracket/compound named selectors and
 name recognition inside an application's own interactive input are not defined
 by this feature; ordinary numeric selector syntax remains available.
 
-The main prompt displays `A0 [COMMANDS]>` when the current DU has a name.
-Unnamed locations retain the numeric prompt. Other numeric DU reports do not
+The main prompt displays `A0 [COMMANDS]> ` when the current DU has a name.
+Unnamed locations retain the numeric prompt, also followed by a space (`A0> `). Other numeric DU reports do not
 gain prompt annotations.
 
 PATH.COM accepts a named operand with its colon. It resolves names immediately
@@ -87,7 +87,7 @@ Current measured accounting:
 | Explicit in-allocation cache footer | 10 |
 | Remaining page padding | 14 |
 | **Protected NDR allocation** | **512** |
-| Additional reclaimable CCP allocation against v1.1.1 | 256 |
+| Additional reclaimable CCP allocation against v1.1.1 | 512 |
 | Additional protected BDOS/BIOS/PDS allocation | 0 |
 
 Separate drive/user bytes are intentional: 16 drives × 32 users cannot fit in
@@ -100,10 +100,10 @@ the profile is nonempty. Thus loading NDR as the first RSX costs 1536 bytes;
 adding it to an already active profile costs 512. Removing the final RSX
 releases that existing shared area too. It is not an NDR-specific addition.
 
-CCP grows from 5593 to 5880 emitted bytes, with allocation increasing from 5632
-to 5888. RAW/POKE scratch and the stack are trailing write-before-read storage;
+CCP grows from 5593 to 5892 emitted bytes, with allocation increasing from 5632
+to 6144. Command input, RAW/POKE scratch and the stack are trailing write-before-read storage;
 their allocation remains, but their zero bytes are omitted from the carrier.
-The unchecked bootstrap carrier is 6649 bytes and fits its existing 6656-byte
+The unchecked bootstrap carrier is 6534 bytes and fits its existing 6656-byte
 disk slot. Neither reserved tracks nor the filesystem boundary changes.
 
 ## Callable service ABI 1.0
