@@ -1,8 +1,9 @@
 # NOAH overlay PATH maintenance fix
 
 Target: BetterCP/M v1.1.2. Classification: maintenance/integration bug fix.
-Status: implemented locally and focused checks passed, 9 November 2026;
-not merged or published. NOAH identification revision: 1.0 (021).
+Status: functional fix carried forward into BetterCP/M 1.2.
+NOAH identification revision: 1.0 (021). The authoritative component registry
+and its legacy TSV projection both assign revision 21.
 
 ## Cause and correction
 
