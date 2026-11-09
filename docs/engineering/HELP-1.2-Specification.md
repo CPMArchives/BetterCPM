@@ -84,15 +84,31 @@ is on `B0:`, PIP in that LBR wins over PIP in `A0:HELP.ARK`.
 If all topic passes miss, display an archived `_INDEX.H?P`, checking LBR
 before ARK. An LBR index therefore cannot hide a topic in ARK. If there
 is no archived index either, print `No help for TOPIC was found.` with
-the requested name substituted and return to CP/M.
-
-Bare `HELP` displays the first archived `_INDEX.H?P`, checking the
-selected LBR before the selected ARK. If neither supplies an index, generate
-a menu from the loose topics on PATH and the members of those two archives.
-Show each logical topic once. Selecting `PIP` opens the same copy as
-`HELP PIP`, regardless of how many encodings or copies were found. This
-also works when all available topics are loose. A damaged or unreadable
+the requested name substituted and return to CP/M. A damaged or unreadable
 file or archive requires a diagnostic distinct from a lookup miss.
+
+## Opening an archive with bare HELP
+
+Bare `HELP` skips loose files and searches the effective PATH for the first
+`HELP.LBR`. Only if that search finds no LBR does it search for the first
+`HELP.ARK`. Once an archive is selected, display its `_INDEX.H?P` if present.
+Otherwise generate the topic menu immediately from that archive's members,
+even if a different archive contains an authored index. If neither default
+archive exists, report the missing archive and return to CP/M.
+
+List the `.HLP`, `.HQP` and `.HZP` members by basename, once per topic.
+Use archive member order, assigning a topic its place on first occurrence.
+Selecting an entry opens the preferred encoding of that topic in this
+archive. For example, given `DIR.HLP`, `COPY.HLP`, `LIST.HLP`, `COMMAND.HZP`,
+`STAT.HLP`, `WIZ.HQP` and `CMD2.HLP`, the 80-column menu reads
+
+```text
+0. DIR              1. COPY             2. LIST             3. COMMAND
+4. STAT             5. WIZ              6. CMD2
+```
+
+Here, pressing `5` opens the archive member `WIZ.HQP` even if a loose
+`WIZ.HLP` exists on PATH. At 40 columns the same choices run two per row.
 
 ## Reporting a topic's location and selecting a source
 
@@ -207,8 +223,8 @@ nine resident RCP commands.
 1. Review the [delivered TCAP 2.0 direct ABI](TCAP-Direct-ABI.md). Establish what HELP can rely on for
    geometry, unknown dimensions, semantic standout, plain output, cancellation
    and state restoration. Use the shared facility across supported platforms.
-2. Define the bare-`HELP` diagnostic when no topics or index are available,
-   and errors for a damaged member or index and insufficient decoder TPA.
+2. Define diagnostics for a missing default archive, an archive with no
+   index or topics, a damaged member or index, and insufficient decoder TPA.
 3. Freeze the Markdown subset, section and link naming, behavior for absent
    linked subjects, direct-section lookup, wrapping and page boundaries.
    Use a short topic and a multi-section topic at narrow and wide
