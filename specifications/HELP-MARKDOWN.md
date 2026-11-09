@@ -1,11 +1,11 @@
 # BetterCP/M 1.2 help-file format
 
 **Design draft for review, 9 November 2026.** A subject is a human-editable
-ASCII Markdown file. HELP reads it directly after any LBR member selection
-and decompression. The opening-page rule and the navigation keys below are
+ASCII Markdown file. The same markup applies to a loose file and to a
+decoded LBR or ARK member. The opening-page rule and the navigation keys below are
 settled. The remaining dialect and interaction details are under review.
 See the [system specification](../docs/engineering/HELP-1.2-Specification.md)
-for the agreed library lookup, footer, authored index and menu fallback.
+for topic lookup, the utility footer and the bare-`HELP` index and menu rules.
 
 ## Worked subjects
 
@@ -19,7 +19,7 @@ The examples use the [command reference](../docs/manuals/Command-and-Utilities-R
 
 | Construct | Proposed meaning |
 | --- | --- |
-| `# Title` | First nonblank line. The title is display text. The CP/M member basename supplies the subject name for lookup. |
+| `# Title` | First nonblank line. The title is display text. The CP/M file or archive member basename supplies the subject name for lookup. |
 | Content between the title and the first `##` | Optional synopsis on the section menu. An author can give a command form in a fenced block, write a brief description or omit the synopsis. Keep longer explanations under a section heading. |
 | Paragraphs | Blank lines separate paragraphs. Join adjacent prose lines with a space and wrap to the usable width. |
 | `## Heading` | A named, selectable section. The reader builds a menu from section headings in source order. A section ends at the next `##` or end of subject. |

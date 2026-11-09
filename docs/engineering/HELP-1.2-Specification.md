@@ -34,42 +34,50 @@ Every printed footer must resolve to a topic in the supplied library.
 At release review, account for packaged programs with native interfaces
 that currently lack a BetterCP/M help screen, including ZSM4 and LINK.
 HELP's own `/H`, `/HELP` and `/VER` follow the utility query contract and
-must work before any library access. [Utility help contract](../../specifications/UTILITY-HELP.md)
+must work before any help-file or archive access. [Utility help contract](../../specifications/UTILITY-HELP.md)
 
 ## Subject files and libraries
 
 One CP/M `.HLP` file is the unit an author writes, a user installs, and a
 library stores as a named member. Subject files can be kept individually.
-The standard collection is `HELP.LBR`. Users can select any mix of supplied,
-third-party or locally written subjects and build their own LBR from scratch
-with NOAH. Adding, replacing, extracting or removing a subject is an ordinary
+The standard collection is `HELP.LBR`. HELP also recognizes `HELP.ARK`.
+Users can select any mix of supplied, third-party or locally written subjects
+and build their own LBR with NOAH. Adding, replacing, extracting or removing a subject is an ordinary
 LBR operation. Authors can distribute a collection containing none of the OS
 topics. HELP only needs read access.
 
 The subject is the same in plain, individually squeezed and individually
 crunched forms. For PIP these are `PIP.HLP`, `PIP.HQP` and `PIP.HZP`.
 The notation `PIP.H?P` below denotes those forms. The reader design calls
-for reusing the existing Z80 LBR reader, CP/M file adapter and USQ/UNCR
-decoders. The corresponding standalone programs need not be installed to
-read help. Validate live decoder memory and paging behavior before choosing
-the encoding for release media. [Archive reader](../../src/archive/lbr.mac)
+for reusing the existing Z80 LBR and ARK readers, CP/M file adapter and
+decoders. For an ARK member, decode the archive method to recover the member
+contents. A `.HLP` member then contains text. A `.HQP` or `.HZP` member
+still needs USQ or UNCR, respectively. HELP includes the required routines.
+Validate live decoder memory and paging behavior before choosing
+the encoding for release media. [LBR reader](../../src/archive/lbr.mac) · [ARK reader](../../src/archive/ark.mac)
 · [USQ](../../src/codec/usq.inc) · [UNCR](../../src/codec/uncr.inc)
 
-## Lookup within the default library
+## Default topic lookup
 
-HELP first locates `HELP.LBR`. The following behavior applies equally to
-the standard library and a user-built library installed under that name.
+For `HELP TOPIC`, stop at the first successful step. The same rules apply
+to supplied and user-built collections.
 
-| Invocation | Behavior |
-| --- | --- |
-| `HELP PIP` with a matching member | Find `PIP.H?P` in the archive and open it directly, even if an authored index omits PIP. |
-| `HELP` | Display `_INDEX.H?P` if present. Otherwise generate a topic menu from the available help members in the archive directory. |
-| `HELP BOGUS` with no matching member | Identify the missing subject, then use the same authored-index or generated-menu fallback as bare `HELP`, within the same archive. |
+1. Look for the loose file `TOPIC.HLP`. If found, open it directly.
+2. Look for `TOPIC.H?P` inside `HELP.LBR` or `HELP.ARK`. A matching
+   member opens directly, even if the authored index omits it.
+3. If the topic is absent, display an archived `_INDEX.H?P` if available.
+4. If neither the topic nor an archived index was found, print
+   `No help for TOPIC was found.` and return to CP/M. Substitute the requested
+   topic name, for example, `No help for BOGUS was found.`
 
-`_INDEX` is optional in every collection. The generated menu presents
-logical subject names, so a member named `PIP.HQP` appears as `PIP`.
-Choosing that entry opens the same subject as typing `HELP PIP`. A damaged
-or unreadable archive requires a diagnostic distinct from a missing subject.
+Bare `HELP` displays the archived `_INDEX.H?P` if present. In an archive
+without an index, bare `HELP` generates a menu from the available help
+members. The menu presents logical subject names, so `PIP.HQP` appears as
+`PIP`. Thus `_INDEX` is optional. A damaged or unreadable file or archive
+requires a diagnostic distinct from a lookup miss.
+
+When both default archives exist, their precedence and whether to consult
+both remain open. The DU search policy also remains open.
 
 ## Authoring and presentation
 
@@ -143,10 +151,11 @@ nine resident RCP commands.
 1. Review the [delivered TCAP 2.0 direct ABI](TCAP-Direct-ABI.md). Establish what HELP can rely on for
    geometry, unknown dimensions, semantic standout, plain output, cancellation
    and state restoration. Use the shared facility across supported platforms.
-2. Settle the installation DU and search order for `HELP.LBR`, invocation
-   for a loose subject or an explicitly named custom library, and precedence
-   if several encodings of the same subject coexist. Define errors for a
-   missing library, a damaged member or index, and insufficient decoder TPA.
+2. Settle the DU search policy, behavior when both default archives exist,
+   invocation for an explicitly named custom library, and precedence if
+   several encodings of the same subject coexist. Define the bare-`HELP`
+   diagnostic when neither archive exists and errors for a damaged member
+   or index and insufficient decoder TPA.
 3. Freeze the Markdown subset, section and link naming, behavior for absent
    linked subjects, direct-section lookup, wrapping, menu selection and page
    boundaries. Use a short topic and a multi-section topic at narrow and wide
