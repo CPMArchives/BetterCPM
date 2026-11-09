@@ -60,6 +60,8 @@ The unloaded complete-record COM limit is 57,344 bytes on cpmsim and Model II, a
 
 1.1 adds numeric command PATH and TCAP 2.0 integrated ADM3A/VT52/ANSI personality/renderers. TCAP 1.0 was abandoned before release. Existing SCRN/SCX clients retain their separate backends. See the [1.1 release notes](docs/releases/RELEASE-NOTES-1.1.md) and [TCAP 2.0 contract](docs/engineering/TCAP-Direct-ABI.md).
 
+BetterCP/M 1.2 development adds optional [named directories](docs/user/NDR.md), with a [512-byte protected provider and explicit memory accounting](docs/engineering/NDR-1.2.md). Published release identities remain unchanged.
+
 Subsystems are versioned independently. See [`specifications/SUBSYSTEM-VERSIONING.md`](specifications/SUBSYSTEM-VERSIONING.md) and the authoritative assignments in [`metadata/subsystem-versions.tsv`](metadata/subsystem-versions.tsv).
 Utility `/VER` output and independent build counters are defined in [`specifications/UTILITY-VERSIONING.md`](specifications/UTILITY-VERSIONING.md), with assignments in [`metadata/utility-versions.tsv`](metadata/utility-versions.tsv).
 

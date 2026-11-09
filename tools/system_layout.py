@@ -21,6 +21,13 @@ LAYOUT.update(PDS_DESCRIPTOR=LAYOUT["SYSTEM"] + 0x80,
 
 def expand_layout(text: str) -> str:
     """Inline selected generated inputs, or the unchanged canonical default."""
+    if '; @ndr-ccp@' in text:
+        text = text.replace('; @ndr-ccp@', (ROOT/'src/ccp/ndr.inc').read_text(encoding='ascii'))
+    if '; @ndr-lookup@' in text:
+        client = (ROOT/'src/utilities/common/ndr-client.inc').read_text(encoding='ascii')
+        text = text.replace('; @ndr-lookup@', client[:client.index('CN_REQUEST:')])
+    if '; @ndr-client@' in text:
+        text = text.replace('; @ndr-client@', (ROOT/'src/utilities/common/ndr-client.inc').read_text(encoding='ascii'))
     if '; @package-record-map@' in text:
         mapping = ((ROOT/'src/platform/trs80m2/package-map.inc').read_text()
                    if CONTEXT and CONTEXT[0]['target'] == 'trs80m2' else '')

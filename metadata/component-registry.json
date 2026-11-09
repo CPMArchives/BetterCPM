@@ -1175,6 +1175,39 @@
       "dependency_status": "selected input map",
       "display_format": "numeric",
       "description": "Numeric Command Search Path"
+    },
+    "utility:NDR": {
+      "kind": "utility",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/utilities/ndr.mac",
+        "src/utilities/common/ndr-client.inc"
+      ],
+      "builders": [
+        "tools/build_ndr.py"
+      ],
+      "revision": 1,
+      "api_version": null,
+      "tracking": "initial",
+      "dependency_status": "unqualified development",
+      "display_format": "numeric",
+      "description": "Named Directory Management"
+    },
+    "module:NDR": {
+      "kind": "loadable module",
+      "version": "1.0",
+      "placement": "System",
+      "roots": [
+        "src/rsx/ndr.mac"
+      ],
+      "builders": [
+        "tools/build_ndr.py"
+      ],
+      "revision": 1,
+      "api_version": "1.0",
+      "tracking": "initial",
+      "dependency_status": "roots-only; selected dependency closure pending"
     }
   },
   "legacy_utility_order": [
@@ -1229,7 +1262,8 @@
     "R",
     "W",
     "MOUNT",
-    "PATH"
+    "PATH",
+    "NDR"
   ],
   "legacy_subsystem_rows": [
     {

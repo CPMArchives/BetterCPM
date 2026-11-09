@@ -64,7 +64,7 @@ def expand_versions(text):
         name = match[1]
         prepared = query.replace('; @version-banner@', '        LD DE,UV_TEXT')
         extra = ''
-        if name in ('STAT','CPX','RSX','DUP','SYSGEN','TIME','ERA','REN','TYPE','ED','SUBMIT','XSUB','ADMTST','VT52TST','ANSITST','SYSBUILD','RESPACK','RLMBUILD','WARM','PATH'):
+        if name in ('STAT','CPX','RSX','DUP','SYSGEN','TIME','ERA','REN','TYPE','ED','SUBMIT','XSUB','ADMTST','VT52TST','ANSITST','SYSBUILD','RESPACK','RLMBUILD','WARM','PATH','NDR'):
             from utility_help import query_source, source
             prepared = prepared.replace('        CALL UV_QUERY',
                 '        LD DE,UH_TEXT\n        CALL UH_QUERY\n        JR C,UV_EXIT\n'
