@@ -45,6 +45,7 @@ class Noah(Command):
         self.max_stack = 0
 
     def run(self, *args, **kwargs):
+        self.system_memory = kwargs.pop('system_memory', {})
         supply=kwargs.pop('supply_overlay',True)
         self.overlay_change_at=kwargs.pop('overlay_change_at',None)
         self.overlay_opens=0
@@ -89,7 +90,12 @@ class Noah(Command):
             at=self.image.window
             assert bytes(self.mem[at:at+len(self.image.controller)])==self.image.controller, 'controller not restored'
         ceiling=kwargs.get('tpa',0xd501)
-        assert not any(self.mem[ceiling:0xd800]), 'write above active TPA'
+        protected = bytearray(65536)
+        for address, data in self.system_memory.items():
+            protected[address:address + len(data)] = data
+        assert bytes(self.mem[ceiling:0xd800]) == bytes(protected[ceiling:0xd800]), 'write above active TPA'
+        for address, data in self.system_memory.items():
+            assert bytes(self.mem[address:address + len(data)]) == data, 'system memory changed'
         minimum = C.c_ushort.in_dll(self.lib, 'minimum_sp').value
         self.max_stack = max(self.max_stack, self.symbols['UC_STACK_TOP'] - minimum)
         assert self.max_stack < 384, 'stack overlaps version-tail scratch'

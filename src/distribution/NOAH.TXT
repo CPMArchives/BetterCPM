@@ -1,9 +1,12 @@
 BETTERCP/M NOAH ARCHIVE UTILITY
 
-Keep NOAH.COM and its matching NOAH.OVL together. Change to the Utilities
-Disk before running NOAH (e.g. B:), then qualify archive/source operands
-with the desired writable disk and user. Overlay lookup uses the current
-invocation DU, then A0:; it does not search arbitrary disks or users.
+Keep NOAH.COM and its matching NOAH.OVL together. Overlay lookup searches
+the current drive/user first, then the configured BetterCP/M system PATH.
+An invalid or incompatible overlay stops the operation immediately, even
+if a later PATH directory holds another copy. Without compatible PATH
+support, lookup retains the current drive/user, then A0: fallback.
+Archive/source operands still refer to the invocation drive/user unless
+qualified. The caller's drive and user are preserved.
 
 NOAH /HELP
 NOAH /LIST C:FILES.ARK

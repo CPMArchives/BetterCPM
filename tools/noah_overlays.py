@@ -56,6 +56,16 @@ def partition(flat):
     assert code[0].strip()=='JP NH_START';code.pop(0)
     return '\n'.join(constants)+'\n','\n'.join(code)+'\n','NH_OLDSP: DW 0\n'+'\n'.join(data)+'\n'
 
+def path_layouts():
+    """Known v1.1 layouts, generated from the same contract as PATH.COM."""
+    from build_profiles import PROFILES, profile_inputs, symbols as layout_symbols
+    source = ROOT / 'src/system/layout.inc'
+    layouts = [layout_symbols(source.read_text())]
+    layouts += [profile_inputs(p, source)[0]['symbols'] for p in PROFILES.values()]
+    return sorted({(v['LY_BIOS'] + 3, v['LY_SYS'] + 0x80, v['LY_EXT'] - 16)
+                   for v in layouts})
+
+
 def production_build(assembler,out,flat_builder):
     out.mkdir(parents=True,exist_ok=True)
     flat_builder(assembler,out/'flat',source_only=True)
@@ -66,6 +76,10 @@ def production_build(assembler,out,flat_builder):
     constant_names=set(re.findall(r'^([A-Z_][A-Z_0-9]*)\s+EQU',constants+aliases,re.M|re.I))
     resident=(ROOT/'src/utilities/common/noahresident.inc').read_text()+'\n'+(ROOT/'src/utilities/common/noahcodec-resident.inc').read_text()
     resident_data=(ROOT/'src/utilities/common/noahresident-data.inc').read_text()
+    layouts = path_layouts()
+    resident_data = resident_data.replace('; @noah-path-layouts@',
+        f'NR_LAYOUT_COUNT EQU {len(layouts)}\nNR_LAYOUTS:\n' +
+        ''.join(' DW ' + ','.join(map(str, row)) + '\n' for row in layouts))
     def boot(window,header):
         h='NR_EXPECT:\n'+''.join(' DB '+','.join(map(str,header[i:i+16]))+'\n' for i in range(0,128,16))
         return ' ORG 100H\n JP NR_START\n'+constants+f'NR_WINDOW EQU {window}\nNR_CONTEXT EQU {window+2048}\n'+resident+data+resident_data+h+'NR_END:\n'+ '\n'.join(x for x in aliases.splitlines() if 'NI_' not in x)+'\n END\n'
