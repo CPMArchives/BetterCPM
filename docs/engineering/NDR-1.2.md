@@ -22,8 +22,9 @@ release images have been qualified. Operator instructions are in
   the PDS nor a second name map is involved. There are no loader arguments or
   runtime capacity changes. Rebuilding the capacity constant is separate work.
 - Warm boot and normal stateful RSX reconstruction retain the table. Unload
-  discards it and recovers the allocation. A fresh load starts empty; saved
-  `.NDR` sets and an explicit startup command provide cold-boot persistence.
+  discards it and recovers the allocation. A fresh load uses the table embedded in that carrier (empty in the
+  shipped carrier). `/DEFAULT filespec` persists the live set into a selected
+  carrier; `/SAVE` and `/LOAD` retain separate interchangeable `.NDR` sets.
 
 ## Resolution and presentation
 
@@ -172,6 +173,35 @@ the table. Load verifies the header, reserved bytes, every entry, uniqueness,
 and exact logical EOF before publishing. Unsupported/incomplete/invalid sets
 leave the live namespace unchanged. Save creates a new file and refuses to
 overwrite an existing one; failed writes remove the incomplete new file.
+
+## Embedded startup defaults
+
+`NDR /DEFAULT [DU:]file[.RSX]` requires an explicit target filename and a loaded
+provider for its snapshot. It validates the live table, requires an existing
+writable carrier, then verifies its exact supported header, relocation directory,
+code prefix and typed metadata and its old payload checksum. Both public BRSX
+v2 and checked/public v3 forms are accepted. References are derived from the
+provider assembled in the same build; the supported module version is explicitly
+tracked in NDR.COM's selected-input configuration. Unrecognized custom or future
+providers are rejected rather than edited by guessed offsets.
+
+Only the on-disk 320-byte table and its 16-bit payload checksum change. CP/M
+record padding, public checked binding and other file attributes are preserved.
+Sequential output uses complete 128-byte CP/M records. No live publication,
+provider code change, PDS allocation, or resident-memory increase is involved.
+Warm boot and STATEFUL reconstruction retain live state; fresh loading starts
+with the saved defaults. `/CLEAR` followed by `/DEFAULT file.RSX` saves an empty
+initial table. `/SAVE` and `/LOAD` continue to use the unchanged BNDR set format.
+
+The utility rejects existing same-stem `.$ND` and `.$NB` siblings. It creates
+`.$ND`, closes and reopens it, verifies every record and EOF, and applies the
+original attributes before renaming the original to `.$NB` and the staged file
+to the requested name. A failed second rename attempts restoration of `.$NB`.
+The backup is deleted only after installation succeeds. Failed cleanup reports
+the retained file; failed rollback retains the original backup and proposed
+replacement. CP/M has no atomic replace: interruption may require restoring
+`.$NB` to the original `.RSX` filename. Fatal disk aborts/power loss are not
+returning errors and cannot be handled by this transient transaction.
 
 ## Qualification boundary
 

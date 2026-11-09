@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "scope": "private booted checked cpmsim development media",
+  "steps": 24,
+  "cold_load_without_ndr_file": true,
+  "repeat_update": true,
+  "empty_defaults": true,
+  "read_only_rejected": true,
+  "caller_du_restored": true,
+  "carrier_unrelated_bytes_preserved": true,
+  "file_attributes_preserved": true,
+  "input_sha256": {
+    "NDR.COM": "9a9007fec104ebcbe953b68f1d331898d8be0678c5565d570ca7aaf1920ec36b",
+    "NDR.RSX": "620fcc3f03c9c2c541d459fb38ce298f7b4c1cb56e24decd2c4409a9f581bab3",
+    "RSX.COM": "c77d85bb4969588d3c1adc2bf3745ef74bdce082314f797055389e5c3bd853aa",
+    "RCP.CPX": "b77c8d2d958e3e84e457c806497e4ae447c8aadf263459fe164953d1c5bb29ad",
+    "R3PACK.RSX": "92fb0e10d16290785bc1bbb632c2c48ea424843e1107a8f9b9ef5dcb95506996",
+    "R3CACHE.RSX": "ccb22f43708e030245e32933dffc5c35e5e65b9358e5528cc9f9f8c871817e96"
+  },
+  "embedded_carrier_sha256": "1ca8b858718f8fd0cd6bd5fb475141ac673532f9bbbb6189d12c8b12e3c13f35"
+}

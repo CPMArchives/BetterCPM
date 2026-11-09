@@ -1182,12 +1182,14 @@
       "placement": "System",
       "roots": [
         "src/utilities/ndr.mac",
-        "src/utilities/common/ndr-client.inc"
+        "src/utilities/common/ndr-client.inc",
+        "src/utilities/common/ndr-default.inc",
+        "src/rsx/ndr.mac"
       ],
       "builders": [
         "tools/build_ndr.py"
       ],
-      "revision": 1,
+      "revision": 2,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "unqualified development",

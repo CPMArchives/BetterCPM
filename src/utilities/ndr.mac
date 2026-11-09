@@ -3,6 +3,8 @@ BDOS EQU 5
         ASEG
         ORG 0100H
         CALL UV_CHECK
+        LD HL,NM_EXTNAME
+        LD (NM_FEXT),HL
         CALL SD_INIT
         LD A,(SD_USER)
         LD (NM_ORIGUSER),A
@@ -60,6 +62,10 @@ NM_READY:
         LD DE,NM_SKEY
         CALL NM_KEY
         JP Z,NM_SAVE
+        LD HL,(NM_OPTION)
+        LD DE,NF_DKEY
+        CALL NM_KEY
+        JP Z,NF_DEFAULT
         JP NM_BAD
 NM_CLEAR:
         CALL NM_END
@@ -552,7 +558,7 @@ NM_FNEND:
         LD A,(NM_FCB+9)
         CP ' '
         RET NZ
-        LD HL,NM_EXTNAME
+        LD HL,(NM_FEXT)
         LD DE,NM_FCB+9
         LD BC,3
         LDIR
@@ -757,6 +763,9 @@ NM_VBAD:
         SCF
         RET
 
+; @ndr-default@
+; @ndr-default-template@
+
 NM_DKEY: DB 'DEL',0
 NM_CKEY: DB 'CLEAR',0
 NM_LKEY: DB 'LOAD',0
@@ -786,6 +795,7 @@ NM_ROW: DB 0
 NM_LINDEX: DB 0
 NM_GAP: DB 0
 NM_LPTRS: DS 64
+NM_FEXT: DW 0
 NM_OPTION: DW 0
 NM_DPAIR: DW 0
 NM_CHECK: DW 0

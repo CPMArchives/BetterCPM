@@ -7388,6 +7388,7 @@ NDR /DEL name
 NDR /CLEAR
 NDR /SAVE [DU:]file[.NDR]
 NDR /LOAD [DU:]file[.NDR]
+NDR /DEFAULT [DU:]file[.RSX]
 NDR /H | /HELP | /VER
 ```
 
@@ -7413,6 +7414,16 @@ leave the live names unchanged. File operations restore the caller's user.
 The binary format is three 128-byte records (384 bytes), with a BNDR version-1
 header and 32 ten-byte entries. It is not Z-System .NDR compatible.
 
+`/DEFAULT` requires a target filename (extension defaults to .RSX) and embeds
+the live table into that existing, compatible NDR carrier. It updates the
+startup defaults for the next fresh load, without changing the live table.
+Repeat it to replace old defaults. `/CLEAR` followed by `/DEFAULT` with a
+filename saves empty defaults. Read-only, corrupt or unsupported carriers are
+rejected. A verified staging file precedes backup/rename replacement; existing
+same-stem `.$ND` or `.$NB` files block the operation. If interrupted, `.$NB`
+contains the original carrier and may need renaming back to its `.RSX` name.
+See [recovery details](../user/NDR.md).
+
 #### Examples
 
 ```text
@@ -7421,6 +7432,7 @@ NDR COMMANDS A0:
 NDR SOURCE B2:
 NDR UTILS B3:
 NDR /SAVE WORK
+NDR /DEFAULT A0:NDR.RSX
 SOURCE:
 UTILS:MYTOOL
 TYPE SOURCE:NOTE.TXT
@@ -7441,9 +7453,9 @@ Numeric navigation and PATH remain available without NDR.
 
 Warm boots and STATEFUL manager reconstruction retain the table. Unloading
 NDR discards it and recovers its 512-byte protected allocation. The shared RSX
-manager costs another 1,024 bytes when the first provider is loaded. For cold
-restoration, explicitly load NDR.RSX then `/LOAD` a saved set in the startup
-sequence. No NDR table is stored in the PDS. Names confer no file protection.
+manager costs another 1,024 bytes when the first provider is loaded. A fresh load initializes the embedded defaults (empty in the shipped carrier).
+For cold restoration, load NDR.RSX in startup; optionally follow it with `/LOAD`
+to select a different separate set. No NDR table is stored in the PDS. Names confer no file protection.
 
 #### See Also
 

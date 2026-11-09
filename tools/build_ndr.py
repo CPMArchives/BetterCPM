@@ -13,10 +13,37 @@ from system_layout import CONTEXT
 
 ROOT = Path(__file__).resolve().parents[1]
 
-@recorded_build('utility:NDR')
-def build_manager(assembler, destination):
-    return assemble(assembler, (ROOT/'src/utilities/ndr.mac').read_text(),
-                    destination/'NDR.COM', destination/'ndr.lst', 0x100)
+def default_template(carrier, table_offset):
+    """Pin editing to this provider layout, for public BRSX 2 and 3."""
+    from checked_carriers import rsx_metadata
+    configuration = json.loads((ROOT/'metadata/component-inputs.json').read_text())['components']['utility:NDR']['configuration']
+    if carrier[40:42] != bytes(configuration['default_provider_version']):
+        raise ValueError('review /DEFAULT compatibility before changing the provider version')
+    code_size = int.from_bytes(carrier[12:14], 'little')
+    metadata_offset = int.from_bytes(carrier[30:32], 'little')
+    header = bytearray(carrier[:512]); header[4] = 2
+    metadata = carrier[metadata_offset:]
+    if carrier[4] == 3:
+        assert metadata[12:16] == bytes((4, 18, 1, 0))
+        metadata = bytearray(metadata[:12] + metadata[32:])
+        metadata[4] = 1; metadata[7] -= 1
+        metadata[8:10] = len(metadata).to_bytes(2, 'little')
+        metadata = bytes(metadata)
+    checked = rsx_metadata('NDR', metadata, {})  # public binding has no target ID
+    assert table_offset + 320 == code_size
+    values = dict(NF_TABLE_OFFSET=512+table_offset, NF_META_OFFSET=metadata_offset,
+                  NF_PAYLOAD_SIZE=code_size, NF_SIZE2=metadata_offset+len(metadata),
+                  NF_SIZE3=metadata_offset+len(checked))
+    assert max(values['NF_SIZE2'], values['NF_SIZE3']) <= 1152
+    values['NF_RECS2'] = (values['NF_SIZE2']+127)//128
+    values['NF_RECS3'] = (values['NF_SIZE3']+127)//128
+    result = '\n'.join(f'{name} EQU {value}' for name,value in values.items())+'\n'
+    for label, data in [('NF_REFERENCE',bytes(header)+carrier[512:512+table_offset]),
+                        ('NF_META2',metadata),('NF_META3',checked)]:
+        result += label+':\n'
+        result += '\n'.join('        DB '+','.join(f'0{v:02X}H' for v in data[i:i+16])
+                            for i in range(0,len(data),16))+'\n'
+    return result
 
 def build(assembler, output=None):
     output = output or ROOT / 'build/rsx'
@@ -40,6 +67,14 @@ def build(assembler, output=None):
     print(report)
     dest = ROOT/'build/utilities'
     dest.mkdir(parents=True, exist_ok=True)
+    template = default_template(carrier, symbols(output/'ndr.lst')['NR_TABLE']-0x8000)
+    @recorded_build('utility:NDR')
+    def build_manager(assembler, destination):
+        source = (ROOT/'src/utilities/ndr.mac').read_text()
+        source = source.replace('; @ndr-default@',
+            (ROOT/'src/utilities/common/ndr-default.inc').read_text())
+        source = source.replace('; @ndr-default-template@', template)
+        return assemble(assembler, source, destination/'NDR.COM', destination/'ndr.lst', 0x100)
     build_manager(assembler, dest, target=CONTEXT[0]['target'] if CONTEXT else 'z80pack')
     return carrier
 

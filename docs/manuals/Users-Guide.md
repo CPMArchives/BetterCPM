@@ -149,8 +149,10 @@ Delete with `NDR /DEL SOURCE` before reassigning an existing name. `/CLEAR`
 removes the live set. `NDR /SAVE MYNAMES` creates MYNAMES.NDR; it refuses an
 existing file. `NDR /LOAD MYNAMES` replaces the live set only after validating
 it. Names survive warm boot while the provider is loaded. Unload discards them;
-save first. Restore after cold boot by putting `RSX LOAD NDR` followed by
-`NDR /LOAD A0:MYNAMES` in your startup script.
+save first. `NDR /DEFAULT A0:NDR.RSX` embeds the current set in that existing
+provider for its next fresh load. Then `RSX LOAD NDR` alone restores the names
+after cold boot. Alternatively follow the load with `NDR /LOAD A0:MYNAMES`
+to restore a separate set. The shipped provider defaults to an empty table.
 
 PATH accepts names as input and stores their numeric locations immediately:
 `PATH $$ COMMANDS: SOURCE:`. Later name changes do not retarget PATH.

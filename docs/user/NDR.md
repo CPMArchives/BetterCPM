@@ -60,6 +60,33 @@ Delete an existing name before assigning it again. Save defaults the extension
 to `.NDR` and refuses to overwrite an existing file; use another filename or
 erase the old file first. Invalid sets do not change the current names.
 
+To make the current names the startup defaults in a particular provider file:
+
+```text
+NDR /DEFAULT A0:NDR.RSX
+```
+
+A target filename is required; its extension defaults to `.RSX`. The file must
+already exist and contain a supported, writable NDR provider. `/DEFAULT` embeds
+the live set into that carrier, including an empty set after `/CLEAR`. It leaves
+the live table unchanged. On the next fresh load of that file, the embedded
+names are immediately available; ordinary warm boots retain the current live
+names. You can repeat `/DEFAULT` to replace previously embedded defaults.
+The shipped carrier starts with no names.
+
+`/SAVE` still creates an interchangeable `.NDR` set; `/DEFAULT` updates an
+existing `.RSX` carrier. To restore embedded defaults after cold boot, only
+`RSX LOAD NDR` is needed in startup. An explicit `/LOAD` after it can select
+a different saved set.
+
+The replacement is staged and read back before the original is renamed. Files
+with the same stem and suffix `.$ND` (staging) or `.$NB` (original backup) block
+the operation rather than being overwritten. Normal success removes both.
+If an interruption leaves these files, inspect them before retrying: `.$NB`
+holds the original carrier, and `.$ND` holds the proposed replacement. When
+restoring an absent original filename, rename the backup to its original `.RSX`
+name. Returning errors attempt rollback and report retained recovery files.
+
 Names survive warm boots while NDR remains loaded. Unloading discards the live
 table and frees its allocation:
 
@@ -67,8 +94,8 @@ table and frees its allocation:
 RSX UNLOAD NDR
 ```
 
-Save a set before unloading if you want to restore it. For cold-boot restoration,
-put `RSX LOAD NDR` and `NDR /LOAD MYNAMES` in your startup sequence, after the
-needed disk is available. The supplied provider uses 512 protected bytes; CCP
+Save a set or embed defaults before unloading if you want to restore the names.
+For restoration from a separate set, put `RSX LOAD NDR` and `NDR /LOAD MYNAMES`
+in your startup sequence after the needed disk is available. The supplied provider uses 512 protected bytes; CCP
 growth is reclaimable. The existing shared RSX manager adds 1 KiB when the first
 RSX is loaded, shared by all active providers.

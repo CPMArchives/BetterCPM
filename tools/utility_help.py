@@ -8,6 +8,7 @@ SCREENS={
  ('/CLEAR', 'Discard all live names.'),
  ('/LOAD [DU:]file', 'Replace names from a saved .NDR set.'),
  ('/SAVE [DU:]file', 'Save names to a new .NDR file.'),
+ ('/DEFAULT [DU:]file.RSX', 'Embed names for the next provider load.'),
  ('', 'List names: up to four columns, eight per column.')]),
  'STAT':('System and File Statistics','STAT [drive: | filespec | request]',[
  ('', 'No operand: report logged-in drives only.'),
