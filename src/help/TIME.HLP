@@ -1,0 +1,24 @@
+# TIME - Read or set the clock
+
+```text
+TIME
+TIME /PROVIDER
+```
+
+## Read the clock
+
+TIME displays the date and time from the installed clock provider.
+/PROVIDER identifies it and reports its read and set capabilities. On
+cpmsim load the native clock with RSX LOAD ZPRTC. A Model 4 with a FreHD
+clock uses FREHDCLK.
+
+## Set the clock
+
+```text
+TIME /SET LL HH HR MN SC
+```
+
+The five operands are hexadecimal bytes. LL and HH are the low and high
+bytes of the CP/M day count (day 1 is January 1, 1978). HR, MN and SC
+are packed decimal digits, so 12 34 56 means 12:34:56. A read-only
+provider declines SET.

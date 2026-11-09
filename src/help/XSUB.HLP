@@ -1,0 +1,27 @@
+# XSUB - Feed submitted lines to a program
+
+```text
+XSUB [DU:]
+```
+
+## Enable input
+
+Place XSUB in a .SUB procedure before the program that needs responses.
+With XSUB.COM and BATCHIO.RSX on the Utilities disk in B0, use B0:XSUB
+B0:. The second B0: gives the location of the matching resident module.
+
+## Example procedure
+
+```text
+B0:XSUB B0:
+ED XDEMO.TXT
+IHELLO FROM XSUB^L^Z
+E
+:TYPE XDEMO.TXT
+```
+
+Use a fresh filename. Save these lines as XDEMO.SUB and run SUBMIT
+XDEMO. Type the caret sequences literally. [SUBMIT](SUBMIT.HLP) converts
+them to control bytes. Each buffered input request takes the next
+procedure line. ED's single-character insert mode still reads the
+keyboard.

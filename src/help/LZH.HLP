@@ -1,0 +1,24 @@
+# LZH - Compress a file in CrLZH format
+
+```text
+LZH [drive:]file [destination-drive:]
+```
+
+## Compress a file
+
+```text
+B0:LZH A:REPORT.TXT D:
+```
+
+This writes REPORT.TYT on D. Both drives use the current user area.
+Omitting the destination sends output to the logged drive.
+
+## Restore a copy
+
+```text
+B0:UNLZH D:REPORT.TYT C:
+```
+
+[UNLZH](UNLZH.HLP) gets the original name from the stream. For
+compressed help topics use [SQ](SQ.HLP) or [CR](CR.HLP), which produce
+the .HQP and .HZP types HELP recognizes.

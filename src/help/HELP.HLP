@@ -6,7 +6,8 @@ HELP [topic [section]] [/S=filespec] [/R]
 
 ## Reading topics
 
-Type `HELP` to open the default archive. An authored index opens first.
+Type `HELP` to open the default archive. The supplied index groups commands by task.
+Choose a group and then a command.
 When the archive has no index, choose a topic from its member list.
 
 `HELP PIP` opens the PIP topic. `HELP PIP SELECTORS` opens

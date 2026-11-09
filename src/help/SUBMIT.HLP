@@ -1,0 +1,29 @@
+# SUBMIT - Run commands from a file
+
+```text
+SUBMIT procedure [arguments]
+```
+
+## Write a procedure
+
+Put one CP/M command on each line of a .SUB text file. Use $1 for the
+first argument, $2 for the second, and $$ for a literal dollar sign. For
+example, save these two lines as CHECK.SUB:
+
+```text
+DIR $1
+STAT $1
+```
+
+At the command prompt, run:
+
+```text
+SUBMIT CHECK D0:*.COM
+```
+
+## Supply responses
+
+Ordinary procedure lines go to the command processor. To supply a
+program's buffered console responses, place [XSUB](XSUB.HLP) before the
+program and put its responses immediately after it. Single-key prompts
+still read the keyboard.

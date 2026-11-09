@@ -1,0 +1,22 @@
+# GET - Load a file into memory
+
+```text
+GET [hex-address] filename
+```
+
+## Load and inspect
+
+```text
+GET D0:TEST.COM
+PEEK 100 11F
+```
+
+GET defaults to address 0100H and returns to the command prompt. The
+optional hex address selects a different starting point.
+[PEEK](PEEK.HLP) lets you inspect the bytes in place.
+
+## Execute
+
+Use [GO](GO.HLP) for a program loaded at 0100H. Launching another
+transient can overwrite the image. Use [JUMP](JUMP.HLP) when you know
+the intended entry address.

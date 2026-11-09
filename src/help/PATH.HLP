@@ -26,3 +26,10 @@ PATH /DEFAULT
 
 The first command appends C4. The second removes that entry. The third
 restores the default path.
+
+## Named locations
+
+A fixed entry such as A0:[ROOT] shows the live name for that location.
+Symbolic entries keep their dollar signs. PATH resolves a named location
+when you add it; changing the name later keeps the same numeric search
+location. See [named directories](NDR.HLP).

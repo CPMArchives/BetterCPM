@@ -1,8 +1,87 @@
 # BetterCP/M Help
 
-- [COPY](COPY.HLP) copies files using source-first syntax.
-- [PIP](PIP.HLP) transfers files and device streams.
-- [DIR](DIR.HLP) lists files by drive and user area.
-- [PATH](PATH.HLP) displays and edits the search path.
-- [NOAH](NOAH.HLP) manages archives and builds custom help libraries.
-- [HELP](HELP.HLP) explains navigation, source selection and reporting.
+Choose a group, or type HELP followed by a command name at the CP/M prompt.
+
+## Files and users
+
+- [COPY](COPY.HLP) Copy files.
+- [DIR](DIR.HLP) Directory listing.
+- [ERA](ERA.HLP) Erase selected files.
+- [MOVE](MOVE.HLP) Move files between locations.
+- [PIP](PIP.HLP) File and device transfer.
+- [REN](REN.HLP) Rename files in place.
+- [SEARCH](SEARCH.HLP) Find text or bytes in files.
+- [TYPE](TYPE.HLP) Display a text file.
+- [USER](USER.HLP) Select a numbered user area.
+
+## Disks and setup
+
+- [CONFIG](CONFIG.HLP) Configure startup and disk bindings.
+- [DUP](DUP.HLP) Check, format or copy a disk.
+- [FDB](FDB.HLP) Edit the disk format catalogue.
+- [NDR](NDR.HLP) Name drive and user locations.
+- [PATH](PATH.HLP) Command search path.
+- [STAT](STAT.HLP) Disk, file and memory status.
+- [SYSGEN](SYSGEN.HLP) Install or export a boot system.
+- [TIME](TIME.HLP) Read or set the clock.
+- [VER](VER.HLP) Identify the running system.
+
+## Inspect files
+
+- [COMPARE](COMPARE.HLP) Compare two files byte by byte.
+- [CRCKSUM](CRCKSUM.HLP) Calculate and check file checksums.
+- [DUMP](DUMP.HLP) Inspect file bytes.
+- [MD5SUM](MD5SUM.HLP) Make or verify an MD5 list.
+- [PATCH](PATCH.HLP) Apply a verified binary patch.
+
+## Batch and system
+
+- [CLS](CLS.HLP) Clear the console.
+- [CPX](CPX.HLP) Manage command processor extensions.
+- [HELP](HELP.HLP) Browse online help.
+- [RSX](RSX.HLP) Manage resident extensions.
+- [SUBMIT](SUBMIT.HLP) Run commands from a file.
+- [XSUB](XSUB.HLP) Feed submitted lines to a program.
+
+## Edit and build
+
+- [DASM](DASM.HLP) Disassemble a Z80 binary.
+- [DDT](DDT.HLP) Debug an 8080 program.
+- [DLINK](DLINK.HLP) Link and capture a checked report.
+- [DSYM](DSYM.HLP) Convert a linker report to DASM symbols.
+- [ED](ED.HLP) Edit text with the line editor.
+- [LINK](LINK.HLP) Link relocatable object modules.
+- [TED](TED.HLP) Edit text on screen.
+- [ZSM4](ZSM4.HLP) Assemble a Z80 source file.
+
+## Archives
+
+- [CR](CR.HLP) Crunch one file.
+- [LZH](LZH.HLP) Compress a file in CrLZH format.
+- [NOAH](NOAH.HLP) Archive utility.
+- [SQ](SQ.HLP) Squeeze one file.
+- [UNCR](UNCR.HLP) Restore a crunched file.
+- [UNLZH](UNLZH.HLP) Restore a CrLZH file.
+- [USQ](USQ.HLP) Restore a squeezed file.
+
+## Memory commands
+
+- [GET](GET.HLP) Load a file into memory.
+- [GO](GO.HLP) Execute a program at 0100H.
+- [JUMP](JUMP.HLP) Execute at a chosen address.
+- [PEEK](PEEK.HLP) Inspect memory in hexadecimal.
+- [POKE](POKE.HLP) Change bytes in memory.
+- [SAVE](SAVE.HLP) Write memory pages to a file.
+
+## Terminal tests
+
+- [ADMTST](ADMTST.HLP) Exercise the ADM3A personality.
+- [ANSITST](ANSITST.HLP) Exercise the ANSI personality.
+- [VT52TST](VT52TST.HLP) Exercise the VT52 personality.
+
+## cpmsim host
+
+- [BYE](BYE.HLP) Exit cpmsim.
+- [MOUNT](MOUNT.HLP) Mount a host image in cpmsim.
+- [R](R.HLP) Import a host file into cpmsim.
+- [W](W.HLP) Export a cpmsim file to the host.

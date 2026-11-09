@@ -1,0 +1,22 @@
+# USER - Select a numbered user area
+
+```text
+USER number
+```
+
+## Change user
+
+```text
+USER 3
+DIR
+USER 0
+```
+
+USER selects a number from 0 through 31 on the current drive. The prompt
+shows the new location. Files in other user areas remain on the disk.
+
+## Work elsewhere
+
+A numeric prefix lets you access another location without changing the
+prompt. DIR D3:*.TXT lists text files in user 3 of D. [NDR](NDR.HLP)
+lets you name a frequently used drive/user.

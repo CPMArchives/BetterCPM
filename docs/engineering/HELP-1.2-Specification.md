@@ -224,10 +224,17 @@ builder requires z80pack's `z80asm`. The optional data disks also require
 `cpmcp`. The outputs in `build/help/` are `HELP.COM`, `HELP.LBR` and
 `BetterCPM-1.2-HELP` images in DSK (cpmsim), DMK (Model 4) and IMD
 (Model II) formats. Mount the appropriate data disk as B on a running
-system, type `B:`, then `HELP`. The source collection contains COPY, DIR,
-HELP, NOAH, PATH and PIP plus an authored index. New loose subjects can be
-tried immediately with `HELP /S=filespec`. A custom directory of ASCII
-`.HLP` sources can be packaged with `--subjects directory`.
+system, type `B:`, then `HELP`. The supplied library covers all 48 packaged
+programs and nine additional resident or built-in commands. Its authored
+index groups the 57 subjects by task. New loose subjects can be tried with
+`HELP /S=filespec`. Use `--subjects directory` to package a custom collection.
+Run `python3 tools/test_help_corpus.py` to check the supplied index, disk
+inventories and cross-references.
+
+The full-library experimental boot sets keep HELP.COM on A0. On cpmsim,
+STARTUP.SUB appends C0 to PATH and the companion disk holds HELP.LBR.
+The Model 4 and Model II System disks have space for the library on A0.
+`HELP PIP /R` reports the archive selected by the current setup.
 [Reader source](../../src/utilities/help.mac) · [Topic sources](../../src/help/)
 
 `python3 tools/qualify_help.py --system disk.raw --simulator cpmsim --console`

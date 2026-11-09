@@ -1,0 +1,21 @@
+# UNLZH - Restore a CrLZH file
+
+```text
+UNLZH [drive:]file [destination-drive:]
+```
+
+## Restore a file
+
+```text
+B0:UNLZH A:REPORT.TYT D:
+```
+
+The original filename comes from the CrLZH header. Choose a drive with
+room and a free destination name. A checksum or stream error prevents
+publication of the restored file.
+
+## Historical files
+
+UNLZH recognizes supported old (10h) and new (20h) CrLZH variants from
+their headers. Use [LZH](LZH.HLP) to make a new compressed copy. Use
+[UNCR](UNCR.HLP) for CRUNCH 2.x files.

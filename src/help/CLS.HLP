@@ -1,0 +1,9 @@
+# CLS - Clear the console
+
+```text
+CLS
+```
+
+CLS in the resident RCP package clears the display and homes the cursor.
+The active console determines how the operation appears. With ADM3A
+selected, CLS starts a fresh screen at the next command prompt.

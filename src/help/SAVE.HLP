@@ -1,0 +1,16 @@
+# SAVE - Write memory pages to a file
+
+```text
+SAVE pages filespec
+```
+
+SAVE writes from 0100H in 256-byte pages. The page count is decimal. For
+example, after loading a 512-byte program with [GET](GET.HLP), this
+command saves two pages on D:
+
+```text
+SAVE 2 D0:NEW.COM
+```
+
+Choose the page count to cover the intended bytes. Extra pages copy
+whatever follows the image in memory.

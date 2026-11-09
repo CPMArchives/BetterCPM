@@ -1,0 +1,23 @@
+# DLINK - Link and capture a checked report
+
+```text
+B0:DLINK base
+B0:DLINK output module [module ...]
+```
+
+## Build a program
+
+From the writable drive containing PROGRAM.REL, run B0:DLINK PROGRAM.
+DLINK invokes the supplied B0:LINK.COM and captures its report. Use
+fresh output names for the .COM, .SYM and .LOG files.
+
+## Several modules
+
+```text
+B0:DLINK RESULT MAIN PART
+B0:DSYM RESULT.LOG
+```
+
+Use the same user area for output and modules. A complete successful
+report is the input [DSYM](DSYM.HLP) needs to make disassembly symbols.
+Check any failure before using the generated files.

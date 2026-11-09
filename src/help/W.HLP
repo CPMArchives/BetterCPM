@@ -1,0 +1,24 @@
+# W - Export a cpmsim file to the host
+
+```text
+W CP/M-filespec [host-file]
+```
+
+## Export a file
+
+```text
+W D0:SOURCE.ASM "Edited source.asm"
+```
+
+Give one CP/M filename and a host filename in the emulator's working
+directory. Quote host names containing spaces. W accepts single names
+without host directory prefixes or wildcards.
+
+## Import the result
+
+```text
+R "Edited source.asm" D0:NEW.ASM
+```
+
+[R](R.HLP) brings the host file back under a CP/M 8.3 name. W and R are
+supplied on the cpmsim System disk.
