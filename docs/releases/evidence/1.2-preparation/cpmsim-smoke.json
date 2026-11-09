@@ -5,5 +5,10 @@
   "paired_images": {
     "b": "6d4534f7d3234c054fc6e317e0ee71ba26829ba6d1610b4aab9528fe7128b5bc",
     "c": "d3aabb59435f51d8377e1dba143a5542c05cd654fe2065913187eb280ff30f84"
+  },
+  "transcript": {
+    "raw_sha256": "44f744cf564758d9a0025deb98294824679eb882b8525fbac1b64abee1dbd591",
+    "raw_path": "build/release-1.2/rc-smoke-cpmsim-paired/transcript.txt",
+    "text_projection": "cpmsim-smoke.txt normalizes terminal CR/LF and trailing whitespace only"
   }
 }

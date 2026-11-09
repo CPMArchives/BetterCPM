@@ -40,6 +40,15 @@ folder is `build/release-1.2/rc-packages/candidates/dc16a08543ba7a377dd04912ece0
 The paired cpmsim smoke includes an actual PIP topic open and exit. Its
 Companion Utilities disk is mounted as C:, as required by the shipped layout.
 The earlier standalone System-only fixture omitted that disk and is not HELP
-acceptance. Native smoke status is recorded separately; unobserved checks remain
-pending.
+acceptance. All three platform smoke checks passed. Model 4 named-DU use is retained
+in `model4-named-use.json` and its capture; only private startup input/text
+fixtures changed, with the release binaries unchanged. Early keyboard-paced
+runs were not treated as passing evidence.
 No v1.2 tag or public release has been created.
+
+
+The consolidated result is `status.json`: **PASS focused release preparation**.
+The candidate manifests intentionally remain review-only and retain the gates
+that were pending when assembled. The hash-bound smoke and audit sidecars record
+the subsequent observations; this does not retroactively rewrite those manifests.
+Maintainer acceptance, final naming/tagging and publication remain separate.

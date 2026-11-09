@@ -2,5 +2,5 @@
   "status": "PASS",
   "scope": "NDR assignment and annotated PATH; later new PATH echo proves return after assignment",
   "system_sha256": "17e412df72a2d9167115abec3812ddcfe7b4f4514596aec9522a163e6bdea8b6",
-  "capture_oracle_correction": "First capture occurs immediately after updated message, before CCP prompt. Second capture contains a new PATH command at A0 [SYSTEM]> and its annotated result, independently proving return. Explicit named-DU selection remains pending the private startup-input smoke."
+  "capture_oracle_correction": "First capture occurs immediately after updated message, before CCP prompt. Second capture contains a new PATH command at A0 [SYSTEM]> and its annotated result, independently proving return. Explicit named-DU selection passed in the private startup-input smoke; see model4-named-use.json."
 }
