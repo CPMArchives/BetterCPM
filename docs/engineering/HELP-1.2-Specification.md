@@ -92,6 +92,28 @@ DU, their precedence needs a rule. If several DUs contain the same archive
 filename, lookup needs a rule for whether a member miss in the first such
 archive continues to later copies of that archive.
 
+## Reporting a topic's location and selecting a library
+
+Source information is available on request through the proposed `/REPORT`
+switch. The proposed `/LIBRARY=` switch selects the collection to search.
+
+| Invocation | Behavior |
+| --- | --- |
+| `HELP PIP /REPORT` | Use the same lookup as `HELP PIP`. Print the selected loose filespec (for example, `C3:PIP.HQP`) or the archive filespec and actual member name (for example, `B0:HELP.LBR (PIP.HLP)`), then return to CP/M. |
+| `HELP PIP /LIBRARY=A4:HELP.ARK` | Look up PIP exclusively in the named archive. Use the same syntax for a user-built collection such as `A4:TOOLS.LBR`. |
+| `HELP PIP /L=A4:HELP.ARK /REPORT` | `/L=` is the short spelling of `/LIBRARY=`. Report the result of lookup in that archive only. |
+
+`/REPORT` answers whether the requested topic was found. On a miss, print
+`No help for PIP was found.` and return directly to CP/M, even when an
+authored index is available. A match reports the first source chosen by
+ordinary lookup in the specified scope. Reporting requires only enough
+file or archive metadata to identify that source.
+
+For ordinary reading with `/LIBRARY=`, the selected archive supplies the
+topic and its usual index fallback. With no topic, show that archive's
+authored index or generate its menu. If the specified archive cannot be
+opened, identify it in the diagnostic and return to CP/M.
+
 ## Authoring and presentation
 
 The design direction is a small, documented, human-editable ASCII Markdown
@@ -164,9 +186,8 @@ nine resident RCP commands.
 1. Review the [delivered TCAP 2.0 direct ABI](TCAP-Direct-ABI.md). Establish what HELP can rely on for
    geometry, unknown dimensions, semantic standout, plain output, cancellation
    and state restoration. Use the shared facility across supported platforms.
-2. Settle handling of repeated archive filenames along PATH, invocation
-   for an explicitly named custom library, and precedence if several
-   encodings of a subject coexist in one DU or archive. Define the bare-`HELP`
+2. Settle handling of repeated archive filenames along PATH and precedence
+   if several encodings of a subject coexist in one DU or archive. Define the bare-`HELP`
    diagnostic when neither archive exists and errors for a damaged member
    or index and insufficient decoder TPA.
 3. Freeze the Markdown subset, section and link naming, behavior for absent
