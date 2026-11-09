@@ -2,8 +2,9 @@
 
 **Design draft for review, 9 November 2026.** A subject is a human-editable
 ASCII Markdown file. HELP reads it directly after any LBR member selection
-and decompression. The opening-page rule below is settled; the remaining
-dialect and navigation details are under review. See the [system specification](../docs/engineering/HELP-1.2-Specification.md)
+and decompression. The opening-page rule and the navigation keys below are
+settled. The remaining dialect and interaction details are under review.
+See the [system specification](../docs/engineering/HELP-1.2-Specification.md)
 for the agreed library lookup, footer, authored index and menu fallback.
 
 ## Worked subjects
@@ -84,6 +85,20 @@ one separator. This also permits `## File attributes` to be addressed as
 normalization. Menu numbers are local to the display; examples and references
 may use a section's name even after its menu position changes.
 
+## Navigation keys
+
+| Key at a HELP navigation prompt | Action |
+| --- | --- |
+| `^C` or `Q` | Return one level. At the top level, exit to the CP/M command prompt. |
+| `,` or `<` | Display the previous page of the current section. |
+| `.` or `>` | Display the next page of the current section. |
+
+Paging within a section leaves its parent unchanged. For example, start at
+the library menu, open PIP, select Examples and advance two pages. The first
+`Q` returns to the PIP section menu, the second to the library menu, and the
+third to CP/M. Handle Ctrl-C as a navigation key at these prompts so a nested
+view can return to its parent.
+
 ## TCAP 2.0 findings
 
 The delivered [direct ABI](../docs/engineering/TCAP-Direct-ABI.md) supplies
@@ -105,8 +120,9 @@ unknown geometry still need an explicit pager policy.
 ## Choices to review before freezing the format
 
 Direct addressing of a section by name and the role of `###` within the section
-remain under review. Other review points are link selection
-on a plain terminal, returning from a link or directly requested section,
+remain under review. Other review points are menu-number entry, link selection
+on a plain terminal, return position after following a link, the top level
+for a direct command-line request, behavior at the first and last page,
 long literal lines on a narrow display and the handling of malformed input.
 On a compressed subject a generated section menu requires a scan of the
 decoded headings. Measure that cost alongside direct jumps and backward paging

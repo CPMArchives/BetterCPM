@@ -101,13 +101,17 @@ section choices in source order, left to right, two per row at 40 columns
 and four per row at 80 columns. Continue numbering across rows. Use up to 16 visible heading
 characters per menu label and show the full heading inside the section.
 
+**Navigation keys.** At a HELP prompt, `^C` or `Q` goes back one level,
+exiting to CP/M from the top level. Within a multi-page section, `,` or
+`<` goes to the previous page and `.` or `>` goes to the next.
+
 **Proposed for review.** Use `###` for a local subheading. Add paragraphs,
 simple lists, inline code, fenced examples that preserve spacing, and links
 between subjects. A topic with no selectable sections could display immediately.
 A command such as `HELP PIP SELECTORS` could go directly to a section.
 Z-System's menus, preformatted examples, cross-file navigation and frames
 informed these proposals. Compatibility with historical files, the final
-Markdown grammar and the navigation keys are open.
+Markdown grammar and the remaining navigation details are open.
 
 ## Evidence already available
 
@@ -144,8 +148,8 @@ nine resident RCP commands.
    if several encodings of the same subject coexist. Define errors for a
    missing library, a damaged member or index, and insufficient decoder TPA.
 3. Freeze the Markdown subset, section and link naming, behavior for absent
-   linked subjects, direct-section lookup, wrapping, menu return and pager
-   controls. Use a short topic and a multi-section topic at narrow and wide
+   linked subjects, direct-section lookup, wrapping, menu selection and page
+   boundaries. Use a short topic and a multi-section topic at narrow and wide
    console widths to review the result.
 4. Integrate the reader and measure startup, member access, decoder workspace,
    forward and backward navigation on floppy-oriented media. Verify plain
