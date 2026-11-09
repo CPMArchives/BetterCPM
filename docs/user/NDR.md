@@ -21,7 +21,7 @@ protect files. If several names refer to the current location, the first live
 entry supplies the prompt name:
 
 ```text
-A0 [COMMANDS] >
+A0 [COMMANDS]>
 ```
 
 Use a colon to navigate or qualify a command/file operand:

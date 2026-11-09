@@ -183,8 +183,6 @@ CN_PNAME:
         DJNZ CN_PNAME
 CN_PCLOSE:
         LD A,']'
-        CALL CN_CHAR
-        LD A,' '
 CN_CHAR:
         PUSH HL
         PUSH BC

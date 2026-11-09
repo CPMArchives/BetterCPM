@@ -209,7 +209,7 @@ def main():
     g.cpu = ccp
     g.install()
     ccp.run(test_ccp.symbol('CN_PROMPT'), limit=10000)
-    assert g.output.endswith(b' [COMMANDS] '), g.output
+    assert g.output.endswith(b' [COMMANDS]'), g.output
     data = test_ccp.symbol('CCP_DATA'); count = test_ccp.symbol('CCP_COUNT')
     def normalize(text):
         text = text.encode('ascii')
@@ -240,7 +240,7 @@ def main():
     assert ccp.carry and (g.drive,g.user) == (15,31)
     g.reset_console()
     ccp.run(test_ccp.symbol('CN_PROMPT'), limit=10000)
-    assert g.output == b' [LAST] ', g.output
+    assert g.output == b' [LAST]', g.output
     normalize('UTILS:HELLO x')
     ccp.run(test_ccp.symbol('CCP_LQUAL'), limit=10000)
     assert ccp.mem[test_ccp.symbol('CCP_FCB')] == 2
