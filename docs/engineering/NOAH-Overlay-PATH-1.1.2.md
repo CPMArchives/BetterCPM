@@ -1,8 +1,8 @@
 # NOAH overlay PATH maintenance fix
 
 Target: BetterCP/M v1.1.2. Classification: maintenance/integration bug fix.
-Status: implemented locally and focused checks passed, 9 November 2026;
-not merged or published. NOAH identification revision: 1.0 (021).
+Status: implemented, focused checks passed and maintainer authorized v1.1.2
+publication, 9 November 2026. NOAH identification revision: 1.0 (021).
 
 ## Cause and correction
 
@@ -75,6 +75,6 @@ python3 tools/test_noah_path_cpm.py \
 
 These are focused utility checks. Model 4 and Model II layout admission was
 executed on the Z80 core with modeled BDOS, not as new hardware/emulator media
-qualification. No broader release engineering was performed. The branch starts
-at locally cached `origin/main` commit `3fcb4c79`; an upstream refresh failed
-because github.com could not be resolved in this session.
+qualification. The maintenance release branch starts directly at the published v1.1.1 tag;
+only this fix and its publication files are added. Release packaging verifies
+exact binary identity and disk-file readback without another engineering campaign.
