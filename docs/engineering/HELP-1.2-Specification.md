@@ -95,12 +95,15 @@ Completion of TCAP is a development dependency. Once shipped, HELP must
 still be readable on a plain console when optional enhancements are absent.
 [Terminal architecture, section 22](POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md#22-optional-utility-presentation-and-ascii-fallback)
 
-**Proposed for review on resumption.** Use `#` for a title, `##` for a
-selectable section and `###` for a local subheading. Add paragraphs, simple
-lists, inline code, fenced examples that preserve spacing, and links between
-subjects. A topic with no selectable sections could display immediately.
-A sectioned topic could open with its title, an optional short synopsis and
-the menu of all Level 2 headings, with direct access such as `HELP PIP SELECTORS`.
+**Opening page for a sectioned topic.** Display the `#` title, render the
+optional synopsis before the first `##`, then present the numbered `##`
+section choices horizontally in source order. Continue left to right across
+additional rows as needed to fit the viewport.
+
+**Proposed for review.** Use `###` for a local subheading. Add paragraphs,
+simple lists, inline code, fenced examples that preserve spacing, and links
+between subjects. A topic with no selectable sections could display immediately.
+A command such as `HELP PIP SELECTORS` could go directly to a section.
 Z-System's menus, preformatted examples, cross-file navigation and frames
 informed these proposals. Compatibility with historical files, the final
 Markdown grammar and the navigation keys are open.
