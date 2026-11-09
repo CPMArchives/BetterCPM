@@ -94,16 +94,17 @@ archive continues to later copies of that archive.
 
 ## Reporting a topic's location and selecting a library
 
-Source information is available on request through the proposed `/REPORT`
-switch. The proposed `/LIBRARY=` switch selects the collection to search.
+`/R` and `/REPORT` are equivalent. In 1.2, a successful report contains
+only the location of the selected topic. The proposed `/LIBRARY=` switch
+selects the collection to search.
 
 | Invocation | Behavior |
 | --- | --- |
 | `HELP PIP /REPORT` | Use the same lookup as `HELP PIP`. Print the selected loose filespec (for example, `C3:PIP.HQP`) or the archive filespec and actual member name (for example, `B0:HELP.LBR (PIP.HLP)`), then return to CP/M. |
 | `HELP PIP /LIBRARY=A4:HELP.ARK` | Look up PIP exclusively in the named archive. Use the same syntax for a user-built collection such as `A4:TOOLS.LBR`. |
-| `HELP PIP /L=A4:HELP.ARK /REPORT` | `/L=` is the short spelling of `/LIBRARY=`. Report the result of lookup in that archive only. |
+| `HELP PIP /L=A4:HELP.ARK /R` | `/L=` is the short spelling of `/LIBRARY=`. Report the result of lookup in that archive only. |
 
-`/REPORT` answers whether the requested topic was found. On a miss, print
+On a miss, print
 `No help for PIP was found.` and return directly to CP/M, even when an
 authored index is available. A match reports the first source chosen by
 ordinary lookup in the specified scope. Reporting requires only enough
