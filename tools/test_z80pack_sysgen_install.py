@@ -53,8 +53,11 @@ def session(simulator: Path, disks: Path,
                     transcript_path.write_bytes(transcript)
                 raise AssertionError(f"expected silence for {timeout}s; received {data!r}")
             return
+        # NDR-era CCP adds a space after '>'. Accept the earlier numeric
+        # cursor spelling for existing callers using this shared transport.
+        alternatives = (wanted, wanted.replace(b'>_ ', b'> _ '))
         deadline = time.monotonic() + timeout
-        while wanted not in pending:
+        while not any(candidate in pending for candidate in alternatives):
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 raise AssertionError(
@@ -70,7 +73,8 @@ def session(simulator: Path, disks: Path,
             if transcript_path is not None:
                 transcript_path.write_bytes(transcript)
             pending.extend(data)
-        end = pending.index(wanted) + len(wanted)
+        matched = next(candidate for candidate in alternatives if candidate in pending)
+        end = pending.index(matched) + len(matched)
         del pending[:end]
 
     try:

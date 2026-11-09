@@ -1,0 +1,38 @@
+{
+  "status": "PASS",
+  "scope": "private booted cpmsim development media",
+  "steps": 43,
+  "first_provider_charge": 1536,
+  "unload_recovers_baseline": true,
+  "cold_restore": true,
+  "saved_sets": {
+    "DEMO": {
+      "bytes": 384,
+      "names": 3,
+      "sha256": "a752e28d7ba03555834aa482922dba363b43a9a8aec6e0050a7db7813cf58c3f"
+    },
+    "THIRTY": {
+      "bytes": 384,
+      "names": 30,
+      "sha256": "ddd770d25b0f6bf76fe11d4efc07a268249e5bb549c118dbc320b19aa0f5fa15"
+    },
+    "EDITED": {
+      "bytes": 384,
+      "names": 31,
+      "sha256": "7596af7a27f8f83abf68bfbef8532d0451e7933a290eb0e9ad97c07e2dee1cb6"
+    }
+  },
+  "system_tracks_sha256": "7072bfb420a1da49aace19e7a678f3496cd92fde718dfa036bb6db7a53ea7347",
+  "inputs": {
+    "NDR.COM": "df2ec0dad7165d94dc801f27e776cf448cb295f73f5bac1c693da8d9bfdb4397",
+    "NDR.RSX": "108f682f22e7fd1b93336bb76c07bda05b5449a77d6833aa2988d63ccfabc665",
+    "PATH.COM": "84a2acc0ec049e0990e6a83f93a5a9b42940dcd830e69b3c6bf0d19bd2b0037a",
+    "STAT.COM": "a9f1fe2dc5a4f4cc4c7131ae7283d0eb25949412d762963ab91ffc65cad64d7e",
+    "SUBMIT.COM": "f7d2449bae144fa45ed7ad308c5458dc2d729bfa3c31da88a1aefe4cd7633157",
+    "RSX.COM": "c77d85bb4969588d3c1adc2bf3745ef74bdce082314f797055389e5c3bd853aa",
+    "RCP.CPX": "bad4f863c3b6da62f72b7c89b579a7922d2111f5f1dc968d26aac81e72532979",
+    "R3CACHE.RSX": "f3f02c1db76a9f8a9fddf885a6d5b8acabc7d0a47d51581c8970afab3b5f63ba",
+    "R3PACK.RSX": "6a92984d2c117174fbe87fa144d00eb401ae8e43f8629c489d9df33d175745b8",
+    "NDSTATE.COM": "c7eb82f707707f6c8ba5e1a49abe1c9f4c2acc2e4f1239acd999c0eaa11ee1a9"
+  }
+}

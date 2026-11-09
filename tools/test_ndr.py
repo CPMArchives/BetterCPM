@@ -51,6 +51,10 @@ class Guest:
             c.hl = self.base+self.entry_off if self.loaded else 0
             c.setword(de+12, c.hl)
             c.a = 0 if self.loaded else 1
+        elif fn == 6:
+            c.a = 13  # finish the isolated editor redraw
+        elif fn == 178:
+            c.a = 0  # visible underscore fallback
         elif fn == 25:
             c.a = self.drive
         elif fn == 32:
@@ -241,6 +245,12 @@ def main():
     g.reset_console()
     ccp.run(test_ccp.symbol('CN_PROMPT'), limit=10000)
     assert g.output == b' [LAST]', g.output
+    # The editor must retain the named prompt on every redraw and on Enter.
+    ccp.mem[test_ccp.symbol('CCP_COUNT')] = 0
+    ccp.mem[test_ccp.symbol('CCP_EDCUR')] = 0
+    g.reset_console()
+    ccp.run(test_ccp.symbol('CCP_EDDRAW'), limit=100000)
+    assert g.output.count(b'P31 [LAST]> ') == 3, g.output
     normalize('UTILS:HELLO x')
     ccp.run(test_ccp.symbol('CCP_LQUAL'), limit=10000)
     assert ccp.mem[test_ccp.symbol('CCP_FCB')] == 2

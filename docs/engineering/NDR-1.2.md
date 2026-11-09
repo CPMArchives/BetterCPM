@@ -87,7 +87,7 @@ Current measured accounting:
 | Explicit in-allocation cache footer | 10 |
 | Remaining page padding | 14 |
 | **Protected NDR allocation** | **512** |
-| Additional reclaimable CCP allocation against v1.1.1 | 512 |
+| Additional reclaimable CCP allocation against v1.1.1 | 256 |
 | Additional protected BDOS/BIOS/PDS allocation | 0 |
 
 Separate drive/user bytes are intentional: 16 drives × 32 users cannot fit in
@@ -100,10 +100,10 @@ the profile is nonempty. Thus loading NDR as the first RSX costs 1536 bytes;
 adding it to an already active profile costs 512. Removing the final RSX
 releases that existing shared area too. It is not an NDR-specific addition.
 
-CCP grows from 5593 to 5892 emitted bytes, with allocation increasing from 5632
-to 6144. Command input, RAW/POKE scratch and the stack are trailing write-before-read storage;
+CCP grows from 5593 to 5874 emitted bytes, with allocation increasing from 5632
+to 5888. Command input, RAW/POKE scratch and the stack are trailing write-before-read storage;
 their allocation remains, but their zero bytes are omitted from the carrier.
-The unchecked bootstrap carrier is 6534 bytes and fits its existing 6656-byte
+The unchecked bootstrap carrier is 6516 bytes and fits its existing 6656-byte
 disk slot. Neither reserved tracks nor the filesystem boundary changes.
 
 ## Callable service ABI 1.0
@@ -161,8 +161,14 @@ CCP/PATH regression checks and the Model 4 disk reloader tests remain required.
 The production RSX-manager fixture additionally covers first/marginal loading,
 offline reconstruction, unload/reload and allocation recovery.
 
+The booted cpmsim campaign additionally exercises 43 management/shell steps,
+actual saved files and explicit restoration after a fresh cold boot. Native
+trs80gp smoke checks cover the Model 4 and Model II; these use private development
+disks. The editor uses the same named prompt on initial display, redraw and
+Enter, so editing does not erase its annotation or following space.
+
 The same source is assembled and exercised under the default Model 4 layout,
-checked cpmsim-fullram and checked Model II-fullram profiles. This is component
-and execution-fixture qualification, not a claim that new 1.2 release media or
+checked cpmsim-fullram and checked Model II-fullram profiles. This is development component, fixture and guest
+qualification, not a claim that new 1.2 release media or
 real hardware have been qualified. Evidence is under
 [NDR implementation checks](evidence/ndr-1.2/README.md).

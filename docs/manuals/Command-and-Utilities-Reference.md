@@ -41,6 +41,7 @@ The file-specification chapter and shared messages follow the command sections. 
 
 ## Contents
 
+- [NDR — named directories (1.2 development)](#ndr)
 - [Files, directories, and transfers](#files-directories-and-transfers)
   - [COPY — Resident](#copy-resident)
   - [COPY — Transient](#copy-transient)
@@ -7366,6 +7367,88 @@ A missing optional CPX file may simply be skipped without producing the same war
 
 [system messages](#system-messages) · [file specifications](#file-specifications)
 
+
+<a id="ndr"></a>
+
+### NDR (1.2 development)
+
+#### Description
+
+Manages the live named-directory table in optional NDR.RSX. Load it with
+`RSX LOAD NDR`. Both NDR.COM and NDR.RSX are supplied on development System
+images for cpmsim, Model 4 and Model II. `/H`, `/HELP` and `/VER` also work
+without a loaded provider.
+
+#### General Form
+
+```text
+NDR
+NDR name DU:
+NDR /DEL name
+NDR /CLEAR
+NDR /SAVE [DU:]file[.NDR]
+NDR /LOAD [DU:]file[.NDR]
+NDR /H | /HELP | /VER
+```
+
+#### Detailed Reference
+
+The fixed capacity is 32 names of one to eight alphanumeric characters,
+case-insensitive and stored uppercase. All-digit names, and A–P followed only
+by digits (including a bare drive letter), are reserved. Drive values cover
+A–P and users 0–31; actual disk availability remains platform-dependent.
+Several names may alias one DU; the first live entry supplies the prompt name.
+
+With no operands, NDR displays up to four columns, eight entries down each
+column. Fields are 13 characters wide with four spaces between columns
+(maximum width 64). Deleted slots are skipped; the usage count follows.
+An empty table explicitly reports zero names. Assigning an existing name
+fails: delete it first. A full table rejects additional entries unchanged.
+Edits are live immediately; successful editing reports that they are not saved.
+
+`/SAVE` defaults the extension to .NDR and refuses an existing destination.
+A returning write failure removes the incomplete new file. `/LOAD` replaces
+the whole table, rather than merging; invalid, truncated or oversized sets
+leave the live names unchanged. File operations restore the caller's user.
+The binary format is three 128-byte records (384 bytes), with a BNDR version-1
+header and 32 ten-byte entries. It is not Z-System .NDR compatible.
+
+#### Examples
+
+```text
+RSX LOAD NDR
+NDR COMMANDS A0:
+NDR SOURCE B2:
+NDR UTILS B3:
+NDR /SAVE WORK
+SOURCE:
+UTILS:MYTOOL
+TYPE SOURCE:NOTE.TXT
+PATH $$ COMMANDS: UTILS:
+NDR /DEL SOURCE
+NDR SOURCE C2:
+NDR /LOAD A0:WORK
+```
+
+The prompt is `A0 [COMMANDS]> `, with one space after `>` and none before it.
+The CCP resolves named prefixes in commands and filename operands, including
+after `=`; quoted text stays literal. Names do not extend bracket/compound DU
+selectors or applications' own interactive input parsers. PATH resolves names
+once into numeric DU entries; changing/deleting an alias does not change PATH.
+Numeric navigation and PATH remain available without NDR.
+
+#### Persistence and Memory
+
+Warm boots and STATEFUL manager reconstruction retain the table. Unloading
+NDR discards it and recovers its 512-byte protected allocation. The shared RSX
+manager costs another 1,024 bytes when the first provider is loaded. For cold
+restoration, explicitly load NDR.RSX then `/LOAD` a saved set in the startup
+sequence. No NDR table is stored in the PDS. Names confer no file protection.
+
+#### See Also
+
+[Named-directory guide](../user/NDR.md) ·
+[NDR ABI and saved format](../engineering/NDR-1.2.md) · [RSX](#rsx)
 
 <a id="rsx"></a>
 

@@ -338,12 +338,12 @@ def boot(target, image, out, root, simulator, emulator):
         shutil.copy2(image, disks / 'drivea.dsk')
         for letter in 'bcd':
             shutil.copy2(root / f'build/z80pack/disks/drive{letter}.dsk', disks / f'drive{letter}.dsk')
-        text = session(simulator, disks, [(b'STAT MEM\r', b'A0>_ ', 60),
-                       (b'CPX LIST\r', b'A0>_ ', 60),
-                       (b'VER\r', b'A0>_ ', 60),
-                       (b'ED /VER\r', b'A0>_ ', 60),
-                       (b'RSX LOAD ZPRTC\r', b'A0>_ ', 60),
-                       (b'RSX LIST\r', b'A0>_ ', 60)], out/'boot.txt').decode(errors='replace')
+        text = session(simulator, disks, [(b'STAT MEM\r', b'A0> _ ', 60),
+                       (b'CPX LIST\r', b'A0> _ ', 60),
+                       (b'VER\r', b'A0> _ ', 60),
+                       (b'ED /VER\r', b'A0> _ ', 60),
+                       (b'RSX LOAD ZPRTC\r', b'A0> _ ', 60),
+                       (b'RSX LIST\r', b'A0> _ ', 60)], out/'boot.txt').decode(errors='replace')
         if 'RCP' not in text or 'BetterCP/M' not in text or 'ZPRTC : BDOS' not in text:
             raise ValueError('cpmsim boot/system/provider identity missing')
         if ed_identity not in text:
@@ -360,7 +360,7 @@ def boot(target, image, out, root, simulator, emulator):
 log_file -noappend [lindex $argv 2]
 spawn -noecho [lindex $argv 0] -z -d [lindex $argv 1]
 expect {
- -exact {A0>_ } {}
+ -exact {A0> _ } {}
  timeout {exit 1}
  eof {exit 1}
 }

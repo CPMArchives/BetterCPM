@@ -81,14 +81,7 @@ CCP_LOOP:                               ; prompt for and dispatch next command
         LD      DE,CCP_PROMPT
         LD      C,9
         CALL    BDOS
-        CALL    CCP_DUPROMPT
-        CALL    CN_PROMPT
-        LD      E,'>'
-        LD      C,2
-        CALL    BDOS
-        LD      E,' '
-        LD      C,2
-        CALL    BDOS
+        CALL    CCP_INPUTPROMPT
         CALL    CCP_READLN
 
 CCP_DISPATCH:                           ; dispatch acquired or cold-start command
@@ -374,6 +367,17 @@ CCP_DUPTEN:                             ; convert user-number tens digit
 CCP_DUPONE:                             ; print user-number units digit
         ADD     A,'0'
         LD      E,A
+        LD      C,2
+        JP      BDOS
+
+; Keep the initial prompt, editor redraws and completed line identical.
+CCP_INPUTPROMPT:
+        CALL    CCP_DUPROMPT
+        CALL    CN_PROMPT
+        LD      E,'>'
+        LD      C,2
+        CALL    BDOS
+        LD      E,' '
         LD      C,2
         JP      BDOS
 
@@ -1081,10 +1085,7 @@ CCP_EDDRAW:                             ; redraw edited command line
         LD      E,13
         LD      C,2
         CALL    BDOS
-        CALL    CCP_DUPROMPT
-        LD      E,'>'
-        LD      C,2
-        CALL    BDOS
+        CALL    CCP_INPUTPROMPT
         LD      A,(CCP_EDCUR)
         LD      B,A
         LD      HL,CCP_DATA
@@ -1146,10 +1147,7 @@ CCP_CLLOOP:                             ; clear one stale display cell
         LD      E,13
         LD      C,2
         CALL    BDOS
-        CALL    CCP_DUPROMPT
-        LD      E,'>'
-        LD      C,2
-        CALL    BDOS
+        CALL    CCP_INPUTPROMPT
         LD      A,(CCP_EDCUR)
         LD      B,A
         LD      HL,CCP_DATA
@@ -1219,10 +1217,7 @@ CCP_EDFIN:                              ; finish command-line editing
         LD      E,13
         LD      C,2
         CALL    BDOS
-        CALL    CCP_DUPROMPT
-        LD      E,'>'
-        LD      C,2
-        CALL    BDOS
+        CALL    CCP_INPUTPROMPT
         LD      A,(CCP_COUNT)
         LD      B,A
         LD      HL,CCP_DATA

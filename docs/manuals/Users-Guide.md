@@ -134,6 +134,28 @@ REN keeps files in their original DU; its template cannot select a new location.
 
 To copy using historical destination-first syntax, use [PIP](Command-and-Utilities-Reference.md#pip), for example `PIP D:=A:*.COM`. `PIP A4:=B[-]:*.COM` copies from all B user areas into A4. It checks up to 64 matched files before copying and rejects distinct sources with the same destination filename; see [PIP selector and collision rules](Command-and-Utilities-Reference.md#expanded-source-du-selectors). Its bracket parameters are not COPY's attribute syntax. Use STAT to distinguish allocation space from file record length and directory-entry capacity.
 
+#### Named directories (1.2 development)
+
+Load `NDR.RSX` with `RSX LOAD NDR`, then use `NDR COMMANDS A0:` and
+`NDR SOURCE B2:` to assign names. Up to 32 names of one to eight letters or
+digits are supported. Names ignore case; numeric DU spellings remain reserved.
+`SOURCE:` selects B2; `TYPE SOURCE:NOTE.TXT` reads a named file location.
+The prompt becomes `A0 [COMMANDS]> `, including the space after `>`.
+Names alias existing drive/user areas; they do not create directories.
+
+`NDR` lists eight entries down each column, up to four columns, with four
+spaces between 13-character fields, followed by the in-use count.
+Delete with `NDR /DEL SOURCE` before reassigning an existing name. `/CLEAR`
+removes the live set. `NDR /SAVE MYNAMES` creates MYNAMES.NDR; it refuses an
+existing file. `NDR /LOAD MYNAMES` replaces the live set only after validating
+it. Names survive warm boot while the provider is loaded. Unload discards them;
+save first. Restore after cold boot by putting `RSX LOAD NDR` followed by
+`NDR /LOAD A0:MYNAMES` in your startup script.
+
+PATH accepts names as input and stores their numeric locations immediately:
+`PATH $$ COMMANDS: SOURCE:`. Later name changes do not retarget PATH.
+See [NDR](Command-and-Utilities-Reference.md#ndr) for syntax and limitations.
+
 <a id="chapter-5"></a>
 
 ### Chapter 5 — Edit, recall and run commands

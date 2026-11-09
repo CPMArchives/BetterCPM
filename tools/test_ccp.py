@@ -197,6 +197,7 @@ def main() -> None:
     # Invoke editing actions with an Enter-returning direct-console stub. Each
     # action flows through the real redraw/finalization path before returning.
     editor_bdos = bytes((
+        0x79, 0xFE, 182, 0x20, 3, 0x3E, 1, 0xC9,  # NDR absent
         0x79, 0xFE, 6, 0x28, 0x02, 0xAF, 0xC9,
         0x3A, 0x00, 0x75, 0xC9,
     ))
