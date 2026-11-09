@@ -8,7 +8,7 @@ SCREENS={
  ('/CLEAR', 'Discard all live names.'),
  ('/LOAD [DU:]file', 'Replace names from a saved .NDR set.'),
  ('/SAVE [DU:]file', 'Save names to a new .NDR file.'),
- ('', 'No operands lists names; capacity is 32.')]),
+ ('', 'List names: up to four columns, eight per column.')]),
  'STAT':('System and File Statistics','STAT [drive: | filespec | request]',[
  ('', 'No operand: report logged-in drives only.'),
  ('d:', 'Query free space on that drive directly.'),

@@ -134,7 +134,12 @@ of ten zero bytes. There is no separate live count or duplicate resident index.
 ## Saved sets and management
 
 `NDR.COM` lists assignments and their in-use count, assigns, deletes, clears,
-loads and saves. Command tails accept ordinary leading blanks and case-insensitive
+loads and saves. Listing is column-major, with eight entries per column and
+at most four columns. The entry field is 13 characters (eight name bytes, a
+space and up to four DU characters), with four spaces between fields: a
+64-character maximum row. Deleted slots are skipped without altering the
+snapshot or live table. The usage count follows the listing.
+Command tails accept ordinary leading blanks and case-insensitive
 operation keywords. Successful loads are reported separately from unsaved edits.
 It provides standard
 `/H`, `/HELP`, and `/VER` queries. All edits use a transient snapshot and publish

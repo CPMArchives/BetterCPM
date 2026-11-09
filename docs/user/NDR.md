@@ -14,6 +14,9 @@ NDR
 
 With no operands, NDR lists the live assignments and reports how many of the
 32 entries are in use, including an explicit zero count for an empty table.
+Entries fill down each column, eight per column, using up to four columns.
+Each entry has a 13-character field followed by a four-space gap to the next
+column; the maximum display width is 64 characters. Deleted slots are skipped.
 
 Names ignore case. Numeric directory spellings such as `A`, `B2` and `31` are
 reserved. Names are aliases; they do not create filesystem directories or

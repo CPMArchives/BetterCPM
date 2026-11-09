@@ -34,3 +34,8 @@ v1.1.1 checkout: `test_utility_help_layout.py` expects NOAH's old `/HELP` label
 instead of the existing `/H /HELP` label; `test_distribution.py` expects the
 old development heading for release versions other than exactly 1.1. Neither
 failure is caused by NDR, and neither test was weakened for this change.
+
+Approved listing layout was also executed against the 32-name mock-up: eight
+rows, column-major order, 13-character fields and four-space inter-column gaps.
+The longest row is 64 characters. A second listing with deleted slots verifies
+that names are compacted for display and that the live table is unchanged.

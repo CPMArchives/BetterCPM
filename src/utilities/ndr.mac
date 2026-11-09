@@ -310,19 +310,90 @@ NM_KEND:
         RET
 
 NM_LIST:
+        ; Keep live-slot order, skipping deleted entries without changing the
+        ; snapshot. Each column contains eight entries, at a 17-character pitch.
         XOR A
         LD (NM_INUSE),A
         LD HL,NM_TABLE
+        LD DE,NM_LPTRS
         LD B,32
-NM_LNEXT:
+NM_LSCAN:
         LD A,(HL)
         OR A
         JR Z,NM_LSKIP
         LD A,(NM_INUSE)
         INC A
         LD (NM_INUSE),A
-        PUSH BC
-        PUSH HL
+        LD A,L
+        LD (DE),A
+        INC DE
+        LD A,H
+        LD (DE),A
+        INC DE
+NM_LSKIP:
+        PUSH DE
+        LD DE,10
+        ADD HL,DE
+        POP DE
+        DJNZ NM_LSCAN
+        LD A,(NM_INUSE)
+        OR A
+        JP Z,NM_SUMMARY
+        XOR A
+        LD (NM_ROW),A
+NM_LROW:
+        LD A,(NM_ROW)
+        LD (NM_LINDEX),A
+NM_LCOL:
+        LD A,(NM_LINDEX)
+        LD L,A
+        LD H,0
+        ADD HL,HL
+        LD DE,NM_LPTRS
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        CALL NM_LENTRY
+        LD A,(NM_LINDEX)
+        ADD A,8
+        LD C,A
+        LD A,(NM_INUSE)
+        CP C
+        JR Z,NM_LEND
+        JR C,NM_LEND
+        LD A,C
+        LD (NM_LINDEX),A
+        LD A,(NM_GAP)
+        LD B,A
+NM_LSPACE:
+        LD A,' '
+        CALL NM_CHAR
+        DJNZ NM_LSPACE
+        JR NM_LCOL
+NM_LEND:
+        LD DE,NM_NEWLINE
+        CALL NM_PUTS
+        LD A,(NM_ROW)
+        INC A
+        LD (NM_ROW),A
+        CP 8
+        JR NC,NM_SUMMARY
+        LD C,A
+        LD A,(NM_INUSE)
+        CP C
+        JR Z,NM_SUMMARY
+        JR C,NM_SUMMARY
+        JR NM_LROW
+NM_SUMMARY:
+        LD DE,NM_COUNTMSG
+        CALL NM_PUTS
+        LD A,(NM_INUSE)
+        CALL NM_NUMBER
+        LD DE,NM_CAPMSG
+        JP NM_PRINT
+NM_LENTRY:
         LD B,8
 NM_LNAME:
         LD A,(HL)
@@ -337,20 +408,17 @@ NM_LNAME:
         INC HL
         LD A,(HL)
         CALL NM_NUMBER
-        LD DE,NM_COLON
-        CALL NM_PUTS
-        POP HL
-        POP BC
-NM_LSKIP:
-        LD DE,10
-        ADD HL,DE
-        DJNZ NM_LNEXT
-        LD DE,NM_COUNTMSG
-        CALL NM_PUTS
-        LD A,(NM_INUSE)
-        CALL NM_NUMBER
-        LD DE,NM_CAPMSG
-        JP NM_PRINT
+        ; Duu: occupies four bytes; Du: needs one padding byte before the
+        ; four-space inter-column gap. Do not pad the last column of a row.
+        LD A,(HL)
+        CP 10
+        LD A,4
+        JR NC,NM_LPAD
+        INC A
+NM_LPAD:
+        LD (NM_GAP),A
+        LD A,':'
+        JP NM_CHAR
 NM_NUMBER:
         LD B,'0'
 NM_TENS:
@@ -700,7 +768,7 @@ NM_EXISTS: DB 'Name exists. Delete it before reassignment.',13,10,'$'
 NM_MISSING: DB 'Name not found.',13,10,'$'
 NM_FULL: DB 'NDR is full (32 names).',13,10,'$'
 NM_OK: DB 'Named directories updated (not saved).',13,10,'$'
-NM_COLON: DB ':',13,10,'$'
+NM_NEWLINE: DB 13,10,'$'
 NM_SAVED: DB 'Named-directory set saved.',13,10,'$'
 NM_LOADED: DB 'Named-directory set loaded.',13,10,'$'
 NM_COUNTMSG: DB 'NDR: $'
@@ -714,6 +782,10 @@ NM_HEADER: DB 'BNDR',1,32,8,10
         ENDM
 NM_ORIGUSER: DB 0
 NM_INUSE: DB 0
+NM_ROW: DB 0
+NM_LINDEX: DB 0
+NM_GAP: DB 0
+NM_LPTRS: DS 64
 NM_OPTION: DW 0
 NM_DPAIR: DW 0
 NM_CHECK: DW 0
