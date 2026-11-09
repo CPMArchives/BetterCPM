@@ -22,7 +22,8 @@ def prepare(output, simulator, target, inner=False):
     output = output.resolve()
     work = output/'work'
     work.mkdir(parents=True, exist_ok=True)
-    identity = source_identity()
+    identity = (json.loads((ROOT/'profile-state.json').read_text())['source']
+                if inner else source_identity())
     out = output/'systems'/target
     if out.exists():
         raise ValueError('refusing to overwrite prepared media')
