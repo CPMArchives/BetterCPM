@@ -18,7 +18,7 @@ from convert_fdf_image import raw_to_dmk
 from release_metadata import disk_record
 
 
-def prepare(output, simulator, target):
+def prepare(output, simulator, target, inner=False):
     output = output.resolve()
     work = output/'work'
     work.mkdir(parents=True, exist_ok=True)
@@ -30,14 +30,21 @@ def prepare(output, simulator, target):
         from trs80m2_distribution import build_system
         build_system(work, out, identity, Path('/unused'), False, ROOT, pending_smoke=True)
         return
-    if target == 'z80pack':
+    if target == 'z80pack' and not inner:
         profile = PROFILES['cpmsim-fullram']
         identity = dict(identity, profile=profile_inputs(profile, ROOT/'src/system/layout.inc')[0])
         root = prepare_profile(work, target, identity, profile)
         environment = context_environment(root/'build/profile/context.json', root/'src/system/layout.inc')
+        run([sys.executable, root/'tools/prepare_release_12.py', '--output', output,
+             '--simulator', simulator, '--target', target, '--inner'], root,
+            work/'cpmsim-prepare.log', timeout=1800, env=environment)
+        return
+    if inner:
+        root = ROOT
+        identity = json.loads((root/'profile-state.json').read_text())['source']
         stage_cpmsim_guest(simulator, root)
-        run([sys.executable, '-c', 'from build_checked_distribution import components; components(False)'],
-            root/'tools', work/'cpmsim-components.log', timeout=1800, env=environment)
+        from build_checked_distribution import components
+        components(False)
     else:
         root = current_build(work, target, identity, False)
     manifest = json.loads((ROOT/'metadata/distribution.json').read_text())
@@ -80,5 +87,6 @@ if __name__ == '__main__':
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--simulator', type=Path, required=True)
     p.add_argument('--target', choices=('z80pack','trs80gp','trs80m2'), required=True)
+    p.add_argument('--inner', action='store_true', help=argparse.SUPPRESS)
     a = p.parse_args()
-    prepare(a.output, a.simulator.resolve(), a.target)
+    prepare(a.output, a.simulator.resolve(), a.target, a.inner)
