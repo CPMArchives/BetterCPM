@@ -68,41 +68,48 @@ file opens. [Numeric PATH](Numeric-PATH-1.1.md#using-path)
 
 | Pass | Search across PATH | Result |
 | --- | --- | --- |
-| 1 | Loose `TOPIC.H?P` | Open the first matching DU's plain, squeezed or crunched topic. |
-| 2 | `HELP.LBR` | Open `TOPIC.H?P` if found inside. |
-| 3 | `HELP.ARK` | Open `TOPIC.H?P` if found inside. |
+| 1 | Loose `TOPIC.H?P` | Open the topic in the first DU containing a supported encoding. |
+| 2 | First `HELP.LBR` on PATH | If it contains the topic, open it. Otherwise proceed to the ARK pass. |
+| 3 | First `HELP.ARK` on PATH | If it contains the topic, open it. Otherwise proceed to the index fallback. |
+
+Within one DU or one archive, prefer `.HLP`, then `.HQP`, then `.HZP`.
+For example, a loose `PIP.HQP` in an earlier DU wins over a loose
+`PIP.HLP` in a later DU. Only the first archive of each default name
+participates in lookup, including index fallback.
 
 For example, from `A0:` with `B0:` on PATH, loose `B0:PIP.HQP` wins
-over PIP in `A0:HELP.LBR`. If there is no loose PIP, PIP in
-`B0:HELP.LBR` wins over PIP in `A0:HELP.ARK`.
+over PIP in `A0:HELP.LBR`. If there is no loose PIP and the first LBR
+is on `B0:`, PIP in that LBR wins over PIP in `A0:HELP.ARK`.
 
 If all topic passes miss, display an archived `_INDEX.H?P`, checking LBR
 before ARK. An LBR index therefore cannot hide a topic in ARK. If there
 is no archived index either, print `No help for TOPIC was found.` with
 the requested name substituted and return to CP/M.
 
-Bare `HELP` displays the archived `_INDEX.H?P` if present. In an archive
-without an index, bare `HELP` generates a menu from the available help
-members. The menu presents logical subject names, so `PIP.HQP` appears as
-`PIP`. Thus `_INDEX` is optional. A damaged or unreadable file or archive
-requires a diagnostic distinct from a lookup miss.
+Bare `HELP` displays the first archived `_INDEX.H?P`, checking the
+selected LBR before the selected ARK. If neither supplies an index, generate
+a menu from the loose topics on PATH and the members of those two archives.
+Show each logical topic once. Selecting `PIP` opens the same copy as
+`HELP PIP`, regardless of how many encodings or copies were found. This
+also works when all available topics are loose. A damaged or unreadable
+file or archive requires a diagnostic distinct from a lookup miss.
 
-Two tie cases remain open. If several encodings of the loose topic share a
-DU, their precedence needs a rule. If several DUs contain the same archive
-filename, lookup needs a rule for whether a member miss in the first such
-archive continues to later copies of that archive.
-
-## Reporting a topic's location and selecting a library
+## Reporting a topic's location and selecting a source
 
 `/R` and `/REPORT` are equivalent. In 1.2, a successful report contains
-only the location of the selected topic. The proposed `/LIBRARY=` switch
-selects the collection to search.
+only the location of the selected topic. `/S=filespec` and
+`/SOURCE=filespec` name an exact CP/M file. An `.LBR` or `.ARK` selects
+a collection. An `.HLP`, `.HQP` or `.HZP` selects an individual topic
+in that specific encoding.
 
 | Invocation | Behavior |
 | --- | --- |
 | `HELP PIP /REPORT` | Use the same lookup as `HELP PIP`. Print the selected loose filespec (for example, `C3:PIP.HQP`) or the archive filespec and actual member name (for example, `B0:HELP.LBR (PIP.HLP)`), then return to CP/M. |
-| `HELP PIP /LIBRARY=A4:HELP.ARK` | Look up PIP exclusively in the named archive. Use the same syntax for a user-built collection such as `A4:TOOLS.LBR`. |
-| `HELP PIP /L=A4:HELP.ARK /R` | `/L=` is the short spelling of `/LIBRARY=`. Report the result of lookup in that archive only. |
+| `HELP PIP /SOURCE=A4:HELP.ARK` | Look up PIP exclusively in the named archive. The same syntax accepts a custom collection such as `A4:TOOLS.LBR`. |
+| `HELP /S=A4:TOOLS.LBR` | Open this archive's authored index, or generate a menu from its members. |
+| `HELP /S=A4:PIP.HQP` | Open that exact loose file, even if `A4:PIP.HLP` exists. The filename supplies the topic name. |
+| `HELP PIP /S=A4:HELP.ARK /R` | Report the actual member selected in the named archive. |
+| `HELP /S=A4:PIP.HQP /R` | Report `A4:PIP.HQP` if found. |
 
 On a miss, print
 `No help for PIP was found.` and return directly to CP/M, even when an
@@ -110,10 +117,13 @@ authored index is available. A match reports the first source chosen by
 ordinary lookup in the specified scope. Reporting requires only enough
 file or archive metadata to identify that source.
 
-For ordinary reading with `/LIBRARY=`, the selected archive supplies the
-topic and its usual index fallback. With no topic, show that archive's
-authored index or generate its menu. If the specified archive cannot be
-opened, identify it in the diagnostic and return to CP/M.
+For ordinary reading with an explicit archive, that archive supplies the
+topic, its usual index fallback, and the targets of links. If an explicit
+source cannot be opened, identify its filespec and return to CP/M.
+
+For a redundant topic operand, the proposed rule accepts
+`HELP PIP /S=A4:PIP.HQP`. If the operand differs from the loose file's
+basename, as in `HELP COPY /S=A4:PIP.HQP`, report the mismatch.
 
 ## Authoring and presentation
 
@@ -140,14 +150,24 @@ still be readable on a plain console when optional enhancements are absent.
 [Terminal architecture, section 22](POST-1.0-TERMINAL-ARCHITECTURE-OUTLINE.md#22-optional-utility-presentation-and-ascii-fallback)
 
 **Opening page for a sectioned topic.** Display the `#` title, render the
-optional synopsis before the first `##`, then present the numbered `##`
+optional synopsis before the first `##`, then present the selectable `##`
 section choices in source order, left to right, two per row at 40 columns
-and four per row at 80 columns. Continue numbering across rows. Use up to 16 visible heading
+and four per row at 80 columns. Assign keys across rows. Use up to 16 visible heading
 characters per menu label and show the full heading inside the section.
 
 **Navigation keys.** At a HELP prompt, `^C` or `Q` goes back one level,
 exiting to CP/M from the top level. Within a multi-page section, `,` or
 `<` goes to the previous page and `.` or `>` goes to the next.
+
+**Proposed menu keys.** Assign choices `0` through `9`, then `A` through
+`Z`, skipping `Q` to preserve its navigation meaning. A single keystroke
+opens a choice. This gives 35 keys per menu page. For a longer menu, use the
+paging keys and assign keys afresh to the visible choices on each page.
+
+**Subject links.** From an archive member, try the originating archive
+first, then ordinary topic lookup on a miss. An explicitly selected archive
+keeps links within that archive. From a loose file, including one opened
+with `/S=`, use ordinary topic lookup for the linked subject.
 
 **Proposed for review.** Use `###` for a local subheading. Add paragraphs,
 simple lists, inline code, fenced examples that preserve spacing, and links
@@ -187,13 +207,11 @@ nine resident RCP commands.
 1. Review the [delivered TCAP 2.0 direct ABI](TCAP-Direct-ABI.md). Establish what HELP can rely on for
    geometry, unknown dimensions, semantic standout, plain output, cancellation
    and state restoration. Use the shared facility across supported platforms.
-2. Settle handling of repeated archive filenames along PATH and precedence
-   if several encodings of a subject coexist in one DU or archive. Define the bare-`HELP`
-   diagnostic when neither archive exists and errors for a damaged member
-   or index and insufficient decoder TPA.
+2. Define the bare-`HELP` diagnostic when no topics or index are available,
+   and errors for a damaged member or index and insufficient decoder TPA.
 3. Freeze the Markdown subset, section and link naming, behavior for absent
-   linked subjects, direct-section lookup, wrapping, menu selection and page
-   boundaries. Use a short topic and a multi-section topic at narrow and wide
+   linked subjects, direct-section lookup, wrapping and page boundaries.
+   Use a short topic and a multi-section topic at narrow and wide
    console widths to review the result.
 4. Integrate the reader and measure startup, member access, decoder workspace,
    forward and backward navigation on floppy-oriented media. Verify plain

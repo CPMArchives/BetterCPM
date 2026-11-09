@@ -28,7 +28,7 @@ The examples use the [command reference](../docs/manuals/Command-and-Utilities-R
 | Inline code between single backticks | Display its contents literally. Wildcards, brackets, underscores and asterisks in commands keep their CP/M meaning. |
 | Three backticks on a line | Start or end a literal block. Accept an optional `text` tag on the opening fence so examples can be copied from the manuals. Preserve line breaks and spaces. Markup and heading recognition are suspended until the closing fence. |
 | `**text**` | Standard Markdown strong emphasis in prose. On a plain console display the enclosed words. |
-| `[label](COPY.HLP)` | Selectable reference to a logical subject in the active library. This target can resolve to the plain, squeezed or crunched representation. A missing linked subject identifies the missing target and leaves the originating topic available. |
+| `[label](COPY.HLP)` | Selectable reference to the logical subject COPY in any supported encoding. From a loose file, use ordinary topic lookup. From an archive member, try that archive first, then ordinary lookup. An archive explicitly selected with `/SOURCE=` supplies all link targets. On a miss, identify the target and leave the originating topic available. |
 
 On CP/M media, use ASCII and CR/LF; recognize a text EOF (1Ah) or the
 logical end of the loose file or decoded member. Markdown is interpreted
@@ -43,32 +43,32 @@ dialect. Aligned material can be represented by a fenced block.
 
 **Opening page.** For a subject with sections, display the `#` title, render
 the optional synopsis before the first `##`, then list every `##` heading in
-source order. HELP supplies the numbers and fills each row left to right:
+source order. HELP assigns the selection keys and fills each row left to right,
 two choices per row on a 40-column display and four on an 80-column display.
-Use 20-column slots and continue numbering on the next row. Short labels
+Use 20-column slots and continue the key sequence on the next row. Short labels
 keep the same layout; a partial final row contains only the remaining choices.
 
 For layout, use the first 16 visible characters of each section heading as
-its menu label. The selection number and separator are outside that count.
+its menu label. The selection key and separator are outside that count.
 For example, `Some really, really, long title that doesn't fit` appears as
 `Some really, rea`. Display the complete heading when the section opens.
-Two sections whose first 16 characters coincide retain distinct menu numbers.
+Two sections whose first 16 characters coincide remain separately selectable.
 
-Example at 80 columns:
+Example using the proposed keys at 80 columns
 
 ```text
 PIP - File and device transfer
 
 PIP destination=source[,source...]
 
-1  Syntax           2  Selectors        3  Examples
+0  Syntax           1  Selectors        2  Examples
 ```
 
 The same menu at 40 columns:
 
 ```text
-1  Syntax           2  Selectors
-3  Examples
+0  Syntax           1  Selectors
+2  Examples
 ```
 
 | Request | Proposed result |
@@ -82,7 +82,7 @@ Use the complete `##` heading as the direct-section name. Compare the remaining
 command-tail words case-insensitively, treating runs of spaces or tabs as
 one separator. This also permits `## File attributes` to be addressed as
 `HELP DIR FILE ATTRIBUTES`. Require section names to be unique after that
-normalization. Menu numbers are local to the display; examples and references
+normalization. Selection keys are local to the display. Examples and references
 may use a section's name even after its menu position changes.
 
 ## Navigation keys
@@ -92,6 +92,13 @@ may use a section's name even after its menu position changes.
 | `^C` or `Q` | Return one level. At the top level, exit to the CP/M command prompt. |
 | `,` or `<` | Display the previous page of the current section. |
 | `.` or `>` | Display the next page of the current section. |
+
+**Proposed menu keys.** Assign one key per visible choice in the order
+`0123456789ABCDEFGHIJKLMNOPRSTUVWXYZ`. Pressing that key selects the
+entry immediately. Reserve `Q` for Back or Quit. When the screen is full
+or all 35 keys are in use, put the remaining entries on subsequent pages.
+Page through the menu using `,` or `<` and `.` or `>`. Restart at `0` on
+each page.
 
 Paging within a section leaves its parent unchanged. For example, start at
 the library menu, open PIP, select Examples and advance two pages. The first
@@ -120,7 +127,7 @@ unknown geometry still need an explicit pager policy.
 ## Choices to review before freezing the format
 
 Direct addressing of a section by name and the role of `###` within the section
-remain under review. Other review points are menu-number entry, link selection
+remain under review. Other review points are link selection
 on a plain terminal, return position after following a link, the top level
 for a direct command-line request, behavior at the first and last page,
 long literal lines on a narrow display and the handling of malformed input.
