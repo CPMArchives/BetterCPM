@@ -1,18 +1,18 @@
-# BetterCP/M 1.1 User's Guide
+# BetterCP/M 1.2 User's Guide
 
 License: original prose/illustrations are CC BY 4.0; original reusable code examples are GPL-2.0-or-later. Third-party material retains its own terms. See [licensing and example boundaries](../LICENSING.md).
 
 This guide assumes that you can operate a computer and are familiar with CP/M drives, user areas, 8.3 filenames and COM programs. Part I concentrates on useful BetterCP/M tasks. Part II explains the system behind those tasks. Look up complete syntax, switches and diagnostics in the separate [Command and Utilities Reference](Command-and-Utilities-Reference.md).
 
-This edition describes BetterCP/M 1.1 for patched cpmsim, TRS-80 Model 4 and the 64 KiB Model II under trs80gp 2.5.8. Use matching System and Utilities downloads from the same release. Package identity and exact source/image hashes come from RELEASE.json and the release index. The prior 1.0 and 1.0.1 downloads and locks remain unchanged. See the [1.1 scope](../releases/1.1-SCOPE-AND-ACCEPTANCE.md) and [platform boundaries](../platform/SUPPORT-1.1.md); engineering receipts are not acceptance of differently hashed final media.
+This edition describes BetterCP/M 1.2 for patched cpmsim, TRS-80 Model 4 and the 64 KiB Model II under trs80gp 2.5.8. Use matching System and Utilities downloads from the same release. Package identity and exact source/image hashes come from RELEASE.json and the release index. The prior 1.0 and 1.0.1 downloads and locks remain unchanged. See the [1.2 scope](../releases/1.2-SCOPE-AND-ACCEPTANCE.md) and [platform boundaries](../platform/SUPPORT-1.2.md); engineering receipts are not acceptance of differently hashed final media.
 
-## 1.1 operating profile
+## 1.2 operating profile
 
 The unloaded complete-record COM limit is 57,344 bytes on cpmsim and Model II. Model 4 retains a 54,272-byte exception because of its keyboard/video reservation. Optional RSXs consume TPA while loaded; complete unload restores the unloaded limit. Read STAT MEM and the current page-zero gateway boundary instead of assuming a hard-coded size. The first RSX also incurs 1,024 bytes of general manager overhead. TCAP full-path accounting includes the renderer, personality, facts, descriptors, cache/alignment, caller helper, shared BIOS state and call/stack allowances: at most 1,280 bytes for ADM3A/VT52 and 1,792 for ANSI; there is no additional permanent display reservation.
 
-BetterCP/M 1.1 supplies integrated ADM3A, VT52 and ANSI personality/renderers implementing the independently versioned TCAP 2.0 direct API. Load one with `RSX LOAD ANSI`, unload it with `RSX UNLOAD ANSI`, and rediscover services after every layout mutation. No standalone screen backend is required by these integrated modules. Model 4 startup selects ADM3A; cpmsim and Model II start with the basic console. Separate ANSISCRN, M4SCRN and M2SCRN modules remain available to clients of SCRN/SCX, such as TED and DUMP paging. TYPE/TED/HELP have not been migrated to TCAP 2.0, and HELP is not shipped. TYPE, TED and HELP are examples, not the complete affected-utility set; see the [full impact audit](../engineering/TCAP-Utility-Impact-Audit.md). The abandoned, unreleased TCAP 1.0/template designs are historical, not compatibility modes. The supported protocols are fixed 80x24 seven-bit paths, not arbitrary host geometry. See the [direct ABI and caller helper contract](../engineering/TCAP-Direct-ABI.md).
+BetterCP/M 1.2 supplies integrated ADM3A, VT52 and ANSI personality/renderers implementing the independently versioned TCAP 2.0 direct API. Load one with `RSX LOAD ANSI`, unload it with `RSX UNLOAD ANSI`, and rediscover services after every layout mutation. No standalone screen backend is required by these integrated modules. Model 4 startup selects ADM3A; cpmsim and Model II start with the basic console. Separate ANSISCRN, M4SCRN and M2SCRN modules remain available to clients of SCRN/SCX, such as TED and DUMP paging. HELP and its topic library are shipped and use the TCAP 2.0 direct API. TYPE and TED retain their existing display interfaces; see the [full impact audit](../engineering/TCAP-Utility-Impact-Audit.md). The abandoned, unreleased TCAP 1.0/template designs are historical, not compatibility modes. The supported protocols are fixed 80x24 seven-bit paths, not arbitrary host geometry. See the [direct ABI and caller helper contract](../engineering/TCAP-Direct-ABI.md).
 
-Numeric PATH has up to six ordered drive/user entries, default `. A0:`. `.` tracks the caller. Use `PATH /H`, `/HELP` or `/VER`; `A0:PATH /DEFAULT` recovers the default. PATH is volatile: use the existing startup script to apply a preferred list after cold boot. Named directories and scripting are outside 1.1.
+Unqualified commands search the invocation drive/user first. Numeric PATH adds up to six ordered drive/user entries, default `$$: A0:`. `$$` tracks the caller; `$0` uses user 0 on the current drive and `A$` uses the current user on A. `.` is not a PATH entry. Use `PATH /H`, `/HELP` or `/VER`; `A0:PATH /DEFAULT` recovers the default. PATH is volatile: use the existing startup script to apply a preferred list after cold boot. NDR supplies named directories and PATH annotates matching numeric entries. Extended scripting remains outside 1.2.
 
 ## Contents
 
@@ -61,7 +61,7 @@ BetterCP/M preserves the CP/M 2.2 application environment while improving everyd
 
 Ordinary CP/M programs use the familiar BDOS/BIOS interfaces. Programs that patch private OS addresses, assume a particular terminal or address hardware directly may require adaptation. [Appendix E](#appendix-e) describes the compatibility boundary and how to investigate a problem.
 
-The four-manual collection consists of this User's Guide, the [Command and Utilities Reference](Command-and-Utilities-Reference.md), the [Programmer's Guide](Programmers-Guide.md) covering applications/extensions/APIs, and the [Practical Porting Guide](Practical-Porting-Guide.md). Existing programmer and architecture references remain available behind those guides; the [coverage/evidence ledger](../programmers/REFERENCE-STATUS.md) records their stability and expansion boundaries. The 1.1 platform and feature boundaries are recorded above.
+The four-manual collection consists of this User's Guide, the [Command and Utilities Reference](Command-and-Utilities-Reference.md), the [Programmer's Guide](Programmers-Guide.md) covering applications/extensions/APIs, and the [Practical Porting Guide](Practical-Porting-Guide.md). Existing programmer and architecture references remain available behind those guides; the [coverage/evidence ledger](../programmers/REFERENCE-STATUS.md) records their stability and expansion boundaries. The 1.2 platform and feature boundaries are recorded above.
 
 <a id="chapter-2"></a>
 
@@ -134,7 +134,7 @@ REN keeps files in their original DU; its template cannot select a new location.
 
 To copy using historical destination-first syntax, use [PIP](Command-and-Utilities-Reference.md#pip), for example `PIP D:=A:*.COM`. `PIP A4:=B[-]:*.COM` copies from all B user areas into A4. It checks up to 64 matched files before copying and rejects distinct sources with the same destination filename; see [PIP selector and collision rules](Command-and-Utilities-Reference.md#expanded-source-du-selectors). Its bracket parameters are not COPY's attribute syntax. Use STAT to distinguish allocation space from file record length and directory-entry capacity.
 
-#### Named directories (1.2 development)
+#### Named directories (1.2)
 
 Load `NDR.RSX` with `RSX LOAD NDR`, then use `NDR COMMANDS A0:` and
 `NDR SOURCE B2:` to assign names. Up to 32 names of one to eight letters or
@@ -197,7 +197,7 @@ Keep A0 writable. SUBMIT and XSUB use `A0:$$$.SUB` even when the script lives el
 
 XSUB feeds submitted lines to compatible programs using buffered console input; it is not a universal keyboard emulator. With Utilities in B, use `B0:XSUB B0:` so its matching BATCHIO.RSX is loaded from B0. Keep matching R3PACK.RSX and R3CACHE.RSX on System A0. Help/version queries do not activate it. The copy-to-A0 workaround in the 1.0 erratum applies only to those older locked binaries.
 
-The supplied STARTUP.SUB is itself a practical batch example. Keep an unchanged copy before customizing it, especially if you use `SUBMIT STARTUP` to restore the Model 4 console after unloading modules. Extended flow-control scripting remains outside 1.1.
+The supplied STARTUP.SUB is itself a practical batch example. Keep an unchanged copy before customizing it, especially if you use `SUBMIT STARTUP` to restore the Model 4 console after unloading modules. Extended flow-control scripting remains outside 1.2.
 
 <a id="chapter-7"></a>
 
@@ -415,7 +415,7 @@ Formatting writes physical media, copying duplicates data, and SYSGEN installs o
 
 CP/M applications can use cooked character services, direct console services, logical reader/punch/list devices or BIOS calls. Those routes differ in echo, control-character handling, polling and redirection. An application's private hardware accesses can bypass the portable console path entirely.
 
-BetterCP/M 1.1 supplies integrated ADM3A, VT52 and ANSI personality/renderers implementing the independently versioned TCAP 2.0 direct API. Load one with `RSX LOAD ANSI`, unload it with `RSX UNLOAD ANSI`, and rediscover services after every layout mutation. No standalone screen backend is required by these integrated modules. Model 4 startup selects ADM3A; cpmsim and Model II start with the basic console. Separate ANSISCRN, M4SCRN and M2SCRN modules remain available to clients of SCRN/SCX, such as TED and DUMP paging. TYPE/TED/HELP have not been migrated to TCAP 2.0, and HELP is not shipped. TYPE, TED and HELP are examples, not the complete affected-utility set; see the [full impact audit](../engineering/TCAP-Utility-Impact-Audit.md). The abandoned, unreleased TCAP 1.0/template designs are historical, not compatibility modes. The supported protocols are fixed 80x24 seven-bit paths, not arbitrary host geometry. See the [direct ABI and caller helper contract](../engineering/TCAP-Direct-ABI.md).
+BetterCP/M 1.2 supplies integrated ADM3A, VT52 and ANSI personality/renderers implementing the independently versioned TCAP 2.0 direct API. Load one with `RSX LOAD ANSI`, unload it with `RSX UNLOAD ANSI`, and rediscover services after every layout mutation. No standalone screen backend is required by these integrated modules. Model 4 startup selects ADM3A; cpmsim and Model II start with the basic console. Separate ANSISCRN, M4SCRN and M2SCRN modules remain available to clients of SCRN/SCX, such as TED and DUMP paging. HELP and its topic library are shipped and use the TCAP 2.0 direct API. TYPE and TED retain their existing display interfaces; see the [full impact audit](../engineering/TCAP-Utility-Impact-Audit.md). The abandoned, unreleased TCAP 1.0/template designs are historical, not compatibility modes. The supported protocols are fixed 80x24 seven-bit paths, not arbitrary host geometry. See the [direct ABI and caller helper contract](../engineering/TCAP-Direct-ABI.md).
 
 The personality owns protocol state such as an incomplete sequence; the backend owns hardware rendering and its limits. Command return discards unfinished parsing according to the monitor contract without treating that reset as a request to clear the screen or discard ordinary keyboard input. Backend dependencies must remain satisfied while a personality is active.
 

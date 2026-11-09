@@ -1,6 +1,6 @@
 # Installing BetterCP/M on z80pack / cpmsim
 
-This is the operating guide for the 1.1 cpmsim System package, using its full-RAM checked profile and matching Utilities. The locked 1.0 and 1.0.1 downloads remain unchanged. See the [four manuals](../README.md), [Source Build guide](../SOURCE-BUILD.md), and [1.1 platform limits](SUPPORT-1.1.md). Historical 1.0 notes below apply only where explicitly labelled.
+This is the operating guide for the 1.2 cpmsim System package, using its full-RAM checked profile and matching Utilities. The locked 1.0 and 1.0.1 downloads remain unchanged. See the [four manuals](../README.md), [Source Build guide](../SOURCE-BUILD.md), and [1.2 platform limits](SUPPORT-1.2.md). Historical 1.0 notes below apply only where explicitly labelled.
 
 
 BetterCP/M requires a patched cpmsim with geometry interface version 2.

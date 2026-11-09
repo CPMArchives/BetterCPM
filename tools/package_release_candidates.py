@@ -394,7 +394,7 @@ def assemble(args):
             for name in ('docs/engineering/TCAP-Direct-ABI.md',
                          'docs/engineering/contracts/tcap-2.0.json',
                          'src/utilities/common/tcap2.inc',
-                         'docs/platform/SUPPORT-1.1.md'):
+                         'docs/platform/SUPPORT-'+version+'.md'):
                 files[name]=tracked[name]
         # Retain tracked licensing/permission and provenance files in each ZIP.
         for name,data in tracked.items():
