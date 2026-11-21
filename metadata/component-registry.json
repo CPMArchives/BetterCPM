@@ -1228,7 +1228,7 @@
       "builders": [
         "tools/build_help.py"
       ],
-      "revision": 1,
+      "revision": 2,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "development reader",
