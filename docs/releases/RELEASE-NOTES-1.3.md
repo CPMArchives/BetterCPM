@@ -23,7 +23,9 @@ Install a complete matching System package. Private CCP/RSX helpers and their
 loaders must be rebuilt together; do not mix 1.2 and 1.3 private artifacts.
 The saved configuration writes BCST2; older tools must not edit it. A true cold
 boot initializes PDS 2.0, so no live history migration is needed. Keep matching
-PDSCONF.OVL with CONFIG. Utilities and Documentation remain separate downloads.
+PDSCONF.OVL with CONFIG. Utilities and Documentation remain separate downloads. On cpmsim, mount the
+matching Companion Utilities as C: so PATH can find HELP.LBR; the 332K System
+does not include that archive. Model 4 and Model II include it on System.
 
 NDR/PATH, SUBMIT/XSUB, TCAP, HELP and NOAH 1.0 (021) remain in scope for
 compatibility. NDR state stays in NDR.RSX. FLOW, HISTORY.RSX, program-visible

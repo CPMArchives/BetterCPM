@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
+import subprocess
 
 
 def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -31,10 +32,17 @@ def main():
             root=Path(receipt['build_root'])
             shutil.copyfile(image,disks/'drivea.dsk')
             for letter in 'bcd':shutil.copyfile(root/f'build/z80pack/disks/drive{letter}.dsk',disks/f'drive{letter}.dsk')
+            # The 332K System intentionally keeps HELP.LBR on Companion C:.
+            # Stage only that matching-built archive as a disposable fixture;
+            # this does not qualify a final Companion Utilities package.
+            shutil.copyfile(folder/'diskdefs',disks/'diskdefs')
+            library=root/'build/help/HELP.LBR'
+            subprocess.run(['cpmcp','-T','raw','-f','bettercpm-default',str(disks/'drivec.dsk'),str(library),'0:HELP.LBR'],cwd=disks,check=True)
+            result['supplemental_help_fixture_sha256']=sha(library)
             commands=[(b'VER\r',b'A0> _ ',60),(b'STAT MEM\r',b'A0> _ ',60),
                       (b'CONFIG\r',b'Your choice:',60),(b'F',b'Active H/M/V bytes: 192 0 0',60),
                       (b'\x03\x03',b'A0> _ ',60),(b'RSX LOAD NDR\r',b'A0> _ ',60),
-                      (b'NDR WORK A0:\r',b'A0> _ ',60),(b'PATH\r',b'A0> _ ',60),
+                      (b'NDR WORK A0:\r',b'A0 [WORK]> _ ',60),(b'PATH\r',b'A0 [WORK]> _ ',60),
                       (b'RSX UNLOAD NDR\r',b'A0> _ ',60),(b'HELP VAR\r',b'Enable variables',60),
                       (b'Q',b'A0> _ ',60),(b'STAT /VER\r',b'A0> _ ',60)]
             text=session(args.simulator.resolve(),disks,commands,out/'transcript.txt').decode(errors='replace')
@@ -45,13 +53,18 @@ def main():
             from test_config_startup_read import screen
             disk=out/('a.imd' if target=='trs80m2' else 'a.dmk');shutil.copyfile(image,disk)
             command=[str(DEFAULT_EMULATOR),'-m2' if target=='trs80m2' else '-m4']
-            if target=='trs80m2':command+=['-mem','64','-itime','45000']
+            if target=='trs80m2':
+                from run_model2_qualification import EMU,EMU_SHA
+                assert sha(EMU)==EMU_SHA,'Model II emulator differs from qualified baseline'
+                command[0]=str(EMU);command+=['-mem','64','-itime','45000']
             command+=['-batch','-turbo','-d0',str(disk),'-id','15000','-it']
             steps=['VER\r']
             if target=='trs80gp':steps+=['RSX UNLOAD ADM3A\r']
-            steps+=['STAT MEM\r','CONFIG\rF','\x03\x03','RSX LOAD NDR\r',
+            steps+=['STAT MEM\r','CONFIG\r','F','\x03\x03','RSX LOAD NDR\r',
                     'NDR WORK A0:\r','PATH\r','RSX UNLOAD NDR\r','HELP VAR\r','Q','STAT /VER\r']
-            for step in steps:command+=key_args(step)+['-id','6000','-it']
+            for step in steps:
+                command+=(['-i',step] if target=='trs80m2' else key_args(step))
+                command+=['-id','6000','-it']
             command+=['-ix'];run(command,cwd=out,timeout=300,check=True)
             texts=[screen(path) for path in sorted(out.glob('trs80-text-*.bin'))]
             for index,text in enumerate(texts):(out/f'screen-{index}.txt').write_text(text)
