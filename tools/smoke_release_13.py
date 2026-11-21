@@ -15,6 +15,7 @@ def main():
     parser.add_argument('--system',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--simulator',type=Path)
+    parser.add_argument('--help-delta',action='store_true',help='repeat only identity/memory/HELP/COM after a HELP-only media change')
     args=parser.parse_args();folder=args.system.resolve();out=args.output.resolve()
     out.mkdir(parents=True,exist_ok=False)
     receipt=json.loads((folder/'report.json').read_text())
@@ -57,11 +58,12 @@ def main():
                 from run_model2_qualification import EMU,EMU_SHA
                 assert sha(EMU)==EMU_SHA,'Model II emulator differs from qualified baseline'
                 command[0]=str(EMU);command+=['-mem','64','-itime','45000']
-            command+=['-batch','-turbo','-d0',str(disk),'-iw','Type TYPE README.TXT','-id','3000','-it']
+            command+=['-batch','-turbo','-d0',str(disk),'-iw','A0>' if target=='trs80m2' else 'Type TYPE README.TXT','-id','3000','-it']
             steps=['VER\r']
             if target=='trs80gp':steps+=['RSX UNLOAD ADM3A\r']
-            steps+=['STAT MEM\r','CONFIG\r','F','\x03\x03','RSX LOAD NDR\r',
-                    'NDR WORK A0:\r','PATH\r','HELP VAR\r','Q','STAT /VER\r']
+            steps+=(['STAT MEM\r','HELP VAR\r','Q','STAT /VER\r'] if args.help_delta else
+                    ['STAT MEM\r','CONFIG\r','F','\x03\x03','RSX LOAD NDR\r',
+                     'NDR WORK A0:\r','PATH\r','HELP VAR\r','Q','STAT /VER\r'])
             for step in steps:
                 command+=(['-i',step] if target=='trs80m2' else key_args(step))
                 command+=['-id','25000' if step.startswith('RSX ') else '8000','-it']
@@ -71,6 +73,9 @@ def main():
         text='\n'.join(texts)
         expected=['1.3','candidate','Active H/M/V bytes: 192 0 0','WORK',
                   'Enable variables','STAT 1.0','54272 bytes' if target=='trs80gp' else '57344 bytes']
+        if args.help_delta and target!='z80pack':
+            expected=[p for p in expected if p not in ('Active H/M/V bytes: 192 0 0','WORK')]
+            result['scope']='HELP delta: final-media boot/identity, default memory, HELP VAR and ordinary COM; other unchanged inputs require separate hash-matched smoke evidence'
         for phrase in expected:assert phrase in text,('missing smoke result',phrase,text[-5000:])
         assert sha(image)==original,'source System image changed'
         result.update(status='PASS_FOCUSED_SYSTEM_SMOKE',observed=expected,
