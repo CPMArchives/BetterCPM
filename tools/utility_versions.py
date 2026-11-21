@@ -42,13 +42,14 @@ def strings(name, resident=False, label='UV_TEXT'):
 def expand_versions(text):
     if '; @release-heading@' in text:
         import json
-        version = json.loads((ROOT/'metadata/release-package.json').read_text())['version']
+        package = json.loads((ROOT/'metadata/release-package.json').read_text())
+        version = package['version']
         old = 'BetterCP/M development (after core 1.0)'
         # Frozen 1.1 and 1.2 packages select their core explicitly. Component development
         # markers remain independent; the package heading must not claim 1.0.
         heading = ('BetterCP/M '+version if re.fullmatch(r'1\.[123](?:\.[0-9]+)?',version) else
                    old if display_development('utility:RCP') else 'BetterCP/M '+version)
-        if version == '1.3':
+        if version == '1.3' and not package.get('status','').startswith('qualified'):
             heading += ' candidate'
         if len(heading) > len(old):
             raise ValueError('distribution heading exceeds its fixed field')
