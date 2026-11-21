@@ -1,6 +1,6 @@
 # BetterCP/M
 
-**BetterCP/M 1.3 is released.** It adds PDS 2.0 and optional MCL/VAR, with HISTORY 192 bytes and MCL/VAR disabled by default. See the [1.3 release notes](docs/releases/RELEASE-NOTES-1.3.md) and [focused acceptance](docs/releases/1.3-SCOPE-AND-ACCEPTANCE.md).
+**BetterCP/M 1.3 is released.** It adds PDS 2.0 and optional multiple command line and variable support. Command history retains its default 192-byte capacity; the new command line and variable features are disabled by default. See the [1.3 release notes](docs/releases/RELEASE-NOTES-1.3.md) and [focused acceptance](docs/releases/1.3-SCOPE-AND-ACCEPTANCE.md).
 
 BetterCP/M is a compact, maintainable CP/M-compatible operating system for Z80-class computers. Download the System package for your platform from the [published v1.3 release](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.3), then follow the [quick start](#quick-start) below. Matching Utilities, complete Source and the four-manual Documentation collection are separate downloads. See the [documentation index](docs/README.md).
 
