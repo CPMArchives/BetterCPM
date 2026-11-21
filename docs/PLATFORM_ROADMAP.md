@@ -1,6 +1,9 @@
 # Platform roadmap
 
-Status reviewed: 3 November 2026.
+Status reviewed: 21 November 2026. [BetterCP/M 1.3 is published](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.3);
+[maintained platforms](platform/SUPPORT-1.3.md) and the
+[publication record](releases/evidence/1.3-publication/publication.json) define
+the released emulator scope. Future priorities below remain provisional.
 
 This is a provisional platform inventory and planning order. It does not add
 release gates or certify support. The [1.0 roadmap](releases/1.0-ROADMAP.md)
@@ -9,8 +12,8 @@ authority over 1.0 scope.
 
 ## Priorities and evidence
 
-- **P0 — existing baselines:** maintain Model 4 and cpmsim and finish their
-  established release acceptance work.
+- **P0 — existing baselines:** maintain released Model 4, cpmsim and Model II
+  configurations and their source/image-bound evidence.
 - **P1 — near term:** integrate or investigate the reported ports and close
   specific boot/status gaps.
 - **P2 — planned:** select reproducible configurations, then implement and test.
@@ -32,9 +35,9 @@ supply that status.
 
 | Platform | Priority | Current status and emulator evidence | Physical hardware | Next step |
 | --- | --- | --- | --- | --- |
-| TRS-80 Model 4 / trs80gp | P0 | Existing integrated baseline; reproducible boot and bounded emulator validation recorded. Final release acceptance remains open. | Not validated | Maintain baseline and complete the existing release checks. |
-| z80pack cpmsim | P0 | Existing integrated, emulator-native baseline; bounded emulator validation recorded. Requires the pinned patched emulator, including geometry interface v2. Final release acceptance remains open. | N/A | Maintain reconstruction and evidence for the exact tested images/emulator. |
-| TRS-80 Model II | P1 | a-griff third-party port reported; integration and qualification pending. Not an integrated or qualified mainline target. | Not validated | Obtain and review the port source, provenance, build instructions and emulator/image identity; integrate through the shared platform boundary and retain test evidence. |
+| TRS-80 Model 4 / trs80gp | P0 | Published 1.3 baseline; focused emulator acceptance and installation/cold-boot evidence retained. Unloaded COM floor 54,272 bytes. | Not validated | Maintain the released baseline and rerun relevant checks for changed inputs. |
+| z80pack cpmsim | P0 | Published 1.3 emulator-native baseline with offline reconstruction and focused acceptance. Requires the pinned patched emulator, including geometry interface v2. Unloaded COM floor 57,344 bytes. | N/A | Maintain reconstruction and evidence for the exact tested images/emulator. |
+| TRS-80 Model II | P0 | Published, maintained 1.3 baseline: 64 KiB, trs80gp, BCM2SS single-sided eight-inch IMDs, focused install/cold-boot acceptance and 57,344-byte unloaded COM floor. | Not validated | Maintain the released configuration and its exact-media evidence; other models/media remain separate candidates. |
 | TRS-80 Model 4D | P1 | Preliminary emulator boot success reported; no separate Model 4D qualification established. | Not validated | Reproduce with identified emulator, ROM, drive configuration and image, then run applicable platform checks. |
 | TRS-80 Model 4P | P1 | ROM/boot failure reported in emulation; cause unresolved. | Not validated | Record and reproduce the boot failure before choosing a bootstrap/adapter change. |
 | Kaypro | P1 | Future targeted platform; no port work has started. No BetterCP/M boot or qualification claimed. | Not validated | Select the exact Kaypro model and emulator configuration when port work is taken up. |
@@ -49,18 +52,19 @@ Kaypro, MyZ80, z80pack IMSAI and Altair, RomWBW, Model 12 and Model 16 are
 future targets with no BetterCP/M port work started. The Model 12 image trial
 was a compatibility experiment, not the start of a port. Model 4D and Model 4P
 have preliminary boot observations only; no dedicated port effort or
-qualification is established. Model II is the third-party-port exception,
-with mainline integration still pending.
+qualification is established. Model II is now an integrated, maintained release
+baseline; the earlier third-party-port report is historical.
 
-The Model II, Model 4D, Model 4P and Model 12 observations above are
+The Model 4D, Model 4P and Model 12 observations above are
 maintainer-reported planning inputs from the design discussion, not newly
 reproduced results or repository qualification receipts. Their recording here
 does not establish that a BIOS, disk format or boot ROM is the cause of a failure.
 
 ## Evidence and configuration notes
 
-The current baseline evidence is the
-[release conformance record of 2 November 2026](engineering/Release-Conformance-2026-11-02.md).
+Current release evidence is the [1.3 frozen record](releases/1.3-FROZEN-REVIEW.md)
+and [publication ledger](releases/evidence/1.3-publication/publication.json). See
+also the historical [release conformance record of 2 November 2026](engineering/Release-Conformance-2026-11-02.md).
 It distinguishes suite passes, controlled/external checks, observations,
 exclusions and profile differences; it does not claim 627 passes, physical-device
 qualification or final release acceptance. See also the
