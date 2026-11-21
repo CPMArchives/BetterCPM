@@ -3,6 +3,10 @@
 Not yet accepted or published. Use the published 1.2 packages for the current
 stable release; these notes describe the 1.3 source candidate.
 
+See the [readiness record](1.3-READINESS.md) for actual candidate evidence and
+remaining gates. In particular, PR #688 proposes a reviewed NOAH 1.0 (022)
+compatibility repair; the locked 021 identity is not silently replaced here.
+
 - PDS 2.0 composes fixed HISTORY, MCL and VAR allocations at cold boot.
 - HISTORY keeps its default capacity and behavior as an explicit owner.
 - Optional MCL separates interactive commands with semicolons outside double

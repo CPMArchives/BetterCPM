@@ -10,6 +10,23 @@ from utility_versions import expand_versions
 
 
 class ReleaseHeadingTests(unittest.TestCase):
+    def test_13_candidate_and_accepted_use_same_field(self):
+        with tempfile.TemporaryDirectory() as name:
+            root=Path(name)
+            (root/'metadata').mkdir()
+            query=root/'src/utilities/common/version.inc'
+            query.parent.mkdir(parents=True);query.write_text('')
+            images=[]
+            for index,status in enumerate(('release candidate; acceptance pending','qualified 1.3 release')):
+                (root/'metadata/release-package.json').write_text(json.dumps({'version':'1.3','status':status}))
+                with patch('utility_versions.ROOT',root):
+                    text=expand_versions('        ORG 100H\nBC_VERSION: ; @release-heading@\nAFTER: RET\n END\n')
+                data=assemble(Path.home()/'bin/z80asm',text,root/f'{index}.bin',root/f'{index}.lst',0x100)
+                expected='BetterCP/M 1.3'+(' candidate' if index==0 else '')
+                self.assertTrue(data.startswith(('\r\n'+expected+'\r\n$').encode()))
+                images.append(data)
+            self.assertEqual(len(images[0]),len(images[1]))
+
     def test_fixed_field_and_automatic_selection(self):
         with tempfile.TemporaryDirectory() as name:
             root = Path(name)

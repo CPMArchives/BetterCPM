@@ -1,0 +1,23 @@
+CONFIG 1.0 (021-dev)
+A0> RSX LOAD NDR
+
+A0> NDR WORK A0:
+Named directories updated (not saved).
+
+A0 [WORK]> PATH
+PATH: $$: | A0:[WORK]
+
+A0 [WORK]> HELP VAR
+VAR - Session command variables
+
+VAR
+VAR NAME
+VAR NAME=value
+VAR /D NAME
+
+0  Enable variables 1  Define and subst 2  Lifetime and com
+Choice (< > Q):
+
+
+
+
