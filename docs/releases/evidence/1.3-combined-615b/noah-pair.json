@@ -1,0 +1,7 @@
+{
+  "status": "PASS_FOCUSED_NOAH_PAIR",
+  "system_sha256": "5b977efb8acd336e3c4dfecd41465e9d0cf3f34441821c3aab15f6f25e84546c",
+  "companion_sha256": "f07a1950e5581e625d8626ed844f22d1b0dbee191de299dbbd034f3fc7e40882",
+  "test": "actual companion COM/OVL, /VER and /TEST stored ARK fixture",
+  "source_master_unchanged": true
+}
