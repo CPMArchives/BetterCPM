@@ -55,6 +55,12 @@ VR_RECORD:
         ADD HL,DE
         JP Z,VR_PAD
         JP NC,V_CORRUPT
+        INC HL                         ; both record-header bytes must be owned
+        OR A
+        SBC HL,DE
+        ADD HL,DE
+        DEC HL
+        JP NC,V_CORRUPT
         LD (V_CUR),HL
         LD A,(HL)
         DEC A

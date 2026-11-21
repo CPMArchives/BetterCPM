@@ -87,6 +87,17 @@ def main():
     except AssertionError as error:assert 'execution limit reached' in str(error)
     else:raise AssertionError('changed PDS metadata reached expansion')
     assert b'cold boot required' in out
+    # A one-byte trailing record header must fail before reading the directory.
+    c,p,out=machine();at,n=p['owners']['VAR']
+    c.mem[at:at+n]=(126).to_bytes(2,'little')+bytes((1,122))+b'A'+b'x'*122+b'\1'
+    class ReadGuard(bytearray):
+        def __getitem__(self,index):
+            if (index==at+n and symbol('VR_RECORD')<=c.pc<symbol('VR_NBOUND')
+                    and super().__getitem__(c.pc-1)==0x7e):
+                raise AssertionError('record header read outside VAR owner')
+            return super().__getitem__(index)
+    c.mem=ReadGuard(c.mem);expand(c,b'VER')
+    assert c.carry and b'VAR reset.' in out and bytes(c.mem[at:at+n])==bytes(n)
     c,p,out=machine(0)
     assert expand(c,b'TYPE %unknown% %%')==b'TYPE %unknown% %%' and not c.carry
     command(c,b'VAR');assert b'disabled' in out
