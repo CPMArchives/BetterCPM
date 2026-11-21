@@ -1,0 +1,10 @@
+{
+  "status": "PREPARED FOR MAINTAINER REVIEW; NOT PUBLISHED",
+  "source_freeze_commit": "51e1092d01b2a23e6244faaa877a8c5c8d6eb388",
+  "file": "build/releases/BetterCPM-1.3-review-51e1092d.zip",
+  "bytes": 416369097,
+  "sha256": "9d84ece0d6686cc16dc00e7b4651b90f9d38a287bfa96b1573b994f5ea4c28af",
+  "contents": "Eight candidate packages plus source freeze, focused readiness ledger, checksums and supporting evidence",
+  "official_asset_count": 8,
+  "review_wrapper_only": true
+}

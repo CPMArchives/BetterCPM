@@ -1,0 +1,99 @@
+{
+  "status": "PASS_FOCUSED_RELEASE_READINESS",
+  "source_freeze_commit": "51e1092d01b2a23e6244faaa877a8c5c8d6eb388",
+  "systems": {
+    "cpmsim": {
+      "image": "BetterCPM-Distribution-z80pack-332K.dsk",
+      "sha256": "5b977efb8acd336e3c4dfecd41465e9d0cf3f34441821c3aab15f6f25e84546c",
+      "fresh_source_commit": "51e1092d01b2a23e6244faaa877a8c5c8d6eb388"
+    },
+    "Model4": {
+      "image": "BetterCPM-Distribution-trs80gp-80T-DS-System.dmk",
+      "sha256": "d39282f578817914af217bf3b35c46ef2bb3b2bc0cc03919cc9712ed37149c06",
+      "fresh_source_commit": "51e1092d01b2a23e6244faaa877a8c5c8d6eb388"
+    },
+    "Model2": {
+      "image": "BetterCPM-Distribution-trs80m2-77T-SS-System.imd",
+      "sha256": "61b1566f0e42229caebb343546b19a76a9536b5bd1b2b27196c60a5c2c8eb629",
+      "fresh_source_commit": "51e1092d01b2a23e6244faaa877a8c5c8d6eb388"
+    }
+  },
+  "installation_and_cold_boot": {
+    "cpmsim": {
+      "status": "PASS_EXACT_IMAGE_REUSE",
+      "image_sha256": "5b977efb8acd336e3c4dfecd41465e9d0cf3f34441821c3aab15f6f25e84546c",
+      "execution_source_commit": "3afac0cbd79ec1425b6551693c11656bcf711c48",
+      "evidence": "Evidence/z80pack-installation.json",
+      "filesystem_preserved": true,
+      "source_master_unchanged": true
+    },
+    "Model4": {
+      "status": "PASS_EXACT_IMAGE_REUSE",
+      "image_sha256": "d39282f578817914af217bf3b35c46ef2bb3b2bc0cc03919cc9712ed37149c06",
+      "execution_source_commit": "91167ada1e02281c6e50f91962d3a7e92b3ce49d",
+      "evidence": "Evidence/trs80gp-installation.json",
+      "filesystem_preserved": true,
+      "source_master_unchanged": true
+    },
+    "Model2": {
+      "status": "PASS_EXACT_IMAGE_REUSE",
+      "image_sha256": "61b1566f0e42229caebb343546b19a76a9536b5bd1b2b27196c60a5c2c8eb629",
+      "execution_source_commit": "3afac0cbd79ec1425b6551693c11656bcf711c48",
+      "evidence": "Evidence/trs80m2-installation.json",
+      "filesystem_preserved": true,
+      "source_master_unchanged": true
+    }
+  },
+  "maximum_com_bytes": {
+    "cpmsim": 57344,
+    "Model4": 54272,
+    "Model2": 57344
+  },
+  "next_record_rejected_and_protected_canaries": "PASS",
+  "default_pds": {
+    "total": 204,
+    "metadata": 12,
+    "HISTORY": 192,
+    "MCL": 0,
+    "VAR": 0
+  },
+  "resident_bytes_added": 0,
+  "package_audit": "PASS: all eight actual ZIPs, exact bytes/checksums, all three platform pairs, source offers and four-manual Documentation",
+  "utilities_inventory": "PASS: all six primary/Companion images",
+  "native_source_offer": "PASS: complete build/work/source disks and generated includes; exact native-proof module hashes retained",
+  "native_proof_byte_matches": {
+    "build/ccp/ccp.bin": "2dfb4df4a033f072a29bc8a810c5865306e8444d6e71b4a81e5a1ecfc8de4928",
+    "build/ccp/ccp.rlm": "0247a27d453e8351dbb4f6d3bf3cd02f0f76c9eea88f927e1a1ce9d947e5e297",
+    "build/ccp/packed.bin": "b39f4a91ef84b65d0f6d565475dd0a0d95cb77bdc0b1c9235796f5ef3ca0ff27",
+    "build/ccp/packed-alt.bin": "422964a973c71b3a26ee8809dffc625f7c433f8fd32332152300e535e3217fab",
+    "build/ccp/packed-check.bin": "c11f1ecb2cff755ede8054947f56e84585565b9b44ee510e35b616577a90ff99",
+    "build/utilities/RLMBUILD.COM": "6d0dd6a41a928004491fe83fe6c33f44a59fed335362adcbffb05f753016a955"
+  },
+  "offline_runtime": {
+    "status": "PASS",
+    "method": "extracted delivered host kit and packaged upstream source tar; exact executable/guest-tool parity",
+    "executables": {
+      "cpmsim/cpmsim": "0f6b256cd6beea2ab7bf0eab8a9cc2a5241ed772408e811150c3f6e0f5cff4e8",
+      "cpmsim/srctools/cpmrecv": "9a3a7f11a228a8000c7ae97c7d77cd5ccfbe2d79a5294bc77787b7f0b44a13e1",
+      "cpmsim/srctools/cpmsend": "c046dcb77849e63f1e1efa03a989c0f99c35d4c5a449eb80beb8d4b763aae448",
+      "cpmsim/srctools/mkdskimg": "2841cdb54f4c9494dabd807f6771b1889435395dd9b8edf47b31c86051f531cd",
+      "cpmsim/srctools/bin2hex": "5e2fbfeb136c57c1ce82e912ad800d00ca5f9ca418ec5b2dee7f92b0b35d78cd",
+      "cpmsim/srctools/ptp2bin": "c13bae047331e38085aaf486a155c52f0dee2b253e3df026d3507968e885887d"
+    },
+    "guest_utilities": {
+      "cpmtools/r.com": "611ba1f903a21f406a9a5dd50d10ea64089fd83161ca4a3c396e743b0a5c8f65",
+      "cpmtools/w.com": "e26591c1f49448767e91d065ce1dbac56a7228f2d9361057f43de9d563626720",
+      "cpmtools/mount.com": "a25834591c94a9bf8fd6623303dfea66c5fdaa7bcc988e3bcd0cb1dc7a4d15ce"
+    },
+    "source_archive_sha256": "010576d4035f6db5e616a6cb143dab47754ca375d9e7a451ee9bdf1b700a5b3b"
+  },
+  "frozen_software_changes_since_accepted_installations": "none: all three complete System images match by SHA-256",
+  "validation_policy": "1.3-focused; no broad CP/M qualification campaign",
+  "receipt_policy": "Original candidate pending/provisional receipt fields are retained. This ledger records focused 1.3 results and does not promote historical component receipts.",
+  "remaining": [
+    "Maintainer artifact/release approval"
+  ],
+  "published": false,
+  "tag_created": false,
+  "baseline_promoted": false
+}
