@@ -1,25 +1,25 @@
 entry	kind	source_object	ram_start	ram_end	bytes	init_policy	template_start	purpose
-dynamic-bdos-gateway	object	dynamic-bdos-gateway	D501	D503	3	runtime	none	stable writable BDOS and RSX-chain jump
-command-history	object	command-history	D504	D5C3	192	runtime	none	fixed bounded-PDS history object
-gateway-entry-reserve	reserved	none	D5C4	D617	84	zero	none	stable system entry and future ROM trampolines
-system-stack	object	system-stack	D618	D637	32	zero	none	system reconstruction stack
-gateway-handoff-reserve	reserved	none	D638	D643	12	zero	none	stable COM handoff and descriptor alignment
-descriptor-header	reserved	none	D644	D646	3	copy	D644	live descriptor magic and version copied from ROM template
-extension-control-live	object	extension-control-live	D647	D657	17	copy	D647	live extension-control descriptor fields
-cpx-profile	object	cpx-profile	D658	D680	41	copy	D658	persistent CPX reconstruction profile
-gateway-tail-reserve	reserved	none	D691	D6BB	43	zero	none	fixed gateway growth and ROM-entry trampolines
-bdos-live-state	object	bdos-live-state	D6BC	D700	69	copy	E3BC	BDOS persistent and call-local state
-bdos-stack	object	bdos-stack	D701	D728	40	zero	none	private BDOS stack
-extension-live-state	object	extension-live-state	D729	D72D	5	zero	none	extension dispatcher call state
-physical-drive-profiles	object	z80pack-physical-drive-profiles	D72E	D745	24	copy	E951	live z80pack physical-drive profiles
-disk-session-state	object	z80pack-disk-session-state	D746	D753	14	copy	E969	z80pack disk transfer state
-bios-disk-state	object	z80pack-bios-disk-state	D754	D75F	12	copy	EB64	BIOS logical and physical disk state
-file-stream-fcb	object	file-stream-fcb	D760	D783	36	zero	none	protected carrier-stream FCB
-live-disk-tables	object	z80pack-live-disk-tables	D784	D9C3	576	copy-fixup	ED17	live DPH bindings, ALV and CSV records
-rsx-profile	object	rsx-profile	D9C4	D9EC	41	zero	none	active RSX reconstruction profile
-directory-buffer	object	directory-buffer	D9ED	DA6C	128	zero	none	BDOS directory transfer buffer
-physical-sector-buffer	object	physical-sector-buffer	DA6D	DC6C	512	zero	none	lower workspace for module staging, full-sector transfers and control overlays
-module-config-buffer	object	module-config-buffer	DC6D	DE6C	512	zero	none	upper workspace for small-sector staging, full-sector transfers and control overlays
-monitor-binding	object	z80pack-monitor-binding	D681	D682	2	zero	none	BIOS-owned monitor target initialized by cold BOOT
-com-read-result	object	com-read-result	D683	D683	1	zero	none	protected loader result for CCP reentry
-numeric-path	object	numeric-path	D684	D690	13	zero	none	live numeric command search policy
+dynamic-bdos-gateway	object	dynamic-bdos-gateway	D50D	D50F	3	runtime	none	stable writable BDOS and RSX-chain jump
+command-history	object	command-history	D510	D5CF	192	runtime	none	fixed bounded-PDS history object
+gateway-entry-reserve	reserved	none	D5D0	D623	84	zero	none	stable system entry and future ROM trampolines
+system-stack	object	system-stack	D624	D643	32	zero	none	system reconstruction stack
+gateway-handoff-reserve	reserved	none	D644	D64F	12	zero	none	stable COM handoff and descriptor alignment
+descriptor-header	reserved	none	D650	D652	3	copy	D644	live descriptor magic and version copied from ROM template
+extension-control-live	object	extension-control-live	D653	D663	17	copy	D653	live extension-control descriptor fields
+cpx-profile	object	cpx-profile	D664	D68C	41	copy	D664	persistent CPX reconstruction profile
+monitor-binding	object	z80pack-monitor-binding	D68D	D68E	2	zero	none	BIOS-owned monitor target initialized by cold BOOT
+com-read-result	object	com-read-result	D68F	D68F	1	zero	none	protected loader result for CCP reentry
+numeric-path	object	numeric-path	D690	D69C	13	zero	none	live numeric command search policy
+gateway-tail-reserve	reserved	none	D69D	D6C7	43	zero	none	fixed gateway growth and ROM-entry trampolines
+bdos-live-state	object	bdos-live-state	D6C8	D70A	67	copy	E3C6	BDOS persistent and call-local state
+bdos-stack	object	bdos-stack	D70B	D732	40	zero	none	private BDOS stack
+extension-live-state	object	extension-live-state	D733	D737	5	zero	none	extension dispatcher call state
+physical-drive-profiles	object	z80pack-physical-drive-profiles	D738	D74F	24	copy	E951	live z80pack physical-drive profiles
+disk-session-state	object	z80pack-disk-session-state	D750	D75D	14	copy	E969	z80pack disk transfer state
+bios-disk-state	object	z80pack-bios-disk-state	D75E	D769	12	copy	EB64	BIOS logical and physical disk state
+file-stream-fcb	object	file-stream-fcb	D76A	D78D	36	zero	none	protected carrier-stream FCB
+live-disk-tables	object	z80pack-live-disk-tables	D78E	D9CD	576	copy-fixup	ED17	live DPH bindings, ALV and CSV records
+rsx-profile	object	rsx-profile	D9CE	D9F6	41	zero	none	active RSX reconstruction profile
+directory-buffer	object	directory-buffer	D9F7	DA76	128	zero	none	BDOS directory transfer buffer
+physical-sector-buffer	object	physical-sector-buffer	DA77	DC76	512	zero	none	lower workspace for module staging, full-sector transfers and control overlays
+module-config-buffer	object	module-config-buffer	DC77	DE76	512	zero	none	upper workspace for small-sector staging, full-sector transfers and control overlays

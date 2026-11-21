@@ -16,11 +16,11 @@
 ; Resident and Reconstructible Regions
 ; -------------------------------------------------------------------------------
 
-LY_SYS          EQU     0D5C4H          ; resident system gateway base
-LY_BDOS         EQU     0D6BCH          ; unified BDOS base
+LY_SYS          EQU     0D5D0H          ; 12 recovered bytes below the resident core
+LY_BDOS         EQU     0D6C8H          ; unified BDOS base
 ; Qualified memory savings reserve BIOS routing/monitor space at unchanged TPA.
 ; Rebuild all layout-dependent components together after these bases change.
-LY_EXT          EQU     0E43AH          ; protected extension-services base
+LY_EXT          EQU     0E43FH          ; consume the former five-byte slot tail
 LY_DISK         EQU     0E5E3H          ; resident disk-service base
 LY_BIOS         EQU     0E991H          ; compatibility BIOS base
 LY_FILE         EQU     0EC86H          ; shared file-loader base
@@ -44,8 +44,8 @@ LY_STKT         EQU     00500H          ; transient loader stack top
 LY_LIMIT        EQU     0F400H          ; resident-memory upper limit
 LY_TOPRSV       EQU     00C00H          ; bytes above resident RAM (STAT count)
 LY_RAMEND       EQU     0F400H          ; available RAM end
-LY_HIST         EQU     0D504H          ; persistent command-history base
-LY_TPA          EQU     0D501H          ; exclusive TPA upper bound
+LY_HIST         EQU     0D510H          ; unchanged 192-byte history allocation
+LY_TPA          EQU     0D50DH          ; exclusive TPA upper bound
 LY_SECTS        EQU     0000DH          ; resident system sector count
 
 ; -------------------------------------------------------------------------------
@@ -77,5 +77,5 @@ PL_M2           EQU     0
 ; Fixed command-environment state above the BDOS stack. The image builder
 ; reserves this range independently of the stack, PDS and extension code.
 PATHMAX         EQU     6
-LY_LERR         EQU     LY_EXT-17       ; protected reader result until CCP resumes
+LY_LERR         EQU     LY_EXT-14       ; result + count + six DU pairs; no tail padding
 LY_PATH         EQU     LY_LERR+1       ; count and six DU pairs; drive 0/user FF = current

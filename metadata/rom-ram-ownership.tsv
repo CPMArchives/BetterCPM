@@ -1,16 +1,16 @@
 object	platform	current_start	current_end	bytes	owner	lifetime	cold_boot	warm_boot	storage_class	overlay_group	immutable_template	disposition
 page-zero	all	0000	00FF	256	CP/M low-memory ABI	boot session	initialize vectors, drive, I/O byte and DMA defaults	preserve ABI; reconstruct vectors as required	fixed subsystem state	none	gateway and low-memory defaults	already RAM
 transient-loader-stack	all	04C0	04FF	64	command reconstruction	one reconstruction pass	discarded	fresh for each reconstruction	stack	transient TPA borrow	none	already RAM
-dynamic-bdos-gateway	all	D501	D503	3	system gateway and RSX chain	boot session	install JP to BDOS or active RSX head	rebuild after command-environment reconstruction	fixed subsystem state	none	none	retain in ROM-profile RAM
-command-history	all	D504	D5C3	192	built-in command history	cold boot through warm boots	create canonical empty v1 object	preserve valid object	bounded PDS state	none	none	relocate to ROM-profile RAM
-system-stack	all	D618	D637	32	system gateway	one system-entry pass	fresh stack	fresh stack	stack	none	none	relocate to ROM-profile RAM
-extension-control-live	all	D647	D657	17	system gateway	boot session	copy descriptor defaults then publish live values	preserve or reconstruct by field	fixed subsystem state	none	gateway descriptor defaults	relocate to ROM-profile RAM
-cpx-profile	all	D658	D680	41	command reconstruction	boot session	copy default profile	preserve across warm boot	fixed subsystem state	none	default CPX profile	relocate to ROM-profile RAM
-bdos-live-state	all	E3BC	E400	69	BDOS	boot session and individual calls	initialize CP/M defaults	preserve persistent fields; reset call-local fields	fixed subsystem state	none	BDOS state defaults	relocate to ROM-profile RAM
-bdos-stack	all	E401	E428	40	BDOS	one public BDOS call	fresh stack	fresh stack	stack	none	none	relocate to ROM-profile RAM
-com-read-result	all	E429	E429	1	protected COM reader	one return	clear	consume after CCP reconstruction	fixed subsystem state	none	zero	relocate to ROM-profile RAM
-numeric-path	all	E42A	E436	13	command-search policy	boot session	select default	preserve across warm boot	fixed subsystem state	none	zero	relocate to ROM-profile RAM
-extension-live-state	all	E590	E594	5	extension dispatcher	one extension or adapter call	clear	clear or overwrite before use	fixed subsystem state	none	none	relocate to ROM-profile RAM
+dynamic-bdos-gateway	all	D50D	D50F	3	system gateway and RSX chain	boot session	install JP to BDOS or active RSX head	rebuild after command-environment reconstruction	fixed subsystem state	none	none	retain in ROM-profile RAM
+command-history	all	D510	D5CF	192	built-in command history	cold boot through warm boots	create canonical empty v1 object	preserve valid object	bounded PDS state	none	none	relocate to ROM-profile RAM
+system-stack	all	D624	D643	32	system gateway	one system-entry pass	fresh stack	fresh stack	stack	none	none	relocate to ROM-profile RAM
+extension-control-live	all	D653	D663	17	system gateway	boot session	copy descriptor defaults then publish live values	preserve or reconstruct by field	fixed subsystem state	none	gateway descriptor defaults	relocate to ROM-profile RAM
+cpx-profile	all	D664	D68C	41	command reconstruction	boot session	copy default profile	preserve across warm boot	fixed subsystem state	none	default CPX profile	relocate to ROM-profile RAM
+bdos-live-state	all	E3C6	E408	67	BDOS	boot session and individual calls	initialize CP/M defaults	preserve persistent fields; reset call-local fields	fixed subsystem state	none	BDOS state defaults	relocate to ROM-profile RAM
+bdos-stack	all	E409	E430	40	BDOS	one public BDOS call	fresh stack	fresh stack	stack	none	none	relocate to ROM-profile RAM
+com-read-result	all	E431	E431	1	protected COM reader	one return	clear	consume after CCP reconstruction	fixed subsystem state	none	zero	relocate to ROM-profile RAM
+numeric-path	all	E432	E43E	13	command-search policy	boot session	select default	preserve across warm boot	fixed subsystem state	none	zero	relocate to ROM-profile RAM
+extension-live-state	all	E595	E599	5	extension dispatcher	one extension or adapter call	clear	clear or overwrite before use	fixed subsystem state	none	none	relocate to ROM-profile RAM
 trs80-physical-drive-profiles	trs80	E96E	E985	24	disk service	boot session	copy default physical profiles	preserve live configuration	fixed subsystem state	none	TRS-80 physical-profile defaults	relocate to ROM-profile RAM
 trs80-disk-session-state	trs80	E986	E990	11	disk service	boot session and individual transfers	initialize invalid/no-selection defaults	preserve selection; reset invalidated context	fixed subsystem state	none	TRS-80 disk session defaults	relocate to ROM-profile RAM
 z80pack-physical-drive-profiles	z80pack	E951	E968	24	disk service	boot session	copy default physical profiles	preserve live configuration	fixed subsystem state	none	z80pack physical-profile defaults	relocate to ROM-profile RAM

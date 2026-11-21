@@ -579,10 +579,10 @@ UB_RESET:                               ; reset disk system
 UB_SELECT:                              ; select default drive
         LD      A,E
         CP      4                       ; this build exposes only logical drives A-D
-        JP      NC,UB_BAD
+        JR      NC,UB_BAD              ; local target: one-byte protected-memory saving
         LD      C,A
         CALL    UB_CONTEXT
-        JP      NZ,UB_BAD
+        JR      NZ,UB_BAD              ; local target: one-byte protected-memory saving
         LD      A,C
         LD      (UB_DRIVE),A
         XOR     A
@@ -2648,7 +2648,6 @@ UB_OPENENT:     DW      0               ; opened directory entry
 ; -------------------------------------------------------------------------------
 
 UB_RREM:        DB      0               ; records remaining
-UB_RRES:        DW      0               ; reserved scratch; retain frozen ROM/RAM state span
 UB_RBNO:        DB      0               ; allocation block number
 UB_RRCR:        DB      0               ; random-record scratch
 UB_ZMODE:       DB      0               ; zero-fill mode
