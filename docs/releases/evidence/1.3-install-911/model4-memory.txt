@@ -1,0 +1,24 @@
+A0> STAT MEM
+
+BetterCP/M Memory Map
+High-Low    Bytes Owner
+FFFF-F400 03072 Platform-reserved memory
+F3FF-F000 01024 Shared physical/module buffers
+EFFF-EF80 00128 Directory transfer buffer
+EF7F-EF57 00041 Active RSX reconstruction table
+EF56-ED17 00576 Drive tables and disk workspace
+ED16-EC86 00145 Protected file services
+EC85-E991 00757 BIOS
+E990-E5E3 00942 Disk and extension support
+E5E2-E43F 00420 Protected loader/extension services
+E43E-D6C8 03447 BDOS and private state
+D6C7-D5D0 00248 System gateway, ECB and CPX profile
+D5CF-D504 00204 PDS (persistent command data)
+D503-D501 00003 Dynamic CP/M gateway
+D500-B401 08448 Loaded CPX allocation
+B400-9201 08704 CCP image
+9200-0100 37121 Transient area below CCP
+00FF-0000 00256 CP/M page zero
+PDS bytes: total 204; metadata 12; HISTORY 192; MCL 0; VAR 0
+Maximum loadable COM: 54272 bytes
+A0>

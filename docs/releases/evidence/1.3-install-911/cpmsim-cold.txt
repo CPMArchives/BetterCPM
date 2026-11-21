@@ -1,0 +1,118 @@
+
+#######  #####    ###            #####    ###   #     #
+     #  #     #  #   #          #     #    #    ##   ##
+    #   #     # #     #         #          #    # # # #
+   #     #####  #     #  #####   #####     #    #  #  #
+  #     #     # #     #               #    #    #     #
+ #      #     #  #   #          #     #    #    #     #
+#######  #####    ###            #####    ###   #     #
+
+Release 1.39, Copyright (C) 1987-2025 by Udo Munk and others
+
+CPU speed is unlimited, CPU executes undocumented instructions
+
+
+Booting...
+
+
+
+
+A0> PATH /A C0:
+PATH: $$: | A0: | C0:
+
+A0> :VER /BANNER
+
+ - - -                                                  - - -
+|                                                            |
+|                         BetterCP/M                         |
+                         Core OS 1.3
+
+                  CP/M 2.2 Compatible System
+
+                Type TYPE README.TXT for more
+|                                                            |
+ - - -                                                  - - -
+
+A0>
+A0> _
+A0>
+A0> V_
+A0> V
+A0> VE_
+A0> VE
+A0> VER_
+A0> VER
+A0> VER
+
+BetterCP/M 1.3 candidate
+
+A0>
+A0> _
+A0>
+A0> S_
+A0> S
+A0> ST_
+A0> ST
+A0> STA_
+A0> STA
+A0> STAT_
+A0> STAT
+A0> STAT _
+A0> STAT
+A0> STAT M_
+A0> STAT M
+A0> STAT ME_
+A0> STAT ME
+A0> STAT MEM_
+A0> STAT MEM
+A0> STAT MEM
+
+BetterCP/M Memory Map
+High-Low    Bytes Owner
+FFFF-FC00 01024 Shared physical/module buffers
+FBFF-FB80 00128 Directory transfer buffer
+FB7F-FB57 00041 Active RSX reconstruction table
+FB56-F917 00576 Drive tables and disk workspace
+F916-F886 00145 Protected file services
+F885-F591 00757 BIOS
+F590-F1E3 00942 Disk and extension support
+F1E2-F03F 00420 Protected loader/extension services
+F03E-E2C8 03447 BDOS and private state
+E2C7-E1D0 00248 System gateway, ECB and CPX profile
+E1CF-E104 00204 PDS (persistent command data)
+E103-E101 00003 Dynamic CP/M gateway
+E100-C001 08448 Loaded CPX allocation
+C000-9E01 08704 CCP image
+9E00-0100 40193 Transient area below CCP
+00FF-0000 00256 CP/M page zero
+PDS bytes: total 204; metadata 12; HISTORY 192; MCL 0; VAR 0
+Maximum loadable COM: 57344 bytes
+A0>
+A0> _
+A0>
+A0> S_
+A0> S
+A0> ST_
+A0> ST
+A0> STA_
+A0> STA
+A0> STAT_
+A0> STAT
+A0> STAT _
+A0> STAT
+A0> STAT /_
+A0> STAT /
+A0> STAT /V_
+A0> STAT /V
+A0> STAT /VE_
+A0> STAT /VE
+A0> STAT /VER_
+A0> STAT /VER
+A0> STAT /VER
+STAT 1.0 (010-dev)
+  - - -
+ | BetterCP/M Utilities
+ | File, Disk and System Information
+
+A0>
+A0> _

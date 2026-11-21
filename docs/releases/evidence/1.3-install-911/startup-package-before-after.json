@@ -1,0 +1,24 @@
+{
+  "baseline": "3afac0cbd79ec1425b6551693c11656bcf711c48",
+  "fix_producer": "91167ada1e02281c6e50f91962d3a7e92b3ce49d",
+  "before": {
+    "system_sha256": "6bedea4a2b560d390f04c307ad3066b2543afb8002fcdef0a4299e0d2c062d8d",
+    "package_sha256": "2ee7f7b16dbe7b9db3b0aa624a7dc792210f0a2111607e270d7c840d9c3f9b98",
+    "boot_startup": "SUBMIT STARTUP",
+    "install_package_startup": ""
+  },
+  "after": {
+    "system_sha256": "d39282f578817914af217bf3b35c46ef2bb3b2bc0cc03919cc9712ed37149c06",
+    "package_sha256": "385f5f3ef37e23b1dcb2e2f132e28bee2906a4e822da0cccef4809fe41cb2879",
+    "boot_startup": "SUBMIT STARTUP",
+    "install_package_startup": "SUBMIT STARTUP",
+    "PDS_choices": [
+      2,
+      0,
+      0
+    ]
+  },
+  "all_non_BCST_package_bytes_unchanged": true,
+  "resident_bytes_added": 0,
+  "only_changed_system_member": "SYSTEM.SYS"
+}

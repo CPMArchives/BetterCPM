@@ -1,0 +1,141 @@
+{
+  "status": "PASS_FOCUSED_INSTALLATION_AND_PACKAGE_GATES",
+  "reviewed_main": "3afac0cbd79ec1425b6551693c11656bcf711c48",
+  "packaging_fix_producer": "91167ada1e02281c6e50f91962d3a7e92b3ce49d",
+  "systems": {
+    "z80pack": {
+      "image": "BetterCPM-Distribution-z80pack-332K.dsk",
+      "sha256": "5b977efb8acd336e3c4dfecd41465e9d0cf3f34441821c3aab15f6f25e84546c",
+      "source_commit": "91167ada1e02281c6e50f91962d3a7e92b3ce49d"
+    },
+    "trs80gp": {
+      "image": "BetterCPM-Distribution-trs80gp-80T-DS-System.dmk",
+      "sha256": "d39282f578817914af217bf3b35c46ef2bb3b2bc0cc03919cc9712ed37149c06",
+      "source_commit": "91167ada1e02281c6e50f91962d3a7e92b3ce49d"
+    },
+    "trs80m2": {
+      "image": "BetterCPM-Distribution-trs80m2-77T-SS-System.imd",
+      "sha256": "61b1566f0e42229caebb343546b19a76a9536b5bd1b2b27196c60a5c2c8eb629",
+      "source_commit": "91167ada1e02281c6e50f91962d3a7e92b3ce49d"
+    }
+  },
+  "installation": {
+    "z80pack": {
+      "status": "PASS",
+      "image_sha256": "5b977efb8acd336e3c4dfecd41465e9d0cf3f34441821c3aab15f6f25e84546c",
+      "install_source_commit": "3afac0cbd79ec1425b6551693c11656bcf711c48",
+      "image_reuse": "exact complete image SHA-256 matches final-source install",
+      "filesystem_sha256_before_and_after_install": "e747d84dda4df6a734fa75c9e02b6614e905931005e5ba1a0d90f96a04db0b8f",
+      "installed_raw_sha256_before_cold_boot": "a03c37bf7ef4c9d2ebb6504217e23aa40e4d791fd14e5e032fb26a79dcb12b14",
+      "maximum_com": 57344,
+      "archive": "BetterCPM-1.3-System-cpmsim-candidate.zip",
+      "archive_sha256": "df4ddf1512975a4c53bfb0d50b175fab97b64c5490c4ace87d1bd6ca6764555a"
+    },
+    "trs80gp": {
+      "status": "PASS",
+      "image_sha256": "d39282f578817914af217bf3b35c46ef2bb3b2bc0cc03919cc9712ed37149c06",
+      "install_source_commit": "91167ada1e02281c6e50f91962d3a7e92b3ce49d",
+      "image_reuse": "fresh execution",
+      "filesystem_sha256_before_and_after_install": "94708619a83d0c8008b087d8e2a6c0303976cf68d7aa1b1a3680d0575694f341",
+      "installed_raw_sha256_before_cold_boot": "f110ef481544b1824f9b8f8d6898cf7133a7a719f92939501f0a822129135711",
+      "maximum_com": 54272,
+      "archive": "BetterCPM-1.3-System-Model4-candidate.zip",
+      "archive_sha256": "3a4ce27979efb6a0200afd7beb4ed257b389ddd1ee74512a5ad5274010ad10ee"
+    },
+    "trs80m2": {
+      "status": "PASS",
+      "image_sha256": "61b1566f0e42229caebb343546b19a76a9536b5bd1b2b27196c60a5c2c8eb629",
+      "install_source_commit": "3afac0cbd79ec1425b6551693c11656bcf711c48",
+      "image_reuse": "exact complete image SHA-256 matches final-source install",
+      "filesystem_sha256_before_and_after_install": "af73994d5ba4bf58a470968a0404bbaa5c65b99d5e73501394fca2ffa05bbe37",
+      "installed_raw_sha256_before_cold_boot": "6279615d06e2b51c03ae272bd126f7231c623dc264202dd034a795c27858d821",
+      "maximum_com": 57344,
+      "archive": "BetterCPM-1.3-System-Model2-candidate.zip",
+      "archive_sha256": "02b06b745897c33bf1b8f9505c38db475a05ba239ff6f8b2d3a9ac5eb046afe2"
+    }
+  },
+  "capture_sha256": {
+    "z80pack": {
+      "cold-transcript.txt": "caed8815a30f21ca80f9e698f994ac35cfadf857cbeca2d9210430c7495d0755",
+      "install-transcript.txt": "548394b20f9ffefb79839e4779ee598867e51489d8965ec70adca3d3acad0174"
+    },
+    "trs80gp": {
+      "install/arguments.json": "0fb33fb66b87acfc646bef8845ff3a16e70b7e4d21ca1b502c9d3b0acc72c0d0",
+      "install/trs80-text-1.txt": "1b9864eb3f7568ce478ca3ebd68981b4b365ad9c45ee41fdbe6605fcff440344",
+      "install/trs80-text-0.txt": "0745828f8cb866f533b88161c78da69e32df89d35e5e3f7a1c261a4fc1058529",
+      "install/trs80-text-2.txt": "edcba8e615b001d3bd334e9c67380d7d17a75b3023bade4aa7ee2b19f5e9f5da",
+      "install/trs80-text-3.txt": "ece571fe1bbc59efec0a60d09870edf186785adad0c4e4dcf4a62ce2844d890b",
+      "install/trs80-text-6.txt": "804acd0feb2687b1abe3ddfcee8b0433501564ca6fc0e76d9666b01e7749c359",
+      "install/trs80-text-4.txt": "fe5d3f27cce847b2fe1a22366c3540cc77ad6650ecfb0bcd57b0c41d3a5dd2e6",
+      "install/trs80-text-5.txt": "d07c60a7176d9ea73fc8f7ec51f7320ee7bf65a2cdfd6519479f21b19589d4d9",
+      "cold/arguments.json": "2337ee96580eb1a23f9a26e143e58e18261336ddf201e6a095746a2e542f2ddf",
+      "cold/trs80-text-1.txt": "7c660b42dc401196b7519491b147ba8337cd6af59d39b8f7190008bdb2aa8fea",
+      "cold/trs80-text-0.txt": "0745828f8cb866f533b88161c78da69e32df89d35e5e3f7a1c261a4fc1058529",
+      "cold/trs80-text-2.txt": "7c660b42dc401196b7519491b147ba8337cd6af59d39b8f7190008bdb2aa8fea",
+      "cold/trs80-text-3.txt": "b6168683f9ec1eb225220a27b1ff0d53f160b05030f24b87a2865153bd549e18",
+      "cold/trs80-text-6.txt": "2d9550faa43079675ba45bb46861c656e7889ade7ce8943e8d3ba08429473879",
+      "cold/trs80-text-4.txt": "4eed91605015e55718055324194a8e9e369ad544b48d0a72012458a4b7671b20",
+      "cold/trs80-text-5.txt": "6f471573581f099232a41dc291f20e2bee49fc55968f4e96e920ea11cc0db47b"
+    },
+    "trs80m2": {
+      "install/arguments.json": "f7c871520f28751192b8aff26ae80a7d2b60c59fa3545714b1673a766dc4b967",
+      "install/trs80-text-1.txt": "6d8d2059a137f94435cb3f656c27421751241f088a6b1784498102f3a47514de",
+      "install/trs80-text-0.txt": "5de6d9b1da5c49517f62710a49b3c276b13cb95c74084b9163ab6b1c50d5cd25",
+      "install/trs80-text-2.txt": "e722e3b5cdf2f2d777f0473c6e3a84ef5bf0520659703ec20663eb4dc2d993a2",
+      "cold/arguments.json": "3b0cdd5975a870247968bfb29e9996f13059f19eb3de95cb1cd2c5c80959660b",
+      "cold/trs80-text-1.txt": "965a60be4f69c7324a267ef0cb6efb815597069f2ee78c13299bdc7885cb6d67",
+      "cold/trs80-text-0.txt": "5de6d9b1da5c49517f62710a49b3c276b13cb95c74084b9163ab6b1c50d5cd25",
+      "cold/trs80-text-2.txt": "5edaff6bf824781748cf8b34d348902cadf8016409d0589afcf288cbd02776ef",
+      "cold/trs80-text-3.txt": "e1bc22ba35d4b3f38f4a7ea2ff5e95b75bbe341eba13bd1a7c5be78de3ff7f42"
+    }
+  },
+  "archive_audit": "PASS: all eight actual ZIPs; platform pairs, checksums, source offers, four-manual edition and source retention",
+  "utilities_inventory": {
+    "status": "PASS",
+    "platforms": [
+      "cpmsim",
+      "Model4",
+      "Model2"
+    ],
+    "sha256": "2c5ef2bb8404f40b46839941c64816fb500df2ae1214d831d327266e7fdf42d5"
+  },
+  "offline_runtime": {
+    "status": "PASS",
+    "method": "extracted delivered cpmsim ZIP host kit and packaged upstream tar; exact executable and guest-tool equality",
+    "source_commit": "91167ada1e02281c6e50f91962d3a7e92b3ce49d",
+    "source_archive_sha256": "010576d4035f6db5e616a6cb143dab47754ca375d9e7a451ee9bdf1b700a5b3b",
+    "builder_sha256": "fef1692fd17d3491a4e8d1fbf011588db0b823fb8a7d4b463ff7ad2ef7c7ce29",
+    "patch_set_sha256": "41377ca4d3314d829fc90a46609f2c9816a3fd2bf076fd9600aac5c49616bddf",
+    "executables": {
+      "cpmsim/cpmsim": "0f6b256cd6beea2ab7bf0eab8a9cc2a5241ed772408e811150c3f6e0f5cff4e8",
+      "cpmsim/srctools/cpmrecv": "9a3a7f11a228a8000c7ae97c7d77cd5ccfbe2d79a5294bc77787b7f0b44a13e1",
+      "cpmsim/srctools/cpmsend": "c046dcb77849e63f1e1efa03a989c0f99c35d4c5a449eb80beb8d4b763aae448",
+      "cpmsim/srctools/mkdskimg": "2841cdb54f4c9494dabd807f6771b1889435395dd9b8edf47b31c86051f531cd",
+      "cpmsim/srctools/bin2hex": "5e2fbfeb136c57c1ce82e912ad800d00ca5f9ca418ec5b2dee7f92b0b35d78cd",
+      "cpmsim/srctools/ptp2bin": "c13bae047331e38085aaf486a155c52f0dee2b253e3df026d3507968e885887d"
+    },
+    "guest_utilities": {
+      "cpmtools/r.com": "611ba1f903a21f406a9a5dd50d10ea64089fd83161ca4a3c396e743b0a5c8f65",
+      "cpmtools/w.com": "e26591c1f49448767e91d065ce1dbac56a7228f2d9361057f43de9d563626720",
+      "cpmtools/mount.com": "a25834591c94a9bf8fd6623303dfea66c5fdaa7bcc988e3bcd0cb1dc7a4d15ce"
+    }
+  },
+  "default_pds": {
+    "total": 204,
+    "metadata": 12,
+    "HISTORY": 192,
+    "MCL": 0,
+    "VAR": 0
+  },
+  "resident_bytes_added": 0,
+  "unchanged_scope": "No broad qualification campaign; functional evidence for unchanged inputs remains pinned in earlier 1.3 records.",
+  "pending": [
+    "Maintainer review/merge of the Model 4 startup-package fix",
+    "Maintainer acceptance of the pinned candidate source and artifacts before any release action"
+  ],
+  "not_performed": [
+    "PR merge",
+    "release publication or tags",
+    "baseline promotion"
+  ]
+}
