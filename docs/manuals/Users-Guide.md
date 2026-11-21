@@ -207,7 +207,7 @@ Begin with `CONFIG /SHOW`. Record active drive bindings and saved startup settin
 
 Changing a runtime binding does not format a disk. Changing a catalogue does not reinterpret an existing active binding. A setting can work for the session without becoming the next cold-boot default. CONFIG distinguishes current state and pending cold-boot settings; choose the save operation matching your intention rather than assuming every menu edit is already on disk.
 
-In the 1.3 foundation, CONFIG's **F — Command environment / PDS** menu shows active allocations, saved choices, pending choices and the next cold boot's maximum COM size. Save from the main menu, then cold boot to activate a different composition. Ordinary warm boot keeps the active layout. The default retains 192 bytes of history, with MCL and VAR storage off. Those two commands follow in later 1.3 stages. Keep the matching `PDSCONF.OVL` alongside the system utilities in A:user 0. `STAT MEM` shows total PDS size, metadata and each owner's allocation; optional storage reduces program capacity by the cost shown in CONFIG.
+In the 1.3 foundation, CONFIG's **F — Command environment / PDS** menu shows active allocations, saved choices, pending choices and the next cold boot's maximum COM size. Save from the main menu, then cold boot to activate a different composition. Ordinary warm boot keeps the active layout. The default retains 192 bytes of history, with MCL and VAR storage off. MCL execution is available when enabled; VAR storage remains reserved for the next implementation stage. Keep the matching `PDSCONF.OVL` alongside the system utilities in A:user 0. `STAT MEM` shows total PDS size, metadata and each owner's allocation; optional storage reduces program capacity by the cost shown in CONFIG.
 
 For an actual disk task:
 
@@ -220,6 +220,16 @@ For an actual disk task:
 For Model 4 System installation, use the exact [named BCPM780 procedure](../platform/MODEL4-SHIPPED-INSTALLATION.txt), also described in the [SYSGEN entry](Command-and-Utilities-Reference.md#sysgen). Do not substitute historical 790K or an ordinary 800K Work disk.
 
 Startup-script edits, extension load/unload operations, terminal selection and clock-provider loading have their own tools and lifetimes. CONFIG does not manage all of them. Use the [complete CONFIG reference](Command-and-Utilities-Reference.md#config) for menu/input controls, command-line forms, save choices and recovery.
+
+With MCL enabled, type multiple commands on one interactive line, for example
+`VER;DIR`. Semicolons inside double quotes remain part of an argument. The whole
+line must have balanced double quotes; empty segments are skipped. The original
+line appears once in history, and the 127-character input limit still applies.
+Startup and SUBMIT records retain literal semicolons. Ordinary program returns
+and warm boots continue the remaining commands; recognized CCP/BDOS errors or
+cancellation discard them. A program that prints its own error and returns
+normally still continues the sequence. CONFIG menu F, choice B enables MCL for
+the next cold boot; its 128-byte cost is shown before saving.
 
 <a id="chapter-8"></a>
 

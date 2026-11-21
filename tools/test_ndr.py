@@ -268,7 +268,7 @@ def main():
     ccp.setword(1, LAYOUT['BIOS']+3)
     ccp.mem[LAYOUT['BIOS']+3:LAYOUT['BIOS']+6] = b'\xc3\xff\xff'
     ccp.mem[LAYOUT['PDS_DESCRIPTOR']:LAYOUT['PDS_DESCRIPTOR']+4] = b'BM\x01\x05'
-    address = LAYOUT['EXTENSIONS']-16
+    address = LAYOUT['EXTENSIONS']-13  # result byte precedes count and six DU pairs
     result = g.run('$$ ROOT: B2: UTILS: C0:', 'PATH')
     expected = bytes([5,0,255,3,3,2,2,2,0,3,0])
     assert bytes(ccp.mem[address:address+len(expected)]) == expected, result

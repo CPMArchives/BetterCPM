@@ -52,7 +52,6 @@ UB_ENTRY:                               ; enter unified BDOS
         JP      Z,LY_EXT                ; route the P2DOS fallback pair
 
 UB_STANDARD:                            ; dispatch ordinary function
-        LD      A,C                     ; preserve the standard entry convention
         LD      (UB_OLDSP),SP
         LD      SP,UB_STKTOP
         LD      (UB_OLDIX),IX           ; nonlocal error exits can unwind any helper depth
@@ -191,8 +190,15 @@ UB_DIN:                                 ; din
         OR      A
         RET     Z
 
-UB_DGET:                                ; dget
-        JR      UB_GETIN
+UB_DGET:                                ; direct input shares the ordinary getter
+UB_GETIN:                               ; getin
+        LD      A,(UB_PENDING)
+        OR      A
+        JP      Z,BIO_CONIN
+        XOR     A
+        LD      (UB_PENDING),A
+        LD      A,(UB_PENDCH)
+        RET
 
 ; -------------------------------------------------------------------------------
 ; Cooked Console Input
@@ -201,7 +207,7 @@ UB_DGET:                                ; dget
 UB_CONIN:                               ; read cooked console character
         CALL    UB_GETIN
         CP      3
-        JP      Z,BIO_WBOOT
+        JP      Z,UB_MABORT
         CP      16                      ; ^P toggles printer echo and is consumed
         JR      Z,UB_TOGGLE
         CP      19                      ; ^S waits for one key and is consumed
@@ -217,17 +223,8 @@ UB_TOGGLE:                              ; toggle control state
 UB_PAUSE:                               ; pause output
         CALL    BIO_CONIN
         CP      3
-        JP      Z,BIO_WBOOT
+        JP      Z,UB_MABORT
         JR      UB_CONIN
-
-UB_GETIN:                               ; getin
-        LD      A,(UB_PENDING)
-        OR      A
-        JP      Z,BIO_CONIN
-        XOR     A
-        LD      (UB_PENDING),A
-        LD      A,(UB_PENDCH)
-        RET
 
 ; -------------------------------------------------------------------------------
 ; Cooked Console Output
@@ -322,7 +319,7 @@ UB_PUT:                                 ; put
         JR      Z,UB_PUTNOW
         CALL    BIO_CONIN
         CP      3
-        JP      Z,BIO_WBOOT
+        JP      Z,UB_MABORT
         CP      16
         JR      Z,UB_PUTTOG
         CP      19
@@ -341,7 +338,7 @@ UB_PUTTOG:                              ; puttog
 UB_PUTPAUSE:                            ; putpause
         CALL    BIO_CONIN
         CP      3
-        JP      Z,BIO_WBOOT
+        JP      Z,UB_MABORT
 
 UB_PUTNOW:                              ; putnow
         POP     BC
@@ -433,7 +430,7 @@ UB_RLSTORE:                             ; rlstore
 UB_RLCTRL:                              ; rlctrl
         LD      A,(IX+1)
         OR      A
-        JP      Z,BIO_WBOOT
+        JP      Z,UB_MABORT
         LD      A,3
         JR      UB_RLSTORE
 
@@ -572,7 +569,7 @@ UB_RESET:                               ; reset disk system
         LD      (UB_RDONLY),HL
         LD      C,A
         CALL    UB_CONTEXT
-        JP      NZ,UB_BAD
+        JR      NZ,UB_BAD
         XOR     A
         RET
 
@@ -1490,7 +1487,7 @@ UB_EXLOW:                               ; exlow
         EX      (SP),HL
         ADD     A,B
         LD      (UB_CANREC),A
-        LD      D,0
+        ; D is still zero from the extent-byte lookup.
         JR      NC,UB_EXNC0
         INC     D
 
@@ -1704,7 +1701,7 @@ UB_FRO:                                 ; fro
 UB_FROLOOP:                             ; froloop
         LD      A,(HL)
         OR      A
-        JP      Z,BIO_WBOOT
+        JP      Z,UB_MABORT
         INC     HL
         PUSH    HL
         CALL    UB_COCHAR
@@ -2028,8 +2025,7 @@ UB_RGET8:                               ; rget8
         LD      E,A
         LD      D,0
         ADD     HL,DE
-        LD      E,(HL)
-        LD      D,0
+        LD      E,(HL)                 ; D remains zero from the byte-index setup
 
 UB_RBLOCK:                              ; rblock
         LD      A,D
@@ -2556,7 +2552,7 @@ UB_SECKEY:                              ; seckey
   ; Never flush a failed directory write while reconstructing the CCP.
         XOR     A
         LD      (UB_DIRTY),A
-        JP      BIO_WBOOT
+        JP      UB_MABORT
 
 UB_IGNOR:                               ; ignor
         POP     IX
@@ -2601,6 +2597,13 @@ UA_NLOOP:
         DJNZ    UA_NLOOP
         RET
 
+
+ ; Known aborts latch cancellation in the existing private command flags.
+ ; Warm reconstruction validates PDS and clears MCL before command acquisition.
+UB_MABORT:
+        LD HL,LY_SYS+095H
+        SET 2,(HL)
+        JP BIO_WBOOT
 
 UB_OLDSP:       DW      0               ; caller stack pointer
 UB_OLDIX:       DW      0               ; saved caller IX

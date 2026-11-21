@@ -177,7 +177,7 @@ PD_HELP: DB 13,10,'Changes apply next cold boot. Save from main menu.',13,10
         DB 'A History: 0 Off, 1 128, 2 192, 3 384 bytes',13,10
         DB 'B MCL storage: 0 Off, 1 128 bytes',13,10
         DB 'C VAR storage: 0 Off, 1 128, 2 256, 3 512 bytes',13,10
-        DB 'MCL/VAR command support follows in later 1.3 stages.',13,10
+        DB 'MCL applies to interactive lines; VAR storage is reserved.',13,10
         DB '^C Return',13,10,0
 
 STDEFAULT:                             ; reset startup while preserving PDS choices

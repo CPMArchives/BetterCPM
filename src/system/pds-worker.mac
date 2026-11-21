@@ -6,6 +6,12 @@
         JP PW_ENTER
         JP PC_VALIDATE
         JP PW_BIND
+        JP MC_SOURCE
+        JP MC_SOURCE+3
+        JP MC_SOURCE+6
+        JP PW_STARTUP
+PW_CSECTS:
+; @command-sector-table@
 
         INCLUDE command-record.inc
 
@@ -21,29 +27,16 @@ PW_ENTER:
         LD HL,0
         LD (LY_PD2+6),HL
         LD (LY_PD2+8),HL
-; BIOS logical records 1 and 2; stack and work buffer do not overlap code.
-        LD BC,0
-        LD E,C
-        CALL LY_BIOS+27
-        LD A,H
-        OR L
-        JR Z,PW_DEFAULT
-        LD BC,0
-        CALL LY_BIOS+30
-        LD BC,1
+; Saved settings are read before any reconstruction can overwrite the buffer.
         LD DE,01000H
-        CALL PW_READ
-        JR NZ,PW_DEFAULT
-        LD BC,2
-        LD DE,01080H
-        CALL PW_READ
+        CALL PW_RLOAD
         JR NZ,PW_DEFAULT
         LD IX,01000H
         CALL PC_VALIDATE
         JR NZ,PW_DEFAULT
         LD A,(01004H)
-        CP 2
-        JR NZ,PW_COMPOSE
+        DEC A
+        JR Z,PW_COMPOSE
         LD A,(01091H)                   ; CE history choice, offset 145
         LD HL,PW_HSIZES
         CALL PW_SIZE
@@ -139,13 +132,31 @@ PW_WARM:
         OR E
         CALL NZ,PW_HIST
         POP HL
+        LD A,(LY_SYS+095H)
+        BIT 2,A
+        JR Z,PW_DONE
+        LD DE,(LY_PD2+4)
+        ADD HL,DE
+        LD A,(LY_PD2+6)
+        OR A
+        JR Z,PW_UNLATCH
+        LD B,128
+        XOR A
+PW_MCLEAR:
+        LD (HL),A
+        INC HL
+        DJNZ PW_MCLEAR
+PW_UNLATCH:
+        LD HL,LY_SYS+095H
+        RES 2,(HL)
+PW_DONE:
+        XOR A
         RET
 PW_HBAD:
-        LD DE,PW_CORRUPT
+        LD DE,MC_SOURCE+MC_ERROR
         LD C,9
         CALL LY_BDOS
         JP PC_BAD
-PW_CORRUPT: DB 'PDS invalid; cold boot required.',13,10,'$'
 
 PW_READ:
         PUSH DE
@@ -165,13 +176,15 @@ PW_SIZE:
         LD D,(HL)
         EX DE,HL
         RET
-PW_FALLBACK: DB 'PDS: invalid saved settings; using defaults.',13,10,'$'
+PW_FALLBACK: DB 'Invalid PDS; defaults.',13,10,'$'
 
         INCLUDE pds-directory.inc
 
 ; IX=CCP owner-operand offsets; HL=editor scratch for disabled HISTORY.
 PW_BIND:
         LD (PW_RAW),HL
+        LD HL,(LY_SYS+08CH)
+        LD (HP_BASE),HL
         LD C,(IX+0)
         LD B,(IX+1)
         INC IX
@@ -205,6 +218,8 @@ PW_BIND:
         SBC HL,BC
         EX DE,HL
 PB_WORK:
+        CALL H_PATCH
+        JP MC_INSTALL
 H_PATCH:
         LD A,(IX+0)
         INC IX
@@ -212,7 +227,7 @@ HP_LOOP:
         PUSH AF
         LD C,(IX+0)
         LD B,(IX+1)
-        LD HL,(LY_SYS+08CH)
+        LD HL,(HP_BASE)
         ADD HL,BC
         LD C,(HL)
         INC HL
@@ -322,5 +337,93 @@ PH_RESET:
         XOR A
         RET
 PH_NOTICE: DB 'History reset.',13,10,'$'
+; Saved startup record input shares the worker's direct BIOS read routine.
+PW_STARTUP:
+        LD DE,0100H
+PW_RLOAD:
+        PUSH DE
+        LD BC,0
+        LD E,C
+        CALL LY_BIOS+27
+        LD A,H
+        OR L
+        POP DE
+        JP Z,PC_BAD
+        PUSH DE
+        LD BC,0
+        CALL LY_BIOS+30
+        POP DE
+        PUSH DE
+        LD BC,1
+        CALL PW_READ
+        POP DE
+        RET NZ
+        LD HL,128
+        ADD HL,DE
+        EX DE,HL
+        LD BC,2
+        JP PW_READ
+; Copy the private MCL runtime into the CCP's reserved, reclaimable workspace.
+; IX describes its destination offset, typed word fixups and CCP call operands.
+MC_INSTALL:
+        LD C,(IX+0)
+        LD B,(IX+1)
+        INC IX
+        INC IX
+        LD HL,(LY_SYS+08CH)
+        ADD HL,BC
+        LD (MI_DEST),HL
+        EX DE,HL
+        LD HL,MC_SOURCE
+        LD BC,MC_SIZE
+        LDIR
+        PUSH DE                        ; cache fields immediately follow the copied code
+        LD HL,(MI_DEST)
+        LD (HP_BASE),HL
+        LD DE,-MC_SOURCE
+        ADD HL,DE
+        EX DE,HL
+        CALL H_PATCH
+        LD HL,(LY_SYS+08CH)
+        LD (HP_BASE),HL
+        LD HL,(MI_DEST)
+        LD DE,-(PW_BASE+9)
+        ADD HL,DE
+        EX DE,HL
+        CALL H_PATCH
+        LD HL,(PW_RAW)
+        LD DE,-128
+        ADD HL,DE
+        POP DE
+        EX DE,HL
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        INC HL
+        EX DE,HL
+        PUSH DE
+        LD HL,LY_PD2
+        LD DE,(LY_PD2+8)
+        OR A
+        SBC HL,DE
+        LD DE,(LY_PD2+6)
+        SBC HL,DE
+        POP DE
+        EX DE,HL
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        INC HL
+        EX DE,HL
+        LD HL,LY_PD2
+        LD BC,12
+        LDIR
+        XOR A
+        RET
+HP_BASE: DW 0
+MI_DEST: DW 0
 PW_RAW: DW 0
+MC_SOURCE:
+; @mcl-runtime@
+
         END

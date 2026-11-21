@@ -21,10 +21,15 @@ LAYOUT.update(PDS_DESCRIPTOR=LAYOUT["SYSTEM"] + 0x80,
 
 def expand_layout(text: str) -> str:
     """Inline selected generated inputs, or the unchanged canonical default."""
-    for inc in ('command-record.inc','pds-directory.inc'):
+    for inc in ('command-record.inc','pds-directory.inc','mcl-worker.inc'):
         text = re.sub(r'^[ \t]*INCLUDE[ \t]+'+re.escape(inc)+r'[ \t]*$',
                       lambda _, inc=inc: (ROOT/'src/system'/inc).read_text(),
                       text, flags=re.M|re.I)
+    if '; @mcl-runtime-fixups@' in text:
+        text=text.replace('; @mcl-runtime-fixups@',(ROOT/'build/pds/mcl-fixups.inc').read_text())
+        import json
+        count=json.loads((ROOT/'build/pds/mcl-runtime.json').read_text())['size']
+        text=text.replace('; @mcl-runtime-workspace@','        REPT '+str(count)+'\n        DB 0\n        ENDM')
     if '; @ndr-ccp@' in text:
         text = text.replace('; @ndr-ccp@', (ROOT/'src/ccp/ndr.inc').read_text(encoding='ascii'))
     if '; @ndr-lookup@' in text:
@@ -157,7 +162,7 @@ def expand_layout(text: str) -> str:
         "; @command-sector-table@", '\n'.join(
             f'        DB {n//20*32+n//10%2*16+order[n%10]}'
             for n in range(14+LAYOUT['BOOT_SECTORS'],27+LAYOUT['BOOT_SECTORS']))).replace(
-        '; @pds-sector-table@', table(8+LAYOUT['BOOT_SECTORS'],2)).replace(
+        '; @pds-sector-table@', table(8+LAYOUT['BOOT_SECTORS'],4)).replace(
         "; @reloader-sector-table@", table(2 + LAYOUT["BOOT_SECTORS"], 2)).replace(
         "; @control-sector-table@", table(4 + LAYOUT["BOOT_SECTORS"], 2)).replace(
         "; @rsx-sector-table@", table(6 + LAYOUT["BOOT_SECTORS"], 2)).replace(

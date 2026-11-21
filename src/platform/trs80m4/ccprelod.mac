@@ -62,6 +62,7 @@ CRBODY:                                 ; begin reconstruction body
         LD HL,PW_BASE
         LD DE,CR_PDSECT
         CALL M4_FETCH
+        CALL Z,M4_FETCH
         CALL Z,PW_BASE
         JP NZ,CRFAIL
   ; 07-Sep-2026 -- a BIOS caller may leave another physical drive selected
@@ -337,11 +338,11 @@ CRSZOK:                                 ; accept module allocation size
         SBC     HL,DE
         JP      C,CRBAD
         PUSH    HL
-        LD      DE,LY_LOAD+0400H
+        LD      DE,01E00H
         OR      A
         SBC     HL,DE
         POP     HL
-        JP      C,CRBAD                 ; never overwrite the executing transient loader
+        JP      C,CRBAD                 ; protect loader, stack and reconstructed command worker
         LD      (CRBASE),HL
         LD      (CRBOUND),HL
         LD      (CRDEST),HL
@@ -641,8 +642,7 @@ CRCPXERR:      DB      'CPX?',13,10,'$'  ; optional carrier reconstruction faile
 ; Loader State
 ; -------------------------------------------------------------------------------
 
-CRSECTS:                                ; module sector count
-  ; @command-sector-table@
+CRSECTS EQU PW_BASE+21                   ; packed table now travels with the worker
 CR_PDSECT:
 ; @pds-sector-table@
 ; @pds-fetch@

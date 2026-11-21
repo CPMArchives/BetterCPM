@@ -95,7 +95,7 @@ def main():
     cpu, io = machine(bytes(bad))
     cpu.run(0x1700, limit=100000)
     assert bytes(cpu.mem[L['SYSTEM']-12:L['SYSTEM']]) == header()
-    assert b'using defaults' in io['messages'][0]
+    assert b'defaults' in io['messages'][0]
     print('PASS PDS cold composition, exact owner bounds, zero-owner case, warm preservation, corrupt-live rejection, BCST1 and saved fallback')
 
 

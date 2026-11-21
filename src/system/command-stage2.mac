@@ -62,7 +62,7 @@ CRBODY:                                 ; begin reconstruction body
         LD      A,5
         CALL    LY_BIOS+66              ; reset unfinished monitor output before reconstruction
         LD HL,CR_PDT
-        LD DE,PW_BASE+768
+        LD DE,PW_BASE+864
         LD BC,CR_PDE-CR_PDT
         LDIR
         CALL PW_BASE
@@ -208,7 +208,7 @@ CRCCP:                                  ; load relocatable CCP
 ; Fixed header cache + record buffer; all state is inside the verified stage.
 STAGE EQU 01000H
 CR10BUFFER EQU 01600H
-CR10FLOOR EQU 01B00H
+CR10FLOOR EQU 01E00H
 
 CRLOAD:
         LD HL,STAGE

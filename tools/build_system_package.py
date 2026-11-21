@@ -23,7 +23,7 @@ COMPONENTS = (
     ("RSXSEL.BIN", "build/trs80/rsxselect.bin", 8612, 92),
     ("CONFIG.BIN", "build/system/config.bin", 8704, 1024),
     ("RSXLOAD.BIN", "build/system/rsxloader.bin", 9728, 1021),
-    ("PDSWORK.BIN", "build/pds/worker.bin", 10752, 1021),
+    ("PDSWORK.BIN", "build/pds/worker.bin", 10752, 2045),
     ("RSXRESOL.BIN", "build/system/rsxresolver.bin", 12800, 1021),
     ("CCP.RLM", "build/ccp/ccp.rlm", 13824, 52 * 128),
 )
@@ -42,7 +42,7 @@ def compose() -> tuple[bytes, dict[str, bytes]]:
         payload[offset:offset + len(data)] = data
         exported[name] = data
     gateway = bytes((0xC3, LAYOUT["BDOS"] & 0xFF, LAYOUT["BDOS"] >> 8))
-    for offset in (9728, 10752, 11776, 12800):
+    for offset in (9728, 11776, 12800):
         payload[offset + 1021:offset + 1024] = gateway
     payload[128:384] = startup_record(system_base=LAYOUT["SYSTEM"])
 

@@ -876,6 +876,9 @@ class Z80:
                 old = self.d
                 self.d = ((old << 1) | int(self.carry)) & 255
                 self.z, self.carry = self.d == 0, bool(old & 128)
+            elif op == 0xCB and self.mem[self.pc] == 0x96:  # RES 2,(HL)
+                self.pc += 1
+                self.mem[self.hl] &= 0xFB
             elif op == 0xCB and self.mem[self.pc] >= 0xC0:
                 sub = self.mem[self.pc]
                 self.pc += 1

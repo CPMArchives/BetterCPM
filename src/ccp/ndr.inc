@@ -144,6 +144,7 @@ CN_QLOOP:
         JR NZ,CN_QLOOP
         JR CN_TEXT
 CN_LONG:
+        CALL PW_BASE+12
         POP HL
         LD DE,CCP_UNKNOWN
         LD C,9
