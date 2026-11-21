@@ -1,0 +1,89 @@
+{
+  "status": "PASS_FOCUSED_NATIVE_REBUILD",
+  "date": "2026-11-21",
+  "base": "bcd27a0a24f1a644d65a6eac7847bbfb74eec0f2",
+  "artifacts": {
+    "build/ccp/ccp.bin": {
+      "bytes": 8470,
+      "sha256": "2dfb4df4a033f072a29bc8a810c5865306e8444d6e71b4a81e5a1ecfc8de4928"
+    },
+    "build/ccp/ccp.rlm": {
+      "bytes": 6526,
+      "sha256": "0247a27d453e8351dbb4f6d3bf3cd02f0f76c9eea88f927e1a1ce9d947e5e297"
+    },
+    "build/ccp/packed.bin": {
+      "bytes": 6014,
+      "sha256": "b39f4a91ef84b65d0f6d565475dd0a0d95cb77bdc0b1c9235796f5ef3ca0ff27"
+    },
+    "build/ccp/packed-alt.bin": {
+      "bytes": 6014,
+      "sha256": "422964a973c71b3a26ee8809dffc625f7c433f8fd32332152300e535e3217fab"
+    },
+    "build/ccp/packed-check.bin": {
+      "bytes": 6014,
+      "sha256": "c11f1ecb2cff755ede8054947f56e84585565b9b44ee510e35b616577a90ff99"
+    },
+    "build/utilities/RLMBUILD.COM": {
+      "bytes": 1520,
+      "sha256": "6d0dd6a41a928004491fe83fe6c33f44a59fed335362adcbffb05f753016a955"
+    },
+    "build/trs80/BetterCPM-Build-80T-DS-800K.img": {
+      "bytes": 819200,
+      "sha256": "e859ca300482ae8fa12e155695ea350ca2e073aeac60492b14019cfdbba883ea"
+    },
+    "build/ccp/NATIVE-PACKED-BUILD.LOG": {
+      "bytes": 1762,
+      "sha256": "42589c859ddb5c292fc358e923f388ebb610d1c4bcae0a91d3515121d14a4008"
+    },
+    "build/ccp/NATIVE-CCP-BUILD.LOG": {
+      "bytes": 1163,
+      "sha256": "2aa794ce9113a11f2ebbe8a95936ce05eed326a7bd1ad9029b810dfc3cd3b654"
+    }
+  },
+  "native_toolchain": {
+    "/Users/nathanael/projects/git/z80pack/cpmsim/cpmsim": "0f6b256cd6beea2ab7bf0eab8a9cc2a5241ed772408e811150c3f6e0f5cff4e8",
+    "/Users/nathanael/projects/git/cpm-compatibility/suite/build-tools/ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+    "/Users/nathanael/projects/git/cpm-compatibility/suite/build-tools/LINK.COM": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677"
+  },
+  "commands": [
+    "python3 tools/build_ccp.py",
+    "python3 tools/build_disk_utilities.py",
+    "python3 tools/test_native_ccp_rebuild.py",
+    "python3 tools/test_native_builder_tpa.py",
+    "python3 tools/test_native_build_disk.py",
+    "python3 tools/validate_native_ccp.py --cpmsim /Users/nathanael/projects/git/z80pack/cpmsim/cpmsim --system-disk /Users/nathanael/projects/git/z80pack/cpmsim/disks/library/cpm22-62khd.dsk --disk-template /Users/nathanael/projects/git/cpm-compatibility/suite/disk-images/z80pack/ibm-3740/drivea.dsk --tools /Users/nathanael/projects/git/cpm-compatibility/suite/build-tools --build-disk build/trs80/BetterCPM-Build-80T-DS-800K.img",
+    "python3 tools/build_native_ccp.py --cpmsim /Users/nathanael/projects/git/z80pack/cpmsim/cpmsim --system-disk /Users/nathanael/projects/git/z80pack/cpmsim/disks/library/cpm22-62khd.dsk --disk-template /Users/nathanael/projects/git/cpm-compatibility/suite/disk-images/z80pack/ibm-3740/drivea.dsk --tools /Users/nathanael/projects/git/cpm-compatibility/suite/build-tools",
+    "python3 tools/component_registry.py --check",
+    "python3 tools/test_pds_memory_boundary.py --target model4",
+    "python3 tools/test_pds_memory_boundary.py --root build/review-1.3/readiness-help-fixed/work/profiles/cpmsim-fullram/z80pack --target z80pack",
+    "python3 tools/test_pds_memory_boundary.py --root build/review-1.3/readiness-help-fixed/work/profiles/model2-fullram/trs80m2 --target trs80m2"
+  ],
+  "results": {
+    "prepared_input_parity_bytes": [
+      6014,
+      6014,
+      6014
+    ],
+    "native_carrier_parity_bytes": 6526,
+    "zero_tail_padding": 2,
+    "inner_native_parity_bytes": 8470,
+    "production_builder_cases": 20,
+    "builder_admission_query_cases": 22,
+    "build_disk_and_complete_archive": "PASS",
+    "maximum_com": {
+      "cpmsim": 57344,
+      "model2": 57344,
+      "model4": 54272
+    },
+    "next_record_rejected_and_protected_canaries": "PASS",
+    "resident_bytes_added": 0,
+    "pds_metadata_bytes": 12,
+    "default_history_owner_bytes": 192,
+    "default_pds_total_bytes": 204,
+    "default_mcl_var": "disabled"
+  },
+  "limits": [
+    "Native CCP inner edits require host repacking, as approved.",
+    "Final combined release/archive and installation acceptance remain pending."
+  ]
+}

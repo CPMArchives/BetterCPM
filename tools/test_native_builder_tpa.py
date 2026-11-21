@@ -62,7 +62,7 @@ def run(name, ceiling, tail=''):
 
 def main():
     count = 0
-    for name, minimum in (('SYSBUILD', 0x9000), ('RLMBUILD', 0x8600)):
+    for name, minimum in (('SYSBUILD', 0x9000), ('RLMBUILD', 0x8C00)):
         # Include the audited gateway values and both sides of the exact
         # exclusive workspace end. Equality supplies all required bytes.
         for ceiling in (0x7001, 0x7801, 0x8001, minimum - 1, minimum, minimum + 1, 0xD501):

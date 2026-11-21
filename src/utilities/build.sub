@@ -1,6 +1,7 @@
 ; ********************************************************************************
 ; *                    BetterCP/M Native System Build Script                     *
 ; *                                                                              *
+; * Packed CCP inputs are host-prepared; inner CCP edits need host repacking.    *
 ; * Rebuilds the protected BetterCP/M system from native Z80 source products,    *
 ; * constructs the resident payload and relocatable CCP, then composes the final *
 ; * SYSTEM.SYS package.                                                         *

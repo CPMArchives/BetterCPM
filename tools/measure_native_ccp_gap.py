@@ -18,7 +18,7 @@ def measure(root):
     outer_relocs=int.from_bytes(module[14:16],'little')
     records=math.ceil(len(inner)/128)
     stride=0x1600
-    return {'status':'NATIVE_REBUILD_REVIEW_BOUNDARY',
+    return {'status':'PREPARED_INPUT_REBUILD_IMPLEMENTED',
         'inner_image_bytes':len(inner),'inner_record_bytes':records*128,
         'outer_payload_bytes':outer_size,'outer_allocation':outer_alloc,
         'outer_relocations':outer_relocs,'outer_header_bytes':module[5]*512,
@@ -28,11 +28,11 @@ def measure(root):
         'legacy_outer_slot_overlap_bytes':max(0,math.ceil(outer_size/128)*128-stride),
         'legacy_header_plus_outer_bytes':1024+outer_size,
         'fixed_carrier_capacity':6656,
-        'current_metadata_sources':{'size':'inner ccp.bin','allocation':'rounded inner ccp.bin','relocations':'outer ccp.rlm'},
-        'proposed_prepared_inputs':{'size':outer_size,'allocation':outer_alloc,
+        'current_metadata_sources':{'size':'outer ccp.rlm','allocation':'outer ccp.rlm','relocations':'outer ccp.rlm','headers':'outer ccp.rlm'},
+        'prepared_inputs':{'size':outer_size,'allocation':outer_alloc,
             'relocations':outer_relocs,'header_records':module[5]*4,
             'input_stride':6144,'highest_workspace_end':0x8c00},
-        'review_required':'Host-prepared packed bootstrap assembly preserves native assembly/module construction, but edited inner CCP source needs host repacking. A fully native packer is additional build-tool work, not implemented here.'}
+        'approved_contract':'Native assembly/module construction from prepared packed-bootstrap inputs; edited inner CCP source requires host repacking. No native compressor.'}
 
 
 def main():
