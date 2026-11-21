@@ -57,12 +57,12 @@ def partition(flat):
     return '\n'.join(constants)+'\n','\n'.join(code)+'\n','NH_OLDSP: DW 0\n'+'\n'.join(data)+'\n'
 
 def path_layouts():
-    """Known v1.1 layouts, generated from the same contract as PATH.COM."""
+    """Known 1.3 layouts, generated from the same contract as PATH.COM."""
     from build_profiles import PROFILES, profile_inputs, symbols as layout_symbols
     source = ROOT / 'src/system/layout.inc'
     layouts = [layout_symbols(source.read_text())]
     layouts += [profile_inputs(p, source)[0]['symbols'] for p in PROFILES.values()]
-    return sorted({(v['LY_BIOS'] + 3, v['LY_SYS'] + 0x80, v['LY_EXT'] - 16)
+    return sorted({(v['LY_BIOS'] + 3, v['LY_SYS'] + 0x80, v['LY_EXT'] - 13)
                    for v in layouts})
 
 
