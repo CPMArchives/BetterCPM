@@ -5,7 +5,7 @@ Welcome to BetterCP/M, a CP/M-compatible operating system for Z80
 computers. It keeps the familiar CP/M 2.2 programming model while adding
 shared file-selection syntax, loadable extensions and modern build tools.
 
-This is the BetterCP/M 1.1 System Disk.
+This is a BetterCP/M 1.3 CANDIDATE System Disk; release acceptance is pending.
 See the accompanying release notes for changes and known limitations.
 Targets: patched cpmsim, TRS-80 Model 4 and 64K Model II under trs80gp.
 Model II uses BCM2SS single-sided IMDs; physical hardware is unverified.
@@ -88,4 +88,11 @@ TYPE and TED have not been migrated to the TCAP 2.0 API.
 
 Unloaded COM limits: cpmsim and Model II 57344 bytes; Model 4 54272.
 Optional RSXs consume TPA while loaded. Complete unload restores it.
+
+COMMAND ENVIRONMENT (1.3 CANDIDATE)
+
+HISTORY defaults to 192 bytes; MCL and VAR are off by default. CONFIG menu F
+saves owner choices for the next cold boot. STAT MEM reports memory costs.
+HELP MCL and HELP VAR explain command sequences and session substitution.
+Use complete matching 1.3 System files; do not mix private 1.2/1.3 modules.
 
