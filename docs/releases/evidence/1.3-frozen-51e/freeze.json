@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "product": "BetterCP/M 1.3",
+  "status": "FROZEN FOR MAINTAINER REVIEW; NOT PUBLISHED",
+  "source_freeze_commit": "51e1092d01b2a23e6244faaa877a8c5c8d6eb388",
+  "source_git_tree": "33f57279966905e977053503ce334e8dda10229e",
+  "source_clean_at_build": true,
+  "source_files_manifest_sha256": "02fbe9d4fa5b45c882e427296525c013d7fea23d56831d3f511c21edb267a289",
+  "source_files": 3454,
+  "release_accepted_commit": null,
+  "release_tag": null,
+  "candidate_index": "BetterCPM-1.3-CANDIDATE.json",
+  "candidate_index_sha256": "02246a635583813381767485eea6af2ab2ce07875665c43d0753842d83e19cf8",
+  "assets": [
+    {
+      "filename": "BetterCPM-1.3-System-cpmsim-candidate.zip",
+      "sha256": "f498e1335e7659a4c4bba0f3d3284d7d69cc431268dafbdd6510a7dec6effdd2",
+      "size_bytes": 558098
+    },
+    {
+      "filename": "BetterCPM-1.3-System-Model4-candidate.zip",
+      "sha256": "0734cee492078d4cd25eac01c2547ec9e6c2c1cb375d4aa8547b8d4fcb9539df",
+      "size_bytes": 279441
+    },
+    {
+      "filename": "BetterCPM-Utilities-1.3-cpmsim-candidate.zip",
+      "sha256": "e531f0cf4a5a57cdcc80053ddcdc6844baf7867ae6b20ca7767ac198702b043f",
+      "size_bytes": 354094
+    },
+    {
+      "filename": "BetterCPM-Utilities-1.3-Model4-candidate.zip",
+      "sha256": "958e85a242716a413aa3d9236016ee50875c2a9a3c0215e1face3fc62f70dd8a",
+      "size_bytes": 370608
+    },
+    {
+      "filename": "BetterCPM-1.3-System-Model2-candidate.zip",
+      "sha256": "edd21101f0bc296e613d70debcf631b874f915dc6fd65b23f6db801629bc89c9",
+      "size_bytes": 238733
+    },
+    {
+      "filename": "BetterCPM-Utilities-1.3-Model2-candidate.zip",
+      "sha256": "75d0bc8192273b66f51a1997df9aa38bec4d01a5d69bc29da0bc16b4c2646c8c",
+      "size_bytes": 335216
+    },
+    {
+      "filename": "BetterCPM-1.3-Source-candidate.zip",
+      "sha256": "8d23e176c1b4115008e7416cbf99f73290755fdd717cf3e1bb79ca6cc02a09c1",
+      "size_bytes": 396393451
+    },
+    {
+      "filename": "BetterCPM-1.3-Documentation-candidate.zip",
+      "sha256": "eee97c7ff587f4baa68f029e217455386932d55daac05637100fe66745996171",
+      "size_bytes": 737133
+    }
+  ],
+  "readiness": "READINESS.json",
+  "readiness_sha256": "fe2bca5a5112b7014e67571f961faa7f3779c8b3210dfacf71e863ec2d09f489"
+}

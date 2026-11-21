@@ -1,0 +1,9 @@
+{
+  "target": "model4",
+  "raw_com": 54273,
+  "maximum_com": 54272,
+  "accepted_bytes": 54272,
+  "rejected_bytes": 54400,
+  "protected_canary": "PASS",
+  "method": "production reader / controlled disk records"
+}
