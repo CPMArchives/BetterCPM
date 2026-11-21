@@ -11,24 +11,24 @@ from test_lbr import archive, entry, with_crcs
 from test_sq import host_decode
 from test_ark import member as arc_member
 
-# Independent published v1.1 memory layouts: WBOOT vector, BM descriptor, PATH.
-LAYOUTS = ((0xe994, 0xd644, 0xe42a),       # Model 4 / conventional
-           (0xf594, 0xe244, 0xf02a),       # cpmsim full RAM
-           (0xf5ec, 0xe244, 0xf02a))       # Model II full RAM
+# Independent post-PDS 1.3 memory layouts: WBOOT vector, BM descriptor, PATH.
+LAYOUTS = ((0xe994, 0xd650, 0xe432),       # Model 4 / conventional
+           (0xf594, 0xe250, 0xf032),       # cpmsim full RAM
+           (0xf5ec, 0xe250, 0xf032))       # Model II full RAM
 
 
 def tests(m):
-    # The inherited literal fixtures must still match current 1.2's contract,
+    # The inherited literal fixtures must still match current 1.3's contract,
     # including all platform profiles used by PATH.COM and the NOAH builder.
     from build_profiles import PROFILES, profile_inputs, symbols
     from noah_overlays import path_layouts
     source = Path(__file__).resolve().parents[1] / 'src/system/layout.inc'
     text = source.read_text()
-    assert 'LY_LERR         EQU     LY_EXT-17' in text
+    assert 'LY_LERR         EQU     LY_EXT-14' in text
     assert 'LY_PATH         EQU     LY_LERR+1' in text
     layouts = [symbols(text)]
     layouts += [profile_inputs(p, source)[0]['symbols'] for p in PROFILES.values()]
-    current = {(v['LY_BIOS'] + 3, v['LY_SYS'] + 0x80, v['LY_EXT'] - 16) for v in layouts}
+    current = {(v['LY_BIOS'] + 3, v['LY_SYS'] + 0x80, v['LY_EXT'] - 13) for v in layouts}
     assert current == set(LAYOUTS) == set(path_layouts()), current
     provider = m.bdos
     attempts = []
@@ -147,7 +147,7 @@ def tests(m):
         text = run({}, tail=tail)
         assert 'NOAH' in text and not attempts, text
     m.bdos = provider
-    print(f'PASS: {m.cases} NOAH overlay PATH cases; all three v1.1 layouts; drive/user/DMA restored')
+    print(f'PASS: {m.cases} NOAH overlay PATH cases; all three 1.3 layouts; drive/user/DMA restored')
 
 
 if __name__ == '__main__':
