@@ -1,0 +1,54 @@
+{
+  "accepted_commit": null,
+  "assets": [
+    {
+      "filename": "BetterCPM-1.3-System-cpmsim-candidate.zip",
+      "sha256": "062ce330a351a69b28c8782dc8eb5b01702863c3aef08cd84f22a1959faf9040",
+      "size_bytes": 558096
+    },
+    {
+      "filename": "BetterCPM-1.3-System-Model4-candidate.zip",
+      "sha256": "4cf504cee127d3da65fd2dd0f270e1e16674350643974e1587f865f508487d57",
+      "size_bytes": 279421
+    },
+    {
+      "filename": "BetterCPM-Utilities-1.3-cpmsim-candidate.zip",
+      "sha256": "dd14992c7499647a9352e55a7b31e5a7df2e47af2e38ba3ba6f206aa00c52836",
+      "size_bytes": 354095
+    },
+    {
+      "filename": "BetterCPM-Utilities-1.3-Model4-candidate.zip",
+      "sha256": "d12c52af66ad9814a071a68b4c4ab242f0db454c18e30d175446141bfb77b039",
+      "size_bytes": 370610
+    },
+    {
+      "filename": "BetterCPM-1.3-System-Model2-candidate.zip",
+      "sha256": "ed1913d5c9b2d381703f2b19a6b8bc3266b7e5f9a2b3ba1cef1a674e87062143",
+      "size_bytes": 238726
+    },
+    {
+      "filename": "BetterCPM-Utilities-1.3-Model2-candidate.zip",
+      "sha256": "1c8d92106289b3d1244548b6374d645fd88a20dc61c0d4d84a75904c13c71731",
+      "size_bytes": 335216
+    },
+    {
+      "filename": "BetterCPM-1.3-Source-candidate.zip",
+      "sha256": "328a91ec0f4d9f4434a07af8291e0434ceae0ede31b78b2d78a72dffb7813b54",
+      "size_bytes": 396315817
+    },
+    {
+      "filename": "BetterCPM-1.3-Documentation-candidate.zip",
+      "sha256": "6d65fd89d3e38631e0c3643141f0da09709c9a110f7a7f8d7e009a81e211cffe",
+      "size_bytes": 736242
+    }
+  ],
+  "pending": [
+    "Automated build/package audit",
+    "Smoke-only validation on three platforms",
+    "Maintainer release acceptance"
+  ],
+  "schema": 1,
+  "source_commit": "615b0adce955ce2adb45e7f34ab17685e2e0a8f6",
+  "status": "CANDIDATE; NOT ACCEPTED",
+  "tag": null
+}
