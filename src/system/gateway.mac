@@ -236,7 +236,7 @@ CPTCOUNT:                               ; persistent CPX record count
         DB      1                       ; default proof profile loads RCP.CPX
 
 CPTFLAGS:                               ; persistent cold-start flags
-        DB      0                       ; bit 0: startup command already consumed
+        DB      0                       ; bits 0 startup consumed, 1 PDS composed, 2 recognized abort
 
 CPTABLE:                                ; persistent CPX reconstruction table
         DB      'RCP     '              ; ordinary RCP.CPX filename stem

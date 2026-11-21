@@ -380,10 +380,6 @@ FINALIZE:                               ; finalize overlay carriers
         LD      BC,3
         LDIR
         LD      HL,BDOSJUMP
-        LD      DE,BUFFER+10752+1021
-        LD      BC,3
-        LDIR
-        LD      HL,BDOSJUMP
         LD      DE,BUFFER+11776+1021
         LD      BC,3
         LDIR
@@ -589,7 +585,7 @@ PARTS:                                  ; system component table
         DB 1
         DB 0,'PDSWORK BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         DW BUFFER+10752
-        DW 8
+        DW 16
         DW PDSWORK_SIZE
         DB 1
         DB 0,'RSXRESOLBIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

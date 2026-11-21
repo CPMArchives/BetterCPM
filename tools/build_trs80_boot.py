@@ -204,9 +204,10 @@ def install(boot: bytes, stage1: bytes, resident: bytes, command: bytes,
 
     manager_start = control_start + 1024
     raw[manager_start:manager_start + 1024] = overlay_block(manager)
-    raw[manager_start + 1024:manager_start + 2048] = overlay_block(
-        (ROOT/'build/pds/worker.bin').read_bytes())
-    raw[manager_start + 2048:manager_start + 3072] = overlay_block(b"")
+    worker=(ROOT/'build/pds/worker.bin').read_bytes()
+    if not 0 < len(worker) <= 2045:
+        raise ValueError('command worker exceeds its two-KiB raw carrier')
+    raw[manager_start+1024:manager_start+3072] = worker.ljust(2045,b'\0')+gateway
     resolver = (ROOT / "build/system/rsxresolver.bin").read_bytes()
     if not 0 < len(resolver) <= 1021:
         raise ValueError("RSX resolver exceeds its allocation")

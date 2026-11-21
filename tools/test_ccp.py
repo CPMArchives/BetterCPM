@@ -31,7 +31,7 @@ def symbol(name: str) -> int:
     return (linked + BASE - LINK_BASE) & 0xFFFF
 
 
-def cpu() -> Z80:
+def cpu(bind=True) -> Z80:
     machine = Z80(b"")
     machine.mem[LAYOUT["BIOS"]+66] = 0xC9  # isolated prompt fixture: monitor reset is a no-op
     machine.mem[LAYOUT["EXTENSIONS"]+3:LAYOUT["EXTENSIONS"]+5] = bytes((0xAF, 0xC9))  # drive available
@@ -51,6 +51,12 @@ def cpu() -> Z80:
     worker = (ROOT/'build/pds/worker.bin').read_bytes()
     machine.mem[0x1700:0x1700+len(worker)] = worker
     machine.sp = 0x7F00
+    if bind:
+        machine.setword(LAYOUT['SYSTEM']+0x8c,BASE)
+        machine.ix=symbol('HF_MAIN');machine.hl=symbol('CCP_RAW')
+        machine.run(0x1706,limit=20000)
+        machine.a=machine.b=machine.c=machine.d=machine.e=machine.h=machine.l=machine.ix=0
+        machine.z=machine.carry=False
     return machine
 
 
@@ -121,7 +127,7 @@ def main() -> None:
         0x1E, 13,       0x0E, 0x02, 0xCD, 0x05, 0x00,
         0x1E, 10,       0x0E, 0x02, 0xCD, 0x05, 0x00,
     ))
-    require(bytes(machine.mem[handler:handler + len(expected)]) == expected,
+    require(bytes(machine.mem[handler+3:handler+3 + len(expected)]) == expected,
             "CCP Ctrl-C acknowledgement is not ^C followed by CR/LF")
     call(machine, handler)
     require(machine.mem[0x7600] == 4 and

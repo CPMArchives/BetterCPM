@@ -70,6 +70,8 @@ CCP_ENTRY:                              ; initialize CCP stack
         JR      Z,CCP_LMSG
         LD      DE,CCP_MREAD
 CCP_LMSG:
+MP01:
+        CALL PW_BASE+12
         XOR     A
         LD      (LY_LERR),A
         LD      C,9
@@ -129,6 +131,8 @@ CCP_DISPATCH:                           ; dispatch acquired or cold-start comman
 CCP_BAD:                                ; fall through to transient command load
         CALL    CCP_LOAD
         JR      NC,CCP_LOOP             ; successful program exits only via warm start
+MP02:
+        CALL    PW_BASE+12
         CALL    CS_CANCEL               ; a bad submitted command aborts the whole stream
         LD      DE,CCP_UNKNOWN
         LD      C,9
@@ -151,7 +155,6 @@ CCP_STARTUP:
         LD      (STARTFLAG),A
         XOR     A
         LD      (LY_PATH),A             ; true cold startup selects the default list
-        CALL    CCP_STBASE              ; direct BIOS calls avoid BDOS ^C handling
         CALL    CCP_SUPPR
         JR      NC,CCP_STGO
         OR      A                       ; suppression returns without dispatch
@@ -186,51 +189,17 @@ CCP_STCOPY:
   ; LY_BUF cannot be used because a platform BIOS may use it during transfer.
 
 CCP_STLOAD:
-        LD      BC,0
-        LD      E,0                     ; boot drive A
-        LD      A,27                    ; SELDSK
-        CALL    CCP_STBIO
-        LD      A,H
-        OR      L
-        JR      Z,CCP_STIOERR
-        LD      BC,0
-        LD      A,30                    ; SETTRK 0
-        CALL    CCP_STBIO
-        LD      BC,1
-        LD      DE,STARTBUF
-        CALL    CCP_STREAD
-        RET     NZ
-        LD      BC,2
-        LD      DE,STARTBUF+128
-
-CCP_STREAD:
-        PUSH    DE
-        LD      A,33                    ; SETSEC logical record
-        CALL    CCP_STBIO
-        POP     BC
-        LD      A,36                    ; SETDMA
-        CALL    CCP_STBIO
-        LD      A,39                    ; READ
-        CALL    CCP_STBIO
-        OR      A
-        RET
-
-CCP_STIOERR:
-        LD      A,1
-        OR      A
-        RET
+        JP PW_BASE+18
 
   ; A queued Ctrl-C suppresses the saved command for this cold boot. Read the
   ; console through BIOS so the gesture cannot invoke BDOS warm-boot handling.
   ; Other queued input is consumed but does not suppress startup.
 
 CCP_SUPPR:
-        LD      A,6                     ; CONST
-        CALL    CCP_STBIO
+        CALL    LY_BIOS+6               ; direct CONST avoids BDOS Ctrl-C handling
         OR      A
         RET     Z
-        LD      A,9                     ; CONIN
-        CALL    CCP_STBIO
+        CALL    LY_BIOS+9               ; matching private BIOS CONIN
         AND     07FH
         CP      3
         JR      Z,CCP_STHELD
@@ -239,23 +208,6 @@ CCP_SUPPR:
 CCP_STHELD:
         SCF
         RET
-
-CCP_STBASE:
-        LD      HL,(0001H)              ; derive BIOS base from WBOOT vector
-        DEC     HL
-        DEC     HL
-        DEC     HL
-        LD      (STBBASE),HL
-        RET
-
-CCP_STBIO:
-        LD      HL,(STBBASE)
-        PUSH    DE
-        LD      E,A
-        LD      D,0
-        ADD     HL,DE
-        POP     DE
-        JP      (HL)
 
   ; Display the live default drive/user pair.  User numbers are deliberately
   ; unpadded: A0>, A5>, A31>.  The following command-line colon belongs to the
@@ -333,6 +285,10 @@ CCP_READLN:                             ; acquire next command line
         LD      (CCP_SUBACTIVE),A
         JR      CS_READ
 
+CR_PENDING:
+MP03:
+        CALL PW_BASE+9
+        RET C
 CR_INTER:                               ; initialize interactive editor
         CALL    CCP_HINIT
         XOR     A
@@ -367,7 +323,7 @@ CS_READ:                                ; read next SUBMIT record
         LD      DE,0080H
         LD      C,26
         CALL    BDOS
-        JR      CR_INTER
+        JR      CR_PENDING
 
 CS_OPEN:                                ; process open SUBMIT stream
         LD      A,(LY_FCB+15)
@@ -381,6 +337,9 @@ CS_OPEN:                                ; process open SUBMIT stream
         OR      A
         JR      Z,CS_DATA
 
+CS_ERROR:
+MP04:
+        CALL PW_BASE+12
 CS_DROP:                                ; delete exhausted or invalid SUBMIT stream
         LD      DE,LY_FCB
         LD      C,19
@@ -396,7 +355,7 @@ CS_DROP:                                ; delete exhausted or invalid SUBMIT str
 CS_DATA:                                ; accept SUBMIT record data
         LD      A,(0080H)
         CP      126                     ; stock SUBMIT never emits more than 125 bytes
-        JR      NC,CS_DROP
+        JR      NC,CS_ERROR
         LD      C,A
         LD      B,0
         LD      HL,0081H
@@ -416,7 +375,7 @@ CS_FILE:                                ; close or delete updated SUBMIT stream
         LD      DE,LY_FCB
         CALL    CS_A0CALL
         INC     A
-        JR      Z,CS_DROP
+        JR      Z,CS_ERROR
         LD      DE,0080H
         LD      C,26
         CALL    BDOS
@@ -456,6 +415,8 @@ CS_CR:                                  ; terminate submitted command echo
         CALL    BDOS
         OR      A
         JR      Z,CS_OK
+MP05:
+        CALL PW_BASE+12
         LD      DE,LY_FCB               ; the consumed stream FCB still names $$$.SUB
         LD      C,19
         CALL    CS_A0CALL
@@ -611,6 +572,8 @@ CCP_EDGET:                              ; read and decode editor keystroke
   ; one-sector relocation directory as the reloadable CCP grows.
 
 CCP_EDWBOOT:                            ; handle command-line warm boot
+MP06:
+        CALL PW_BASE+12
 
   ; Patch 2026-09-03: CP/M visibly acknowledges a command-line warm boot.
   ; Preserve that useful feedback instead of silently replacing one prompt with
@@ -1180,7 +1143,9 @@ CCP_EDFIN:                              ; finish command-line editing
         LD      A,(CCP_COUNT)
         OR      A
         RET     Z
-        JR      CCP_HADD
+        CALL    CCP_HADD
+MP07:
+        JP PW_BASE+15
 
   ; Persistent packed command history. The protected history region contains a
   ; nine-byte control header followed by length-prefixed complete command lines. New
@@ -1763,6 +1728,8 @@ CCP_GO:                                 ; execute GO command
         JP      (HL)
 
 CCP_ADDRERR:                            ; report missing or invalid address
+MP08:
+        CALL PW_BASE+12
         LD      DE,CCP_MADDR
         LD      C,9
         JP      BDOS
@@ -1857,7 +1824,7 @@ CCP_GWILD:                              ; reject wildcard GET filename
         LD      C,35
         CALL    BDOS
         CP      0FFH
-        JR      Z,CCP_GNOFILE
+        JP      Z,CCP_GNOFILE
         LD      A,(CCP_FCB+35)
         OR      A
         JR      NZ,CCP_GBIG
@@ -1884,7 +1851,7 @@ CCP_GMUL:                               ; compute GET load extent
         LD      C,15
         CALL    BDOS
         INC     A
-        JR      Z,CCP_GNOFILE
+        JP      Z,CCP_GNOFILE
         LD      HL,(CCP_TADDR)
         LD      (CCP_GDMA),HL
 
@@ -1915,21 +1882,31 @@ CCP_GDONE:                              ; report successful GET
         JR      CCP_GPRINT
 
 CCP_GSYNTAX:                            ; report GET syntax error
+MP09:
+        CALL PW_BASE+12
         LD      DE,CCP_MGET
         JR      CCP_GPRINT
 
 CCP_GPROTECT:                           ; report protected-memory overlap
+MP10:
+        CALL PW_BASE+12
         LD      DE,CCP_MPROTECT
         JR      CCP_GPRINT
 
 CCP_GBIG:                               ; report oversized GET file
+MP11:
+        CALL PW_BASE+12
         LD      DE,CCP_MTOOBIG
         JR      CCP_GPRINT
 
 CCP_GNOFILE:                            ; report missing GET file
+MP12:
+        CALL PW_BASE+12
         LD      DE,CCP_MNOFILE
         JR      CCP_GPRINT
 CCP_GREAD:                              ; report GET read error
+MP13:
+        CALL PW_BASE+12
         LD      DE,CCP_MREAD
 
 CCP_GPRINT:                             ; print GET status message
@@ -2304,6 +2281,8 @@ CCP_POCHECK:                            ; validate POKE target range
         RET
 
 CCP_POSYNTAX:                           ; report POKE syntax error
+MP14:
+        CALL PW_BASE+12
         LD      DE,CCP_MPOKE
         LD      C,9
         JP      BDOS
@@ -2476,6 +2455,8 @@ CSVSYN:                                 ; report SAVE syntax error
 CSVSPACE:                               ; report SAVE disk-full error
         LD      DE,CCP_MSPACE
 CSVPRINT:                               ; print SAVE status message
+MP15:
+        CALL PW_BASE+12
         LD      C,9
         CALL    BDOS
 
@@ -3064,6 +3045,8 @@ CCP_LOP:
 CCP_DEFP:
         DB      0,0FFH,1,0              ; dynamic caller, A0
 CCP_LREPORT:
+MP16:
+        CALL PW_BASE+12
         PUSH    DE
         CALL    CCP_LURST
         CALL    CS_CANCEL
@@ -3598,6 +3581,26 @@ HF_WORK: DB 18
         DW HP33+1-CCPBASE
         DW HP36+1-CCPBASE
 
+MF_DESC: DW CCP_MCL-CCPBASE
+; @mcl-runtime-fixups@
+        DB 17
+        DW CN_LONG+1-CCPBASE
+        DW MP01+1-CCPBASE
+        DW MP02+1-CCPBASE
+        DW MP03+1-CCPBASE
+        DW MP04+1-CCPBASE
+        DW MP05+1-CCPBASE
+        DW MP06+1-CCPBASE
+        DW MP07+1-CCPBASE
+        DW MP08+1-CCPBASE
+        DW MP09+1-CCPBASE
+        DW MP10+1-CCPBASE
+        DW MP11+1-CCPBASE
+        DW MP12+1-CCPBASE
+        DW MP13+1-CCPBASE
+        DW MP14+1-CCPBASE
+        DW MP15+1-CCPBASE
+        DW MP16+1-CCPBASE
 CCP_BUFFER:                             ; command buffer base
         DB      127
 CCP_COUNT:                              ; command-line length
@@ -3614,6 +3617,9 @@ CCP_RAW:
         REPT    127
         DB      0
         ENDM
+
+CCP_MCL:
+; @mcl-runtime-workspace@
 
 CCP_STACK:                              ; CCP stack storage
         REPT    128

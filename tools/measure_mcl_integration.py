@@ -91,7 +91,7 @@ MC_VALIDATORS:
         raw_ccp_carrier_bytes=len(carrier),raw_ccp_carrier_spare=6656-len(carrier),
         checked_ccp_carrier_spare=6656-len(carrier)-22,
         pds_worker_bytes=(ROOT/'build/pds/worker.bin').stat().st_size,
-        pds_worker_capacity=1021,
+        pds_worker_raw_capacity=2045,pds_worker_checked_budget=1598,
         model4_reloader_bytes=(ROOT/'build/trs80/ccpreload.bin').stat().st_size,
         model4_reloader_capacity=L['RELOADER_CAPACITY'],
         direct_cancel_reference_bytes=len(data),
@@ -99,7 +99,7 @@ MC_VALIDATORS:
         direct_cancel_owner_canary_cases=cases,
         alternative_latched_abort_bytes=len(latch_data),
         alternative_flag_preservation_cases=4,
-        note='Reference costs, not a proof of minimum implementation size. No production behavior changed.')
+        note='Reference costs, not a proof of minimum implementation size. The measurement probe changes no production behavior.')
     if checked_loader:
         checked=json.loads(checked_loader.read_text())
         result['checked_stage1_bytes']=checked['stage1_bytes']

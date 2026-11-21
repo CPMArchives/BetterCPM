@@ -27,12 +27,12 @@ def build_stages(output: Path, identity: bytes, assembler: Path) -> dict:
     output.mkdir(parents=True, exist_ok=False)
     from build_pds_worker import build as pds_worker
     worker = pds_worker(assembler)
-    if len(worker) <= 768:
+    if len(worker) <= 864:
         raise ValueError('checked PDS split requires a nonempty second-stage tail')
     source = (ROOT/'src/system/command-stage2.mac').read_text(encoding='ascii')
     source = source.replace('; @pds-worker-tail@', '\n'.join(
         '        DB '+','.join(str(x) for x in worker[i:i+16])
-        for i in range(768, len(worker), 16)))
+        for i in range(864, len(worker), 16)))
     (output/'stage2.mac').write_text(source, encoding='ascii')
     stage2 = assemble(assembler, source, output/'stage2.bin', output/'stage2.lst', 0x500)
     if not stage2 or len(stage2) > 2024:
@@ -45,7 +45,7 @@ def build_stages(output: Path, identity: bytes, assembler: Path) -> dict:
     bootstrap = constants + (ROOT/'src/system/command-stage1.mac').read_text(encoding='ascii')
     bootstrap = bootstrap.replace('; @pds-worker-bytes@', '\n'.join(
         '        DB '+','.join(str(x) for x in worker[i:i+16])
-        for i in range(0, min(len(worker),768), 16)))
+        for i in range(0, min(len(worker),864), 16)))
     (output/'stage1.mac').write_text(bootstrap, encoding='ascii')
     stage1 = assemble(assembler, bootstrap, output/'stage1.bin', output/'stage1.lst', 0x100)
     if not stage1 or len(stage1) > 932:
@@ -59,7 +59,7 @@ def build_stages(output: Path, identity: bytes, assembler: Path) -> dict:
         'stage2_crc16': checksum, 'stage2_raw_records': [84, 99],
         'stack_reserved_low': 0xD00, 'stack_top': 0x1000,
         'header_origin': 0x1000, 'header_capacity': 1536,
-        'record_buffer': 0x1600, 'record_buffer_bytes': 128, 'temporary_limit': 0x1B00,
+        'record_buffer': 0x1600, 'record_buffer_bytes': 128, 'temporary_limit': 0x1E00,
         'artifacts': {name:hashlib.sha256((output/name).read_bytes()).hexdigest()
                       for name in ('stage1.bin', 'stage2.bin', 'stage1.carrier', 'stage2.carrier')},
         'status': 'checked command stages assembled; not installed in a distribution',

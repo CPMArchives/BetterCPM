@@ -7,7 +7,7 @@ from test_ccp import cpu, call, symbol, BASE
 
 def main():
     for choice in range(4):
-        machine=cpu()
+        machine=cpu(bind=False)
         directory=header(choice,1,3)
         plan=layout(directory,L['SYSTEM'])
         low,size=plan['owners']['HISTORY']
