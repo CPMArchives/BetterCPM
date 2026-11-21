@@ -9,9 +9,13 @@ ROOT=Path(__file__).resolve().parents[1]
 
 def main():
     out=(ROOT/'build/cache-relocation-test');out.mkdir(exist_ok=True)
+    from private_rsx_rebase import helper_tables
+    from rsx_container import NAMES
+    slots={n+'.RSX':(ROOT/'build/system'/(n+'.RSX')).read_bytes() for n in NAMES}
+    tables=helper_tables(Path.home()/'bin/z80asm',ROOT/'build/system','',slots)
     images=[]
     for base in (0x1000,0x1234,0x7141):
-        images.append(assemble(Path.home()/'bin/z80asm',source('r3cache.mac','CBBASE',base),out/f'{base:x}.bin',out/f'{base:x}.lst',base))
+        images.append(assemble(Path.home()/'bin/z80asm',source('r3cache.mac','CBBASE',base).replace('; @private-helper-maps@',tables),out/f'{base:x}.bin',out/f'{base:x}.lst',base))
     table=relocation_offsets(images[0],images[1],0x234)
     relocated=bytearray(images[0])
     for offset in table:

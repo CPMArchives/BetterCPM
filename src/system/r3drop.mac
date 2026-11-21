@@ -239,7 +239,7 @@ RD_NEXT:                                ; advance the retained-profile scan
 
 RD_PLANIT:                              ; invoke the authoritative planner
         LD      HL,(RD_PREQ)
-        LD      DE,LY_RSX
+        LD      DE,(RX_BASE)
         CALL    RD_PUTDE
         LD      DE,(RD_HIGH)
         CALL    RD_PUTDE

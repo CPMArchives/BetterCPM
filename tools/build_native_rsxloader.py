@@ -38,7 +38,14 @@ def main() -> None:
         for drive in "bcd":
             blank(args.disk_template, disks / f"drive{drive}.dsk")
         staged = work / "RSXLOADR.MAC"
-        staged.write_bytes(cpm_text(SOURCE))
+        generated=BUILD/'rsxloader.mac'
+        if not generated.is_file():
+            raise ValueError('build the bound raw loader source first')
+        text=generated.read_text().replace('        ASEG\n        ORG', '        CSEG\n        .PHASE',1)
+        pos=text.rfind('        END')
+        text=text[:pos]+'        .DEPHASE\n'+text[pos:]
+        expanded=work/'expanded.mac';expanded.write_text(text)
+        staged.write_bytes(cpm_text(expanded))
         run("cpmcp", "-f", "ibm-3740", str(disks / "drivec.dsk"),
             str(staged), "0:RSXLOADR.MAC")
         for tool in ("ZSM4.COM", "LINK.COM"):

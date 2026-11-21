@@ -26,8 +26,8 @@ def main() -> None:
     text = SOURCE.read_text(encoding="ascii").replace(
         "        CSEG\n        .PHASE  ", "        ASEG\n        ORG     ").replace(
         "        .DEPHASE\n", "")
-    data = assemble(args.assembler, text, BUILD / "rsxloader.bin",
-                    BUILD / "rsxloader.lst", BASE)
+    from private_rsx_rebase import boot_image
+    data = boot_image(args.assembler, text, 'RVBASE', BUILD, 'rsxloader')
     # Raw replacement preserves the final nine stack bytes and gateway.
     if len(data) > 1012:
         raise SystemExit(f"RSX transaction entry exceeds its safe slot: {len(data)} bytes")

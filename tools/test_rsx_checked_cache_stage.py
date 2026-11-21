@@ -19,7 +19,7 @@ def main():
     listing=(out/'entry.lst').read_text()
     sym=lambda n:int(re.search(r'^([0-9a-f]{4}).*\b'+n+':',listing,re.M|re.I)[1],16)
     assert len(image)<1000 and sym('PX_END')-sym('PX_CODE')<=512
-    cases=[(None,0,0)]+[(n,0,255) for n in range(5)]+[(None,1,255)]
+    cases=[(None,0,0)]+[(n,0,255) for n in range(8)]+[(None,1,255)]
     for fault,crc,expected in cases:
         m=setup();m.stage_fault=fault
         m.mem[L['CONFIG']:L['CONFIG']+1024]=image.ljust(1024,b'\0')
@@ -33,7 +33,7 @@ def main():
         assert bytes(m.mem[L['CONFIG']:L['CONFIG']+1024])==before,(fault,crc,'CFG not restored')
         assert m.chain()==chain
         assert m.context()==(2,17,0x1600)
-    print('PASS checked staging: destructive CFG reads, five read failures, CRC rejection, frame/context preservation;',len(image),'entry bytes')
+    print('PASS checked staging: destructive CFG reads, eight read failures, CRC rejection, frame/context preservation;',len(image),'entry bytes')
 
 
 if __name__=='__main__':main()

@@ -22,17 +22,14 @@ BIOPHREAD      EQU     LY_BIOS+51
 ; ================================================================================
 
 RS_SELECT:                              ; select and load RSX utility
-        LD      E,A
-        LD      D,0
-        LD      H,D
-        LD      L,E
-        ADD     HL,HL
-        ADD     HL,DE
-        ADD     HL,HL
-        LD      DE,RS_TABLE
-        ADD     HL,DE
-        EX      DE,HL
-        LD      HL,LY_RSX
+        ADD A,A
+        LD E,A
+        ADD A,A
+        ADD A,E
+        ADD A,RS_TABLE AND 255
+        LD E,A
+        LD D,RS_TABLE/256
+        LD      HL,(RX_BASE)
         CALL    RS_READ
         RET     NZ
         INC     DE
@@ -42,11 +39,13 @@ RS_SELECT:                              ; select and load RSX utility
         CALL    RS_READ                 ; stage the sector containing the stack
         RET     NZ
         LD      HL,LY_BUF
-        LD      DE,LY_RSX+0200H
+        LD      DE,(RX_BASE)
+        INC D
+        INC D
         LD      BC,01F4H
         LDIR                            ; preserve the nine-byte return frame
         LD      HL,LY_BUF+01FDH
-        LD      DE,LY_RSX+03FDH
+        LD      DE,(RX_STACK)
         LD      BC,3
         LDIR                            ; install the fixed BDOS gateway
         RET
@@ -56,11 +55,9 @@ RS_READ:                                ; read one physical overlay sector
         EX      DE,HL
         LD      A,(HL)
         INC     HL
-        LD      C,(HL)
+        LD      B,(HL)
         INC     HL
-        LD      H,(HL)
-        LD      B,C
-        LD      C,H
+        LD      C,(HL)
         EX      DE,HL
         CALL    BIOPHREAD
         POP     DE
@@ -75,5 +72,8 @@ RS_TABLE:                               ; RSX utility sector table
   ; @rsx-validator-sector-table@
   ; @rsx-publisher-sector-table@
   ; @rsx-resolver-sector-table@
+        IF (RS_TABLE AND 255)+23 GT 255
+        .ERROR  RSX selector table crosses page
+        ENDIF
         .DEPHASE
         END

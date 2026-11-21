@@ -197,7 +197,7 @@ PF_CANDIDATE:                           ; append validated candidate facts
 
 PF_BUILD:                               ; construct planner request
         LD      HL,(PF_PREQ)
-        LD      DE,LY_RSX
+        LD      DE,(RX_BASE)
         LD      (HL),E
         INC     HL
         LD      (HL),D

@@ -64,8 +64,9 @@ def main() -> None:
     rsx = LAYOUT["RSX"]
 
     from rsx_disk_cache import build_worker
-    build_worker(args.assembler, BUILD)
-    entry = build(args.assembler, "r3entry", "r3entry.mac", "RVBASE", rsx)
+    entry = (BUILD/"rsxloader.bin").read_bytes()
+    (BUILD/"r3entry.bin").write_bytes(entry)
+    (BUILD/"r3entry.lst").write_bytes((BUILD/"rsxloader.lst").read_bytes())
     entry_source = (ROOT / "src/system/r3entry.mac").read_text(encoding="ascii")
     helper = entry_source[entry_source.index("RI_ENTRY:"):entry_source.index("RI_END:")]
     io = assemble(args.assembler, "        INCLUDE layout.inc\n        INCLUDE profile.inc\n        ASEG\n        ORG 0\n" + helper + "        END\n",
@@ -90,7 +91,7 @@ def main() -> None:
     handoff = build(args.assembler, "r3ovload", "r3ovload.mac", "ROBASE", cfg + 0x310)
     persistent = build(args.assembler, "r3persist", "r3pst.mac", "RTBASE", cfg + 0x38F)
     commit = build(args.assembler, "r3commit", "r3comit.mac", "RCBASE", rsx)
-    resolver = (BUILD / "rsxresolver.bin").read_bytes()
+    resolver = (BUILD / "rsxresolver-plain.bin").read_bytes()
 
     for label, data in (("planner", plan), ("slot preparer", slots),
                         ("snapshot constructor", snapshot),
@@ -153,6 +154,7 @@ def main() -> None:
         "R3COMIT.RSX": commit.ljust(1021, b"\0") + gateway,
         "R3RESOL.RSX": resolver.ljust(1021, b"\0") + gateway,
     }
+    build_worker(args.assembler, BUILD, images=outputs)
     outputs[PACK_NAME] = pack(outputs)
     for name, data in outputs.items():
         (BUILD / name).write_bytes(data)
