@@ -73,9 +73,9 @@ BUILD_SOURCES = (
     ("CONFIG.MAC", "src/bios/config.mac"),
     ("RSXLOAD.MAC", "src/system/r3entry.mac"),
     ("RSXRESOL.MAC", "src/system/rsxresol.mac"),
-    ("CCP.MAC", "src/ccp/ccp.mac"),
-    ("CCPALT.MAC", "src/ccp/ccp.mac"),
-    ("CCPCHK.MAC", "src/ccp/ccp.mac"),
+    ("CCP.MAC", "build/ccp/packed.mac"),
+    ("CCPALT.MAC", "build/ccp/packed-alt.mac"),
+    ("CCPCHK.MAC", "build/ccp/packed-check.mac"),
 )
 
 BUILD_INCLUDES = (
@@ -125,12 +125,6 @@ def build_source(data: bytes, name: str) -> bytes:
                          ("disklinks.inc", "disklink.inc"),
                          ("cpxlinks.inc", "cpxlink.inc")):
         text = text.replace(host, native)
-    if name == "CCPALT.MAC":
-        text = text.replace("CCPBASE         EQU     0BB00H",
-                            "CCPBASE         EQU     0BC01H")
-    elif name == "CCPCHK.MAC":
-        text = text.replace("CCPBASE         EQU     0BB00H",
-                            "CCPBASE         EQU     0BD37H")
     return text_file(text.encode("ascii"))
 
 
@@ -265,7 +259,12 @@ user zero:
   A0:SUBMIT B:BUILD
 
 BUILD.SUB selects C:, reads sources and tools from B:, and writes all products
-to the work disk. RESPACK constructs the packed RESIDENT.BIN payload, then
+to the work disk. CCP.MAC, CCPALT.MAC and CCPCHK.MAC are host-prepared
+packed-bootstrap inputs at BB00h, BC01h and BD37h. RLMBUILD reconstructs the
+ordinary CCP.RLM carrier from their native links. Complete editable inner CCP
+source remains in the source archive. After editing it, repack on the host and
+prepare a matching build disk; BUILD.SUB does not include a native compressor.
+RESPACK constructs the packed RESIDENT.BIN payload, then
 SYSBUILD creates and read-back verifies the 161-record SYSTEM.SYS package.
 Move or copy SYSTEM.SYS from C: before using that drive letter for installation.
 SYSGEN SYSTEM.SYS D: installs a package on a prepared SYSTEM disk. SYSGEN A: D:

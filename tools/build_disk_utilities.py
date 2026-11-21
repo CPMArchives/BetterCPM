@@ -3,7 +3,6 @@
 from pathlib import Path
 import argparse
 import json
-import math
 from build_ccp import assemble
 from system_layout import expand_layout
 from build_system_package import COMPONENTS
@@ -75,13 +74,9 @@ def main():
                           (args.config_extra_resident.parent/'bios.lst').read_text(),args.config_extra_bootstrap_spt,8))
     io_meta=io_assembly(io_records)
     (out/'config-iobyte.inc').write_text(io_meta)
-    ccp = (ROOT/'build/ccp/ccp.bin').read_bytes()
-    rlm = (ROOT/'build/ccp/ccp.rlm').read_bytes()
-    relocations = int.from_bytes(rlm[14:16], 'little')
-    ccpmeta = (f"CCP_SIZE EQU {len(ccp)}\n"
-               f"CCP_ALLOC EQU {(len(ccp)+255)&~255}\n"
-               f"CCP_RECORDS EQU {math.ceil(len(ccp)/128)}\n"
-               f"CCP_RELOCS EQU {relocations}\n")
+    from native_ccp import metadata
+    ccpmeta = (metadata((ROOT/'build/ccp/ccp.rlm').read_bytes()) if not checked else
+               'CCP_SIZE EQU 1\nCCP_ALLOC EQU 256\nCCP_RECORDS EQU 1\nCCP_RELOCS EQU 0\nCCP_HEADERS EQU 1\n')
     partmeta = "".join(
         f"{symbol}_SIZE EQU {0 if checked else (ROOT/path).stat().st_size}\n"
         for symbol, path in (

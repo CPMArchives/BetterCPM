@@ -87,6 +87,12 @@ they are produced by the same coherent host build
 that creates the disk, preventing sources and inter-module addresses from being
 mixed across builds.
 
+In 1.3, the native build's `CCP.MAC`, `CCPALT.MAC` and `CCPCHK.MAC` are
+host-prepared packed-bootstrap assembly inputs. Native ZSM4/LINK reproduce their
+outer payloads. Complete inner CCP source remains in the source archive;
+editing it requires host repacking and preparation of a matching build disk.
+The approved 1.3 workflow does not provide a native CCP compressor.
+
 `RLMBUILD.COM` compares native CCP links at BB00h, BC01h, and BD37h and
 constructs the versioned `CCP.RLM` with a verified relocation directory.
 `RESPACK.COM` constructs the 52-record `RESIDENT.BIN` from `GATEWAY.BIN`,

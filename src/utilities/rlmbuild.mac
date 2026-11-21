@@ -13,9 +13,9 @@
         ORG     0100H
 BDOS    EQU     5
 BASEBUF EQU     04000H
-ALTBUF  EQU     05600H
-CHKBUF  EQU     06C00H
-HEADER  EQU     08200H
+ALTBUF  EQU     05800H
+CHKBUF  EQU     07000H
+HEADER  EQU     08800H
 HDRSIZE EQU     1024
 LINKBASE EQU    0BB00H
 
@@ -37,6 +37,12 @@ START:  CALL    UV_CHECK
         CALL 5
         JP 0
         ENDIF
+        IF CCP_SIZE GT 6144
+        ERROR 'CCP exceeds native input slot'
+        ENDIF
+        IF CCP_RELOCS GT (CCP_HEADERS*512-16)/2
+        ERROR 'CCP fixups exceed header'
+        ENDIF
         LD      HL,(6)                  ; include all three images and RLM header
         LD      DE,HEADER+HDRSIZE
         OR      A
@@ -52,7 +58,7 @@ STARTMEM:
         CALL    PRINT
         LD      HL,BASEBUF
         LD      DE,BASEBUF+1
-        LD      BC,03FFFH
+        LD      BC,04BFFH
         XOR     A
         LD      (HL),A
         LDIR
@@ -163,13 +169,34 @@ SCANDONE:                               ; finish relocation scan
         OR      A
         SBC     HL,DE
         JP      NZ,RELOCBAD
+        LD      DE,00101H
+        CALL    REBASE
+        LD      HL,BASEBUF
+        LD      DE,ALTBUF
+        CALL    COMPARE
+        JP      NZ,RELOCBAD
+        LD      DE,00136H
+        CALL    REBASE
+        LD      HL,BASEBUF
+        LD      DE,CHKBUF
+        CALL    COMPARE
+        JP      NZ,RELOCBAD
+        LD      DE,0FDC9H
+        CALL    REBASE                  ; restore canonical BB00H payload
         LD      HL,BASEBUF+CCP_SIZE
         LD      DE,BASEBUF+CCP_SIZE+1
-        LD      BC,CCP_RECORDS*128-CCP_SIZE-1
+        LD      BC,CCP_RECORDS*128-CCP_SIZE
+        LD      A,B
+        OR      C
+        JR      Z,PADDONE
+        DEC     BC
         XOR     A
         LD      (HL),A
+        LD      A,B
+        OR      C
+        JR      Z,PADDONE
         LDIR
-
+PADDONE:
         LD      DE,OUTFCB
         LD      C,19
         CALL    BDOS
@@ -179,7 +206,7 @@ SCANDONE:                               ; finish relocation scan
         INC     A
         JP      Z,CREATEBAD
         LD      HL,HEADER
-        LD      B,8
+        LD      B,CCP_HEADERS*4
         CALL    WRITE
         JP      NZ,WRITEBAD
         LD      HL,BASEBUF
@@ -194,6 +221,52 @@ SCANDONE:                               ; finish relocation scan
         LD      DE,DONE
         CALL    PRINT
         JP      0
+
+ ; Apply the discovered table, then compare every byte, including constants.
+REBASE: LD      (DELTA),DE
+        LD      IX,HEADER+16
+        LD      BC,CCP_RELOCS
+        LD      A,B
+        OR      C
+        RET     Z
+REBASELP:
+        PUSH    BC
+        LD      E,(IX+0)
+        LD      D,(IX+1)
+        LD      HL,BASEBUF
+        ADD     HL,DE
+        PUSH    HL
+        LD      E,(HL)
+        INC     HL
+        LD      D,(HL)
+        LD      HL,(DELTA)
+        ADD     HL,DE
+        EX      DE,HL
+        POP     HL
+        LD      (HL),E
+        INC     HL
+        LD      (HL),D
+        INC     IX
+        INC     IX
+        POP     BC
+        DEC     BC
+        LD      A,B
+        OR      C
+        JR      NZ,REBASELP
+        RET
+COMPARE:LD      BC,CCP_SIZE
+COMPARELP:
+        LD      A,(DE)
+        CP      (HL)
+        RET     NZ
+        INC     HL
+        INC     DE
+        DEC     BC
+        LD      A,B
+        OR      C
+        JR      NZ,COMPARELP
+        RET
+DELTA:  DW      0
 
   ; DE=FCB, HL=destination. Require exactly CCP_RECORDS records.
 
@@ -220,7 +293,11 @@ LOADLP: LD      A,(COUNT)               ; read next linked-image record
         CP      CCP_RECORDS+1
         JR      NC,LOADBAD
         LD      DE,(CURPTR)
-        LD      C,26
+        LD      A,(COUNT)
+        CP      CCP_RECORDS
+        JR      NZ,LOADDMA
+        LD      DE,HEADER            ; extra-record probe never crosses a slot
+LOADDMA:LD      C,26
         CALL    BDOS
         LD      DE,(CURFCB)
         LD      C,20
@@ -243,8 +320,9 @@ LOADEOF:CP      1                       ; finish exact-length input
         XOR     A
         JR      LOADCLOSE
 
-LOADMISS:LD     A,1                     ; report missing linked image
-        JR      LOADCLOSE
+LOADMISS:LD     A,1                     ; no open FCB to close
+        OR      A
+        RET
 
 LOADBAD:LD      A,2                     ; report linked-image read failure
 
@@ -253,6 +331,13 @@ LOADCLOSE:                              ; handle linked-image close failure
         LD      DE,(CURFCB)
         LD      C,16
         CALL    BDOS
+        INC     A
+        JR      NZ,LDCLOSED
+        POP     AF
+        LD      A,2
+        OR      A
+        RET
+LDCLOSED:
         POP     AF
         OR      A
         RET
@@ -352,7 +437,7 @@ CRLF:   DB      13,10,'$'               ; newline string
 ; Files and Build State
 ; -------------------------------------------------------------------------------
 
-MAGIC:  DB      'BCM1',1,2              ; RLM carrier magic
+MAGIC:  DB      'BCM1',1,CCP_HEADERS              ; RLM carrier magic
         DW      LINKBASE,CCP_SIZE,CCP_ALLOC,0,CCP_RELOCS
 
 BASEFCB:DB 0,'CCPBASE BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ; BB00H-linked CCP input FCB

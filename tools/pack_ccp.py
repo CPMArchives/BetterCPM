@@ -43,6 +43,12 @@ def build(assembler, image, payload_size, offsets, assemble, relocation_offsets)
         text = (f'PK_ORIGIN EQU {origin}\nPK_RUNTIME EQU {origin+3}\n'+
                 (ROOT/'src/ccp/unpack.mac').read_text().replace('; @packed-bootstrap-body@',db(body)))
         bodies.append(assemble(assembler,text,out/(stem+'.bin'),out/(stem+'.lst'),origin))
+        # Approved prepared input: native tools reconstruct the outer carrier.
+        (out/(stem+'.mac')).write_text(
+            '; Host-prepared packed CCP; edit inner source then repack on host.\n'
+            + text.replace('        ASEG\n        ORG PK_ORIGIN',
+                           '        CSEG\n        .PHASE PK_ORIGIN').replace(
+                               '        END', '        .DEPHASE\n        END'), encoding='ascii')
     outer_offsets = relocation_offsets(bodies[0],[(bodies[1],0xBC01),(bodies[2],0xBD37)])
     # Only decoder operands vary: compressed canonical code/table never relocates.
     if any(x >= len(bodies[0])-len(packed) for x in outer_offsets):
