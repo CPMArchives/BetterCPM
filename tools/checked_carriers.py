@@ -52,7 +52,7 @@ def command_carrier(data, name, kind, contract):
             raise ValueError('expected an unbound BCPX1 carrier')
         result[4] = 2
     elif kind == 'ccp':
-        if result[:6] != b'BCM1\x01\x02':
+        if result[:6] != b'BCM1\x01\x01':
             raise ValueError('expected an unbound BCM1 CCP carrier')
         result[:5] = b'BCM2\x02'
     else:

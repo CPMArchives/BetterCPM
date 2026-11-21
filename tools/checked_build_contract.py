@@ -19,7 +19,8 @@ def compatibility_inputs(inputs):
                      'tools/build_z80pack_image', 'tools/checked_',
                      'tools/build_model2', 'tools/model2_media',
                      'tools/system_layout', 'tools/build_profiles', 'tools/rsx_container',
-                     'tools/private_rsx_rebase', 'tools/build_pds_worker', 'tools/rsx_disk_cache')
+                     'tools/private_rsx_rebase', 'tools/build_pds_worker', 'tools/rsx_disk_cache',
+                     'tools/pack_ccp', 'tools/command_packing')
     return {name:value for name,value in inputs.items()
             if (name.startswith(source_prefixes) and not name.endswith(('bye.mac','.md')))
             or (name.startswith(tool_prefixes) and name.endswith('.py'))}

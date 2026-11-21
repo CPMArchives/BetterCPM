@@ -47,7 +47,7 @@ def command_cases(paths, identity):
             allocation = int.from_bytes(data[14:16] if cpx else data[10:12],'little')
             assert c.word(sy['CRBOUND']) == L['TPA']-(allocation if expected else 0)
             if expected:
-                header = int.from_bytes(data[24:26],'little') if cpx else 1024
+                header = int.from_bytes(data[24:26],'little') if cpx else data[5]*512
                 length = int.from_bytes(data[12:14] if cpx else data[8:10],'little')
                 linked = int.from_bytes(data[10:12] if cpx else data[6:8],'little')
                 count = int.from_bytes(data[22:24] if cpx else data[14:16],'little')

@@ -61,6 +61,7 @@ CCP_ENTRY:                              ; initialize CCP stack
         LD DE,CCP_RAW-CCPBASE
         ADD HL,DE
         CALL PW_BASE+6
+        CALL V_INIT
         CALL    CPX_INITIALIZE
         LD      A,(LY_LERR)             ; reader may have overwritten the entire CCP
         OR      A
@@ -94,6 +95,8 @@ CCP_LOOP:                               ; prompt for and dispatch next command
         CALL    CCP_READLN
 
 CCP_DISPATCH:                           ; dispatch acquired or cold-start command
+        CALL V_EXPAND
+        JR C,CCP_VARFAIL
         LD      A,(CCP_COUNT)
         OR      A
         JR      Z,CCP_LOOP
@@ -101,6 +104,8 @@ CCP_DISPATCH:                           ; dispatch acquired or cold-start comman
         JR      C,CCP_LOOP
         CALL    CCP_UPPER
         JR      Z,CCP_LOOP              ; SPACE-only input is an empty command
+        CALL V_COMMAND
+        JR C,CCP_LOOP
 
   ; Patch 2026-09-02: direct drive/user navigation is command-processor syntax,
   ; not a resident command.  Keep BDOS as the sole owner of both values so the
@@ -138,6 +143,13 @@ MP02:
         LD      C,9
         CALL    BDOS
         JR      CCP_LOOP
+
+CCP_VARFAIL:
+        CALL CCP_VCANCEL
+        JR CCP_LOOP
+CCP_VCANCEL:
+        CALL CCP_MCL+3
+        JP CS_CANCEL
 
 ; -------------------------------------------------------------------------------
 ; Cold-Startup Command
@@ -3540,6 +3552,8 @@ CCP_NEWLINE:                            ; shared CR/LF string
 
   ; Explicit bytes keep host and native links identical; DS fill is tool-specific.
 
+; @var-ccp@
+
 HF_MAIN: DW HPCAP+1-CCPBASE
         DB 19
         DW HP07+1-CCPBASE
@@ -3620,6 +3634,42 @@ CCP_RAW:
 
 CCP_MCL:
 ; @mcl-runtime-workspace@
+
+V_HEAD: DB 0,0,0,0,0,0,0,0,0,0,0,0
+V_CAP: DW 0
+V_OWNER: DW 0
+V_FIRST: DW 0
+V_END: DW 0
+V_PREV: DW 0
+V_CUR: DW 0
+V_NAME: DW 0
+V_NEXT: DW 0
+V_SLOT: DW 0
+V_TOKEN: DW 0
+V_OUT: DW 0
+V_VALUE: DW 0
+V_PREFIX: DW 0
+V_SUFFIX: DW 0
+V_TAIL: DW 0
+V_USED: DW 0
+V_KLEN: DB 0
+V_FOUND: DB 0
+V_OLEN: DB 0
+V_DELETE: DB 0
+V_VLEN: DB 0
+V_PRINTLEN: DB 0
+V_KEY:
+        REPT 8
+        DB 0
+        ENDM
+V_EXPBUF:
+        REPT 127
+        DB 0
+        ENDM
+V_EDIT:
+        REPT 512
+        DB 0
+        ENDM
 
 CCP_STACK:                              ; CCP stack storage
         REPT    128

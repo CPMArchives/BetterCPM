@@ -207,7 +207,7 @@ Begin with `CONFIG /SHOW`. Record active drive bindings and saved startup settin
 
 Changing a runtime binding does not format a disk. Changing a catalogue does not reinterpret an existing active binding. A setting can work for the session without becoming the next cold-boot default. CONFIG distinguishes current state and pending cold-boot settings; choose the save operation matching your intention rather than assuming every menu edit is already on disk.
 
-In the 1.3 foundation, CONFIG's **F — Command environment / PDS** menu shows active allocations, saved choices, pending choices and the next cold boot's maximum COM size. Save from the main menu, then cold boot to activate a different composition. Ordinary warm boot keeps the active layout. The default retains 192 bytes of history, with MCL and VAR storage off. MCL execution is available when enabled; VAR storage remains reserved for the next implementation stage. Keep the matching `PDSCONF.OVL` alongside the system utilities in A:user 0. `STAT MEM` shows total PDS size, metadata and each owner's allocation; optional storage reduces program capacity by the cost shown in CONFIG.
+In the 1.3 foundation, CONFIG's **F — Command environment / PDS** menu shows active allocations, saved choices, pending choices and the next cold boot's maximum COM size. Save from the main menu, then cold boot to activate a different composition. Ordinary warm boot keeps the active layout. The default retains 192 bytes of history, with MCL and VAR storage off. MCL execution is available when enabled; VAR enables command variables and substitution when its storage is enabled. Keep the matching `PDSCONF.OVL` alongside the system utilities in A:user 0. `STAT MEM` shows total PDS size, metadata and each owner's allocation; optional storage reduces program capacity by the cost shown in CONFIG.
 
 For an actual disk task:
 
@@ -230,6 +230,23 @@ and warm boots continue the remaining commands; recognized CCP/BDOS errors or
 cancellation discard them. A program that prints its own error and returns
 normally still continues the sequence. CONFIG menu F, choice B enables MCL for
 the next cold boot; its 128-byte cost is shown before saving.
+
+Use CONFIG F, choice C to choose 128, 256 or 512 bytes for variables; save and
+cold boot to enable them. `VAR` lists assignments, `VAR NAME` queries one,
+`VAR NAME=value` defines or replaces one, and `VAR /D NAME` deletes one.
+Names are case-insensitive, 1–8 letters/digits/underscores, beginning with a
+letter or underscore. `VAR EMPTY=` defines an empty value. Values keep their
+spaces, quotes and extra equals signs; write `=` immediately after the name.
+
+For example, `VAR F=B0:README.TXT` followed by `TYPE %F%` supplies the expanded
+file name to TYPE. `%%` produces a literal percent. Expansion happens once:
+inserted percent signs are not expanded again. Undefined/invalid references or
+results beyond 127 characters prevent dispatch and cancel queued commands.
+With MCL, `VAR X=NEW;VAR X` queries the value just assigned. STARTUP/SUBMIT
+commands also expand variables; program input and XSUB input do not. Variables
+survive ordinary program returns and warm boots, and reset on a true cold boot.
+With variable storage off (the default), other commands keep literal percent
+characters. CONFIG and STAT MEM show the persistent memory cost.
 
 <a id="chapter-8"></a>
 
