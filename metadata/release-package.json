@@ -2,6 +2,11 @@
   "schema": 1,
   "name": "BetterCP/M release package",
   "version": "1.3",
-  "status": "release candidate; acceptance pending",
-  "notes": "Merged PDS/HISTORY/CONFIG, MCL and VAR scope. Candidate tooling and focused final-media acceptance are in progress. Historical 1.2 release records remain unchanged. No tag or publication is authorized by this metadata."
+  "status": "qualified 1.3 release; published",
+  "notes": "Published from the maintainer-approved frozen source. The eight ZIP payloads and reviewed SHA-256 values are unchanged; final download filenames omit -candidate. Embedded candidate labels are historical build records. Repository status updates do not rebuild or retag the release.",
+  "accepted_commit": "51e1092d01b2a23e6244faaa877a8c5c8d6eb388",
+  "tag": "v1.3",
+  "release_url": "https://github.com/CPMArchives/BetterCPM/releases/tag/v1.3",
+  "published_at": "2026-11-21T15:13:14Z",
+  "publication_record": "docs/releases/evidence/1.3-publication/publication.json"
 }

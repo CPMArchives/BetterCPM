@@ -1,4 +1,4 @@
-"""1.3 candidate identity, selection and strict pending-policy regression."""
+"""Published 1.3 provenance, selection and strict candidate-policy regression."""
 import json
 from pathlib import Path
 import tempfile
@@ -7,17 +7,26 @@ from package_release_candidates import ROOT,source_files,documentation_members,r
 
 
 class Release13(unittest.TestCase):
-    def test_candidate_identity_and_eight_assets(self):
+    def test_published_identity_and_eight_unchanged_assets(self):
         package=json.loads((ROOT/'metadata/release-package.json').read_text())
         self.assertEqual(package['version'],'1.3')
-        self.assertIn('pending',package['status'])
+        self.assertTrue(package['status'].startswith('qualified'))
         layout=json.loads((ROOT/'metadata/release-assets-1.3.json').read_text())
-        self.assertIsNone(layout['accepted_commit'])
+        published=json.loads((ROOT/'docs/releases/evidence/1.3-publication/release.json').read_text())
+        self.assertEqual(layout['accepted_commit'],published['accepted_commit'])
+        self.assertEqual(package['accepted_commit'],published['accepted_commit'])
+        self.assertEqual(published['accepted_commit'],'51e1092d01b2a23e6244faaa877a8c5c8d6eb388')
+        approved=json.loads((ROOT/'docs/releases/evidence/1.3-frozen-51e/freeze.json').read_text())
+        reviewed={a['filename']:a for a in approved['assets']}
+        released={a['filename']:a for a in published['assets']}
         self.assertEqual(len(layout['assets']),8)
         tracked=source_files()
         for asset in layout['assets']:
             self.assertIn('1.3',asset['filename'])
             self.assertIn(asset['readme_template'],tracked)
+            self.assertEqual(asset['published_sha256'],released[asset['filename']]['sha256'])
+            self.assertEqual(asset['published_sha256'],reviewed[asset['reviewed_filename']]['sha256'])
+            self.assertEqual(asset['published_archive_root'],asset['archive_root']+'-candidate')
         files,evidence=documentation_members(tracked,'a'*40,'1.3')
         self.assertEqual(len(evidence['manuals']),4)
         self.assertGreater(evidence['local_links_checked'],0)

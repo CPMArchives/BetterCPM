@@ -1,8 +1,8 @@
 # BetterCP/M documentation
 
-Start with the installation guide for your platform, then use the four maintained manuals below. Current manuals include the 1.3 candidate; the stable release is 1.2. The [published v1.2 release](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.2) provides three System packages, three matching Utilities packages, Source and Documentation, with checksums and exact acceptance evidence.
+Start with the installation guide for your platform, then use the four maintained manuals below. The current stable release is 1.3. The [published v1.3 release](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.3) provides three System packages, three matching Utilities packages, Source and Documentation, with checksums and exact acceptance evidence.
 
-The [maintained platforms and qualification matrix](platform/SUPPORT-1.1.md) covers patched cpmsim and emulated Model 4/64 KiB Model II. Historical 1.0 and 1.0.1 packages retain their own immutable identities and qualification boundaries.
+The [maintained platforms and qualification matrix](platform/SUPPORT-1.3.md) covers patched cpmsim and emulated Model 4/64 KiB Model II. Historical 1.0 and 1.0.1 packages retain their own immutable identities and qualification boundaries.
 
 ## Four manuals
 
@@ -17,15 +17,15 @@ The [maintained platforms and qualification matrix](platform/SUPPORT-1.1.md) cov
 
 - Installation: [patched cpmsim](platform/CPMSIM-INSTALLATION.md), [Model 4/trs80gp](platform/MODEL4-INSTALLATION.md), [Model II/trs80gp](platform/MODEL2-INSTALLATION.md), [named System-binding walkthrough](platform/MODEL4-SHIPPED-INSTALLATION.txt).
 - Building: [Source Build and Reconstruction Guide](SOURCE-BUILD.md), [System Disk construction](releases/DISTRIBUTION-BUILD.md), [native build material](programmers/BUILD-DISK.md).
-- Release: [1.1 release notes](releases/RELEASE-NOTES-1.1.md), [TCAP 2.0 ABI](engineering/TCAP-Direct-ABI.md), [VER disposition](releases/1.1-VER-DISPOSITION.md), [delivered inventory](releases/DISTRIBUTION-MANIFEST.md), and historical [1.0 errata](releases/1.0-ERRATA.md).
+- Release: [1.3 release notes](releases/RELEASE-NOTES-1.3.md), [TCAP 2.0 ABI](engineering/TCAP-Direct-ABI.md), [VER disposition](releases/1.1-VER-DISPOSITION.md), [delivered inventory](releases/DISTRIBUTION-MANIFEST.md), and historical [1.0 errata](releases/1.0-ERRATA.md).
 - Rights and attribution: [licensing boundaries](LICENSING.md), [component/package inventory](LICENSING-INVENTORY.md), and supplied notices/source companions.
 - Publication: [formats, documentation selection and separate provenance](releases/DOCUMENTATION-PUBLICATION.md).
 
 ## Current source and release readiness
 
-- [1.3 candidate notes](releases/RELEASE-NOTES-1.3.md) and [focused acceptance gates](releases/1.3-SCOPE-AND-ACCEPTANCE.md).
+- [1.3 release notes](releases/RELEASE-NOTES-1.3.md), [focused acceptance gates](releases/1.3-SCOPE-AND-ACCEPTANCE.md), and [publication record](releases/evidence/1.3-publication/publication.json). Published source remains frozen at `51e1092d`; repository documentation updates do not change the downloads.
 
-- [Named directories: operator guide](user/NDR.md) and [engineering/memory contract](engineering/NDR-1.2.md). Shipped in 1.2 and retained in the 1.3 candidate.
+- [Named directories: operator guide](user/NDR.md) and [engineering/memory contract](engineering/NDR-1.2.md). Shipped in 1.2 and retained in 1.3.
 
 ## Authority and history
 

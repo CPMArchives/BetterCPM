@@ -1,4 +1,4 @@
-# BetterCP/M 1.3 candidate platforms
+# BetterCP/M 1.3 maintained platforms
 
 | Platform | Maintained baseline | Default unloaded maximum COM |
 | --- | --- | ---: |
@@ -12,9 +12,10 @@ been newly qualified. The default PDS composition is HISTORY 192 bytes, MCL
 Off and VAR Off, with 12 metadata bytes and 204 total bytes. Enabling optional
 owners can reduce COM capacity; CONFIG and STAT MEM show the cost.
 
-The [1.3 readiness record](../releases/1.3-READINESS.md) distinguishes focused
-engineering evidence from final combined-package acceptance. This candidate
-is not a release acceptance or publication claim.
+The [published 1.3 release](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.3)
+and [publication record](../releases/evidence/1.3-publication/publication.json)
+bind maintainer acceptance to frozen source `51e1092d`. The
+[readiness record](../releases/1.3-READINESS.md) retains the focused evidence.
 
 Installation: [cpmsim](CPMSIM-INSTALLATION.md),
 [Model 4](MODEL4-INSTALLATION.md), [Model II](MODEL2-INSTALLATION.md).

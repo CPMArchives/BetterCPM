@@ -2,8 +2,8 @@
   "schema": 1,
   "release_title": "BetterCP/M 1.3",
   "version": "1.3",
-  "status": "candidate layout; final artifacts and acceptance pending",
-  "accepted_commit": null,
+  "status": "published; approved frozen ZIP bytes unchanged",
+  "accepted_commit": "51e1092d01b2a23e6244faaa877a8c5c8d6eb388",
   "tag": "v1.3",
   "specification": "docs/releases/1.3-SCOPE-AND-ACCEPTANCE.md",
   "release_index": "BetterCPM-1.3-RELEASE.json",
@@ -18,7 +18,12 @@
         "cpmsim"
       ],
       "readme_template": "packaging/1.3/README-System-cpmsim.txt",
-      "status": "candidate preparation"
+      "status": "published",
+      "reviewed_filename": "BetterCPM-1.3-System-cpmsim-candidate.zip",
+      "published_archive_root": "BetterCPM-1.3-System-cpmsim-candidate",
+      "published_sha256": "f498e1335e7659a4c4bba0f3d3284d7d69cc431268dafbdd6510a7dec6effdd2",
+      "published_size_bytes": 558098,
+      "published_url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-System-cpmsim.zip"
     },
     {
       "id": "system-model4",
@@ -29,7 +34,12 @@
         "Model4"
       ],
       "readme_template": "packaging/1.3/README-System-Model4.txt",
-      "status": "candidate preparation"
+      "status": "published",
+      "reviewed_filename": "BetterCPM-1.3-System-Model4-candidate.zip",
+      "published_archive_root": "BetterCPM-1.3-System-Model4-candidate",
+      "published_sha256": "0734cee492078d4cd25eac01c2547ec9e6c2c1cb375d4aa8547b8d4fcb9539df",
+      "published_size_bytes": 279441,
+      "published_url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-System-Model4.zip"
     },
     {
       "id": "utilities-cpmsim",
@@ -40,7 +50,12 @@
         "cpmsim"
       ],
       "readme_template": "packaging/1.3/README-Utilities-cpmsim.txt",
-      "status": "candidate preparation"
+      "status": "published",
+      "reviewed_filename": "BetterCPM-Utilities-1.3-cpmsim-candidate.zip",
+      "published_archive_root": "BetterCPM-Utilities-1.3-cpmsim-candidate",
+      "published_sha256": "e531f0cf4a5a57cdcc80053ddcdc6844baf7867ae6b20ca7767ac198702b043f",
+      "published_size_bytes": 354094,
+      "published_url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-Utilities-1.3-cpmsim.zip"
     },
     {
       "id": "utilities-model4",
@@ -51,7 +66,12 @@
         "Model4"
       ],
       "readme_template": "packaging/1.3/README-Utilities-Model4.txt",
-      "status": "candidate preparation"
+      "status": "published",
+      "reviewed_filename": "BetterCPM-Utilities-1.3-Model4-candidate.zip",
+      "published_archive_root": "BetterCPM-Utilities-1.3-Model4-candidate",
+      "published_sha256": "958e85a242716a413aa3d9236016ee50875c2a9a3c0215e1face3fc62f70dd8a",
+      "published_size_bytes": 370608,
+      "published_url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-Utilities-1.3-Model4.zip"
     },
     {
       "id": "system-model2",
@@ -62,7 +82,12 @@
         "Model2"
       ],
       "readme_template": "packaging/1.3/README-System-Model2.txt",
-      "status": "candidate preparation"
+      "status": "published",
+      "reviewed_filename": "BetterCPM-1.3-System-Model2-candidate.zip",
+      "published_archive_root": "BetterCPM-1.3-System-Model2-candidate",
+      "published_sha256": "edd21101f0bc296e613d70debcf631b874f915dc6fd65b23f6db801629bc89c9",
+      "published_size_bytes": 238733,
+      "published_url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-System-Model2.zip"
     },
     {
       "id": "utilities-model2",
@@ -73,7 +98,12 @@
         "Model2"
       ],
       "readme_template": "packaging/1.3/README-Utilities-Model2.txt",
-      "status": "candidate preparation"
+      "status": "published",
+      "reviewed_filename": "BetterCPM-Utilities-1.3-Model2-candidate.zip",
+      "published_archive_root": "BetterCPM-Utilities-1.3-Model2-candidate",
+      "published_sha256": "75d0bc8192273b66f51a1997df9aa38bec4d01a5d69bc29da0bc16b4c2646c8c",
+      "published_size_bytes": 335216,
+      "published_url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-Utilities-1.3-Model2.zip"
     },
     {
       "id": "source",
@@ -82,7 +112,12 @@
       "archive_root": "BetterCPM-1.3-Source",
       "platforms": [],
       "readme_template": "packaging/1.3/README-Source.txt",
-      "status": "candidate preparation"
+      "status": "published",
+      "reviewed_filename": "BetterCPM-1.3-Source-candidate.zip",
+      "published_archive_root": "BetterCPM-1.3-Source-candidate",
+      "published_sha256": "8d23e176c1b4115008e7416cbf99f73290755fdd717cf3e1bb79ca6cc02a09c1",
+      "published_size_bytes": 396393451,
+      "published_url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-Source.zip"
     },
     {
       "id": "documentation",
@@ -91,8 +126,18 @@
       "archive_root": "BetterCPM-1.3-Documentation",
       "platforms": [],
       "readme_template": "packaging/1.3/README-Documentation.txt",
-      "status": "candidate preparation"
+      "status": "published",
+      "reviewed_filename": "BetterCPM-1.3-Documentation-candidate.zip",
+      "published_archive_root": "BetterCPM-1.3-Documentation-candidate",
+      "published_sha256": "eee97c7ff587f4baa68f029e217455386932d55daac05637100fe66745996171",
+      "published_size_bytes": 737133,
+      "published_url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-Documentation.zip"
     }
   ],
-  "feature_freeze_commit": "0c7c29b2f872878df4f179f5aa6dd6e8d4a3e135"
+  "feature_freeze_commit": "0c7c29b2f872878df4f179f5aa6dd6e8d4a3e135",
+  "source_freeze_commit": "51e1092d01b2a23e6244faaa877a8c5c8d6eb388",
+  "release_url": "https://github.com/CPMArchives/BetterCPM/releases/tag/v1.3",
+  "published_at": "2026-11-21T15:13:14Z",
+  "publication_record": "docs/releases/evidence/1.3-publication/publication.json",
+  "layout_notes": "archive_root/readme_template retain preparation templates; published_archive_root, published_sha256, published_size_bytes and published_url describe the unchanged published ZIPs. Frozen candidate labels remain historical records."
 }

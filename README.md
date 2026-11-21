@@ -1,17 +1,12 @@
 # BetterCP/M
 
-Current source is a **1.3 candidate**, with PDS 2.0 and optional MCL/VAR. It is not yet release-qualified. See [1.3 candidate notes](docs/releases/RELEASE-NOTES-1.3.md) and [focused acceptance](docs/releases/1.3-SCOPE-AND-ACCEPTANCE.md).
+**BetterCP/M 1.3 is released.** It adds PDS 2.0 and optional MCL/VAR, with HISTORY 192 bytes and MCL/VAR disabled by default. See the [1.3 release notes](docs/releases/RELEASE-NOTES-1.3.md) and [focused acceptance](docs/releases/1.3-SCOPE-AND-ACCEPTANCE.md).
 
-BetterCP/M is a compact, maintainable CP/M-compatible operating system for Z80-class computers. **BetterCP/M 1.2 is released.** Download the System package for your platform from the [published v1.2 release](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.2), then follow the [quick start](#quick-start) below. Matching Utilities, complete Source and the four-manual Documentation collection are available separately. See the [documentation index](docs/README.md).
+BetterCP/M is a compact, maintainable CP/M-compatible operating system for Z80-class computers. Download the System package for your platform from the [published v1.3 release](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.3), then follow the [quick start](#quick-start) below. Matching Utilities, complete Source and the four-manual Documentation collection are separate downloads. See the [documentation index](docs/README.md).
 
 The project begins with CP/M 2.2 as its compatibility baseline while redesigning the operating system around explicit interfaces, documented state, reproducible builds, portable hardware boundaries, and independently testable subsystems. The objective is not simply to reproduce Digital Research CP/M source code, but to provide a clean and well-specified CP/M environment that remains practical on small 8-bit systems.
 
-The released 1.1 packages include exact-image acceptance, installation and reconstruction evidence. Qualification covers patched z80pack `cpmsim`, TRS-80 Model 4 and 64 KiB Model II under `trs80gp` 2.5.8; physical hardware is outside this qualification.
-
-BetterCP/M 1.1 officially supports the 64 KiB TRS-80 Model II in trs80gp
-2.5.8 with BCM2SS floppy media and 56 KiB unloaded TPA.
-[Maintained platforms and qualification](docs/platform/SUPPORT-1.1.md) ·
-[Model II installation](docs/platform/MODEL2-INSTALLATION.md).
+The released 1.3 packages use focused acceptance and retained exact-image installation, cold-boot and reconstruction evidence. Support covers patched z80pack `cpmsim`, TRS-80 Model 4 and 64 KiB Model II under `trs80gp`; physical hardware is outside this qualification. See [maintained platforms](docs/platform/SUPPORT-1.3.md) and [Model II installation](docs/platform/MODEL2-INSTALLATION.md).
 
 The finalized visual design is defined in the [BetterCP/M Visual Identity standard](specifications/VISUAL-IDENTITY.md).
 
@@ -52,7 +47,7 @@ For a detailed explanation of how artificial intelligence is used in BetterCP/M,
 
 ## Current system
 
-The released 1.1 system boots reproducibly on **patched z80pack `cpmsim`**, **TRS-80 Model 4** and **64 KiB TRS-80 Model II under `trs80gp`**. It provides a working BetterCP/M BIOS, BDOS, directory services, command processor, transient-program loader, resident commands, CPX command extensions, and relocatable RSX services.
+The released 1.3 system boots reproducibly on **patched z80pack `cpmsim`**, **TRS-80 Model 4** and **64 KiB TRS-80 Model II under `trs80gp`**. It provides a working BetterCP/M BIOS, BDOS, directory services, command processor, transient-program loader, resident commands, CPX command extensions, and relocatable RSX services.
 
 The system supports four physical drives, runtime disk-format assignment, ordinary CP/M drive/user operation, persistent command history, SUBMIT/XSUB operation, configurable disk services, and the standard CP/M file operations exercised by the project's compatibility suite.
 
@@ -62,7 +57,7 @@ The unloaded complete-record COM limit is 57,344 bytes on cpmsim and Model II, a
 
 1.1 adds numeric command PATH and TCAP 2.0 integrated ADM3A/VT52/ANSI personality/renderers. TCAP 1.0 was abandoned before release. Existing SCRN/SCX clients retain their separate backends. See the [1.1 release notes](docs/releases/RELEASE-NOTES-1.1.md) and [TCAP 2.0 contract](docs/engineering/TCAP-Direct-ABI.md).
 
-BetterCP/M 1.2 development adds optional [named directories](docs/user/NDR.md), with a [512-byte protected provider and explicit memory accounting](docs/engineering/NDR-1.2.md). Published release identities remain unchanged.
+BetterCP/M 1.2 added optional [named directories](docs/user/NDR.md), with a [512-byte protected provider and explicit memory accounting](docs/engineering/NDR-1.2.md). The feature is retained in 1.3. PDS 2.0 now composes HISTORY and optional MCL/VAR at cold boot; CONFIG F saves owner capacities for the next cold boot, and STAT MEM reports their memory cost.
 
 Subsystems are versioned independently. See [`specifications/SUBSYSTEM-VERSIONING.md`](specifications/SUBSYSTEM-VERSIONING.md) and the authoritative assignments in [`metadata/subsystem-versions.tsv`](metadata/subsystem-versions.tsv).
 Utility `/VER` output and independent build counters are defined in [`specifications/UTILITY-VERSIONING.md`](specifications/UTILITY-VERSIONING.md), with assignments in [`metadata/utility-versions.tsv`](metadata/utility-versions.tsv).
@@ -74,19 +69,19 @@ provisional P0–P3 priorities, and planned or exploratory ports. It distinguish
 bounded emulator validation, preliminary boot reports, and physical-hardware
 status; all current testing is emulator-based.
 
-## Current downloads — 1.1
+## Current downloads — 1.3
 
 Choose matching System and Utilities packages. Each Utilities ZIP includes primary and NOAH companion media, instructions and license notices. Corresponding source is in the separate Source download.
 
 | Platform | System | Utilities |
 | --- | --- | --- |
-| Patched cpmsim | [System](https://github.com/CPMArchives/BetterCPM/releases/download/v1.1/BetterCPM-1.1-System-cpmsim.zip) | [Utilities](https://github.com/CPMArchives/BetterCPM/releases/download/v1.1/BetterCPM-Utilities-1.1-cpmsim.zip) |
-| TRS-80 Model 4 | [System](https://github.com/CPMArchives/BetterCPM/releases/download/v1.1/BetterCPM-1.1-System-Model4.zip) | [Utilities](https://github.com/CPMArchives/BetterCPM/releases/download/v1.1/BetterCPM-Utilities-1.1-Model4.zip) |
-| TRS-80 Model II | [System](https://github.com/CPMArchives/BetterCPM/releases/download/v1.1/BetterCPM-1.1-System-Model2.zip) | [Utilities](https://github.com/CPMArchives/BetterCPM/releases/download/v1.1/BetterCPM-Utilities-1.1-Model2.zip) |
+| Patched cpmsim | [System](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-System-cpmsim.zip) | [Utilities](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-Utilities-1.3-cpmsim.zip) |
+| TRS-80 Model 4 | [System](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-System-Model4.zip) | [Utilities](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-Utilities-1.3-Model4.zip) |
+| TRS-80 Model II | [System](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-System-Model2.zip) | [Utilities](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-Utilities-1.3-Model2.zip) |
 
-[Source](https://github.com/CPMArchives/BetterCPM/releases/download/v1.1/BetterCPM-1.1-Source.zip) · [Four-manual Documentation](https://github.com/CPMArchives/BetterCPM/releases/download/v1.1/BetterCPM-1.1-Documentation.zip) · [Checksums](https://github.com/CPMArchives/BetterCPM/releases/download/v1.1/BetterCPM-1.1-SHA256SUMS.txt) · [Release index](https://github.com/CPMArchives/BetterCPM/releases/download/v1.1/BetterCPM-1.1-RELEASE.json)
+[Source](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-Source.zip) · [Four-manual Documentation](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-Documentation.zip) · [Checksums](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-SHA256SUMS.txt) · [Release index](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-RELEASE.json)
 
-The Source package contains the acceptance ledger and portable evidence. Earlier [1.0.1](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.0.1) and [1.0](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.0) downloads remain available and unchanged.
+The release source is frozen at `51e1092d01b2a23e6244faaa877a8c5c8d6eb388`. The approved ZIP bytes and hashes are unchanged; download filenames omit `-candidate`, while embedded candidate labels/roots remain build-time records. The published release index records maintainer acceptance. [Frozen provenance](docs/releases/1.3-FROZEN-REVIEW.md) and the [publication record](docs/releases/evidence/1.3-publication/publication.json) distinguish these identities. Earlier [1.2](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.2), [1.1](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.1), [1.0.1](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.0.1) and [1.0](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.0) downloads remain available and unchanged.
 
 ## Earlier release — BetterCP/M 1.0
 
@@ -189,11 +184,11 @@ DIR A:
 PATH
 ```
 
-With Utilities installed, also inspect `DIR B:` and `DIR C:`. Continue with the [User's Guide](docs/manuals/Users-Guide.md) and [Command and Utilities Reference](docs/manuals/Command-and-Utilities-Reference.md). Read the [1.1 release notes](docs/releases/RELEASE-NOTES-1.1.md), including platform limits and the documented VER limitation. Use the platform guide for FDB's memory requirements and system installation; copying directory files alone does not install a bootable system.
+With Utilities installed, also inspect `DIR B:` and `DIR C:`. Continue with the [User's Guide](docs/manuals/Users-Guide.md) and [Command and Utilities Reference](docs/manuals/Command-and-Utilities-Reference.md). Read the [1.3 release notes](docs/releases/RELEASE-NOTES-1.3.md), including platform limits and the approved native prepared-input workflow. Use the platform guide for FDB's memory requirements and system installation; copying directory files alone does not install a bootable system.
 
 ## Building BetterCP/M
 
-To use the released system, start with the downloads above. For exact 1.1 reconstruction, use the matching Source ZIP and [Source Build and Reconstruction Guide](docs/SOURCE-BUILD.md). The commands below build the current checkout, which may differ from the released bytes.
+To use the released system, start with the downloads above. For exact 1.3 reconstruction, use the matching Source ZIP and [Source Build and Reconstruction Guide](docs/SOURCE-BUILD.md). The commands below build the current checkout, which may differ from the released bytes.
 
 The complete current development image can be generated with:
 
@@ -240,7 +235,7 @@ BetterCP/M distinguishes between the **project/engineering record** and the **pu
 
 The project record documents architectural decisions, implementation milestones, qualification evidence, current work, and deferred designs. The principal entry points are:
 
-- [1.1 frozen scope and acceptance](docs/releases/1.1-SCOPE-AND-ACCEPTANCE.md) and [release notes](docs/releases/RELEASE-NOTES-1.1.md);
+- [1.3 scope and focused acceptance](docs/releases/1.3-SCOPE-AND-ACCEPTANCE.md) and [release notes](docs/releases/RELEASE-NOTES-1.3.md);
 - [`docs/releases/1.0-ROADMAP.md`](docs/releases/1.0-ROADMAP.md) — historical 1.0 scope and work sequence;
 - [`docs/releases/1.0-IMPLEMENTATION-CONTRACTS.md`](docs/releases/1.0-IMPLEMENTATION-CONTRACTS.md) — retained 1.0 implementation contracts;
 - [`docs/architecture/`](docs/architecture/) — architectural specifications and design record;
@@ -271,7 +266,7 @@ BetterCP/M compatibility is defined by documented behavioral requirements rather
 
 The system is tested with the separately maintained [**CP/M 2.2 Compatibility Suite**](https://github.com/CPMArchives/cpm-2.2-compatibility-suite), together with subsystem regression tests, platform tests, native/cross-build comparisons, and physical-system qualification procedures.
 
-Historical milestone results retain their exact builds and scope. The November 2 card accounting and Model 4 batch are not universal two-platform passes. Later exact-package installation, native query, offline reproduction and protected-XIP receipts are summarized in the [retained release notes](docs/releases/RELEASE-NOTES-1.0.md) and [five-package lock](docs/releases/non-documentation-lock-1.0/README.md). New documentation checks do not rerun those trials. These receipts establish their stated emulator scope; no physical hardware qualification is implied. Current publication and exact-package acceptance are recorded by the [v1.1 release](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.1) and its release index.
+Historical milestone results retain their exact builds and scope. The November 2 card accounting and Model 4 batch are not universal two-platform passes. Later exact-package installation, native query, offline reproduction and protected-XIP receipts are summarized in the [retained release notes](docs/releases/RELEASE-NOTES-1.0.md) and [five-package lock](docs/releases/non-documentation-lock-1.0/README.md). New documentation checks do not rerun those trials. These receipts establish their stated emulator scope; no physical hardware qualification is implied. Current publication and exact-package acceptance are recorded by the [v1.3 release](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.3) and its release index.
 
 ## Related projects
 

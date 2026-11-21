@@ -1,0 +1,89 @@
+{
+  "status": "PUBLISHED AND VERIFIED",
+  "release_url": "https://github.com/CPMArchives/BetterCPM/releases/tag/v1.3",
+  "tag": "v1.3",
+  "source_commit": "51e1092d01b2a23e6244faaa877a8c5c8d6eb388",
+  "published_at": "2026-11-21T15:13:14Z",
+  "package_count": 8,
+  "asset_count": 15,
+  "published_assets": {
+    "BetterCPM-1.3-Documentation.zip": {
+      "sha256": "eee97c7ff587f4baa68f029e217455386932d55daac05637100fe66745996171",
+      "bytes": 737133,
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-Documentation.zip"
+    },
+    "BetterCPM-1.3-READINESS.json": {
+      "sha256": "fe2bca5a5112b7014e67571f961faa7f3779c8b3210dfacf71e863ec2d09f489",
+      "bytes": 4960,
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-READINESS.json"
+    },
+    "BetterCPM-1.3-RELEASE-NOTES.md": {
+      "sha256": "367f6f21a2f2754011125917753863cd5bcde14f9e552e6191b4454aed78e88a",
+      "bytes": 3917,
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-RELEASE-NOTES.md"
+    },
+    "BetterCPM-1.3-RELEASE.json": {
+      "sha256": "744d94846f9776e8a29c5591bdb7b844399053ceb40ab6110a07661842b4e2e6",
+      "bytes": 4758,
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-RELEASE.json"
+    },
+    "BetterCPM-1.3-REVIEWED-INDEX.json": {
+      "sha256": "02246a635583813381767485eea6af2ab2ce07875665c43d0753842d83e19cf8",
+      "bytes": 1822,
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-REVIEWED-INDEX.json"
+    },
+    "BetterCPM-1.3-REVIEWED-SHA256SUMS.txt": {
+      "sha256": "fec93f17d4b59edb1b46fd3566e84b0eebb6e06c19dabd11f1a4e63f11f3291f",
+      "bytes": 961,
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-REVIEWED-SHA256SUMS.txt"
+    },
+    "BetterCPM-1.3-SHA256SUMS.txt": {
+      "sha256": "9c77a793af07c4aae942ef0ab48dc44bcd45007bdda3b517c03d44dc036f21fc",
+      "bytes": 1374,
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-SHA256SUMS.txt"
+    },
+    "BetterCPM-1.3-SOURCE-FREEZE.json": {
+      "sha256": "51c554bb404eeb42365c00de65263ae31bb024accba2aa88f3d67effea3521d4",
+      "bytes": 2251,
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-SOURCE-FREEZE.json"
+    },
+    "BetterCPM-1.3-Source.zip": {
+      "sha256": "8d23e176c1b4115008e7416cbf99f73290755fdd717cf3e1bb79ca6cc02a09c1",
+      "bytes": 396393451,
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-Source.zip"
+    },
+    "BetterCPM-1.3-System-Model2.zip": {
+      "sha256": "edd21101f0bc296e613d70debcf631b874f915dc6fd65b23f6db801629bc89c9",
+      "bytes": 238733,
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-System-Model2.zip"
+    },
+    "BetterCPM-1.3-System-Model4.zip": {
+      "sha256": "0734cee492078d4cd25eac01c2547ec9e6c2c1cb375d4aa8547b8d4fcb9539df",
+      "bytes": 279441,
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-System-Model4.zip"
+    },
+    "BetterCPM-1.3-System-cpmsim.zip": {
+      "sha256": "f498e1335e7659a4c4bba0f3d3284d7d69cc431268dafbdd6510a7dec6effdd2",
+      "bytes": 558098,
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-System-cpmsim.zip"
+    },
+    "BetterCPM-Utilities-1.3-Model2.zip": {
+      "sha256": "75d0bc8192273b66f51a1997df9aa38bec4d01a5d69bc29da0bc16b4c2646c8c",
+      "bytes": 335216,
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-Utilities-1.3-Model2.zip"
+    },
+    "BetterCPM-Utilities-1.3-Model4.zip": {
+      "sha256": "958e85a242716a413aa3d9236016ee50875c2a9a3c0215e1face3fc62f70dd8a",
+      "bytes": 370608,
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-Utilities-1.3-Model4.zip"
+    },
+    "BetterCPM-Utilities-1.3-cpmsim.zip": {
+      "sha256": "e531f0cf4a5a57cdcc80053ddcdc6844baf7867ae6b20ca7767ac198702b043f",
+      "bytes": 354094,
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-Utilities-1.3-cpmsim.zip"
+    }
+  },
+  "artifact_policy": "Approved ZIP bytes are unchanged; release download filenames omit -candidate. Embedded candidate roots/labels and historical evidence remain unchanged.",
+  "published_release_manifest_sha256": "744d94846f9776e8a29c5591bdb7b844399053ceb40ab6110a07661842b4e2e6",
+  "published_checksums_sha256": "9c77a793af07c4aae942ef0ab48dc44bcd45007bdda3b517c03d44dc036f21fc"
+}
