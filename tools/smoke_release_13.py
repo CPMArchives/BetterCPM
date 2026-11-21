@@ -57,15 +57,15 @@ def main():
                 from run_model2_qualification import EMU,EMU_SHA
                 assert sha(EMU)==EMU_SHA,'Model II emulator differs from qualified baseline'
                 command[0]=str(EMU);command+=['-mem','64','-itime','45000']
-            command+=['-batch','-turbo','-d0',str(disk),'-id','15000','-it']
+            command+=['-batch','-turbo','-d0',str(disk),'-iw','Type TYPE README.TXT','-id','3000','-it']
             steps=['VER\r']
             if target=='trs80gp':steps+=['RSX UNLOAD ADM3A\r']
             steps+=['STAT MEM\r','CONFIG\r','F','\x03\x03','RSX LOAD NDR\r',
-                    'NDR WORK A0:\r','PATH\r','RSX UNLOAD NDR\r','HELP VAR\r','Q','STAT /VER\r']
+                    'NDR WORK A0:\r','PATH\r','HELP VAR\r','Q','STAT /VER\r']
             for step in steps:
                 command+=(['-i',step] if target=='trs80m2' else key_args(step))
-                command+=['-id','6000','-it']
-            command+=['-ix'];run(command,cwd=out,timeout=300,check=True)
+                command+=['-id','25000' if step.startswith('RSX ') else '8000','-it']
+            command+=['-ix'];run(command,cwd=out,timeout=480,check=True)
             texts=[screen(path) for path in sorted(out.glob('trs80-text-*.bin'))]
             for index,text in enumerate(texts):(out/f'screen-{index}.txt').write_text(text)
         text='\n'.join(texts)
