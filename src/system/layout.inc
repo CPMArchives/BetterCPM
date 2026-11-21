@@ -79,3 +79,9 @@ PL_M2           EQU     0
 PATHMAX         EQU     6
 LY_LERR         EQU     LY_EXT-14       ; result + count + six DU pairs; no tail padding
 LY_PATH         EQU     LY_LERR+1       ; count and six DU pairs; drive 0/user FF = current
+
+; Existing resident instruction operands, fixed up once by cold composition.
+; They double as private placement words; extens.mac asserts their locations.
+RX_BASE         EQU     LY_EXT+0A3H    ; Function-182 CALL operand = manager base
+RX_STACK        EQU     LY_EXT+065H    ; manager stack LD SP operand
+RX_CALL         EQU     LY_EXT+06BH    ; manager CALL operand (RAM legacy path)

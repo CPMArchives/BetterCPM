@@ -24,9 +24,11 @@ def main() -> None:
     text = SOURCE.read_text(encoding="ascii").replace(
         "        CSEG\n        .PHASE  ", "        ASEG\n        ORG     ").replace(
         "        .DEPHASE\n", "")
-    data = assemble(args.assembler, text, BUILD / "rsxresolver.bin",
-                    BUILD / "rsxresolver.lst", BASE)
-    if not data or len(data) > 893:
+    assemble(args.assembler,text,BUILD/'rsxresolver-plain.bin',
+             BUILD/'rsxresolver-plain.lst',BASE)
+    from private_rsx_rebase import boot_image
+    data = boot_image(args.assembler,text,'RRBASE',BUILD,'rsxresolver')
+    if not data or len(data) > 1000:
         raise SystemExit(f"RSX resolver exceeds its packed slot: {len(data)} bytes")
     print(f"{hashlib.sha256(data).hexdigest()}  build/system/rsxresolver.bin")
     print(f"RSX resolver bytes: {len(data)}")

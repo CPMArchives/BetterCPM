@@ -68,7 +68,7 @@ class DiskMachine(Machine):
         return super().change(op,name,location,high)
     def chain(self):
         low=self.word(L['SYSTEM']+0x88)
-        return (bytes(self.mem[L['RSX_STATE']:L['RSX_STATE']+41]),self.word(L['SYSTEM']+0x84),low,self.word(6),self.word(L['SYSTEM']+0x92),bytes(self.mem[low:L['RSX']]))
+        return (bytes(self.mem[L['RSX_STATE']:L['RSX_STATE']+41]),self.word(L['SYSTEM']+0x84),low,self.word(6),self.word(L['SYSTEM']+0x92),bytes(self.mem[low:self.word(L['EXTENSIONS']+0xa3)]))
     def context(self):return (self.mem[self.symbol['UB_DRIVE']],self.mem[self.symbol['UB_USERNO']],self.word(self.symbol['UB_DMA']))
 
 def setup():
@@ -125,7 +125,7 @@ def main():
     b=setup();old_tpa=b.word(6)
     assert b.change(1,b'BATCHIO',(1,0))==0,b.trace
     low=b.word(L['SYSTEM']+0x88)
-    allocation=L['RSX']-low
+    allocation=b.word(L['EXTENSIONS']+0xa3)-low
     assert b.change(2,b'BATCHIO',(0,0))==0
     assert b.word(6)==old_tpa
     print('BATCHIO provider allocation',allocation)
@@ -191,7 +191,7 @@ def main():
     assert x.change(1,b'HELLO',(1,0))==255
     assert x.chain()==before
     stage_checks=[]
-    for chunk in range(5):
+    for chunk in range(8):
         x=setup();assert x.change(1,b'STATEFUL',(1,3))==0
         before=x.chain();context=x.context();x.stage_fault=chunk
         assert x.change(1,b'HELLO',(1,0))==255
@@ -231,7 +231,7 @@ def main():
     for low in (0x405,0x1234,0x2011):
         x=setup();x.workspace_low=low
         assert x.change(1,b'HELLO',(1,0))==0
-        assert x.word(L['FILE']+109+34)==((low+255)&~255)+512+33
+        assert x.word(L['FILE']+109+34)==((low+255)&~255)+512+36
         assert x.change(2,b'HELLO',(0,0))==0
         assert not any(k[2].endswith('.RSC') for k in x.files)
     # Repeated successful changes reclaim cache files immediately at commit.
@@ -296,8 +296,8 @@ def main():
             'provider_footer_bytes':10,'extra_batchio_allocation_for_footer':allocation-512,
             'provider_owned_padding_preserved':True,
             'extra_shared_resident_bytes':0,'unloaded_tpa_change':0,'total_emitted_image_bytes':sum(sizes.values()),
-            'helper_file_bytes':2560,'helper_actual_bytes':sizes['r3cache.bin'],
-            'temporary_reserved_helper_bytes':2560,'temporary_workspace':'page-aligned caller-supplied bounds',
+            'helper_file_bytes':4096,'helper_actual_bytes':sizes['r3cache.bin'],
+            'temporary_reserved_helper_bytes':4096,'temporary_workspace':'page-aligned caller-supplied bounds',
             'emitted_code_sizes':sizes,
             'disk_free_query_provenance':True,'cache_namespace_exhaustion_safe':True,
             'limitations':[

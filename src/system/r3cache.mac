@@ -15,6 +15,7 @@ CBBASE EQU 01000H
         JP VERIFY
         JP CLEAN
         JP FINISH
+        JP REBASE
 ; Inline-call dispatcher. FCB R0..R2 are private JP while using sequential I/O.
 ; Preserve the caller's argument registers and consume the inline vector byte.
 DISPATCH:
@@ -38,7 +39,7 @@ DISPATCH:
         LD D,0
         LD HL,(LY_FCB+34)
         ADD HL,DE
-        LD DE,33
+        LD DE,36
         OR A
         SBC HL,DE
         LD (DP_JUMP+1),HL
@@ -590,7 +591,7 @@ FINISH: POP DE
         LD (RESIMAGE),HL
         CALL CLEAN
         LD HL,(RESIMAGE)
-        LD DE,LY_RSX
+        LD DE,(RX_BASE)
         LD BC,03F4H
         LDIR
         XOR A                         ; committed success; cleanup may be retried
@@ -713,5 +714,95 @@ CHCRC: DW 0
 CFOOT: DS 8
 READIDX: DB 0
 BUFFER: DS 128
+; Window follows cold-composed PDS. It is immutable until the next cold boot.
+; A=private slot record offset (slot*8), HL=pristine staged 1K image.
+; Verify the full slot before typed fixups; preserve capsule-stream CRC and IX.
+REBASE:
+        PUSH IX
+        LD (RB_IMAGE),HL
+        RRCA
+        LD E,A
+        LD D,0
+        LD HL,RB_DIR
+        ADD HL,DE
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (RB_BITS),DE
+        INC HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        LD (RB_WANT),DE
+        LD HL,(CRC)
+        PUSH HL
+        LD HL,(RB_IMAGE)
+        LD BC,1024
+        LD DE,0FFFFH
+        CALL CRCLOOP
+        POP HL
+        LD (CRC),HL
+        LD HL,(RB_WANT)
+        OR A
+        SBC HL,DE
+        JR NZ,RB_BAD
+        LD HL,(RB_BITS)
+        LD A,H
+        OR L
+        JR Z,RB_DONE
+        LD DE,CBBASE
+        ADD HL,DE
+        PUSH HL
+        POP IX
+        LD DE,(RX_BASE)
+        LD HL,-LY_RSX
+        ADD HL,DE
+        LD B,H
+        LD C,L
+        LD HL,(RB_IMAGE)
+        LD D,128
+RB_BYTE:
+        LD A,(IX+0)
+        INC IX
+        LD E,8
+RB_BIT:
+        RRCA
+        JR NC,RB_SKIP
+        PUSH AF
+        PUSH DE
+        PUSH HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        ADD HL,BC
+        EX DE,HL
+        POP HL
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        DEC HL
+        POP DE
+        POP AF
+RB_SKIP:
+        INC HL
+        DEC E
+        JR NZ,RB_BIT
+        LD A,D
+        DEC A
+        LD D,A
+        JR NZ,RB_BYTE
+RB_DONE:
+        POP IX
+        LD HL,(RB_IMAGE)
+        XOR A
+        RET
+RB_BAD:
+        POP IX
+        JP BAD
+RB_IMAGE: DW 0
+RB_BITS: DW 0
+RB_WANT: DW 0
+; @private-helper-maps@
         .DEPHASE
         END

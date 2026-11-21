@@ -177,9 +177,14 @@ RF_HAVECOUNT:                           ; validate the prospective profile count
         CALL    RF_PUTDE
         LD      A,(RF_COUNT)
         OR      A
-        LD      DE,LY_RSX
+        LD      DE,(RX_BASE)
         JR      NZ,RF_TOP
-        LD      DE,LY_HIST              ; release the manager for an empty profile
+        PUSH HL
+        LD HL,(RX_BASE)
+        LD DE,1024
+        ADD HL,DE
+        EX DE,HL
+        POP HL                          ; empty profile restores actual PDS low
 RF_TOP:                                 ; store the empty-profile boundary
         CALL    RF_PUTDE
         LD      DE,LY_BDOS

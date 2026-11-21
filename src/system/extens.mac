@@ -22,7 +22,7 @@
 CPTCOUNT        EQU     LY_SYS+094H
 CPTFLAGS        EQU     LY_SYS+095H
 CPTABLE         EQU     LY_SYS+096H
-RSXCONTROL      EQU     LY_RSX
+RSXCONTROL      EQU     LY_HIST-0400H
 BIOCURSOR       EQU     LY_BIOS+54
 COREBDOS        EQU     LY_BDOS
 
@@ -121,9 +121,11 @@ EX_RLOAD:                               ; load RSX manager overlay
         OR      A
         JR      NZ,EX_RBAD
         POP     IX                      ; move the saved register to the manager's stack
-        LD      SP,LY_RSX+03FDH
+EX_MSP:
+        LD      SP,LY_HIST-3
         PUSH    IX
         PUSH    DE                      ; preserve the public request for result pickup
+EX_MCALL:
         IF BP_CHECKED EQ 1
         CALL    LY_CFG
         ELSE
@@ -170,6 +172,7 @@ BF_RSXSVC:                              ; locate RSX-published service
         LD      A,(LY_RSTA)
         OR      A
         JR      Z,BF_RSNONE
+EX_SCALL:
         CALL    RSXCONTROL
         JR      EX_RET182
 
@@ -360,6 +363,15 @@ CL_ABORT:                               ; restore lookup context before WBOOT re
 EX_OLDSP:       DW      0               ; saved extension stack pointer
 BCX_MVAL:       DB      0               ; selected CPX mask
 AD_DMA:         DW      0               ; adapter DMA address
+        IF EX_MSP+1 NE RX_STACK
+        .ERROR  private manager stack operand moved
+        ENDIF
+        IF EX_MCALL+1 NE RX_CALL
+        .ERROR  private manager call operand moved
+        ENDIF
+        IF EX_SCALL+1 NE RX_BASE
+        .ERROR  private resolver call operand moved
+        ENDIF
         INCLUDE versions.inc
         .DEPHASE
         END

@@ -51,7 +51,7 @@ Z_EENT: LD HL,0
         CALL Z_VERIFY
         RET NZ
         LD HL,LY_CFG+03FDH
-        LD DE,LY_RSX+03FDH
+        LD DE,(RX_STACK)
         LD BC,3
         LDIR
         XOR A
@@ -63,14 +63,13 @@ Z_RESTORE:
         LD A,H
         OR L
         RET Z
-        LD DE,LY_RSX
+        LD DE,(RX_BASE)
         LD BC,03F4H
         LDIR
         XOR A
         RET
 Z_BADLOAD:
-        LD A,0FFH
-        OR A
+        OR 0FFH
         RET
 Z_VERIFY:
         PUSH HL

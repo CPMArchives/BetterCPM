@@ -65,14 +65,14 @@ def build_rsx_components(contract: dict, assembler: Path, output: Path) -> dict:
             raise ValueError(f'{stem}: move overlay overlap')
         move[offset:offset+len(code)] = code;end = offset+len(code)
     images['R3MOVE.RSX'] = bytes(move)
-    resolver = (ROOT/'build/system/rsxresolver.bin').read_bytes()
+    resolver = (ROOT/'build/system/rsxresolver-plain.bin').read_bytes()
     if not resolver or len(resolver)>1012:
         raise ValueError('resolver exceeds gateway-safe allocation')
     images['R3RESOL.RSX'] = resolver.ljust(1021,b'\0')+gateway
     package = pack_slots(images, identity)
     constants = assembly_constants(contract, binascii.crc_hqx(package[:512],0xFFFF))
     from rsx_disk_cache import build_worker
-    cache,cache_bytes,relocations=build_worker(assembler,output,constants)
+    cache,cache_bytes,relocations=build_worker(assembler,output,constants,images=images)
     cache=cache[:8]+identity+cache[24:]
     images['R3CACHE.RSX']=cache
     sizes['R3CACHE']=cache_bytes

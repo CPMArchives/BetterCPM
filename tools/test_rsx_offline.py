@@ -40,6 +40,8 @@ class Machine:
         self.stream=b'';self.position=0;self.opened=None;self.error=None;self.events=[];self.fail_read=False
         self.word(L['SYSTEM']+0x90,L['TPA']);self.word(6,L['TPA'])
         self.word(L['SYSTEM']+0x92,1)
+        self.word(L['EXTENSIONS']+0xa3,L['HISTORY']-1024)
+        self.word(L['EXTENSIONS']+0x65,L['HISTORY']-3)
         self.bootstrap=(ROOT/'build/system/r3entry.bin').read_bytes()
         self.files[0,0,'R3PACK.RSX']=(ROOT/'build/system/R3PACK.RSX').read_bytes()
         self.files[0,0,'R3CACHE.RSX']=(ROOT/'build/system/R3CACHE.RSX').read_bytes()
@@ -106,9 +108,10 @@ class Machine:
         req=bytes((2 if location is None else 3,op,0,0))+name.ljust(8,b' ')+bytes(2)+struct.pack('<HH',getattr(self,'workspace_low',0x405),high or min(self.word(6),0x7000))
         if location is not None:req+=bytes(location)
         self.mem[at:at+len(req)]=req
-        self.mem[L['RSX']:L['RSX']+1024]=self.bootstrap.ljust(1024,b'\0')
+        window=self.word(L['EXTENSIONS']+0xa3)
+        self.mem[window:window+1024]=self.bootstrap.ljust(1024,b'\0')
         self.pair('DE',at)
-        result=self.run(L['RSX'])
+        result=self.run(window)
         # Model the production extension epilogue's direct-result marker.
         if self.mem[at+3]&0x80:
             result=self.mem[at+3]&1;self.mem[at+3]=0

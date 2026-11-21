@@ -240,7 +240,7 @@ RV_HIGHOK:                              ; use the effective workspace ceiling
         ADD     HL,DE
         LD      (LY_CBACK),HL
         EX      DE,HL
-        LD      HL,LY_RSX
+        LD      HL,(RX_BASE)
         LD      BC,03F4H
         LDIR
 RV_NOBACK:
@@ -251,7 +251,7 @@ RV_NOBACK:
         PUSH    HL
         EX      DE,HL
         LD      HL,(PX_HEADER)
-        LD      BC,0800H
+        LD      BC,0E00H
         ADD     HL,BC
         LD      BC,0200H
         LDIR
@@ -337,7 +337,7 @@ PX_CODE:
 CK_01:  LD L,0
         LD (IX+4),L
         LD (IX+5),H
-        LD DE,0A00H
+        LD DE,01000H
         ADD HL,DE
         JR NC,CK_02
         LD A,255
@@ -370,7 +370,7 @@ CK_03:  EX DE,HL
         JP (IY)
 CK_04:  LD L,(IX+4)
         LD H,(IX+5)
-        LD B,5
+        LD B,8
 CK_READ:
         PUSH BC
         CALL LY_FILE+3
@@ -393,7 +393,7 @@ CK_05:  DJNZ CK_READ
         JP (IY)
 CK_08:  LD E,(IX+4)
         LD D,(IX+5)
-        LD BC,2560
+        LD BC,4096
         CALL LY_CCRC
         LD DE,BP_CACHE_CRC
         OR A
@@ -431,7 +431,7 @@ CK_LOOP:
         LD D,(HL)
         INC HL
         PUSH HL
-        LD HL,1535
+        LD HL,3071
         OR A
         SBC HL,DE
         POP HL
@@ -462,7 +462,7 @@ CK_BAD: LD A,255
 CK_DONE:
         LD L,(IX+6)
         LD H,(IX+7)
-        LD DE,33
+        LD DE,36
         ADD HL,DE
         LD (LY_FCB+34),HL
         LD A,0C3H
@@ -498,7 +498,7 @@ PX_STAGE:
         JP C,PX_BAD
         LD L,0
         LD (PX_HEADER),HL
-        LD DE,0A00H
+        LD DE,01000H
         ADD HL,DE
         JP C,PX_BAD
         PUSH HL
@@ -519,7 +519,7 @@ PX_STAGE:
         CALL LY_FILE
         JP NZ,PX_BAD
         LD HL,(PX_HEADER)
-        LD B,5
+        LD B,8
 PX_READ:
         PUSH BC
         CALL LY_FILE+3
@@ -548,7 +548,7 @@ PX_CHECK:
         CALL LY_CCMP
         JP NZ,PX_BAD
         LD DE,(PX_HEADER)
-        LD BC,2560
+        LD BC,4096
         CALL LY_CCRC
         LD DE,BP_CACHE_CRC
         OR A
@@ -575,7 +575,7 @@ PX_RELOC:
         LD D,(HL)
         INC HL
         PUSH HL
-        LD HL,1535
+        LD HL,3071
         OR A
         SBC HL,DE
         POP HL
@@ -603,7 +603,7 @@ PX_RELOC:
         JR PX_RELOC
 PX_READY:
         LD HL,(PX_BASE)
-        LD DE,33
+        LD DE,36
         ADD HL,DE
         LD (LY_FCB+34),HL
         LD A,0C3H
@@ -1018,12 +1018,16 @@ RIX12:
         JR      NZ,RI_READFAIL           ; reject a partially padded block
         ENDIF
         POP     HL
+        LD      A,(IX+18)
+        CALL    LY_FCB+33
+        DB      33
+        JR      NZ,RI_FAIL
         LD      A,(IX+0)
         OR      A
         LD      DE,LY_CFG
         LD      BC,0400H
         JR      Z,RI_COPY
-        LD      DE,LY_RSX
+        LD      DE,(RX_BASE)
         LD      BC,03F4H
 RI_COPY:                                ; install the complete staged image
         LDIR
@@ -1063,7 +1067,8 @@ RI_RETURN:                              ; restore the caller frame and dispatch
         LD      A,D
         OR      E
         RET     Z
-        JP      LY_RSX
+        LD      HL,(RX_BASE)
+        JP      (HL)
 RI_PACK: DB 'R3PACK  '
         IF BP_CHECKED EQ 1
 RI_ID: DB BP_ID0,BP_ID1,BP_ID2,BP_ID3,BP_ID4,BP_ID5,BP_ID6,BP_ID7,BP_ID8,BP_ID9,BP_ID10,BP_ID11,BP_ID12,BP_ID13,BP_ID14,BP_ID15

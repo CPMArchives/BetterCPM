@@ -12,7 +12,7 @@ def main():
     machine.files[1,0,'NDR.RSX'] = carrier
     baseline = machine.word(6)
     assert machine.change(1,b'NDR',(1,0)) == 0
-    shared_manager = L['HISTORY']-L['RSX']
+    shared_manager = 1024
     assert baseline-machine.word(6) == 512+shared_manager
     assert machine.change(2,b'NDR',(0,0)) == 0
     assert machine.word(6) == baseline
