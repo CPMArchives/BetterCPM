@@ -44,8 +44,8 @@ LY_STKT         EQU     00500H          ; transient loader stack top
 LY_LIMIT        EQU     0F400H          ; resident-memory upper limit
 LY_TOPRSV       EQU     00C00H          ; bytes above resident RAM (STAT count)
 LY_RAMEND       EQU     0F400H          ; available RAM end
-LY_HIST         EQU     0D510H          ; unchanged 192-byte history allocation
-LY_TPA          EQU     0D50DH          ; exclusive TPA upper bound
+LY_HIST         EQU     0D504H          ; default HISTORY owner, 192 bytes
+LY_TPA          EQU     0D501H          ; default exclusive TPA upper bound
 LY_SECTS        EQU     0000DH          ; resident system sector count
 
 ; -------------------------------------------------------------------------------
@@ -55,11 +55,13 @@ LY_SECTS        EQU     0000DH          ; resident system sector count
   ; PDS ABI 1 static-layout bridge. The versioned system descriptor at LY_PDSD
   ; publishes LY_PDSF as its live lower boundary. Until configurable sizing is
   ; implemented, the upper boundary is LY_PDST and boot size equals current size.
-LY_PDSD         EQU     LY_SYS+080H     ; PDS versioned descriptor address
+LY_PDSD         EQU     LY_SYS+080H     ; legacy name: BM1 environment descriptor
 LY_PDST         EQU     LY_SYS          ; PDS upper boundary
-LY_PDSF         EQU     LY_SYS+088H     ; PDS live lower-bound field
-LY_PDSS         EQU     LY_SYS-LY_HIST  ; current protected-data size
-
+LY_PDSF         EQU     LY_SYS+088H     ; legacy name: BM1 live RSX lower bound
+LY_PDSS         EQU     LY_SYS-LY_HIST  ; default size: 192 owner + 12 metadata
+LY_PD2          EQU     LY_SYS-12       ; immutable-location PD ABI 2 header
+PW_BASE         EQU     01700H          ; transient reconstruction worker, never resident
+PW_RECORD       EQU     PW_BASE+3      ; private BCST validator, IX=256-byte record
 ; -------------------------------------------------------------------------------
 ; Protected COM Handoff and Shared Filename State
 ; -------------------------------------------------------------------------------

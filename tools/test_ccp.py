@@ -46,6 +46,10 @@ def cpu() -> Z80:
         value = int.from_bytes(data[offset:offset + 2], "little")
         data[offset:offset + 2] = ((value + delta) & 0xFFFF).to_bytes(2, "little")
     machine.mem[BASE:BASE + len(data)] = data
+    from pds_layout import header
+    machine.mem[LAYOUT['SYSTEM']-12:LAYOUT['SYSTEM']] = header()
+    worker = (ROOT/'build/pds/worker.bin').read_bytes()
+    machine.mem[0x1700:0x1700+len(worker)] = worker
     machine.sp = 0x7F00
     return machine
 

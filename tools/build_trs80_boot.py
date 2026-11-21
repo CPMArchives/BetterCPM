@@ -204,7 +204,8 @@ def install(boot: bytes, stage1: bytes, resident: bytes, command: bytes,
 
     manager_start = control_start + 1024
     raw[manager_start:manager_start + 1024] = overlay_block(manager)
-    raw[manager_start + 1024:manager_start + 2048] = overlay_block(b"")
+    raw[manager_start + 1024:manager_start + 2048] = overlay_block(
+        (ROOT/'build/pds/worker.bin').read_bytes())
     raw[manager_start + 2048:manager_start + 3072] = overlay_block(b"")
     resolver = (ROOT / "build/system/rsxresolver.bin").read_bytes()
     if not 0 < len(resolver) <= 1021:
@@ -399,6 +400,7 @@ def main() -> None:
                      ("NDR.RSX", ndr_provider.read_bytes()),
                      ("WARM.COM", warm_path.read_bytes()),
                      ("CONFIG.COM", config_path.read_bytes()),
+                     ("PDSCONF.OVL", (ROOT/"build/utilities/PDSCONF.OVL").read_bytes()),
                      ("DUP.COM", dup_path.read_bytes()),
                      ("SYSGEN.COM", sysgen_path.read_bytes()),
                      ("SYSBUILD.COM", sysbuild_path.read_bytes()),

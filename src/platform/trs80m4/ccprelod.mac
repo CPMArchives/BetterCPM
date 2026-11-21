@@ -59,6 +59,11 @@ CRBODY:                                 ; begin reconstruction body
         LD      SP,CRSTKTOP
         LD      A,5
         CALL    LY_BIOS+66              ; reset unfinished monitor output before reconstruction
+        LD HL,PW_BASE
+        LD DE,CR_PDSECT
+        CALL M4_FETCH
+        CALL Z,PW_BASE
+        JP NZ,CRFAIL
   ; 07-Sep-2026 -- a BIOS caller may leave another physical drive selected
   ; without changing BDOS's cached A: context. Do not reload RCP.CPX from
   ; that drive using A:'s old DPB. Invalidate before the first file lookup.
@@ -424,11 +429,8 @@ CRRELOC:                                ; prepare module relocation
 ; -------------------------------------------------------------------------------
 
 CRRLOOP:                                ; read next relocation word
-        LD      DE,MODBUF+0200H
-        PUSH    HL
-        OR      A
-        SBC     HL,DE
-        POP     HL
+        LD      A,H                    ; relocation reader stays within one 512-byte buffer
+        CP      (MODBUF+0200H)/256
         JR      NZ,CRRHAVE
         PUSH    BC
         LD      HL,MODBUF
@@ -586,23 +588,31 @@ CRNEXT:                                 ; advance to next CPX
         JP      NZ,FLNEXT
         LD      A,(CRSLOT)
         CP      13
-        JP      NC,CRBAD
+        JR      NC,CRBAD
         PUSH    HL
         LD      E,A
         INC     A
         LD      (CRSLOT),A
-        LD      A,E
-        ADD     A,A
-        ADD     A,E
-        LD      E,A
         LD      D,0
         LD      HL,CRSECTS
         ADD     HL,DE
         LD      A,(HL)
-        INC     HL
-        LD      B,(HL)
-        INC     HL
-        LD      C,(HL)
+        AND     15
+        LD      C,A
+        LD      A,(HL)
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        AND     1
+        LD      B,A
+        LD      A,(HL)
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        AND     7
         POP     HL
         JP      BIOPHREAD
 
@@ -633,6 +643,9 @@ CRCPXERR:      DB      'CPX?',13,10,'$'  ; optional carrier reconstruction faile
 
 CRSECTS:                                ; module sector count
   ; @command-sector-table@
+CR_PDSECT:
+; @pds-sector-table@
+; @pds-fetch@
 
 CRMAGPTR:      DW      0                ; expected signature pointer
 CRTPTR:        DW      0                ; temporary pointer

@@ -42,15 +42,16 @@ def main() -> None:
     history_base = LAYOUT["HISTORY"]
 
     cold, _seed = seeded_system()
+    cold.mem[LAYOUT['BIOS']+3:LAYOUT['BIOS']+6] = bytes((0xC3, SENTINEL & 255, SENTINEL >> 8))
     cold.run(gateway_symbol("SYS_COLD"))
-    require(cold.mem[history_base] != ord("B"),
-            "cold entry preserved a valid-looking history object")
+    require(cold.mem[LAYOUT['SYSTEM']+0x95] == 0,
+            "cold entry did not request fresh PDS composition")
 
     # The CCP owns the history representation. Cold entry invalidates it, and
     # the owner's ordinary validation path must create the canonical empty v1
     # object rather than making the gateway duplicate that private format.
     owner = ccp_cpu()
-    owner.mem[history_base:LAYOUT["SYSTEM"]] = cold.mem[history_base:LAYOUT["SYSTEM"]]
+    owner.mem[history_base:history_base+192] = bytes(192)
     call_ccp(owner, ccp_symbol("CCP_HINIT"))
     require(bytes(owner.mem[history_base:history_base + 6]) == b"BH\x01\x00\x00\x00",
             "cold invalidation did not become an empty history-v1 object")

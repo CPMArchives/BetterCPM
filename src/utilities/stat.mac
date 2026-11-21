@@ -2313,6 +2313,9 @@ MEMREPORT:                              ; report BetterCP/M memory map
         LD      A,(HL)
         CP      1
         JP      NZ,MEMBAD
+        CALL PH_VALIDATE
+        JP NZ,MEMBAD
+        LD (PM_LOW),HL
         LD      DE,MMEMHEAD
         CALL    PRINT
         IF LY_TOPRSV NE 0
@@ -2361,7 +2364,7 @@ MEMREPORT:                              ; report BetterCP/M memory map
         LD      BC,LY_BDOS-1
         LD      DE,MSYSGATE
         CALL    MAPLINE
-        LD      HL,LY_HIST
+        LD      HL,(PM_LOW)
         LD      BC,LY_SYS-1
         LD      DE,MPDS
         CALL    MAPLINE
@@ -2369,7 +2372,8 @@ MEMREPORT:                              ; report BetterCP/M memory map
         INC     HL
         INC     HL
         INC     HL
-        LD      BC,LY_TPA+2             ; include inactive original gateway
+        LD      BC,(PM_LOW)
+        DEC BC                         ; actual PDS, independent of RSX low
         LD      A,H
         CP      B
         JR      C,MRRSX
@@ -2429,6 +2433,7 @@ MRTPA: LD      HL,(ECB+12)              ; mrtpa
         LD      DE,MPAGEZERO
         CALL    MAPLINE
         CALL    CRLF
+        CALL PM_REPORT
         LD      DE,MMAXCOM
         CALL    PRINT
         LD      HL,(0006H)
@@ -2451,6 +2456,40 @@ MEMBAD: LD      DE,MMEMBAD              ; membad
 ; -------------------------------------------------------------------------------
 ; Memory Range Output
 ; -------------------------------------------------------------------------------
+
+; Print allocations separately from non-overlapping physical map rows.
+PM_REPORT:
+        LD DE,PM_TOTAL
+        LD HL,LY_SYS
+        LD BC,(PM_LOW)
+        OR A
+        SBC HL,BC
+        CALL PM_LINE
+        LD DE,PM_META
+        LD HL,12
+        CALL PM_LINE
+        LD DE,PM_HIST
+        LD HL,(LY_PD2+4)
+        CALL PM_LINE
+        LD DE,PM_MCL
+        LD HL,(LY_PD2+6)
+        CALL PM_LINE
+        LD DE,PM_VAR
+        LD HL,(LY_PD2+8)
+        CALL PM_LINE
+        JP CRLF
+PM_LINE:
+        PUSH HL
+        CALL PRINT
+        POP HL
+        JP PWORD
+PM_LOW: DW 0
+PM_TOTAL: DB 'PDS bytes: total $'
+PM_META: DB '; metadata $'
+PM_HIST: DB '; HISTORY $'
+PM_MCL: DB '; MCL $'
+PM_VAR: DB '; VAR $'
+        INCLUDE pds-directory.inc
 
 MAPLINE:                                ; print one memory-map range
         LD      (MAPSTART),HL
@@ -2756,7 +2795,7 @@ MDISKSVC:       DB 'Disk and extension support$' ; mdisksvc
 MEXTSVC:        DB 'Protected loader/extension services$' ; mextsvc
 MBDOS:          DB 'BDOS and private state$' ; mbdos
 MSYSGATE:       DB 'System gateway, ECB and CPX profile$' ; msysgate
-MPDS:           DB 'PDS (command history)$' ; mpds
+MPDS:           DB 'PDS (persistent command data)$' ; mpds
 MRSX:           DB 'Loaded RSX allocation$' ; mrsx
 MGATE:          DB 'Dynamic CP/M gateway$' ; mgate
 MCPX:           DB 'Loaded CPX allocation$' ; mcpx

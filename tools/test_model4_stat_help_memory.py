@@ -11,6 +11,8 @@ from test_disk_utilities import ROOT, medium, keys
 from test_sysgen_install import screen
 from trs80gp_launch import run
 from system_layout import SYMBOLS
+from add_cpm_file_to_dmk import extract_raw
+from build_trs80_boot import FILESYSTEM_FIRST_SECTOR, SECTOR_SIZE
 
 
 def validate_map(text):
@@ -43,7 +45,7 @@ def main():
     address = (len(stat) + 0x100 + 255) & ~255
     extras = [('STAT.COM', stat), ('RSX.COM', (ROOT / 'build/utilities/RSX.COM').read_bytes()),
               ('ECHO.RSX', (ROOT / 'build/rsx/ECHO.RSX').read_bytes())]
-    overlays = ('R3PACK',)
+    overlays = ('R3PACK', 'R3CACHE')
     extras += [(name + '.RSX', (ROOT / 'build/system' / (name + '.RSX')).read_bytes())
                for name in overlays]
     for name, record in [('NOMETA.COM', bytes(32)), ('BADSIG.COM', b'XX\1' + bytes(29)),
@@ -69,11 +71,15 @@ def main():
             invocation += keys(command + '\r') + ['-itime', '0']
             if completion is not None:
                 invocation += ['-iw', completion]
-            invocation += ['-iw', 'A0> ', '-id', '1000', '-it']
+            # A0> may still be visible in the command echo. Allow the file-
+            # backed RSX transaction to finish before typing the next command.
+            delay = '20000' if command.startswith('RSX LOAD ') else '6000'
+            invocation += ['-iw', 'A0> ', '-id', delay, '-it']
         invocation += ['-ix']
         if retained:
             assert json.loads((work / 'invocation.json').read_text()) == invocation
         else:
+            disk.write_bytes(image)
             (work / 'invocation.json').write_text(json.dumps(invocation, indent=2) + '\n')
             run(invocation, cwd=work, check=True, timeout=90)
         captures = sorted(work.glob('trs80-text-*.bin'), key=lambda p: int(p.stem.rsplit('-', 1)[1]))
@@ -86,7 +92,12 @@ def main():
                 assert 'RSX module or profile error' not in text, text
             # The complete memory map can scroll the command echo off screen.
             results.append(text.rsplit('A0>' + command, 1)[-1])
-        assert disk.read_bytes() == image, 'Inspection changed media'
+        if any(command.startswith('RSX LOAD ') for command,_ in commands):
+            # Loading legitimately creates the manager's ordinary cache file.
+            protected=FILESYSTEM_FIRST_SECTOR*SECTOR_SIZE
+            assert extract_raw(disk.read_bytes())[:protected]==extract_raw(image)[:protected]
+        else:
+            assert disk.read_bytes() == image, 'Inspection changed media'
         return results
 
     helptext = launch('help', [('STAT VAL:', 'BAT: console input uses RDR:; output uses LST:.')])[0]
@@ -113,7 +124,8 @@ def main():
         assert 'STAT MEM requires BetterCP/M ECB version 1' in text and 'BetterCP/M Memory Map' not in text, text
     (report / 'evidence.json').write_text(json.dumps({'result': 'PASS',
         'baseline_maximum_com': before_max, 'loaded_maximum_com': after_max,
-        'baseline_map': before, 'loaded_map': after, 'media_unchanged': True,
+        'baseline_map': before, 'loaded_map': after, 'inspection_media_unchanged': True,
+        'rsx_cache_writes_allowed': True,
         'stat_sha256': hashlib.sha256(stat).hexdigest(),
         'media_sha256': hashlib.sha256(image).hexdigest(),
         'emulator_sha256': hashlib.sha256(DEFAULT_EMULATOR.read_bytes()).hexdigest()}, indent=2) + '\n')

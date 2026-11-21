@@ -101,6 +101,7 @@ def medium(extras=()):
     b=ROOT/'build'
     files=[('RCP.CPX',(b/'cpx/RCP.CPX').read_bytes()),
            ('CONFIG.COM',(b/'utilities/CONFIG.COM').read_bytes()),
+           ('PDSCONF.OVL',(b/'utilities/PDSCONF.OVL').read_bytes()),
            ('DUP.COM',(b/'utilities/DUP.COM').read_bytes()),
            ('SYSGEN.COM',(b/'utilities/SYSGEN.COM').read_bytes()),
            ('DISK.FDB',build_fdf_catalog().read_bytes()),

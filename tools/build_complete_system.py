@@ -7,7 +7,7 @@ from system_layout import CONTEXT
 ROOT = Path(__file__).resolve().parents[1]
 COMPONENTS = (
     "fdf_catalog",
-    "bdos", "ccp", "ccpreload", "rsxselect", "rcp_cpx", "hello_cpx",
+    "bdos", "bios", "ccp", "ccpreload", "rsxselect", "rcp_cpx", "hello_cpx",
     "hello_rsx", "echo_rsx", "fdf_rsx", "p2dos_rsx", "frehd_time_rsx", "zprtc_rsx",
     "test_service_rsx", "svctest",
     "stateful_test_rsx", "stattst",

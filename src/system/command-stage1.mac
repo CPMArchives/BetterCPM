@@ -21,6 +21,10 @@ P9_EXPECT: LD DE,COMMAND_STAGE2_CRC
         OR A
         SBC HL,DE
         JR NZ,P9_HALT
+        LD HL,P1_WORK
+        LD DE,PW_BASE
+        LD BC,P1_END-P1_WORK
+        LDIR
         JP 0500H
 P9_HALT:
         IF PL_M2 EQ 1
@@ -33,4 +37,7 @@ P9_HALT:
         ENDIF
         HALT
         JR P9_HALT
+P1_WORK:
+; @pds-worker-bytes@
+P1_END:
         END

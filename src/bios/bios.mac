@@ -108,8 +108,8 @@ BIOBOOT:                                ; cold boot entry
         CALL    PL_INIT
   ; 08-Sep-2026: BOOT must begin on A even when called from another drive.
   ; WBOOT preserves the caller's drive; reset it only on this cold entry.
-        LD      C,13
-        CALL    LY_BDOS
+        XOR     A
+        LD      (LY_SYS+095H),A         ; cold composition/startup; worker resets disk state
   ; Patch 2026-09-02: the CCP is no longer part of the stage-one resident image.
   ; Cold and warm entry both reconstruct the calculated command environment
   ; from the system tracks before entering the portable WBOOT path.

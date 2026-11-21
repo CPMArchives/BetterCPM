@@ -6,8 +6,20 @@ from test_rsx_stage3 import service_offset
 
 ROOT = Path(__file__).resolve().parents[1]
 
-def main():
+def check_profile(h,m,v):
+    from pds_layout import header,layout
     machine = setup()
+    directory=header(h,m,v)
+    plan=layout(directory,L['SYSTEM'])
+    low=plan['low'];window=low-1024
+    machine.mem[low:L['SYSTEM']-12]=b'\x5a'*(plan['total']-12)
+    machine.mem[L['SYSTEM']-12:L['SYSTEM']]=directory
+    protected=bytes(machine.mem[low:L['SYSTEM']])
+    machine.word(L['EXTENSIONS']+0xa3,window)
+    machine.word(L['EXTENSIONS']+0x65,window+0x3fd)
+    machine.word(L['SYSTEM']+0x88,low)
+    machine.word(L['SYSTEM']+0x90,low-3)
+    machine.word(6,low-3)
     carrier = (ROOT/'build/rsx/NDR.RSX').read_bytes()
     machine.files[1,0,'NDR.RSX'] = carrier
     baseline = machine.word(6)
@@ -49,6 +61,11 @@ def main():
     assert not any(snapshot())
     assert machine.change(2,b'NDR',(0,0)) == 0
     assert machine.word(6) == baseline
+    assert bytes(machine.mem[low:L['SYSTEM']])==protected
     print('PASS production NDR load, exact 512-byte charge, offline stateful reconstruction, unload recovery and empty reload')
+
+def main():
+    for profile in ((2,0,0),(2,1,1),(3,1,3),(0,0,0),(1,0,0)):
+        check_profile(*profile)
 
 if __name__ == '__main__': main()

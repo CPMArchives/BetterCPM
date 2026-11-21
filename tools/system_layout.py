@@ -16,11 +16,15 @@ ALIASES = dict(SYSTEM="LY_SYS", BDOS="LY_BDOS", FILE="LY_FILE",
     RELOADER_CAPACITY="LY_RLCAP", RSX_SELECTOR="LY_RSSEL")
 LAYOUT = {name: SYMBOLS[symbol] for name, symbol in ALIASES.items()}
 LAYOUT.update(PDS_DESCRIPTOR=LAYOUT["SYSTEM"] + 0x80,
-              PDS_TOP=LAYOUT["SYSTEM"], PDS_LOW=LAYOUT["HISTORY"],
+              PDS_DIRECTORY=LAYOUT["SYSTEM"]-12, PDS_TOP=LAYOUT["SYSTEM"], PDS_LOW=LAYOUT["HISTORY"],
               PDS_SIZE=LAYOUT["SYSTEM"] - LAYOUT["HISTORY"])
 
 def expand_layout(text: str) -> str:
     """Inline selected generated inputs, or the unchanged canonical default."""
+    for inc in ('command-record.inc','pds-directory.inc'):
+        text = re.sub(r'^[ \t]*INCLUDE[ \t]+'+re.escape(inc)+r'[ \t]*$',
+                      lambda _, inc=inc: (ROOT/'src/system'/inc).read_text(),
+                      text, flags=re.M|re.I)
     if '; @ndr-ccp@' in text:
         text = text.replace('; @ndr-ccp@', (ROOT/'src/ccp/ndr.inc').read_text(encoding='ascii'))
     if '; @ndr-lookup@' in text:
@@ -134,11 +138,26 @@ def expand_layout(text: str) -> str:
                      if 'CPXBASE         EQU     00100H' in text else ''))
         text = text.replace('; @rcp-shared-selector@', selector)
 
+    if '; @pds-fetch@' in text:
+        listing = (ROOT/'build/bios/bios.lst').read_text(errors='replace')
+        address = re.search(r'^([0-9a-f]{4})[^\n]*\bM4_FETCH:', listing, re.M|re.I)
+        if not address:
+            raise ValueError('build Model 4 BIOS before its PDS-aware reloader')
+        text = text.replace('; @pds-fetch@', 'M4_FETCH EQU 0'+address[1]+'H')
+    if '; @startup-default@' in text:
+        from startup_record import build as startup_record
+        record=startup_record(system_base=LAYOUT['SYSTEM'])
+        text=text.replace('; @startup-default@', '\n'.join(
+            '        DB '+','.join(str(x) for x in record[i:i+16])
+            for i in range(0,256,16)))
     order = (1,3,5,7,9,2,4,6,8,10)
     def table(start, count):
         return "\n".join(f"        DB {n//20},{n//10%2},{order[n%10]}" for n in range(start, start+count))
     return text.replace("; @resident-sector-table@", table(2, LAYOUT["BOOT_SECTORS"])) .replace(
-        "; @command-sector-table@", table(14 + LAYOUT["BOOT_SECTORS"], 13)).replace(
+        "; @command-sector-table@", '\n'.join(
+            f'        DB {n//20*32+n//10%2*16+order[n%10]}'
+            for n in range(14+LAYOUT['BOOT_SECTORS'],27+LAYOUT['BOOT_SECTORS']))).replace(
+        '; @pds-sector-table@', table(8+LAYOUT['BOOT_SECTORS'],2)).replace(
         "; @reloader-sector-table@", table(2 + LAYOUT["BOOT_SECTORS"], 2)).replace(
         "; @control-sector-table@", table(4 + LAYOUT["BOOT_SECTORS"], 2)).replace(
         "; @rsx-sector-table@", table(6 + LAYOUT["BOOT_SECTORS"], 2)).replace(

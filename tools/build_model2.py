@@ -162,7 +162,7 @@ def build():
     for build_utility in (stat, time_command):
         build_utility(ASM, util, target='trs80m2', identity_state='development')
     files.append(('PATH.COM', path_command(ASM, util, target='trs80m2', identity_state='development')))
-    names = ('STAT.COM','TIME.COM','RSX.COM','CPX.COM','CONFIG.COM','DUP.COM','SYSGEN.COM')
+    names = ('STAT.COM','TIME.COM','RSX.COM','CPX.COM','CONFIG.COM','PDSCONF.OVL','DUP.COM','SYSGEN.COM')
     programs = [(name,(util/name).read_bytes()) for name in names]
     from build_release_tcap import release_modules
     release_modules('model2', ASM)

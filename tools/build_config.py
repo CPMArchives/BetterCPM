@@ -40,7 +40,12 @@ def expanded_source(generated_root=None):
      '        DB 13,10\n' for line in lines)+"        DB '$'\n"
  appendix=(ROOT/'src/utilities/common/confighelp.inc').read_text().replace(
      '; @config-help-text@',help_data)
+ text=text.replace('; @config-pds@',(ROOT/'src/utilities/common/configpdsload.inc').read_text())
  text=text.replace('; @config-help@',appendix)
+ import zlib
+ overlay=ROOT/'build/utilities/PDSCONF.OVL'
+ crc=zlib.crc32(overlay.read_bytes()[:1792]) if overlay.exists() else 0
+ text=text.replace('; @pds-overlay-crc@','        DB '+','.join(str(x) for x in crc.to_bytes(4,'little')))
  return expand_config_ui(text)
 
 
@@ -55,3 +60,33 @@ def validate_layout(image, listing):
   raise ValueError('CONFIG code/help overlaps its private stack')
  if 0x100+len(image)>0xac00:
   raise ValueError('CONFIG help exceeds existing minimum transient memory')
+
+
+def build_image(assembler, text, out):
+ """Bind one matching PDS settings overlay to CONFIG's existing callbacks."""
+ import re, zlib
+ from build_ccp import assemble
+ from build_z80pack_image import symbols
+ image=assemble(assembler,text,out/'CONFIG.COM',out/'config.lst',0x100)
+ labels=symbols(out/'config.lst')
+ callbacks=('STSTATE','STFETCH','STSAVEINVALID','HEADER','PUTS','PUTC',
+            'CRLF','CHOICE','STSUBFCB','STDIRTY','MAIN')
+ prefix=''.join(f'{name} EQU 0{labels[name]:04X}H\n' for name in callbacks)
+ prefix+='STPEND EQU 0A9A0H\nBDOS EQU 5\n'
+ overlay=('        INCLUDE layout.inc\n'+prefix+
+          '        ASEG\n        ORG 09000H\n'+
+          '\n'.join('        JP '+name for name in
+                    ('PC_VALIDATE','PD_UPGRADE','PD_KEEP','PD_RESTORE','PD_SNAPSHOT','PD_MENU','STDEFAULT','STCHECKSUM','STFCBRESET'))+
+          '\n        INCLUDE command-record.inc\n        INCLUDE pds-directory.inc\n'+
+          (ROOT/'src/utilities/common/configpds.inc').read_text()+'\n        END\n')
+ data=assemble(assembler,overlay,out/'pdsconf.bin',out/'pdsconf.lst',0x9000)
+ if len(data)>2048:
+  raise ValueError('PDS configuration overlay exceeds its existing track-buffer window')
+ data=data.ljust(2048,b'\0')
+ (out/'PDSCONF.OVL').write_bytes(data)
+ crc=','.join(str(x) for x in zlib.crc32(data[:1792]).to_bytes(4,'little'))
+ text=re.sub(r'PD_EXPECT:\n[^\n]*', 'PD_EXPECT:\n        DB '+crc, text)
+ image=assemble(assembler,text,out/'CONFIG.COM',out/'config.lst',0x100)
+ if any(symbols(out/'config.lst')[name]!=labels[name] for name in callbacks):
+  raise ValueError('CONFIG callbacks moved during overlay binding')
+ return image

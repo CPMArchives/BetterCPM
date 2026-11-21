@@ -1,5 +1,9 @@
 # BetterCP/M RSX and CPX Programmer's Guide
 
+1.3 planning correction: HISTORY.RSX was an implementation option, not a
+committed feature. HISTORY remains a PDS owner. The approved 1.3 scope in
+docs/engineering/1.3-IMPLEMENTATION-SCOPE.md supersedes old future directions.
+
 > **Locked 1.0 reading note:** Selector migration and production reconstruction are complete. Use [the current guide](../manuals/Programmers-Guide.md) and [final interface reference](BETTERCPM-API.md) for 176/177/182, eight-byte CPX headers, lifecycle and corrected metadata validation. Earlier pending/open-stage passages below are retained historical development context; focused final contracts and the release lock control on conflict.
 
 
