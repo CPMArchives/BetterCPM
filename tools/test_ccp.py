@@ -11,12 +11,12 @@ from test_bios import Z80, require
 
 ROOT = Path(__file__).resolve().parents[1]
 IMAGE = ROOT / "build/ccp/ccp.bin"
-MODULE = ROOT / "build/ccp/ccp.rlm"
+MODULE = ROOT / "build/ccp/ccp-inner.rlm"
 LISTING = ROOT / "build/ccp/ccp.lst"
 LINK_BASE = 0xBB00
 # Keep the focused image below its C100h BDOS stand-in as the resident monitor
 # grows.  This arbitrary relocation base is used only by the unit fixture.
-BASE = 0xA000
+BASE = 0x9000
 CALLER = 0x7000
 
 
@@ -55,6 +55,7 @@ def cpu(bind=True) -> Z80:
         machine.setword(LAYOUT['SYSTEM']+0x8c,BASE)
         machine.ix=symbol('HF_MAIN');machine.hl=symbol('CCP_RAW')
         machine.run(0x1706,limit=20000)
+        machine.run(symbol('V_INIT'),limit=20000)
         machine.a=machine.b=machine.c=machine.d=machine.e=machine.h=machine.l=machine.ix=0
         machine.z=machine.carry=False
     return machine

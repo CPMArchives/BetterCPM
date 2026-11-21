@@ -1,0 +1,9 @@
+; Private CCP entry bootstrap. The ordinary carrier reader authenticates and
+; relocates this executable before entry. Its lower bootstrap is released
+; before command acquisition; the inner command environment stays protected.
+        ASEG
+        ORG PK_ORIGIN
+        JP PK_RUNTIME
+PK_SOURCE:
+; @packed-bootstrap-body@
+        END

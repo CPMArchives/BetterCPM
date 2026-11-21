@@ -21,6 +21,7 @@ LAYOUT.update(PDS_DESCRIPTOR=LAYOUT["SYSTEM"] + 0x80,
 
 def expand_layout(text: str) -> str:
     """Inline selected generated inputs, or the unchanged canonical default."""
+    text=text.replace('; @var-ccp@',(ROOT/'src/ccp/var.inc').read_text())
     for inc in ('command-record.inc','pds-directory.inc','mcl-worker.inc'):
         text = re.sub(r'^[ \t]*INCLUDE[ \t]+'+re.escape(inc)+r'[ \t]*$',
                       lambda _, inc=inc: (ROOT/'src/system'/inc).read_text(),

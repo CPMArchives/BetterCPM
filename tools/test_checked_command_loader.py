@@ -108,8 +108,8 @@ def module_fixture(cpx, identity, public):
         header[48:50] = (10).to_bytes(2, 'little')
         old = bytes(header) + payload + b'PROBE   '
     else:
-        header = bytearray(1024)
-        header[:16] = struct.pack('<4sBBHHHHH', b'BCM1', 1, 2, 0x8000, 32, 256, 0, 1)
+        header = bytearray(512)
+        header[:16] = struct.pack('<4sBBHHHHH', b'BCM1', 1, 1, 0x8000, 32, 256, 0, 1)
         header[16:18] = (10).to_bytes(2, 'little')
         old = bytes(header) + payload
     return bind(old, identity, public), payload
@@ -120,7 +120,7 @@ def second_stage_cases(directory, identity):
     results = []
     for cpx, public in [(True, False), (True, True), (False, False)]:
         original, payload = module_fixture(cpx, identity, public)
-        header = 512 if cpx else 1024
+        header = 512
         scenarios = ['good', 'payload-corruption', 'late-crc', 'old-format', 'wrong-class',
                      'wrong-id', 'bad-relocation', 'oversized-header', 'truncated',
                      'read-error', 'padding-ignored', 'exact-floor', 'below-floor']
@@ -162,7 +162,7 @@ def second_stage_cases(directory, identity):
             cpu.mem[sy['CRFILE']] = int(cpx)
             cpu.mem[sy['CRSLOT']] = 108
             cpu.setword(sy['CRMAGPTR'], sy['CRCPXMAG' if cpx else 'CRCCPMAG'])
-            bound = 0x1780 if name == 'exact-floor' else 0x177F if name == 'below-floor' else L['TPA']
+            bound = 0x1F00 if name == 'exact-floor' else 0x1EFF if name == 'below-floor' else L['TPA']
             cpu.setword(sy['CRBOUND'], bound);cpu.sp = 0x1000
             cpu.mem[bound:bound+16] = bytes([0xA5])*16
             cpu.run(sy['CRLOAD'], limit=1000000)

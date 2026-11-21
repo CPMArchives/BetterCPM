@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure a host-only private-carrier packing candidate; changes no artifacts."""
+"""Historical unpacked-carrier sizing probe; not the production command packer."""
 import argparse
 import hashlib
 import json
@@ -94,7 +94,7 @@ def main():
         else:
             raise AssertionError('reference accepted malformed stream')
     print(json.dumps({
-        'status': 'host-only sizing candidate; no Z80 decoder or VAR code',
+        'status': 'historical host-only candidate; hypothetical uncompressed carrier sizes',
         'payload_sha256': hashlib.sha256(payload).hexdigest(),
         'ccp_payload_bytes': size,
         'ccp_allocation_bytes': (len(image) + 255) & ~255,

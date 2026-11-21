@@ -16,10 +16,9 @@ BUILD = ROOT / "build/ccp"
 LINK_BASE = 0xBB00
 ALTERNATE_BASE = 0xBC01
 CHECK_BASE = 0xBD37
-# The original one-sector relocation directory was sufficient for the small
-# bring-up CCP.  The finalized resident monitor needs a second sector; the
-# carrier records its header length so old one-sector modules remain legible.
-MODULE_HEADER_SIZE = 1024
+# The packed outer bootstrap has a small ordinary relocation directory; its
+# authenticated carrier uses one header sector. Inner fixups travel packed.
+MODULE_HEADER_SIZE = 512
 DEFAULT_GATEWAY = LAYOUT["TPA"]
 
 
@@ -116,8 +115,6 @@ def main() -> None:
                      CHECK_BASE)
     offsets = relocation_offsets(
         data, [(alternate, ALTERNATE_BASE), (check, CHECK_BASE)])
-    if len(offsets) > (MODULE_HEADER_SIZE - 16) // 2:
-        raise SystemExit("CCP relocation directory exceeds its header")
     from checked_carriers import selected_contract, command_carrier
     contract = selected_contract(args.assembler)
     # Command input, RAW/POKE staging and stack are write-before-read workspace. Keep their
@@ -131,8 +128,21 @@ def main() -> None:
             any(offset + 2 > workspace for offset in offsets)):
         raise ValueError("CCP workspace must be trailing, zero and free of relocation sites")
     payload = data[:workspace]
+    # Keep an unpacked instruction fixture; this is not a shipped carrier.
+    inner_head_size = ((16+2*len(offsets)+511)//512)*512
+    inner = bytearray(inner_head_size)
+    inner[:16] = struct.pack('<4sBBHHHHH', b'BCM1',1,inner_head_size//512,
+                            LINK_BASE,len(payload),allocation_size,0,len(offsets))
+    for index,offset in enumerate(offsets):
+        struct.pack_into('<H',inner,16+2*index,offset)
+    (BUILD/'ccp-inner.rlm').write_bytes(bytes(inner)+payload)
+    from pack_ccp import build as pack_command
+    payload, offsets, allocation_size = pack_command(
+        args.assembler,data,workspace,offsets,assemble,relocation_offsets)
+    if len(offsets) > (MODULE_HEADER_SIZE-16)//2:
+        raise SystemExit('packed CCP bootstrap relocation directory exceeds header')
     header = bytearray(MODULE_HEADER_SIZE)
-    header[:16] = struct.pack("<4sBBHHHHH", b"BCM1", 1, 2, LINK_BASE,
+    header[:16] = struct.pack("<4sBBHHHHH", b"BCM1", 1, 1, LINK_BASE,
                               len(payload), allocation_size, 0, len(offsets))
     for index, offset in enumerate(offsets):
         struct.pack_into("<H", header, 16 + index * 2, offset)
@@ -145,7 +155,7 @@ def main() -> None:
     module.write_bytes(carrier)
     print(f"{hashlib.sha256(data).hexdigest()}  {output.relative_to(ROOT)}")
     print(f"CCP bytes: {len(data)}")
-    print(f"CCP allocation: {allocation_size} bytes; calculated base: "
+    print(f"CCP temporary allocation: {allocation_size} bytes; calculated base: "
           f"{DEFAULT_GATEWAY - allocation_size:04X}h")
     print(f"CCP relocations: {len(offsets)}; module bytes: {module.stat().st_size}")
 

@@ -1,0 +1,203 @@
+; Executed below the destination image. On success its temporary allocation
+; becomes ordinary GET/POKE space; the complete inner CCP remains protected.
+; Input has a fixed bound; every output and backward copy is checked.
+        ASEG
+        ORG PK_RUNTIME
+        LD HL,PK_REAL
+        LD BC,PK_DECODED
+PGROUP:
+        CALL PBYTE
+        LD (PFLAGS),A
+        LD A,8
+        LD (PBITS),A
+PTOKEN:
+        LD A,(PFLAGS)
+        SRL A
+        LD (PFLAGS),A
+        JR NC,PMATCH
+        CALL PBYTE
+        LD (HL),A
+        INC HL
+        DEC BC
+        JR PNEXT
+PMATCH:
+        CALL PBYTE
+        LD E,A
+        AND 128
+        JR Z,PSHORT
+        LD A,E
+        AND 127
+        LD E,A
+        CALL PBYTE
+        LD (PSECOND),A
+        AND 15
+        RRCA
+        LD D,A
+        AND 128
+        OR E
+        LD E,A
+        LD A,D
+        AND 7
+        LD D,A
+        LD A,(PSECOND)
+        AND 0F0H
+        RRCA
+        RRCA
+        RRCA
+        RRCA
+        ADD A,3
+        JR PMATCHLEN
+PSHORT:
+        LD D,0
+        LD A,2
+PMATCHLEN:
+        LD (PLENGTH),A
+        INC DE
+        PUSH HL
+        OR A
+        SBC HL,DE
+        JP C,PFAIL
+        LD DE,PK_REAL
+        OR A
+        SBC HL,DE
+        JP C,PFAIL
+        ADD HL,DE
+        POP DE
+PCOPY:
+        LD A,B
+        OR C
+        JP Z,PFAIL
+        LD A,(HL)
+        LD (DE),A
+        INC HL
+        INC DE
+        DEC BC
+        LD A,(PLENGTH)
+        DEC A
+        LD (PLENGTH),A
+        JR NZ,PCOPY
+        EX DE,HL
+PNEXT:
+        LD A,B
+        OR C
+        JR Z,PFINISH
+        LD A,(PBITS)
+        DEC A
+        LD (PBITS),A
+        JR NZ,PTOKEN
+        JP PGROUP
+PFINISH:
+        LD HL,(PSOURCE)
+        LD DE,PEND
+        OR A
+        SBC HL,DE
+        JP NZ,PFAIL
+        LD HL,PK_REAL+PK_PAYLOAD
+        LD BC,PK_RELOCS
+PRELOC:
+        LD A,B
+        OR C
+        JR Z,PRELDONE
+        CALL PRELBYTE
+        OR A
+        JR NZ,PREL8
+        CALL PRELBYTE
+        LD E,A
+        CALL PRELBYTE
+        LD D,A
+        JR PRELDELTA
+PREL8:
+        LD E,A
+        LD D,0
+PRELDELTA:
+        LD A,D
+        OR A
+        JR NZ,PRELBOUND
+        LD A,E
+        CP 2
+        JP C,PFAIL
+PRELBOUND:
+        PUSH HL
+        LD HL,(PPREV)
+        ADD HL,DE
+        JP C,PFAIL
+        LD (PPREV),HL
+        EX DE,HL
+        PUSH BC
+        LD HL,PK_PAYLOAD-1
+        OR A
+        SBC HL,DE
+        JP C,PFAIL
+        JP Z,PFAIL
+        LD HL,PK_REAL
+        ADD HL,DE
+        PUSH HL
+        LD E,(HL)
+        INC HL
+        LD D,(HL)
+        EX DE,HL
+        LD BC,PK_REAL
+        ADD HL,BC
+        LD BC,-0BB00H
+        ADD HL,BC
+        EX DE,HL
+        POP HL
+        LD (HL),E
+        INC HL
+        LD (HL),D
+        POP BC
+        POP HL
+        DEC BC
+        JR PRELOC
+PRELDONE:
+        LD DE,PK_REAL+PK_DECODED
+        OR A
+        SBC HL,DE
+        JP NZ,PFAIL
+        LD HL,PK_REAL
+        LD (LY_SYS+08CH),HL
+        LD HL,PK_INNERALLOC
+        LD (LY_SYS+08EH),HL
+        JP PK_REAL
+PRELBYTE:
+        PUSH DE
+        LD DE,PK_REAL+PK_DECODED
+        OR A
+        SBC HL,DE
+        ADD HL,DE
+        POP DE
+        JP NC,PFAIL
+        LD A,(HL)
+        INC HL
+        RET
+PBYTE:
+        PUSH HL
+        PUSH DE
+        LD HL,(PSOURCE)
+        LD DE,PEND
+        OR A
+        SBC HL,DE
+        JP NC,PFAIL
+        LD HL,(PSOURCE)
+        LD A,(HL)
+        INC HL
+        LD (PSOURCE),HL
+        POP DE
+        POP HL
+        RET
+PFAIL:
+        LD DE,PERROR
+        LD C,9
+        CALL LY_BDOS
+PSTOP:  JR PSTOP
+PERROR: DB 'CCP invalid; cold boot required.',13,10,'$'
+PSOURCE: DW PDATA
+PFLAGS: DB 0
+PBITS: DB 0
+PLENGTH: DB 0
+PSECOND: DB 0
+PPREV: DW 0
+PDATA:
+; @packed-command-data@
+PEND:
+        END

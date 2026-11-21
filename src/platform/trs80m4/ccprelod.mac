@@ -208,7 +208,7 @@ CRLOAD:                                 ; load relocatable command module
         RET     NZ
         LD      HL,MODBUF
         LD      DE,(CRMAGPTR)
-        LD      B,6
+        LD      B,5                    ; header sectors/class validated separately
 
 ; -------------------------------------------------------------------------------
 ; Carrier Signature Validation
@@ -236,8 +236,10 @@ CRMAGLP:                                ; match carrier signature
         LD      HL,(MODBUF+14)
         LD      (CRMRELOCS),HL
         LD      A,(MODBUF+5)            ; BCM1 records its header in 512-byte sectors
-        OR      A
-        JP      Z,CRBAD
+        DEC     A
+        CP      2
+        JP      NC,CRBAD                ; packed one-sector or legacy RLMBUILD two-sector
+        INC     A
         LD      H,A
         LD      L,0
         ADD     HL,HL
@@ -252,6 +254,9 @@ CRMAGLP:                                ; match carrier signature
 ; -------------------------------------------------------------------------------
 
 CRNCPX:                                 ; normalize BCPX carrier header
+        LD      A,(MODBUF+5)
+        DEC     A
+        JP      NZ,CRBAD                ; retain strict command-extension class admission
         LD      HL,(MODBUF+6)           ; L=ABI major, H=ABI minor
         DEC     HL
         LD      A,H
@@ -470,11 +475,7 @@ CRRHAVE:                                ; apply relocation word
         LD      (HL),E
         POP     BC
         POP     HL
-        LD      A,C
-        SUB     1
-        LD      C,A
-        JR      NC,CRRLOOP
-        DEC     B
+        DEC     BC                     ; loop entry already tests the complete word
         JR      CRRLOOP
 
 CRRLBAD:                                ; reject invalid relocation entry
@@ -634,7 +635,7 @@ CRFAIL:                                 ; halt after reconstruction failure
 ; Carrier Signatures
 ; -------------------------------------------------------------------------------
 
-CRCCPMAG:      DB      'B','C','M','1',1,2 ; CCP carrier signature
+CRCCPMAG:      DB      'B','C','M','1',1,1 ; CCP carrier signature
 CRCPXMAG:      DB      'B','C','P','X',1,1 ; CPX carrier signature
 CRCPXERR:      DB      'CPX?',13,10,'$'  ; optional carrier reconstruction failed
 

@@ -5366,7 +5366,7 @@ Press Ctrl-C to leave the main menu.
 
 CONFIG operates through the ordinary console and does not require a terminal-monitor extension.
 
-The 1.3 foundation adds menu F for Command Environment/PDS. It displays active HISTORY/MCL/VAR allocation bytes, saved and pending capacity choices, total pending PDS bytes and the next cold boot's maximum COM capacity. A cycles HISTORY through Off/128/192/384 bytes; B cycles MCL storage through Off/128; C cycles VAR storage through Off/128/256/512. Defaults are HISTORY 192, MCL Off and VAR Off. MCL splitting is active for interactive input when its storage is enabled at cold boot. VAR storage remains reserved; VAR execution is a later stage. Interactive semicolons separate commands outside double quotes (`VER;DIR`); balanced quotes are checked before dispatch. Empty segments are skipped, the original line is recorded once in history, and the input limit remains 127 characters. STARTUP/SUBMIT semicolons remain literal. Ordinary program returns and warm boots continue pending commands; recognized CCP/BDOS failures cancel them. Application-reported errors followed by a normal return still continue.
+The 1.3 foundation adds menu F for Command Environment/PDS. It displays active HISTORY/MCL/VAR allocation bytes, saved and pending capacity choices, total pending PDS bytes and the next cold boot's maximum COM capacity. A cycles HISTORY through Off/128/192/384 bytes; B cycles MCL storage through Off/128; C cycles VAR storage through Off/128/256/512. Defaults are HISTORY 192, MCL Off and VAR Off. MCL splitting is active for interactive input when its storage is enabled at cold boot. VAR enables command variables/substitution at cold boot. Interactive semicolons separate commands outside double quotes (`VER;DIR`); balanced quotes are checked before dispatch. Empty segments are skipped, the original line is recorded once in history, and the input limit remains 127 characters. STARTUP/SUBMIT semicolons remain literal. Ordinary program returns and warm boots continue pending commands; recognized CCP/BDOS failures cancel them. Application-reported errors followed by a normal return still continue.
 
 Return to the main menu and save pending cold-boot changes to persist these choices. A save does not resize the active layout: it takes a cold boot to activate it. Startup command and PDS changes preserve one another. `STAT MEM` reports the active PDS total, twelve metadata bytes and each allocation. Keep the matching `PDSCONF.OVL` in A:user 0; restore it from the same build if CONFIG requests it.
 
@@ -12183,3 +12183,29 @@ See [Appendix E](Users-Guide.md#appendix-e) for additional guidance on compatibi
 ## Command locator
 
 Commands are indexed by function above. Each entry contains its own syntax and invocation examples. For memory commands, P is an alias for PEEK. User/drive navigation such as B3: is performed directly by the CCP.
+
+
+## VAR (1.3 command environment)
+
+VAR is a built-in CCP command when enabled through CONFIG F/C and a cold boot.
+Storage defaults to Off; enabled capacities are 128/256/512 bytes. `VAR` lists
+sorted assignments, `VAR NAME` queries, `VAR NAME=value` defines/replaces, and
+`VAR /D NAME` deletes. Undefined queries/deletes are errors. An empty assignment
+is a defined empty string. Names have 1–8 case-insensitive ASCII characters:
+first a letter or underscore, then letters, digits or underscores. Assignment
+requires an immediate equals sign; everything after it, including spaces,
+quotes and further equals signs, is the value. No quote stripping is performed.
+
+`%NAME%` inserts a value and `%%` inserts a literal percent, once per selected
+command before dispatch. Inserted text is never expanded again or interpreted
+as MCL separators/quotes. `VAR TEXT=%%NAME%%` stores literal `%NAME%`.
+Undefined/malformed references and expanded commands over 127 characters fail
+without dispatch and cancel pending MCL/SUBMIT work. Failed assignments preserve
+the existing table. Startup/submitted commands expand consistently; program and
+XSUB input remain literal. Session values survive WBOOT and reset on cold boot.
+No program-visible environment API or derived system variables are provided.
+
+VAR code and scratch are reclaimable CCP memory. This stage increases standing
+CCP space by 2048 bytes, reducing GET/POKE's editable area; maximum loadable COM
+capacity remains unchanged at default settings. Each enabled VAR allocation
+reduces COM capacity by the configured persistent bytes, as CONFIG/STAT report.

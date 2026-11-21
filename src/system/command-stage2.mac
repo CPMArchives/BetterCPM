@@ -262,7 +262,7 @@ CR9CCP:
         LDIR
         LD HL,(STAGE+14)
         LD (CRMRELOCS),HL
-        LD HL,1024
+        LD HL,512
         LD (CRMHEADSZ),HL
         LD (CRMPAYLOAD),HL
         LD HL,16
@@ -795,7 +795,7 @@ CRFAIL:                                 ; halt after reconstruction failure
 ; Carrier Signatures
 ; -------------------------------------------------------------------------------
 
-CRCCPMAG:      DB      'B','C','M','2',2,2 ; CCP carrier signature
+CRCCPMAG:      DB      'B','C','M','2',2,1 ; CCP carrier signature
 CRCPXMAG:      DB      'B','C','P','X',2,1 ; CPX carrier signature
 CRCPXERR:      DB      'CPX?',13,10,'$'  ; optional carrier reconstruction failed
 
