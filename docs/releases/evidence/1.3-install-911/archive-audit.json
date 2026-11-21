@@ -1,0 +1,58 @@
+{
+  "status": "PASS_CANDIDATE_ARCHIVE_AUDIT",
+  "source_commit": "91167ada1e02281c6e50f91962d3a7e92b3ce49d",
+  "packages": {
+    "system-cpmsim": {
+      "files": 69,
+      "platforms": [
+        "cpmsim"
+      ]
+    },
+    "system-model4": {
+      "files": 34,
+      "platforms": [
+        "Model4"
+      ]
+    },
+    "utilities-cpmsim": {
+      "files": 33,
+      "platforms": [
+        "cpmsim"
+      ]
+    },
+    "utilities-model4": {
+      "files": 33,
+      "platforms": [
+        "Model4"
+      ]
+    },
+    "system-model2": {
+      "files": 32,
+      "platforms": [
+        "Model2"
+      ]
+    },
+    "utilities-model2": {
+      "files": 33,
+      "platforms": [
+        "Model2"
+      ]
+    },
+    "source": {
+      "files": 3498,
+      "platforms": []
+    },
+    "documentation": {
+      "files": 183,
+      "platforms": []
+    }
+  },
+  "checks": [
+    "ZIP readback and file hashes",
+    "source offers and commit binding",
+    "all three Utilities primary/companion pairs",
+    "four-manual Documentation selection",
+    "retained editable inner CCP source"
+  ],
+  "release_acceptance": "PENDING"
+}

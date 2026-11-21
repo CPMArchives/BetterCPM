@@ -1,0 +1,97 @@
+
+#######  #####    ###            #####    ###   #     #
+     #  #     #  #   #          #     #    #    ##   ##
+    #   #     # #     #         #          #    # # # #
+   #     #####  #     #  #####   #####     #    #  #  #
+  #     #     # #     #               #    #    #     #
+ #      #     #  #   #          #     #    #    #     #
+#######  #####    ###            #####    ###   #     #
+
+Release 1.39, Copyright (C) 1987-2025 by Udo Munk and others
+
+CPU speed is unlimited, CPU executes undocumented instructions
+
+
+Booting...
+
+
+
+
+A0> PATH /A C0:
+PATH: $$: | A0: | C0:
+
+A0> :VER /BANNER
+
+ - - -                                                  - - -
+|                                                            |
+|                         BetterCP/M                         |
+                         Core OS 1.3
+
+                  CP/M 2.2 Compatible System
+
+                Type TYPE README.TXT for more
+|                                                            |
+ - - -                                                  - - -
+
+A0>
+A0> _
+A0>
+A0> S_
+A0> S
+A0> SY_
+A0> SY
+A0> SYS_
+A0> SYS
+A0> SYSG_
+A0> SYSG
+A0> SYSGE_
+A0> SYSGE
+A0> SYSGEN_
+A0> SYSGEN
+A0> SYSGEN _
+A0> SYSGEN
+A0> SYSGEN S_
+A0> SYSGEN S
+A0> SYSGEN SY_
+A0> SYSGEN SY
+A0> SYSGEN SYS_
+A0> SYSGEN SYS
+A0> SYSGEN SYST_
+A0> SYSGEN SYST
+A0> SYSGEN SYSTE_
+A0> SYSGEN SYSTE
+A0> SYSGEN SYSTEM_
+A0> SYSGEN SYSTEM
+A0> SYSGEN SYSTEM._
+A0> SYSGEN SYSTEM.
+A0> SYSGEN SYSTEM.S_
+A0> SYSGEN SYSTEM.S
+A0> SYSGEN SYSTEM.SY_
+A0> SYSGEN SYSTEM.SY
+A0> SYSGEN SYSTEM.SYS_
+A0> SYSGEN SYSTEM.SYS
+A0> SYSGEN SYSTEM.SYS _
+A0> SYSGEN SYSTEM.SYS
+A0> SYSGEN SYSTEM.SYS B_
+A0> SYSGEN SYSTEM.SYS B
+A0> SYSGEN SYSTEM.SYS B:_
+A0> SYSGEN SYSTEM.SYS B:
+A0> SYSGEN SYSTEM.SYS B:
+
+Install the selected BetterCP/M system on drive B:, physical drive 1
+Reserved system records to copy and verify: 160
+
+The destination system area will be replaced.
+Files outside the reserved system tracks will be preserved.
+Proceed (Y/N)?
+Installing system track 0
+Installing system track 1
+Installing system track 2
+Installing system track 3
+Installing system track 4
+
+System installed and verified. The destination is bootable.
+
+A0>
+A0> _
+A0>

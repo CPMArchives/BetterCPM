@@ -1,0 +1,32 @@
+{
+  "status": "PASS_FOCUSED_INSTALL",
+  "source_commit": "3afac0cbd79ec1425b6551693c11656bcf711c48",
+  "target": "z80pack",
+  "system_sha256": "5b977efb8acd336e3c4dfecd41465e9d0cf3f34441821c3aab15f6f25e84546c",
+  "scope": "one package install, entire populated filesystem preservation, independent cold boot, identity/memory/ordinary COM",
+  "filesystem_unchanged": true,
+  "populated_filesystem_sha256": "e747d84dda4df6a734fa75c9e02b6614e905931005e5ba1a0d90f96a04db0b8f",
+  "installed_protected_sha256": "acc2277a5a2b7f271606c95122a95ecddec1948cb1419ba9c4ef6a9011fb0180",
+  "installed_raw_sha256": "a03c37bf7ef4c9d2ebb6504217e23aa40e4d791fd14e5e032fb26a79dcb12b14",
+  "source_master_unchanged": true,
+  "protected_normalization": [
+    [
+      4952,
+      36,
+      72
+    ],
+    [
+      4965,
+      6,
+      3
+    ],
+    [
+      4970,
+      192,
+      160
+    ]
+  ],
+  "maximum_com": 57344,
+  "cold_boot_identity_and_ordinary_com": "PASS",
+  "maintainer_release_acceptance": "PENDING"
+}

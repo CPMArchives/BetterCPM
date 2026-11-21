@@ -1,0 +1,23 @@
+{
+  "status": "PASS_FOCUSED_INSTALL",
+  "source_commit": "91167ada1e02281c6e50f91962d3a7e92b3ce49d",
+  "target": "trs80gp",
+  "system_sha256": "d39282f578817914af217bf3b35c46ef2bb3b2bc0cc03919cc9712ed37149c06",
+  "scope": "one package install, entire populated filesystem preservation, independent cold boot, identity/memory/ordinary COM",
+  "emulator_sha256": "8f967e640927af1fb9de3a178bbf0bc4d687124780405885a6daa33a3fee1d9f",
+  "filesystem_unchanged": true,
+  "populated_filesystem_sha256": "94708619a83d0c8008b087d8e2a6c0303976cf68d7aa1b1a3680d0575694f341",
+  "installed_protected_sha256": "bc8738c2e95d4bd13cdcf99c7f114994e7c9413f357d96476e29879ab49b77e1",
+  "installed_raw_sha256": "f110ef481544b1824f9b8f8d6898cf7133a7a719f92939501f0a822129135711",
+  "source_master_unchanged": true,
+  "protected_normalization": [
+    [
+      7018,
+      224,
+      160
+    ]
+  ],
+  "maximum_com": 54272,
+  "cold_boot_identity_and_ordinary_com": "PASS",
+  "maintainer_release_acceptance": "PENDING"
+}

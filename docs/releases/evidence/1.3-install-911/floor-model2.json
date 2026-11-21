@@ -1,0 +1,9 @@
+{
+  "target": "trs80m2",
+  "raw_com": 57345,
+  "maximum_com": 57344,
+  "accepted_bytes": 57344,
+  "rejected_bytes": 57472,
+  "protected_canary": "PASS",
+  "method": "production reader / controlled disk records"
+}
