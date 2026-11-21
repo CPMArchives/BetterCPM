@@ -18,6 +18,33 @@ from convert_fdf_image import raw_to_dmk
 from release_metadata import disk_record
 
 
+def align_model4_install_startup(files, command):
+    """The ordinary install package must carry the same BCST as the disk.
+
+    The native host reference deliberately starts with an empty command. Only
+    the 1.3 distribution derivative receives the selected distribution startup;
+    native reference products and historical release preparation stay intact.
+    """
+    from startup_record import build as startup_record
+    from system_layout import LAYOUT
+    startup = startup_record(command, system_base=LAYOUT['SYSTEM'])
+    result = []
+    found = False
+    for component, data in files:
+        if component['name'] == 'SYSTEM.SYS' and component['user'] == 0:
+            if len(data) != 20608 or data[:6] != b'BCSY\x01\x01':
+                raise ValueError('expected ordinary Model 4 SYSTEM.SYS package')
+            source_hash = digest(data)
+            data = data[:256]+startup+data[512:]
+            component = dict(component, preparation='distribution startup BCST',
+                             source_artifact_sha256=source_hash)
+            found = True
+        result.append((component,data))
+    if not found:
+        raise ValueError('Model 4 System Disk lacks SYSTEM.SYS')
+    return result
+
+
 def prepare(output, simulator, target, inner=False):
     output = output.resolve()
     work = output/'work'
@@ -50,10 +77,16 @@ def prepare(output, simulator, target, inner=False):
         root = current_build(work, target, identity, False)
     manifest = json.loads((ROOT/'metadata/distribution.json').read_text())
     files, omitted = selected_files(manifest, target, root)
+    if target == 'trs80gp':
+        files = align_model4_install_startup(files, manifest.get('cold_start_command', ''))
     g = geometry(target, root)
     totals = capacity(files, g)
     out.mkdir(parents=True)
     raw = construct(target, root, out, files, g, manifest.get('cold_start_command', ''))
+    if target == 'trs80gp':
+        package = next(data for c,data in files if c['name']=='SYSTEM.SYS' and c['user']==0)
+        if package[256:512] != raw.read_bytes()[128:384]:
+            raise ValueError('Model 4 install package and boot disk startup differ')
     validate_config_fingerprint(target, raw, files, root)
     validate_config_cold_patch(target, raw, files, root)
     included = validate_files(raw, out, files, g)
