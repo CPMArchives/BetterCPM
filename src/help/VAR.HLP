@@ -1,0 +1,39 @@
+# VAR - Session command variables
+
+```text
+VAR
+VAR NAME
+VAR NAME=value
+VAR /D NAME
+```
+
+## Enable variables
+
+Variables are off by default. In [CONFIG](CONFIG.HLP), choose F, then C to
+select 128, 256 or 512 bytes. Save and cold boot. Ordinary warm boot keeps
+active choices. [STAT MEM](STAT.HLP) reports the persistent memory cost.
+
+## Define and substitute
+
+Names are case-insensitive, 1-8 letters, digits or underscores, beginning
+with a letter or underscore. Put = immediately after the name. Everything
+after it is the value, including spaces, quotes and additional equals signs.
+An empty assignment defines an empty value; /D deletes the name.
+
+```text
+VAR F=B0:README.TXT
+TYPE %F%
+```
+
+%NAME% substitutes once; %% produces a literal percent. Inserted text is
+not expanded again. Undefined or malformed references and results over 127
+characters prevent dispatch and cancel queued work. Failed edits preserve
+the old table. There is no program-visible environment API.
+
+## Lifetime and command sources
+
+Values survive ordinary program returns and warm boots. Cold boot resets
+them; STARTUP or [SUBMIT](SUBMIT.HLP) can define them again.
+[MCL](MCL.HLP) splits interactive commands before substitution, so inserted
+semicolons cannot create new commands. Startup/submitted commands expand
+individually; program input, including XSUB input, remains literal.

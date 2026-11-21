@@ -1,0 +1,29 @@
+# MCL - Multiple interactive commands
+
+## Enable command sequences
+
+MCL is off by default. In [CONFIG](CONFIG.HLP), choose F, then B to enable
+its 128-byte persistent allocation. Save and cold boot. This reduces maximum
+COM capacity by 128 bytes; [STAT MEM](STAT.HLP) reports the resulting limit.
+
+## Separate commands
+
+```text
+VER;DIR
+VAR X=NEW;VAR X
+```
+
+Semicolons separate interactive commands outside double quotes. Quotes must
+balance across the whole line before the first command runs. Empty segments
+are skipped. The input limit stays 127 characters and history records the
+original line once. [VAR](VAR.HLP) expansion occurs separately for each selected
+command, so later commands observe earlier assignments.
+
+## Returns and cancellation
+
+Ordinary program returns and warm boots continue the pending remainder.
+Recognized CCP/BDOS errors or cancellation discard it. A program that prints
+its own error and returns normally still continues the sequence.
+
+STARTUP and [SUBMIT](SUBMIT.HLP) records retain literal semicolons. XSUB and
+program input do not consume pending commands. MCL does not add FLOW features.

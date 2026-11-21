@@ -38,7 +38,7 @@ def checked_name(name):
     return name
 
 
-def read_report(folder, commit, *, allow_pending_smoke=False):
+def read_report(folder, commit, *, allow_pending_smoke=False, pending_policy="1.2-focused"):
     folder=Path(folder)
     report=json.loads((folder/'report.json').read_text())
     if report['source']['revision']!=commit:
@@ -52,7 +52,7 @@ def read_report(folder, commit, *, allow_pending_smoke=False):
     if report.get('target')=='trs80m2':
         validation=report['validation']
         if (validation.get('boot',{}).get('status') != 'PASS' and not (
-                allow_pending_smoke and report.get('release_policy') == '1.2-focused'
+                allow_pending_smoke and report.get('release_policy') == pending_policy
                 and validation.get('boot',{}).get('status') == 'PENDING_SMOKE')) or any(
                 validation.get('inventory',{}).get(g)!='PASS'
                 for g in ('exact_membership','independent_record_readback','allocation')):
@@ -208,9 +208,9 @@ def assemble(args):
     pending=(['Exact-artifact three-platform acceptance', 'TCAP 2.0 on delivered media',
               'Offline reconstruction', 'Final documentation and license reconciliation',
               'Release acceptance ledger'] if version in ('1.1','1.2') else PENDING)
-    if version == '1.2':
+    if version in ('1.2','1.3'):
         pending = ['Automated build/package audit', 'Smoke-only validation on three platforms', 'Maintainer release acceptance']
-    if version not in ('1.0','1.0.1','1.1','1.2'):
+    if version not in ('1.0','1.0.1','1.1','1.2','1.3'):
         raise ValueError('unsupported release version')
     if version=='1.0' and (ROOT / 'docs/releases/non-documentation-lock-1.0/LOCK.json').exists():
         raise ValueError('Five 1.0 packages are locked; use build_documentation.py. Do not rebuild the six-package set during documentation sync.')
@@ -315,12 +315,12 @@ def assemble(args):
             platform={'system-cpmsim':'cpmsim','system-model4':'Model4','system-model2':'Model2'}[id]
             folder={'cpmsim':args.cpmsim_system,'Model4':args.model4_system,'Model2':getattr(args,'model2_system',None)}[platform]
             if folder is None: raise ValueError('1.1 requires --model2-system')
-            report,data=read_report(folder,commit,allow_pending_smoke=version=='1.2')
+            report,data=read_report(folder,commit,allow_pending_smoke=version in ('1.2','1.3'), pending_policy=version+'-focused')
             expected={'cpmsim':'z80pack','Model4':'trs80gp','Model2':'trs80m2'}[platform]
             if report['target']!=expected:
                 raise ValueError('wrong System platform receipt')
             if platform=='cpmsim' and report['validation'].get('boot')!='PASS' and not (
-                    version=='1.2' and report.get('release_policy')=='1.2-focused'
+                    version in ('1.2','1.3') and report.get('release_policy')==version+'-focused'
                     and report['validation'].get('boot')=='PENDING_SMOKE'):
                 raise ValueError('cpmsim candidate requires its own boot evidence')
             files['images/'+report['image']]=data
@@ -422,7 +422,7 @@ def assemble(args):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--version',choices=('1.0','1.0.1','1.1','1.2'),default='1.0')
+    p.add_argument('--version',choices=('1.0','1.0.1','1.1','1.2','1.3'),default='1.0')
     p.add_argument('--model2-system',type=Path)
     for name in ('cpmsim-system','model4-system','utilities','inventory','upstream','runtime-manifest','output'):
         p.add_argument('--'+name,type=Path,required=True)

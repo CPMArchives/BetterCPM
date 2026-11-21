@@ -23,8 +23,9 @@ class ReleaseHeadingTests(unittest.TestCase):
                 images.append(image)
             self.assertEqual(len(images[0]), len(images[1]))
             release=json.loads((Path(__file__).resolve().parents[1]/'metadata/release-package.json').read_text())['version']
-            self.assertTrue(images[0].startswith(('\r\nBetterCP/M '+release+'\r\n$').encode()))
-            expected='BetterCP/M '+release if release in ('1.1','1.2') else 'BetterCP/M development (after core 1.0)'
+            suffix=' candidate' if release=='1.3' else ''
+            self.assertTrue(images[0].startswith(('\r\nBetterCP/M '+release+suffix+'\r\n$').encode()))
+            expected='BetterCP/M '+release+suffix if release in ('1.1','1.2','1.3') else 'BetterCP/M development (after core 1.0)'
             self.assertTrue(images[1].startswith(('\r\n'+expected+'\r\n$').encode()))
 
 

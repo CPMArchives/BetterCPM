@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "name": "BetterCP/M release package",
-  "version": "1.2",
-  "status": "qualified 1.2 release",
-  "notes": "Feature freeze d7a11e2e; PR #682 merged after review. Focused builds, package checks and three-platform smoke passed. Existing engineering qualification reused. Final archive identities are recorded in the v1.2 release index."
+  "version": "1.3",
+  "status": "release candidate; acceptance pending",
+  "notes": "Merged PDS/HISTORY/CONFIG, MCL and VAR scope. Candidate tooling and focused final-media acceptance are in progress. Historical 1.2 release records remain unchanged. No tag or publication is authorized by this metadata."
 }

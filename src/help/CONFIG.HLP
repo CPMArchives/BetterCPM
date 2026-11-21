@@ -12,6 +12,15 @@ enter its menus. A logical drive binding associates a CP/M letter with a
 physical drive and a disk format. Match the format to the mounted media
 before accessing it.
 
+## Command environment
+
+Menu F shows active, pending and saved PDS choices and the next cold boot's
+maximum COM capacity. A selects HISTORY (Off/128/192/384 bytes), B selects
+[MCL](MCL.HLP) (Off/128), and C selects [VAR](VAR.HLP) (Off/128/256/512).
+Defaults retain HISTORY 192 with MCL and VAR off. Save from the main menu,
+then cold boot to activate a different composition. Warm boot preserves the
+active layout. Keep matching PDSCONF.OVL with CONFIG in A:user 0.
+
 ## Cold startup
 
 ```text
