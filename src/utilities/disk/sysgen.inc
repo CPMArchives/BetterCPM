@@ -284,6 +284,7 @@ SGSKIP: CALL SGNEXT
         JR NZ,SGSAVE
         XOR A
         LD (STDIRTY),A
+        CALL PD_SNAPSHOT
         LD HL,SGOK
         JR SGREPORT
 SGSTUNDO:                              ; failed startup write: restore it only

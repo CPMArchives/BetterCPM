@@ -1,8 +1,8 @@
 object	platform	current_start	current_end	bytes	owner	lifetime	cold_boot	warm_boot	storage_class	overlay_group	immutable_template	disposition
 page-zero	all	0000	00FF	256	CP/M low-memory ABI	boot session	initialize vectors, drive, I/O byte and DMA defaults	preserve ABI; reconstruct vectors as required	fixed subsystem state	none	gateway and low-memory defaults	already RAM
 transient-loader-stack	all	04C0	04FF	64	command reconstruction	one reconstruction pass	discarded	fresh for each reconstruction	stack	transient TPA borrow	none	already RAM
-dynamic-bdos-gateway	all	D50D	D50F	3	system gateway and RSX chain	boot session	install JP to BDOS or active RSX head	rebuild after command-environment reconstruction	fixed subsystem state	none	none	retain in ROM-profile RAM
-command-history	all	D510	D5CF	192	built-in command history	cold boot through warm boots	create canonical empty v1 object	preserve valid object	bounded PDS state	none	none	relocate to ROM-profile RAM
+dynamic-bdos-gateway	all	D501	D503	3	system gateway and RSX chain	boot session	install JP to BDOS or active RSX head	rebuild after command-environment reconstruction	fixed subsystem state	none	none	retain in ROM-profile RAM
+command-history	all	D504	D5C3	192	built-in command history	cold boot through warm boots	create canonical empty v1 object	preserve valid object	bounded PDS state	none	none	relocate to ROM-profile RAM
 system-stack	all	D624	D643	32	system gateway	one system-entry pass	fresh stack	fresh stack	stack	none	none	relocate to ROM-profile RAM
 extension-control-live	all	D653	D663	17	system gateway	boot session	copy descriptor defaults then publish live values	preserve or reconstruct by field	fixed subsystem state	none	gateway descriptor defaults	relocate to ROM-profile RAM
 cpx-profile	all	D664	D68C	41	command reconstruction	boot session	copy default profile	preserve across warm boot	fixed subsystem state	none	default CPX profile	relocate to ROM-profile RAM
@@ -15,8 +15,8 @@ trs80-physical-drive-profiles	trs80	E96E	E985	24	disk service	boot session	copy 
 trs80-disk-session-state	trs80	E986	E990	11	disk service	boot session and individual transfers	initialize invalid/no-selection defaults	preserve selection; reset invalidated context	fixed subsystem state	none	TRS-80 disk session defaults	relocate to ROM-profile RAM
 z80pack-physical-drive-profiles	z80pack	E951	E968	24	disk service	boot session	copy default physical profiles	preserve live configuration	fixed subsystem state	none	z80pack physical-profile defaults	relocate to ROM-profile RAM
 z80pack-disk-session-state	z80pack	E969	E976	14	disk service	boot session and individual transfers	initialize transfer defaults	preserve or overwrite transfer context	fixed subsystem state	none	z80pack disk session defaults	relocate to ROM-profile RAM
-trs80-bios-disk-state	trs80	EA8E	EA99	12	BIOS	boot session and individual transfers	initialize CP/M disk defaults	preserve current disk context	fixed subsystem state	none	BIOS disk defaults	relocate to ROM-profile RAM
-trs80-bios-console-state	trs80	EBBF	EBC4	6	TRS-80 console adapter	boot session	initialize CAPS, cursor, column and pending input	preserve console state	fixed subsystem state	none	platform console defaults	relocate to ROM-profile RAM
+trs80-bios-disk-state	trs80	EA8D	EA98	12	BIOS	boot session and individual transfers	initialize CP/M disk defaults	preserve current disk context	fixed subsystem state	none	BIOS disk defaults	relocate to ROM-profile RAM
+trs80-bios-console-state	trs80	EBBE	EBC3	6	TRS-80 console adapter	boot session	initialize CAPS, cursor, column and pending input	preserve console state	fixed subsystem state	none	platform console defaults	relocate to ROM-profile RAM
 z80pack-bios-disk-state	z80pack	EB64	EB6F	12	BIOS	boot session and individual transfers	initialize CP/M disk defaults	preserve current disk context	fixed subsystem state	none	BIOS disk defaults	relocate to ROM-profile RAM
 file-stream-fcb	all	ECF3	ED16	36	protected file loader	one carrier stream	discarded	discarded	temporary/shared workspace	file and reconstruction scratch	none	relocate to ROM-profile RAM
 trs80-live-disk-tables	trs80	ED17	EF56	576	disk service	boot session	copy DPH, binding, ALV and CSV defaults	preserve live bindings and filesystem state	fixed subsystem state	none	TRS-80 disk-table defaults	relocate to ROM-profile RAM
@@ -25,5 +25,9 @@ rsx-profile	all	EF57	EF7F	41	RSX reconstruction	boot session	create empty profil
 directory-buffer	all	EF80	EFFF	128	BDOS directory service	one directory transfer	discarded	discarded	temporary/shared workspace	directory and reconstruction scratch	none	relocate to ROM-profile RAM
 physical-sector-buffer	all	F000	F1FF	512	disk service	one physical transfer	discarded	discarded	temporary/shared workspace	physical, module and CONFIG workspace	none	relocate to ROM-profile RAM
 module-config-buffer	all	F200	F3FF	512	command reconstruction and CONFIG	one module or CONFIG operation	discarded	discarded	temporary/shared workspace	physical, module and CONFIG workspace	none	relocate to ROM-profile RAM
-trs80-monitor-binding	trs80	EC84	EC85	2	BIOS monitor dispatch	boot session	select basic backend before console use	preserve binding	fixed subsystem state	none	none	relocate to ROM-profile RAM
+trs80-monitor-binding	trs80	EC83	EC84	2	BIOS monitor dispatch	boot session	select basic backend before console use	preserve binding	fixed subsystem state	none	none	relocate to ROM-profile RAM
 z80pack-monitor-binding	z80pack	EBFE	EBFF	2	BIOS monitor dispatch	boot session	select basic backend before console use	preserve binding	fixed subsystem state	none	none	relocate to ROM-profile RAM
+pds-directory	all	D5C4	D5CF	12	PDS cold composer	cold boot through warm reconstruction	compose and publish once	preserve active layout	bounded PDS state	none	none	relocate to ROM-profile RAM
+rsx-call-target	all	E4AA	E4AB	2	extension dispatcher	cold boot through warm reconstruction	compose and publish once	preserve active layout	fixed subsystem state	none	none	relocate to ROM-profile RAM
+rsx-service-target	all	E4E2	E4E3	2	extension dispatcher	cold boot through warm reconstruction	compose and publish once	preserve active layout	fixed subsystem state	none	none	relocate to ROM-profile RAM
+rsx-stack-target	all	E4A4	E4A5	2	extension dispatcher	cold boot through warm reconstruction	compose and publish once	preserve active layout	fixed subsystem state	none	none	relocate to ROM-profile RAM

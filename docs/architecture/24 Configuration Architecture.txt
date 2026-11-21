@@ -1,5 +1,9 @@
 BETTERCP/M CONFIGURATION ARCHITECTURE
 
+1.3 planning correction: HISTORY.RSX was an implementation option, not a
+committed feature. HISTORY remains a PDS owner. The approved 1.3 scope in
+docs/engineering/1.3-IMPLEMENTATION-SCOPE.md supersedes old future directions.
+
 Status: adopted design; implementation is incremental and incomplete.
 
 1. PURPOSE

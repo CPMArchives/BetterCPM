@@ -32,7 +32,7 @@ CCP_HTMP        EQU     HISTBASE+7
 CCP_HSKIP       EQU     HISTBASE+8
 CCP_EDOLD       EQU     HISTBASE+9
 HISTDATA        EQU     HISTBASE+10
-HISTCAP         EQU     LY_SYS-LY_HIST-10
+HISTCAP         EQU     182
 STARTBUF        EQU     LY_LOAD         ; finished transient-loader workspace
 STARTFLAG       EQU     LY_SYS+095H     ; bit 0: cold startup already consumed
 
@@ -54,6 +54,13 @@ CCP_ENTRY:                              ; initialize CCP stack
         LD      DE,CCP_STKTOP-CCPBASE
         ADD     HL,DE
         LD      SP,HL
+        LD IX,(LY_SYS+08CH)
+        LD DE,HF_MAIN-CCPBASE
+        ADD IX,DE
+        LD HL,(LY_SYS+08CH)
+        LD DE,CCP_RAW-CCPBASE
+        ADD HL,DE
+        CALL PW_BASE+6
         CALL    CPX_INITIALIZE
         LD      A,(LY_LERR)             ; reader may have overwritten the entire CCP
         OR      A
@@ -152,92 +159,13 @@ CCP_STARTUP:
 CCP_STGO:
         CALL    CCP_STLOAD              ; read BCST after reconstruction is done
         RET     NZ
-        LD      HL,STARTBUF
-        LD      DE,CCP_STSIG
-        LD      B,7
-
-CCP_STMAGIC:
-        LD      A,(DE)
-        CP      (HL)
-        RET     NZ
-        INC     DE
-        INC     HL
-        DJNZ    CCP_STMAGIC
-        LD      A,(HL)                  ; flags: only enabled bit is defined
-        CP      1
-        RET     NZ
-        INC     HL
-        LD      A,(HL)                  ; command length
-        OR      A
-        RET     Z
-        CP      127
-        RET     NC
-        LD      C,A
-        INC     HL
-        LD      A,(HL)                  ; declared capacity is 126
-        CP      126
-        RET     NZ
-        INC     HL
-        LD      A,(HL)                  ; declared record size is 256
-        OR      A
-        RET     NZ
-        INC     HL
-        LD      A,(HL)
-        CP      1
-        RET     NZ
-        INC     HL
-        INC     HL                      ; checksum is verified below
-        INC     HL
-        LD      DE,(STARTBUF+14)        ; system-base binding
-        LD      HL,LY_SYS
-        OR      A
-        SBC     HL,DE
-        RET     NZ
-        LD      HL,STARTBUF             ; canonical 16-bit little-endian sum
-        LD      DE,0
-        LD      B,128
-
-CCP_STSUM:
-        LD      A,(HL)
-        ADD     A,E
-        LD      E,A
-        INC     HL
-        LD      A,(HL)
-        ADC     A,D
-        LD      D,A
-        INC     HL
-        DJNZ    CCP_STSUM
-        LD      A,D
-        OR      E
+        LD      IX,STARTBUF
+        CALL    PW_RECORD
         RET     NZ
         LD      A,(STARTBUF+8)
         LD      (CCP_COUNT),A
-        LD      B,A
-        LD      HL,STARTBUF+16
-
-CCP_STTEXT:                             ; reject controls in the saved command
-        LD      A,(HL)
-        CP      020H
-        RET     C
-        CP      07FH
-        RET     Z
-        INC     HL
-        DJNZ    CCP_STTEXT
-        LD      DE,STARTBUF+256
-
-CCP_STZERO:                             ; all bytes after the command are reserved
-        LD      A,H
-        CP      D
-        JR      NZ,CCP_STZBYTE
-        LD      A,L
-        CP      E
-        JR      Z,CCP_STCOPY
-CCP_STZBYTE:
-        LD      A,(HL)
         OR      A
-        RET     NZ
-        INC     HL
-        JR      CCP_STZERO
+        RET     Z
 
 CCP_STCOPY:
         LD      A,(STARTBUF+8)
@@ -410,7 +338,9 @@ CR_INTER:                               ; initialize interactive editor
         XOR     A
         LD      (CCP_COUNT),A
         LD      (CCP_EDCUR),A
+HP00:
         LD      (CCP_HPOS),A
+HP01:
         LD      (CCP_EDOLD),A
         INC     A                       ; each new line starts in insert mode
         LD      (CCP_EDINS),A
@@ -710,6 +640,7 @@ CCP_EDNEW:                              ; start physical continuation line
         LD      C,2
         CALL    BDOS
         XOR     A
+HP02:
         LD      (CCP_EDOLD),A
         JP      CCP_EDDRAW
 
@@ -974,11 +905,14 @@ CCP_DWTAIL:                             ; skip trailing spaces for word delete
 
 CCP_DWMOVE:                             ; compact line after word delete
         LD      A,E
+HP03:
         LD      (CCP_HTMP),A            ; end of deleted range
         LD      A,(CCP_EDCUR)
         LD      C,A
+HP04:
         LD      A,(CCP_HTMP)
         SUB     C
+HP05:
         LD      (CCP_HSKIP),A           ; number of bytes removed
         LD      A,(CCP_COUNT)
         SUB     E
@@ -1002,6 +936,7 @@ CCP_DWMOVE:                             ; compact line after word delete
 
 CCP_DWNOCOPY:                           ; finish word deletion without copy
         LD      A,(CCP_COUNT)
+HP06:
         LD      HL,CCP_HSKIP
         SUB     (HL)
         LD      (CCP_COUNT),A
@@ -1042,8 +977,13 @@ CCP_BSEND:                              ; finish backspace deletion
 ; -------------------------------------------------------------------------------
 
 CCP_EDUP:                               ; recall previous history entry
+        LD A,(LY_PD2+4)
+        OR A
+        JR Z,CCP_EDDOWN
         CALL    CCP_HINIT
+HP07:
         LD      A,(HISTBASE+3)
+HP08:
         LD      HL,CCP_HPOS
         CP      (HL)
         JP      Z,CCP_EDGET
@@ -1053,13 +993,16 @@ CCP_EDUP:                               ; recall previous history entry
         JR      CCP_EDDRAW
 
 CCP_EDDOWN:                             ; recall next history entry
+HP09:
         LD      A,(CCP_HPOS)
         OR      A
         JP      Z,CCP_EDGET
         DEC     A
+HP10:
         LD      (CCP_HPOS),A
         JR      Z,CCP_HCLEAR
         LD      B,A
+HP11:
         LD      A,(HISTBASE+3)
         SUB     B
         CALL    CCP_HGET
@@ -1069,6 +1012,7 @@ CCP_HCLEAR:                             ; restore live line after history
         XOR     A
         LD      (CCP_COUNT),A
         LD      (CCP_EDCUR),A
+HP12:
         LD      (CCP_HPOS),A
         JR      CCP_EDDRAW
 
@@ -1123,9 +1067,11 @@ CCP_CSLEN:                              ; measure visible command length
   ; cell. The former single-space cleanup left recalled text visible when ^X
   ; returned from history to the empty live command line.
 
+HP13:
         LD      A,(CCP_EDOLD)
         LD      B,A
         LD      A,(CCP_COUNT)
+HP14:
         LD      (CCP_EDOLD),A
         LD      C,A
         LD      A,B
@@ -1251,17 +1197,24 @@ CCP_EDFIN:                              ; finish command-line editing
 ; -------------------------------------------------------------------------------
 
 CCP_HINIT:                              ; validate persistent history header
+        LD A,(LY_PD2+4)
+        OR A
+        RET Z
+HP15:
         LD      A,(HISTBASE)
         CP      'B'
         JR      NZ,CCP_HRESET
+HP16:
         LD      A,(HISTBASE+1)
         CP      'H'
         JR      NZ,CCP_HRESET
+HP17:
         LD      A,(HISTBASE+2)
         CP      1
         RET     Z
 
 CCP_HRESET:                             ; reset persistent history
+HP18:
         LD      HL,HISTBASE
         LD      (HL),'B'
         INC     HL
@@ -1286,6 +1239,7 @@ CCP_HRESET:                             ; reset persistent history
 
 CCP_HGET:                               ; fetch selected history entry
         LD      B,A
+HP19:
         LD      HL,HISTDATA
 
 CCP_HGLOOP:                             ; scan packed history records
@@ -1314,35 +1268,62 @@ CCP_HGFOUND:                            ; copy selected history record
 ; -------------------------------------------------------------------------------
 
 CCP_HADD:                               ; append command to history
+        LD A,(LY_PD2+4)
+        OR A
+        RET Z
+        LD A,(CCP_COUNT)
+        OR A
+        RET Z
+        INC A
+        LD HL,(LY_PD2+4)
+        LD DE,-10
+        ADD HL,DE
+        CP L
+        JR C,HA_SIZEOK
+        JR Z,HA_SIZEOK
+        LD A,H
+        OR A
+        RET Z
+HA_SIZEOK:
         CALL    CCP_HINIT
         LD      A,(CCP_COUNT)
         INC     A
+HP20:
         LD      (CCP_HTMP),A            ; required length byte plus command data
 
 CCP_HROOM:                              ; make room for history record
+HP21:
         LD      HL,(HISTBASE+4)
+HP22:
         LD      A,(CCP_HTMP)
         LD      E,A
         LD      D,0
         ADD     HL,DE
+HPCAP:
         LD      DE,HISTCAP+1
         OR      A
         SBC     HL,DE
         JR      C,CCP_HAPPEND
   ; Evict the oldest record and compact the packed region toward HISTDATA.
+HP23:
         LD      A,(HISTDATA)
         INC     A
+HP24:
         LD      (CCP_HSKIP),A
         LD      E,A
         LD      D,0
+HP25:
         LD      HL,(HISTBASE+4)
         OR      A
         SBC     HL,DE
+HP26:
         LD      (HISTBASE+4),HL
         LD      B,H
         LD      C,L
+HP27:
         LD      HL,HISTDATA
         ADD     HL,DE
+HP28:
         LD      DE,HISTDATA
         LD      A,B
         OR      C
@@ -1350,12 +1331,15 @@ CCP_HROOM:                              ; make room for history record
         LDIR
 
 CCP_HEMPTY:                             ; reset empty history area
+HP29:
         LD      HL,HISTBASE+3
         DEC     (HL)
         JR      CCP_HROOM
 
 CCP_HAPPEND:                            ; append packed history record
+HP30:
         LD      HL,HISTDATA
+HP31:
         LD      DE,(HISTBASE+4)
         ADD     HL,DE
         LD      A,(CCP_COUNT)
@@ -1366,15 +1350,20 @@ CCP_HAPPEND:                            ; append packed history record
         LD      C,A
         LD      B,0
         LDIR
+HP32:
         LD      HL,(HISTBASE+4)
+HP33:
         LD      A,(CCP_HTMP)
         LD      E,A
         LD      D,0
         ADD     HL,DE
+HP34:
         LD      (HISTBASE+4),HL
+HP35:
         LD      HL,HISTBASE+3
         INC     (HL)
         XOR     A
+HP36:
         LD      (CCP_HPOS),A
         RET
 
@@ -3463,7 +3452,6 @@ CCP_EMPTY:     DB      13,10,'EMPTY PROGRAM',13,10,'$'
 CCP_NODRV:     DB      13,10,'DRIVE UNAVAILABLE',13,10,'$'
 CCP_COM:                                ; .COM extension text
         DB      'COM'
-CCP_STSIG:     DB      'BCST',1,0,16
 STBBASE:       DW      0               ; runtime BIOS jump-table base
 
 ; -------------------------------------------------------------------------------
@@ -3568,6 +3556,47 @@ CCP_NEWLINE:                            ; shared CR/LF string
 ; -------------------------------------------------------------------------------
 
   ; Explicit bytes keep host and native links identical; DS fill is tool-specific.
+
+HF_MAIN: DW HPCAP+1-CCPBASE
+        DB 19
+        DW HP07+1-CCPBASE
+        DW HP11+1-CCPBASE
+        DW HP15+1-CCPBASE
+        DW HP16+1-CCPBASE
+        DW HP17+1-CCPBASE
+        DW HP18+1-CCPBASE
+        DW HP19+1-CCPBASE
+        DW HP21+1-CCPBASE
+        DW HP23+1-CCPBASE
+        DW HP25+1-CCPBASE
+        DW HP26+1-CCPBASE
+        DW HP27+1-CCPBASE
+        DW HP28+1-CCPBASE
+        DW HP29+1-CCPBASE
+        DW HP30+1-CCPBASE
+        DW HP31+2-CCPBASE
+        DW HP32+1-CCPBASE
+        DW HP34+1-CCPBASE
+        DW HP35+1-CCPBASE
+HF_WORK: DB 18
+        DW HP00+1-CCPBASE
+        DW HP01+1-CCPBASE
+        DW HP02+1-CCPBASE
+        DW HP03+1-CCPBASE
+        DW HP04+1-CCPBASE
+        DW HP05+1-CCPBASE
+        DW HP06+1-CCPBASE
+        DW HP08+1-CCPBASE
+        DW HP09+1-CCPBASE
+        DW HP10+1-CCPBASE
+        DW HP12+1-CCPBASE
+        DW HP13+1-CCPBASE
+        DW HP14+1-CCPBASE
+        DW HP20+1-CCPBASE
+        DW HP22+1-CCPBASE
+        DW HP24+1-CCPBASE
+        DW HP33+1-CCPBASE
+        DW HP36+1-CCPBASE
 
 CCP_BUFFER:                             ; command buffer base
         DB      127

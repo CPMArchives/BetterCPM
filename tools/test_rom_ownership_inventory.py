@@ -12,8 +12,8 @@ from system_layout import LAYOUT
 ROOT = Path(__file__).resolve().parents[1]
 INVENTORY = ROOT / "metadata/rom-ram-ownership.tsv"
 
-RELOCATION_BYTES = {"trs80": 2268, "z80pack": 2265}
-ROM_RAM_BYTES = {"trs80": 2271, "z80pack": 2268}
+RELOCATION_BYTES = {"trs80": 2286, "z80pack": 2283}
+ROM_RAM_BYTES = {"trs80": 2289, "z80pack": 2286}
 STORAGE_CLASSES = {
     "bounded PDS state",
     "fixed subsystem state",
@@ -27,7 +27,11 @@ ANCHORS = {
     "page-zero": (0x0000, 0x0100),
     "transient-loader-stack": (LAYOUT["STACK_LOW"], LAYOUT["STACK_TOP"]),
     "dynamic-bdos-gateway": (LAYOUT["TPA"], LAYOUT["HISTORY"]),
-    "command-history": (LAYOUT["HISTORY"], LAYOUT["SYSTEM"]),
+    "command-history": (LAYOUT["HISTORY"], LAYOUT["SYSTEM"]-12),
+    "pds-directory": (LAYOUT["SYSTEM"]-12, LAYOUT["SYSTEM"]),
+    "rsx-call-target": (LAYOUT["EXTENSIONS"]+0x6b, LAYOUT["EXTENSIONS"]+0x6d),
+    "rsx-service-target": (LAYOUT["EXTENSIONS"]+0xa3, LAYOUT["EXTENSIONS"]+0xa5),
+    "rsx-stack-target": (LAYOUT["EXTENSIONS"]+0x65, LAYOUT["EXTENSIONS"]+0x67),
     "system-stack": ("system/gateway.lst:SYS_STACK", "system/gateway.lst:SYS_STKTOP"),
     "extension-control-live": ("system/gateway.lst:ECB_FLAGS", "system/gateway.lst:CPTCOUNT"),
     "cpx-profile": ("system/gateway.lst:CPTCOUNT", "system/gateway.lst:SINIBODY"),

@@ -15,6 +15,7 @@ def main():
     old=build('OLD STARTUP',system_base=LAYOUT['SYSTEM'])
     for failed in ((),(1,),(2,),(1,2)):
         c=Z80(b'');c.mem[256:256+len(image)]=image;c.mem[:3]=bytes.fromhex('c3ffff')
+        c.mem[0x9000:0x9800]=(ROOT/'build/utilities/PDSCONF.OVL').read_bytes()
         c.mem[5:8]=bytes((0xdb,254,0xc9));disk=bytearray(old);ops=[];out=[];writes=0
         for name,port in [('STLOAD',230),('SGIO',231),('SGVERIFY',232)]:
             at=addr(name);c.mem[at:at+3]=bytes((0xdb,port,0xc9))
@@ -39,7 +40,7 @@ def main():
             c.z=True;return 0
         c.port_read=io;c.mem[addr('CF_MODE')]=2
         command=b'NEW STARTUP';c.mem[addr('CF_LEN')]=len(command);at=addr('CF_TEXT');c.mem[at:at+len(command)]=command
-        c.run(addr('CF_START'),limit=500000)
+        c.run(addr('CF_START'),limit=2000000)
         text=bytes(out)
         assert b'Push ENTER' not in text
         if not failed:

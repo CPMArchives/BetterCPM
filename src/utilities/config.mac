@@ -85,6 +85,8 @@ MAIN:   LD HL,TITLE                     ; enter CONFIG utility
         JP Z,EDITDRIVE
         CP 'A'
         JP Z,STARTMENU
+        CP 'F'
+        JP Z,PD_MENU
         CP 'B'
         JP Z,IO_MENU
         CP 'C'
@@ -895,6 +897,7 @@ STSAVE:LD A,(STSTATE)                  ; save pending cold changes only
         JR NZ,SVROLL2
         XOR A
         LD (STDIRTY),A
+        CALL PD_SNAPSHOT
         LD HL,STSAVED
         JR STSAVEREPORT
 
@@ -1047,8 +1050,10 @@ STFETCH:CALL STLOAD                    ; establish private pending copy
         LD DE,STPEND
         LD BC,256
         LDIR
+        CALL PD_UPGRADE
         LD A,1
         LD (STSTATE),A
+        CALL PD_SNAPSHOT
         RET
 STFETCHBAD:
         CALL STDEFAULT
@@ -1187,41 +1192,13 @@ STA0CALL:                              ; call BDOS on the A0 command stream
         RET
 STUSER:        DB      0               ; user saved for one output file call
 
-STFCBRESET:                            ; restore reusable A0:$$$.SUB FCB
-        LD HL,STSUBFCB+12
-        LD DE,STSUBFCB+13
-        LD BC,23
-        LD (HL),0
-        LDIR
-        RET
+STFCBRESET: LD HL,09018H
+        JP PD_CALL
 
-STDEFAULT:                             ; construct canonical disabled record
-        LD HL,STPEND
-        LD DE,STPEND+1
-        LD BC,255
-        LD (HL),0
-        LDIR
-        LD HL,STHEADER
-        LD DE,STPEND
-        LD BC,16
-        LDIR
-STCHECKSUM:
-        LD HL,0                        ; set negative 16-bit word sum
-        LD (STPEND+12),HL
-        LD IX,STPEND
-        LD B,128
-STCKLOOP:LD E,(IX+0)
-        LD D,(IX+1)
-        ADD HL,DE
-        INC IX
-        INC IX
-        DJNZ STCKLOOP
-        EX DE,HL
-        LD HL,0
-        OR A
-        SBC HL,DE
-        LD (STPEND+12),HL
-        RET
+STDEFAULT: LD HL,09012H
+        JP PD_CALL
+STCHECKSUM: LD HL,09015H
+        JP PD_CALL
 
 STLOAD: CALL SGDISKSET                  ; load protected records 1 and 2
         RET NZ
@@ -1242,84 +1219,11 @@ STLOAD: CALL SGDISKSET                  ; load protected records 1 and 2
         CALL SGIO
         RET NZ
 
-STVALID:                               ; validate complete BCST v1 record
-        LD HL,TRACKBF
-        LD DE,STMAGIC
-        LD BC,7
-        CALL SGCMP
-        RET NZ
-        LD A,(TRACKBF+7)
-        CP 2
-        RET NC
-        LD A,(TRACKBF+8)
-        CP 127
-        RET NC
-        LD B,A
-        LD A,(TRACKBF+9)
-        CP 126
-        RET NZ
-        LD HL,(TRACKBF+10)
-        LD DE,256
-        OR A
-        SBC HL,DE
-        RET NZ
-        LD HL,(TRACKBF+14)
-        LD DE,LY_SYS
-        OR A
-        SBC HL,DE
-        RET NZ
-        LD A,B
-        OR A
-        JR Z,STSTATE0
-        LD A,(TRACKBF+7)
-        CP 1
-        RET NZ
-        JR STSUM
-STSTATE0:LD A,(TRACKBF+7)
-        OR A
-        RET NZ
-STSUM:  LD IX,TRACKBF                  ; 16-bit little-endian word sum is zero
-        LD HL,0
-        LD B,128
-STSUMLP:LD E,(IX+0)
-        LD D,(IX+1)
-        ADD HL,DE
-        INC IX
-        INC IX
-        DJNZ STSUMLP
-        LD A,H
-        OR L
-        RET NZ
-        LD IX,TRACKBF+16
-        LD A,(TRACKBF+8)
-        OR A
-        JR Z,STRESERVE
-        LD B,A
-STCHAR: LD A,(IX+0)
-        CP 32
-        JR C,STFAIL
-        CP 127
-        JR NC,STFAIL
-        INC IX
-        DJNZ STCHAR
-STRESERVE:
-        LD A,240
-        LD B,A
-        LD A,(TRACKBF+8)
-        LD C,A
-        LD A,B
-        SUB C
-        LD B,A
-STRESLP:LD A,(IX+0)
-        OR A
-        JR NZ,STFAIL
-        INC IX
-        DJNZ STRESLP
-        XOR A
-        RET
-STFAIL: LD A,1
-        OR A
-        RET
+STVALID:
+        LD IX,TRACKBF
+        LD HL,09000H
+        JP PD_CALL
+
   ; The sector table is in physical order. Changing IDs changes interleave.
   ; N selects the uniform size, or maximum size for a mixed track.
   ; S records each individual length in the same physical order as the IDs.
@@ -1960,6 +1864,10 @@ CF_STREADY:
         JP STSAVE
  ; /DEFAULT resets only the private startup domain; saving remains explicit.
 CF_DEFAULT:
+        CALL STFETCH
+        LD A,(STSTATE)
+        CP 2
+        JP Z,STSAVEINVALID
         CALL STDEFAULT
         LD HL,CF_DEFCMD
         LD DE,STPEND+16
@@ -3005,8 +2913,9 @@ MAINMSG:DB 'Configuration options:',13,10,13,10 ; main-menu text
         DB '[ C ] Disk drive definitions',13,10
         DB '[ D ] Disk format definitions',13,10
         DB '[ E ] Create or edit a disk format',13,10,13,10
-        DB '[ S ] Save current configuration on disk (SYSGEN)',13,10,13,10,13,10
-        DB 'Select [ A - E or S ], or BREAK (^C) to exit.',13,10,0
+        DB '[ F ] Command environment / PDS',13,10
+        DB '[ S ] Save configuration on disk (SYSGEN)',13,10,13,10,13,10
+        DB 'Select [ A - F or S ], or BREAK (^C) to exit.',13,10,0
 
 
 PHYHEAD:DB 'Disk drive selections',0    ; physical yhead
@@ -3085,9 +2994,7 @@ STTESTNONE:DB 'There is no pending startup command to test.',13,10,0
 STTEST126:DB 'A 126-byte command can run at cold boot but cannot use Test now.',13,10,0
 STTESTSUB:DB 'A0:$$$.SUB prevents test.',13,10,0
 STTESTBAD:DB 'Unable to create the one-command test stream on A:.',13,10,0
-STMAGIC:DB 'BCST',1,0,16
-STHEADER:DB 'BCST',1,0,16,0,0,126,0,1,0,0
-         DW LY_SYS
+
 
 SAVETITLE:DB 'Save startup defaults',0
 SAVEHELP:DB '[ A ] Save pending cold-boot changes only',13,10
@@ -3154,5 +3061,6 @@ UI_COLUMNS EQU 79
 P12CONFIG EQU 1
         INCLUDE private-utility.inc
         ENDIF
+; @config-pds@
 ; @config-help@
         END

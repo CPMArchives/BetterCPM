@@ -21,6 +21,8 @@ def main() -> None:
                         default=Path("/Users/nathanael/bin/z80asm"))
     args = parser.parse_args()
     BUILD.mkdir(parents=True, exist_ok=True)
+    from build_pds_worker import build as pds_worker
+    pds_worker(args.assembler)
     text = SOURCE.read_text(encoding="ascii")
     text = text.replace("        CSEG\n        .PHASE  ",
                         "        ASEG\n        ORG     ")

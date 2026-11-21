@@ -1,5 +1,9 @@
 BETTERCP/M ROM AND RAM OWNERSHIP
 
+1.3 planning correction: HISTORY.RSX was an implementation option, not a
+committed feature. HISTORY remains a PDS owner. The approved 1.3 scope in
+docs/engineering/1.3-IMPLEMENTATION-SCOPE.md supersedes old future directions.
+
 Status: accepted BetterCP/M 1.0 architecture.
 
 

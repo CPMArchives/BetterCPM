@@ -12,11 +12,11 @@ inventory. Qualify original SUBMIT/XSUB syntax and workflows independently of th
 chosen internal implementation, including parameter substitution, command order,
 program input, cancellation and return across warm boot.
 
-## Tentative 1.3 flow-control investigation
+## Later flow-control investigation (1.4 candidate)
 
-**Planning status:** documentation-only proposal, tentatively targeted for
-BetterCP/M 1.3. Neither scope nor syntax is approved; the target is not a release
-commitment. This agenda develops the existing proposal below rather than
+**Planning status:** documentation-only later candidate, likely BetterCP/M 1.4.
+FLOW is excluded from the locked 1.3 release. Neither scope nor syntax is
+approved; the candidate version is not a release commitment. This agenda develops the existing proposal below rather than
 introducing a second scripting facility. The module names, language forms,
 common-stream interfaces and broad PDS inventory below remain proposal material,
 not implemented behavior or new allocations in the frozen architecture.

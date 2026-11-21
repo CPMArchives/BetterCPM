@@ -117,7 +117,11 @@ def main():
             from build_dup import expanded_source
             text=expanded_source()
         if checked:text=assembly_constants(checked)+text
-        data=assemble(args.assembler,text,out/(stem.upper()+'.COM'),out/(stem+'.lst'),0x100)
+        if stem=='config':
+            from build_config import build_image
+            data=build_image(args.assembler,text,out)
+        else:
+            data=assemble(args.assembler,text,out/(stem.upper()+'.COM'),out/(stem+'.lst'),0x100)
         if stem=='config':
             from build_config import validate_layout
             validate_layout(data,(out/'config.lst').read_text())

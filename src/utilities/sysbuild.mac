@@ -587,6 +587,11 @@ PARTS:                                  ; system component table
         DW 8
         DW RSXLOAD_SIZE
         DB 1
+        DB 0,'PDSWORK BIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+        DW BUFFER+10752
+        DW 8
+        DW PDSWORK_SIZE
+        DB 1
         DB 0,'RSXRESOLBIN',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         DW BUFFER+12800
         DW 8
@@ -620,12 +625,8 @@ BDOSJUMP:DB 0C3H,0BCH,0D6H              ; live gateway jump template
   ; Version-1 startup record. The 16-bit little-endian word sum, including the
   ; checksum word, is zero. CONFIG replaces this two-record default only after
   ; validating the complete saved configuration.
-STARTDEF:DB 'BCST',1,0,16,0,0,126,0,1
-         DW 0-(016A6H+LY_SYS)           ; additive checksum of disabled BCST
-         DW LY_SYS
-        REPT 240
-        DB 0
-        ENDM
+STARTDEF:
+; @startup-default@
 
 CURFCB: DW 0                            ; current component FCB pointer
 CURDST: DW 0                            ; current component destination

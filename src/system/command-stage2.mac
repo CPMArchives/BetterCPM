@@ -61,6 +61,12 @@ CRBODY:                                 ; begin reconstruction body
         LD      SP,CRSTKTOP
         LD      A,5
         CALL    LY_BIOS+66              ; reset unfinished monitor output before reconstruction
+        LD HL,CR_PDT
+        LD DE,PW_BASE+768
+        LD BC,CR_PDE-CR_PDT
+        LDIR
+        CALL PW_BASE
+        JP NZ,CRFAIL
   ; 07-Sep-2026 -- a BIOS caller may leave another physical drive selected
   ; without changing BDOS's cached A: context. Do not reload RCP.CPX from
   ; that drive using A:'s old DPB. Invalidate before the first file lookup.
@@ -202,7 +208,7 @@ CRCCP:                                  ; load relocatable CCP
 ; Fixed header cache + record buffer; all state is inside the verified stage.
 STAGE EQU 01000H
 CR10BUFFER EQU 01600H
-CR10FLOOR EQU 01680H
+CR10FLOOR EQU 01B00H
 
 CRLOAD:
         LD HL,STAGE
@@ -824,4 +830,7 @@ CRSLOT:        DB      0                ; current CPX profile slot
 CRFIRST:       DB      0                ; first CPX descriptor
 CRMCHECK:      DW      0
 CRFILE:        DB      0                ; module file FCB
+CR_PDT:
+; @pds-worker-tail@
+CR_PDE:
         END

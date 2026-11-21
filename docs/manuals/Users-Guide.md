@@ -207,6 +207,8 @@ Begin with `CONFIG /SHOW`. Record active drive bindings and saved startup settin
 
 Changing a runtime binding does not format a disk. Changing a catalogue does not reinterpret an existing active binding. A setting can work for the session without becoming the next cold-boot default. CONFIG distinguishes current state and pending cold-boot settings; choose the save operation matching your intention rather than assuming every menu edit is already on disk.
 
+In the 1.3 foundation, CONFIG's **F — Command environment / PDS** menu shows active allocations, saved choices, pending choices and the next cold boot's maximum COM size. Save from the main menu, then cold boot to activate a different composition. Ordinary warm boot keeps the active layout. The default retains 192 bytes of history, with MCL and VAR storage off. Those two commands follow in later 1.3 stages. Keep the matching `PDSCONF.OVL` alongside the system utilities in A:user 0. `STAT MEM` shows total PDS size, metadata and each owner's allocation; optional storage reduces program capacity by the cost shown in CONFIG.
+
 For an actual disk task:
 
 1. Confirm the physical drive's track/side capabilities and the inserted media format.
@@ -231,7 +233,7 @@ RSX LIST
 STAT MEM
 ```
 
-CPXs add commands at the prompt; RSXs supply services while applications run. Place compatible normal CPX/RSX carriers in A0 before loading. Keep configured CPXs there for reconstruction after transient execution. Keep the matching R3PACK.RSX manager container in A0; it is support material, not a module to load manually.
+CPXs add commands at the prompt; RSXs supply services while applications run. Place compatible normal CPX/RSX carriers in A0 before loading. Keep configured CPXs there for reconstruction after transient execution. Keep the matching R3PACK.RSX manager container and R3CACHE.RSX support carrier in A0; these are support material, not modules to load manually.
 
 CPX has an ordered four-name profile including RCP. A configured name can remain listed when its carrier is missing or rejected, so LIST alone does not prove its commands loaded. Restore standard commands with `CPX LOAD RCP` if necessary. Removing RCP is allowed and removes its commands; it does not create missing transient files. CLS.COM, USER.COM and MOVE.COM are not selected System Disk contents.
 

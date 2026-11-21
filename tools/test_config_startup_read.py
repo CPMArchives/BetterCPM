@@ -31,8 +31,8 @@ def run_case(name: str, image: bytes, expected: tuple[str, ...],
     original_record = extract_raw(image)[128:384]
     args = [str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo", "-d0", str(disk),
             "-id", "2500"]
-    args += key_args("CONFIG\r") + ["-id", "2000"]
-    args += key_args("A") + ["-id", "2000", "-it", "-ix"]
+    args += ["-iw", "A0>"] + key_args("CONFIG\r") + ["-iw", "Your choice:", "-id", "200"]
+    args += key_args("A") + ["-iw", "Test pending command now", "-id", "200", "-it", "-ix"]
     if actions:
         args = args[:-2]
         for index, action in enumerate(actions):
@@ -55,8 +55,13 @@ def run_pending_save(image: bytes) -> bytes:
     disk.write_bytes(image)
     args = [str(DEFAULT_EMULATOR), "-m4", "-batch", "-turbo", "-d0", str(disk),
             "-id", "2500"]
-    for action in ("CONFIG\r", "A", "E", "VER\r", "\x03", "S", "A", "Y"):
-        args += key_args(action) + ["-id", "2000"]
+    args += ["-iw", "A0>", "-id", "1000"]
+    for action,completion in (("CONFIG\r", "Your choice:"), ("A", "Test pending command now"),
+                              ("E", "Command: "), ("VER\r", "Test pending command now"),
+                              ("\x03", "Configuration options:"),
+                              ("S", "Save pending cold-boot changes only"), ("A", "(Y/N)?"),
+                              ("Y", "Pending cold-boot changes saved and verified.")):
+        args += key_args(action) + ["-iw", completion, "-id", "1000"]
     args += ["-it", "-ix"]
     run_trs80gp(args, cwd=work, check=True, timeout=180)
     text = screen(work / "trs80-text-0.bin")
@@ -96,7 +101,9 @@ def main() -> None:
     run_case("test-disabled", image,
              ("There is no pending startup command to test.",),
              ("T",))
-    run_case("test-now", image, ("BetterCP/M 1.0",),
+    from version_metadata import rows
+    version=next(row['implementation_version'] for row in rows() if row['component']=='BetterCP/M')
+    run_case("test-now", image, ("BetterCP/M "+version,),
              ("E", "VER\r", "T"), final_delay=5000)
 
     maximum = extract_raw(image)

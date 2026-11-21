@@ -91,16 +91,15 @@ SYS_WBOOT:                              ; stable BIOS WBOOT target
 ; -------------------------------------------------------------------------------
 
 SYS_COLD:                               ; perform cold system entry
-        LD      SP,SYS_STKTOP
         XOR     A
         LD      (RSTCOUNT),A            ; cold boot starts from the saved empty profile
                                 ; while WBOOT deliberately preserves this byte
-  ; Invalidate the history owner's signature on true cold entry. The rebuilt
-  ; CCP then creates its canonical empty v1 object through CCP_HINIT; keeping
-  ; that representation out of the gateway preserves single ownership. WBOOT
-  ; deliberately bypasses this store and retains valid persistent history.
-        LD      (HISTBASE),A
-        JR      SYS_ENTER               ; A=0 deliberately begins on drive A
+  ; Clear cold-composition/startup flags. The transient PDS worker loads saved
+  ; capacities and initializes owners before command reconstruction. Ordinary
+  ; WBOOT bypasses this reset and preserves the composed directory and owners.
+        LD      (CPTFLAGS),A
+        JP      BIOWBOOT                ; cold worker precedes all reconstruction
+        DB      0,0                     ; retain fixed handoff/stack placement
 
 ; -------------------------------------------------------------------------------
 ; Warm Entry
@@ -173,10 +172,8 @@ SYS_COMSTART:                           ; saved transient-entry state
         DB      0
         ENDM
 
-  ; Extension Control Block, version 1. This is also the PDS ABI 1 descriptor.
-  ; ECB_PDSLOW publishes the live lower boundary; its fixed address at SYSBASE+80h
-  ; publishes SYSBASE as the upper boundary. Until configurable sizing exists,
-  ; current and next-boot sizes are both SYSBASE-ECB_PDSLOW.
+  ; BM version 1 retains its live RSX boundary and TPA semantics. The cold-
+  ; composed PDS ABI 2 directory is separately located at LY_SYS-12.
 
 ; ================================================================================
 ; =                           Extension Control Block                            =
@@ -202,8 +199,6 @@ ECB_RSXHEAD:                            ; live RSX-chain head
 
 ECB_CPXHEAD:                            ; live CPX-chain head
         DW      0
-
-ECB_PDSLOW:                             ; live protected-data lower bound
 
 ECB_RSXLOW:                             ; live RSX lower bound
         DW      HISTBASE

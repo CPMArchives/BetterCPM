@@ -5356,7 +5356,8 @@ CONFIG displays a menu containing the available configuration operations:
 [ D ] Disk format definitions
 [ E ] Create or edit a disk format
 
-[ S ] Save current configuration on disk (SYSGEN)
+[ F ] Command environment / PDS
+[ S ] Save configuration on disk (SYSGEN)
 ```
 
 Select the letter corresponding to the operation you want to perform.
@@ -5364,6 +5365,10 @@ Select the letter corresponding to the operation you want to perform.
 Press Ctrl-C to leave the main menu.
 
 CONFIG operates through the ordinary console and does not require a terminal-monitor extension.
+
+The 1.3 foundation adds menu F for Command Environment/PDS. It displays active HISTORY/MCL/VAR allocation bytes, saved and pending capacity choices, total pending PDS bytes and the next cold boot's maximum COM capacity. A cycles HISTORY through Off/128/192/384 bytes; B cycles MCL storage through Off/128; C cycles VAR storage through Off/128/256/512. Defaults are HISTORY 192, MCL Off and VAR Off. MCL/VAR execution is supplied by later 1.3 implementation stages.
+
+Return to the main menu and save pending cold-boot changes to persist these choices. A save does not resize the active layout: it takes a cold boot to activate it. Startup command and PDS changes preserve one another. `STAT MEM` reports the active PDS total, twelve metadata bytes and each allocation. Keep the matching `PDSCONF.OVL` in A:user 0; restore it from the same build if CONFIG requests it.
 
 
 ##### Editing Startup and Numeric Fields
