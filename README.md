@@ -1,6 +1,8 @@
 # BetterCP/M
 
-BetterCP/M is a compact, maintainable CP/M-compatible operating system for Z80-class computers. **BetterCP/M 1.1 is released.** Download the System package for your platform from the [published v1.1 release](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.1), then follow the [quick start](#quick-start) below. Matching Utilities, complete Source and the four-manual Documentation collection are available separately. See the [documentation index](docs/README.md).
+Current source is a **1.3 candidate**, with PDS 2.0 and optional MCL/VAR. It is not yet release-qualified. See [1.3 candidate notes](docs/releases/RELEASE-NOTES-1.3.md) and [focused acceptance](docs/releases/1.3-SCOPE-AND-ACCEPTANCE.md).
+
+BetterCP/M is a compact, maintainable CP/M-compatible operating system for Z80-class computers. **BetterCP/M 1.2 is released.** Download the System package for your platform from the [published v1.2 release](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.2), then follow the [quick start](#quick-start) below. Matching Utilities, complete Source and the four-manual Documentation collection are available separately. See the [documentation index](docs/README.md).
 
 The project begins with CP/M 2.2 as its compatibility baseline while redesigning the operating system around explicit interfaces, documented state, reproducible builds, portable hardware boundaries, and independently testable subsystems. The objective is not simply to reproduce Digital Research CP/M source code, but to provide a clean and well-specified CP/M environment that remains practical on small 8-bit systems.
 

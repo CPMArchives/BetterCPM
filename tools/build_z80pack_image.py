@@ -16,7 +16,9 @@ DEFAULT_FORMAT='California Computer Systems (40T, DS, DD, 332K)'
 
 def symbols(path):
  result={}
- for address,name in re.findall(r'^([0-9a-f]{4})\s+.*?\b([A-Z][A-Z0-9_]*):',path.read_text(),re.M|re.I):
+ # Udo listings can contain non-UTF-8 bytes in include-file page headers.
+ # Latin-1 preserves every byte; the symbol grammar remains ASCII-only.
+ for address,name in re.findall(r'^([0-9a-f]{4})\s+.*?\b([A-Z][A-Z0-9_]*):',path.read_text(encoding='latin-1'),re.M|re.I):
   result[name]=int(address,16)
  return result
 

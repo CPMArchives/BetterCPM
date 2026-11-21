@@ -39,9 +39,11 @@ Choose a group, or type HELP followed by a command name at the CP/M prompt.
 - [CLS](CLS.HLP) Clear the console.
 - [CPX](CPX.HLP) Manage command processor extensions.
 - [HELP](HELP.HLP) Browse online help.
+- [MCL](MCL.HLP) Multiple interactive commands.
 - [RSX](RSX.HLP) Manage resident extensions.
 - [SUBMIT](SUBMIT.HLP) Run commands from a file.
 - [XSUB](XSUB.HLP) Feed submitted lines to a program.
+- [VAR](VAR.HLP) Session command variables and substitution.
 
 ## Edit and build
 

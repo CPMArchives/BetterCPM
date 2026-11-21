@@ -1,0 +1,23 @@
+Command Environment / PDS
+
+Active H/M/V bytes: 192 0 0
+Saved choices H/M/V: 2 0 0
+Pending choices H/M/V: 2 0 0
+Pending PDS bytes (includes 12 metadata): 204
+Next cold boot maximum COM (no RSXs): 57344
+
+Changes apply next cold boot. Save from main menu.
+A History: 0 Off, 1 128, 2 192, 3 384 bytes
+B MCL storage: 0 Off, 1 128 bytes
+C VAR storage: 0 Off, 1 128, 2 256, 3 512 bytes
+MCL: interactive lines. VAR: command substitution.
+^C Return
+Your choice: [ ]
+
+
+
+
+
+
+
+

@@ -13,7 +13,7 @@
       "builders": [
         "tools/build_stat.py"
       ],
-      "revision": 9,
+      "revision": 10,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -64,7 +64,7 @@
       "builders": [
         "tools/build_config.py"
       ],
-      "revision": 20,
+      "revision": 21,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -251,7 +251,7 @@
       "builders": [
         "tools/build_rcp_cpx.py"
       ],
-      "revision": 20,
+      "revision": 21,
       "api_version": null,
       "tracking": "existing",
       "dependency_status": "roots-only; selected dependency closure pending",
@@ -645,7 +645,7 @@
         "tools/build_bdos.py",
         "tools/build_native_bdos.py"
       ],
-      "revision": 2,
+      "revision": 3,
       "api_version": "1.2",
       "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -693,7 +693,7 @@
         "tools/build_ccpreload.py",
         "tools/build_checked_command_loader.py"
       ],
-      "revision": 4,
+      "revision": 5,
       "api_version": "2.0",
       "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -749,7 +749,7 @@
         "tools/build_rsx_runtime_overlays.py",
         "tools/build_checked_resident_rsx.py"
       ],
-      "revision": 2,
+      "revision": 3,
       "api_version": "2.0",
       "tracking": "initial",
       "dependency_status": "roots-only; selected dependency closure pending"
@@ -1228,7 +1228,7 @@
       "builders": [
         "tools/build_help.py"
       ],
-      "revision": 1,
+      "revision": 2,
       "api_version": null,
       "tracking": "initial",
       "dependency_status": "development reader",
@@ -1297,9 +1297,9 @@
       "component": "BetterCP/M",
       "identity": "Core OS",
       "interface_version": "-",
-      "implementation_version": "1.2",
-      "status": "qualified release",
-      "notes": "Core OS 1.2. Independent component revisions and TCAP API versions retained; focused release checks and three-platform smoke passed."
+      "implementation_version": "1.3",
+      "status": "release candidate",
+      "notes": "Core OS 1.3 candidate: PDS 2.0, optional MCL and VAR. Focused release acceptance pending; not a qualified or published release."
     },
     {
       "component": "CCP",

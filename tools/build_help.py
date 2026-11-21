@@ -56,7 +56,7 @@ def assemble_reader(assembler, output):
     for profile in PROFILES.values():
         manifest, _, _ = profile_inputs(profile, ROOT / "src/system/layout.inc")
         sym = manifest["symbols"]
-        layouts.add((sym["LY_BIOS"] + 3, sym["LY_SYS"] + 0x80, sym["LY_EXT"] - 16))
+        layouts.add((sym["LY_BIOS"] + 3, sym["LY_SYS"] + 0x80, sym["LY_EXT"] - 13))
     table = "\n".join(" DW " + ",".join(str(n) for n in row) for row in sorted(layouts))
     query = (UTILITY / "common/version.inc").read_text().split("\nUV_QUERY:", 1)[1]
     replacements = {"queries.inc": query_source(ROOT) + "\nUV_QUERY:" + query,

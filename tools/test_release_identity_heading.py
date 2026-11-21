@@ -10,6 +10,23 @@ from utility_versions import expand_versions
 
 
 class ReleaseHeadingTests(unittest.TestCase):
+    def test_13_candidate_and_accepted_use_same_field(self):
+        with tempfile.TemporaryDirectory() as name:
+            root=Path(name)
+            (root/'metadata').mkdir()
+            query=root/'src/utilities/common/version.inc'
+            query.parent.mkdir(parents=True);query.write_text('')
+            images=[]
+            for index,status in enumerate(('release candidate; acceptance pending','qualified 1.3 release')):
+                (root/'metadata/release-package.json').write_text(json.dumps({'version':'1.3','status':status}))
+                with patch('utility_versions.ROOT',root):
+                    text=expand_versions('        ORG 100H\nBC_VERSION: ; @release-heading@\nAFTER: RET\n END\n')
+                data=assemble(Path.home()/'bin/z80asm',text,root/f'{index}.bin',root/f'{index}.lst',0x100)
+                expected='BetterCP/M 1.3'+(' candidate' if index==0 else '')
+                self.assertTrue(data.startswith(('\r\n'+expected+'\r\n$').encode()))
+                images.append(data)
+            self.assertEqual(len(images[0]),len(images[1]))
+
     def test_fixed_field_and_automatic_selection(self):
         with tempfile.TemporaryDirectory() as name:
             root = Path(name)
@@ -22,9 +39,11 @@ class ReleaseHeadingTests(unittest.TestCase):
                 self.assertEqual(image[-1:], b'\xc9')
                 images.append(image)
             self.assertEqual(len(images[0]), len(images[1]))
-            release=json.loads((Path(__file__).resolve().parents[1]/'metadata/release-package.json').read_text())['version']
-            self.assertTrue(images[0].startswith(('\r\nBetterCP/M '+release+'\r\n$').encode()))
-            expected='BetterCP/M '+release if release in ('1.1','1.2') else 'BetterCP/M development (after core 1.0)'
+            package=json.loads((Path(__file__).resolve().parents[1]/'metadata/release-package.json').read_text())
+            release=package['version']
+            suffix=' candidate' if release=='1.3' and not package.get('status','').startswith('qualified') else ''
+            self.assertTrue(images[0].startswith(('\r\nBetterCP/M '+release+suffix+'\r\n$').encode()))
+            expected='BetterCP/M '+release+suffix if release in ('1.1','1.2','1.3') else 'BetterCP/M development (after core 1.0)'
             self.assertTrue(images[1].startswith(('\r\n'+expected+'\r\n$').encode()))
 
 

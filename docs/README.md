@@ -1,6 +1,6 @@
 # BetterCP/M documentation
 
-Start with the installation guide for your platform, then use the four maintained manuals below. Current documentation describes BetterCP/M 1.1. The [published v1.1 release](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.1) provides three System packages, three matching Utilities packages, Source and Documentation, with checksums and exact acceptance evidence.
+Start with the installation guide for your platform, then use the four maintained manuals below. Current manuals include the 1.3 candidate; the stable release is 1.2. The [published v1.2 release](https://github.com/CPMArchives/BetterCPM/releases/tag/v1.2) provides three System packages, three matching Utilities packages, Source and Documentation, with checksums and exact acceptance evidence.
 
 The [maintained platforms and qualification matrix](platform/SUPPORT-1.1.md) covers patched cpmsim and emulated Model 4/64 KiB Model II. Historical 1.0 and 1.0.1 packages retain their own immutable identities and qualification boundaries.
 
@@ -21,9 +21,11 @@ The [maintained platforms and qualification matrix](platform/SUPPORT-1.1.md) cov
 - Rights and attribution: [licensing boundaries](LICENSING.md), [component/package inventory](LICENSING-INVENTORY.md), and supplied notices/source companions.
 - Publication: [formats, documentation selection and separate provenance](releases/DOCUMENTATION-PUBLICATION.md).
 
-## 1.2 development
+## Current source and release readiness
 
-- [Named directories: operator guide](user/NDR.md) and [engineering/memory contract](engineering/NDR-1.2.md). This is development work, separate from the published 1.1 release.
+- [1.3 candidate notes](releases/RELEASE-NOTES-1.3.md) and [focused acceptance gates](releases/1.3-SCOPE-AND-ACCEPTANCE.md).
+
+- [Named directories: operator guide](user/NDR.md) and [engineering/memory contract](engineering/NDR-1.2.md). Shipped in 1.2 and retained in the 1.3 candidate.
 
 ## Authority and history
 
