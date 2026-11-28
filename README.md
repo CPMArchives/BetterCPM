@@ -6,7 +6,7 @@ BetterCP/M is a compact, maintainable CP/M-compatible operating system for Z80-c
 
 The project begins with CP/M 2.2 as its compatibility baseline while redesigning the operating system around explicit interfaces, documented state, reproducible builds, portable hardware boundaries, and independently testable subsystems. The objective is not simply to reproduce Digital Research CP/M source code, but to provide a clean and well-specified CP/M environment that remains practical on small 8-bit systems.
 
-The released 1.3 packages use focused acceptance and retained exact-image installation, cold-boot and reconstruction evidence. Support covers patched z80pack `cpmsim`, TRS-80 Model 4 and 64 KiB Model II under `trs80gp`; physical hardware is outside this qualification. See [maintained platforms](docs/platform/SUPPORT-1.3.md) and [Model II installation](docs/platform/MODEL2-INSTALLATION.md).
+The released 1.3 packages use focused acceptance and retained exact-image installation, cold-boot and reconstruction evidence. Support covers patched z80pack `cpmsim`, TRS-80 Model 4, 64 KiB Model II under `trs80gp`, and Altair Z80 / Tarbell under the pinned serial-only z80pack emulator; physical hardware is outside this qualification. See [maintained platforms](docs/platform/SUPPORT-1.3.md) and [Model II installation](docs/platform/MODEL2-INSTALLATION.md).
 
 The finalized visual design is defined in the [BetterCP/M Visual Identity standard](specifications/VISUAL-IDENTITY.md).
 
@@ -55,7 +55,7 @@ Altair uses fixed Tarbell single-density geometry and a combined System/Utilitie
 
 CONFIG, DUP, SYSBUILD, and SYSGEN provide the implemented configuration, disk-management, system-generation, and installation path. Disk configuration uses BetterCP/M's FDF/FDB format-description architecture.
 
-The unloaded complete-record COM limit is 57,344 bytes on cpmsim, Model II and Altair, and 54,272 bytes on Model 4. Model 4 startup loads the integrated ADM3A personality; cpmsim and Model II start with the basic console. Optional RSXs reduce TPA while loaded. See the platform guides for unloading/restoring the startup environment and FDB requirements.
+The unloaded complete-record COM limit is 57,344 bytes on cpmsim, Model II and Altair, and 54,272 bytes on Model 4. Model 4 startup loads the integrated ADM3A personality; cpmsim, Model II and Altair start with the basic console. Optional RSXs reduce TPA while loaded. See the platform guides for unloading/restoring the startup environment and FDB requirements.
 
 1.1 adds numeric command PATH and TCAP 2.0 integrated ADM3A/VT52/ANSI personality/renderers. TCAP 1.0 was abandoned before release. Existing SCRN/SCX clients retain their separate backends. See the [1.1 release notes](docs/releases/RELEASE-NOTES-1.1.md) and [TCAP 2.0 contract](docs/engineering/TCAP-Direct-ABI.md).
 
@@ -73,13 +73,14 @@ status; all current testing is emulator-based.
 
 ## Current downloads — 1.3
 
-Choose matching System and Utilities packages. Each Utilities ZIP includes primary and NOAH companion media, instructions and license notices. Corresponding source is in the separate Source download.
+Choose matching System and Utilities packages. The Altair download combines System and Utilities and has its own matching Source ZIP. The original platform Utilities ZIPs include primary and NOAH companion media, instructions and license notices.
 
 | Platform | System | Utilities |
 | --- | --- | --- |
 | Patched cpmsim | [System](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-System-cpmsim.zip) | [Utilities](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-Utilities-1.3-cpmsim.zip) |
 | TRS-80 Model 4 | [System](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-System-Model4.zip) | [Utilities](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-Utilities-1.3-Model4.zip) |
 | TRS-80 Model II | [System](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-System-Model2.zip) | [Utilities](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-Utilities-1.3-Model2.zip) |
+| Altair Z80 / Tarbell | [System + Utilities](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-Altair.zip) | [Matching Altair source](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-Altair-Source.zip) |
 
 [Source](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-Source.zip) · [Four-manual Documentation](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-Documentation.zip) · [Checksums](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-SHA256SUMS.txt) · [Release index](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-RELEASE.json)
 
