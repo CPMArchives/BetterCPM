@@ -44,3 +44,24 @@ live PDS resizing, timestamps and new ports are excluded.
 See [focused acceptance](1.3-SCOPE-AND-ACCEPTANCE.md) and the
 [implementation scope](../engineering/1.3-IMPLEMENTATION-SCOPE.md). Earlier
 implementation tests retain their original scope; the [frozen review record](1.3-FROZEN-REVIEW.md) and publication record bind final acceptance.
+
+
+## Altair platform addition — 28 November 2026
+
+BetterCP/M 1.3 now supports the Altair Z80 / 64 KiB / 88-2SIO / Tarbell 1011D
+configuration under the pinned serial-only z80pack emulator. The new combined
+package contains one System disk, three Utilities disks, a Work template,
+offline emulator build, launcher, source notices and qualification evidence.
+The sign-on banner identifies `BetterCP/M 1.3 - Altair`.
+
+Download the [Altair package](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-Altair.zip),
+[matching source](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-Altair-Source.zip)
+and [checksums](https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/SHA256SUMS-Altair-1.3.txt).
+See [installation](../platform/ALTAIR-INSTALLATION.md) and the
+[publication record](evidence/altair-1.3-publication/README.md).
+
+Seven focused final-media gates pass, including 269 automatic compatibility
+assertions and 45 utility identity queries. Default maximum loadable COM is
+57,344 bytes. This release uses fixed Tarbell single-density geometry; physical
+Altair hardware and 8080 operation remain unqualified. The original cpmsim and
+TRS-80 1.3 assets and source freeze remain unchanged.

@@ -1,6 +1,6 @@
 # Altair Z80 / Tarbell platform
 
-Status, 28 November 2026: **release integration in progress for BetterCP/M 1.3**.
+Status, 28 November 2026: **published BetterCP/M 1.3 emulator platform**.
 The shared source baseline is published mainline commit
 `55612e001027bce02978d1cd010ee56e63549402` plus this platform adapter.
 See the [release ledger](../../../docs/releases/ALTAIR-1.3-READINESS.md) for
@@ -167,4 +167,5 @@ preservation, media-change/reset, all IOBYTE routes, shipped utility queries,
 HELP/NOAH, native assembler/linker execution and 269 automatic independent
 compatibility assertions. Existing matching 1.3 core evidence is reused; these
 results are not a new full 627-card campaign or physical-hardware validation.
-Final package and publication records remain separate gates.
+Final package acceptance and verified publication are recorded in the
+[publication ledger](../../../docs/releases/evidence/altair-1.3-publication/README.md).

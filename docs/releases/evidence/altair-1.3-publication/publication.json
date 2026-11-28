@@ -1,0 +1,142 @@
+{
+  "status": "PUBLISHED; VERIFIED",
+  "date": "2026-11-28",
+  "release": "https://github.com/CPMArchives/BetterCPM/releases/tag/v1.3",
+  "product_source_commit": "6bfb621b6348e1f3782e2f12be4512fe37197306",
+  "pr": 696,
+  "merge_commit": "699db570302bad7c5f9c704057160cd83fe11676",
+  "website_commit": "984113f7784433a47c5f3dbb216a829679237afd",
+  "publication_workflow_run": 46098246506,
+  "publication_workflow_url": "https://github.com/CPMArchives/BetterCPM/actions/runs/46098246506",
+  "publication_worker_commit": "b07141569ef8bc10b4119d9df832aa97506478e5",
+  "pages_workflow_run": 46098358557,
+  "assets": [
+    {
+      "name": "BetterCPM-1.3-Altair.zip",
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-Altair.zip",
+      "id": 802898945,
+      "size": 1121944,
+      "digest": "sha256:7500f3972e707eed5daa4c26c2ec77d1a3e2ebc6c76fcf8ea62f5e706b9e9801"
+    },
+    {
+      "name": "BetterCPM-1.3-Altair-Source.zip",
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-Altair-Source.zip",
+      "id": 802899009,
+      "size": 133895070,
+      "digest": "sha256:d0809274fd71377b20c6c6078c68197b55295b704cf6987936c2b89a47d6ef75"
+    },
+    {
+      "name": "ALTAIR-RELEASE.json",
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/ALTAIR-RELEASE.json",
+      "id": 802899339,
+      "size": 735532,
+      "digest": "sha256:40b62c0810f07e3e7b98b8412be40596f70543ae934068d5dca4dab189a0c4b5"
+    },
+    {
+      "name": "SHA256SUMS-Altair-1.3.txt",
+      "url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/SHA256SUMS-Altair-1.3.txt",
+      "id": 802899409,
+      "size": 275,
+      "digest": "sha256:d0a6a13a657385d9e44486e80af2b02195e196e6382997c5690446d133e08166"
+    }
+  ],
+  "original_assets_unchanged": [
+    {
+      "id": 775952690,
+      "name": "BetterCPM-1.3-Documentation.zip",
+      "size": 737133,
+      "digest": "sha256:eee97c7ff587f4baa68f029e217455386932d55daac05637100fe66745996171"
+    },
+    {
+      "id": 775952675,
+      "name": "BetterCPM-1.3-READINESS.json",
+      "size": 4960,
+      "digest": "sha256:fe2bca5a5112b7014e67571f961faa7f3779c8b3210dfacf71e863ec2d09f489"
+    },
+    {
+      "id": 775952693,
+      "name": "BetterCPM-1.3-RELEASE-NOTES.md",
+      "size": 3917,
+      "digest": "sha256:367f6f21a2f2754011125917753863cd5bcde14f9e552e6191b4454aed78e88a"
+    },
+    {
+      "id": 775952696,
+      "name": "BetterCPM-1.3-RELEASE.json",
+      "size": 4758,
+      "digest": "sha256:744d94846f9776e8a29c5591bdb7b844399053ceb40ab6110a07661842b4e2e6"
+    },
+    {
+      "id": 775952694,
+      "name": "BetterCPM-1.3-REVIEWED-INDEX.json",
+      "size": 1822,
+      "digest": "sha256:02246a635583813381767485eea6af2ab2ce07875665c43d0753842d83e19cf8"
+    },
+    {
+      "id": 775952712,
+      "name": "BetterCPM-1.3-REVIEWED-SHA256SUMS.txt",
+      "size": 961,
+      "digest": "sha256:fec93f17d4b59edb1b46fd3566e84b0eebb6e06c19dabd11f1a4e63f11f3291f"
+    },
+    {
+      "id": 775952723,
+      "name": "BetterCPM-1.3-SHA256SUMS.txt",
+      "size": 1374,
+      "digest": "sha256:9c77a793af07c4aae942ef0ab48dc44bcd45007bdda3b517c03d44dc036f21fc"
+    },
+    {
+      "id": 775952724,
+      "name": "BetterCPM-1.3-SOURCE-FREEZE.json",
+      "size": 2251,
+      "digest": "sha256:51c554bb404eeb42365c00de65263ae31bb024accba2aa88f3d67effea3521d4"
+    },
+    {
+      "id": 775952725,
+      "name": "BetterCPM-1.3-Source.zip",
+      "size": 396393451,
+      "digest": "sha256:8d23e176c1b4115008e7416cbf99f73290755fdd717cf3e1bb79ca6cc02a09c1"
+    },
+    {
+      "id": 775952738,
+      "name": "BetterCPM-1.3-System-cpmsim.zip",
+      "size": 558098,
+      "digest": "sha256:f498e1335e7659a4c4bba0f3d3284d7d69cc431268dafbdd6510a7dec6effdd2"
+    },
+    {
+      "id": 775952731,
+      "name": "BetterCPM-1.3-System-Model2.zip",
+      "size": 238733,
+      "digest": "sha256:edd21101f0bc296e613d70debcf631b874f915dc6fd65b23f6db801629bc89c9"
+    },
+    {
+      "id": 775952737,
+      "name": "BetterCPM-1.3-System-Model4.zip",
+      "size": 279441,
+      "digest": "sha256:0734cee492078d4cd25eac01c2547ec9e6c2c1cb375d4aa8547b8d4fcb9539df"
+    },
+    {
+      "id": 775952767,
+      "name": "BetterCPM-Utilities-1.3-cpmsim.zip",
+      "size": 354094,
+      "digest": "sha256:e531f0cf4a5a57cdcc80053ddcdc6844baf7867ae6b20ca7767ac198702b043f"
+    },
+    {
+      "id": 775952742,
+      "name": "BetterCPM-Utilities-1.3-Model2.zip",
+      "size": 335216,
+      "digest": "sha256:75d0bc8192273b66f51a1997df9aa38bec4d01a5d69bc29da0bc16b4c2646c8c"
+    },
+    {
+      "id": 775952765,
+      "name": "BetterCPM-Utilities-1.3-Model4.zip",
+      "size": 370608,
+      "digest": "sha256:958e85a242716a413aa3d9236016ee50875c2a9a3c0215e1face3fc62f70dd8a"
+    }
+  ],
+  "verification": [
+    "worker reconstructed exact approved ZIP hashes before upload",
+    "all uploaded asset digests verified through GitHub release API",
+    "all original asset IDs, sizes and digests unchanged",
+    "release notes appended with Altair downloads and qualification scope",
+    "website deployment succeeded; maintainer confirmed Altair under Choose your platform"
+  ]
+}

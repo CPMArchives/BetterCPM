@@ -47,13 +47,15 @@ For a detailed explanation of how artificial intelligence is used in BetterCP/M,
 
 ## Current system
 
-The released 1.3 system boots reproducibly on **patched z80pack `cpmsim`**, **TRS-80 Model 4** and **64 KiB TRS-80 Model II under `trs80gp`**. It provides a working BetterCP/M BIOS, BDOS, directory services, command processor, transient-program loader, resident commands, CPX command extensions, and relocatable RSX services.
+The released 1.3 system boots reproducibly on **patched z80pack `cpmsim`**, **TRS-80 Model 4**, **64 KiB TRS-80 Model II under `trs80gp`**, and **Altair Z80 / Tarbell under the pinned serial-only z80pack emulator**. It provides a working BetterCP/M BIOS, BDOS, directory services, command processor, transient-program loader, resident commands, CPX command extensions, and relocatable RSX services.
 
 The system supports four physical drives, runtime disk-format assignment, ordinary CP/M drive/user operation, persistent command history, SUBMIT/XSUB operation, configurable disk services, and the standard CP/M file operations exercised by the project's compatibility suite.
 
+Altair uses fixed Tarbell single-density geometry and a combined System/Utilities package; see the [Altair installation guide](docs/platform/ALTAIR-INSTALLATION.md) and [publication record](docs/releases/evidence/altair-1.3-publication/README.md).
+
 CONFIG, DUP, SYSBUILD, and SYSGEN provide the implemented configuration, disk-management, system-generation, and installation path. Disk configuration uses BetterCP/M's FDF/FDB format-description architecture.
 
-The unloaded complete-record COM limit is 57,344 bytes on cpmsim and Model II, and 54,272 bytes on Model 4. Model 4 startup loads the integrated ADM3A personality; cpmsim and Model II start with the basic console. Optional RSXs reduce TPA while loaded. See the platform guides for unloading/restoring the startup environment and FDB requirements.
+The unloaded complete-record COM limit is 57,344 bytes on cpmsim, Model II and Altair, and 54,272 bytes on Model 4. Model 4 startup loads the integrated ADM3A personality; cpmsim and Model II start with the basic console. Optional RSXs reduce TPA while loaded. See the platform guides for unloading/restoring the startup environment and FDB requirements.
 
 1.1 adds numeric command PATH and TCAP 2.0 integrated ADM3A/VT52/ANSI personality/renderers. TCAP 1.0 was abandoned before release. Existing SCRN/SCX clients retain their separate backends. See the [1.1 release notes](docs/releases/RELEASE-NOTES-1.1.md) and [TCAP 2.0 contract](docs/engineering/TCAP-Direct-ABI.md).
 
