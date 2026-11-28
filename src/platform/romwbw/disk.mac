@@ -1,0 +1,195 @@
+        INCLUDE layout.inc
+        INCLUDE profile.inc
+        INCLUDE bioslinks.inc
+        INCLUDE state.inc
+        ASEG
+        ORG LY_DISK
+        JP WB_API
+        JP WB_MAP
+        JP WB_SEL
+        JP WB_READ
+        JP WB_WRITE
+        JP WB_BOOT
+WB_API:
+        LD A,B
+        OR A
+        LD HL,0
+        RET Z                           ; no geometry descriptor on this first target
+        LD HL,2
+        LD A,L
+        OR A
+        RET
+WB_SEL:
+        LD A,C
+        OR A
+        LD HL,0
+        RET NZ
+        LD (BIO_DRIVE),A
+        LD HL,LY_TAB
+        RET
+WB_MAP:
+        LD HL,(BIO_TRACK)
+        LD DE,1040
+        OR A
+        SBC HL,DE
+        JP NC,WB_BAD
+        ADD HL,DE
+        LD A,(BIO_SECTOR+1)
+        OR A
+        JP NZ,WB_BAD
+        LD A,(BIO_SECTOR)
+        CP 64
+        JP NC,WB_BAD
+        LD (WB_REC),A
+        SRL A
+        SRL A
+        LD E,A
+        LD D,0
+        LD B,4
+WB_MSHIFT:
+        ADD HL,HL
+        DJNZ WB_MSHIFT
+        ADD HL,DE
+        LD (WB_LBA),HL
+        XOR A
+        RET
+WB_READ:
+        XOR A
+        JR WB_IO
+WB_WRITE:
+        LD A,1
+WB_IO:
+        LD (WB_WR),A
+        LD (WB_DMA),HL
+        CALL WB_SEEK
+        RET NZ
+        LD B,013H
+        CALL WB_SECTOR
+        RET NZ
+        LD HL,128
+        LD A,1
+        LD (WB_COUNT),A
+        ; HBIOS bank copies must not cross the lower/common boundary.
+        ; Only a straddling DMA needs byte copies; ordinary records use one.
+        LD A,(WB_DMA+1)
+        CP 07FH
+        JR NZ,WB_SIZE
+        LD A,(WB_DMA)
+        CP 081H
+        JR C,WB_SIZE
+        LD HL,1
+        LD A,128
+        LD (WB_COUNT),A
+WB_SIZE:
+        LD A,(WB_BANK)
+        LD E,A
+        LD A,(WB_USER)
+        LD D,A
+        LD A,(WB_WR)
+        OR A
+        JR Z,WB_CSET
+        LD A,D
+        LD D,E
+        LD E,A
+WB_CSET:
+        LD B,0F4H
+        CALL 0FFF0H
+        RET NZ
+        LD HL,(WB_HEAP)
+        LD A,(WB_REC)
+        AND 3
+        ; offset = (record & 3) * 128
+        LD D,A
+        SRL D
+        RRA
+        AND 080H
+        LD E,A
+        ADD HL,DE
+        LD DE,(WB_DMA)
+        LD A,(WB_WR)
+        OR A
+        JR Z,WB_COPY
+        EX DE,HL
+WB_COPY:
+        LD A,(WB_COUNT)
+        LD C,A
+WB_COPYLOOP:
+        PUSH BC
+        LD B,0F5H
+        CALL 0FFF0H
+        POP BC
+        RET NZ
+        DEC C
+        JR NZ,WB_COPYLOOP
+        LD A,(WB_WR)
+        OR A
+        RET Z
+        CALL WB_SEEK
+        RET NZ
+        LD B,014H
+WB_SECTOR:
+        LD A,(WB_UNIT)
+        LD C,A
+        LD A,(WB_BANK)
+        LD D,A
+        LD E,1
+        LD HL,(WB_HEAP)
+        CALL 0FFF0H
+        OR A
+        RET
+WB_SEEK:
+        LD HL,(WB_LBA)
+        LD DE,08000H
+        LD A,(WB_UNIT)
+        LD C,A
+        LD B,012H
+        CALL 0FFF0H
+        OR A
+        RET
+; Shared checked package records are stored at byte 32768, clear of
+; RomWBW's sector-2 metadata and sector-3 bootstrap.
+WB_BOOT:
+        LD A,B
+        OR A
+        JR Z,WB_BAD
+WB_BNEXT:
+        LD A,D
+        OR A
+        JR NZ,WB_BAD
+        LD A,E
+        CP 160
+        JR NC,WB_BAD
+        PUSH BC
+        PUSH DE
+        PUSH HL
+        LD HL,256
+        ADD HL,DE
+        LD A,L
+        LD (WB_REC),A
+        SRL H
+        RR L
+        SRL H
+        RR L
+        LD (WB_LBA),HL
+        POP HL
+        CALL WB_READ
+        POP DE
+        POP BC
+        RET NZ
+        INC DE
+        LD HL,(WB_DMA)
+        LD A,L
+        ADD A,128
+        LD L,A
+        JR NC,WB_BNC
+        INC H
+WB_BNC:
+        DJNZ WB_BNEXT
+        XOR A
+        RET
+WB_BAD:
+        LD A,1
+        OR A
+        RET
+        INCLUDE checked-identity.inc
+        END

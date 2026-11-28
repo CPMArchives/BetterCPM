@@ -39,6 +39,7 @@ class BuildProfile:
 
 
 PROFILES = {
+    'romwbw-hbios': BuildProfile('romwbw-hbios', 'romwbw', 0xA00, 0xFE00, 0x200),
     'cromemco-fullram': BuildProfile('cromemco-fullram', 'cromemco', 0xC00, 0x10000, 0),
     'altair-fullram': BuildProfile('altair-fullram', 'altair', 0xC00, 0x10000, 0),
     'model2-fullram': BuildProfile('model2-fullram', 'trs80m2', 0xC00, 0x10000, 0),
@@ -83,6 +84,14 @@ def profile_inputs(profile: BuildProfile, source: Path) -> tuple:
         raise ValueError('canonical RAM ceiling changed; reassess supported profiles')
     selected = {name: value + (profile.delta if name in RELOCATED else 0)
                 for name, value in base.items()}
+    if profile.target == 'romwbw':
+        # Keep the 512-byte firmware proxy. A smaller HBIOS disk adapter
+        # recovers that space below the BIOS, preserving the 56 KiB COM floor.
+        for name in ('LY_TPA', 'LY_HIST', 'LY_SYS', 'LY_BDOS', 'LY_EXT', 'LY_DISK'):
+            selected[name] += 0x200
+        selected['LY_BIOS'] += 32
+        selected['LY_FILE'] += 96
+        selected['LY_TAB'] += 96
     if profile.target == 'trs80m2':
         # The FD1791/DMA reader needs more room than the simulated controller.
         # Move the BIOS start 88 bytes and its end 64; reserve a 64-byte ALV

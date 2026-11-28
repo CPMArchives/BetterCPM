@@ -44,11 +44,11 @@ supply that status.
 | MyZ80 1.24 under DOSBox-X | P2 | Planned emulator-native target; no BetterCP/M boot or qualification claimed. | N/A | Pin MyZ80 1.24, DOSBox-X and guest configuration; examine boot, disk and console interfaces and establish reproducible tests. |
 | z80pack IMSAI, Z80 configuration | P2 | Planned. Upstream source supports Z80 CPU selection, subject to build configuration; no BetterCP/M boot or qualification claimed. | Not validated | Pin a Z80-capable build and explicit CPU selection, ROM, memory, console and FIF disk setup; verify the configuration before porting. |
 | z80pack Altair, Z80 configuration | P0 | Published 1.3 emulator baseline as of 28 November 2026: Z80, 64 KiB, 88-2SIO and fixed Tarbell single-density geometry. Seven focused acceptance gates pass, including 269 compatibility assertions, configuration/installation, screen personalities, native tools and the four-volume distribution. | Not validated | Maintain the published configuration and [exact publication evidence](releases/evidence/altair-1.3-publication/README.md); see the [Altair implementation](../src/platform/altair/README.md). |
-| RomWBW / HBIOS | P3 | Exploratory. An emulator candidate has been found; suitability and BetterCP/M operation are untested. | Not validated | Evaluate the candidate below and select a bounded HBIOS target before implementation. |
+| RomWBW / HBIOS | P1 | Initial engineering port boots on pinned romwbw_emu 1.51 / RomWBW 3.5.1; focused filesystem, bank-boundary DMA, 56 KiB TPA and RSX lifecycle checks pass. One fixed hd512 disk; C++ HBIOS scope only. | Not validated | Complete configuration/installation, utility and compatibility qualification before release. See the [port target sheet](../src/platform/romwbw/README.md). |
 | TRS-80 Model 12 | P3 | Exploratory. The Model II system image failed to boot on an emulated Model 12 with a reported ROM-level error. Exact message and cause are not established. | Not validated | Retain the observation; defer boot-protocol investigation until an actual Model 12 port is undertaken. |
 | TRS-80 Model 16 | P3 | Exploratory; no BetterCP/M boot or qualification evidence established. | Not validated | Select the Z80-side CP/M environment and emulator configuration when this port is taken up. |
 
-Kaypro, MyZ80, z80pack IMSAI, RomWBW, Model 12 and Model 16 are
+Kaypro, MyZ80, z80pack IMSAI, Model 12 and Model 16 are
 future targets with no BetterCP/M port work started. The Model 12 image trial
 was a compatibility experiment, not the start of a port. Model 4D and Model 4P
 have preliminary boot observations only; no dedicated port effort or
@@ -93,13 +93,13 @@ This verifies a source capability, not a tested launch configuration. Record the
 selected build options and CPU mode explicitly; historical machine names and
 stock CP/M disk boot success are insufficient evidence for running BetterCP/M.
 
-A RomWBW emulator candidate is
-[avwohl/romwbw_emu](https://github.com/avwohl/romwbw_emu).
-Its documentation describes banked ROM/RAM emulation and a C++ implementation
-of HBIOS. Evaluate which firmware paths it actually exercises, select and pin
-the emulator and ROM/disk versions, and retain reproducible boot/test records
-before treating it as a BetterCP/M validation environment. This candidate
-does not establish a port, real-hardware compatibility or full firmware coverage.
+RomWBW now has a bounded engineering target using
+[avwohl/romwbw_emu](https://github.com/avwohl/romwbw_emu). Its native executable
+and Z80 core build from verified upstream snapshots. ROM loader execution,
+shared-core operation, disk persistence and RSX lifecycle have focused retained
+[evidence](engineering/evidence/2026-11-28-romwbw/README.md). HBIOS is implemented
+in C++; this is not real-driver or physical-hardware validation. The initial
+single-disk geometry has no runtime configuration/installation support yet.
 
 ## Shared core and advancement criteria
 

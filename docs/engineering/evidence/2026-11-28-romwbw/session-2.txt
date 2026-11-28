@@ -1,0 +1,26 @@
+[DISK] Validated disk0: $WORKTREE/build/romwbw-bringup-acceptance/system.img (8519680 bytes)
+CPU mode: Z80
+RomWBW mode: 512KB ROM + 512KB RAM, bank switching enabled
+Auto-boot: configured NVRAM for '2' (this run only)
+Console escape: ^E - reserved by the emulator, the guest never sees it (--escape=none to disable)
+Instruction limit: 2000000000 - the run stops there with exit status 124 (--max-instructions=0 for none)
+RomWBW v3.5.1 (from $WORKTREE/build/romwbw-emulator/emu_avw.rom)
+Starting execution at 0x0000 in ROM bank 0
+
+
+RetroBrew SBC [SBC_simh_std] Boot Loader
+NV Switches Found
+
+AutoBoot in 0 Seconds (<esc> aborts, <enter> now)...
+
+Booting Disk Unit 2, Slice 0, Sector 0x00000000...
+
+Volume "BETTERCPM HBIOS " [0x1000-0x1200, entry @ 0x1000]...
+A0> A0> _ A0> A0> D_ A0> DA0> DI_ A0> DIA0> DIR_ A0> DIRA0> DIR _ A0> DIR A0> DIR R_ A0> DIR RA0> DIR RO_ A0> DIR ROA0> DIR ROM_ A0> DIR ROMA0> DIR ROMW_ A0> DIR ROMWA0> DIR ROMWB_ A0> DIR ROMWBA0> DIR ROMWBW_ A0> DIR ROMWBWA0> DIR ROMWBW._ A0> DIR ROMWBW.A0> DIR ROMWBW.D_ A0> DIR ROMWBW.DA0> DIR ROMWBW.DA_ A0> DIR ROMWBW.DAA0> DIR ROMWBW.DAT_ A0> DIR ROMWBW.DATA0> DIR ROMWBW.DAT
+
+A0: ROMWBW   DAT
+
+A0> A0> _ A0> A0> H_ A0> HA0> HE_ A0> HEA0> HEL_ A0> HELA0> HELL_ A0> HELLA0> HELLO_ A0> HELLOA0> HELLO
+ROMWBW TRANSIENT PASS
+
+A0> A0> _

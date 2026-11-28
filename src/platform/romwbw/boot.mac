@@ -1,0 +1,55 @@
+; Loaded by the unmodified RomWBW disk boot loader from physical sector 3.
+        INCLUDE layout.inc
+        ASEG
+        ORG 01000H
+        LD SP,01000H
+        LD BC,0F8E0H
+        CALL 0FFF0H
+        JR NZ,RW_BAD
+        LD A,E
+        OR A
+        JR NZ,RW_BAD
+        LD C,D
+        PUSH BC
+        LD B,01AH
+        CALL 0FFF0H
+        JR NZ,RW_BAD
+        LD A,B
+        CP 2
+        JR NZ,RW_BAD
+        LD A,C
+        OR D
+        OR E
+        JR NZ,RW_BAD
+        LD DE,16640
+        OR A
+        SBC HL,DE
+        JR NZ,RW_BAD
+        POP BC
+        LD B,012H
+        LD DE,08000H
+        LD HL,66                      ; package resident: (256+8)/4
+        PUSH BC
+        CALL 0FFF0H
+        POP BC
+        JR NZ,RW_BAD
+        LD B,0F3H
+        PUSH BC
+        CALL 0FFF0H
+        LD D,C
+        POP BC
+        LD B,013H
+        LD E,13
+        LD HL,LY_SYS
+        CALL 0FFF0H
+        JR NZ,RW_BAD
+        XOR A
+        LD (0048H),A
+        JP LY_BIOS
+RW_BAD:
+        LD BC,0100H
+        LD E,'!'
+        CALL 0FFF0H
+        HALT
+        JR RW_BAD
+        END
