@@ -3,8 +3,11 @@
 This is an additional platform for OS 1.3. It does not replace the eight
 published 1.3 archives or change their frozen source choice and hashes.
 The Altair package has its own exact source commit, selected-source manifest,
-media ledger and source offer. Until the final artifact ledger and publication
-record are retained, its status is **candidate; not published**.
+media ledger and source offer. The exact artifact and acceptance records are retained in
+[evidence/altair-1.3](evidence/altair-1.3/README.md). Its status is
+**qualified emulator candidate; ready for release review, not published**.
+Frozen product source: `cb561f759f81e215a0fe57256398c648dc0a23fc`
+(tree `00ba2b312234d8dd670561091b97533c61bd47d0`).
 
 The target is Z80 / 64 KiB / 88-2SIO / Tarbell 1011D under the pinned serial-only
 z80pack emulator. No physical hardware, 8080, graphics or modem claim is made.
@@ -22,10 +25,10 @@ See [installation](../platform/ALTAIR-INSTALLATION.md) and
 | Error handling | Missing/wrong-sized/read-only media; failed reads preserve DMA, failed writes preserve media; media-change/reset |
 | Console routing | All 256 IOBYTE values on the emitted BIOS |
 | Compatibility | 269 independent automatic assertions, zero failures/errors; separate from manual/external cards |
-| Utility integration | Final-media queries, screen/overlay loading and native toolchain smoke in progress |
-| Offline source | Pinned emulator/assembler source archive; offline emulator build passes |
-| Final packages | Source/notices, deterministic archives and exact-artifact verification pending |
-| Publication | Pending validated packages and release integration |
+| Utility integration | PASS: 45 final-media identity queries, all three integrated screen personalities, HELP/NOAH and native ZSM4/LINK |
+| Offline source | PASS: pinned emulator/assembler sources; offline first launch and exported Source ZIP rebuild |
+| Final packages | PASS: source/notices, deterministic archives and exact-artifact verification; all four images reproduce |
+| Publication | Pending merge/release review and additive upload; existing assets unchanged |
 
 The independent suite is pinned at
 `a9a878fcd2e36698c7e856654a85847a004fdd20`. Automatic groups cover CPU, ecosystem,
