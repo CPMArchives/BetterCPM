@@ -4,10 +4,10 @@ This is an additional platform for OS 1.3. It does not replace the eight
 published 1.3 archives or change their frozen source choice and hashes.
 The Altair package has its own exact source commit, selected-source manifest,
 media ledger and source offer. The exact artifact and acceptance records are retained in
-[evidence/altair-1.3](evidence/altair-1.3/README.md). Its status is
+[evidence/altair-1.3-banner](evidence/altair-1.3-banner/README.md). Its status is
 **qualified emulator candidate; ready for release review, not published**.
-Frozen product source: `cb561f759f81e215a0fe57256398c648dc0a23fc`
-(tree `00ba2b312234d8dd670561091b97533c61bd47d0`).
+Frozen product source: `6bfb621b6348e1f3782e2f12be4512fe37197306`
+(tree `9eac4485b52c47d77b1a44bbf121774e923a9a92`).
 
 The target is Z80 / 64 KiB / 88-2SIO / Tarbell 1011D under the pinned serial-only
 z80pack emulator. No physical hardware, 8080, graphics or modem claim is made.

@@ -1,0 +1,73 @@
+{
+  "status": "PASS; approved for publication",
+  "source_commit": "6bfb621b6348e1f3782e2f12be4512fe37197306",
+  "banner": "BetterCP/M 1.3 - Altair",
+  "acceptance": {
+    "status": "PASS",
+    "system_sha256": "a0ca3e383c1ff298eb4d0c06cb370bc48a863355527f83eab448ba67e6920a3a",
+    "emulator_sha256": "b96e030f36d1db4136edc5d7266b8060bd5d3ed45b1882d528272a9df22ec9d6",
+    "gates": {
+      "loader": {
+        "status": "PASS",
+        "result": "loader/result.json",
+        "log": "loader.log"
+      },
+      "install": {
+        "status": "PASS",
+        "result": "install/result.json",
+        "log": "install.log"
+      },
+      "media": {
+        "status": "PASS",
+        "result": "media/result.json",
+        "log": "media.log"
+      },
+      "utilities": {
+        "status": "PASS",
+        "result": "utilities/result.json",
+        "log": "utilities.log"
+      },
+      "compatibility": {
+        "status": "PASS",
+        "result": "compatibility/result.json",
+        "log": "compatibility.log"
+      },
+      "shared-core": {
+        "status": "PASS",
+        "result": "shared-core/result.json",
+        "log": "shared-core.log"
+      },
+      "hardware": {
+        "status": "PASS",
+        "result": "hardware/result.json",
+        "log": "hardware.log"
+      }
+    }
+  },
+  "banner_checks": {
+    "status": "PASS",
+    "system_sha256": "a0ca3e383c1ff298eb4d0c06cb370bc48a863355527f83eab448ba67e6920a3a",
+    "checks": [
+      "cold startup identifies BetterCP/M 1.3 - Altair",
+      "explicit :VER /BANNER identifies platform",
+      "ordinary :VER remains concise OS version",
+      "unloaded COM remains 57344 bytes"
+    ],
+    "transcript_sha256": "22e1121b644c3f3c6602ebe32df3074a5681a1890f927874a6e6317244ee6676"
+  },
+  "compatibility_assertions": 269,
+  "utility_queries": 45,
+  "assets": [
+    {
+      "bytes": 1121944,
+      "name": "BetterCPM-1.3-Altair.zip",
+      "sha256": "7500f3972e707eed5daa4c26c2ec77d1a3e2ebc6c76fcf8ea62f5e706b9e9801"
+    },
+    {
+      "bytes": 133895070,
+      "name": "BetterCPM-1.3-Altair-Source.zip",
+      "sha256": "d0809274fd71377b20c6c6078c68197b55295b704cf6987936c2b89a47d6ef75"
+    }
+  ],
+  "scope": "Fresh final-media gates and archive CRC/member readback. Existing unchanged offline launcher/source workflow evidence remains in altair-1.3; previous candidate archives are historical."
+}
