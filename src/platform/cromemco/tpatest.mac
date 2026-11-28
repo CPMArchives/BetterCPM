@@ -1,0 +1,43 @@
+; Overwrite the discarded CCP/CPX region, then require a complete warm boot.
+        INCLUDE layout.inc
+        ASEG
+        ORG 0100H
+        LD SP,01F00H
+        LD HL,(0006H)
+        LD DE,LY_TPA
+        OR A
+        SBC HL,DE
+        JR NZ,TTFAIL
+        LD HL,LY_TPA
+        LD DE,00100H+56*1024
+        OR A
+        SBC HL,DE
+        JR C,TTFAIL
+        LD HL,02000H
+TTNEXT:
+        LD (HL),055H
+        LD A,(HL)
+        CP 055H
+        JR NZ,TTFAIL
+        LD (HL),0AAH
+        LD A,(HL)
+        CP 0AAH
+        JR NZ,TTFAIL
+        INC HL
+        LD A,H
+        CP HIGH LY_TPA
+        JR NZ,TTNEXT
+        LD A,L
+        CP LOW LY_TPA
+        JR NZ,TTNEXT
+        LD DE,TTOK
+        JR TTMSG
+TTFAIL:
+        LD DE,TTBAD
+TTMSG:
+        LD C,9
+        CALL 5
+        JP 0
+TTOK: DB 'CROMEMCO 56K TPA OVERWRITE PASS',13,10,'$'
+TTBAD: DB 'CROMEMCO TPA FAIL',13,10,'$'
+        END

@@ -1,0 +1,25 @@
+{
+  "revision": "91fd28eb04e675c2127df88ed3f40675e15282e2",
+  "build": [
+    "make",
+    "-C",
+    "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-emulator-input-fixed/cromemcosim/srcsim",
+    "-j4",
+    "FRONTPANEL=NO",
+    "INFOPANEL=NO",
+    "CIV_LIB=",
+    "CIV_LDLIBS=",
+    "PLAT_INCS=",
+    "PLAT_LDFLAGS=",
+    "PLAT_LDLIBS=",
+    "IO_SRCS=bettercpm-no-video.c cromemco-wdi.c cromemco-d+7a.c cromemco-fdc.c cromemco-tu-art.c cromemco-hal.c unix_terminal.c unix_network.c simbdos.c diskmanager.c"
+  ],
+  "scope": "serial console, banked ROM and floppy controller; no network or graphics",
+  "binary_sha256": "dff0200108196f0b4fdc500219d6632cec88e94a6e646c2aed24b918bb57cf7f",
+  "modified_sources": {
+    "cromemcosim/srcsim/sim.h": "210abd3f5aa9fab6374385b7959539e151ba8e8efa1f7be7cfa0d363e8967eb4",
+    "cromemcosim/srcsim/simio.c": "fa3340129c9520bbef6020fa212daf6fc60274fdaa05b6d24ca86a050d121a4b",
+    "iodevices/cromemco-hal.c": "c58f8a36bb2f45b93ddd9015ae022780278cb098fc2f127ba90b2e19036d10eb",
+    "cromemcosim/srcsim/bettercpm-no-video.c": "4b3d31fd376ddafecdcd966c7671c378729081a15f6024152336e32efe6c3eae"
+  }
+}

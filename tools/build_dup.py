@@ -15,11 +15,11 @@ def expanded_source():
  text=text.replace('        INCLUDE disk/builtins.inc',builtin_source())
  text=text.replace('; @monitor-console@',(ROOT/'src/utilities/common/monitorconsole.inc').read_text())
  from system_layout import CONTEXT
- # Eight-inch Altair SD runs 250 kbit/s at 360 RPM. Keep the established
- # budgets byte-identical on every other target.
- altair=bool(CONTEXT and CONTEXT[0]['target']=='altair')
- text=('DUP_FMCAP EQU '+str(5208 if altair else 3125)+'\n'+
-       'DUP_MFMCAP EQU '+str(10416 if altair else 6250)+'\n'+text)
+ # Eight-inch Altair/Cromemco SD runs 250 kbit/s at 360 RPM. Keep the established
+ # budgets byte-identical on other targets.
+ eight_inch=bool(CONTEXT and CONTEXT[0]['target'] in ('altair','cromemco'))
+ text=('DUP_FMCAP EQU '+str(5208 if eight_inch else 3125)+'\n'+
+       'DUP_MFMCAP EQU '+str(10416 if eight_inch else 6250)+'\n'+text)
  if CONTEXT and CONTEXT[0]['target']=='trs80m2':
   text=text.replace('; @dup-boot-record-count@', '        LD A,(DCYL)\n        OR A\n        JR NZ,M2_TPDATA\n        LD HL,26\nM2_TPDATA:')
   text=text.replace('; @dup-boot-size@', '        LD A,(DCYL)\n        OR A\n        JR NZ,M2_GSDATA\n        LD (SSIZE),A\n        RET\nM2_GSDATA:')

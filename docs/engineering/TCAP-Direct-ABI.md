@@ -60,6 +60,13 @@ uses `sio1_baud_rate 0`, whose synchronous output accepts every byte. This
 bounded renderer is not qualified for a throttled physical serial device. The single console is the
 existing CRT selector 1; the TCAP client route rules remain unchanged.
 
+The Cromemco adapter uses native MCON 1.0 platform bit 16 and exact private
+checked-system binding. Its integrated renderers call the bound BIOS transmit
+leaf, which polls FDC-UART status bit 7 on port 00h before writing port 01h and
+preserves renderer registers/flags. Raw input uses the same bound BIOS's raw
+monitor vector. Neither path re-enters the active personality. Equivalent short
+branches and fixed bound-vector calls preserve the existing TCAP memory limits.
+
 The loader's successful admission does not imply that a utility has admitted the
 current console route. The client checks the route again before each operation.
 

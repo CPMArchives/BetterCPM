@@ -36,3 +36,5 @@ Architecture specifications remain technical contracts; dated engineering record
 The Command and Utilities Reference is the sole command/utility manual. Obsolete Utilities and standalone-command locators have been removed and their internal links updated. Old backup, development FDB 1.01 and PDF/DOCX editions are not current 1.0 manuals. Further programmer/porting expansion and native execution of new documentation examples remain explicitly separate from 1.0 software requirements.
 
 - [Altair Z80 / Tarbell installation](platform/ALTAIR-INSTALLATION.md) and [platform release ledger](releases/ALTAIR-1.3-READINESS.md).
+
+- [Cromemco Z-1 installation](platform/CROMEMCO-INSTALLATION.md), [adapter](../src/platform/cromemco/README.md) and [release candidate ledger](releases/CROMEMCO-1.3-READINESS.md); publication remains separate from qualification.

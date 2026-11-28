@@ -76,6 +76,7 @@ LY_FCB          EQU     LY_FILE+109     ; shared filename FCB address
 ; Selected at profile preparation; default/native builds use the existing platform.
 PL_M2           EQU     0
 PL_ALTAIR       EQU     0
+PL_CROM         EQU     0
 
 ; Fixed command-environment state above the BDOS stack. The image builder
 ; reserves this range independently of the stack, PDS and extension code.

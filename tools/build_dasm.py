@@ -86,6 +86,6 @@ if __name__ == '__main__':
     p.add_argument('--output', type=Path, default=ROOT/'build/utilities')
     p.add_argument('--reference', action='store_true')
     p.add_argument('--identity-state',choices=('auto','assigned','development'),default='auto')
-    p.add_argument('--target',choices=('z80pack','trs80gp','altair'),default='z80pack')
+    p.add_argument('--target',choices=('z80pack','trs80gp','altair','cromemco'),default='z80pack')
     a = p.parse_args()
     print(len(build(a.assembler, a.output, a.reference,target=a.target,identity_state=a.identity_state)), 'bytes')

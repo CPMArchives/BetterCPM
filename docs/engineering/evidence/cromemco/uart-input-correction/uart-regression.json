@@ -1,0 +1,25 @@
+[
+  {
+    "command": [
+      "python3",
+      "tools/test_cromemco_uart_input.py",
+      "--source-root",
+      "build/cromemco-emulator-final",
+      "--expect-bug"
+    ],
+    "stdout": "expected=0 actual=-1431655936\nexpected=65 actual=-1431655871\nexpected=97 actual=-1431655839\nexpected=127 actual=-1431655809\nexpected=255 actual=-1431655681\nPASS: original reader reproducibly discards valid characters\n",
+    "source_sha256": "40691871c0356ab3786bfa4a5e06f97d25c03c642eeca16b665509be25d5b8d4",
+    "status": "PASS"
+  },
+  {
+    "command": [
+      "python3",
+      "tools/test_cromemco_uart_input.py",
+      "--source-root",
+      "build/cromemco-emulator-input-fixed"
+    ],
+    "stdout": "expected=0 actual=0\nexpected=65 actual=65\nexpected=97 actual=97\nexpected=127 actual=127\nexpected=255 actual=255\nPASS: UART input survives poisoned host stack for all tested byte values\n",
+    "source_sha256": "c58f8a36bb2f45b93ddd9015ae022780278cb098fc2f127ba90b2e19036d10eb",
+    "status": "PASS"
+  }
+]

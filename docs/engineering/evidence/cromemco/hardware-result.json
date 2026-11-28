@@ -1,0 +1,112 @@
+{
+  "status": "PASS",
+  "scope": "hardware bring-up; not an OS boot",
+  "command": [
+    "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-emulator-final/cromemcosim/cromemcosim",
+    "-z",
+    "-R",
+    "-M1",
+    "-f0",
+    "-r",
+    "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-emulator-final/cromemcosim/roms",
+    "-c",
+    "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-hardware-final/system.conf",
+    "-d",
+    "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-hardware-final/disks"
+  ],
+  "cpu": "Z80",
+  "ram_bytes": 65536,
+  "boot": "RDOS 2.52 banked ROM; sector entry 0080h",
+  "console": "FDC UART, ports 00h/01h",
+  "emulator_sha256": "f2f9fbb3dcb68dd5482e49e5cf6a2b1864c827f13a9c05a23c64008d45f928c0",
+  "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc",
+  "boot_sha256": "cf154c2c5437066f1cd02bf583cd714fc67bdd51462fd02b482ca3a16a3c9eed",
+  "probe_sha256": "60ed65b0253f4ac0ba2c4aadc48f71bee7f62947f24380b72c62dd52a4481fc1",
+  "probe_bytes": 678,
+  "images": [
+    {
+      "drive": "a",
+      "sha256": "3b96b52280fe02d613622cd0046a253163774456a08d3e9db1ed9572aabdbad0"
+    },
+    {
+      "drive": "b",
+      "sha256": "dd4d9c7ae7511c825aee13ae67b0e7959f60f3f5f0c5ccc2eb0932af8bd74696"
+    },
+    {
+      "drive": "c",
+      "sha256": "96e962acc0ec5715198fd4f45e07864d67e17d5d1099acd3200c1f797cbef4dd"
+    },
+    {
+      "drive": "d",
+      "sha256": "f9b2603490d7b1c902e4e2406e62ffb531b26cf62ad37a7cd5e0e41d89dbf612"
+    }
+  ],
+  "checks": [
+    "CROMEMCO Z80 16FDC BOOT",
+    "ROM RECLAIM AND UPPER 16K RAM PASS",
+    "CONSOLE INPUT PASS",
+    "FOUR DRIVE READ WRITE PASS",
+    "INVALID ADDRESS PASS",
+    "CROMEMCO PROBE PASS"
+  ],
+  "fault_cases": [
+    {
+      "case": "missing",
+      "status": "PASS",
+      "command": [
+        "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-emulator-final/cromemcosim/cromemcosim",
+        "-z",
+        "-R",
+        "-M1",
+        "-f0",
+        "-r",
+        "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-emulator-final/cromemcosim/roms",
+        "-c",
+        "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-hardware-final/missing/system.conf",
+        "-d",
+        "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-hardware-final/missing/disks"
+      ],
+      "media_unchanged": true,
+      "probe_sha256": "a5093172b561c41c289ebf47512fd60322a9c66c043cb4d3bb87031431aab282"
+    },
+    {
+      "case": "wrong-size",
+      "status": "PASS",
+      "command": [
+        "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-emulator-final/cromemcosim/cromemcosim",
+        "-z",
+        "-R",
+        "-M1",
+        "-f0",
+        "-r",
+        "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-emulator-final/cromemcosim/roms",
+        "-c",
+        "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-hardware-final/wrong-size/system.conf",
+        "-d",
+        "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-hardware-final/wrong-size/disks"
+      ],
+      "media_unchanged": true,
+      "probe_sha256": "a5093172b561c41c289ebf47512fd60322a9c66c043cb4d3bb87031431aab282"
+    },
+    {
+      "case": "read-only",
+      "status": "PASS",
+      "command": [
+        "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-emulator-final/cromemcosim/cromemcosim",
+        "-z",
+        "-R",
+        "-M1",
+        "-f0",
+        "-r",
+        "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-emulator-final/cromemcosim/roms",
+        "-c",
+        "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-hardware-final/read-only/system.conf",
+        "-d",
+        "/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-hardware-final/read-only/disks"
+      ],
+      "media_unchanged": true,
+      "probe_sha256": "ebe05a48df7e2c13c18a6862c1a307e43b26640478e17162a8a6e868f2d35d1c"
+    }
+  ],
+  "exit_code": 0
+}

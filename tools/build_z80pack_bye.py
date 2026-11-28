@@ -36,7 +36,7 @@ def help_text(development=None):
 
 
 def build(assembler=Path.home() / 'bin/z80asm', output=None, *, baseline=None, identity_state='auto', emulator='cpmsim'):
-    if emulator not in ('cpmsim','Altair'):
+    if emulator not in ('cpmsim','Altair','Cromemco'):
         raise ValueError('unsupported emulator label')
     output = Path(output or ROOT / 'build/z80pack-tools')
     output.mkdir(parents=True, exist_ok=True)
@@ -47,7 +47,7 @@ def build(assembler=Path.home() / 'bin/z80asm', output=None, *, baseline=None, i
     reference = json.loads(Path(baseline).read_text()) if baseline else None
     def inputs():
         try:
-            options = {'target':'altair','configuration':{'emulator':'Altair'}} if emulator=='Altair' else {}
+            options = {'target':emulator.lower(),'configuration':{'emulator':emulator}} if emulator!='cpmsim' else {}
             return capture('utility:BYE', assembler, root=ROOT, **options), None
         except (ValueError, OSError, KeyError) as error:
             return None, str(error)

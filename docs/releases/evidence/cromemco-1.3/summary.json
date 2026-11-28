@@ -1,0 +1,62 @@
+{
+  "status": "PASS; frozen-source packaging and publication separate",
+  "system_sha256": "bbfb777c4e4a7620107bea90906dbdbde6de7105d060117e79011fab9182ca62",
+  "volumes": [
+    {
+      "volume": "System",
+      "image": "BetterCPM-1.3-Cromemco-System.dsk",
+      "sha256": "bbfb777c4e4a7620107bea90906dbdbde6de7105d060117e79011fab9182ca62"
+    },
+    {
+      "volume": "Utilities-1",
+      "image": "BetterCPM-1.3-Cromemco-Utilities-1.dsk",
+      "sha256": "5e16397bb2293799dc330ca4e1d4c7b8e25239b7e7fa364391754d727771a370"
+    },
+    {
+      "volume": "Utilities-2",
+      "image": "BetterCPM-1.3-Cromemco-Utilities-2.dsk",
+      "sha256": "e356c31c89f1304f1dc1793f715df55f5884bf27290517a62c10ed8a03ba9e4f"
+    },
+    {
+      "volume": "Utilities-3",
+      "image": "BetterCPM-1.3-Cromemco-Utilities-3.dsk",
+      "sha256": "b4f554ae277153bf7760cbb0077cc81ae09373199f5cb2d812e5898afc092ab8"
+    }
+  ],
+  "gates": {
+    "loader": {
+      "status": "PASS",
+      "result_sha256": "f122a84cadb1461d079f1aeba21176d8a2d0ebd885ac6b9f5291e2942f47b3e3"
+    },
+    "install": {
+      "status": "PASS",
+      "result_sha256": "cb0e5e77e1a2292accdd8f557850a42f2d8fde3c6c0984766ee120829d304f5d"
+    },
+    "media": {
+      "status": "PASS",
+      "result_sha256": "0b99345721b40789db8f0c6b6255df394f15a5195956b21516e07b1b68abd8fb"
+    },
+    "utilities": {
+      "status": "PASS",
+      "result_sha256": "14681363e650e23bfe7bd8a9f5c157b6381e41bceed51dec55e2b087c09189f4"
+    },
+    "compatibility": {
+      "status": "PASS",
+      "result_sha256": "758386fb09f9cc198073dade66e8eeb3ec24800db4b0174927a78800897bb2c9"
+    },
+    "shared-core": {
+      "status": "PASS",
+      "result_sha256": "710dbc49b82423dba40b73c6d3c2907e643356dbff2bb3ea39b2f2e902ea4d0d"
+    },
+    "hardware": {
+      "status": "PASS",
+      "result_sha256": "32d5664f0b821b3125d5c1e31703d172649576ffe13dd59cf4e9c30c4dbbacaf"
+    },
+    "display-transport": {
+      "status": "PASS",
+      "result_sha256": "a4653a6cfa0550f03f664f2f8710d7297e5dbd54396af32605fdb7b3a1f2f664"
+    }
+  },
+  "compatibility_passes": 269,
+  "utility_queries": 45
+}

@@ -1,0 +1,139 @@
+; Controller bring-up only: this is not a BetterCP/M system image.
+        ASEG
+        ORG 01000H
+        INCLUDE hardware.inc
+        LD A,0C0H
+        OUT (CM_SSTAT),A
+        LD A,1
+        OUT (002H),A
+        XOR A
+        OUT (002H),A
+        LD HL,CM_START
+        CALL CM_STRING
+        LD HL,0C000H
+CM_RAM:
+        LD (HL),055H
+        LD A,(HL)
+        CP 055H
+        JP NZ,CM_FAIL
+        LD (HL),0AAH
+        LD A,(HL)
+        CP 0AAH
+        JP NZ,CM_FAIL
+        INC HL
+        LD A,H
+        OR L
+        JR NZ,CM_RAM
+        LD HL,CM_RAMOK
+        CALL CM_STRING
+        LD HL,CM_INPUT
+        CALL CM_STRING
+        CALL CM_CONIN
+        CP 'a'
+        JP NZ,CM_FAIL
+        LD HL,CM_INOK
+        CALL CM_STRING
+; @fault-test@
+        XOR A
+        LD (CM_DRV),A
+CM_DRIVES:
+        LD A,(CM_DRV)
+        LD DE,00201H
+        LD HL,02000H
+        CALL CM_READ
+        JP NZ,CM_FAIL
+        LD A,(CM_DRV)
+        ADD A,040H
+        CALL CM_CHECK
+        LD A,(CM_DRV)
+        LD DE,04C1AH
+        LD HL,02000H
+        CALL CM_READ
+        JP NZ,CM_FAIL
+        LD A,(CM_DRV)
+        ADD A,080H
+        CALL CM_CHECK
+        LD A,(CM_DRV)
+        ADD A,0C0H
+        LD HL,02000H
+        LD B,128
+CM_FILL:
+        LD (HL),A
+        INC HL
+        DJNZ CM_FILL
+        LD A,(CM_DRV)
+        LD DE,00302H
+        LD HL,02000H
+        CALL CM_WRITE
+        JP NZ,CM_FAIL
+        LD HL,02000H
+        LD B,128
+CM_CLEAR:
+        LD (HL),0
+        INC HL
+        DJNZ CM_CLEAR
+        LD A,(CM_DRV)
+        LD HL,02000H
+        CALL CM_READ
+        JP NZ,CM_FAIL
+        LD A,(CM_DRV)
+        ADD A,0C0H
+        CALL CM_CHECK
+        LD A,(CM_DRV)
+        INC A
+        LD (CM_DRV),A
+        CP 4
+        JR NZ,CM_DRIVES
+        LD HL,CM_IOOK
+        CALL CM_STRING
+        LD A,4                      ; drive outside A-D must fail
+        LD DE,00201H
+        CALL CM_READ
+        JP Z,CM_FAIL
+        XOR A
+        LD DE,04D01H                ; track 77 must fail
+        CALL CM_READ
+        JP Z,CM_FAIL
+        XOR A
+        LD DE,00200H                ; sector zero must fail before I/O
+        CALL CM_READ
+        JP Z,CM_FAIL
+        XOR A
+        LD DE,0021BH                ; sector 27 must fail
+        CALL CM_READ
+        JP Z,CM_FAIL
+        LD HL,CM_ERROROK
+        CALL CM_STRING
+        LD HL,CM_OK
+        CALL CM_STRING
+        JP CM_EXIT
+CM_FAIL:
+        LD HL,CM_MSGNG
+        CALL CM_STRING
+CM_EXIT:
+        LD A,0AAH
+        OUT (0A0H),A
+        LD A,080H
+        OUT (0A0H),A
+        HALT
+CM_CHECK:
+        LD HL,02000H
+        LD B,128
+CM_COMPARE:
+        CP (HL)
+        JP NZ,CM_FAIL
+        INC HL
+        DJNZ CM_COMPARE
+        RET
+CM_DRV: DB 0
+CM_START: DB 'CROMEMCO Z80 16FDC BOOT',13,10,0
+CM_RAMOK: DB 'ROM RECLAIM AND UPPER 16K RAM PASS',13,10,0
+CM_INPUT: DB 'SEND a',13,10,0
+CM_INOK: DB 'CONSOLE INPUT PASS',13,10,0
+CM_IOOK: DB 'FOUR DRIVE READ WRITE PASS',13,10,0
+CM_ERROROK: DB 'INVALID ADDRESS PASS',13,10,0
+CM_OK: DB 'CROMEMCO PROBE PASS',13,10,0
+CM_MSGNG: DB 'CROMEMCO PROBE FAIL',13,10,0
+        INCLUDE console.inc
+        INCLUDE fdc.inc
+        END

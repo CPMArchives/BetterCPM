@@ -35,7 +35,7 @@ def build(workspace,out,platform,personality='ADM3A',assembler=None,inline_cache
     if inline_cache and 'CACHE_INLINE_1' not in (workspace/'src/system/r3cache.mac').read_text():
         raise ValueError('the selected system does not support explicit inline cache ownership')
     out.mkdir(parents=True,exist_ok=True)
-    host=platform in ('cpmsim','altair');m2=platform=='model2'
+    host=platform in ('cpmsim','altair','cromemco');m2=platform=='model2'
     preamble='M2BANK EQU %d\n'%m2
     if not host:
         bios=symbols(workspace/('build/trs80m2/bios.lst' if m2 else 'build/bios/bios.lst'))
@@ -48,6 +48,27 @@ def build(workspace,out,platform,personality='ADM3A',assembler=None,inline_cache
         # accepted synchronously by the emulator. Keep the existing leaf
         # renderer and bounded relocation/allocation budget on this target.
         text=text.replace('OUT (1),A','OUT (011H),A')
+    if platform=='cromemco':
+        # The exact private binding admits only this BIOS. Its leaf polls TBE
+        # and preserves AF/BC/DE/HL, without re-entering the monitor router.
+        bios=symbols(workspace/'build/cromemco/bios.lst')
+        text=f"CMTX EQU 0{bios['CM_TXA']:04X}H\n"+text.replace('OUT (1),A','CALL CMTX')
+        raw='D_RAW:\n        LD HL,(1)\n        LD DE,66\n        ADD HL,DE\n        JP (HL)'
+        assert text.count(raw)==1
+        # The same binding fixes the raw-input vector. Avoid reconstructing
+        # its known address on each input call and retain the allocation page.
+        text=text.replace(raw,f"D_RAW:\n        JP 0{bios['BIOS']+69:04X}H")
+        text=text.replace('        CALL CMTX\n        RET', '        JP CMTX\n')
+        if personality=='ANSI':
+            # Equivalent short branches keep the frozen 1,792-byte complete
+            # display-path budget and existing relocation-header limit.
+            text=text.replace('        JP Z,D_RESET','        JR Z,D_RESET',2)
+            text=text.replace('        JP D_RESET','        JR D_RESET',1)
+            text=text.replace('        JP NZ,A_BAD','        JR NZ,A_BAD',1)
+            text=text.replace('A_ERDONE:\n        POP HL\n        JP D_SET',
+                              'A_ERDONE:\n        POP HL\n        JR D_SET')
+            text=text.replace('        JP Z,H_POSITION','        JR Z,H_POSITION',1)
+            text=text.replace('        JP Z,H_STR','        JR Z,H_STR',1)
     code=assemble(assembler,text,out/'native.bin',out/'native.lst',0x8000)
     alternate=assemble(assembler,text.replace('08000H','08101H'),out/'alternate.bin',out/'alternate.lst',0x8101)
     labels=symbols(out/'native.lst')
@@ -55,7 +76,7 @@ def build(workspace,out,platform,personality='ADM3A',assembler=None,inline_cache
         relocations=relocation_offsets(code,alternate,0x101),reconstruction_class='STATEFUL',
         init_offset=labels['D_ACTIVATE']-0x8000,
         cache_footer_inline=inline_cache,
-        callable_services=[(b'MCON',1,0,labels['D_ENTRY']-0x8000,8 if platform=='altair' else 2 if host else 4 if m2 else 1),
+        callable_services=[(b'MCON',1,0,labels['D_ENTRY']-0x8000,16 if platform=='cromemco' else 8 if platform=='altair' else 2 if host else 4 if m2 else 1),
                            (b'TCAP',2,0,labels['D_TCAP']-0x8000,0)])
     context=workspace/'build/profile/context.json'
     contract=None
@@ -94,7 +115,7 @@ def build(workspace,out,platform,personality='ADM3A',assembler=None,inline_cache
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('workspace',type=Path)
-    p.add_argument('--platform',choices=('cpmsim','model4','model2','altair'),required=True)
+    p.add_argument('--platform',choices=('cpmsim','model4','model2','altair','cromemco'),required=True)
     p.add_argument('--personality',choices=('ADM3A','VT52','ANSI'),default='ADM3A')
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--inline-cache',action='store_true')

@@ -284,7 +284,7 @@ def release_banner(target=None) -> str:
         import os
         from system_layout import CONTEXT
         target = CONTEXT[0]['target'] if CONTEXT else os.environ.get('BETTERCPM_IDENTITY_TARGET')
-    platform = {'altair':'Altair', 'z80pack':'cpmsim',
+    platform = {'cromemco':'Cromemco', 'altair':'Altair', 'z80pack':'cpmsim',
                 'trs80m2':'TRS-80 Model II', 'trs80gp':'TRS-80 Model 4'}.get(target)
     heading = f'BetterCP/M {release} - {platform}' if platform else 'BetterCP/M'
     width = 62

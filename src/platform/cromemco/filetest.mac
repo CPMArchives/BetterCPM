@@ -1,0 +1,130 @@
+; Portable BDOS qualification fixture, not a distribution utility.
+        ASEG
+        ORG 0100H
+        LD SP,01F00H
+        LD A,2
+        LD (FTFCB),A
+FTDRIVE:
+        CALL FTCLEAR
+        LD A,'M'
+        LD (FTSTEP),A
+        LD DE,FTFCB
+        LD C,22
+        CALL 5
+        INC A
+        JP Z,FTFAIL
+        XOR A
+        LD (FTREC),A
+FTWRITE:
+        LD A,(FTREC)
+        LD HL,02000H
+        LD B,128
+FTFILL:
+        LD A,(FTREC)
+        XOR B
+        LD (HL),A
+        INC HL
+        DJNZ FTFILL
+        LD DE,02000H
+        LD C,26
+        CALL 5
+        LD A,'W'
+        LD (FTSTEP),A
+        LD DE,FTFCB
+        LD C,21
+        CALL 5
+        OR A
+        JP NZ,FTFAIL
+        LD A,(FTREC)
+        INC A
+        LD (FTREC),A
+        CP 140
+        JR NZ,FTWRITE
+        CALL FTCLOSE
+        CALL FTCLEAR
+        LD A,'O'
+        LD (FTSTEP),A
+        LD DE,FTFCB
+        LD C,15
+        CALL 5
+        INC A
+        JP Z,FTFAIL
+        XOR A
+        LD (FTREC),A
+FTREAD:
+        LD HL,02000H
+        LD DE,02001H
+        LD BC,127
+        LD (HL),0
+        LDIR
+        LD A,'R'
+        LD (FTSTEP),A
+        LD DE,FTFCB
+        LD C,20
+        CALL 5
+        OR A
+        JP NZ,FTFAIL
+        LD A,'V'
+        LD (FTSTEP),A
+        LD HL,02000H
+        LD B,128
+FTCHECK:
+        LD A,(FTREC)
+        XOR B
+        CP (HL)
+        JP NZ,FTFAIL
+        INC HL
+        DJNZ FTCHECK
+        LD A,(FTREC)
+        INC A
+        LD (FTREC),A
+        CP 140
+        JR NZ,FTREAD
+        LD A,'E'
+        LD (FTSTEP),A
+        LD DE,FTFCB
+        LD C,20
+        CALL 5
+        CP 1
+        JP NZ,FTFAIL
+        CALL FTCLOSE
+        LD A,(FTFCB)
+        INC A
+        LD (FTFCB),A
+        CP 5
+        JP C,FTDRIVE
+        LD DE,FTOK
+        LD C,9
+        CALL 5
+        JP 0
+FTCLEAR:
+        LD HL,FTFCB+12
+        LD DE,FTFCB+13
+        LD BC,23
+        LD (HL),0
+        LDIR
+        RET
+FTCLOSE:
+        LD A,'C'
+        LD (FTSTEP),A
+        LD DE,FTFCB
+        LD C,16
+        CALL 5
+        INC A
+        RET NZ
+FTFAIL:
+        LD A,(FTSTEP)
+        LD E,A
+        LD C,2
+        CALL 5
+        LD DE,FTBAD
+        LD C,9
+        CALL 5
+        JP 0
+FTFCB: DB 2,'CROMEMCODAT'
+        DS 24
+FTREC: DB 0
+FTSTEP: DB 0
+FTOK: DB 'CROMEMCO BDOS FILE IO PASS',13,10,'$'
+FTBAD: DB ' CROMEMCO BDOS FILE IO FAIL',13,10,'$'
+        END

@@ -31,6 +31,7 @@ class BuildProfiles(unittest.TestCase):
     def test_qualified_boundaries_and_fixed_transient_addresses(self):
         before = SOURCE.read_bytes()
         for name, bdos, bios, top, tpa, reserved in [
+                ('cromemco-fullram', 0xE2C8, 0xF591, 0x10000, 57344, 0),
                 ('altair-fullram', 0xE2C8, 0xF591, 0x10000, 57344, 0),
                 ('model2-fullram', 0xE2C8, 0xF5E9, 0x10000, 57344, 0),
                 ('cpmsim-fullram', 0xE2C8, 0xF591, 0x10000, 57344, 0),

@@ -46,6 +46,6 @@ if __name__=='__main__':
     p.add_argument('--assembler',type=Path,default=Path.home()/'bin/z80asm')
     p.add_argument('--output',type=Path,default=ROOT/'build/utilities')
     p.add_argument('--identity-state',choices=('auto','assigned','development'),default='auto')
-    p.add_argument('--target',choices=('z80pack','trs80gp','altair'),default='z80pack')
+    p.add_argument('--target',choices=('z80pack','trs80gp','altair','cromemco'),default='z80pack')
     a=p.parse_args();image=build(a.assembler,a.output,target=a.target,identity_state=a.identity_state)
     print(len(image),'bytes;',hashlib.sha256(image).hexdigest())

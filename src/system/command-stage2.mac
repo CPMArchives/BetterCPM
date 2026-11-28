@@ -774,7 +774,7 @@ CRLPBAD:                               ; reject out-of-range lifecycle offset
 ; -------------------------------------------------------------------------------
 
 CRFAIL:                                 ; halt after reconstruction failure
-        IF PL_M2+PL_ALTAIR EQ 1
+        IF PL_M2+PL_ALTAIR+PL_CROM EQ 1
         LD C,'!'
         XOR A
         CALL LY_BIOS+69                 ; raw CRT; no unverified monitor callback

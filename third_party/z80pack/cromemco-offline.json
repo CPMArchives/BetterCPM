@@ -1,0 +1,19 @@
+{
+  "revision": "91fd28eb04e675c2127df88ed3f40675e15282e2",
+  "upstream": "https://github.com/udo-munk/z80pack",
+  "archive": "cromemco-offline.tar.gz",
+  "sha256": "3fec9761738fb41bac18d7776d27d799610325867726aa877f69ea2496f237c9",
+  "paths": [
+    "cromemcosim/srcsim",
+    "cromemcosim/roms/rdos252.asm",
+    "cromemcosim/roms/rdos252.hex",
+    "z80core",
+    "iodevices",
+    "frontpanel",
+    "z80asm",
+    "LICENSE",
+    "README.md",
+    "HISTORY"
+  ],
+  "scope": "Pinned serial Cromemco sources, RDOS 2.52 firmware/disassembly, assembler and upstream notices; excludes historical disk images and other machine configurations."
+}

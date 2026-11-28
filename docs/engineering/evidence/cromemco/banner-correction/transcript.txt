@@ -1,0 +1,454 @@
+
+#######  #####    ###            #####    ###   #     #
+     #  #     #  #   #          #     #    #    ##   ##
+    #   #     # #     #         #          #    # # # #
+   #     #####  #     #  #####   #####     #    #  #  #
+  #     #     # #     #               #    #    #     #
+ #      #     #  #   #          #     #    #    #     #
+#######  #####    ###            #####    ###   #     #
+
+Release 1.39, Copyright (C) 1987-2025 by Udo Munk and others
+Cromemco Z-1 Simulation Release 1.19
+Copyright (C) 2014-2025 by Udo Munk & 2021-2022 by David McNaughton
+
+CPU speed is unlimited, CPU executes undocumented instructions
+
+
+Web server not builtin
+
+
+
+RAM 0000H - FFFFH
+
+ROM C000H - DFFFH rdos252.hex
+
+Power-on jump address at C000H
+
+MMU has 7 additional RAM banks of 64 KB
+
+
+
+FDC Banked ROM enabled
+
+
+
+DISK MAP: [/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-banner-check-final/disks/disk.map]
+
+A:DSK:='drivea.dsk'
+
+B:DSK:='driveb.dsk'
+
+C:DSK:='drivec.dsk'
+
+D:DSK:='drived.dsk'
+
+Loader statistics for file /Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-emulator-final/cromemcosim/roms/rdos252.hex:
+
+START : C000H
+
+END   : CFFFH
+
+PC    : C000H
+
+LOADED: 1000H (4096)
+
+
+
+
+
+
+
+TU-ART DEVICE MAP:
+
+TUART0.deviceA = WEBTTY STDIO
+
+TUART1.deviceA = SCKTSRV1 WEBTTY2
+
+TUART1.deviceB = SCKTSRV2 WEBTTY3
+
+
+
+HARD DISK MAP: [/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-banner-check-final/disks]
+
+HD0: OFFLINE - NO FILE 'hd0.hdd'
+
+HD1: OFFLINE - NO FILE 'hd1.hdd'
+
+HD2: OFFLINE - NO FILE 'hd2.hdd'
+
+
+
+
+Preparing to boot, ESC to abort
+
+Standby
+
+A0> :VER /BANNER
+
+ - - -                                                  - - -
+|                                                            |
+|                 BetterCP/M 1.3 - Cromemco                  |
+
+                  CP/M 2.2 Compatible System
+
+                Type TYPE README.TXT for more
+|                                                            |
+ - - -                                                  - - -
+
+A0>
+A0> _
+A0>
+A0> :_
+A0> :
+A0> :V_
+A0> :V
+A0> :VE_
+A0> :VE
+A0> :VER_
+A0> :VER
+A0> :VER _
+A0> :VER
+A0> :VER /_
+A0> :VER /
+A0> :VER /B_
+A0> :VER /B
+A0> :VER /BA_
+A0> :VER /BA
+A0> :VER /BAN_
+A0> :VER /BAN
+A0> :VER /BANN_
+A0> :VER /BANN
+A0> :VER /BANNE_
+A0> :VER /BANNE
+A0> :VER /BANNER_
+A0> :VER /BANNER
+A0> :VER /BANNER
+
+ - - -                                                  - - -
+|                                                            |
+|                 BetterCP/M 1.3 - Cromemco                  |
+
+                  CP/M 2.2 Compatible System
+
+                Type TYPE README.TXT for more
+|                                                            |
+ - - -                                                  - - -
+
+A0>
+A0> _
+A0>
+A0> V_
+A0> V
+A0> VE_
+A0> VE
+A0> VER_
+A0> VER
+A0> VER
+
+BetterCP/M 1.3
+
+A0>
+A0> _
+A0>
+A0> D_
+A0> D
+A0> DI_
+A0> DI
+A0> DIR_
+A0> DIR
+A0> DIR
+
+A0: RCP      CPX : R3PACK   RSX : R3CACHE  RSX : SYSTEM   SYS
+A0: STARTUP  SUB : README   TXT : STAT     COM : RSX      COM
+A0: ECHO     RSX : CONFIG   COM : PDSCONF  OVL : SYSGEN   COM
+A0: DUP      COM : PATH     COM : NDR      COM : SUBMIT   COM
+A0: XSUB     COM : VER      COM : NDR      RSX : BATCHIO  RSX
+A0: DISK     FDB : AFILE    COM : ATPA     COM : AAPI     COM
+A0: AECHO    COM : BYE      COM
+
+A0>
+A0> _
+A0>
+A0> S_
+A0> S
+A0> ST_
+A0> ST
+A0> STA_
+A0> STA
+A0> STAT_
+A0> STAT
+A0> STAT _
+A0> STAT
+A0> STAT M_
+A0> STAT M
+A0> STAT ME_
+A0> STAT ME
+A0> STAT MEM_
+A0> STAT MEM
+A0> STAT MEM
+
+BetterCP/M Memory Map
+High-Low    Bytes Owner
+FFFF-FC00 01024 Shared physical/module buffers
+FBFF-FB80 00128 Directory transfer buffer
+FB7F-FB57 00041 Active RSX reconstruction table
+FB56-F917 00576 Drive tables and disk workspace
+F916-F886 00145 Protected file services
+F885-F591 00757 BIOS
+F590-F1E3 00942 Disk and extension support
+F1E2-F03F 00420 Protected loader/extension services
+F03E-E2C8 03447 BDOS and private state
+E2C7-E1D0 00248 System gateway, ECB and CPX profile
+E1CF-E104 00204 PDS (persistent command data)
+E103-E101 00003 Dynamic CP/M gateway
+E100-C001 08448 Loaded CPX allocation
+C000-9E01 08704 CCP image
+9E00-0100 40193 Transient area below CCP
+00FF-0000 00256 CP/M page zero
+PDS bytes: total 204; metadata 12; HISTORY 192; MCL 0; VAR 0
+Maximum loadable COM: 57344 bytes
+A0>
+A0> _
+A0>
+A0> A_
+A0> A
+A0> AA_
+A0> AA
+A0> AAP_
+A0> AAP
+A0> AAPI_
+A0> AAPI
+A0> AAPI
+CROMEMCO GEOMETRY API PASS
+
+A0>
+A0> _
+A0>
+A0> A_
+A0> A
+A0> AF_
+A0> AF
+A0> AFI_
+A0> AFI
+A0> AFIL_
+A0> AFIL
+A0> AFILE_
+A0> AFILE
+A0> AFILE
+CROMEMCO BDOS FILE IO PASS
+
+A0>
+A0> _
+A0>
+A0> A_
+A0> A
+A0> AT_
+A0> AT
+A0> ATP_
+A0> ATP
+A0> ATPA_
+A0> ATPA
+A0> ATPA
+CROMEMCO 56K TPA OVERWRITE PASS
+
+A0>
+A0> _
+A0>
+A0> V_
+A0> V
+A0> VE_
+A0> VE
+A0> VER_
+A0> VER
+A0> VER
+
+BetterCP/M 1.3
+
+A0>
+A0> _
+A0>
+A0> R_
+A0> R
+A0> RS_
+A0> RS
+A0> RSX_
+A0> RSX
+A0> RSX _
+A0> RSX
+A0> RSX L_
+A0> RSX L
+A0> RSX LO_
+A0> RSX LO
+A0> RSX LOA_
+A0> RSX LOA
+A0> RSX LOAD_
+A0> RSX LOAD
+A0> RSX LOAD _
+A0> RSX LOAD
+A0> RSX LOAD E_
+A0> RSX LOAD E
+A0> RSX LOAD EC_
+A0> RSX LOAD EC
+A0> RSX LOAD ECH_
+A0> RSX LOAD ECH
+A0> RSX LOAD ECHO_
+A0> RSX LOAD ECHO
+A0> RSX LOAD ECHO
+
+A0>
+A0> _
+A0>
+A0> R_
+A0> R
+A0> RS_
+A0> RS
+A0> RSX_
+A0> RSX
+A0> RSX _
+A0> RSX
+A0> RSX L_
+A0> RSX L
+A0> RSX LI_
+A0> RSX LI
+A0> RSX LIS_
+A0> RSX LIS
+A0> RSX LIST_
+A0> RSX LIST
+A0> RSX LIST
+
+ECHO : BDOS 199
+TPA available: 54K
+
+A0>
+A0> _
+A0>
+A0> A_
+A0> A
+A0> AE_
+A0> AE
+A0> AEC_
+A0> AEC
+A0> AECH_
+A0> AECH
+A0> AECHO_
+A0> AECHO
+A0> AECHO
+
+Hello from ECHO.RSX
+
+A0>
+A0> _
+A0>
+A0> R_
+A0> R
+A0> RS_
+A0> RS
+A0> RSX_
+A0> RSX
+A0> RSX _
+A0> RSX
+A0> RSX U_
+A0> RSX U
+A0> RSX UN_
+A0> RSX UN
+A0> RSX UNL_
+A0> RSX UNL
+A0> RSX UNLO_
+A0> RSX UNLO
+A0> RSX UNLOA_
+A0> RSX UNLOA
+A0> RSX UNLOAD_
+A0> RSX UNLOAD
+A0> RSX UNLOAD _
+A0> RSX UNLOAD
+A0> RSX UNLOAD E_
+A0> RSX UNLOAD E
+A0> RSX UNLOAD EC_
+A0> RSX UNLOAD EC
+A0> RSX UNLOAD ECH_
+A0> RSX UNLOAD ECH
+A0> RSX UNLOAD ECHO_
+A0> RSX UNLOAD ECHO
+A0> RSX UNLOAD ECHO
+
+A0>
+A0> _
+A0>
+A0> R_
+A0> R
+A0> RS_
+A0> RS
+A0> RSX_
+A0> RSX
+A0> RSX _
+A0> RSX
+A0> RSX L_
+A0> RSX L
+A0> RSX LI_
+A0> RSX LI
+A0> RSX LIS_
+A0> RSX LIS
+A0> RSX LIST_
+A0> RSX LIST
+A0> RSX LIST
+
+No RSXs loaded
+
+TPA available: 56K
+
+A0>
+A0> _
+A0>
+A0> B_
+A0> B
+A0> B:_
+A0> B:
+A0> B:
+
+B0>
+B0> _
+B0> ^C
+
+B0>
+B0> _
+B0>
+B0>
+
+B0>
+B0> _
+B0>
+B0> A_
+B0> A
+B0> A:_
+B0> A:
+B0> A:
+
+A0>
+A0> _
+A0>
+A0> V_
+A0> V
+A0> VE_
+A0> VE
+A0> VER_
+A0> VER
+A0> VER
+
+BetterCP/M 1.3
+
+A0>
+A0> _
+A0>
+A0> B_
+A0> B
+A0> BY_
+A0> BY
+A0> BYE_
+A0> BYE
+A0> BYE
+
+
+System halted
+I/O ran for 4302 ms, waited for 0 ms
+CPU executed 129900208486 t-states in 53625 ms
+Clock frequency 2422.35 MHz
