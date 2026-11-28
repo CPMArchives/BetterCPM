@@ -1,0 +1,43 @@
+{
+  "status": "PASS",
+  "source": {
+    "selected_sources_sha256": "1f964f66f53ba0f4b25477c9a7978525db0c661e427bcd341b43039f6485951a",
+    "source_commit": "b417ff8591239d2c4f61cb0048efbdadfeb52b06",
+    "status": "qualified emulator candidate; publication separate",
+    "target": "cromemco",
+    "version": "1.3"
+  },
+  "images": [
+    {
+      "name": "BetterCPM-1.3-Cromemco-System.dsk",
+      "sha256": "bbfb777c4e4a7620107bea90906dbdbde6de7105d060117e79011fab9182ca62",
+      "status": "IDENTICAL"
+    },
+    {
+      "name": "BetterCPM-1.3-Cromemco-Utilities-1.dsk",
+      "sha256": "5e16397bb2293799dc330ca4e1d4c7b8e25239b7e7fa364391754d727771a370",
+      "status": "IDENTICAL"
+    },
+    {
+      "name": "BetterCPM-1.3-Cromemco-Utilities-2.dsk",
+      "sha256": "e356c31c89f1304f1dc1793f715df55f5884bf27290517a62c10ed8a03ba9e4f",
+      "status": "IDENTICAL"
+    },
+    {
+      "name": "BetterCPM-1.3-Cromemco-Utilities-3.dsk",
+      "sha256": "b4f554ae277153bf7760cbb0077cc81ae09373199f5cb2d812e5898afc092ab8",
+      "status": "IDENTICAL"
+    }
+  ],
+  "emulator_sha256": "dff0200108196f0b4fdc500219d6632cec88e94a6e646c2aed24b918bb57cf7f",
+  "checks": [
+    "offline exported-source emulator build",
+    "exported-source complete media rebuild",
+    "all four release images byte-identical",
+    "unpacked native launcher from unrelated working directory",
+    "cold and explicit banner",
+    "packaged HELP/ANSI and full TPA restoration",
+    "BYE clean exit"
+  ],
+  "transcript_sha256": "208d9214befb0b1bbf902047652ae053aed2c1f41c1869084115077da9e8381e"
+}

@@ -1,0 +1,108 @@
+Writable session: /Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-package-verification/BetterCPM-1.3-Cromemco/Session
+
+#######  #####    ###            #####    ###   #     #
+     #  #     #  #   #          #     #    #    ##   ##
+    #   #     # #     #         #          #    # # # #
+   #     #####  #     #  #####   #####     #    #  #  #
+  #     #     # #     #               #    #    #     #
+ #      #     #  #   #          #     #    #    #     #
+#######  #####    ###            #####    ###   #     #
+
+Release 1.39, Copyright (C) 1987-2025 by Udo Munk and others
+Cromemco Z-1 Simulation Release 1.19
+Copyright (C) 2014-2025 by Udo Munk & 2021-2022 by David McNaughton
+
+CPU speed is unlimited, CPU executes undocumented instructions
+
+Web server not builtin
+
+RAM 0000H - FFFFH
+ROM C000H - DFFFH rdos252.hex
+Power-on jump address at C000H
+MMU has 7 additional RAM banks of 64 KB
+
+FDC Banked ROM enabled
+
+DISK MAP: [/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-package-verification/BetterCPM-1.3-Cromemco/Session/disks/disk.map]
+A:DSK:='drivea.dsk'
+B:DSK:='driveb.dsk'
+C:DSK:='drivec.dsk'
+D:DSK:='drived.dsk'
+Loader statistics for file /Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-package-verification/BetterCPM-1.3-Cromemco/Host/roms/rdos252.hex:
+START : C000H
+END   : CFFFH
+PC    : C000H
+LOADED: 1000H (4096)
+
+
+
+TU-ART DEVICE MAP:
+TUART0.deviceA = WEBTTY STDIO  
+TUART1.deviceA = SCKTSRV1 WEBTTY2  
+TUART1.deviceB = SCKTSRV2 WEBTTY3  
+
+HARD DISK MAP: [/Users/nathanael/Documents/ChatGPT/M 2/BetterCPM-cromemco/build/cromemco-package-verification/BetterCPM-1.3-Cromemco/Session/disks]
+HD0: OFFLINE - NO FILE 'hd0.hdd'
+HD1: OFFLINE - NO FILE 'hd1.hdd'
+HD2: OFFLINE - NO FILE 'hd2.hdd'
+
+
+Preparing to boot, ESC to abort
+
+Standby
+
+A0> PATH C0: D0:
+PATH: C0: | D0:
+
+A0> :VER /BANNER
+
+ - - -                                                  - - - 
+|                                                            |
+|                 BetterCP/M 1.3 - Cromemco                  |
+
+                  CP/M 2.2 Compatible System
+
+                Type TYPE README.TXT for more
+|                                                            |
+ - - -                                                  - - - 
+
+A0> A0> _ A0> A0> :_ A0> :A0> :V_ A0> :VA0> :VE_ A0> :VEA0> :VER_ A0> :VERA0> :VER _ A0> :VER A0> :VER /_ A0> :VER /A0> :VER /B_ A0> :VER /BA0> :VER /BA_ A0> :VER /BAA0> :VER /BAN_ A0> :VER /BANA0> :VER /BANN_ A0> :VER /BANNA0> :VER /BANNE_ A0> :VER /BANNEA0> :VER /BANNER_ A0> :VER /BANNERA0> :VER /BANNER 
+
+ - - -                                                  - - - 
+|                                                            |
+|                 BetterCP/M 1.3 - Cromemco                  |
+
+                  CP/M 2.2 Compatible System
+
+                Type TYPE README.TXT for more
+|                                                            |
+ - - -                                                  - - - 
+
+A0> A0> _ A0> A0> R_ A0> RA0> RS_ A0> RSA0> RSX_ A0> RSXA0> RSX _ A0> RSX A0> RSX L_ A0> RSX LA0> RSX LO_ A0> RSX LOA0> RSX LOA_ A0> RSX LOAA0> RSX LOAD_ A0> RSX LOADA0> RSX LOAD _ A0> RSX LOAD A0> RSX LOAD C_ A0> RSX LOAD CA0> RSX LOAD C:_ A0> RSX LOAD C:A0> RSX LOAD C:A_ A0> RSX LOAD C:AA0> RSX LOAD C:AN_ A0> RSX LOAD C:ANA0> RSX LOAD C:ANS_ A0> RSX LOAD C:ANSA0> RSX LOAD C:ANSI_ A0> RSX LOAD C:ANSIA0> RSX LOAD C:ANSI 
+[1;1H[2;1HA[2;2H0[2;3H>[2;4H [2;5H[2;1HA[2;2H0[2;3H>[2;4H [2;5H_[2;6H [2;7H[2;1HA[2;2H0[2;3H>[2;4H [2;5H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6H_[2;7H [2;8H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6HE[2;7H_[2;8H [2;9H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6HE[2;7H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6HE[2;7HL[2;8H_[2;9H [2;10H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6HE[2;7HL[2;8H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6HE[2;7HL[2;8HP[2;9H_[2;10H [2;11H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6HE[2;7HL[2;8HP[2;9H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6HE[2;7HL[2;8HP[2;9H [2;10H_[2;11H [2;12H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6HE[2;7HL[2;8HP[2;9H [2;10H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6HE[2;7HL[2;8HP[2;9H [2;10HP[2;11H_[2;12H [2;13H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6HE[2;7HL[2;8HP[2;9H [2;10HP[2;11H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6HE[2;7HL[2;8HP[2;9H [2;10HP[2;11HI[2;12H_[2;13H [2;14H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6HE[2;7HL[2;8HP[2;9H [2;10HP[2;11HI[2;12H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6HE[2;7HL[2;8HP[2;9H [2;10HP[2;11HI[2;12HP[2;13H_[2;14H [2;15H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6HE[2;7HL[2;8HP[2;9H [2;10HP[2;11HI[2;12HP[2;13H[2;1HA[2;2H0[2;3H>[2;4H [2;5HH[2;6HE[2;7HL[2;8HP[2;9H [2;10HP[2;11HI[2;12HP[2;13H [2;14H[2;1H[3;1H[1;1H                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [1;1H[0;7mP[1;2HI[1;3HP[1;4H [1;5H-[1;6H [1;7HF[1;8Hi[1;9Hl[1;10He[1;11H [1;12Ha[1;13Hn[1;14Hd[1;15H [1;16Hd[1;17He[1;18Hv[1;19Hi[1;20Hc[1;21He[1;22H [1;23Ht[1;24Hr[1;25Ha[1;26Hn[1;27Hs[1;28Hf[1;29He[1;30Hr[1;31H [1;32H [1;33H [1;34H [1;35H [1;36H [1;37H [1;38H [1;39H [1;40H [1;41H [1;42H [1;43H [1;44H [1;45H [1;46H [1;47H [1;48H [1;49H [1;50H [1;51H [1;52H [1;53H [1;54H [1;55H [1;56H [1;57H [1;58H [1;59H [1;60H [1;61H [1;62H [1;63H [1;64H [1;65H [1;66H [1;67H [1;68H [1;69H [1;70H [1;71H [1;72H [1;73H [1;74H [1;75H [1;76H [1;77H [1;78H [1;79H [1;80H [0m[2;1H[3;1HP[3;2HI[3;3HP[3;4H [3;5Hd[3;6He[3;7Hs[3;8Ht[3;9Hi[3;10Hn[3;11Ha[3;12Ht[3;13Hi[3;14Ho[3;15Hn[3;16H=[3;17Hs[3;18Ho[3;19Hu[3;20Hr[3;21Hc[3;22He[3;23H[[3;24H,[3;25Hs[3;26Ho[3;27Hu[3;28Hr[3;29Hc[3;30He[3;31H.[3;32H.[3;33H.[3;34H][3;35H[4;1H[5;1H0[5;2H [5;3H [5;4HS[5;5Hy[5;6Hn[5;7Ht[5;8Ha[5;9Hx[5;10H [5;11H [5;12H [5;13H [5;14H [5;15H [5;16H [5;17H [5;18H [5;19H [5;20H [5;21H1[5;22H [5;23H [5;24HS[5;25He[5;26Hl[5;27He[5;28Hc[5;29Ht[5;30Ho[5;31Hr[5;32Hs[5;33H [5;34H [5;35H [5;36H [5;37H [5;38H [5;39H [5;40H [5;41H2[5;42H [5;43H [5;44HE[5;45Hx[5;46Ha[5;47Hm[5;48Hp[5;49Hl[5;50He[5;51Hs[5;52H[24;1H0[24;2H-[24;3H2[24;4H [24;5HS[24;6He[24;7Hl[24;8He[24;9Hc[24;10Ht[24;11H [24;12H [24;13HQ[24;14H [24;15HE[24;16Hx[24;17Hi[24;18Ht[24;19H[1;1H                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [E                                                                                [1;1H[1;1H[2;1HA[2;2H0[2;3H>[2;4H [2;5H[2;1HA[2;2H0[2;3H>[2;4H [2;5H_[2;6H [2;7H[2;1HA[2;2H0[2;3H>[2;4H [2;5H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6H_[2;7H [2;8H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7H_[2;8H [2;9H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H_[2;9H [2;10H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9H_[2;10H [2;11H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10H_[2;11H [2;12H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11H_[2;12H [2;13H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12H_[2;13H [2;14H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13H_[2;14H [2;15H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13HA[2;14H_[2;15H [2;16H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13HA[2;14H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13HA[2;14HD[2;15H_[2;16H [2;17H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13HA[2;14HD[2;15H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13HA[2;14HD[2;15H [2;16H_[2;17H [2;18H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13HA[2;14HD[2;15H [2;16H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13HA[2;14HD[2;15H [2;16HA[2;17H_[2;18H [2;19H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13HA[2;14HD[2;15H [2;16HA[2;17H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13HA[2;14HD[2;15H [2;16HA[2;17HN[2;18H_[2;19H [2;20H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13HA[2;14HD[2;15H [2;16HA[2;17HN[2;18H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13HA[2;14HD[2;15H [2;16HA[2;17HN[2;18HS[2;19H_[2;20H [2;21H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13HA[2;14HD[2;15H [2;16HA[2;17HN[2;18HS[2;19H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13HA[2;14HD[2;15H [2;16HA[2;17HN[2;18HS[2;19HI[2;20H_[2;21H [2;22H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13HA[2;14HD[2;15H [2;16HA[2;17HN[2;18HS[2;19HI[2;20H[2;1HA[2;2H0[2;3H>[2;4H [2;5HR[2;6HS[2;7HX[2;8H [2;9HU[2;10HN[2;11HL[2;12HO[2;13HA[2;14HD[2;15H [2;16HA[2;17HN[2;18HS[2;19HI[2;20H [2;21H[2;1H[3;1H
+A0> A0> _ A0> A0> S_ A0> SA0> ST_ A0> STA0> STA_ A0> STAA0> STAT_ A0> STATA0> STAT _ A0> STAT A0> STAT M_ A0> STAT MA0> STAT ME_ A0> STAT MEA0> STAT MEM_ A0> STAT MEMA0> STAT MEM 
+
+BetterCP/M Memory Map
+High-Low    Bytes Owner
+FFFF-FC00 01024 Shared physical/module buffers
+FBFF-FB80 00128 Directory transfer buffer
+FB7F-FB57 00041 Active RSX reconstruction table
+FB56-F917 00576 Drive tables and disk workspace
+F916-F886 00145 Protected file services
+F885-F591 00757 BIOS
+F590-F1E3 00942 Disk and extension support
+F1E2-F03F 00420 Protected loader/extension services
+F03E-E2C8 03447 BDOS and private state
+E2C7-E1D0 00248 System gateway, ECB and CPX profile
+E1CF-E104 00204 PDS (persistent command data)
+E103-E101 00003 Dynamic CP/M gateway
+E100-C101 08192 Loaded CPX allocation
+C100-9F01 08704 CCP image
+9F00-0100 40449 Transient area below CCP
+00FF-0000 00256 CP/M page zero
+PDS bytes: total 204; metadata 12; HISTORY 192; MCL 0; VAR 0
+Maximum loadable COM: 57344 bytes
+A0> A0> _ A0> A0> B_ A0> BA0> BY_ A0> BYA0> BYE_ A0> BYEA0> BYE _ A0> BYE A0> BYE /_ A0> BYE /A0> BYE /Y_ A0> BYE /YA0> BYE /Y 
+
+
+System halted

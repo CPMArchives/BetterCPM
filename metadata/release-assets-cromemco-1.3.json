@@ -2,7 +2,7 @@
   "schema": 1,
   "version": "1.3",
   "target": "cromemco",
-  "status": "qualified emulator candidate; publication pending",
+  "status": "release candidate complete; review, merge and publication pending",
   "existing_assets": "Additive only; preserve all existing 1.3 platform downloads",
   "assets": [
     {
@@ -21,5 +21,7 @@
       "name": "SHA256SUMS-Cromemco-1.3.txt",
       "role": "additive checksums"
     }
-  ]
+  ],
+  "source_commit": "b417ff8591239d2c4f61cb0048efbdadfeb52b06",
+  "package_verification": "docs/releases/evidence/cromemco-1.3/package-verification.json"
 }
