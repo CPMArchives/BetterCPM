@@ -1,6 +1,6 @@
 # BetterCP/M 1.3 Cromemco release integration
 
-Status: **release candidate complete; review, merge and publication pending**. This adds a platform for OS 1.3 and does not replace
+Status: **published as an additive BetterCP/M 1.3 platform release**. This adds a platform for OS 1.3 and does not replace
 the existing platform archives or alter their frozen identities.
 
 Target: pinned serial z80pack Cromemco Z-1, Z80, bank-zero 64 KiB RAM, FDC UART,
@@ -22,7 +22,7 @@ the [adapter target sheet](../../src/platform/cromemco/README.md).
 | Display transport | Delayed transmit-ready polling and preserved register/flag state; all three complete paths fit their existing footprint limits |
 | Offline emulator | Pinned source archive builds without a network or graphics libraries; native binary matches the tested build |
 | Final archives | PASS: frozen-source build and exported-source rebuild reproduce all four accepted images and the exact emulator; unpacked native launcher, banner and HELP pass |
-| Publication | Branch/review, merge and additive asset publication remain separate from candidate qualification |
+| Publication | PASS: PR #697 merged; all four additive release assets uploaded and server SHA-256 digests verified |
 
 TCAP modules use MCON backend bit 16 and the exact private BIOS binding. Their
 leaf calls poll the timed UART without monitor recursion. The complete ANSI

@@ -1,0 +1,37 @@
+{
+  "status": "published",
+  "release_url": "https://github.com/CPMArchives/BetterCPM/releases/tag/v1.3",
+  "merged_pr": 697,
+  "merge_commit": "22201ed0a05b26456362cfef46c3dcdb3167db95",
+  "source_commit": "b417ff8591239d2c4f61cb0048efbdadfeb52b06",
+  "assets": [
+    {
+      "id": 803633980,
+      "name": "BetterCPM-1.3-Cromemco-Source.zip",
+      "size": 10184452,
+      "digest": "sha256:4b99b541d8725da52288338e02043ce73b83794c5c845c000c2fbc02b68707ad",
+      "browser_download_url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-Cromemco-Source.zip"
+    },
+    {
+      "id": 803633975,
+      "name": "BetterCPM-1.3-Cromemco.zip",
+      "size": 1261436,
+      "digest": "sha256:3ec9424fba2628285552720963835c3fb805f27f5a1fa0bf58c678cae2c79958",
+      "browser_download_url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/BetterCPM-1.3-Cromemco.zip"
+    },
+    {
+      "id": 803633984,
+      "name": "CROMEMCO-RELEASE.json",
+      "size": 620220,
+      "digest": "sha256:d31c8a55b740f4314f90ec80ced8c8c9d13f7d1088cd550f85d7ccc6961f0343",
+      "browser_download_url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/CROMEMCO-RELEASE.json"
+    },
+    {
+      "id": 803633974,
+      "name": "SHA256SUMS-Cromemco-1.3.txt",
+      "size": 281,
+      "digest": "sha256:58521f3c535210fae88303c4627f30233e83412a001e9ebd497a56da988d6ca6",
+      "browser_download_url": "https://github.com/CPMArchives/BetterCPM/releases/download/v1.3/SHA256SUMS-Cromemco-1.3.txt"
+    }
+  ]
+}

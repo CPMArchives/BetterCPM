@@ -2,7 +2,7 @@
 
 All eight focused gates passed on the four exact media hashes in `summary.json`.
 `receipts-and-transcripts.tar.gz` retains per-gate machine-readable results and
-guest transcripts. Final package/source-export proof also passed; publication remains pending.
+guest transcripts. Final package/source-export proof also passed; publication is recorded in `publication.json`.
 These execution receipts do not imply publication.
 
 The gates cover loader/56 KiB TPA/reconstruction, populated-media installation,
