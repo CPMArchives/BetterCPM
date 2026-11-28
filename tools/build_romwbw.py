@@ -97,7 +97,7 @@ def compile_image(assembler):
             raise ValueError('checked loader fixup moved: '+label)
         struct.pack_into('<H',bios,at+1,binascii.crc_hqx(data,0xffff))
     table_data = tables(L)
-    if len(table_data)+15 > L['RSX_STATE']-L['TABLES']:
+    if len(table_data)+16 > L['RSX_STATE']-L['TABLES']:
         raise ValueError('disk tables/platform state overlap RSX state')
     resident = bytearray(52*128)
     parts = [(L['SYSTEM'],gateway,L['BDOS']),
@@ -143,7 +143,15 @@ def compile_image(assembler):
     for filename,source in [('AFILE.COM','filetest.mac'),('ATPA.COM','tpatest.mac'),('AIOTEST.COM','iotest.mac'),('AFAILIO.COM','failio.mac')]:
         files.append((filename,component(filename[:-4].lower(),
             read('src/platform/romwbw/'+source),0x100,4096)))
-    files.append(('CONFIG.COM',component('config-com',read('src/platform/romwbw/config.mac'),0x100,0x1C00)))
+    block = read('src/platform/romwbw/config.mac').replace('ORG 0100H','ORG 08000H')
+    block = block.replace('        LD SP,01F00H', '        LD (WB_RETSP),SP\n        LD SP,08F00H')
+    block = block.replace('        JP 0\n', '        JP WB_BRET\n')
+    block = block.replace('        END\n', 'WB_BRET: LD SP,(WB_RETSP)\n        RET\nWB_RETSP: DW 0\n        END\n')
+    utility = read('src/platform/romwbw/utility.inc').replace('        JP 0\n','        JP WB_BRET\n')
+    files.append(('BLOCKCFG.OVL',component('blockcfg',block,0x8000,0xE00,{'utility.inc':utility})))
+    from build_romwbw_config import build as build_config
+    files += build_config(assembler)
+
     files.append(('HELLO.COM',component('hello',
         "        ASEG\n        ORG 0100H\n        LD DE,MSG\n        LD C,9\n        CALL 5\n        JP 0\nMSG: DB 'ROMWBW TRANSIENT PASS',13,10,'$'\n        END\n",0x100,256)))
     util = ROOT/'build/utilities'
@@ -154,8 +162,31 @@ def compile_image(assembler):
               ('ECHO.RSX', (ROOT/'build/rsx/ECHO.RSX').read_bytes())]
     files.append(('AECHO.COM', component('aecho',
         "        ASEG\n        ORG 0100H\n        LD C,199\n        CALL 5\n        JP 0\n        END\n",0x100,128)))
+    # Portable COM builders share the selected core/context. Disk-specific
+    # CONFIG/SYSGEN above are retained; floppy-only DUP/SYSBUILD are excluded.
+    from build_utilities import BUILDERS
+    for builder in BUILDERS:
+        if builder in ('fdb','disk_utilities','rsx_utilities'):continue
+        subprocess.run([sys.executable,'-B',str(ROOT/'tools'/f'build_{builder}.py'),
+                        '--assembler',str(assembler)],cwd=ROOT,check=True)
+    files += [(name,(ROOT/'build/help'/name).read_bytes()) for name in ('HELP.COM','HELP.LBR')]
+    present={name for name,data in files}
+    from component_registry import utility_identities
+    for name in sorted(utility_identities()):
+        filename=name+'.COM'
+        path=util/filename
+        if filename not in present and path.is_file():
+            files.append((filename,path.read_bytes()));present.add(filename)
+    for path in sorted(util.iterdir()):
+        if path.suffix.upper() in ('.OVL','.HLB','.HLP','.HIX') and path.name not in present:
+            files.append((path.name,path.read_bytes()));present.add(path.name)
+    for filename in ('NDR.RSX','BATCHIO.RSX'):
+        path=ROOT/'build/rsx'/filename
+        if path.is_file():files.append((filename,path.read_bytes()))
     prefix = bytearray(image(payload,boot,files)[:131072])
     prefix[2048:2560]=bytes(512)
+    prefix[128:384]=bytes(256)
+    prefix[32896:33152]=bytes(256)
     install=f'SG_SYSCRC EQU 0{binascii.crc_hqx(prefix,0xffff):04X}H\n'
     install_files=[(name,data) for name,data in files
                    if name not in ('AFILE.COM','ATPA.COM','AIOTEST.COM','AFAILIO.COM')]

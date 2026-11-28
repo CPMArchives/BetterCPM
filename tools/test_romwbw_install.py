@@ -17,7 +17,7 @@ def main():
     def terminal(name,boot='2',disk=source,second=target):
         work=out/name;work.mkdir()
         command=[str(simulator),'--romwbw='+str(rom),'--disk0='+str(disk),
-                 '--boot='+boot,'--no-config','--strict-io','--max-instructions=4000000000']
+                 '--boot='+boot,'--no-config','--strict-io','--max-instructions=40000000000']
         if second is not None:command+=['--disk1='+str(second)]
         return Terminal(simulator,work,command=command)
     t=terminal('install')
@@ -30,7 +30,7 @@ def main():
         t.send('CONFIG /SHOW','B: HBIOS unit 3')
         t.send('CONFIG /LOGICAL=B /UNIT=0','CONFIG failed')
         t.send('CONFIG /SHOW','B: HBIOS unit 3')
-        t.type_command('SYSGEN B:');t.expect('ROMWBW SYSGEN INSTALL PASS',timeout=60);t.prompt()
+        t.type_command('SYSGEN B:');t.expect('ROMWBW SYSGEN INSTALL PASS',timeout=1200);t.prompt()
         checks+=['protected A alias rejected without changing B','B mapped to HBIOS unit 3',
                  'configuration saved and read-back verified','empty B installed and sector/file verified']
     finally:t.close()

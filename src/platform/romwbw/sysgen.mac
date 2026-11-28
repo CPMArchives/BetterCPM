@@ -95,8 +95,20 @@ SG_KERN:
         JR NZ,SG_KCRC
         LD A,L
         CP 4
+        JR Z,SG_KZERO
+        OR A
+        JR Z,SG_KST
+        CP 64
         JR NZ,SG_KCRC
-        CALL SG_ZERO                    ; configuration is the sole mutable sector
+SG_KST:
+        LD HL,03080H
+        LD DE,03081H
+        LD BC,255
+        LD (HL),0
+        LDIR
+        JR SG_KCRC
+SG_KZERO:
+        CALL SG_ZERO
 SG_KCRC:
         LD HL,03000H
         LD BC,512
@@ -215,11 +227,15 @@ SG_ZERO:
         LDIR
         RET
 SG_CFG:
+        LD A,(03007H)
+        PUSH AF
         CALL SG_ZERO
         LD HL,SG_HEAD
         LD DE,03000H
         LD BC,8
         LDIR
+        POP AF
+        LD (03007H),A
         LD HL,03000H
         CALL U_SUM
         LD HL,0
@@ -413,7 +429,7 @@ SG_CRC: DW 0FFFFH
 SG_NREC: DW 0
 SG_SRC: DS 36
 SG_DST: DS 36
-SG_HEAD: DB 'BWCF',1,2,255,0
+SG_HEAD: DB 'BWCF',2,2,255,095H
 SG_TITLE: DB 'SYSGEN B: validating empty target and matched system...',13,10,'$'
 SG_NONMT: DB 'SYSGEN refused: destination B: is not empty.',13,10,'$'
 SG_ERROR: DB 'SYSGEN failed; destination is not an installed system.',13,10,'$'

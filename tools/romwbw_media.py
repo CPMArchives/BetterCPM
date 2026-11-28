@@ -18,8 +18,8 @@ def tables(layout):
         data+=bytes((0 if drive==0 else 255,))+dpb+mapping
     return bytes(data)+bytes(512)
 
-def configuration(unit=255):
-    record=bytearray(512);record[:8]=b'BWCF'+bytes((1,2,unit,0))
+def configuration(unit=255, iobyte=0x95):
+    record=bytearray(512);record[:8]=b'BWCF'+bytes((2,2,unit,iobyte))
     checksum=-sum(struct.unpack('<256H',record))&65535
     struct.pack_into('<H',record,8,checksum)
     return bytes(record)

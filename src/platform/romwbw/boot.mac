@@ -82,7 +82,7 @@
         SBC HL,DE
         JP NZ,RW_BAD
         LD HL,(LY_BUF+4)
-        LD DE,00201H                   ; version 1, two logical drives
+        LD DE,00202H                   ; version 2, two logical drives
         OR A
         SBC HL,DE
         JP NZ,RW_BAD
@@ -99,6 +99,12 @@ RW_SUM:
         LD A,H
         OR L
         JP NZ,RW_BAD
+        LD A,(LY_BUF+7)
+        AND 3
+        CP 1
+        JP NZ,RW_BAD
+        LD A,(LY_BUF+7)
+        LD (WB_IOBYTE),A
         LD A,(LY_BUF+6)
         LD (WB_SAVED),A
         CP 0FFH

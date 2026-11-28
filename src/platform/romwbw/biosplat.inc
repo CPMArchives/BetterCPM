@@ -2,7 +2,7 @@
 ; RomWBW HBIOS standard entry, never emulator-specific ports.
 IO_COLD:
 PL_INIT:
-        LD A,095H
+        LD A,(WB_IOBYTE)
         LD (3),A
         XOR A
         LD (LY_RSTA),A

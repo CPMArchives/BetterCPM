@@ -1,6 +1,7 @@
 # RomWBW / HBIOS engineering port
 
-28 November 2026: block-device configuration and empty-disk installation pass focused emulator acceptance.
+28 November 2026: shared configuration, cold-boot settings and portable utilities are integrated.
+Focused emulator acceptance is retained with the port.
 This is an engineering target, not a published platform release.
 
 ## Target
@@ -121,9 +122,15 @@ CONFIG /LOGICAL=B /UNBIND /SAVE
 SYSGEN B:
 ```
 
-These are engineering platform variants of CONFIG and SYSGEN. CONFIG currently
-provides the block options above; startup/PDS/IOBYTE editing and the full shared
-CONFIG interface still require integration. SYSGEN must run in user zero. It
+CONFIG now uses the shared startup-command and PDS menus with RomWBW block
+bindings in place of floppy editors. No arguments opens the menu.
+`CONFIG /STARTUP="HELLO"` and `CONFIG /IOBYTE=85` save confirmed cold-boot
+settings; `/SHOW` distinguishes live and saved values. PDS edits leave live
+owners unchanged until cold boot. Keep CONFIG.COM, BLOCKCFG.OVL and
+PDSCONF.OVL together on A0:. BCST/PDS changes are mirrored into the checked
+system package. IOBYTE and block saves preserve each other.
+
+SYSGEN is an engineering platform variant. SYSGEN must run in user zero. It
 requires an empty formatted hd512 destination, verifies its matched source,
 copies and verifies the manifest files and system area, then commits boot
 metadata last. It refuses existing files in any user area; it is not an in-place
@@ -134,6 +141,22 @@ filesystem formatting remain separate work.
 The [installation acceptance record](../../../docs/engineering/evidence/2026-11-28-romwbw-install/README.md)
 retains two-disk install/cold-boot, saved mappings, independent host extraction,
 source corruption/refusal and injected HBIOS I/O failure results. Broader utility
-and compatibility qualification, CONFIG feature parity, terminal personalities,
+and compatibility qualification, terminal personalities,
 release packaging, other ROM versions/boards/slices and physical hardware remain
 outside this engineering acceptance. Banked RSX execution is still deferred.
+
+## Portable utility image
+
+The engineering image also builds the shared file, inspection, archive, batch,
+PATH/NDR, RSX and assembler/debugger utilities. HELP.COM and HELP.LBR are
+included. The fixed-block image excludes floppy CONFIG/DUP/SYSBUILD and FDB;
+its CONFIG and SYSGEN use the block backend described above. Native terminal
+personality modules are not yet included. TIME reports no provider.
+
+Additional focused acceptance entry points are `tools/test_romwbw_config.py`
+and `tools/test_romwbw_utilities.py`, with the same image-dir, simulator, rom and
+output arguments shown above. Installation of the larger image can take several
+minutes because every file is copied and read back through the guest BIOS.
+The retained configuration/utility evidence is in
+[the configuration acceptance record](../../../docs/engineering/evidence/2026-11-28-romwbw-config/README.md).
+These checks do not constitute full utility, compatibility or screen qualification.

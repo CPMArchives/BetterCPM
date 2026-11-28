@@ -178,17 +178,21 @@ CF_SAVE:
         JP NZ,CF_FAILED
         LD A,(U_REQ+1)
         PUSH AF
+        LD HL,4
+        LD (U_LBA),HL
+        LD A,(U_BOOT)
+        LD C,A
+        LD B,013H
         LD HL,06000H
-        LD DE,06001H
-        LD BC,511
-        LD (HL),0
-        LDIR
-        LD HL,CF_BWHDR
-        LD DE,06000H
-        LD BC,6
-        LDIR
+        CALL U_IO
+        JP NZ,CF_FAILED
+        LD HL,06000H
+        CALL U_SUM
+        JP NZ,CF_FAILED
         POP AF
         LD (06006H),A
+        LD HL,0
+        LD (06008H),HL
         LD HL,06000H
         CALL U_SUM
         LD HL,0
@@ -241,7 +245,7 @@ CF_LOGOPT: DB '/LOGICAL=',0
 CF_UNITOPT: DB '/UNIT=',0
 CF_UNBOPT: DB '/UNBIND',0
 CF_SAVEOPT: DB '/SAVE',0
-CF_BWHDR: DB 'BWCF',1,2
+CF_BWHDR: DB 'BWCF',2,2
 CF_TITLE: DB 'BetterCP/M RomWBW block configuration',13,10,'$'
 CF_COLON: DB ': ', '$'
 CF_UNITLABEL: DB 'HBIOS unit ', '$'

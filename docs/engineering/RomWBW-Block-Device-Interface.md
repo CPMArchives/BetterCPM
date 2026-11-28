@@ -58,11 +58,21 @@ and boot-address work rather than changing this record silently.
 
 ## Persistence
 
-Physical LBA 4 contains a 512-byte `BWCF` record: magic +0..3, version=1 at
-+4, logical count=2 at +5, saved B unit at +6, reserved zero at +7, two's
+Physical LBA 4 contains a 512-byte `BWCF` record: magic +0..3, version=2 at
++4, logical count=2 at +5, saved B unit at +6, saved IOBYTE at +7, two's
 complement word checksum at +8, and remaining reserved bytes zero. All 256
 little-endian words sum to zero. A is never persisted as a device number: the
-firmware boot unit determines it on every cold boot.
+firmware boot unit determines it on every cold boot. CON must remain TTY (low
+two IOBYTE bits = 1). This replaces the initial unpublished version-1 record;
+version 1 is rejected rather than interpreted as an IOBYTE setting.
+
+The shared CONFIG interface retains startup-command and PDS editing, including
+pending settings that take effect only at cold boot. BLOCKCFG.OVL handles the
+block options; PDSCONF.OVL retains the common PDS validator and menus.
+CONFIG /SHOW reports live/saved IOBYTE, mappings, saved startup text and PDS choices.
+CONFIG /IOBYTE=n validates available routes, confirms, writes and verifies the
+record while leaving live IOBYTE unchanged. A failed save attempts restoration.
+Block saves preserve the saved IOBYTE.
 
 CONFIG /SHOW inspects live mappings. CONFIG /LOGICAL=B /UNIT=n or /UNBIND
 validates and changes the live mapping; /SAVE writes a complete physical
@@ -78,13 +88,16 @@ fixed hd512 device. It requires all 512 destination directory entries to be E5,
 including user areas other than zero. It refuses a nonempty disk before writes.
 
 Preflight verifies the source's reserved area against a build-time CRC with
-only the mutable LBA-4 configuration sector normalized. It opens and verifies
+the mutable LBA-4 configuration sector and both 256-byte saved BCST/PDS records
+(at bytes 128 and 32896) normalized. Shared CONFIG mirrors and verifies BCST/PDS
+writes in both locations. It opens and verifies
 all manifest source files before destination writes. The installer's own source
 file gets a runtime preflight CRC; other files have build-time expected CRCs.
 The installer invalidates destination boot metadata, copies files through BDOS,
 reopens every destination file to verify its complete CRC and record count,
 then copies and verifies reserved sectors. It creates a default unbound B
-configuration for the installed disk and writes/verifies the RomWBW boot-info
+configuration for the installed disk, preserves saved IOBYTE and both startup/PDS
+records, and writes/verifies the RomWBW boot-info
 sector last. Reported I/O failures trigger attempted deletion of its explicit manifest
 files; interruption can still leave an incomplete target requiring a fresh or
 cleaned disk. This is installation onto an empty disk, not an in-place upgrade.
