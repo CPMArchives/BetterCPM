@@ -13,21 +13,54 @@
 WB_API:
         LD A,B
         OR A
-        LD HL,0
-        RET Z                           ; no geometry descriptor on this first target
-        LD HL,2
+        LD HL,WB_INFO
+        RET Z
+        LD (WB_OP),A
+        PUSH IX
+        PUSH DE
+        POP IX
+        CALL LY_BIOS+57
+        JR NZ,WB_APIBAD
+        JP LY_CFG+12
+WB_APIBAD:
+        LD HL,1
         LD A,L
+        POP IX
         OR A
         RET
 WB_SEL:
         LD A,C
-        OR A
-        LD HL,0
-        RET NZ
+        CP 2
+        JR NC,WB_NODSK
+        CALL WB_DPH
+        PUSH HL
+        LD DE,16
+        ADD HL,DE
+        LD A,(HL)
+        POP HL
+        CP 0FFH
+        JR Z,WB_NODSK
+        LD (WB_UNIT),A
+        LD A,C
         LD (BIO_DRIVE),A
+        RET
+WB_NODSK:
+        LD HL,0
+        RET
+WB_DPH:
         LD HL,LY_TAB
+        OR A
+        RET Z
+        LD DE,80
+        ADD HL,DE
         RET
 WB_MAP:
+        LD A,(BIO_DRIVE)
+        LD C,A
+        CALL WB_SEL
+        LD A,H
+        OR L
+        JP Z,WB_BAD
         LD HL,(BIO_TRACK)
         LD DE,1040
         OR A
@@ -149,6 +182,8 @@ WB_SEEK:
 ; Shared checked package records are stored at byte 32768, clear of
 ; RomWBW's sector-2 metadata and sector-3 bootstrap.
 WB_BOOT:
+        LD A,(LY_TAB+16)
+        LD (WB_UNIT),A
         LD A,B
         OR A
         JR Z,WB_BAD
@@ -191,5 +226,8 @@ WB_BAD:
         LD A,1
         OR A
         RET
+WB_INFO:
+        DB 'BDCF',6,2,0,64
+        DW 0,LY_TAB,0,0
         INCLUDE checked-identity.inc
         END

@@ -6,12 +6,46 @@
         LD B,0
         LD C,181
         CALL 5
-        LD A,H
-        OR L
+        LD A,(HL)
+        CP 'B'
         JP NZ,FAIL
+        LD DE,4
+        ADD HL,DE
+        LD A,(HL)
+        CP 6
+        JP NZ,FAIL
+        XOR A
+        LD (04000H),A
         LD B,3
         LD C,181
         LD DE,04000H
+        CALL 5
+        LD A,H
+        OR L
+        JP NZ,FAIL
+        LD A,(04002H)
+        CP 64
+        JP NZ,FAIL
+        ; Binding setters reject incompatible DPBs without publishing bytes.
+        LD A,1
+        LD (04000H),A
+        LD B,3
+        LD DE,04000H
+        LD C,181
+        CALL 5
+        LD A,H
+        OR L
+        JP NZ,FAIL
+        LD HL,04001H
+        LD DE,04100H
+        LD BC,64
+        LDIR
+        LD A,(04002H)
+        XOR 1
+        LD (04002H),A
+        LD B,4
+        LD DE,04000H
+        LD C,181
         CALL 5
         LD A,H
         OR A
@@ -19,7 +53,57 @@
         LD A,L
         CP 2
         JP NZ,FAIL
-        LD BC,1
+        LD B,3
+        LD DE,04000H
+        LD C,181
+        CALL 5
+        LD HL,04001H
+        LD DE,04100H
+        LD B,64
+IT_CMP:
+        LD A,(DE)
+        CP (HL)
+        JP NZ,FAIL
+        INC HL
+        INC DE
+        DJNZ IT_CMP
+        LD B,3
+        LD DE,0
+        LD C,181
+        CALL 5
+        LD A,H
+        OR A
+        JP NZ,FAIL
+        LD A,L
+        CP 1
+        JP NZ,FAIL
+        ; An 80-byte request ending exactly at the live TPA limit is valid.
+        LD HL,(6)
+        LD DE,-80
+        ADD HL,DE
+        LD (HL),1
+        EX DE,HL
+        LD B,3
+        LD C,181
+        CALL 5
+        LD A,H
+        OR L
+        JP NZ,FAIL
+        LD HL,(6)
+        LD DE,-79
+        ADD HL,DE
+        LD (HL),1
+        EX DE,HL
+        LD B,3
+        LD C,181
+        CALL 5
+        LD A,H
+        OR A
+        JP NZ,FAIL
+        LD A,L
+        CP 1
+        JP NZ,FAIL
+        LD BC,2
         CALL LY_BIOS+27
         LD A,H
         OR L

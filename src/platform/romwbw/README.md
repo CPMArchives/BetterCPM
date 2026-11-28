@@ -1,6 +1,6 @@
 # RomWBW / HBIOS engineering port
 
-28 November 2026: initial emulator bring-up and focused acceptance pass.
+28 November 2026: block-device configuration and empty-disk installation pass focused emulator acceptance.
 This is an engineering target, not a published platform release.
 
 ## Target
@@ -12,7 +12,7 @@ This is an engineering target, not a published platform release.
 | ROM | emu_avw, RomWBW 3.5.1; SHA-256 `4b11402a29fad22de304775b7c415eb6a74600df06bd57828b9931a7e9693258` |
 | Boot | Unmodified RomWBW ROM loader, disk unit 2, slice zero, no MBR |
 | Console | HBIOS character unit zero, basic serial/ANSI clear screen |
-| Disk | One A: drive, fixed hd512: 8,519,680 bytes, 512-byte physical sectors |
+| Disk | Protected boot A: and rebindable B:, fixed hd512: 8,519,680 bytes, 512-byte physical sectors |
 | CP/M geometry | 1040 tracks, 64 logical 128-byte records/track, 16 reserved tracks |
 | Allocation | 2048 blocks of 4096 bytes, 512 directory entries, no CSV |
 | Proxy | FE00h–FFFFh reserved for HBIOS |
@@ -32,11 +32,11 @@ normal macOS system libraries remain dynamically linked.
 The shared BDOS, CCP, reconstruction worker and RSX machinery are reused.
 `romwbw-hbios` reserves the proxy and recovers its 512 bytes by reducing the
 resident disk-service allocation. The BIOS allowance grows for HBIOS console
-calls; a single DPH/DPB and 256-byte ALV replace the four floppy-drive tables.
+calls; two DPH/DPB records and two 256-byte ALVs replace the four floppy-drive tables. Cold HBIOS initialization runs in the bootstrap, recovering BIOS padding for those tables.
 All resident components retain independent build-time size checks.
 
 Every device operation uses standard `CALL FFF0h` HBIOS functions. There are no
-emulator-specific I/O ports in the adapter. Cold boot discovers the boot device,
+emulator-specific I/O ports in the adapter. The bootstrap discovers the boot device,
 BIOS bank and current user bank, then allocates sector staging through SYSALLOC.
 The boot loader requires slice zero and exactly 16,640 physical 512-byte sectors.
 
@@ -84,6 +84,15 @@ checksums and explicit pass/fail output. It requires no manual guest commands.
 `build/romwbw-emulator/provenance.json` identifies the verified sources, compiler,
 build commands and executable hash.
 
+Test native configuration and installation with two private image copies:
+
+```sh
+python3 tools/test_romwbw_install.py \
+  --image-dir build/romwbw-engineering/profiles/romwbw-hbios/romwbw/build/romwbw \
+  --simulator build/romwbw-emulator/romwbw_emu/src/romwbw_emu \
+  --rom build/romwbw-emulator/emu_avw.rom --output build/romwbw-install-acceptance
+```
+
 For an interactive session, use the native emulator with the same ROM and a
 private writable copy of `system.img`, `--boot=2 --no-config`. Enter Ctrl-E for
 its debugger, then type `quit` to exit. Do not attach one writable image to two
@@ -97,11 +106,34 @@ invalid drive/track/sector rejection, read-DMA canaries, last-sector RMW,
 bank-boundary DMA, TPA overwrite and WBOOT, ECHO lifecycle and cold persistence.
 A wrong-capacity image is rejected by the bootstrap before OS entry.
 
-Runtime geometry configuration is not implemented: Function 181 discovery
-returns NULL and other operations return unsupported (HL=2). The wider 64-byte
-binding area is reserved, with only the standard DPB populated. No CONFIG,
-SYSGEN, DUP, filesystem installation or SYSTEM.SYS package is delivered yet.
-The disk images and executables are development artifacts. Full utility and
-compatibility qualification, terminal personalities, publication packaging,
-other ROM versions/devices/slices, injected HBIOS I/O failures and physical
-hardware remain outside this initial acceptance.
+The RomWBW engineering target now advertises Function 181 **block ABI 6**.
+The existing floppy targets retain ABI 5. The [block-device contract](../../../docs/engineering/RomWBW-Block-Device-Interface.md)
+defines query/rebind semantics and the versioned saved configuration sector.
+A remains the protected firmware boot unit. B can map to another exact-capacity
+512-byte HBIOS device or be explicitly unbound; nonzero slices and MBR mappings
+are not implemented.
+
+```text
+CONFIG /SHOW
+CONFIG /LOGICAL=B /UNIT=3
+CONFIG /LOGICAL=B /UNIT=3 /SAVE
+CONFIG /LOGICAL=B /UNBIND /SAVE
+SYSGEN B:
+```
+
+These are engineering platform variants of CONFIG and SYSGEN. CONFIG currently
+provides the block options above; startup/PDS/IOBYTE editing and the full shared
+CONFIG interface still require integration. SYSGEN must run in user zero. It
+requires an empty formatted hd512 destination, verifies its matched source,
+copies and verifies the manifest files and system area, then commits boot
+metadata last. It refuses existing files in any user area; it is not an in-place
+upgrade or a formatter; SYSTEM.SYS package import/export is not implemented. The generated image includes the configured installer.
+Use the host image helper/cpmtools to prepare an empty target for now; DUP and
+filesystem formatting remain separate work.
+
+The [installation acceptance record](../../../docs/engineering/evidence/2026-11-28-romwbw-install/README.md)
+retains two-disk install/cold-boot, saved mappings, independent host extraction,
+source corruption/refusal and injected HBIOS I/O failure results. Broader utility
+and compatibility qualification, CONFIG feature parity, terminal personalities,
+release packaging, other ROM versions/boards/slices and physical hardware remain
+outside this engineering acceptance. Banked RSX execution is still deferred.

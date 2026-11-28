@@ -1,0 +1,21 @@
+[DISK] Validated disk0: $WORKTREE/build/romwbw-block-complete-install/io-fault.img (8519680 bytes)
+CPU mode: Z80
+RomWBW mode: 512KB ROM + 512KB RAM, bank switching enabled
+Auto-boot: configured NVRAM for '2' (this run only)
+Console escape: ^E - reserved by the emulator, the guest never sees it (--escape=none to disable)
+Instruction limit: 4000000000 - the run stops there with exit status 124 (--max-instructions=0 for none)
+RomWBW v3.5.1 (from $WORKTREE/build/romwbw-emulator/emu_avw.rom)
+Starting execution at 0x0000 in ROM bank 0
+
+
+RetroBrew SBC [SBC_simh_std] Boot Loader
+NV Switches Found
+
+AutoBoot in 0 Seconds (<esc> aborts, <enter> now)...
+
+Booting Disk Unit 2, Slice 0, Sector 0x00000000...
+
+Volume "BETTERCPM HBIOS " [0x1000-0x1200, entry @ 0x1000]...
+A0> A0> _ A0> A0> A_ A0> AA0> AF_ A0> AFA0> AFA_ A0> AFAA0> AFAI_ A0> AFAIA0> AFAIL_ A0> AFAILA0> AFAILI_ A0> AFAILIA0> AFAILIO_ A0> AFAILIOA0> AFAILIO
+ROMWBW IO FAULT READY
+XROMWBW IO FAULT PASS

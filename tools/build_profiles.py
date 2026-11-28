@@ -90,8 +90,8 @@ def profile_inputs(profile: BuildProfile, source: Path) -> tuple:
         for name in ('LY_TPA', 'LY_HIST', 'LY_SYS', 'LY_BDOS', 'LY_EXT', 'LY_DISK'):
             selected[name] += 0x200
         selected['LY_BIOS'] += 32
-        selected['LY_FILE'] += 96
-        selected['LY_TAB'] += 96
+        selected['LY_FILE'] -= 128
+        selected['LY_TAB'] -= 128
     if profile.target == 'trs80m2':
         # The FD1791/DMA reader needs more room than the simulated controller.
         # Move the BIOS start 88 bytes and its end 64; reserve a 64-byte ALV

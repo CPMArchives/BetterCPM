@@ -44,7 +44,7 @@ supply that status.
 | MyZ80 1.24 under DOSBox-X | P2 | Planned emulator-native target; no BetterCP/M boot or qualification claimed. | N/A | Pin MyZ80 1.24, DOSBox-X and guest configuration; examine boot, disk and console interfaces and establish reproducible tests. |
 | z80pack IMSAI, Z80 configuration | P2 | Planned. Upstream source supports Z80 CPU selection, subject to build configuration; no BetterCP/M boot or qualification claimed. | Not validated | Pin a Z80-capable build and explicit CPU selection, ROM, memory, console and FIF disk setup; verify the configuration before porting. |
 | z80pack Altair, Z80 configuration | P0 | Published 1.3 emulator baseline as of 28 November 2026: Z80, 64 KiB, 88-2SIO and fixed Tarbell single-density geometry. Seven focused acceptance gates pass, including 269 compatibility assertions, configuration/installation, screen personalities, native tools and the four-volume distribution. | Not validated | Maintain the published configuration and [exact publication evidence](releases/evidence/altair-1.3-publication/README.md); see the [Altair implementation](../src/platform/altair/README.md). |
-| RomWBW / HBIOS | P1 | Initial engineering port boots on pinned romwbw_emu 1.51 / RomWBW 3.5.1; focused filesystem, bank-boundary DMA, 56 KiB TPA and RSX lifecycle checks pass. One fixed hd512 disk; C++ HBIOS scope only. | Not validated | Complete configuration/installation, utility and compatibility qualification before release. See the [port target sheet](../src/platform/romwbw/README.md). |
+| RomWBW / HBIOS | P1 | Initial engineering port boots on pinned romwbw_emu 1.51 / RomWBW 3.5.1; focused filesystem, bank-boundary DMA, 56 KiB TPA and RSX lifecycle checks pass. Two fixed hd512 bindings, saved block configuration and empty-disk SYSGEN installation pass focused tests; C++ HBIOS scope only. | Not validated | Complete CONFIG feature parity, utility/compatibility qualification and release packaging. See the [port target sheet](../src/platform/romwbw/README.md). |
 | TRS-80 Model 12 | P3 | Exploratory. The Model II system image failed to boot on an emulated Model 12 with a reported ROM-level error. Exact message and cause are not established. | Not validated | Retain the observation; defer boot-protocol investigation until an actual Model 12 port is undertaken. |
 | TRS-80 Model 16 | P3 | Exploratory; no BetterCP/M boot or qualification evidence established. | Not validated | Select the Z80-side CP/M environment and emulator configuration when this port is taken up. |
 
@@ -99,7 +99,7 @@ and Z80 core build from verified upstream snapshots. ROM loader execution,
 shared-core operation, disk persistence and RSX lifecycle have focused retained
 [evidence](engineering/evidence/2026-11-28-romwbw/README.md). HBIOS is implemented
 in C++; this is not real-driver or physical-hardware validation. The initial
-single-disk geometry has no runtime configuration/installation support yet.
+two-drive geometry now has focused block configuration and empty-disk installation evidence; full utility integration remains incomplete.
 
 ## Shared core and advancement criteria
 

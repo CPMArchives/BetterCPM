@@ -1,30 +1,19 @@
 ; Loaded by the unmodified RomWBW disk boot loader from physical sector 3.
         INCLUDE layout.inc
+        INCLUDE state.inc
         ASEG
         ORG 01000H
         LD SP,01000H
         LD BC,0F8E0H
         CALL 0FFF0H
-        JR NZ,RW_BAD
+        JP NZ,RW_BAD
         LD A,E
         OR A
-        JR NZ,RW_BAD
+        JP NZ,RW_BAD
         LD C,D
         PUSH BC
-        LD B,01AH
-        CALL 0FFF0H
-        JR NZ,RW_BAD
-        LD A,B
-        CP 2
-        JR NZ,RW_BAD
-        LD A,C
-        OR D
-        OR E
-        JR NZ,RW_BAD
-        LD DE,16640
-        OR A
-        SBC HL,DE
-        JR NZ,RW_BAD
+        CALL RW_CAP
+        JP NZ,RW_BAD
         POP BC
         LD B,012H
         LD DE,08000H
@@ -32,7 +21,7 @@
         PUSH BC
         CALL 0FFF0H
         POP BC
-        JR NZ,RW_BAD
+        JP NZ,RW_BAD
         LD B,0F3H
         PUSH BC
         CALL 0FFF0H
@@ -42,14 +31,117 @@
         LD E,13
         LD HL,LY_SYS
         CALL 0FFF0H
-        JR NZ,RW_BAD
+        JP NZ,RW_BAD
+        LD BC,0F8E0H
+        CALL 0FFF0H
+        JP NZ,RW_BAD
+        LD A,E
+        OR A
+        JP NZ,RW_BAD                  ; initial target is slice zero only
+        LD A,D
+        LD (WB_UNIT),A
+        LD (LY_TAB+16),A
+        LD BC,0F8F2H
+        CALL 0FFF0H
+        JP NZ,RW_BAD
+        LD A,D
+        LD (WB_BANK),A
+        LD B,0F3H
+        CALL 0FFF0H
+        LD A,C
+        LD (WB_USER),A
+        LD HL,512
+        LD B,0F6H
+        CALL 0FFF0H
+        JP NZ,RW_BAD
+        LD (WB_HEAP),HL
+        ; Saved block mapping is a full, checksummed physical sector.
+        LD A,(WB_UNIT)
+        LD C,A
+        LD B,012H
+        LD DE,08000H
+        LD HL,4
+        CALL 0FFF0H
+        JP NZ,RW_BAD
+        LD A,(WB_UNIT)
+        LD C,A
+        LD B,013H
+        LD D,0
+        LD E,1
+        LD HL,LY_BUF
+        CALL 0FFF0H
+        JP NZ,RW_BAD
+        LD HL,(LY_BUF)
+        LD DE,05742H                   ; BW
+        OR A
+        SBC HL,DE
+        JP NZ,RW_BAD
+        LD HL,(LY_BUF+2)
+        LD DE,04643H                   ; CF
+        OR A
+        SBC HL,DE
+        JP NZ,RW_BAD
+        LD HL,(LY_BUF+4)
+        LD DE,00201H                   ; version 1, two logical drives
+        OR A
+        SBC HL,DE
+        JP NZ,RW_BAD
+        LD IX,LY_BUF
+        LD HL,0
+        LD B,0
+RW_SUM:
+        LD E,(IX+0)
+        LD D,(IX+1)
+        ADD HL,DE
+        INC IX
+        INC IX
+        DJNZ RW_SUM
+        LD A,H
+        OR L
+        JP NZ,RW_BAD
+        LD A,(LY_BUF+6)
+        LD (WB_SAVED),A
+        CP 0FFH
+        JR Z,RW_READY
+        LD C,A
+        LD A,(LY_TAB+16)
+        CP C
+        JR Z,RW_READY                  ; a saved alias can never replace A
+        PUSH BC
+        CALL RW_CAP
+        POP BC
+        JR NZ,RW_READY                 ; unavailable B must not stop booting A
+        LD A,C
+        LD (LY_TAB+96),A
+RW_READY:
         XOR A
         LD (0048H),A
         JP LY_BIOS
+RW_CAP:
+        LD B,01AH
+        CALL 0FFF0H
+        RET NZ
+        LD A,B
+        CP 2
+        JR NZ,RW_CAPBAD
+        LD A,C
+        OR D
+        OR E
+        JR NZ,RW_CAPBAD
+        LD DE,16640
+        OR A
+        SBC HL,DE
+        LD A,H
+        OR L
+        RET
+RW_CAPBAD:
+        LD A,1
+        OR A
+        RET
 RW_BAD:
         LD BC,0100H
         LD E,'!'
         CALL 0FFF0H
         HALT
-        JR RW_BAD
+        JP RW_BAD
         END

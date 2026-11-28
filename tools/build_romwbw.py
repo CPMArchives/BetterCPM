@@ -84,7 +84,9 @@ def compile_image(assembler):
     config = ('        INCLUDE layout.inc\n'+equ(es,('EX_RETURN','BCX_MVAL'))+
               '        ASEG\n        ORG LY_CFG\n'+
               '        JP AC_UNSUP\n'*3+'        JP BF_CPXCTL\n'+
-              '        JP AC_UNSUP\n'*3+'AC_UNSUP: LD HL,2\n        RET\nCPTCOUNT EQU'+tail+'\n        END\n')
+              '        JP WB_CONTROL\n'+'        JP AC_UNSUP\n'*2+
+              'AC_UNSUP: LD HL,2\n        RET\n'+read('src/platform/romwbw/control.inc')+
+              '\nCPTCOUNT EQU'+tail+'\n        END\n')
     ctl = component('config',config,L['CONFIG'],1000)
     control = bind_slot(ctl.ljust(1024,b'\0'),identity)
     stage1 = (loader/'stage1.carrier').read_bytes()
@@ -95,7 +97,7 @@ def compile_image(assembler):
             raise ValueError('checked loader fixup moved: '+label)
         struct.pack_into('<H',bios,at+1,binascii.crc_hqx(data,0xffff))
     table_data = tables(L)
-    if len(table_data)+12 > L['RSX_STATE']-L['TABLES']:
+    if len(table_data)+15 > L['RSX_STATE']-L['TABLES']:
         raise ValueError('disk tables/platform state overlap RSX state')
     resident = bytearray(52*128)
     parts = [(L['SYSTEM'],gateway,L['BDOS']),
@@ -136,11 +138,12 @@ def compile_image(assembler):
 
              ('README.TXT',b'BetterCP/M RomWBW engineering image.\r\n'
               b'Initial HBIOS engineering bring-up.\r\n'
-              b'One fixed-format HBIOS disk; no installation utility yet.\r\n\x1a')]
+              b'Use CONFIG /SHOW for block mappings; SYSGEN B: installs on an empty hd512 B:.\r\n\x1a')]
     # Small executable probes use the public CP/M interface only.
-    for filename,source in [('AFILE.COM','filetest.mac'),('ATPA.COM','tpatest.mac'),('AIOTEST.COM','iotest.mac')]:
+    for filename,source in [('AFILE.COM','filetest.mac'),('ATPA.COM','tpatest.mac'),('AIOTEST.COM','iotest.mac'),('AFAILIO.COM','failio.mac')]:
         files.append((filename,component(filename[:-4].lower(),
             read('src/platform/romwbw/'+source),0x100,4096)))
+    files.append(('CONFIG.COM',component('config-com',read('src/platform/romwbw/config.mac'),0x100,0x1C00)))
     files.append(('HELLO.COM',component('hello',
         "        ASEG\n        ORG 0100H\n        LD DE,MSG\n        LD C,9\n        CALL 5\n        JP 0\nMSG: DB 'ROMWBW TRANSIENT PASS',13,10,'$'\n        END\n",0x100,256)))
     util = ROOT/'build/utilities'
@@ -151,6 +154,23 @@ def compile_image(assembler):
               ('ECHO.RSX', (ROOT/'build/rsx/ECHO.RSX').read_bytes())]
     files.append(('AECHO.COM', component('aecho',
         "        ASEG\n        ORG 0100H\n        LD C,199\n        CALL 5\n        JP 0\n        END\n",0x100,128)))
+    prefix = bytearray(image(payload,boot,files)[:131072])
+    prefix[2048:2560]=bytes(512)
+    install=f'SG_SYSCRC EQU 0{binascii.crc_hqx(prefix,0xffff):04X}H\n'
+    install_files=[(name,data) for name,data in files
+                   if name not in ('AFILE.COM','ATPA.COM','AIOTEST.COM','AFAILIO.COM')]
+    install_files.append(('SYSGEN.COM',None))
+    install+=f'SG_COUNT EQU {len(install_files)}\nSG_LIST:\n'
+    for name,data in install_files:
+        stem,ext=name.split('.')
+        record=bytearray((stem.ljust(8)+ext.ljust(3)).encode('ascii'))
+        if data is not None:
+            padded=data.ljust((len(data)+127)//128*128,b'\x1a')
+            record+=struct.pack('<HHB',binascii.crc_hqx(padded,0xffff),len(padded)//128,1)
+        else:record+=bytes(5)
+        install+='        DB '+','.join(str(n) for n in record)+'\n'
+    files.append(('SYSGEN.COM',component('sysgen-com',read('src/platform/romwbw/sysgen.mac'),
+                 0x100,0x1C00,{'installer.inc':install})))
     raw = image(payload, boot, files)
     (out/'system.img').write_bytes(raw)
     (out/'diskdefs').write_text(DISKDEFS)

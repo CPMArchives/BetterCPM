@@ -6,28 +6,6 @@ PL_INIT:
         LD (3),A
         XOR A
         LD (LY_RSTA),A
-        LD BC,0F8E0H
-        CALL 0FFF0H
-        JP NZ,WB_HALT
-        LD A,E
-        OR A
-        JP NZ,WB_HALT                  ; initial target is slice zero only
-        LD A,D
-        LD (WB_UNIT),A
-        LD BC,0F8F2H
-        CALL 0FFF0H
-        JP NZ,WB_HALT
-        LD A,D
-        LD (WB_BANK),A
-        LD B,0F3H
-        CALL 0FFF0H
-        LD A,C
-        LD (WB_USER),A
-        LD HL,512
-        LD B,0F6H
-        CALL 0FFF0H
-        JP NZ,WB_HALT
-        LD (WB_HEAP),HL
         RET
 PL_CONST:
         PUSH BC
