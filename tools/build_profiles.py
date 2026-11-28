@@ -39,6 +39,7 @@ class BuildProfile:
 
 
 PROFILES = {
+    'altair-fullram': BuildProfile('altair-fullram', 'altair', 0xC00, 0x10000, 0),
     'model2-fullram': BuildProfile('model2-fullram', 'trs80m2', 0xC00, 0x10000, 0),
     'cpmsim-legacy-checked': BuildProfile('cpmsim-legacy-checked', 'z80pack',
                                        0, 0xF400, 0xC00),
@@ -106,6 +107,8 @@ def profile_inputs(profile: BuildProfile, source: Path) -> tuple:
     layout = EQUATE.sub(lambda m: f'{m[1]}{m[2]}0{selected[m[1]]:04X}H', original)
     if profile.target == 'trs80m2':
         layout = layout.replace('PL_M2           EQU     0', 'PL_M2           EQU     1')
+    if profile.target == 'altair':
+        layout = layout.replace('PL_ALTAIR       EQU     0', 'PL_ALTAIR       EQU     1')
     layout = f'; Generated build profile: {profile.name}\n' + layout
     flags = (f'; Generated build profile: {profile.name}\n'
              f'BP_CHECKED EQU {int(profile.checked)}\n'

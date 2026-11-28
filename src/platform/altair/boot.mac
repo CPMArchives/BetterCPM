@@ -1,0 +1,43 @@
+; First Tarbell sector. Internal bootstrap enters at 007DH after loading
+; sector 1 into 0000H. Load eight contiguous stage-two sectors at 1000H.
+        ASEG
+        ORG 0
+AL_FIRST EQU 2
+AL_AFTER EQU 10
+        DS 32
+AL_BOOT:
+        DI
+        LD SP,00800H
+        LD HL,01000H
+        LD E,AL_FIRST
+AL_BOOTSECTOR:
+        LD A,E
+        OUT (0FAH),A
+        LD A,08CH
+        OUT (0F8H),A
+        LD B,128
+AL_BOOTBYTE:
+        IN A,(0FCH)
+        OR A
+        JP P,AL_BOOTFAIL
+        IN A,(0FBH)
+        LD (HL),A
+        INC HL
+        DJNZ AL_BOOTBYTE
+        IN A,(0FCH)
+        OR A
+        JP M,AL_BOOTFAIL
+        IN A,(0F8H)
+        OR A
+        JR NZ,AL_BOOTFAIL
+        INC E
+        LD A,E
+        CP AL_AFTER
+        JR NZ,AL_BOOTSECTOR
+        JP 01000H
+AL_BOOTFAIL:
+        HALT
+        JR AL_BOOTFAIL
+        DS 07DH-$
+        JP AL_BOOT
+        END

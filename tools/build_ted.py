@@ -157,7 +157,7 @@ if __name__ == '__main__':
     p.add_argument('--output', type=Path, default=ROOT/'build/ted-development')
     p.add_argument('--reference', action='store_true')
     p.add_argument('--legacy-audit', action='store_true')
-    p.add_argument('--target', choices=['z80pack','trs80gp'], default='z80pack')
+    p.add_argument('--target', choices=['z80pack','trs80gp','altair'], default='z80pack')
     p.add_argument('--identity-state', choices=['auto','assigned','development'], default='auto')
     a = p.parse_args()
     print(len(build(a.assembler, a.output, a.reference,legacy=a.legacy_audit,target=a.target,identity_state=a.identity_state)), 'bytes')

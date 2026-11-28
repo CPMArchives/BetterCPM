@@ -955,12 +955,15 @@ def main() -> None:
 
     boot_target = cpu.word(entries[0] + 1)
     require(cpu.mem[boot_target] == 0xCD and
-            cpu.mem[boot_target + 11] == 0xC3 and
-            BASE <= cpu.word(boot_target + 12) < BASE + len(data),
+            cpu.word(boot_target + 1) == console_symbol('MC_BASE') and
+            cpu.mem[boot_target + 3] == 0xCD and
+            cpu.word(boot_target + 4) == console_symbol('M4_INIT') and
+            cpu.mem[boot_target + 6:boot_target + 10] ==
+                bytes((0xAF, 0x32, (LAYOUT['SYSTEM']+0x95)&255, (LAYOUT['SYSTEM']+0x95)>>8)),
             "BOOT does not initialize the platform then reconstruct commands")
     warm_target = cpu.word(entries[1] + 1)
-    require(cpu.mem[warm_target] == 0xC3 and
-            cpu.word(warm_target + 1) == cpu.word(boot_target + 12),
+    require(warm_target == boot_target + 10 and cpu.mem[warm_target] == 0xC3 and
+            cpu.word(warm_target + 1) == console_symbol('M4_RELOAD'),
             "WBOOT does not enter command-image restoration")
     private_read = BASE + 17 * 3
     private_cursor = private_read + 3

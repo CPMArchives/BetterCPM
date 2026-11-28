@@ -53,6 +53,13 @@ its native screen renderer. A public binding or a foreign private binding does
 not grant access to the Model II video overlay. Generic TCAP admission neither
 executes a query nor substitutes for these checks.
 
+The Altair adapter uses native MCON 1.0 platform bit 8 with exact private
+checked-system binding. Its integrated host renderer writes to 88-2SIO
+port 11h instead of cpmsim's output port 1. The pinned emulator configuration
+uses `sio1_baud_rate 0`, whose synchronous output accepts every byte. This
+bounded renderer is not qualified for a throttled physical serial device. The single console is the
+existing CRT selector 1; the TCAP client route rules remain unchanged.
+
 The loader's successful admission does not imply that a utility has admitted the
 current console route. The client checks the route again before each operation.
 

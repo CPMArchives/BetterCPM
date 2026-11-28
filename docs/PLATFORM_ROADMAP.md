@@ -43,17 +43,20 @@ supply that status.
 | Kaypro | P1 | Future targeted platform; no port work has started. No BetterCP/M boot or qualification claimed. | Not validated | Select the exact Kaypro model and emulator configuration when port work is taken up. |
 | MyZ80 1.24 under DOSBox-X | P2 | Planned emulator-native target; no BetterCP/M boot or qualification claimed. | N/A | Pin MyZ80 1.24, DOSBox-X and guest configuration; examine boot, disk and console interfaces and establish reproducible tests. |
 | z80pack IMSAI, Z80 configuration | P2 | Planned. Upstream source supports Z80 CPU selection, subject to build configuration; no BetterCP/M boot or qualification claimed. | Not validated | Pin a Z80-capable build and explicit CPU selection, ROM, memory, console and FIF disk setup; verify the configuration before porting. |
-| z80pack Altair, Z80 configuration | P2 | Planned. Z80 mode is supported in upstream source; the existing assessment proposes `altairsim -z -F -M1` with Tarbell. No BetterCP/M boot or qualification claimed. | Not validated | Pin and verify the Z80 build/configuration, boot ROM, memory map, console and chosen disk controller; do not assume a default 8080 setup is suitable. |
+| z80pack Altair, Z80 configuration | P2 | Active port as of 28 November 2026: BetterCP/M 1.3 cold/warm boot, 56 KiB maximum COM, B–D multi-extent file I/O, bounded geometry API, RSX load/call/unload and damaged-carrier refusal pass in the pinned serial-only emulator. | Not validated | Finish exact-artifact packaging and publication review after the native configuration/install, media and focused compatibility gates; see the [Altair implementation](../src/platform/altair/README.md). |
 | RomWBW / HBIOS | P3 | Exploratory. An emulator candidate has been found; suitability and BetterCP/M operation are untested. | Not validated | Evaluate the candidate below and select a bounded HBIOS target before implementation. |
 | TRS-80 Model 12 | P3 | Exploratory. The Model II system image failed to boot on an emulated Model 12 with a reported ROM-level error. Exact message and cause are not established. | Not validated | Retain the observation; defer boot-protocol investigation until an actual Model 12 port is undertaken. |
 | TRS-80 Model 16 | P3 | Exploratory; no BetterCP/M boot or qualification evidence established. | Not validated | Select the Z80-side CP/M environment and emulator configuration when this port is taken up. |
 
-Kaypro, MyZ80, z80pack IMSAI and Altair, RomWBW, Model 12 and Model 16 are
+Kaypro, MyZ80, z80pack IMSAI, RomWBW, Model 12 and Model 16 are
 future targets with no BetterCP/M port work started. The Model 12 image trial
 was a compatibility experiment, not the start of a port. Model 4D and Model 4P
 have preliminary boot observations only; no dedicated port effort or
 qualification is established. Model II is now an integrated, maintained release
 baseline; the earlier third-party-port report is historical.
+
+Altair is now an active port workstream. Its controller/console and bounded
+OS integration evidence is separate from release qualification.
 
 The Model 4D, Model 4P and Model 12 observations above are
 maintainer-reported planning inputs from the design discussion, not newly

@@ -22,6 +22,6 @@ def release_modules(platform, assembler=None):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--platform',choices=('cpmsim','model4','model2'),required=True)
+    p.add_argument('--platform',choices=('cpmsim','model4','model2','altair'),required=True)
     p.add_argument('--assembler',type=Path)
     a=p.parse_args();release_modules(a.platform,a.assembler)

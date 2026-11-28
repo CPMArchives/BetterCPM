@@ -1,0 +1,278 @@
+        INCLUDE layout.inc
+        INCLUDE profile.inc
+        INCLUDE bioslinks.inc
+        INCLUDE hardware.inc
+        ASEG
+        ORG LY_DISK
+        JP AD_API
+        JP AD_MAP
+        JP AD_SEL
+        JP AD_READ
+        JP AD_WRITE
+        JP AD_BOOT
+AD_SEL:
+        LD A,C
+        CP 4
+        JR NC,AD_NODSK
+        LD (BIO_DRIVE),A
+        JP AD_DPH
+AD_NODSK:
+        LD HL,0
+        RET
+AD_DPH:
+        LD HL,LY_TAB
+        LD DE,80
+        OR A
+        RET Z
+AD_DLOOP:
+        ADD HL,DE
+        DEC A
+        JR NZ,AD_DLOOP
+        RET
+AD_MAP:
+        LD A,(BIO_DRIVE)
+        CP 4
+        JP NC,AL_IOBAD
+        LD HL,(BIO_TRACK)
+        LD A,H
+        OR A
+        JP NZ,AL_IOBAD
+        LD A,L
+        CP 77
+        JP NC,AL_IOBAD
+        LD (BIO_PCYL),A
+        LD HL,(BIO_SECTOR)
+        LD A,H
+        OR A
+        JP NZ,AL_IOBAD
+        LD A,L
+        CP 26
+        JP NC,AL_IOBAD
+        INC A
+        LD (BIO_PSEC),A
+        XOR A
+        LD (BIO_QUART),A
+        RET
+AD_READ:
+        PUSH HL
+        LD HL,LY_TAB+416              ; dedicated 128-byte read staging area
+        CALL AD_ADDR
+        CALL AL_READ
+        POP DE
+        RET NZ                        ; failed read must not change caller DMA
+        LD HL,LY_TAB+416
+        LD BC,128
+        LDIR
+        XOR A
+        RET
+AD_WRITE:
+        CALL AD_ADDR
+        JP AL_WRITE
+AD_ADDR:
+        LD A,(BIO_PCYL)
+        LD D,A
+        LD A,(BIO_PSEC)
+        LD E,A
+        LD A,(BIO_DRIVE)
+        RET
+; B consecutive absolute 128-byte records from A into HL. DE is a full
+; record index. The reserved system area is 208 records, not CP/M data.
+AD_BOOT:
+        LD A,B
+        OR A
+        JP Z,AL_IOBAD
+AD_BNEXT:
+        PUSH BC
+        PUSH DE
+        LD A,D
+        OR A
+        JR NZ,AD_BBAD
+        LD A,E
+        CP 208
+        JR NC,AD_BBAD
+        LD D,0
+AD_BDIV:
+        CP 26
+        JR C,AD_BID
+        SUB 26
+        INC D
+        JR AD_BDIV
+AD_BID:
+        INC A
+        LD E,A
+        XOR A
+        CALL AL_READ
+        JR AD_BRET
+AD_BBAD:
+        LD A,1
+        OR A
+AD_BRET:
+        POP DE
+        POP BC
+        RET NZ
+        INC DE
+        DJNZ AD_BNEXT
+        RET
+; Read-only geometry discovery. Configuration/format setters return the
+; defined unsupported result; they must not publish a binding we cannot use.
+AD_API:
+        LD A,B
+        OR A
+        LD HL,AD_INFO
+        RET Z
+        PUSH IX
+        PUSH DE
+        POP IX
+        LD A,D
+        OR A
+        JP Z,AD_RBAD
+        LD HL,80
+        ADD HL,DE
+        JP C,AD_RBAD
+        LD DE,LY_TPA
+        OR A
+        SBC HL,DE
+        JR NC,AD_RBAD
+        LD A,(IX+0)
+        CP 4
+        JR NC,AD_RBAD
+        LD A,B
+        CP 1
+        JR Z,AD_PHYS
+        CP 3
+        JR Z,AD_LOG
+        CP 2
+        JR Z,AD_SET
+        CP 4
+        JR Z,AD_SET
+        CP 5
+        JP Z,AD_FMT
+AD_UNSUP:
+        LD HL,2
+        JR AD_DONE
+; Fixed geometry admits identical descriptors without allowing a different
+; controller binding. This supports DUP's save/restore of its active profile.
+AD_SET:
+        LD A,B
+        CP 2
+        JR NZ,AD_SL
+        CALL AD_PP
+        JR AD_SC
+AD_SL:
+        CALL AD_LP
+AD_SC:
+        PUSH IX
+        POP DE
+        INC DE
+AD_CMPL:
+        LD A,(DE)
+        CP (HL)
+        JR NZ,AD_UNSUP
+        INC DE
+        INC HL
+        DJNZ AD_CMPL
+        LD HL,0
+        JP AD_DONE
+AD_PHYS:
+        CALL AD_PP
+        LD C,B
+        LD B,0
+        JR AD_COPY
+AD_PP:
+        LD A,(IX+0)
+        LD E,A
+        ADD A,A
+        ADD A,E
+        ADD A,A
+        LD E,A
+        LD D,0
+        LD HL,AD_PHYT
+        ADD HL,DE
+        LD B,6
+        RET
+AD_LOG:
+        CALL AD_LP
+        LD C,B
+        LD B,0
+        JR AD_COPY
+AD_LP:
+        LD A,(IX+0)
+        CALL AD_DPH
+        LD DE,16
+        ADD HL,DE
+        LD B,64
+        RET
+AD_COPY:
+        PUSH IX
+        POP DE
+        INC DE
+        LDIR
+        LD HL,0
+        JR AD_DONE
+AD_RBAD:
+        LD HL,1
+AD_DONE:
+        LD A,L
+        POP IX
+        OR A
+        RET
+; Format one known FM surface to E5. No variable geometry or arbitrary track
+; streams are claimed. The shared DUP verifies every formatted logical record.
+AD_FMT:
+        LD A,(IX+0)
+        OR A
+        JP Z,AD_UNSUP
+        LD A,(IX+2)
+        OR A
+        JP NZ,AD_UNSUP
+        LD A,(IX+1)
+        CP 77
+        JP NC,AD_RBAD
+        LD L,(IX+5)
+        LD H,(IX+6)
+        LD A,H
+        OR A
+        JP Z,AD_RBAD
+        LD E,(IX+3)
+        LD D,(IX+4)
+        LD A,D
+        OR E
+        JP Z,AD_RBAD
+        ADD HL,DE
+        JP C,AD_RBAD
+        LD DE,LY_TPA
+        OR A
+        SBC HL,DE
+        JP NC,AD_RBAD
+        LD HL,LY_BUF
+        LD DE,LY_BUF+1
+        LD BC,127
+        LD (HL),0E5H
+        LDIR
+        LD D,(IX+1)
+        LD E,1
+AD_FLOOP:
+        LD A,(IX+0)
+        LD HL,LY_BUF
+        CALL AL_WRITE
+        JR NZ,AD_FERR
+        INC E
+        LD A,E
+        CP 27
+        JR C,AD_FLOOP
+        LD HL,0
+        JP AD_DONE
+AD_FERR:
+        LD HL,1
+        JP AD_DONE
+AD_INFO:
+        DB 'BDCF',5,4,4,64
+        DW AD_PHYT,LY_TAB
+        DW 0,0
+AD_PHYT:
+        REPT 4
+        DB 8,77,1,0,0,0
+        ENDM
+        INCLUDE tarbell.inc
+        INCLUDE checked-identity.inc
+        END

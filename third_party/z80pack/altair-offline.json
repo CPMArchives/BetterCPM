@@ -1,0 +1,17 @@
+{
+  "revision": "91fd28eb04e675c2127df88ed3f40675e15282e2",
+  "upstream": "https://github.com/udo-munk/z80pack",
+  "archive": "altair-offline.tar.gz",
+  "sha256": "df88345a59dd9900fca35c5c0dad5cc89059f21f40140a64b064badf382d667a",
+  "paths": [
+    "altairsim/srcsim",
+    "z80core",
+    "iodevices",
+    "frontpanel",
+    "z80asm",
+    "LICENSE",
+    "README.md",
+    "HISTORY"
+  ],
+  "scope": "Pinned upstream serial Altair build and assembler sources, licenses and build scripts; excludes historical disk images and unrelated machines."
+}

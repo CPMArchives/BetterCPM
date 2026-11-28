@@ -1,0 +1,2 @@
+executed 17 BIOS-vector contracts from E991h binary
+character transport, disk state, all 80 reads/writes, failure paths, and SECTRAN passed

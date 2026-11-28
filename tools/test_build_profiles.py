@@ -31,9 +31,10 @@ class BuildProfiles(unittest.TestCase):
     def test_qualified_boundaries_and_fixed_transient_addresses(self):
         before = SOURCE.read_bytes()
         for name, bdos, bios, top, tpa, reserved in [
-                ('model2-fullram', 0xE2BC, 0xF5E9, 0x10000, 57344, 0),
-                ('cpmsim-fullram', 0xE2BC, 0xF591, 0x10000, 57344, 0),
-                ('cpmsim-legacy-checked', 0xD6BC, 0xE991, 0xF400, 54272, 3072)]:
+                ('altair-fullram', 0xE2C8, 0xF591, 0x10000, 57344, 0),
+                ('model2-fullram', 0xE2C8, 0xF5E9, 0x10000, 57344, 0),
+                ('cpmsim-fullram', 0xE2C8, 0xF591, 0x10000, 57344, 0),
+                ('cpmsim-legacy-checked', 0xD6C8, 0xE991, 0xF400, 54272, 3072)]:
             manifest, layout, _ = profile_inputs(PROFILES[name], SOURCE)
             values = symbols(layout)
             self.assertEqual((values['LY_BDOS'], values['LY_BIOS'], values['LY_LIMIT']),
@@ -80,6 +81,9 @@ class BuildProfiles(unittest.TestCase):
         common = self.root/'src/utilities/common'
         common.mkdir(parents=True)
         shutil.copy2(ROOT/'src/utilities/common/version.inc', common/'version.inc')
+        ccp = self.root/'src/ccp'
+        ccp.mkdir()
+        shutil.copy2(ROOT/'src/ccp/var.inc', ccp/'var.inc')
         context = write_context(PROFILES['cpmsim-fullram'], self.source)
         environment = context_environment(context, self.source)
         environment['PYTHONPATH'] = str(tools)
@@ -89,7 +93,7 @@ class BuildProfiles(unittest.TestCase):
                   f'json.loads(subprocess.check_output([sys.executable,"-c",{child!r}]))]))')
         data = json.loads(subprocess.check_output([sys.executable, '-c', parent],
                                                  env=environment, cwd=self.root))
-        self.assertEqual(data[0]['BDOS'], 0xE2BC)
+        self.assertEqual(data[0]['BDOS'], 0xE2C8)
         self.assertEqual(data[0], data[2][0])
         self.assertEqual(symbols(data[1]), data[2][1])
         self.assertIn('BP_CHECKED EQU 1', data[1])

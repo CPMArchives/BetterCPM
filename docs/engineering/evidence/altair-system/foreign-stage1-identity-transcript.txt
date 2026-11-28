@@ -1,0 +1,23 @@
+
+#######  #####    ###            #####    ###   #     #
+     #  #     #  #   #          #     #    #    ##   ##
+    #   #     # #     #         #          #    # # # #
+   #     #####  #     #  #####   #####     #    #  #  #
+  #     #     # #     #               #    #    #     #
+ #      #     #  #   #          #     #    #    #     #
+#######  #####    ###            #####    ###   #     #
+
+Release 1.39, Copyright (C) 1987-2025 by Udo Munk and others
+Altair 8800 Simulation Release 1.19
+Copyright (C) 2008-2025 by Udo Munk
+
+CPU speed is unlimited, CPU executes undocumented instructions
+SIO 0 running at 115200 baud
+SIO 1 running at 0 baud
+SIO 2 running at 115200 baud
+SIO 3 running at 1200 baud
+
+RAM 0000H - FFFFH
+Tarbell bootstrap ROM enabled
+
+!

@@ -466,7 +466,7 @@ PATCHTARGET:                            ; patch package for destination
         CALL API
         RET NZ
         LD A,(REQ+1)
-        IF PL_M2 EQ 1
+        IF PL_M2+PL_ALTAIR EQ 1
         CP 8                            ; Model II boots from eight-inch media
         ELSE
         CP 5

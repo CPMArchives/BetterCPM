@@ -40,6 +40,9 @@ def main():
         if target == 'trs80m2':
             from model2_media import geometry
             fmt = geometry()
+        elif target == 'altair':
+            from altair_media import geometry
+            fmt = geometry()
         else:
             from build_z80pack_image import DEFAULT_FORMAT
             from fdf_format import select_fdf

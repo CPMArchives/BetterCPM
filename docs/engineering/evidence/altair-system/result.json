@@ -1,0 +1,621 @@
+{
+  "status": "PASS",
+  "scope": "bounded OS integration, not release qualification",
+  "command": [
+    "$REPOSITORY/build/altair-emulator/altairsim/altairsim",
+    "-z",
+    "-R",
+    "-M1",
+    "-f0",
+    "-c",
+    "$REPOSITORY/build/altair-1.3-checks/system.conf",
+    "-d",
+    "$REPOSITORY/build/altair-1.3-checks/disks"
+  ],
+  "candidate": {
+    "target": "altair",
+    "status": "engineering image; guest checks pending",
+    "contract": {
+      "contract": {
+        "schema": 1,
+        "profile": "altair-fullram",
+        "checked": true,
+        "private_epoch": 2,
+        "carrier_epoch": 2,
+        "package_epoch": 2,
+        "layout_sha256": "6ac8b13ecabea08e03b0b411d3dd74a274a4ffe465c16e22198a06be7b5bbcce",
+        "profile_flags_sha256": "0fb8abac3b93e1a60e5ea04e89e1c6772b7383da59810602b30580b7f00f49a6",
+        "scratch_bytes": 4096,
+        "command_loader": "header-stream-v1",
+        "private_inputs": {
+          "src/bdos/dirsvc.mac": "96ccc02f15186d24fee6697824eea7bb43e0cd8c206b1f7b05cf6f95c36c0f2b",
+          "src/bdos/dispatch.mac": "7f0f9d8bb0c9472bd681980835b314e6a8e77e2a232bbca3a34dd7f480010275",
+          "src/bdos/unified.mac": "2a015d242bebf3c4846ba75bf96e8829bce4eab27bf6cd16b4e7740f74021cb1",
+          "src/bdos/versions.inc": "0bac29abd74e2e61947d3aad98903dc40abd9467dcf3c94afbabda7016bf2978",
+          "src/bios/bios.mac": "3edb74aeaedde0f59e9f2eeefccaa9aedc9c27102b5ba4e90e89171050bffe0f",
+          "src/bios/biosplat.inc": "58b1aa618335220ff7b858720c01d6149de67da4383ff3184e03ead6e49083a5",
+          "src/bios/config.mac": "14d7c26e57933756736eb3b1874c35a15ec2136ba71298338ad3634f0b74a7d8",
+          "src/bios/disk.mac": "7420081d3bab27b125c35e5a6dcab3a7cc9c7b9a42991c309c969901acbd2f90",
+          "src/bios/tables.mac": "9b98eaa3cfed208133d24acb2bde4103b2fed4b448a317b29e1cef926b8925e9",
+          "src/ccp/ccp.mac": "db8e9f352fccf1c7e66494e44212ed3994df0d84568170f25dec7eae40867342",
+          "src/ccp/ndr.inc": "ab52310a58d1d4d243d13ad082a75a57bfcaf79aa8a9cbb7c41f8b2d9da6fc4d",
+          "src/ccp/unpack-body.mac": "5715fb14c55591b3cabde750a99cb2c217b0a0dd5bfdc9e4d1ba352170c87913",
+          "src/ccp/unpack.mac": "514e893293366d5d78357ed03c311fbf79761daa19a478de4d8d447b0f16a0ac",
+          "src/ccp/var.inc": "e51dc4b482b3ff652a6a6550d8060e442a2ff1f378584eb1a2e03c2a3d9c3d14",
+          "src/platform/altair/ALTRB77.FDF": "89fc4b862ba493d1b02fb5404728dc0f6eb79e7aec9001cd2c9b67520b2bf4ab",
+          "src/platform/altair/apitest.mac": "7d900c8456c82a535e9b9b382e68b017cf5492ffa01efed8c6bfed0759bc4c37",
+          "src/platform/altair/biosplat.inc": "05b3aafc7f5d624a011bfcef5642680b7c7981b2018d425726cd9ffa8fd6b8fe",
+          "src/platform/altair/boot.mac": "e9bbecf8d45c83d7701f73dc10302ed1fbe28a1375cfa921fe734243d1beab85",
+          "src/platform/altair/console.inc": "0add43af0864f0c671cdeb041fcdd27a9d2d13c0acec4f0fc5c22a58e4d8694b",
+          "src/platform/altair/disk.mac": "e0942187ccc9164b8a4852f4ea543fe7f4c1fabe36abae8c211735f5a157f3dd",
+          "src/platform/altair/filetest.mac": "e48cd394d04e2a4a3b2da27a4566f7e80997aa385d9a5b183c6264c72f5f1a1f",
+          "src/platform/altair/hardware.inc": "1617bd6d70a5d6a7943ca7fa4200f61ddcde60d01b41891ba4525e1f917ad579",
+          "src/platform/altair/probe.mac": "c60a0cc01b4a3183f3bdd96d8f7924c961f9ca3f6687bb346b821a44d6ba242b",
+          "src/platform/altair/recordio.inc": "344799707f6b81e457214dccf3b2b6c0795e6d6bf442a26390dd4f28af9ef43d",
+          "src/platform/altair/systemboot.mac": "fdce627f725e14dcdf52a50a7fd71a0db6c3cd92bb5c370d4d0984ef6cdf8527",
+          "src/platform/altair/tarbell.inc": "583ee9e5a6634186d914bf34f76f65588c35cede17752959746ca010b76bf4a2",
+          "src/platform/altair/tpatest.mac": "38a3b0935fd916a40ea928c37aac01029791442e20d560fc8217dea398b87644",
+          "src/platform/trs80m2/BCM2SS.FDF": "f5c087f33add7f85a6281693027104b9b814c8651b4c39939f898dff23b0f4a1",
+          "src/platform/trs80m2/boot.mac": "9c8cba4ce4e28df9126521d014880ee5f169bc28aaf451f7e77bf38bc08180a1",
+          "src/platform/trs80m2/console.inc": "d1dabf010108d3ba0fce2af8b13caf08acc2cdcb2cf6e07a55daba714dc67c6f",
+          "src/platform/trs80m2/control.inc": "94962c7e74b6dae50487d47306a7650518bf1eb7ef3559dc7b9674f0604b8c01",
+          "src/platform/trs80m2/package-map.inc": "5355ffa70ff32cf5e7cd297318a05e2c7bb712361936e8aee2f3501b98d0a47f",
+          "src/platform/trs80m2/physical.inc": "f6b41d7d9eb6cbefc29315f07b2b055e0e14d9f80f13d5c0794d3dceb1aa3f51",
+          "src/platform/trs80m2/raw.inc": "f671b591fd8f1a02446b87c0f70e2c68703d24eca4b65184fdd6722faef4a369",
+          "src/platform/trs80m2/transfer.inc": "72bfb87fcb35237d44ea4de76918b1a4e9c5bc6879450f74b2cba8d2adda9a41",
+          "src/platform/trs80m4/boot.mac": "39ca9dcebe9a4257aba478704e2e5d6839a201351d014d6fb97c0a27a25fa388",
+          "src/platform/trs80m4/ccprelod.mac": "07736687d02ad226e62367a4dc03a3d95fc764bb79d9bc6f429faddbdaa6a2f6",
+          "src/platform/trs80m4/ccprload.mac": "b157f4ad35285115a37ad62ab577c415f88d0996440594cadea239c6cb833b43",
+          "src/platform/trs80m4/diskread.mac": "e97657a51b989f8381b370ad29f2a686cf8df9e1b698e74331bd16bf1ce1cb78",
+          "src/platform/trs80m4/diskwrit.mac": "3cbfda1fa7c24a90d1a2f1d868dbe5ceaaca6453bc417fe5c48b96477b480914",
+          "src/platform/trs80m4/hal.inc": "13850d1b483ac6e5981ac863413bc3d8f489f65d188dc15dbee958452c9c38c6",
+          "src/platform/trs80m4/hardware.inc": "239f8bef37ccee742447b843cc209e7104748f376cdc32a692dcad6ee6fac6e2",
+          "src/platform/trs80m4/m4cons.inc": "94ffbf2a69d5d02d79237bd16a73bf3cf603b80f4358909e8a9b5b95dd5e5bfb",
+          "src/platform/trs80m4/m4disk.inc": "1ab88296e2f87c2a6b87d877a836c461122884ac2a86c29a2a3e8c69b729e757",
+          "src/platform/trs80m4/m4scroll.inc": "1f03e03655cba9f600145380236134f157291b66fd5cf612bf4d7cbdbde3cfa3",
+          "src/platform/trs80m4/reload.inc": "f73d437fe4904d0e6e018bba4997025ebe31eeac04e3778512b6b682872ce30d",
+          "src/platform/trs80m4/rsxsel.mac": "c72f7b840b7e6be8acf09fa19d2af14adc4ca3d713845bde15fad3a83e12ae65",
+          "src/platform/trs80m4/stage1.mac": "44bca3fa8d96406e424b9a4cbdc9ab09a8f285aa305b8cc0d3fad0b69adeaf2f",
+          "src/platform/z80pack/biosplat.inc": "980a562b08c0675bed1296935c71293e8c1acb14244d9104ae09303fbc68a847",
+          "src/platform/z80pack/boot.mac": "f7f705b7c408f56b1ded7b891d95a73c88d149c8140912d86a6f1f455a15244b",
+          "src/platform/z80pack/chario.inc": "c3128d453c4becbe016953204ea35bcb585fa40d230f24f197d08e51808b9697",
+          "src/platform/z80pack/checked-crc.inc": "28fd3b618af70fbbcb198f1816dc42a4aeb453563639bddd80b4fda9c379bc1d",
+          "src/platform/z80pack/checked-identity.inc": "3c697ca7693e82a11eed0e74316832497406f23bc437864c21627b0d484e21f3",
+          "src/platform/z80pack/checked-load.inc": "888818ad5c9762664bff389648af7ae7e4153d150884c76daeb9090f25d5b466",
+          "src/platform/z80pack/config.mac": "19c29863d3e8f5e5fdb03acbcf621c05f7c3865a8eb7ca9e25b3b65cbc6c8bd5",
+          "src/platform/z80pack/disk.mac": "c751430280fdc9a83054f574c0da5c316254a4d6466e5536eba3b30519ad5d59",
+          "src/platform/z80pack/recordio.inc": "dd86c89dcf3402c0b4ca49862267a4282a0c342a298103392e127c7e0a47bf77",
+          "src/platform/z80pack/romboot.mac": "67e2b0594a2e99d877de7d5257ac17ea041c31794ebaa9a15f6fc0f0883a35b8",
+          "src/platform/z80pack/rominit.mac": "6942e3fcc099f973f2154adc865c9af28f6bf385f01f971cde3be7173b1e6bc2",
+          "src/platform/z80pack/rsxsel.mac": "19c93d7a44dd2e75b6937d21ad57bd2aab83313e9b6418574c9de3e733918ff8",
+          "src/system/command-record.inc": "51b311e5744e59c371aa1c6dc5c1d482c873e03d7ab2809f934d93f48d43913b",
+          "src/system/command-stage1.mac": "ab9cb744d64b96bf41fb20b30ea1fe8556945ee3f88344592e55330d877c23dc",
+          "src/system/command-stage2.mac": "5899986b66494f4aef2824cf55b3de5955964fd49040b5c832fa1efaf3e63e60",
+          "src/system/extens.mac": "5316e9ba881a081122f6cf83ea47d06d2161f32d7e606b297c93765dfa9d1cc5",
+          "src/system/fileload.mac": "72940951733677d36189c4a1730c4e57d0d1fc4b429efd504379936ff321b888",
+          "src/system/gateway.mac": "60d6ff48eed84407c22989d952c2fb8b43312f1dda9c2dece136fef915ad2ae3",
+          "src/system/layout.inc": "6939bacbeabcbe6804e9a128d8438638e932fa2f4992ca8fc385c728a65b2d6c",
+          "src/system/mcl-worker.inc": "1b17589feb51a1dbc8d706cf16f604b20325d6bd15f294a9dc6eea2c7ed6c568",
+          "src/system/part10-stream-load.inc": "1e9dab767d451f6dc0c9d555bf205805a11ac26e379ea7c50182a6c68ed1a493",
+          "src/system/part8-binding.inc": "0517ddd6b753e814309594c1a8cec9b7432cc8bddf4328affc8b7fb750ac0b46",
+          "src/system/part8-record-gate.mac": "e28ea614e80dbbb91917ba470049379107630329f28c20b687cf95dc0c988feb",
+          "src/system/part9-stage-load.inc": "2943a71fcb6bbbc18e85916d7377e0967ada91ee8cc0822536f8a9cc398d6eb3",
+          "src/system/part9-stage1.mac": "8f3d13527dbc6cc9263ad9acdf167aed8ca482869990ed762b4105af8e33a953",
+          "src/system/pds-directory.inc": "2ca4b51fbf2a1429b00f55297f1406cd38f2c1e672326cd41923f1844eba0fbc",
+          "src/system/pds-worker.mac": "2685ec553f99be56493d89566f508c352c5b536310beae31b880a87bdd4b7c6c",
+          "src/system/r3cache.mac": "8e5693f469c8efa7e5bcb51117bd2e72cb56048dd1bff32e572160120f96fc87",
+          "src/system/r3carr.mac": "e2263db4958384597eaff1d3eb0074136ab788f8450dafcabc43c9e73b2b1e8a",
+          "src/system/r3comit.mac": "f3d4ee3dbea7f7455ee9f6aa1e1c8881b5be97c799dfec31e9a35b553f61d46a",
+          "src/system/r3coord.mac": "c4241f21ccc03ba23a36398a4bc2ad51b25017df161c1ceefde895e5df97cb90",
+          "src/system/r3drop.mac": "2a4b7c9f763b394bdf3dcea034ee3596e7de5a03e2738eac810e46b6e3132dcd",
+          "src/system/r3entry.mac": "c9b4989c9cf0f5344decc44ff7be20be1d6e97e15508a3de0d11a7f8c97f53ae",
+          "src/system/r3final.mac": "c5153218292afdd59dccd2b1e92df03e0ca3212dfea1e4cae61e8d2d7ffcaaec",
+          "src/system/r3kctx.mac": "f4c92fc729393fd119bcf93d5577ced93670575adcaecef13e9d6229eb623536",
+          "src/system/r3keep.mac": "a11aa633c937b6eef82e4dc99c6403500b3846e0825ba295b4500933d7e3f4f8",
+          "src/system/r3kpre.mac": "6b3278027a12833fc58beb5745a5333ddb91cf0816e265f661d66b31fd62ea0e",
+          "src/system/r3meta.mac": "296c3bf6341ca9f47f7d05daa1559420f8a820c7fe75e19da53b04974d289965",
+          "src/system/r3ovload.mac": "7796fc16cc8317a1b8cca37a9215f7e8be36f615f67fad853eb0a7ff31ae6d1c",
+          "src/system/r3prep.mac": "f7d15e7e57034730736c27e299c361d026570c3d6a96be968d8560326c54fc17",
+          "src/system/r3prof.mac": "66446b98f75857e8f0fa9c99bcb11cbe68b5f9e59a97376911994b081754773f",
+          "src/system/r3pst.mac": "8b13d1e80fe584db4632f8bb80515c6ec7c438cd9cba3c7799e604c858f3b692",
+          "src/system/r3snap.mac": "715e01a62166b663add68e005011206895f340b45e20526d2576c8a95af11cc8",
+          "src/system/rsxmover.mac": "cecba03c3f44562ce2d698ddc7b4cf821ee886af4b68912d09e7b2c66500924b",
+          "src/system/rsxplan.mac": "8fe731955ace136182b9ff5d5d1e802e41c46b1135e91e01d601894150df3402",
+          "src/system/rsxresol.mac": "fa28d6ffe610566bbb09660ba2da5572c67233a330e18bfa0bd6fba832346357",
+          "src/system/rsxsched.mac": "46075e44f8c7bb26e06cac50de2ae909e296cf3870990a66e6cd53093fba6321",
+          "src/system/rsxslots.mac": "65f53879eb5cbdc6e7eeb93ee80dd2854189e748a1dc9d1665fedd6629de1464",
+          "tools/altair_media.py": "ec57c4b5fa5e7337ac555a3424fa5a4ecdf6ad0b5abf01e5e5632414d334e8dd",
+          "tools/build_altair.py": "e2811c0344c2c842014460d96593c7d4a8eeec0effb4a6527cb60461669868d0",
+          "tools/build_bdos.py": "af1be4b95cd71a7117c6b8df8343ebff2fc15faa35dc66de89e284ca92f22e01",
+          "tools/build_bios.py": "5881b7b70ed403e327ebd371bf53c6719cadf16658c38d4e3f8cff54d9d106c9",
+          "tools/build_ccp.py": "b7d3135ab0e271d2d711bf10e73f694a35d4c621a09664ab776c33f293bd36c9",
+          "tools/build_ccpreload.py": "14ebd56a5b3405e843338157913018cf76da8d855498997d41f95d7a5a69dc36",
+          "tools/build_checked_command_loader.py": "ee3bb0fa9f29e7c25fdd14b3bf52de3b0cdc83ef08da422f07f8d94642f99662",
+          "tools/build_checked_resident_rsx.py": "4a748d1c50ea7007a519647931a8aefb4b34e3aa06b8a955392e29dff606340b",
+          "tools/build_model2.py": "53c3b64637f6e74d6711f54da0a7ccd22fbe39007e081e36cb4cef965a9e0dd3",
+          "tools/build_pds_worker.py": "8aa32aed925c1ca7c3d591fcb49419e8c46d4fcb3d4b5e2b2d22cf3ea4394053",
+          "tools/build_profiles.py": "bfe3abf8476f950d588d9a1c937489d5027b15750c2e7cc59099b344d0b54358",
+          "tools/build_rsx_module.py": "995c069a5b8662d2e99a4a88e47425901c45064a5590397610e8de0cd9fcdb9e",
+          "tools/build_rsx_runtime_overlays.py": "4e341c3cb3f99a3ece11f7a78d2037c159dc66e2153946bcee841fab3c534237",
+          "tools/build_rsx_utilities.py": "0485c356df8fb5ffb85cde6f402f8f2f98f2eb59833f3fb4dc93a6b8eca3f175",
+          "tools/build_rsxcommit.py": "277c16dbecfff8de76af4bf0b413b28d7466e4216a1254a5a7c81a6e979c717f",
+          "tools/build_rsxloader.py": "2ec191da3c31d0a7f9645390489363103585a166cf66bb7da91714361780c6f2",
+          "tools/build_rsxmover.py": "bf968a47e1a4ee11dd2f699fbaee215d91265c8ae5e3b7b8f6ab67ab7fe3c090",
+          "tools/build_rsxplan.py": "8c78bd866add5250b7418bcc608661ee13c2d6f904c27faa20dc3f470086cecc",
+          "tools/build_rsxprepare.py": "141869ed1b993037d0852b591262f1d3ca589b145c226aeafaf054c37a3e6bf6",
+          "tools/build_rsxresolver.py": "403516c92b08cadbfb725820ce2bedfded40854c85154d4f9f0192200c37ea56",
+          "tools/build_rsxschedule.py": "981b0a8eb3edfc5827e89c7f14b773a5da9115fe42c8ed230cecbb87059d15d6",
+          "tools/build_rsxselect.py": "82c39eae8eb5b1fc5b010c2cc449e241f9a54bfee4a5719b5fdc1ce6a224a2b0",
+          "tools/build_rsxslots.py": "0c81b8931d5e8efcde1478099d5d28971cd2aeca0d44665f71c9b332d23a3154",
+          "tools/build_system.py": "4f031a9e13b1395e266a2c3cebbf0caead05a5e2913ddddc1916a8cf11e5ef42",
+          "tools/build_system_package.py": "b0c0b2c6c5334468fa5fd6f32f876f7b925c1ce867d0edd7ebd5d59784e8fef1",
+          "tools/build_z80pack_image.py": "3ad50698a7cd3687bb57e5cb54745e076069bbae70555428392406c3d3e06b60",
+          "tools/checked_build_contract.py": "98d1793f7e1ae7943df3f2ea35cada19a03f161c9a4116cdd791def40c442ed8",
+          "tools/checked_carriers.py": "3607da0e9c0f9dab57dacb060a65b96883b5fda24f2c98ba60827db688e66e3c",
+          "tools/checked_rsx_pack.py": "1ae781547e7584dfdb5593778666f301f21131b6d72250ef475794c4abeaba26",
+          "tools/checked_rsx_reader_fixture.py": "d9b56ec7197915dd1e3103ed78e66b94dc49e1e1face38937d06e74816bb95a6",
+          "tools/checked_system_package.py": "8d1f586a9cdccae76b0f857c6a048ac55edc07cb75b2afe61121f9d928602eef",
+          "tools/command_packing.py": "481bb916f5dc5f2873ddfd5a5a5b51f46267e004a61830448b65b0ade1dce667",
+          "tools/model2_media.py": "69bbadee86a76e6fba0bf3de84de373791a2b2741fbd32c8c704a81a6ffb9748",
+          "tools/pack_ccp.py": "c79d358a66ec42ed9e34eb665fa7936d8784f67900e23d1341a6de104275482b",
+          "tools/private_rsx_rebase.py": "ce6e19b0d107cec40e790beb7da8f655630930987bf2d96e01ed64f6a7a127b1",
+          "tools/rsx_container.py": "45808bb11a6f595c4ad10f3aec17dc1cb2e21bd5b81d19de1f7047746814f754",
+          "tools/rsx_disk_cache.py": "ddc9ce4f8d2710f72a1f25a6c356356d7ce4dc05b00cd1f1456ace9779fcb9dc",
+          "tools/system_layout.py": "1f138d39a669566989dfab930dc2732cfef4dbac6dc8c1473dd09fba6e1ba1fa"
+        },
+        "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc"
+      },
+      "compatibility_id": "3d3d8eca84d4d649a542f1f5c3893672",
+      "source_revision": "285789d44708956eb311081866f2215443cdbb61",
+      "status": "checked RAM component contract"
+    },
+    "layout": {
+      "SYSTEM": 57808,
+      "BDOS": 58056,
+      "FILE": 63622,
+      "RSX": 56580,
+      "EXTENSIONS": 61503,
+      "TABLES": 63767,
+      "RELOADER": 256,
+      "RSX_STATE": 64343,
+      "STACK_LOW": 1216,
+      "STACK_TOP": 1280,
+      "DIRBUF": 64384,
+      "MODULEBUF": 64512,
+      "DISK": 61923,
+      "BIOS": 62865,
+      "CEILING": 65536,
+      "HISTORY": 57604,
+      "TPA": 57601,
+      "BOOT_SECTORS": 13,
+      "CONFIG": 64512,
+      "CPX_CONTROL": 64521,
+      "RAM_END": 65536,
+      "RELOADER_CAPACITY": 932,
+      "RSX_SELECTOR": 65444,
+      "PDS_DESCRIPTOR": 57936,
+      "PDS_DIRECTORY": 57796,
+      "PDS_TOP": 57808,
+      "PDS_LOW": 57604,
+      "PDS_SIZE": 204
+    },
+    "profile": {
+      "schema": 1,
+      "profile": "altair-fullram",
+      "target": "altair",
+      "memory_mode": "ram",
+      "checked": true,
+      "status": "engineering fixture",
+      "delta": 3072,
+      "ram_end": 65536,
+      "top_reserved": 0,
+      "format_epochs": {
+        "private": 2,
+        "carrier": 2,
+        "package": 2
+      },
+      "command_loader": "header-stream-v1",
+      "capacities": {
+        "rsx_scratch_bytes": 4096,
+        "maximum_com_bytes": 57344,
+        "bdos_bytes": 3447,
+        "module_buffer_bytes": 1024
+      },
+      "canonical_layout_sha256": "6939bacbeabcbe6804e9a128d8438638e932fa2f4992ca8fc385c728a65b2d6c",
+      "layout_sha256": "6ac8b13ecabea08e03b0b411d3dd74a274a4ffe465c16e22198a06be7b5bbcce",
+      "flags_sha256": "0fb8abac3b93e1a60e5ea04e89e1c6772b7383da59810602b30580b7f00f49a6",
+      "symbols": {
+        "LY_SYS": 57808,
+        "LY_BDOS": 58056,
+        "LY_EXT": 61503,
+        "LY_DISK": 61923,
+        "LY_BIOS": 62865,
+        "LY_FILE": 63622,
+        "LY_TAB": 63767,
+        "LY_RSTA": 64343,
+        "LY_DIR": 64384,
+        "LY_BUF": 64512,
+        "LY_RSX": 56580,
+        "LY_LOAD": 256,
+        "LY_CFG": 64512,
+        "LY_CPX": 64521,
+        "LY_RLCAP": 932,
+        "LY_RSSEL": 65444,
+        "LY_STKL": 1216,
+        "LY_STKT": 1280,
+        "LY_LIMIT": 65536,
+        "LY_TOPRSV": 0,
+        "LY_RAMEND": 65536,
+        "LY_HIST": 57604,
+        "LY_TPA": 57601,
+        "LY_SECTS": 13
+      }
+    },
+    "files": {
+      "RCP.CPX": {
+        "bytes": 9843,
+        "sha256": "f82f024c724484121345c343fe063f5e92ba7189be5adb26c218996e72d4857e",
+        "cpm_sha256": "296a4d2cf3a5efa08a373acc8d4ff259c3119c3ea1ae48d175d64b1eb5dec516"
+      },
+      "R3PACK.RSX": {
+        "bytes": 15872,
+        "sha256": "2747ebe009f8737c5b4831be4e24825813b97685a4d1786ca2efcc72f6e1991c",
+        "cpm_sha256": "2747ebe009f8737c5b4831be4e24825813b97685a4d1786ca2efcc72f6e1991c"
+      },
+      "R3CACHE.RSX": {
+        "bytes": 4096,
+        "sha256": "db39307ed6fc69415b1060c3a0d175e2a4a6770e9d42dfbdeda97c83da615902",
+        "cpm_sha256": "db39307ed6fc69415b1060c3a0d175e2a4a6770e9d42dfbdeda97c83da615902"
+      },
+      "SYSTEM.SYS": {
+        "bytes": 20608,
+        "sha256": "ac968d21240f792ad714ca79a3fb1c1401f945173cd913240da48e576a768fb5",
+        "cpm_sha256": "ac968d21240f792ad714ca79a3fb1c1401f945173cd913240da48e576a768fb5"
+      },
+      "STAT.COM": {
+        "bytes": 8753,
+        "sha256": "14c22bdbfb95d4faad411b9e46c198bc914b664997edb5daa85f560902d2b890",
+        "cpm_sha256": "04c86e10d3fa4a4e4467aaf1311cceb09eacef679834dfaa4a64da68198ca9a3"
+      },
+      "RSX.COM": {
+        "bytes": 2287,
+        "sha256": "9edb73cd6ef3bc83109e995c4cb4ede78acb85df683f94b65319346f32e9e83d",
+        "cpm_sha256": "349428e214b5859275223c329b22d6da14861dedafb31bdba6ec853051be3f20"
+      },
+      "ECHO.RSX": {
+        "bytes": 601,
+        "sha256": "5b695c48ae0b8806577834c7640ee62f944abc3dd7b1cbe68e945f2a8293149d",
+        "cpm_sha256": "345b8c7004ada6a1064b1ff2b85bbab230b0fe088056f51bac48816476687ede"
+      },
+      "AFILE.COM": {
+        "bytes": 359,
+        "sha256": "4dfb2e0934eb67688646b14bfc1706eae157b6d25249157bd1e4e6e07bea359b",
+        "cpm_sha256": "eb7f5e833e8e1482acd2765f88f6267d3f6aeb3822cbb8f4c491295bba9b2244"
+      },
+      "ATPA.COM": {
+        "bytes": 119,
+        "sha256": "78a18af0dc530a9f8937cbc74932a5a8a1d1218ccbc4f858911d1dad1dbfcb33",
+        "cpm_sha256": "6889ac6f760a4c335cbbcc0e891555ab158552365882a91d51713d2e75c3c425"
+      },
+      "AAPI.COM": {
+        "bytes": 418,
+        "sha256": "0d78ccc0603e00d2cc2934398eddc60c321c1af663fb89e942875736aaf76b7d",
+        "cpm_sha256": "2ae49a87c1d09a440d04894b35d64458af04c4ee0f83c9d2aa6c673f6a8c2508"
+      },
+      "AECHO.COM": {
+        "bytes": 8,
+        "sha256": "8fcfc5fc8b43ac686fba9eabc37e73888f30110fb976f90c7f3147863138a589",
+        "cpm_sha256": "19550682590e340536a139637139ad4a5d9a57480d3792908f2721545a09a034"
+      },
+      "BYE.COM": {
+        "bytes": 9,
+        "sha256": "9b494cfd07b355bf1652590b47f20b05a6e18b40912653874a975080edc98ee6",
+        "cpm_sha256": "db445bc38b1d8c41ebaeddade767a75a15e4bc61fc745e09adb9e30e77614127"
+      }
+    },
+    "resident_parts": [
+      {
+        "address": 57808,
+        "bytes": 248,
+        "limit": 58056
+      },
+      {
+        "address": 58056,
+        "bytes": 3447,
+        "limit": 61503
+      },
+      {
+        "address": 61503,
+        "bytes": 420,
+        "limit": 61923
+      },
+      {
+        "address": 61923,
+        "bytes": 942,
+        "limit": 62865
+      },
+      {
+        "address": 62865,
+        "bytes": 757,
+        "limit": 63622
+      },
+      {
+        "address": 63622,
+        "bytes": 145,
+        "limit": 63767
+      },
+      {
+        "address": 63767,
+        "bytes": 416,
+        "limit": 64343
+      }
+    ],
+    "boot_bytes": 128,
+    "stage2_bytes": 202
+  },
+  "emulator_sha256": "b96e030f36d1db4136edc5d7266b8060bd5d3ed45b1882d528272a9df22ec9d6",
+  "checks": [
+    "cold boot",
+    "shared version/directory commands",
+    "STAT MEM",
+    "B-D create/write/close/reopen/read/EOF across file extents",
+    "independent cpmtools extraction",
+    "56K TPA overwrite and warm boot",
+    "ECHO RSX load/call/unload",
+    "56K after RSX unload",
+    "warm boot preserves drive B",
+    "geometry discovery and unsupported setter refusal",
+    "system tracks and active system files unchanged"
+  ],
+  "files": [
+    {
+      "drive": "b",
+      "records": 140,
+      "bytes": 17920,
+      "sha256": "bb888f573da02bd809299898f15eede53ed2de1343f7217994d922aa22f4521f"
+    },
+    {
+      "drive": "c",
+      "records": 140,
+      "bytes": 17920,
+      "sha256": "bb888f573da02bd809299898f15eede53ed2de1343f7217994d922aa22f4521f"
+    },
+    {
+      "drive": "d",
+      "records": 140,
+      "bytes": 17920,
+      "sha256": "bb888f573da02bd809299898f15eede53ed2de1343f7217994d922aa22f4521f"
+    }
+  ],
+  "system_files": [
+    {
+      "name": "aapi.com",
+      "sha256": "2ae49a87c1d09a440d04894b35d64458af04c4ee0f83c9d2aa6c673f6a8c2508"
+    },
+    {
+      "name": "aecho.com",
+      "sha256": "19550682590e340536a139637139ad4a5d9a57480d3792908f2721545a09a034"
+    },
+    {
+      "name": "afile.com",
+      "sha256": "eb7f5e833e8e1482acd2765f88f6267d3f6aeb3822cbb8f4c491295bba9b2244"
+    },
+    {
+      "name": "atpa.com",
+      "sha256": "6889ac6f760a4c335cbbcc0e891555ab158552365882a91d51713d2e75c3c425"
+    },
+    {
+      "name": "bye.com",
+      "sha256": "db445bc38b1d8c41ebaeddade767a75a15e4bc61fc745e09adb9e30e77614127"
+    },
+    {
+      "name": "echo.rsx",
+      "sha256": "345b8c7004ada6a1064b1ff2b85bbab230b0fe088056f51bac48816476687ede"
+    },
+    {
+      "name": "r3cache.rsx",
+      "sha256": "db39307ed6fc69415b1060c3a0d175e2a4a6770e9d42dfbdeda97c83da615902"
+    },
+    {
+      "name": "r3pack.rsx",
+      "sha256": "2747ebe009f8737c5b4831be4e24825813b97685a4d1786ca2efcc72f6e1991c"
+    },
+    {
+      "name": "rcp.cpx",
+      "sha256": "296a4d2cf3a5efa08a373acc8d4ff259c3119c3ea1ae48d175d64b1eb5dec516"
+    },
+    {
+      "name": "rsx.com",
+      "sha256": "349428e214b5859275223c329b22d6da14861dedafb31bdba6ec853051be3f20"
+    },
+    {
+      "name": "stat.com",
+      "sha256": "04c86e10d3fa4a4e4467aaf1311cceb09eacef679834dfaa4a64da68198ca9a3"
+    },
+    {
+      "name": "system.sys",
+      "sha256": "ac968d21240f792ad714ca79a3fb1c1401f945173cd913240da48e576a768fb5"
+    }
+  ],
+  "guard_cases": [
+    {
+      "case": "stage1-corruption",
+      "entered_ccp": false,
+      "status": "PASS"
+    },
+    {
+      "case": "stage2-corruption",
+      "entered_ccp": false,
+      "status": "PASS"
+    },
+    {
+      "case": "foreign-stage1-identity",
+      "entered_ccp": false,
+      "status": "PASS"
+    }
+  ],
+  "transcript_sha256": "9fab78e72bddf2d0c9c0e54a09cb882f3eb54174af10d3b8378526753f2e32a1",
+  "images": {
+    "drivea.dsk": "edf570bfd4f99fd6df0b587f6c425e0ab713dbe388f19ed108f4422b476f395b",
+    "driveb.dsk": "16e1dfd70c285ed3f90814abf573d663b5e723b24036a12830d8554e1e2558cb",
+    "drivec.dsk": "16e1dfd70c285ed3f90814abf573d663b5e723b24036a12830d8554e1e2558cb",
+    "drived.dsk": "16e1dfd70c285ed3f90814abf573d663b5e723b24036a12830d8554e1e2558cb"
+  },
+  "engineering_source_commit": "285789d44708956eb311081866f2215443cdbb61",
+  "mainline_base": "55612e001027bce02978d1cd010ee56e63549402",
+  "reproducibility": {
+    "status": "PASS",
+    "artifacts": 11,
+    "comparison": "Independent isolated builds before and after committing identical executable inputs produced byte-identical system package, resident components, bootstrap and four initial images."
+  },
+  "regressions": {
+    "build_profiles": {
+      "status": "PASS",
+      "tests": 11
+    },
+    "default_model4_bios": {
+      "status": "PASS",
+      "vector_contracts": 17,
+      "mapped_reads_and_writes": 80
+    }
+  },
+  "emulator_build": {
+    "revision": "91fd28eb04e675c2127df88ed3f40675e15282e2",
+    "build": [
+      "make",
+      "-C",
+      "$REPOSITORY/build/altair-emulator/altairsim/srcsim",
+      "-j4",
+      "FRONTPANEL=NO",
+      "INFOPANEL=NO",
+      "PLAT_LDLIBS=",
+      "PLAT_LDFLAGS=",
+      "PLAT_INCS=",
+      "IO_SRCS=bettercpm-no-video.c tarbell_fdc.c altair-88-dcdd.c altair-88-sio.c altair-88-2sio.c unix_terminal.c unix_network.c simbdos.c"
+    ],
+    "graphics": "absent; access fails",
+    "auxiliary_sockets": "absent; access fails",
+    "simio_sha256": "b9ceb7f792711caf23b500eabb8ce2f3b20732e10cadda7eaf2d96226bee775d",
+    "shim_sha256": "b65b7aa981392ba0ae0b7735e0251da49de03b35dadcadc94c44627c9bf0a74e",
+    "binary_sha256": "b96e030f36d1db4136edc5d7266b8060bd5d3ed45b1882d528272a9df22ec9d6"
+  },
+  "hardware_checks": {
+    "status": "PASS",
+    "scope": "hardware bring-up; not an OS boot",
+    "command": [
+      "$REPOSITORY/build/altair-emulator/altairsim/altairsim",
+      "-z",
+      "-R",
+      "-M1",
+      "-f0",
+      "-c",
+      "$REPOSITORY/build/altair-hardware-current/system.conf",
+      "-d",
+      "$REPOSITORY/build/altair-hardware-current/disks"
+    ],
+    "cpu": "Z80",
+    "ram_bytes": 65536,
+    "boot": "Tarbell internal 32-byte banked ROM; entry 007Dh",
+    "console": "88-2SIO channel A, ports 10h/11h",
+    "emulator_sha256": "b96e030f36d1db4136edc5d7266b8060bd5d3ed45b1882d528272a9df22ec9d6",
+    "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc",
+    "boot_sha256": "d7faa614953d596171ff95b53259153d8285a598afcd82c110b06641d828091f",
+    "probe_sha256": "8d2d3946c69c74762adb6ccce800d500f3c539508b960b2efcc6e93c693d7777",
+    "probe_bytes": 635,
+    "images": [
+      {
+        "drive": "a",
+        "sha256": "0291397a6928b838ad751a21024fca1fb83ed7d79b2fd539677ef1ff30128e8c"
+      },
+      {
+        "drive": "b",
+        "sha256": "dd4d9c7ae7511c825aee13ae67b0e7959f60f3f5f0c5ccc2eb0932af8bd74696"
+      },
+      {
+        "drive": "c",
+        "sha256": "96e962acc0ec5715198fd4f45e07864d67e17d5d1099acd3200c1f797cbef4dd"
+      },
+      {
+        "drive": "d",
+        "sha256": "f9b2603490d7b1c902e4e2406e62ffb531b26cf62ad37a7cd5e0e41d89dbf612"
+      }
+    ],
+    "checks": [
+      "ALTAIR Z80 TARBELL BOOT",
+      "UPPER 1K RAM PASS",
+      "CONSOLE INPUT PASS",
+      "FOUR DRIVE READ WRITE PASS",
+      "INVALID ADDRESS PASS",
+      "ALTAIR PROBE PASS"
+    ],
+    "fault_cases": [
+      {
+        "case": "missing",
+        "status": "PASS",
+        "command": [
+          "$REPOSITORY/build/altair-emulator/altairsim/altairsim",
+          "-z",
+          "-R",
+          "-M1",
+          "-f0",
+          "-c",
+          "$REPOSITORY/build/altair-hardware-current/missing/system.conf",
+          "-d",
+          "$REPOSITORY/build/altair-hardware-current/missing/disks"
+        ],
+        "media_unchanged": true,
+        "probe_sha256": "17247a6f2337fc89f97a43df27444e608363745eafba8982af7e37b85b1df191"
+      },
+      {
+        "case": "wrong-size",
+        "status": "PASS",
+        "command": [
+          "$REPOSITORY/build/altair-emulator/altairsim/altairsim",
+          "-z",
+          "-R",
+          "-M1",
+          "-f0",
+          "-c",
+          "$REPOSITORY/build/altair-hardware-current/wrong-size/system.conf",
+          "-d",
+          "$REPOSITORY/build/altair-hardware-current/wrong-size/disks"
+        ],
+        "media_unchanged": true,
+        "probe_sha256": "17247a6f2337fc89f97a43df27444e608363745eafba8982af7e37b85b1df191"
+      },
+      {
+        "case": "read-only",
+        "status": "PASS",
+        "command": [
+          "$REPOSITORY/build/altair-emulator/altairsim/altairsim",
+          "-z",
+          "-R",
+          "-M1",
+          "-f0",
+          "-c",
+          "$REPOSITORY/build/altair-hardware-current/read-only/system.conf",
+          "-d",
+          "$REPOSITORY/build/altair-hardware-current/read-only/disks"
+        ],
+        "media_unchanged": true,
+        "probe_sha256": "9baaf7ae2b90894af8c63a2ff8bc80d6693ff95fea79663787d0b5ff7d1dd1b9"
+      }
+    ],
+    "exit_code": 0
+  },
+  "initial_images": {
+    "drivea.dsk": "e80607c531581a842e08994fdb8a897a98565be9d89908a3c8e055719376926a",
+    "driveb.dsk": "37a6cb0bbc26e2d40ebc14028630ad35ab14214ed29a318e2352a5cef2e37501",
+    "drivec.dsk": "37a6cb0bbc26e2d40ebc14028630ad35ab14214ed29a318e2352a5cef2e37501",
+    "drived.dsk": "37a6cb0bbc26e2d40ebc14028630ad35ab14214ed29a318e2352a5cef2e37501"
+  },
+  "tool_inputs": {
+    "tools/build_altair.py": "e2811c0344c2c842014460d96593c7d4a8eeec0effb4a6527cb60461669868d0",
+    "tools/altair_media.py": "ec57c4b5fa5e7337ac555a3424fa5a4ecdf6ad0b5abf01e5e5632414d334e8dd",
+    "tools/test_altair_system.py": "1eb4e705e7c4d6a145ce5188982b93b8f90e1e692a07793fefc0ba9ed8509255",
+    "tools/prepare_altair_emulator.py": "1cfdeb32e6e8bd8b38ee674dd6e5a25a597185980bc32561dbd0cccdd7ffa719",
+    "tools/test_altair_hardware.py": "98907ae28ddb12a7b10feea2f3c7a639648748c3c8358f50245d167e3ddbd404",
+    "tools/test_bios.py": "abaa6cf531a08458b9058d83edf0f32a38c6444db81984f8ee7b7225b9307e54",
+    "tools/test_build_profiles.py": "ec720cddcd571867e9a29a513efabd0fab4383fd9874cd609587868bd17ed52b"
+  }
+}

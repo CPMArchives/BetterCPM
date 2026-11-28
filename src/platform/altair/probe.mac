@@ -1,0 +1,137 @@
+; Controller bring-up only: this is not a BetterCP/M system image.
+        ASEG
+        ORG 01000H
+        INCLUDE hardware.inc
+        LD A,3
+        OUT (AL_SSTAT),A
+        LD A,011H
+        OUT (AL_SSTAT),A
+        LD HL,AL_START
+        CALL AL_STRING
+        LD HL,0FC00H
+AL_RAM:
+        LD (HL),055H
+        LD A,(HL)
+        CP 055H
+        JP NZ,AL_FAIL
+        LD (HL),0AAH
+        LD A,(HL)
+        CP 0AAH
+        JP NZ,AL_FAIL
+        INC HL
+        LD A,H
+        OR L
+        JR NZ,AL_RAM
+        LD HL,AL_RAMOK
+        CALL AL_STRING
+        LD HL,AL_INPUT
+        CALL AL_STRING
+        CALL AL_CONIN
+        CP 'a'
+        JP NZ,AL_FAIL
+        LD HL,AL_INOK
+        CALL AL_STRING
+; @fault-test@
+        XOR A
+        LD (AL_DRV),A
+AL_DRIVES:
+        LD A,(AL_DRV)
+        LD DE,00201H
+        LD HL,02000H
+        CALL AL_READ
+        JP NZ,AL_FAIL
+        LD A,(AL_DRV)
+        ADD A,040H
+        CALL AL_CHECK
+        LD A,(AL_DRV)
+        LD DE,04C1AH
+        LD HL,02000H
+        CALL AL_READ
+        JP NZ,AL_FAIL
+        LD A,(AL_DRV)
+        ADD A,080H
+        CALL AL_CHECK
+        LD A,(AL_DRV)
+        ADD A,0C0H
+        LD HL,02000H
+        LD B,128
+AL_FILL:
+        LD (HL),A
+        INC HL
+        DJNZ AL_FILL
+        LD A,(AL_DRV)
+        LD DE,00302H
+        LD HL,02000H
+        CALL AL_WRITE
+        JP NZ,AL_FAIL
+        LD HL,02000H
+        LD B,128
+AL_CLEAR:
+        LD (HL),0
+        INC HL
+        DJNZ AL_CLEAR
+        LD A,(AL_DRV)
+        LD HL,02000H
+        CALL AL_READ
+        JP NZ,AL_FAIL
+        LD A,(AL_DRV)
+        ADD A,0C0H
+        CALL AL_CHECK
+        LD A,(AL_DRV)
+        INC A
+        LD (AL_DRV),A
+        CP 4
+        JR NZ,AL_DRIVES
+        LD HL,AL_IOOK
+        CALL AL_STRING
+        LD A,4                      ; drive outside A-D must fail
+        LD DE,00201H
+        CALL AL_READ
+        JP Z,AL_FAIL
+        XOR A
+        LD DE,04D01H                ; track 77 must fail
+        CALL AL_READ
+        JP Z,AL_FAIL
+        XOR A
+        LD DE,00200H                ; sector zero must fail before I/O
+        CALL AL_READ
+        JP Z,AL_FAIL
+        XOR A
+        LD DE,0021BH                ; sector 27 must fail
+        CALL AL_READ
+        JP Z,AL_FAIL
+        LD HL,AL_ERROROK
+        CALL AL_STRING
+        LD HL,AL_OK
+        CALL AL_STRING
+        JP AL_EXIT
+AL_FAIL:
+        LD HL,AL_MSGNG
+        CALL AL_STRING
+AL_EXIT:
+        LD A,0AAH
+        OUT (0A0H),A
+        LD A,080H
+        OUT (0A0H),A
+        HALT
+AL_CHECK:
+        LD HL,02000H
+        LD B,128
+AL_COMPARE:
+        CP (HL)
+        JP NZ,AL_FAIL
+        INC HL
+        DJNZ AL_COMPARE
+        RET
+AL_DRV: DB 0
+AL_START: DB 'ALTAIR Z80 TARBELL BOOT',13,10,0
+AL_RAMOK: DB 'UPPER 1K RAM PASS',13,10,0
+AL_INPUT: DB 'SEND a',13,10,0
+AL_INOK: DB 'CONSOLE INPUT PASS',13,10,0
+AL_IOOK: DB 'FOUR DRIVE READ WRITE PASS',13,10,0
+AL_ERROROK: DB 'INVALID ADDRESS PASS',13,10,0
+AL_OK: DB 'ALTAIR PROBE PASS',13,10,0
+AL_MSGNG: DB 'ALTAIR PROBE FAIL',13,10,0
+        INCLUDE console.inc
+        INCLUDE tarbell.inc
+        END

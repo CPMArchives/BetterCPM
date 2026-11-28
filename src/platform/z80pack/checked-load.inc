@@ -14,7 +14,7 @@ Z_EREL: LD HL,0
         LD SP,LY_STKT
         JP LY_LOAD
 Z_HALT:
-        IF PL_M2 EQ 1
+        IF PL_M2+PL_ALTAIR EQ 1
         LD C,'!'
         XOR A
         CALL LY_BIOS+69                 ; raw CRT; no unverified monitor callback

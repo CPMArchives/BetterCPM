@@ -34,3 +34,5 @@ The [non-documentation lock](releases/non-documentation-lock-1.0/README.md) fixe
 Architecture specifications remain technical contracts; dated engineering records remain evidence for their exact inputs. Historical surveys, stage-pending language and the earlier six-package preflight are not current completeness sign-off. The compact Documentation selection includes focused references; omitted source/history links lead to pinned repository records. Complete source and corresponding-source archives remain in the unchanged matching downloads.
 
 The Command and Utilities Reference is the sole command/utility manual. Obsolete Utilities and standalone-command locators have been removed and their internal links updated. Old backup, development FDB 1.01 and PDF/DOCX editions are not current 1.0 manuals. Further programmer/porting expansion and native execution of new documentation examples remain explicitly separate from 1.0 software requirements.
+
+- [Altair Z80 / Tarbell installation](platform/ALTAIR-INSTALLATION.md) and [platform release ledger](releases/ALTAIR-1.3-READINESS.md).

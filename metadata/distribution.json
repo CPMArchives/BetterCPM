@@ -50,7 +50,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -60,7 +61,8 @@
       "status": "implemented",
       "targets": [
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -71,7 +73,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -82,7 +85,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -93,7 +97,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -104,7 +109,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0,
       "features": [
@@ -118,7 +124,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -129,7 +136,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -140,7 +148,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -151,7 +160,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -162,7 +172,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -173,7 +184,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -184,7 +196,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0,
       "role": "Required matching CONFIG command-environment settings overlay"
@@ -196,7 +209,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -207,7 +221,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -218,7 +233,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -229,7 +245,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -240,7 +257,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -251,7 +269,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -262,7 +281,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -273,7 +293,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0,
       "role": "Native catalogue workbench"
@@ -285,7 +306,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0,
       "role": "Required matching FDB detail/comparison viewer"
@@ -307,7 +329,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -337,7 +360,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -349,7 +373,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0
     },
@@ -359,7 +384,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "artifact": "build/utilities/PIP.COM",
       "user": 0
@@ -370,7 +396,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0,
       "artifact": "build/utilities/ED.COM"
@@ -391,7 +418,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0,
       "role": "Integrated TCAP 2.0 personality/renderer; no separate screen backend required"
@@ -403,7 +431,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0,
       "role": "ADM-3A monitor test utility"
@@ -415,7 +444,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0,
       "role": "Integrated TCAP 2.0 personality/renderer; no separate screen backend required"
@@ -427,7 +457,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0,
       "role": "VT52 monitor test utility"
@@ -439,7 +470,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0,
       "role": "Integrated TCAP 2.0 personality/renderer; no separate screen backend required"
@@ -451,7 +483,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0,
       "role": "ANSI/VT100 monitor test utility"
@@ -510,7 +543,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "trs80m2"
+        "trs80m2",
+        "altair"
       ],
       "user": 0,
       "role": "Optional-to-load P2DOS clock frontend; not loaded by default startup"
@@ -564,6 +598,51 @@
       ],
       "user": 0,
       "role": "Matching install/export package"
+    },
+    {
+      "name": "STARTUP.SUB",
+      "artifact": "src/distribution/altair/STARTUP.SUB",
+      "status": "implemented",
+      "targets": [
+        "altair"
+      ],
+      "user": 0
+    },
+    {
+      "name": "DISK.FDB",
+      "artifact": "build/altair/DISK.FDB",
+      "status": "implemented",
+      "targets": [
+        "altair"
+      ],
+      "user": 0
+    },
+    {
+      "name": "SYSTEM.SYS",
+      "artifact": "build/altair/SYSTEM.SYS",
+      "status": "implemented",
+      "targets": [
+        "altair"
+      ],
+      "user": 0
+    },
+    {
+      "name": "BYE.COM",
+      "artifact": "build/altair/BYE.COM",
+      "status": "implemented",
+      "targets": [
+        "altair"
+      ],
+      "user": 0
+    },
+    {
+      "name": "README.TXT",
+      "artifact": "src/distribution/altair/README.TXT",
+      "status": "implemented",
+      "targets": [
+        "altair"
+      ],
+      "user": 0
     }
   ],
   "cold_start_command": "SUBMIT STARTUP"

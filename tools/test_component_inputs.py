@@ -137,6 +137,14 @@ class InputTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.capture()
 
+    def test_identity_target_environment_matches_capture(self):
+        with patch.dict(os.environ, {'BETTERCPM_IDENTITY_TARGET':'altair'}):
+            implicit=self.capture()
+            explicit=self.capture(target='altair')
+        self.assertEqual(implicit,explicit)
+        self.assertEqual(implicit['inputs']['variant']['target'],'altair')
+        self.assertEqual(classify(implicit,self.baseline)['state'],'unknown')
+
     def test_checked_environment_refused(self):
         os.environ['BETTERCPM_BUILD_CONTEXT'] = '/unverified/context.json'
         with self.assertRaisesRegex(ValueError, 'checked'):
