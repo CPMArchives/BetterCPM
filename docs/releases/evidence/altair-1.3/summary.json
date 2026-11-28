@@ -1,0 +1,113 @@
+{
+  "status": "PASS; ready for platform release review",
+  "source_commit": "cb561f759f81e215a0fe57256398c648dc0a23fc",
+  "source_tree": "00ba2b312234d8dd670561091b97533c61bd47d0",
+  "target": "Z80 / 64 KiB / 88-2SIO / Tarbell 1011D; pinned serial-only z80pack emulator",
+  "gates": {
+    "loader": {
+      "status": "PASS",
+      "result": "loader/result.json",
+      "log": "loader.log"
+    },
+    "install": {
+      "status": "PASS",
+      "result": "install/result.json",
+      "log": "install.log"
+    },
+    "media": {
+      "status": "PASS",
+      "result": "media/result.json",
+      "log": "media.log"
+    },
+    "utilities": {
+      "status": "PASS",
+      "result": "utilities/result.json",
+      "log": "utilities.log"
+    },
+    "compatibility": {
+      "status": "PASS",
+      "result": "compatibility/result.json",
+      "log": "compatibility.log"
+    },
+    "shared-core": {
+      "status": "PASS",
+      "result": "shared-core/result.json",
+      "log": "shared-core.log"
+    },
+    "hardware": {
+      "status": "PASS",
+      "result": "hardware/result.json",
+      "log": "hardware.log"
+    }
+  },
+  "system_sha256": "c9c5dbbdab1110049ab2eccb886d1be3a526f9dff2b97096c2f1f9a444afd3d2",
+  "emulator_sha256": "b96e030f36d1db4136edc5d7266b8060bd5d3ed45b1882d528272a9df22ec9d6",
+  "automatic_compatibility_assertions": 269,
+  "shipped_utility_queries": 45,
+  "screen_personalities": [
+    "ANSI",
+    "ADM3A",
+    "VT52"
+  ],
+  "clean_builds": "two original builds, fresh GitHub-source build and exported Source ZIP rebuild; all four images identical",
+  "archives": "repeated packaging produces identical bytes for both ZIPs, ledger and checksums",
+  "package_checks": {
+    "status": "PASS",
+    "source_commit": "cb561f759f81e215a0fe57256398c648dc0a23fc",
+    "media_sha256": "2ff4817309c9803044743ba92a01f8b2f88db781cc41fe69426af31148b989d8",
+    "source_sha256": "f0d30f85ecc03492fc0b0c0a7829849e1a9e6cf382728c624f252d8da3dab066",
+    "source_manifest_files": 3518,
+    "checks": [
+      "archive CRC and source manifest",
+      "offline packaged first-launch emulator build",
+      "writable session persistence",
+      "Utilities mount selection",
+      "unchanged master images",
+      "complete reconstruction from exported source ZIP: all four images identical"
+    ]
+  },
+  "source_reuse": {
+    "status": "PASS",
+    "source_commit": "cb561f759f81e215a0fe57256398c648dc0a23fc",
+    "source_tree": "00ba2b312234d8dd670561091b97533c61bd47d0",
+    "tested_source_commit": "c11933119bb41d027c2a7152786941b457b5dda2",
+    "all_four_images_identical": true,
+    "selected_build_inputs_identical": true,
+    "basis": "Remote source commit contains the exact tested Git tree. Two independent clean original builds and a fresh build from that remote commit produce identical final images."
+  },
+  "assets": [
+    {
+      "bytes": 1120369,
+      "name": "BetterCPM-1.3-Altair.zip",
+      "sha256": "2ff4817309c9803044743ba92a01f8b2f88db781cc41fe69426af31148b989d8"
+    },
+    {
+      "bytes": 133649134,
+      "name": "BetterCPM-1.3-Altair-Source.zip",
+      "sha256": "f0d30f85ecc03492fc0b0c0a7829849e1a9e6cf382728c624f252d8da3dab066"
+    }
+  ],
+  "volumes": [
+    {
+      "image": "BetterCPM-1.3-Altair-System.dsk",
+      "sha256": "c9c5dbbdab1110049ab2eccb886d1be3a526f9dff2b97096c2f1f9a444afd3d2",
+      "volume": "System"
+    },
+    {
+      "image": "BetterCPM-1.3-Altair-Utilities-1.dsk",
+      "sha256": "faeedd2d77ed71bc4e50d0cc1edd591515482996a0b92dfdd779aefe5b6d6074",
+      "volume": "Utilities-1"
+    },
+    {
+      "image": "BetterCPM-1.3-Altair-Utilities-2.dsk",
+      "sha256": "2aed060cbc43a295e12a09811e7290850f06a9eab04f2c53fe6851c0bd46dbcf",
+      "volume": "Utilities-2"
+    },
+    {
+      "image": "BetterCPM-1.3-Altair-Utilities-3.dsk",
+      "sha256": "a2c5d56d3bb79eaa747f7bb031d98207baa54cb1431e1bcc1e89acc363220807",
+      "volume": "Utilities-3"
+    }
+  ],
+  "publication": "pending; published 1.3 assets unchanged"
+}

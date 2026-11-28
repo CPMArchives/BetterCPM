@@ -19,6 +19,13 @@ EXPECTED = "\r\n" + "\r\n".join([
     " - - -" + " " * 50 + "- - - ",
 ]) + "\r\n"
 def main():
+    from build_rcp_transients import release_banner
+    for target,label in [('altair','Altair'),('z80pack','cpmsim'),
+                         ('trs80m2','TRS-80 Model II'),('trs80gp','TRS-80 Model 4')]:
+        value=release_banner(target)
+        assert f'BetterCP/M {RELEASE} - {label}' in value
+        assert 'Core OS' not in value
+        assert value.isascii() and max(map(len,value.splitlines()))<=80
     assert EXPECTED.isascii()
     assert len(EXPECTED.splitlines()[1:]) == 10
     assert max(map(len, EXPECTED.splitlines())) <= 80

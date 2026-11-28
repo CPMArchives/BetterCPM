@@ -275,16 +275,25 @@ DT_TOTAL: DS 12
     return text.replace('        END\n', hook + options + metrics + paging + columns + free + whereis + decimal + '\n        END\n', 1)
 
 
-def release_banner() -> str:
-    """Static ASCII sign-on: metadata release, no assumed machine capabilities."""
+def release_banner(target=None) -> str:
+    """ASCII sign-on identifying the release and its selected build target."""
     from version_metadata import rows
     release = next(row['implementation_version'] for row in rows()
                    if row['component'] == 'BetterCP/M')
+    if target is None:
+        import os
+        from system_layout import CONTEXT
+        target = CONTEXT[0]['target'] if CONTEXT else os.environ.get('BETTERCPM_IDENTITY_TARGET')
+    platform = {'altair':'Altair', 'z80pack':'cpmsim',
+                'trs80m2':'TRS-80 Model II', 'trs80gp':'TRS-80 Model 4'}.get(target)
+    heading = f'BetterCP/M {release} - {platform}' if platform else 'BetterCP/M'
     width = 62
     edge = ' - - -' + ' ' * (width - 12) + '- - - '
     side = '|' + ' ' * (width - 2) + '|'
-    lines = [edge, side, '|' + 'BetterCP/M'.center(width - 2) + '|',
-             ('Core OS ' + release).center(width).rstrip(), '',
+    lines = [edge, side, '|' + heading.center(width - 2) + '|']
+    if not platform:
+        lines.append(('Core OS ' + release).center(width).rstrip())
+    lines += ['',
              'CP/M 2.2 Compatible System'.center(width).rstrip(), '',
              'Type TYPE README.TXT for more'.center(width).rstrip(),
              side, edge]

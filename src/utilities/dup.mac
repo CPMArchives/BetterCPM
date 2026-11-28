@@ -1531,9 +1531,9 @@ SDGAP:  CALL RUN                        ; sdgap
         ADD HL,DE
         LD A,(MFM)
         OR A
-        LD DE,3125
+        LD DE,DUP_FMCAP
         JR Z,SCAP
-        LD DE,6250
+        LD DE,DUP_MFMCAP
 
 ; -------------------------------------------------------------------------------
 ; Track Capacity

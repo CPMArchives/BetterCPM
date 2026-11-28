@@ -27,7 +27,7 @@ P9_EXPECT: LD DE,COMMAND_STAGE2_CRC
         LDIR
         JP 0500H
 P9_HALT:
-        IF PL_M2 EQ 1
+        IF PL_M2+PL_ALTAIR EQ 1
         LD C,'!'
         XOR A
         CALL LY_BIOS+69                 ; raw CRT; no unverified monitor callback

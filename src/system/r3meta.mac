@@ -516,6 +516,9 @@ RXM_BAD:
         OR      A
         RET
 RXM_LEGACY:
+        IF PL_ALTAIR EQ 1
+        LD B,8                         ; checked 88-2SIO leaf transport
+        ELSE
         IF PL_M2 EQ 1
         CALL    M2_BOUND
         JR      NZ,RXM_MBAD
@@ -526,6 +529,7 @@ RXM_LEGACY:
         INC     A                      ; Model 4 bit 0 / cpmsim bit 1
         LD      B,A
         ENDIF
+        ENDIF                         ; Altair backend selection
         LD      HL,(RXM_DATA)
         LD      DE,8
         ADD     HL,DE

@@ -40,7 +40,7 @@ def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--assembler',type=Path,default=Path.home()/'bin/z80asm')
     parser.add_argument('--output-dir',type=Path,default=BUILD)
-    parser.add_argument('--target',choices=('z80pack','trs80gp'),default='z80pack')
+    parser.add_argument('--target',choices=('z80pack','trs80gp','altair'),default='z80pack')
     parser.add_argument('--identity-state',choices=('auto','assigned','development'),default='auto')
     args=parser.parse_args()
     data=build(args.assembler,args.output_dir,target=args.target,identity_state=args.identity_state)

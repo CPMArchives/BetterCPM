@@ -35,6 +35,9 @@ def source_path(root, relative):
 def capture(component, assembler, *, root=ROOT, target='z80pack',
             profile='default', build_mode='cross', toolchain=None, configuration=None, checked_context=None):
     root = Path(root)
+    # Match the display selector and the guarded collection build context.
+    # Legacy builders may omit --target while a prepared target is explicit.
+    target = os.environ.get('BETTERCPM_IDENTITY_TARGET', target)
     context = None
     context_path = checked_context or os.environ.get('BETTERCPM_BUILD_CONTEXT')
     if context_path:

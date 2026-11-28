@@ -1,0 +1,34 @@
+; Stage two, loaded from records 4..7 by the 128-byte Tarbell bootstrap.
+        INCLUDE layout.inc
+        INCLUDE hardware.inc
+        ASEG
+        ORG 01000H
+        LD HL,LY_SYS
+        LD DE,00009H                  ; resident starts at track 0, sector 9
+        LD B,52
+AS_NEXT:
+        PUSH BC
+        PUSH DE
+        XOR A
+        CALL AL_READ
+        POP DE
+        POP BC
+        JR NZ,AS_BAD
+        INC E
+        LD A,E
+        CP 27
+        JR C,AS_TRACK
+        LD E,1
+        INC D
+AS_TRACK:
+        DJNZ AS_NEXT
+        XOR A
+        LD (0048H),A
+        JP LY_BIOS
+AS_BAD:
+        LD A,'!'
+        OUT (AL_SDATA),A
+        HALT
+        JR AS_BAD
+        INCLUDE tarbell.inc
+        END

@@ -35,7 +35,9 @@ def help_text(development=None):
             'For detailed help, see HELP BYE\r\n')
 
 
-def build(assembler=Path.home() / 'bin/z80asm', output=None, *, baseline=None, identity_state='auto'):
+def build(assembler=Path.home() / 'bin/z80asm', output=None, *, baseline=None, identity_state='auto', emulator='cpmsim'):
+    if emulator not in ('cpmsim','Altair'):
+        raise ValueError('unsupported emulator label')
     output = Path(output or ROOT / 'build/z80pack-tools')
     output.mkdir(parents=True, exist_ok=True)
     assembler = Path(assembler).resolve()
@@ -45,7 +47,8 @@ def build(assembler=Path.home() / 'bin/z80asm', output=None, *, baseline=None, i
     reference = json.loads(Path(baseline).read_text()) if baseline else None
     def inputs():
         try:
-            return capture('utility:BYE', assembler, root=ROOT), None
+            options = {'target':'altair','configuration':{'emulator':'Altair'}} if emulator=='Altair' else {}
+            return capture('utility:BYE', assembler, root=ROOT, **options), None
         except (ValueError, OSError, KeyError) as error:
             return None, str(error)
     before, unsupported = inputs()
@@ -61,6 +64,8 @@ def build(assembler=Path.home() / 'bin/z80asm', output=None, *, baseline=None, i
     from utility_help import query_source
     help_query = query_source(ROOT)
     source = source.replace('; @bye-text@', '\n'.join(text))
+    if emulator != 'cpmsim':
+        source = source.replace('cpmsim', emulator)
     source = source.replace('; @bye-queries@', help_query + '\n' + query)
     from shared_ui import UI, controller_source
     source = source.replace('; @bye-choice@', (UI/'events.inc').read_text()+'\n'+controller_source(text=False, choice=True))

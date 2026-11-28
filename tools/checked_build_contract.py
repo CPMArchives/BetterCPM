@@ -18,6 +18,7 @@ def compatibility_inputs(inputs):
                      'tools/build_checked_command_loader',
                      'tools/build_z80pack_image', 'tools/checked_',
                      'tools/build_model2', 'tools/model2_media',
+                     'tools/build_altair', 'tools/altair_media',
                      'tools/system_layout', 'tools/build_profiles', 'tools/rsx_container',
                      'tools/private_rsx_rebase', 'tools/build_pds_worker', 'tools/rsx_disk_cache',
                      'tools/pack_ccp', 'tools/command_packing')

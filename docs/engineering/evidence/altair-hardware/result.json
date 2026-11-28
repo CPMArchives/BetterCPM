@@ -1,0 +1,136 @@
+{
+  "status": "PASS",
+  "scope": "hardware bring-up; not an OS boot",
+  "command": [
+    "$REPOSITORY/build/altair-emulator/altairsim/altairsim",
+    "-z",
+    "-R",
+    "-M1",
+    "-f0",
+    "-c",
+    "$REPOSITORY/build/altair-hardware-final/system.conf",
+    "-d",
+    "$REPOSITORY/build/altair-hardware-final/disks"
+  ],
+  "cpu": "Z80",
+  "ram_bytes": 65536,
+  "boot": "Tarbell internal 32-byte banked ROM; entry 007Dh",
+  "console": "88-2SIO channel A, ports 10h/11h",
+  "emulator_sha256": "b96e030f36d1db4136edc5d7266b8060bd5d3ed45b1882d528272a9df22ec9d6",
+  "assembler_sha256": "edc437faf8b685efe0d408aa18830d844eaf9393f6f1f030187ef720f75433fc",
+  "boot_sha256": "d7faa614953d596171ff95b53259153d8285a598afcd82c110b06641d828091f",
+  "probe_sha256": "8d2d3946c69c74762adb6ccce800d500f3c539508b960b2efcc6e93c693d7777",
+  "probe_bytes": 635,
+  "images": [
+    {
+      "drive": "a",
+      "sha256": "0291397a6928b838ad751a21024fca1fb83ed7d79b2fd539677ef1ff30128e8c"
+    },
+    {
+      "drive": "b",
+      "sha256": "dd4d9c7ae7511c825aee13ae67b0e7959f60f3f5f0c5ccc2eb0932af8bd74696"
+    },
+    {
+      "drive": "c",
+      "sha256": "96e962acc0ec5715198fd4f45e07864d67e17d5d1099acd3200c1f797cbef4dd"
+    },
+    {
+      "drive": "d",
+      "sha256": "f9b2603490d7b1c902e4e2406e62ffb531b26cf62ad37a7cd5e0e41d89dbf612"
+    }
+  ],
+  "checks": [
+    "ALTAIR Z80 TARBELL BOOT",
+    "UPPER 1K RAM PASS",
+    "CONSOLE INPUT PASS",
+    "FOUR DRIVE READ WRITE PASS",
+    "INVALID ADDRESS PASS",
+    "ALTAIR PROBE PASS"
+  ],
+  "fault_cases": [
+    {
+      "case": "missing",
+      "status": "PASS",
+      "command": [
+        "$REPOSITORY/build/altair-emulator/altairsim/altairsim",
+        "-z",
+        "-R",
+        "-M1",
+        "-f0",
+        "-c",
+        "$REPOSITORY/build/altair-hardware-final/missing/system.conf",
+        "-d",
+        "$REPOSITORY/build/altair-hardware-final/missing/disks"
+      ],
+      "media_unchanged": true,
+      "probe_sha256": "17247a6f2337fc89f97a43df27444e608363745eafba8982af7e37b85b1df191"
+    },
+    {
+      "case": "wrong-size",
+      "status": "PASS",
+      "command": [
+        "$REPOSITORY/build/altair-emulator/altairsim/altairsim",
+        "-z",
+        "-R",
+        "-M1",
+        "-f0",
+        "-c",
+        "$REPOSITORY/build/altair-hardware-final/wrong-size/system.conf",
+        "-d",
+        "$REPOSITORY/build/altair-hardware-final/wrong-size/disks"
+      ],
+      "media_unchanged": true,
+      "probe_sha256": "17247a6f2337fc89f97a43df27444e608363745eafba8982af7e37b85b1df191"
+    },
+    {
+      "case": "read-only",
+      "status": "PASS",
+      "command": [
+        "$REPOSITORY/build/altair-emulator/altairsim/altairsim",
+        "-z",
+        "-R",
+        "-M1",
+        "-f0",
+        "-c",
+        "$REPOSITORY/build/altair-hardware-final/read-only/system.conf",
+        "-d",
+        "$REPOSITORY/build/altair-hardware-final/read-only/disks"
+      ],
+      "media_unchanged": true,
+      "probe_sha256": "9baaf7ae2b90894af8c63a2ff8bc80d6693ff95fea79663787d0b5ff7d1dd1b9"
+    }
+  ],
+  "exit_code": 0,
+  "source_revision": "48d229002bc12b9e49d180fa70cfb7e74f4388ff",
+  "emulator_build": {
+    "revision": "91fd28eb04e675c2127df88ed3f40675e15282e2",
+    "build": [
+      "make",
+      "-C",
+      "$REPOSITORY/build/altair-emulator/altairsim/srcsim",
+      "-j4",
+      "FRONTPANEL=NO",
+      "INFOPANEL=NO",
+      "PLAT_LDLIBS=",
+      "PLAT_LDFLAGS=",
+      "PLAT_INCS=",
+      "IO_SRCS=bettercpm-no-video.c tarbell_fdc.c altair-88-dcdd.c altair-88-sio.c altair-88-2sio.c unix_terminal.c unix_network.c simbdos.c"
+    ],
+    "graphics": "absent; access fails",
+    "auxiliary_sockets": "absent; access fails",
+    "simio_sha256": "b9ceb7f792711caf23b500eabb8ce2f3b20732e10cadda7eaf2d96226bee775d",
+    "shim_sha256": "b65b7aa981392ba0ae0b7735e0251da49de03b35dadcadc94c44627c9bf0a74e",
+    "binary_sha256": "b96e030f36d1db4136edc5d7266b8060bd5d3ed45b1882d528272a9df22ec9d6"
+  },
+  "inputs": {
+    "src/platform/altair/README.md": "a1af354b90468c424d8dd0daf49b0bc675bbdf9a048b463f5abe1543648c86e7",
+    "src/platform/altair/boot.mac": "2f332b6355193bbcf5b791154c09a24f1294eff8518d9c309b0c28ed0cdaf422",
+    "src/platform/altair/console.inc": "0add43af0864f0c671cdeb041fcdd27a9d2d13c0acec4f0fc5c22a58e4d8694b",
+    "src/platform/altair/hardware.inc": "1617bd6d70a5d6a7943ca7fa4200f61ddcde60d01b41891ba4525e1f917ad579",
+    "src/platform/altair/probe.mac": "c60a0cc01b4a3183f3bdd96d8f7924c961f9ca3f6687bb346b821a44d6ba242b",
+    "src/platform/altair/tarbell.inc": "583ee9e5a6634186d914bf34f76f65588c35cede17752959746ca010b76bf4a2",
+    "tools/altair/no-video.c": "b65b7aa981392ba0ae0b7735e0251da49de03b35dadcadc94c44627c9bf0a74e",
+    "tools/prepare_altair_emulator.py": "1cfdeb32e6e8bd8b38ee674dd6e5a25a597185980bc32561dbd0cccdd7ffa719",
+    "tools/test_altair_hardware.py": "98907ae28ddb12a7b10feea2f3c7a639648748c3c8358f50245d167e3ddbd404"
+  }
+}

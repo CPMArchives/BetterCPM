@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "version": "1.3",
+  "target": "altair",
+  "status": "additive platform candidate; publication separate",
+  "existing_assets": "Do not replace assets in release-assets-1.3.json",
+  "assets": [
+    {"name": "BetterCPM-1.3-Altair.zip", "role": "System, three Utilities volumes, writable Work template, launcher, emulator source, notices and evidence"},
+    {"name": "BetterCPM-1.3-Altair-Source.zip", "role": "matching complete corresponding source"},
+    {"name": "ALTAIR-RELEASE.json", "role": "exact source, media, acceptance and archive ledger"},
+    {"name": "SHA256SUMS-Altair-1.3.txt", "role": "additive asset checksums; preserve the published shared checksum asset"}
+  ]
+}
