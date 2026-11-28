@@ -57,7 +57,8 @@
       "native_files": [],
       "targets": [
         "z80pack",
-        "altair"
+        "altair",
+        "cromemco"
       ]
     },
     "utility:DDT": {
@@ -66,7 +67,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -144,7 +146,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -187,7 +190,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -230,7 +234,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -273,7 +278,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -316,7 +322,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -359,7 +366,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -402,7 +410,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -462,7 +471,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -522,7 +532,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -654,7 +665,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -786,7 +798,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -961,7 +974,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -1188,7 +1202,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -1371,7 +1386,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -1432,7 +1448,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -1494,7 +1511,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -1567,7 +1585,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -1628,7 +1647,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -1760,7 +1780,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -1892,7 +1913,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -2024,7 +2046,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -2122,7 +2145,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -2305,7 +2329,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -2488,7 +2513,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -2671,7 +2697,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -2775,7 +2802,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -2876,7 +2904,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -2956,7 +2985,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -3069,7 +3099,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -3130,7 +3161,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -3191,7 +3223,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -3254,7 +3287,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -3358,7 +3392,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -3461,7 +3496,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -3584,7 +3620,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -3716,7 +3753,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -5013,7 +5051,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -5070,7 +5109,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -5115,7 +5155,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -5157,7 +5198,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -5267,7 +5309,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -5317,7 +5360,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -5373,7 +5417,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -5432,7 +5477,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -5494,7 +5540,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -5547,7 +5594,8 @@
       "targets": [
         "z80pack",
         "trs80gp",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -5596,7 +5644,8 @@
       "target": "z80pack",
       "targets": [
         "z80pack",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -5633,7 +5682,8 @@
       "target": "z80pack",
       "targets": [
         "z80pack",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -5670,7 +5720,8 @@
       "target": "z80pack",
       "targets": [
         "z80pack",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -5709,7 +5760,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -5752,7 +5804,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",
@@ -5805,7 +5858,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "profile": "default",
       "build_mode": "cross",

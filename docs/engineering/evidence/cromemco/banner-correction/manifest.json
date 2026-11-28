@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "scope": "cold and explicit banner plus existing OS integration gates",
+  "files": {
+    "README.md": {
+      "bytes": 1623,
+      "sha256": "fe285ea87cc590201ff63f00672323e33f60d042db969dcc24d49a799c8c5ace"
+    },
+    "engineering-build.tar.gz": {
+      "bytes": 450628,
+      "sha256": "694302803b60a5d78261a8682ce3ebf02710774885edaf243c32796de4c26f2f"
+    },
+    "system-artifacts.tar.gz": {
+      "bytes": 648977,
+      "sha256": "a67ed97b1d0c2bc7e654539d02e95602f3fc9bea5b213543e3e74db844b1bc3e"
+    },
+    "system-result.json": {
+      "bytes": 31802,
+      "sha256": "64419fd22647cd74aec8f3461fbc8957fdcb0829a3beae9fdddf4d4d9d4f6261"
+    },
+    "test_cromemco_system.py": {
+      "bytes": 11029,
+      "sha256": "5d017c9eccef8241f5b47e47a84ced7a8f4cb757f5cb062576b38ab02d11a1eb"
+    },
+    "transcript.txt": {
+      "bytes": 6542,
+      "sha256": "fbb50a935513608947283a23658148a1a6e51c8fdb3fde9dc1d689fcc10c2cf5"
+    }
+  }
+}

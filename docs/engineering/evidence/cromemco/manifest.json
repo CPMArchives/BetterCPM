@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-28",
+  "status": "engineering checkpoint; not release qualification",
+  "baseline": "90a766a29fe210b1f4082c8b6449ea4c705813a6",
+  "files": {
+    "emulator-build.json": {
+      "bytes": 1049,
+      "sha256": "90a023927fc70d0d646a634396091764f5af09e6ea14bb84fa190b817089a3b9"
+    },
+    "engineering-build.tar.gz": {
+      "bytes": 447189,
+      "sha256": "b949c71843b5c168fcd44eb0fe010fb96cda021a240aabed130a0dfcf8152670"
+    },
+    "hardware-artifacts.tar.gz": {
+      "bytes": 39927,
+      "sha256": "cb9ce22331d33633422d11a73b1a1ec6599c49aa6e5c8d576cdd1c9dd5e2d172"
+    },
+    "hardware-result.json": {
+      "bytes": 4189,
+      "sha256": "1bf31a4a1144429cf370a2a5677f86bb8f299b2432d1ffae35804e6bfadd5fbf"
+    },
+    "system-artifacts.tar.gz": {
+      "bytes": 629977,
+      "sha256": "2c3568d4284087a976072cd86d1f9c511d9c598b12bd705b0ebdc18553bd7d46"
+    },
+    "system-result.json": {
+      "bytes": 30625,
+      "sha256": "71d689122ab5228a626bb3c552c09e46d2a187a2388b5f529104d5c06bfa5e64"
+    }
+  },
+  "host_checks": {
+    "test_build_profiles.py": {
+      "passed": 11
+    },
+    "test_component_inputs.py": {
+      "passed": 14
+    },
+    "python_syntax": "PASS",
+    "git_diff_check": "PASS"
+  }
+}

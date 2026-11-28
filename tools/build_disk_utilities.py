@@ -40,6 +40,9 @@ def main():
         if target == 'trs80m2':
             from model2_media import geometry
             fmt = geometry()
+        elif target == 'cromemco':
+            from cromemco_media import geometry
+            fmt = geometry()
         elif target == 'altair':
             from altair_media import geometry
             fmt = geometry()

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "version": "1.3",
+  "target": "cromemco",
+  "status": "qualified emulator candidate; publication pending",
+  "existing_assets": "Additive only; preserve all existing 1.3 platform downloads",
+  "assets": [
+    {
+      "name": "BetterCPM-1.3-Cromemco.zip",
+      "role": "System, three Utilities, Work template, native macOS arm64 emulator, offline sources, launchers, notices and evidence"
+    },
+    {
+      "name": "BetterCPM-1.3-Cromemco-Source.zip",
+      "role": "matching selected corresponding source and maintained documentation"
+    },
+    {
+      "name": "CROMEMCO-RELEASE.json",
+      "role": "frozen source, exact image, qualification and package ledger"
+    },
+    {
+      "name": "SHA256SUMS-Cromemco-1.3.txt",
+      "role": "additive checksums"
+    }
+  ]
+}

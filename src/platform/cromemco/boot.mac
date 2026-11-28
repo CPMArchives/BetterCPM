@@ -1,0 +1,51 @@
+; RDOS loads the first sector at 0080H and jumps there.
+; Reclaim the banked ROM, then read sectors 2..9 to 1000H.
+        ASEG
+        ORG 00080H
+        DI
+        LD SP,00800H
+        LD A,1
+        OUT (040H),A
+        LD A,0FFH
+        OUT (004H),A
+        LD A,031H
+        OUT (034H),A
+        XOR A
+        OUT (030H),A
+        LD HL,01000H
+        LD E,2
+CM_BOOTSECTOR:
+        LD A,E
+        OUT (032H),A
+        LD A,088H
+        OUT (030H),A
+        LD B,128
+CM_BOOTBYTE:
+        LD C,0
+CM_BOOTWAIT:
+        IN A,(030H)
+        BIT 0,A
+        JR Z,CM_BOOTFAIL
+        BIT 1,A
+        JR NZ,CM_BOOTDATA
+        DEC C
+        JR NZ,CM_BOOTWAIT
+        JR CM_BOOTFAIL
+CM_BOOTDATA:
+        IN A,(033H)
+        LD (HL),A
+        INC HL
+        DJNZ CM_BOOTBYTE
+        IN A,(030H)
+        OR A
+        JR NZ,CM_BOOTFAIL
+        INC E
+        LD A,E
+        CP 10
+        JR NZ,CM_BOOTSECTOR
+        JP 01000H
+CM_BOOTFAIL:
+        HALT
+        JR CM_BOOTFAIL
+        DS 00100H-$
+        END

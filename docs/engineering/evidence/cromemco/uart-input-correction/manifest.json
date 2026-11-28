@@ -1,0 +1,41 @@
+{
+  "status": "PASS",
+  "files": {
+    "README.md": {
+      "bytes": 2007,
+      "sha256": "bdcc8f12a8f786368c4b7888558709c500c0ef0903317f5b3b2041783445e8e2"
+    },
+    "emulator-build.json": {
+      "bytes": 1155,
+      "sha256": "b5e31c57c0a6d28a893cc9112133815feb82acdf898405498b562660192deae9"
+    },
+    "hardware-artifacts.tar.gz": {
+      "bytes": 39990,
+      "sha256": "d9ba142e36d842678b18a50611ad5335c312d3219411a6b1ab9f0abc4e27b9c2"
+    },
+    "hardware-result.json": {
+      "bytes": 4285,
+      "sha256": "aa4fce7b809215826f8915a469f3f6463a71e602d7b0b9eeed5800450fbfdc62"
+    },
+    "packaged-launcher-check.tar.gz": {
+      "bytes": 1712,
+      "sha256": "00e4f10fb5f9c7ff320ee164de259195d68f3d2827348e8a4df5ee183caebc56"
+    },
+    "system-artifacts.tar.gz": {
+      "bytes": 648964,
+      "sha256": "023177796621d9aa4fe041578f92cd22f34568450441b3b6267d241e769a962d"
+    },
+    "system-result.json": {
+      "bytes": 31814,
+      "sha256": "030e27f5c378ae8b054c19f07ff4dae89b0c727cb66e0237d7a4b40b52b9dbdf"
+    },
+    "test_cromemco_uart_input.py": {
+      "bytes": 2118,
+      "sha256": "7f8ec3b82d00681c614569e08d3e6eb264e623cab4b805130bd9353cb7d03e20"
+    },
+    "uart-regression.json": {
+      "bytes": 1009,
+      "sha256": "3737e453f6028408c7cab312240ca5d0ae46f56332dfd9a4a0de48f8fd9a234f"
+    }
+  }
+}

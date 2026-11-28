@@ -51,7 +51,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -62,7 +63,8 @@
       "targets": [
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -74,7 +76,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -86,7 +89,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -98,7 +102,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -110,7 +115,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0,
       "features": [
@@ -125,7 +131,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -137,7 +144,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -149,7 +157,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -161,7 +170,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -173,7 +183,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -185,7 +196,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -197,7 +209,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0,
       "role": "Required matching CONFIG command-environment settings overlay"
@@ -210,7 +223,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -222,7 +236,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -234,7 +249,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -246,7 +262,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -258,7 +275,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -270,7 +288,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -282,7 +301,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -294,7 +314,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0,
       "role": "Native catalogue workbench"
@@ -307,7 +328,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0,
       "role": "Required matching FDB detail/comparison viewer"
@@ -330,7 +352,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -361,7 +384,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -374,7 +398,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0
     },
@@ -385,7 +410,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "artifact": "build/utilities/PIP.COM",
       "user": 0
@@ -397,7 +423,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0,
       "artifact": "build/utilities/ED.COM"
@@ -419,7 +446,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0,
       "role": "Integrated TCAP 2.0 personality/renderer; no separate screen backend required"
@@ -432,7 +460,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0,
       "role": "ADM-3A monitor test utility"
@@ -445,7 +474,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0,
       "role": "Integrated TCAP 2.0 personality/renderer; no separate screen backend required"
@@ -458,7 +488,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0,
       "role": "VT52 monitor test utility"
@@ -471,7 +502,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0,
       "role": "Integrated TCAP 2.0 personality/renderer; no separate screen backend required"
@@ -484,7 +516,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0,
       "role": "ANSI/VT100 monitor test utility"
@@ -544,7 +577,8 @@
         "z80pack",
         "trs80gp",
         "trs80m2",
-        "altair"
+        "altair",
+        "cromemco"
       ],
       "user": 0,
       "role": "Optional-to-load P2DOS clock frontend; not loaded by default startup"
@@ -641,6 +675,51 @@
       "status": "implemented",
       "targets": [
         "altair"
+      ],
+      "user": 0
+    },
+    {
+      "name": "STARTUP.SUB",
+      "artifact": "src/distribution/cromemco/STARTUP.SUB",
+      "status": "implemented",
+      "targets": [
+        "cromemco"
+      ],
+      "user": 0
+    },
+    {
+      "name": "DISK.FDB",
+      "artifact": "build/cromemco/DISK.FDB",
+      "status": "implemented",
+      "targets": [
+        "cromemco"
+      ],
+      "user": 0
+    },
+    {
+      "name": "SYSTEM.SYS",
+      "artifact": "build/cromemco/SYSTEM.SYS",
+      "status": "implemented",
+      "targets": [
+        "cromemco"
+      ],
+      "user": 0
+    },
+    {
+      "name": "BYE.COM",
+      "artifact": "build/cromemco/BYE.COM",
+      "status": "implemented",
+      "targets": [
+        "cromemco"
+      ],
+      "user": 0
+    },
+    {
+      "name": "README.TXT",
+      "artifact": "src/distribution/cromemco/README.TXT",
+      "status": "implemented",
+      "targets": [
+        "cromemco"
       ],
       "user": 0
     }

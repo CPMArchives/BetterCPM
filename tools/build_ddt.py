@@ -91,7 +91,7 @@ def main():
     global ASSEMBLER
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,default=BUILD)
     p.add_argument('--assembler',type=Path,default=ASSEMBLER);p.add_argument('--no-install',action='store_true')
-    p.add_argument('--target',choices=('z80pack','trs80gp','altair'),default='z80pack')
+    p.add_argument('--target',choices=('z80pack','trs80gp','altair','cromemco'),default='z80pack')
     p.add_argument('--baseline',type=Path,help='explicit raw input-record reference')
     p.add_argument('--identity-state',choices=('auto','assigned','development'),default='auto')
     a=p.parse_args();ASSEMBLER=a.assembler.resolve();out=a.output.resolve();out.mkdir(parents=True,exist_ok=True)

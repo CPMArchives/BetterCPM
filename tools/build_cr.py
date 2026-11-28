@@ -44,7 +44,7 @@ def main():
     parser.add_argument("--assembler", type=Path, default=Path.home() / "bin/z80asm")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "build/utilities")
     parser.add_argument('--identity-state',choices=('auto','assigned','development'),default='auto')
-    parser.add_argument('--target',choices=('z80pack','trs80gp','altair'),default='z80pack')
+    parser.add_argument('--target',choices=('z80pack','trs80gp','altair','cromemco'),default='z80pack')
     args = parser.parse_args()
     image = build(args.assembler, args.output_dir, identity_state=args.identity_state, target=args.target)
     print(f"{len(image)} bytes; SHA-256 {hashlib.sha256(image).hexdigest()}")

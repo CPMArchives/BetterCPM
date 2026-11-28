@@ -1,0 +1,122 @@
+; Check the bounded geometry API without accepting unsupported setters.
+        ASEG
+        ORG 0100H
+        LD SP,01F00H
+        LD B,0
+        LD C,181
+        CALL 5
+        LD A,(HL)
+        CP 'B'
+        JP NZ,APFAIL
+        LD B,1
+        CALL APCALL
+        LD A,H
+        OR L
+        JP NZ,APFAIL
+        LD A,(APREQ+1)
+        CP 8
+        JP NZ,APFAIL
+        LD A,(APREQ+2)
+        CP 77
+        JP NZ,APFAIL
+        LD A,(APREQ+3)
+        CP 1
+        JP NZ,APFAIL
+        LD B,3
+        CALL APCALL
+        LD A,H
+        OR L
+        JP NZ,APFAIL
+        LD A,(APREQ+1)
+        CP 1
+        JP NZ,APFAIL
+        LD A,(APREQ+2)
+        CP 26
+        JP NZ,APFAIL
+        LD A,(APREQ+15)
+        CP 8
+        JP NZ,APFAIL
+        LD HL,APREQ+1
+        LD DE,APSAVED
+        LD BC,64
+        LDIR
+        LD B,2
+        CALL APUNSUP
+        LD A,(APREQ+17)
+        XOR 1
+        LD (APREQ+17),A
+        LD B,4
+        CALL APUNSUP
+        LD A,(APREQ+17)
+        XOR 1
+        LD (APREQ+17),A
+        LD B,4
+        CALL APCALL
+        LD A,H
+        OR L
+        JP NZ,APFAIL
+        LD B,5
+        CALL APUNSUP
+        LD B,6
+        CALL APUNSUP
+        LD B,3
+        CALL APCALL
+        LD A,H
+        OR L
+        JP NZ,APFAIL
+        LD HL,APREQ+1
+        LD DE,APSAVED
+        LD B,64
+APCHECK:
+        LD A,(DE)
+        CP (HL)
+        JP NZ,APFAIL
+        INC HL
+        INC DE
+        DJNZ APCHECK
+        LD B,1
+        LD C,181
+        LD DE,0FFF0H
+        CALL 5
+        LD A,H
+        OR A
+        JP NZ,APFAIL
+        LD A,L
+        CP 1
+        JP NZ,APFAIL
+        LD A,4
+        LD (APREQ),A
+        LD B,1
+        CALL APCALL
+        LD A,H
+        OR A
+        JP NZ,APFAIL
+        LD A,L
+        CP 1
+        JP NZ,APFAIL
+        LD DE,APOK
+        JR APPRINT
+APUNSUP:
+        CALL APCALL
+        LD A,H
+        OR A
+        JP NZ,APFAIL
+        LD A,L
+        CP 2
+        RET Z
+APFAIL:
+        LD DE,APBAD
+APPRINT:
+        LD C,9
+        CALL 5
+        JP 0
+APCALL:
+        LD DE,APREQ
+        LD C,181
+        JP 5
+APREQ: DB 1
+        DS 79
+APSAVED: DS 64
+APOK: DB 'CROMEMCO GEOMETRY API PASS',13,10,'$'
+APBAD: DB 'CROMEMCO GEOMETRY API FAIL',13,10,'$'
+        END
