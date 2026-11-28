@@ -12,14 +12,15 @@ def tables(layout):
     dpb = struct.pack('<HBBBHHBBHH',64,5,31,1,2047,511,0xF0,0,0,16)
     mapping=b'HB'+bytes((1,0))+struct.pack('<HII',512,0,16640)+bytes(34)
     data=bytearray()
-    for drive in range(2):
+    for drive in range(4):
         data+=struct.pack('<8H',0,0,0,0,layout['DIRBUF'],layout['TABLES']+80*drive+17,
-                          0,layout['TABLES']+160+256*drive)
+                          0,layout['TABLES']+320)
         data+=bytes((0 if drive==0 else 255,))+dpb+mapping
-    return bytes(data)+bytes(512)
+    return bytes(data)+bytes(256)
 
-def configuration(unit=255, iobyte=0x95):
-    record=bytearray(512);record[:8]=b'BWCF'+bytes((2,2,unit,iobyte))
+def configuration(unit=255, iobyte=0x95, *, c_unit=255, d_unit=255):
+    record=bytearray(512);record[:8]=b'BWCF'+bytes((3,4,unit,iobyte))
+    record[10:12]=bytes((c_unit,d_unit))
     checksum=-sum(struct.unpack('<256H',record))&65535
     struct.pack_into('<H',record,8,checksum)
     return bytes(record)

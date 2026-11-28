@@ -118,10 +118,22 @@ WB_BMENU:
         CALL WB_BLOCK
         LD HL,WB_BHELP
         CALL PUTS
+        LD HL,WB_SELTEXT
+        CALL PUTS
+        LD A,(WB_LOGICAL)
+        CALL PUTC
+        CALL CRLF
         CALL CHOICE
         CP 3
         JP Z,MAIN
         CP 'B'
+        JR C,WB_BKEY
+        CP 'E'
+        JR NC,WB_BKEY
+        LD (WB_LOGICAL),A
+        JR WB_BMENU
+WB_BKEY:
+        CP 'N'
         JR Z,WB_BBIND
         CP 'U'
         JR Z,WB_BUNB
@@ -139,6 +151,8 @@ WB_BBIND:
         CP 255
         JR Z,WB_BMENU
         LD (WB_NUMBER),A
+        LD A,(WB_LOGICAL)
+        LD (WB_BINDARG+9),A
         LD HL,WB_BINDARG
         CALL WB_TEXT
         LD A,(80H)
@@ -172,6 +186,8 @@ WB_DDONE:
         INC HL
         RET
 WB_BUNB:
+        LD A,(WB_LOGICAL)
+        LD (WB_UNBARG+9),A
         LD HL,WB_UNBARG
         CALL WB_TEXT
         JR WB_BCALL
@@ -240,7 +256,7 @@ WB_PCODES:
         DJNZ WB_PCODES
         CALL CRLF
         JP DONE
-; BWCF v2 at physical sector four owns saved IOBYTE and B's mapping.
+; BWCF v3 at physical sector four owns saved IOBYTE and B's mapping.
 WB_IOREAD:
         CALL SGDISKSET
         RET NZ
@@ -266,7 +282,7 @@ WB_IOREAD:
         SBC HL,DE
         RET NZ
         LD HL,(06004H)
-        LD DE,00202H
+        LD DE,00403H
         OR A
         SBC HL,DE
         LD A,H
@@ -438,7 +454,9 @@ WB_SAVEARG: DB '/SAVE',0
 WB_UNBARG: DB '/LOGICAL=B /UNBIND',0
 WB_BINDARG: DB '/LOGICAL=B /UNIT=',0
 WB_BTITLE: DB 'RomWBW block bindings',0
-WB_BHELP: DB '[ B ] Bind B:  [ U ] Unbind B:  [ S ] Save mapping  Ctrl-C: back',13,10,0
+WB_BHELP: DB 'B/C/D select drive; N bind; U unbind; S save all; Ctrl-C back.',13,10,0
+WB_LOGICAL: DB 'B'
+WB_SELTEXT: DB 'Selected drive: ',0
 WB_BPROM: DB 'HBIOS unit (decimal, 0..254): ',0
 WB_BADMSG: DB 'Unsupported block operation, or restore BLOCKCFG.OVL.',13,10,0
 WB_PDSL: DB 'Saved H/M/V choices: ',0

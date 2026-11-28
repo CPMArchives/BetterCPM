@@ -82,7 +82,7 @@
         SBC HL,DE
         JP NZ,RW_BAD
         LD HL,(LY_BUF+4)
-        LD DE,00202H                   ; version 2, two logical drives
+        LD DE,00403H                   ; version 3, four logical drives
         OR A
         SBC HL,DE
         JP NZ,RW_BAD
@@ -106,23 +106,45 @@ RW_SUM:
         LD A,(LY_BUF+7)
         LD (WB_IOBYTE),A
         LD A,(LY_BUF+6)
-        LD (WB_SAVED),A
+        LD (LY_BUF+9),A                ; checksum is already verified
+        LD IY,LY_BUF+9                 ; contiguous saved B/C/D units
+        LD IX,LY_TAB+96
+        LD B,3
+RW_BIND:
+        PUSH BC
+        LD C,(IY+0)
+        LD A,C
         CP 0FFH
-        JR Z,RW_READY
-        LD C,A
-        LD A,(LY_TAB+16)
-        CP C
-        JR Z,RW_READY                  ; a saved alias can never replace A
+        JR Z,RW_NEXT
+        CALL RW_ALIAS
+        JR Z,RW_NEXT                   ; skip aliases, including firmware A
         PUSH BC
         CALL RW_CAP
         POP BC
-        JR NZ,RW_READY                 ; unavailable B must not stop booting A
-        LD A,C
-        LD (LY_TAB+96),A
+        JR NZ,RW_NEXT                  ; unavailable bindings do not stop A
+        LD (IX+0),C
+RW_NEXT:
+        LD DE,80
+        ADD IX,DE
+        INC IY
+        POP BC
+        DJNZ RW_BIND
 RW_READY:
         XOR A
         LD (0048H),A
         JP LY_BIOS
+RW_ALIAS:
+        LD HL,LY_TAB+16
+        LD DE,80
+        LD B,4
+RW_APART:
+        LD A,(HL)
+        CP C
+        RET Z
+        ADD HL,DE
+        DJNZ RW_APART
+        OR 1
+        RET
 RW_CAP:
         LD B,01AH
         CALL 0FFF0H

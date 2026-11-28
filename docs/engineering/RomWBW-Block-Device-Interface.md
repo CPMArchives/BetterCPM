@@ -20,7 +20,7 @@ request must be entirely in owned TPA at or above 0100h and below the live
 registers and flags are scratch. Status is HL=0 success, 1 invalid/I/O failure,
 2 unsupported, with A=L. Discovery returns a pointer instead of a status.
 
-The 16-byte discovery descriptor is `BDCF`, ABI 6, logical count 2, floppy
+The 16-byte discovery descriptor is `BDCF`, ABI 6, logical count 4, floppy
 physical count 0, binding length 64; words +8/+10/+12/+14 are respectively
 NULL, logical DPH table, NULL, NULL. The logical table retains the 80-byte
 stride of DPH followed by binding, but is inspection-only.
@@ -28,8 +28,8 @@ stride of DPH followed by binding, but is inspection-only.
 | B | Operation | Contract |
 | --- | --- | --- |
 | 0 | Discover | No request; return the descriptor pointer. |
-| 3 | Get block binding | Request +0 is logical index 0/1; copy 64 bytes to +1. Unbound B remains queryable. |
-| 4 | Set B binding | Request +0 must be 1. Validate all 64 bytes before publication. A cannot be rebound. |
+| 3 | Get block binding | Request +0 is logical index 0..3; copy 64 bytes to +1. Unbound drives remain queryable. |
+| 4 | Set B/C/D binding | Request +0 must be 1..3. Validate all 64 bytes before publication. A cannot be rebound. |
 | Other | Unsupported | Valid requests return 2 without changing a binding. |
 
 ## Binding layout
@@ -38,7 +38,7 @@ Offsets below are relative to the 64-byte binding (request +1).
 
 | Offset | Bytes | Meaning |
 | --- | --- | --- |
-| 0 | 1 | HBIOS disk unit, or FFh for unbound B. A is always the firmware boot unit. |
+| 0 | 1 | HBIOS disk unit, or FFh for an unbound drive. A is always the firmware boot unit. |
 | 1 | 15 | CP/M DPB. Fixed SPT=64, BSH=5, BLM=31, EXM=1, DSM=2047, DRM=511, AL0=F0h, AL1=0, CKS=0, OFF=16. |
 | 16 | 2 | `HB` block-mapping signature. |
 | 18 | 1 | Mapping version 1. |
@@ -49,7 +49,7 @@ Offsets below are relative to the 64-byte binding (request +1).
 | 30 | 34 | Reserved zero. |
 
 Set accepts the exact fixed DPB/mapping with a different unit, or FFh to
-unbind B. It rejects aliases of the boot unit, invalid devices, non-512-byte
+unbind the selected drive. It rejects aliases of any other bound unit, invalid devices, non-512-byte
 sectors and other capacities, preserving the previous binding. Successful
 publication invalidates BDOS login/cache contexts with Function 37.
 No runtime filesystem resizing, formatting, MBR or nonzero slice support is
@@ -58,13 +58,14 @@ and boot-address work rather than changing this record silently.
 
 ## Persistence
 
-Physical LBA 4 contains a 512-byte `BWCF` record: magic +0..3, version=2 at
-+4, logical count=2 at +5, saved B unit at +6, saved IOBYTE at +7, two's
-complement word checksum at +8, and remaining reserved bytes zero. All 256
+Physical LBA 4 contains a 512-byte `BWCF` record: magic +0..3, version=3 at
++4, logical count=4 at +5, saved B unit at +6, saved IOBYTE at +7, two's
+complement word checksum at +8, saved C and D units at +10 and +11, and
+remaining reserved bytes zero. All 256
 little-endian words sum to zero. A is never persisted as a device number: the
 firmware boot unit determines it on every cold boot. CON must remain TTY (low
-two IOBYTE bits = 1). This replaces the initial unpublished version-1 record;
-version 1 is rejected rather than interpreted as an IOBYTE setting.
+two IOBYTE bits = 1). Versions 1 and 2 from earlier unpublished engineering images are rejected;
+there is no silent interpretation or automatic migration of those records.
 
 The shared CONFIG interface retains startup-command and PDS editing, including
 pending settings that take effect only at cold boot. BLOCKCFG.OVL handles the
@@ -74,12 +75,13 @@ CONFIG /IOBYTE=n validates available routes, confirms, writes and verifies the
 record while leaving live IOBYTE unchanged. A failed save attempts restoration.
 Block saves preserve the saved IOBYTE.
 
-CONFIG /SHOW inspects live mappings. CONFIG /LOGICAL=B /UNIT=n or /UNBIND
+CONFIG /SHOW inspects live mappings. CONFIG /LOGICAL=B|C|D /UNIT=n or /UNBIND
 validates and changes the live mapping; /SAVE writes a complete physical
 configuration sector to A and verifies it by reading it back. A subsequent
 cold boot verifies the header and checksum. A corrupt record stops boot;
-a saved B that is absent, unsuitable or now aliases A remains unbound so A
-still boots. Warm boot does not discard a live mapping.
+saved B/C/D mappings are checked independently. Missing or unsuitable devices
+and aliases of A or a previously restored drive remain unbound, while A boots.
+`/SAVE` saves all three live mappings and preserves saved IOBYTE. Warm boot does not discard a live mapping.
 
 ## Installation
 
@@ -95,7 +97,7 @@ all manifest source files before destination writes. The installer's own source
 file gets a runtime preflight CRC; other files have build-time expected CRCs.
 The installer invalidates destination boot metadata, copies files through BDOS,
 reopens every destination file to verify its complete CRC and record count,
-then copies and verifies reserved sectors. It creates a default unbound B
+then copies and verifies reserved sectors. It creates a default unbound B/C/D
 configuration for the installed disk, preserves saved IOBYTE and both startup/PDS
 records, and writes/verifies the RomWBW boot-info
 sector last. Reported I/O failures trigger attempted deletion of its explicit manifest
@@ -103,6 +105,11 @@ files; interruption can still leave an incomplete target requiring a fresh or
 cleaned disk. This is installation onto an empty disk, not an in-place upgrade.
 
 The 56 KiB unloaded COM floor is preserved by recovering unused BIOS padding
-and moving cold HBIOS initialization to the bootstrap. Two DPH/binding records
-and two 256-byte ALVs fit in protected common RAM. Only sector staging uses
+and moving cold HBIOS initialization to the bootstrap. Four 80-byte DPH/binding
+records and one 256-byte active ALV occupy 576 bytes
+in protected common RAM. The existing shared BDOS rebuilds that active ALV on
+every drive-context change, publishing allocated block ownership before it can
+forget an unclosed FCB. This replaces the former two redundant ALVs, so adding
+C:/D: requires no larger resident reservation or banked allocation maps.
+Only sector staging uses
 HBIOS-allocated banked memory; the shared BDOS/CCP/RSX residency model is unchanged.

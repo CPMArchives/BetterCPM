@@ -1,5 +1,5 @@
-; Platform-owned state immediately after the two-drive DPH/DPB/ALV.
-WB_UNIT EQU LY_TAB+672
+; Platform-owned state immediately after the four DPH/DPB records and one shared active ALV.
+WB_UNIT EQU LY_TAB+576
 WB_BANK EQU WB_UNIT+1
 WB_USER EQU WB_UNIT+2
 WB_HEAP EQU WB_UNIT+3

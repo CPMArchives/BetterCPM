@@ -1,0 +1,23 @@
+[DISK] Validated disk0: <workspace>/build/romwbw-four-final-mappings-02/legacy-config.img (8519680 bytes)
+[DISK] Validated disk1: <workspace>/build/romwbw-four-final-mappings-02/b.img (8519680 bytes)
+[DISK] Validated disk2: <workspace>/build/romwbw-four-final-mappings-02/c.img (8519680 bytes)
+[DISK] Validated disk3: <workspace>/build/romwbw-four-final-mappings-02/d.img (8519680 bytes)
+CPU mode: Z80
+RomWBW mode: 512KB ROM + 512KB RAM, bank switching enabled
+Auto-boot: configured NVRAM for '2' (this run only)
+Console escape: ^E - reserved by the emulator, the guest never sees it (--escape=none to disable)
+Instruction limit: 4000000000 - the run stops there with exit status 124 (--max-instructions=0 for none)
+RomWBW v3.5.1 (from <workspace>/build/romwbw-emulator/emu_avw.rom)
+Starting execution at 0x0000 in ROM bank 0
+
+
+RetroBrew SBC [SBC_simh_std] Boot Loader
+NV Switches Found
+
+AutoBoot in 0 Seconds (<esc> aborts, <enter> now)...
+
+Booting Disk Unit 2, Slice 0, Sector 0x00000000...
+
+Volume "BETTERCPM HBIOS " [0x1000-0x1200, entry @ 0x1000]...!
+HLT instruction at 0x115B
+--boot=2 applied to this run only; <workspace>/build/romwbw-four-final-mappings-02/legacy-rejection/config/romwbw_emu/nvram is unchanged

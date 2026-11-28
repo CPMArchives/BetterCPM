@@ -17,7 +17,7 @@ WB_CONTROL:
         JP NC,WC_INVALID
 WC_VALID:
         LD A,(IX+0)
-        CP 2
+        CP 4
         JP NC,WC_INVALID
         CALL WC_DPH
         LD (WC_BIND),HL
@@ -46,10 +46,23 @@ WC_COMPARE:
         LD (WB_PENDING),A
         CP 0FFH
         JR Z,WC_COMMIT
-        LD C,A
-        LD A,(LY_TAB+16)
+        LD HL,LY_TAB+16
+        LD DE,80
+        LD B,4
+        LD C,0
+WC_ALIAS:
+        LD A,(IX+0)
         CP C
+        JR Z,WC_ANEXT
+        LD A,(WB_PENDING)
+        CP (HL)
         JP Z,WC_UNSUPPORTED
+WC_ANEXT:
+        ADD HL,DE
+        INC C
+        DJNZ WC_ALIAS
+        LD A,(WB_PENDING)
+        LD C,A
         LD B,01AH
         CALL 0FFF0H
         JP NZ,WC_INVALID
@@ -66,7 +79,8 @@ WC_COMPARE:
         JP NZ,WC_UNSUPPORTED
 WC_COMMIT:
         LD A,(WB_PENDING)
-        LD (LY_TAB+96),A
+        LD HL,(WC_BIND)
+        LD (HL),A
         PUSH IX
         LD DE,0FFFFH
         LD C,37
@@ -93,10 +107,12 @@ WC_RETURN:
         OR A
         RET
 WC_DPH:
-        LD HL,LY_TAB+16
-        OR A
-        RET Z
+        LD HL,LY_TAB+16-80
         LD DE,80
+        INC A
+WC_DNEXT:
         ADD HL,DE
+        DEC A
+        JR NZ,WC_DNEXT
         RET
 WC_BIND: DW 0

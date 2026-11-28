@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "checks": [
+    "protected A alias rejected without changing B",
+    "B mapped to HBIOS unit 3",
+    "configuration saved and read-back verified",
+    "empty B installed and sector/file verified",
+    "saved B restored after cold boot",
+    "nonempty destination refused",
+    "independent host extraction matches every installed file",
+    "cold boot from installed destination",
+    "boot unit rediscovered as A",
+    "installed transient and RSX lifecycle pass with 56 KiB unloaded TPA",
+    "unavailable saved B does not prevent A boot",
+    "source-kernel corruption rejected before target writes",
+    "source-file corruption rejected before target writes",
+    "nonzero-user files also protect destination from installation",
+    "corrupt saved configuration rejected before OS entry",
+    "HBIOS read failure preserves DMA; failed write pre-read propagates error",
+    "explicit unbind persists across cold boot"
+  ],
+  "source_image_sha256": "876f5a4a806743fc24dce17d8dfa3deaa2c454b6be2ccc6476314fb5cdc98020",
+  "rom_sha256": "4b11402a29fad22de304775b7c415eb6a74600df06bd57828b9931a7e9693258",
+  "simulator_sha256": "27ae94f295c2d6d0ef3b0ab56aaba0dbb5fa882100943e75eb3f83d2a061fc2e",
+  "installed_image_sha256": "1726337491b99682c05065b70c3e81f84c263331b583988f969e7adc0f6cfe72"
+}

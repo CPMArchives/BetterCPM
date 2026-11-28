@@ -236,6 +236,8 @@ SG_CFG:
         LDIR
         POP AF
         LD (03007H),A
+        LD HL,0FFFFH
+        LD (0300AH),HL
         LD HL,03000H
         CALL U_SUM
         LD HL,0
@@ -429,7 +431,7 @@ SG_CRC: DW 0FFFFH
 SG_NREC: DW 0
 SG_SRC: DS 36
 SG_DST: DS 36
-SG_HEAD: DB 'BWCF',2,2,255,095H
+SG_HEAD: DB 'BWCF',3,4,255,095H
 SG_TITLE: DB 'SYSGEN B: validating empty target and matched system...',13,10,'$'
 SG_NONMT: DB 'SYSGEN refused: destination B: is not empty.',13,10,'$'
 SG_ERROR: DB 'SYSGEN failed; destination is not an installed system.',13,10,'$'

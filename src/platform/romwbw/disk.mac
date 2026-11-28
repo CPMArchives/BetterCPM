@@ -30,11 +30,11 @@ WB_APIBAD:
         RET
 WB_SEL:
         LD A,C
-        CP 2
+        CP 4
         JR NC,WB_NODSK
         CALL WB_DPH
         PUSH HL
-        LD DE,16
+        LD E,16                       ; WB_DPH leaves D=0
         ADD HL,DE
         LD A,(HL)
         POP HL
@@ -48,11 +48,13 @@ WB_NODSK:
         LD HL,0
         RET
 WB_DPH:
-        LD HL,LY_TAB
-        OR A
-        RET Z
+        LD HL,LY_TAB-80
         LD DE,80
+        INC A
+WB_DNEXT:
         ADD HL,DE
+        DEC A
+        JR NZ,WB_DNEXT
         RET
 WB_MAP:
         LD A,(BIO_DRIVE)
@@ -223,11 +225,11 @@ WB_BNC:
         XOR A
         RET
 WB_BAD:
-        LD A,1
-        OR A
+        XOR A
+        INC A
         RET
 WB_INFO:
-        DB 'BDCF',6,2,0,64
+        DB 'BDCF',6,4,0,64
         DW 0,LY_TAB,0,0
         INCLUDE checked-identity.inc
         END

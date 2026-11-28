@@ -13,7 +13,7 @@ This is an engineering target, not a published platform release.
 | ROM | emu_avw, RomWBW 3.5.1; SHA-256 `4b11402a29fad22de304775b7c415eb6a74600df06bd57828b9931a7e9693258` |
 | Boot | Unmodified RomWBW ROM loader, disk unit 2, slice zero, no MBR |
 | Console | HBIOS character unit zero, basic serial/ANSI clear screen |
-| Disk | Protected boot A: and rebindable B:, fixed hd512: 8,519,680 bytes, 512-byte physical sectors |
+| Disk | Protected boot A: and rebindable B:/C:/D:, fixed hd512: 8,519,680 bytes, 512-byte physical sectors |
 | CP/M geometry | 1040 tracks, 64 logical 128-byte records/track, 16 reserved tracks |
 | Allocation | 2048 blocks of 4096 bytes, 512 directory entries, no CSV |
 | Proxy | FE00h–FFFFh reserved for HBIOS |
@@ -33,7 +33,8 @@ normal macOS system libraries remain dynamically linked.
 The shared BDOS, CCP, reconstruction worker and RSX machinery are reused.
 `romwbw-hbios` reserves the proxy and recovers its 512 bytes by reducing the
 resident disk-service allocation. The BIOS allowance grows for HBIOS console
-calls; two DPH/DPB records and two 256-byte ALVs replace the four floppy-drive tables. Cold HBIOS initialization runs in the bootstrap, recovering BIOS padding for those tables.
+calls; four DPH/DPB records share one 256-byte active ALV. The common BDOS already
+rebuilds it on context changes, so all four bindings fit in 576 bytes. Cold HBIOS initialization runs in the bootstrap, recovering BIOS padding for those tables.
 All resident components retain independent build-time size checks.
 
 Every device operation uses standard `CALL FFF0h` HBIOS functions. There are no
@@ -110,7 +111,7 @@ A wrong-capacity image is rejected by the bootstrap before OS entry.
 The RomWBW engineering target now advertises Function 181 **block ABI 6**.
 The existing floppy targets retain ABI 5. The [block-device contract](../../../docs/engineering/RomWBW-Block-Device-Interface.md)
 defines query/rebind semantics and the versioned saved configuration sector.
-A remains the protected firmware boot unit. B can map to another exact-capacity
+A remains the protected firmware boot unit. B, C and D can each map to another exact-capacity
 512-byte HBIOS device or be explicitly unbound; nonzero slices and MBR mappings
 are not implemented.
 
@@ -118,6 +119,8 @@ are not implemented.
 CONFIG /SHOW
 CONFIG /LOGICAL=B /UNIT=3
 CONFIG /LOGICAL=B /UNIT=3 /SAVE
+CONFIG /LOGICAL=C /UNIT=4
+CONFIG /LOGICAL=D /UNIT=5 /SAVE
 CONFIG /LOGICAL=B /UNBIND /SAVE
 SYSGEN B:
 ```
@@ -128,7 +131,8 @@ bindings in place of floppy editors. No arguments opens the menu.
 settings; `/SHOW` distinguishes live and saved values. PDS edits leave live
 owners unchanged until cold boot. Keep CONFIG.COM, BLOCKCFG.OVL and
 PDSCONF.OVL together on A0:. BCST/PDS changes are mirrored into the checked
-system package. IOBYTE and block saves preserve each other.
+system package. IOBYTE and block saves preserve each other. The block submenu selects B/C/D,
+then N binds the selected drive or U unbinds it; S saves all mappings.
 
 SYSGEN is an engineering platform variant. SYSGEN must run in user zero. It
 requires an empty formatted hd512 destination, verifies its matched source,
@@ -141,7 +145,7 @@ filesystem formatting remain separate work.
 The [installation acceptance record](../../../docs/engineering/evidence/2026-11-28-romwbw-install/README.md)
 retains two-disk install/cold-boot, saved mappings, independent host extraction,
 source corruption/refusal and injected HBIOS I/O failure results. Broader utility
-and compatibility qualification,
+and remaining manual/external compatibility checks,
 release packaging, other ROM versions/boards/slices and physical hardware remain
 outside this engineering acceptance. Banked RSX execution is still deferred.
 
@@ -177,11 +181,21 @@ and `tools/qualify_romwbw_compatibility.py` read the independent suite at revisi
 `a9a878fcd2e36698c7e856654a85847a004fdd20` from an explicit `--suite` checkout.
 The suite runner never modifies the independent COM programs or their oracles.
 
-The broader two-drive run has 262 qualified automatic assertions. Full suite
-qualification remains **blocked**: DIRTEST 0200 and FILETEST 0158/0169/0242/0278
-require C:, while RANDTEST 0556/0557 require the full-directory D: fixture.
-Actual F/not-run results are retained. RANDTEST 0557's apparent P is excluded
-because its absent-fixture path can return success without exercising the case.
-The runner exits 2 for these missing-provider limitations and 1 for unexpected
-failures; it never promotes blocked cards to passes. The retained record is
-[terminal and compatibility evidence](../../../docs/engineering/evidence/2026-11-28-romwbw-display/README.md).
+The current four-drive run passes all 269 automatic assertions in the eleven
+pinned groups, including the previously unavailable C: and D: cases. The D:
+fixture has all 512 directory entries and all 2,048 allocation blocks occupied;
+its required record-127 marker is retained. Missing-provider exclusions are no
+longer used by the runner: unexpected counts, failures or errors fail the run.
+Manual/external cards remain separate. The historical two-drive result is kept
+in the terminal evidence record.
+
+`tools/test_romwbw_four_drives.py` additionally verifies saved B/C/D mappings,
+interactive drive selection, duplicate-unit rejection, independent unbinding,
+cold-boot alias refusal and 163 alternating writes to two still-open files.
+Independent host extraction checks both full patterns. The default 56 KiB COM
+capacity and the existing HBIOS sector-buffer allocation remain unchanged.
+BWCF version 3 stores all three mappings; previous unpublished engineering
+configuration records are rejected rather than silently migrated.
+
+The current record is
+[four-drive acceptance](../../../docs/engineering/evidence/2026-11-28-romwbw-four-drives/README.md).

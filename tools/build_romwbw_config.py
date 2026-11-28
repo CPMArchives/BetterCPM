@@ -11,7 +11,7 @@ def build(assembler):
     (out/'config-validation.inc').write_text('SGVALID: DS 20\nSGVEND EQU $\n')
     (out/'config-iobyte.inc').write_text('IO_VALID: DW 0\n')
     text=expanded_source()
-    text=text.replace("DB 'BDCF',5,4,4,64", "DB 'BDCF',6,2,0,64")
+    text=text.replace("DB 'BDCF',5,4,4,64", "DB 'BDCF',6,4,0,64")
     text=text.replace('        CALL CF_PARSE                  ; valid quoted command text is not options',
                       '        CALL WB_ROUTE\n        CALL CF_PARSE                  ; valid quoted command text is not options')
     text=text.replace('        CALL INIT\n','        CALL INIT\n        CALL U_CHECK\n',1)
@@ -49,7 +49,7 @@ def build(assembler):
 
     a=text.index('CQ_TEXT:')
     help_lines=['CONFIG: /SHOW /STARTUP="text" /DEFAULT /IOBYTE=n',
-        'RomWBW: /LOGICAL=B /UNIT=n | /UNBIND, optionally /SAVE',
+        'RomWBW: /LOGICAL=B|C|D /UNIT=n | /UNBIND, optionally /SAVE',
         'No arguments: shared startup, PDS and IOBYTE menus; block bindings.']
     text=text[:a]+'CQ_TEXT:\n'+''.join("        DB '"+line+"',13,10\n" for line in help_lines)+"        DB '$'\n        END\n"
 
