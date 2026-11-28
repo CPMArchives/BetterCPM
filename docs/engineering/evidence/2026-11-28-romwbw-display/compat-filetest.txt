@@ -1,0 +1,110 @@
+[DISK] Validated disk0: <workspace>/build/romwbw-bound-compatibility/filetest/system.img (8519680 bytes)
+[DISK] Validated disk1: <workspace>/build/romwbw-bound-compatibility/filetest/fixtures.img (8519680 bytes)
+CPU mode: Z80
+RomWBW mode: 512KB ROM + 512KB RAM, bank switching enabled
+Auto-boot: configured NVRAM for '2' (this run only)
+Console escape: none - every key goes to the guest (sim> unreachable)
+Instruction limit: 40000000000 - the run stops there with exit status 124 (--max-instructions=0 for none)
+RomWBW v3.5.1 (from <workspace>/build/romwbw-emulator/emu_avw.rom)
+Starting execution at 0x0000 in ROM bank 0
+
+
+RetroBrew SBC [SBC_simh_std] Boot Loader
+NV Switches Found
+
+AutoBoot in 0 Seconds (<esc> aborts, <enter> now)...
+
+Booting Disk Unit 2, Slice 0, Sector 0x00000000...
+
+Volume "BETTERCPM HBIOS " [0x1000-0x1200, entry @ 0x1000]...
+A0> A0> _ A0> A0> C_ A0> CA0> CO_ A0> COA0> CON_ A0> CONA0> CONF_ A0> CONFA0> CONFI_ A0> CONFIA0> CONFIG_ A0> CONFIGA0> CONFIG _ A0> CONFIG A0> CONFIG /_ A0> CONFIG /A0> CONFIG /L_ A0> CONFIG /LA0> CONFIG /LO_ A0> CONFIG /LOA0> CONFIG /LOG_ A0> CONFIG /LOGA0> CONFIG /LOGI_ A0> CONFIG /LOGIA0> CONFIG /LOGIC_ A0> CONFIG /LOGICA0> CONFIG /LOGICA_ A0> CONFIG /LOGICAA0> CONFIG /LOGICAL_ A0> CONFIG /LOGICALA0> CONFIG /LOGICAL=_ A0> CONFIG /LOGICAL=A0> CONFIG /LOGICAL=B_ A0> CONFIG /LOGICAL=BA0> CONFIG /LOGICAL=B _ A0> CONFIG /LOGICAL=B A0> CONFIG /LOGICAL=B /_ A0> CONFIG /LOGICAL=B /A0> CONFIG /LOGICAL=B /U_ A0> CONFIG /LOGICAL=B /UA0> CONFIG /LOGICAL=B /UN_ A0> CONFIG /LOGICAL=B /UNA0> CONFIG /LOGICAL=B /UNI_ A0> CONFIG /LOGICAL=B /UNIA0> CONFIG /LOGICAL=B /UNIT_ A0> CONFIG /LOGICAL=B /UNITA0> CONFIG /LOGICAL=B /UNIT=_ A0> CONFIG /LOGICAL=B /UNIT=A0> CONFIG /LOGICAL=B /UNIT=3_ A0> CONFIG /LOGICAL=B /UNIT=3A0> CONFIG /LOGICAL=B /UNIT=3
+B: binding updated.
+BetterCP/M RomWBW block configuration
+A: HBIOS unit 2
+B: HBIOS unit 3
+
+A0> A0> _ A0> A0> B_ A0> BA0> B:_ A0> B:A0> B:
+
+B0> B0> _ B0> B0> F_ B0> FB0> FI_ B0> FIB0> FIL_ B0> FILB0> FILE_ B0> FILEB0> FILET_ B0> FILETB0> FILETE_ B0> FILETEB0> FILETES_ B0> FILETESB0> FILETEST_ B0> FILETESTB0> FILETEST _ B0> FILETEST B0> FILETEST /_ B0> FILETEST /B0> FILETEST /G_ B0> FILETEST /GB0> FILETEST /GR_ B0> FILETEST /GRB0> FILETEST /GRO_ B0> FILETEST /GROB0> FILETEST /GROU_ B0> FILETEST /GROUB0> FILETEST /GROUP_ B0> FILETEST /GROUPB0> FILETEST /GROUP:_ B0> FILETEST /GROUP:B0> FILETEST /GROUP:R_ B0> FILETEST /GROUP:RB0> FILETEST /GROUP:RE_ B0> FILETEST /GROUP:REB0> FILETEST /GROUP:REQ_ B0> FILETEST /GROUP:REQB0> FILETEST /GROUP:REQU_ B0> FILETEST /GROUP:REQUB0> FILETEST /GROUP:REQUI_ B0> FILETEST /GROUP:REQUIB0> FILETEST /GROUP:REQUIR_ B0> FILETEST /GROUP:REQUIRB0> FILETEST /GROUP:REQUIRE_ B0> FILETEST /GROUP:REQUIREB0> FILETEST /GROUP:REQUIRED_ B0> FILETEST /GROUP:REQUIREDB0> FILETEST /GROUP:REQUIRED
+
+FILETEST
+STATUS: P=Pass F=Fail -=Not-run O=Observed
+CLASS:  R=Required N=Not-guaranteed S=Out-of-scope
+ITEM  S  C  OBSERVED
+----  -  -  ----------------------------------------------------------
+0156  P  R  Prereq/Open=00; FCB/I/O state=7F
+0157  P  R  Prereq/Open=00; FCB/I/O state=82
+0158  F  R  Prereq/Open=FF; FCB/I/O state=03
+0159  P  R  Prereq/Open=01; FCB/I/O state=03
+0160  P  R  Prereq/Open=01; FCB/I/O state=03
+0161  P  R  Prereq/Open=00; FCB/I/O state=C4
+0162  P  R  Prereq/Open=02; FCB/I/O state=1F
+0164  P  R  Prereq/Open=02; FCB/I/O state=80
+0165  P  R  Open=01; RC=01
+0166  P  R  Prereq/Open=02; FCB/I/O state=17
+0167  P  R  Read returns=00,00,00; CR=03
+0168  P  R  Prereq/Open=00; FCB/I/O state=01
+0169  -  R  Required C: BTBFILE.DAT fixture unavailable
+0170  P  R  Prereq/Open=01; FCB/I/O state=01
+0171  P  R  Open=FF; FCB guards unchanged
+0172  P  R  Prereq/Open=01; FCB/I/O state=00
+0173  P  R  Prereq/Open=01; FCB/I/O state=00
+0174  P  R  Prereq/Open=02; FCB/I/O state=00
+0175  P  R  Prereq/Open=02; FCB/I/O state=00
+0176  P  R  Prereq/Open=01; FCB/I/O state=01
+0177  P  R  Prereq/Open=00; FCB/I/O state=00
+0178  P  R  Prereq/Open=02; FCB/I/O state=00
+0179  P  R  Prereq/Open=01; FCB/I/O state=00
+0180  P  R  Prereq/Open=00; FCB/I/O state=00
+0181  P  R  Prereq/Open=00; FCB/I/O state=FF
+0219  P  R  Prereq/Open=01; read/state=00
+0220  P  R  Prereq/Open=01; read/state=00
+0221  P  R  Prereq/Open=00; read/state=00
+0222  P  R  Prereq/Open=01; read/state=00
+0223  P  R  Prereq/Open=01; read/state=00
+0224  P  R  Prereq/Open=01; read/state=00
+0226  P  R  Prereq/Open=00; read/state=02
+0227  P  R  Prereq/Open=00; read/state=03
+0228  P  R  Prereq/Open=03; read/state=80
+0229  P  R  Prereq/Open=02; read/state=00
+0230  P  R  Prereq/Open=02; read/state=01
+0231  P  R  Prereq/Open=02; read/state=02
+0232  P  R  Prereq/Open=01; read/state=01
+0234  P  R  Prereq/Open=03; read/state=01
+0235  P  R  Prereq/Open=03; read/state=01
+0236  P  R  Prereq/Open=03; read/state=01
+0237  P  R  Prereq/Open=03; read/state=01
+0239  P  R  Prereq/Open=00; read/state=03
+0242  -  R  Required C: BTBFILE.DAT fixture unavailable
+0243  P  R  Prereq/Open=00; read/state=00
+0248  P  R  Prereq=02; Make/write=00
+0249  P  R  Prereq=02; Make/write=00
+0250  P  R  Prereq=02; Make/write=01
+0251  P  R  Prereq=02; Make/write=00
+0252  P  R  Prereq=02; Make/write=00
+0253  P  R  Prereq=02; Make/write=FF
+0254  P  R  Prereq=02; Make/write=02
+0259  P  R  Prereq=02; Make/write=00
+0260  P  R  Prereq=02; Make/write=00
+0261  P  R  Prereq=02; Make/write=00
+0262  P  R  Prereq=02; Make/write=00
+0263  P  R  Prereq=02; Make/write=00
+0264  P  R  Prereq=02; Make/write=00
+0266  P  R  Prereq=02; Make/write=00
+0267  P  R  Prereq=02; Make/write=00
+0268  P  R  Prereq=02; Make/write=00
+0269  P  R  Prereq=02; Make/write=00
+0271  P  R  Prereq=02; Make/write=00
+0272  P  R  Prereq=02; Make/write=00
+0273  P  R  Prereq=02; Make/write=00
+0274  P  R  Prereq=02; Make/write=FF
+0278  F  R  Prereq=FF; Make/write=FF
+0279  P  R  Prereq=02; Make/write=00
+  0368 - R Manual: sequential read-only protection
+  0369 - R Manual: random read-only protection
+
+Summary: 64 pass, 2 fail, 0 error, 0 observations, 2 not-run
+Details: FILETEST /NNNN:REPORT    Help: FILETEST /HELP
+Failed items: 0158 0278
+
+B0> B0> _

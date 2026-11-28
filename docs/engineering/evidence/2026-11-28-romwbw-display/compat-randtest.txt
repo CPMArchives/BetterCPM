@@ -1,0 +1,81 @@
+[DISK] Validated disk0: <workspace>/build/romwbw-bound-compatibility/randtest/system.img (8519680 bytes)
+[DISK] Validated disk1: <workspace>/build/romwbw-bound-compatibility/randtest/fixtures.img (8519680 bytes)
+CPU mode: Z80
+RomWBW mode: 512KB ROM + 512KB RAM, bank switching enabled
+Auto-boot: configured NVRAM for '2' (this run only)
+Console escape: none - every key goes to the guest (sim> unreachable)
+Instruction limit: 40000000000 - the run stops there with exit status 124 (--max-instructions=0 for none)
+RomWBW v3.5.1 (from <workspace>/build/romwbw-emulator/emu_avw.rom)
+Starting execution at 0x0000 in ROM bank 0
+
+
+RetroBrew SBC [SBC_simh_std] Boot Loader
+NV Switches Found
+
+AutoBoot in 0 Seconds (<esc> aborts, <enter> now)...
+
+Booting Disk Unit 2, Slice 0, Sector 0x00000000...
+
+Volume "BETTERCPM HBIOS " [0x1000-0x1200, entry @ 0x1000]...
+A0> A0> _ A0> A0> C_ A0> CA0> CO_ A0> COA0> CON_ A0> CONA0> CONF_ A0> CONFA0> CONFI_ A0> CONFIA0> CONFIG_ A0> CONFIGA0> CONFIG _ A0> CONFIG A0> CONFIG /_ A0> CONFIG /A0> CONFIG /L_ A0> CONFIG /LA0> CONFIG /LO_ A0> CONFIG /LOA0> CONFIG /LOG_ A0> CONFIG /LOGA0> CONFIG /LOGI_ A0> CONFIG /LOGIA0> CONFIG /LOGIC_ A0> CONFIG /LOGICA0> CONFIG /LOGICA_ A0> CONFIG /LOGICAA0> CONFIG /LOGICAL_ A0> CONFIG /LOGICALA0> CONFIG /LOGICAL=_ A0> CONFIG /LOGICAL=A0> CONFIG /LOGICAL=B_ A0> CONFIG /LOGICAL=BA0> CONFIG /LOGICAL=B _ A0> CONFIG /LOGICAL=B A0> CONFIG /LOGICAL=B /_ A0> CONFIG /LOGICAL=B /A0> CONFIG /LOGICAL=B /U_ A0> CONFIG /LOGICAL=B /UA0> CONFIG /LOGICAL=B /UN_ A0> CONFIG /LOGICAL=B /UNA0> CONFIG /LOGICAL=B /UNI_ A0> CONFIG /LOGICAL=B /UNIA0> CONFIG /LOGICAL=B /UNIT_ A0> CONFIG /LOGICAL=B /UNITA0> CONFIG /LOGICAL=B /UNIT=_ A0> CONFIG /LOGICAL=B /UNIT=A0> CONFIG /LOGICAL=B /UNIT=3_ A0> CONFIG /LOGICAL=B /UNIT=3A0> CONFIG /LOGICAL=B /UNIT=3
+B: binding updated.
+BetterCP/M RomWBW block configuration
+A: HBIOS unit 2
+B: HBIOS unit 3
+
+A0> A0> _ A0> A0> B_ A0> BA0> B:_ A0> B:A0> B:
+
+B0> B0> _ B0> B0> R_ B0> RB0> RA_ B0> RAB0> RAN_ B0> RANB0> RAND_ B0> RANDB0> RANDT_ B0> RANDTB0> RANDTE_ B0> RANDTEB0> RANDTES_ B0> RANDTESB0> RANDTEST_ B0> RANDTESTB0> RANDTEST _ B0> RANDTEST B0> RANDTEST /_ B0> RANDTEST /B0> RANDTEST /S_ B0> RANDTEST /SB0> RANDTEST /SA_ B0> RANDTEST /SAB0> RANDTEST /SAF_ B0> RANDTEST /SAFB0> RANDTEST /SAFE_ B0> RANDTEST /SAFEB0> RANDTEST /SAFE
+
+FILETEST
+STATUS: P=Pass F=Fail -=Not-run O=Observed
+CLASS:  R=Required N=Not-guaranteed S=Out-of-scope
+ITEM  S  C  OBSERVED
+----  -  -  ----------------------------------------------------------
+0317  P  R  Prereq/Open=02; random-I/O=00
+0318  P  R  Prereq/Open=02; random-I/O=00
+0319  P  R  Prereq/Open=02; random-I/O=00
+0320  P  R  Prereq/Open=02; random-I/O=00
+0321  P  R  Prereq/Open=02; random-I/O=00
+0322  P  R  Prereq/Open=02; random-I/O=00
+0323  P  R  Prereq/Open=02; random-I/O=00
+0324  P  R  Prereq/Open=02; random-I/O=00
+0326  P  R  Prereq/Open=02; random-I/O=00
+0327  P  R  Prereq/Open=02; random-I/O=00
+0328  P  R  Prereq/Open=02; random-I/O=00
+0329  P  R  Prereq/Open=02; random-I/O=00
+0330  P  R  Prereq/Open=02; random-I/O=00
+0331  P  R  Prereq/Open=02; random-I/O=01
+0332  P  R  Prereq/Open=02; random-I/O=FF
+0333  P  R  Prereq/Open=02; random-I/O=06
+0335  P  R  Prereq/Open=02; random-I/O=00
+0336  P  R  Prereq/Open=02; random-I/O=00
+0337  P  R  Prereq/Open=02; random-I/O=00
+0338  P  R  Prereq/Open=02; random-I/O=00
+0339  P  R  Prereq/Open=02; random-I/O=00
+0340  P  R  Prereq/Open=02; random-I/O=00
+0341  P  R  Prereq/Open=02; random-I/O=00
+0342  P  R  Prereq/Open=02; random-I/O=00
+0343  P  R  Prereq/Open=02; random-I/O=00
+0344  P  R  Prereq/Open=02; random-I/O=00
+0345  P  R  Prereq/Open=02; random-I/O=06
+0346  P  R  Prereq/Open=02; random-I/O=02
+0347  P  R  Prereq/Open=01; random-I/O=02
+0348  P  R  Prereq/Open=01; random-I/O=02
+0349  P  R  Prereq/Open=01; random-I/O=02
+0350  P  R  Prereq/Open=02; random-I/O=02
+0351  P  R  Prereq/Open=02; random-I/O=00
+0550  P  R  Prereq=02; lifecycle=00
+0551  P  R  Prereq=02; lifecycle=00
+0553  P  R  Prereq=02; lifecycle=00
+0555  P  R  Prereq=02; lifecycle=00
+0556  F  R  Prereq=FF; lifecycle=00
+0557  P  R  Prereq=FF; lifecycle=00
+  0368 - R Manual: sequential read-only protection
+  0369 - R Manual: random read-only protection
+
+Summary: 38 pass, 1 fail, 0 error, 0 observations, 2 not-run
+Details: RANDTEST /NNNN:REPORT    Help: RANDTEST /HELP
+Failed items: 0556
+
+B0> B0> _

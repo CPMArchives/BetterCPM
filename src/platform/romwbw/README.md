@@ -141,7 +141,7 @@ filesystem formatting remain separate work.
 The [installation acceptance record](../../../docs/engineering/evidence/2026-11-28-romwbw-install/README.md)
 retains two-disk install/cold-boot, saved mappings, independent host extraction,
 source corruption/refusal and injected HBIOS I/O failure results. Broader utility
-and compatibility qualification, terminal personalities,
+and compatibility qualification,
 release packaging, other ROM versions/boards/slices and physical hardware remain
 outside this engineering acceptance. Banked RSX execution is still deferred.
 
@@ -150,8 +150,8 @@ outside this engineering acceptance. Banked RSX execution is still deferred.
 The engineering image also builds the shared file, inspection, archive, batch,
 PATH/NDR, RSX and assembler/debugger utilities. HELP.COM and HELP.LBR are
 included. The fixed-block image excludes floppy CONFIG/DUP/SYSBUILD and FDB;
-its CONFIG and SYSGEN use the block backend described above. Native terminal
-personality modules are not yet included. TIME reports no provider.
+its CONFIG and SYSGEN use the block backend described above. The integrated ADM3A, VT52 and ANSI personalities are included; no separate
+screen-backend RSX is required. TIME reports no provider.
 
 Additional focused acceptance entry points are `tools/test_romwbw_config.py`
 and `tools/test_romwbw_utilities.py`, with the same image-dir, simulator, rom and
@@ -160,3 +160,28 @@ minutes because every file is copied and read back through the guest BIOS.
 The retained configuration/utility evidence is in
 [the configuration acceptance record](../../../docs/engineering/evidence/2026-11-28-romwbw-config/README.md).
 These checks do not constitute full utility, compatibility or screen qualification.
+
+## Terminal and compatibility checks
+
+`RSX LOAD ADM3A`, `RSX LOAD VT52`, or `RSX LOAD ANSI` selects an integrated
+personality. Unload it before selecting another. Its renderer uses the protected
+HBIOS character leaf and capability 32; cpmsim port-output modules are refused.
+No personality loads at cold boot by default, and complete unload restores the
+original 56 KiB COM capacity. The shared 81-command lifecycle and HELP PIP through
+each personality are exercised by `tools/qualify_romwbw_display.py`. This runner
+requires `pyte` in addition to the dependencies above.
+
+`tools/qualify_romwbw_toolchain.py` exercises pinned native ZSM4/LINK with indexed
+Z80 code, macro/include expansion and multiple linked modules. Both toolchain
+and `tools/qualify_romwbw_compatibility.py` read the independent suite at revision
+`a9a878fcd2e36698c7e856654a85847a004fdd20` from an explicit `--suite` checkout.
+The suite runner never modifies the independent COM programs or their oracles.
+
+The broader two-drive run has 262 qualified automatic assertions. Full suite
+qualification remains **blocked**: DIRTEST 0200 and FILETEST 0158/0169/0242/0278
+require C:, while RANDTEST 0556/0557 require the full-directory D: fixture.
+Actual F/not-run results are retained. RANDTEST 0557's apparent P is excluded
+because its absent-fixture path can return success without exercising the case.
+The runner exits 2 for these missing-provider limitations and 1 for unexpected
+failures; it never promotes blocked cards to passes. The retained record is
+[terminal and compatibility evidence](../../../docs/engineering/evidence/2026-11-28-romwbw-display/README.md).

@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "scope": "initial emulator engineering acceptance",
+  "checks": [
+    "DIR",
+    "HELLO",
+    "AFILE",
+    "AIOTEST",
+    "ATPA",
+    "RSX LOAD ECHO",
+    "RSX LIST",
+    "AECHO",
+    "warm boot",
+    "AECHO",
+    "RSX UNLOAD ECHO",
+    "RSX LIST",
+    "host extraction: 140 patterned records",
+    "cold restart: file persistence and transient execution",
+    "bootstrap rejects wrong physical capacity"
+  ],
+  "rom_sha256": "4b11402a29fad22de304775b7c415eb6a74600df06bd57828b9931a7e9693258",
+  "simulator_sha256": "c8a07e8128725d4f055d16800b91c9d70f59b8b512a72d781ef3ca0bb13cae9b",
+  "source_image_sha256": "5924bcd3a4da5cd8bfec6bcc5983457c833acae50b4fc06074c0ac5d59c4b143",
+  "guest_file_sha256": "bb888f573da02bd809299898f15eede53ed2de1343f7217994d922aa22f4521f"
+}

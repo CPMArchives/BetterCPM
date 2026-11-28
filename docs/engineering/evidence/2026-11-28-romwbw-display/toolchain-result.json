@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+  "tool_sha256": {
+    "ZSM4.COM": "3dbeed62bc303a07c62e0fd41a5df44d023c2f82c05b76785a97d20a633f6ef8",
+    "LINK.COM": "82df88a9bcfb1068eb37df08df6d664711d20c73ddae66b81577dfed02642677"
+  },
+  "system_sha256": "5924bcd3a4da5cd8bfec6bcc5983457c833acae50b4fc06074c0ac5d59c4b143",
+  "checks": [
+    "native indexed Z80 assembly",
+    "macro and include expansion",
+    "multi-module relocation/link",
+    "linked guest program execution"
+  ],
+  "output_sha256": "f64815dc8465003294fa77317631777b02c73131057f1beda96eaa41379c3452"
+}

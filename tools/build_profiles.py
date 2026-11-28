@@ -121,6 +121,8 @@ def profile_inputs(profile: BuildProfile, source: Path) -> tuple:
         layout = layout.replace('PL_CROM         EQU     0', 'PL_CROM         EQU     1')
     if profile.target == 'altair':
         layout = layout.replace('PL_ALTAIR       EQU     0', 'PL_ALTAIR       EQU     1')
+    if profile.target == 'romwbw':
+        layout = layout.replace('PL_WBW          EQU     0', 'PL_WBW          EQU     1')
     layout = f'; Generated build profile: {profile.name}\n' + layout
     flags = (f'; Generated build profile: {profile.name}\n'
              f'BP_CHECKED EQU {int(profile.checked)}\n'

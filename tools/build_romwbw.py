@@ -183,6 +183,10 @@ def compile_image(assembler):
     for filename in ('NDR.RSX','BATCHIO.RSX'):
         path=ROOT/'build/rsx'/filename
         if path.is_file():files.append((filename,path.read_bytes()))
+    from build_release_tcap import release_modules
+    display_reports=release_modules('romwbw',assembler)
+    files += [(name+'.RSX',(ROOT/'build/rsx'/(name+'.RSX')).read_bytes())
+              for name in display_reports]
     prefix = bytearray(image(payload,boot,files)[:131072])
     prefix[2048:2560]=bytes(512)
     prefix[128:384]=bytes(256)
@@ -212,6 +216,7 @@ def compile_image(assembler):
         'files':{name:{'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest(),
                       'cpm_sha256':hashlib.sha256(data.ljust((len(data)+127)//128*128,b'\x1a')).hexdigest()}
                  for name,data in files},
+        'display_profiles':display_reports,
         'resident_parts':[{ 'address':a,'bytes':len(d),'limit':limit} for a,d,limit in parts],
         'boot_bytes':len(boot),'proxy_start':0xFE00},indent=2)+'\n')
     print(out/'system.img')

@@ -28,13 +28,21 @@ PL_CONOT:
         CP 28
         JR Z,WB_CLEAR
 WB_OUT:
+        LD A,C
+; Raw A-byte leaf for checked display modules. Preserve all caller registers.
+; This does not call BDOS, translate controls, or re-enter the monitor router.
+WB_TXA:
+        PUSH AF
         PUSH BC
         PUSH DE
-        LD E,C
+        PUSH HL
+        LD E,A
         LD BC,0100H
         CALL 0FFF0H
+        POP HL
         POP DE
         POP BC
+        POP AF
         RET
 WB_CLEAR:
         PUSH HL
@@ -54,9 +62,4 @@ PL_CURSOR:
         XOR A
         RET
 WB_CLS: DB 27,'[2J',27,'[H',0
-WB_HALT:
-        LD C,'!'
-        CALL WB_OUT
-        HALT
-        JR WB_HALT
         INCLUDE checked-load.inc

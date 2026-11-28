@@ -35,7 +35,7 @@ def build(workspace,out,platform,personality='ADM3A',assembler=None,inline_cache
     if inline_cache and 'CACHE_INLINE_1' not in (workspace/'src/system/r3cache.mac').read_text():
         raise ValueError('the selected system does not support explicit inline cache ownership')
     out.mkdir(parents=True,exist_ok=True)
-    host=platform in ('cpmsim','altair','cromemco');m2=platform=='model2'
+    host=platform in ('cpmsim','altair','cromemco','romwbw');m2=platform=='model2'
     preamble='M2BANK EQU %d\n'%m2
     if not host:
         bios=symbols(workspace/('build/trs80m2/bios.lst' if m2 else 'build/bios/bios.lst'))
@@ -43,6 +43,15 @@ def build(workspace,out,platform,personality='ADM3A',assembler=None,inline_cache
         assert not m2 or max(bios[pos]+1,bios[col])<0xf800
         preamble+='CRT_POS EQU 0%04XH\nCRT_COL EQU 0%04XH\n'%(bios[pos],bios[col])
     text=preamble+source(personality,'host' if host else 'crt')
+    if platform=='romwbw':
+        # The checked BIOS leaf preserves AF/BC/DE/HL around HBIOS. It replaces
+        # unused halt code without growing the resident reservation or TPA.
+        bios=symbols(workspace/'build/romwbw/bios.lst')
+        text=f"WB_TXA EQU 0{bios['WB_TXA']:04X}H\n"+text.replace('OUT (1),A','CALL WB_TXA')
+        text=text.replace('        CALL WB_TXA\n        RET','        JP WB_TXA\n')
+        raw='D_RAW:\n        LD HL,(1)\n        LD DE,66\n        ADD HL,DE\n        JP (HL)'
+        assert text.count(raw)==1
+        text=text.replace(raw,f"D_RAW:\n        JP 0{bios['BIOS']+69:04X}H")
     if platform=='altair':
         # The pinned release uses sio1_baud_rate=0: every emitted byte is
         # accepted synchronously by the emulator. Keep the existing leaf
@@ -59,6 +68,7 @@ def build(workspace,out,platform,personality='ADM3A',assembler=None,inline_cache
         # its known address on each input call and retain the allocation page.
         text=text.replace(raw,f"D_RAW:\n        JP 0{bios['BIOS']+69:04X}H")
         text=text.replace('        CALL CMTX\n        RET', '        JP CMTX\n')
+    if platform in ('cromemco','romwbw'):
         if personality=='ANSI':
             # Equivalent short branches keep the frozen 1,792-byte complete
             # display-path budget and existing relocation-header limit.
@@ -76,7 +86,7 @@ def build(workspace,out,platform,personality='ADM3A',assembler=None,inline_cache
         relocations=relocation_offsets(code,alternate,0x101),reconstruction_class='STATEFUL',
         init_offset=labels['D_ACTIVATE']-0x8000,
         cache_footer_inline=inline_cache,
-        callable_services=[(b'MCON',1,0,labels['D_ENTRY']-0x8000,16 if platform=='cromemco' else 8 if platform=='altair' else 2 if host else 4 if m2 else 1),
+        callable_services=[(b'MCON',1,0,labels['D_ENTRY']-0x8000,32 if platform=='romwbw' else 16 if platform=='cromemco' else 8 if platform=='altair' else 2 if host else 4 if m2 else 1),
                            (b'TCAP',2,0,labels['D_TCAP']-0x8000,0)])
     context=workspace/'build/profile/context.json'
     contract=None
@@ -115,7 +125,7 @@ def build(workspace,out,platform,personality='ADM3A',assembler=None,inline_cache
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('workspace',type=Path)
-    p.add_argument('--platform',choices=('cpmsim','model4','model2','altair','cromemco'),required=True)
+    p.add_argument('--platform',choices=('cpmsim','model4','model2','altair','cromemco','romwbw'),required=True)
     p.add_argument('--personality',choices=('ADM3A','VT52','ANSI'),default='ADM3A')
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--inline-cache',action='store_true')
