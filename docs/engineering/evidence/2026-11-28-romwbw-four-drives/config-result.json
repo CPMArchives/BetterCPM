@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "checks": [
+    "shared HELP/CONFIG menus",
+    "startup save through shared BCST/PDS validator",
+    "IOBYTE save leaves live routes unchanged",
+    "block save preserves saved IOBYTE",
+    "PDS menu preserves live owners while editing and saves pending choices",
+    "cold boot activates saved startup, IOBYTE and PDS choices",
+    "MCL survives transient execution",
+    "SYSgen accepts edited settings and mirrored BCST",
+    "installed disk preserves startup/PDS/IOBYTE and unbinds B"
+  ],
+  "system_sha256": "876f5a4a806743fc24dce17d8dfa3deaa2c454b6be2ccc6476314fb5cdc98020",
+  "rom_sha256": "4b11402a29fad22de304775b7c415eb6a74600df06bd57828b9931a7e9693258",
+  "simulator_sha256": "27ae94f295c2d6d0ef3b0ab56aaba0dbb5fa882100943e75eb3f83d2a061fc2e"
+}

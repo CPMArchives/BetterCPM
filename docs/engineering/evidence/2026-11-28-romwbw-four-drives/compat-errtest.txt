@@ -1,0 +1,100 @@
+[DISK] Validated disk0: <workspace>/build/romwbw-four-final-compatibility/errtest/system.img (8519680 bytes)
+[DISK] Validated disk1: <workspace>/build/romwbw-four-final-compatibility/errtest/fixtures.img (8519680 bytes)
+[DISK] Validated disk2: <workspace>/build/romwbw-four-final-compatibility/errtest/cross.img (8519680 bytes)
+[DISK] Validated disk3: <workspace>/build/romwbw-four-final-compatibility/errtest/full.img (8519680 bytes)
+CPU mode: Z80
+RomWBW mode: 512KB ROM + 512KB RAM, bank switching enabled
+Auto-boot: configured NVRAM for '2' (this run only)
+Console escape: none - every key goes to the guest (sim> unreachable)
+Instruction limit: 40000000000 - the run stops there with exit status 124 (--max-instructions=0 for none)
+RomWBW v3.5.1 (from <workspace>/build/romwbw-emulator/emu_avw.rom)
+Starting execution at 0x0000 in ROM bank 0
+
+
+RetroBrew SBC [SBC_simh_std] Boot Loader
+NV Switches Found
+
+AutoBoot in 0 Seconds (<esc> aborts, <enter> now)...
+
+Booting Disk Unit 2, Slice 0, Sector 0x00000000...
+
+Volume "BETTERCPM HBIOS " [0x1000-0x1200, entry @ 0x1000]...
+A0> A0> _ A0> A0> C_ A0> CA0> CO_ A0> COA0> CON_ A0> CONA0> CONF_ A0> CONFA0> CONFI_ A0> CONFIA0> CONFIG_ A0> CONFIGA0> CONFIG _ A0> CONFIG A0> CONFIG /_ A0> CONFIG /A0> CONFIG /L_ A0> CONFIG /LA0> CONFIG /LO_ A0> CONFIG /LOA0> CONFIG /LOG_ A0> CONFIG /LOGA0> CONFIG /LOGI_ A0> CONFIG /LOGIA0> CONFIG /LOGIC_ A0> CONFIG /LOGICA0> CONFIG /LOGICA_ A0> CONFIG /LOGICAA0> CONFIG /LOGICAL_ A0> CONFIG /LOGICALA0> CONFIG /LOGICAL=_ A0> CONFIG /LOGICAL=A0> CONFIG /LOGICAL=B_ A0> CONFIG /LOGICAL=BA0> CONFIG /LOGICAL=B _ A0> CONFIG /LOGICAL=B A0> CONFIG /LOGICAL=B /_ A0> CONFIG /LOGICAL=B /A0> CONFIG /LOGICAL=B /U_ A0> CONFIG /LOGICAL=B /UA0> CONFIG /LOGICAL=B /UN_ A0> CONFIG /LOGICAL=B /UNA0> CONFIG /LOGICAL=B /UNI_ A0> CONFIG /LOGICAL=B /UNIA0> CONFIG /LOGICAL=B /UNIT_ A0> CONFIG /LOGICAL=B /UNITA0> CONFIG /LOGICAL=B /UNIT=_ A0> CONFIG /LOGICAL=B /UNIT=A0> CONFIG /LOGICAL=B /UNIT=3_ A0> CONFIG /LOGICAL=B /UNIT=3A0> CONFIG /LOGICAL=B /UNIT=3
+B: binding updated.
+BetterCP/M RomWBW block configuration
+A: HBIOS unit 2
+B: HBIOS unit 3
+C: unbound
+D: unbound
+
+A0> A0> _ A0> A0> C_ A0> CA0> CO_ A0> COA0> CON_ A0> CONA0> CONF_ A0> CONFA0> CONFI_ A0> CONFIA0> CONFIG_ A0> CONFIGA0> CONFIG _ A0> CONFIG A0> CONFIG /_ A0> CONFIG /A0> CONFIG /L_ A0> CONFIG /LA0> CONFIG /LO_ A0> CONFIG /LOA0> CONFIG /LOG_ A0> CONFIG /LOGA0> CONFIG /LOGI_ A0> CONFIG /LOGIA0> CONFIG /LOGIC_ A0> CONFIG /LOGICA0> CONFIG /LOGICA_ A0> CONFIG /LOGICAA0> CONFIG /LOGICAL_ A0> CONFIG /LOGICALA0> CONFIG /LOGICAL=_ A0> CONFIG /LOGICAL=A0> CONFIG /LOGICAL=C_ A0> CONFIG /LOGICAL=CA0> CONFIG /LOGICAL=C _ A0> CONFIG /LOGICAL=C A0> CONFIG /LOGICAL=C /_ A0> CONFIG /LOGICAL=C /A0> CONFIG /LOGICAL=C /U_ A0> CONFIG /LOGICAL=C /UA0> CONFIG /LOGICAL=C /UN_ A0> CONFIG /LOGICAL=C /UNA0> CONFIG /LOGICAL=C /UNI_ A0> CONFIG /LOGICAL=C /UNIA0> CONFIG /LOGICAL=C /UNIT_ A0> CONFIG /LOGICAL=C /UNITA0> CONFIG /LOGICAL=C /UNIT=_ A0> CONFIG /LOGICAL=C /UNIT=A0> CONFIG /LOGICAL=C /UNIT=4_ A0> CONFIG /LOGICAL=C /UNIT=4A0> CONFIG /LOGICAL=C /UNIT=4
+C: binding updated.
+BetterCP/M RomWBW block configuration
+A: HBIOS unit 2
+B: HBIOS unit 3
+C: HBIOS unit 4
+D: unbound
+
+A0> A0> _ A0> A0> C_ A0> CA0> CO_ A0> COA0> CON_ A0> CONA0> CONF_ A0> CONFA0> CONFI_ A0> CONFIA0> CONFIG_ A0> CONFIGA0> CONFIG _ A0> CONFIG A0> CONFIG /_ A0> CONFIG /A0> CONFIG /L_ A0> CONFIG /LA0> CONFIG /LO_ A0> CONFIG /LOA0> CONFIG /LOG_ A0> CONFIG /LOGA0> CONFIG /LOGI_ A0> CONFIG /LOGIA0> CONFIG /LOGIC_ A0> CONFIG /LOGICA0> CONFIG /LOGICA_ A0> CONFIG /LOGICAA0> CONFIG /LOGICAL_ A0> CONFIG /LOGICALA0> CONFIG /LOGICAL=_ A0> CONFIG /LOGICAL=A0> CONFIG /LOGICAL=D_ A0> CONFIG /LOGICAL=DA0> CONFIG /LOGICAL=D _ A0> CONFIG /LOGICAL=D A0> CONFIG /LOGICAL=D /_ A0> CONFIG /LOGICAL=D /A0> CONFIG /LOGICAL=D /U_ A0> CONFIG /LOGICAL=D /UA0> CONFIG /LOGICAL=D /UN_ A0> CONFIG /LOGICAL=D /UNA0> CONFIG /LOGICAL=D /UNI_ A0> CONFIG /LOGICAL=D /UNIA0> CONFIG /LOGICAL=D /UNIT_ A0> CONFIG /LOGICAL=D /UNITA0> CONFIG /LOGICAL=D /UNIT=_ A0> CONFIG /LOGICAL=D /UNIT=A0> CONFIG /LOGICAL=D /UNIT=5_ A0> CONFIG /LOGICAL=D /UNIT=5A0> CONFIG /LOGICAL=D /UNIT=5
+D: binding updated.
+BetterCP/M RomWBW block configuration
+A: HBIOS unit 2
+B: HBIOS unit 3
+C: HBIOS unit 4
+D: HBIOS unit 5
+
+A0> A0> _ A0> A0> B_ A0> BA0> B:_ A0> B:A0> B:
+
+B0> B0> _ B0> B0> E_ B0> EB0> ER_ B0> ERB0> ERR_ B0> ERRB0> ERRT_ B0> ERRTB0> ERRTE_ B0> ERRTEB0> ERRTES_ B0> ERRTESB0> ERRTEST_ B0> ERRTESTB0> ERRTEST _ B0> ERRTEST B0> ERRTEST /_ B0> ERRTEST /B0> ERRTEST /S_ B0> ERRTEST /SB0> ERRTEST /SA_ B0> ERRTEST /SAB0> ERRTEST /SAF_ B0> ERRTEST /SAFB0> ERRTEST /SAFE_ B0> ERRTEST /SAFEB0> ERRTEST /SAFE
+
+STATUS: P=Pass F=Fail -=Not-run O=Observed
+CLASS:  R=Required N=Not-guaranteed S=Out-of-scope X=Profile
+ITEM  S  C  OBSERVED
+----  -  -  -------------------------------------------------------------------
+0404  P  R  One record returned 00h; following sequential EOF returned 01h
+0406  P  R  Random record 0 returned 00h; record 1 returned EOF 01h
+0407  P  R  Random write returned 00h; record 10000h returned 06h
+0408  P  R  Missing Open, then Make/Close/Rename/Delete codes agreed
+0582  P  R  All controlled logical failures returned without intervention
+0405  -  R  Run /0405 with controlled sequential-write refusals
+0516  -  R  Run /0516 on directory-full and allocation-full fixtures
+0390  -  R  Run /0390 with controlled physical read fault
+0391  -  R  Run /0391 with controlled physical write fault
+0392  -  R  Run /0392 with retry-counting fault provider
+0393  -  R  Run /0393 with physical and logical refusal fixtures
+0394  -  R  Run /0394 with controlled bad-sector provider
+0581  -  R  Run /0581 with physical fault and console capture
+0395  -  R  Run /0395 and choose Ignore at physical error
+0396  -  R  Run /0396 and choose Abort at physical error
+0397  -  R  Run /0397; retained card checks restarted environment
+0586  -  R  Run /0586; retained card checks caller abandonment
+0587  -  R  Run /0587; retained card checks usable CCP recovery
+0246  -  X  Run /0246 with CPM-DISKERR-INT read-fault provider
+0283  -  X  Run /0283 with CPM-DISKERR-INT write-fault provider
+0314  -  X  Run /0314 with delete/rename fault provider
+0354  -  X  Run /0354 with random-I/O fault provider
+0385  -  X  Run /0385 with DRI-PROTECT-INT provider
+0387  -  X  Run /0387 with DRI-DIAG-PRES capture
+0389  -  X  Run /0389 with REMOVABLE-MEDIA provider
+0411  -  X  Run /0411 with DRI-DIAG-PRES bad-sector capture
+0512  -  X  Run /0512 with declared CCP-LIFECYCLE profile
+0580  -  X  Run /0580 with DRI-RES-PRES capture
+0398  O  N  Ignored physical-error result is not guaranteed
+0399  O  N  DMA after ignored physical read is not guaranteed
+0400  O  N  Persistence after ignored write is not guaranteed
+0401  O  N  Make persistence after physical error is not guaranteed
+0402  O  N  Close persistence after physical error is not guaranteed
+0403  O  N  Physical-write atomicity is not guaranteed
+0412  O  N  Accepted Ignore characters are implementation-dependent
+0514  O  N  A failed transfer does not validate DMA contents
+0583  O  N  Ignored search data is not validation
+0584  O  N  Ignored directory update is not persistence
+0585  O  N  Post-ignore state has no continuation guarantee
+0618  O  N  Damaged-directory recovery behavior is not guaranteed
+0386  -  S  Resident handler internals are outside public contract
+0409  -  S  DRI permanent-error internals are outside public contract
+0410  -  S  z80pack private status values are outside public contract
+Summary: 5 pass, 0 fail, 0 error, 12 observed, 26 not-run
+43 catalog items implemented; 0 remain to implement.
+
+B0> B0> _

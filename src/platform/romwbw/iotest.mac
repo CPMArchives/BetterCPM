@@ -1,0 +1,226 @@
+; Exercise bounds, RMW quarters, final sector and DMA crossing 8000h.
+        INCLUDE layout.inc
+        ASEG
+        ORG 0100H
+        LD SP,01F00H
+        LD B,0
+        LD C,181
+        CALL 5
+        LD A,(HL)
+        CP 'B'
+        JP NZ,FAIL
+        LD DE,4
+        ADD HL,DE
+        LD A,(HL)
+        CP 6
+        JP NZ,FAIL
+        XOR A
+        LD (04000H),A
+        LD B,3
+        LD C,181
+        LD DE,04000H
+        CALL 5
+        LD A,H
+        OR L
+        JP NZ,FAIL
+        LD A,(04002H)
+        CP 64
+        JP NZ,FAIL
+        ; Binding setters reject incompatible DPBs without publishing bytes.
+        LD A,1
+        LD (04000H),A
+        LD B,3
+        LD DE,04000H
+        LD C,181
+        CALL 5
+        LD A,H
+        OR L
+        JP NZ,FAIL
+        LD HL,04001H
+        LD DE,04100H
+        LD BC,64
+        LDIR
+        LD A,(04002H)
+        XOR 1
+        LD (04002H),A
+        LD B,4
+        LD DE,04000H
+        LD C,181
+        CALL 5
+        LD A,H
+        OR A
+        JP NZ,FAIL
+        LD A,L
+        CP 2
+        JP NZ,FAIL
+        LD B,3
+        LD DE,04000H
+        LD C,181
+        CALL 5
+        LD HL,04001H
+        LD DE,04100H
+        LD B,64
+IT_CMP:
+        LD A,(DE)
+        CP (HL)
+        JP NZ,FAIL
+        INC HL
+        INC DE
+        DJNZ IT_CMP
+        LD B,3
+        LD DE,0
+        LD C,181
+        CALL 5
+        LD A,H
+        OR A
+        JP NZ,FAIL
+        LD A,L
+        CP 1
+        JP NZ,FAIL
+        ; An 80-byte request ending exactly at the live TPA limit is valid.
+        LD HL,(6)
+        LD DE,-80
+        ADD HL,DE
+        LD (HL),1
+        EX DE,HL
+        LD B,3
+        LD C,181
+        CALL 5
+        LD A,H
+        OR L
+        JP NZ,FAIL
+        LD HL,(6)
+        LD DE,-79
+        ADD HL,DE
+        LD (HL),1
+        EX DE,HL
+        LD B,3
+        LD C,181
+        CALL 5
+        LD A,H
+        OR A
+        JP NZ,FAIL
+        LD A,L
+        CP 1
+        JP NZ,FAIL
+        LD BC,2
+        CALL LY_BIOS+27
+        LD A,H
+        OR L
+        JP NZ,FAIL
+        LD BC,0
+        CALL LY_BIOS+27
+        LD BC,04000H
+        CALL LY_BIOS+36
+        LD HL,04000H
+        LD DE,04001H
+        LD BC,127
+        LD (HL),055H
+        LDIR
+        LD BC,1040
+        CALL LY_BIOS+30
+        LD BC,0
+        CALL LY_BIOS+33
+        CALL LY_BIOS+39
+        OR A
+        JP Z,FAIL
+        LD HL,04000H
+        LD B,128
+CANARY:
+        LD A,(HL)
+        CP 055H
+        JP NZ,FAIL
+        INC HL
+        DJNZ CANARY
+        LD BC,0
+        CALL LY_BIOS+30
+        LD BC,64
+        CALL LY_BIOS+33
+        CALL LY_BIOS+39
+        OR A
+        JP Z,FAIL
+        LD BC,0100H
+        CALL LY_BIOS+33
+        CALL LY_BIOS+39
+        OR A
+        JP Z,FAIL
+        LD BC,1039
+        CALL LY_BIOS+30
+        LD A,60
+        LD (SECTOR),A
+WRITE:
+        LD A,(SECTOR)
+        LD HL,07FC0H
+        LD B,128
+FILL:
+        LD (HL),A
+        INC HL
+        DJNZ FILL
+        CALL SETUP
+        LD BC,0
+        CALL LY_BIOS+42
+        OR A
+        JP NZ,FAIL
+        LD A,(SECTOR)
+        INC A
+        LD (SECTOR),A
+        CP 64
+        JR NZ,WRITE
+        LD A,60
+        LD (SECTOR),A
+READ:
+        CALL SETUP
+        CALL LY_BIOS+39
+        OR A
+        JP NZ,FAIL
+        LD HL,07FC0H
+        LD B,128
+VERIFY:
+        LD A,(SECTOR)
+        CP (HL)
+        JP NZ,FAIL
+        INC HL
+        DJNZ VERIFY
+        LD A,(SECTOR)
+        INC A
+        LD (SECTOR),A
+        CP 64
+        JR NZ,READ
+        ; Restore the unused last physical sector to the pristine fill byte.
+        LD A,60
+        LD (SECTOR),A
+RESTORE:
+        LD HL,07FC0H
+        LD DE,07FC1H
+        LD BC,127
+        LD (HL),0E5H
+        LDIR
+        CALL SETUP
+        LD BC,0
+        CALL LY_BIOS+42
+        OR A
+        JP NZ,FAIL
+        LD A,(SECTOR)
+        INC A
+        LD (SECTOR),A
+        CP 64
+        JR NZ,RESTORE
+        LD DE,OK
+        JR DONE
+SETUP:
+        LD BC,07FC0H
+        CALL LY_BIOS+36
+        LD A,(SECTOR)
+        LD C,A
+        LD B,0
+        JP LY_BIOS+33
+FAIL:
+        LD DE,BAD
+DONE:
+        LD C,9
+        CALL 5
+        JP 0
+SECTOR: DB 0
+OK: DB 'ROMWBW BIOS BOUNDARIES PASS',13,10,'$'
+BAD: DB 'ROMWBW BIOS BOUNDARIES FAIL',13,10,'$'
+        END

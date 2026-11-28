@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "checks": [
+    "all three nonboot mappings configured",
+    "descriptor count and invalid index rejection",
+    "interactive block menu selects D and binds the selected drive",
+    "163 alternating writes to two unclosed FCBs",
+    "aliases of another writable logical drive rejected without mutation",
+    "independent host extraction matches both complete file patterns",
+    "saved B/C/D mappings restored at cold boot",
+    "C unbind preserves B and D",
+    "default 56 KiB COM capacity preserved",
+    "cold boot skips a saved alias while restoring independent bindings",
+    "checksummed version-2 configuration rejected before OS entry"
+  ],
+  "system_sha256": "876f5a4a806743fc24dce17d8dfa3deaa2c454b6be2ccc6476314fb5cdc98020"
+}

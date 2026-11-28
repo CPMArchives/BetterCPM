@@ -1,0 +1,175 @@
+; Loaded by the unmodified RomWBW disk boot loader from physical sector 3.
+        INCLUDE layout.inc
+        INCLUDE state.inc
+        ASEG
+        ORG 01000H
+        LD SP,01000H
+        LD BC,0F8E0H
+        CALL 0FFF0H
+        JP NZ,RW_BAD
+        LD A,E
+        OR A
+        JP NZ,RW_BAD
+        LD C,D
+        PUSH BC
+        CALL RW_CAP
+        JP NZ,RW_BAD
+        POP BC
+        LD B,012H
+        LD DE,08000H
+        LD HL,66                      ; package resident: (256+8)/4
+        PUSH BC
+        CALL 0FFF0H
+        POP BC
+        JP NZ,RW_BAD
+        LD B,0F3H
+        PUSH BC
+        CALL 0FFF0H
+        LD D,C
+        POP BC
+        LD B,013H
+        LD E,13
+        LD HL,LY_SYS
+        CALL 0FFF0H
+        JP NZ,RW_BAD
+        LD BC,0F8E0H
+        CALL 0FFF0H
+        JP NZ,RW_BAD
+        LD A,E
+        OR A
+        JP NZ,RW_BAD                  ; initial target is slice zero only
+        LD A,D
+        LD (WB_UNIT),A
+        LD (LY_TAB+16),A
+        LD BC,0F8F2H
+        CALL 0FFF0H
+        JP NZ,RW_BAD
+        LD A,D
+        LD (WB_BANK),A
+        LD B,0F3H
+        CALL 0FFF0H
+        LD A,C
+        LD (WB_USER),A
+        LD HL,512
+        LD B,0F6H
+        CALL 0FFF0H
+        JP NZ,RW_BAD
+        LD (WB_HEAP),HL
+        ; Saved block mapping is a full, checksummed physical sector.
+        LD A,(WB_UNIT)
+        LD C,A
+        LD B,012H
+        LD DE,08000H
+        LD HL,4
+        CALL 0FFF0H
+        JP NZ,RW_BAD
+        LD A,(WB_UNIT)
+        LD C,A
+        LD B,013H
+        LD D,0
+        LD E,1
+        LD HL,LY_BUF
+        CALL 0FFF0H
+        JP NZ,RW_BAD
+        LD HL,(LY_BUF)
+        LD DE,05742H                   ; BW
+        OR A
+        SBC HL,DE
+        JP NZ,RW_BAD
+        LD HL,(LY_BUF+2)
+        LD DE,04643H                   ; CF
+        OR A
+        SBC HL,DE
+        JP NZ,RW_BAD
+        LD HL,(LY_BUF+4)
+        LD DE,00403H                   ; version 3, four logical drives
+        OR A
+        SBC HL,DE
+        JP NZ,RW_BAD
+        LD IX,LY_BUF
+        LD HL,0
+        LD B,0
+RW_SUM:
+        LD E,(IX+0)
+        LD D,(IX+1)
+        ADD HL,DE
+        INC IX
+        INC IX
+        DJNZ RW_SUM
+        LD A,H
+        OR L
+        JP NZ,RW_BAD
+        LD A,(LY_BUF+7)
+        AND 3
+        CP 1
+        JP NZ,RW_BAD
+        LD A,(LY_BUF+7)
+        LD (WB_IOBYTE),A
+        LD A,(LY_BUF+6)
+        LD (LY_BUF+9),A                ; checksum is already verified
+        LD IY,LY_BUF+9                 ; contiguous saved B/C/D units
+        LD IX,LY_TAB+96
+        LD B,3
+RW_BIND:
+        PUSH BC
+        LD C,(IY+0)
+        LD A,C
+        CP 0FFH
+        JR Z,RW_NEXT
+        CALL RW_ALIAS
+        JR Z,RW_NEXT                   ; skip aliases, including firmware A
+        PUSH BC
+        CALL RW_CAP
+        POP BC
+        JR NZ,RW_NEXT                  ; unavailable bindings do not stop A
+        LD (IX+0),C
+RW_NEXT:
+        LD DE,80
+        ADD IX,DE
+        INC IY
+        POP BC
+        DJNZ RW_BIND
+RW_READY:
+        XOR A
+        LD (0048H),A
+        JP LY_BIOS
+RW_ALIAS:
+        LD HL,LY_TAB+16
+        LD DE,80
+        LD B,4
+RW_APART:
+        LD A,(HL)
+        CP C
+        RET Z
+        ADD HL,DE
+        DJNZ RW_APART
+        OR 1
+        RET
+RW_CAP:
+        LD B,01AH
+        CALL 0FFF0H
+        RET NZ
+        LD A,B
+        CP 2
+        JR NZ,RW_CAPBAD
+        LD A,C
+        OR D
+        OR E
+        JR NZ,RW_CAPBAD
+        LD DE,16640
+        OR A
+        SBC HL,DE
+        LD A,H
+        OR L
+        RET
+RW_CAPBAD:
+        LD A,1
+        OR A
+        RET
+RW_BAD:
+        LD BC,0100H
+        LD E,'!'
+        CALL 0FFF0H
+        HALT
+        JP RW_BAD
+        END

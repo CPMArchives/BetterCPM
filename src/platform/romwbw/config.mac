@@ -1,0 +1,274 @@
+        INCLUDE layout.inc
+        INCLUDE profile.inc
+        ASEG
+        ORG 0100H
+        LD SP,01F00H
+        CALL U_CHECK
+        LD A,(0080H)
+        LD E,A
+        LD D,0
+        LD HL,0081H
+        ADD HL,DE
+        LD (HL),0
+        LD HL,0081H
+CF_PARSE:
+        LD A,(HL)
+        OR A
+        JP Z,CF_APPLY
+        CP ' '
+        JP NZ,CF_TOKEN
+        INC HL
+        JP CF_PARSE
+CF_TOKEN:
+        LD (CF_PTR),HL
+        LD DE,CF_SHOWOPT
+        CALL U_PREFIX
+        JP NZ,CF_LOG
+        LD A,1
+        CALL CF_FLAG
+        JP CF_END
+CF_LOG:
+        LD HL,(CF_PTR)
+        LD DE,CF_LOGOPT
+        CALL U_PREFIX
+        JP NZ,CF_UNIT
+        LD A,(HL)
+        AND 0DFH
+        SUB 'A'
+        CP 1
+        JP C,CF_USAGE
+        CP 4
+        JP NC,CF_USAGE
+        LD (CF_TARGET),A
+        INC HL
+        LD A,2
+        CALL CF_FLAG
+        JP CF_END
+CF_UNIT:
+        LD HL,(CF_PTR)
+        LD DE,CF_UNITOPT
+        CALL U_PREFIX
+        JP NZ,CF_UNBIND
+        LD C,0
+        LD B,0
+CF_NUMBER:
+        LD A,(HL)
+        CP '0'
+        JP C,CF_NDONE
+        CP '9'+1
+        JP NC,CF_NDONE
+        SUB '0'
+        LD E,A
+        LD A,C
+        CP 25
+        JP C,CF_NACC
+        JP NZ,CF_USAGE
+        LD A,E
+        CP 6
+        JP NC,CF_USAGE
+CF_NACC:
+        LD A,C
+        ADD A,A
+        LD D,A
+        ADD A,A
+        ADD A,A
+        ADD A,D
+        ADD A,E
+        LD C,A
+        INC B
+        INC HL
+        JP CF_NUMBER
+CF_NDONE:
+        LD A,B
+        OR A
+        JP Z,CF_USAGE
+        LD A,C
+        CP 0FFH
+        JP Z,CF_USAGE                  ; use /UNBIND, not a magic unit number
+        LD (CF_NEW),A
+        LD A,4
+        CALL CF_FLAG
+        JP CF_END
+CF_UNBIND:
+        LD HL,(CF_PTR)
+        LD DE,CF_UNBOPT
+        CALL U_PREFIX
+        JP NZ,CF_PSAVE
+        LD A,0FFH
+        LD (CF_NEW),A
+        LD A,4
+        CALL CF_FLAG
+        JP CF_END
+CF_PSAVE:
+        LD HL,(CF_PTR)
+        LD DE,CF_SAVEOPT
+        CALL U_PREFIX
+        JP NZ,CF_USAGE
+        LD A,8
+        CALL CF_FLAG
+CF_END:
+        LD A,(HL)
+        OR A
+        JP Z,CF_PARSE
+        CP ' '
+        JP NZ,CF_USAGE
+        JP CF_PARSE
+CF_FLAG:
+        PUSH HL
+        LD HL,CF_FLAGS
+        LD E,A
+        AND (HL)
+        JP NZ,CF_USAGE
+        LD A,(HL)
+        OR E
+        LD (HL),A
+        POP HL
+        RET
+CF_APPLY:
+        LD A,(CF_FLAGS)
+        AND 6
+        JP Z,CF_MAYBE_SAVE
+        CP 6
+        JP NZ,CF_USAGE
+        LD A,(CF_TARGET)
+        LD (U_REQ),A
+        CALL U_GET
+        JP NZ,CF_FAILED
+        LD A,(CF_NEW)
+        LD (U_REQ+1),A
+        LD B,4
+        CALL U_API
+        JP NZ,CF_FAILED
+        LD A,(CF_TARGET)
+        ADD A,'A'
+        LD (CF_CHANGED),A
+        LD DE,CF_CHANGED
+        CALL U_PUTS
+CF_MAYBE_SAVE:
+        LD A,(CF_FLAGS)
+        AND 8
+        CALL NZ,CF_SAVE
+        LD DE,CF_TITLE
+        CALL U_PUTS
+        XOR A
+CF_SHOW:
+        LD (CF_DRIVE),A
+        LD (U_REQ),A
+        ADD A,'A'
+        CALL U_PUTC
+        LD DE,CF_COLON
+        CALL U_PUTS
+        CALL U_GET
+        JP NZ,CF_FAILED
+        LD A,(U_REQ+1)
+        CP 0FFH
+        JP Z,CF_SHOW_UNBOUND
+        LD DE,CF_UNITLABEL
+        CALL U_PUTS
+        LD A,(U_REQ+1)
+        CALL U_DEC
+        JP CF_SHOWN
+CF_SHOW_UNBOUND:
+        LD DE,CF_UNBOUND
+        CALL U_PUTS
+CF_SHOWN:
+        CALL U_CRLF
+        LD A,(CF_DRIVE)
+        INC A
+        CP 4
+        JP C,CF_SHOW
+        JP 0
+CF_SAVE:
+        LD HL,4
+        LD (U_LBA),HL
+        LD A,(U_BOOT)
+        LD C,A
+        LD B,013H
+        LD HL,06000H
+        CALL U_IO
+        JP NZ,CF_FAILED
+        LD HL,06000H
+        CALL U_SUM
+        JP NZ,CF_FAILED
+        LD A,1
+        CALL CF_SGET
+        LD (06006H),A
+        LD A,2
+        CALL CF_SGET
+        LD (0600AH),A
+        LD A,3
+        CALL CF_SGET
+        LD (0600BH),A
+        LD HL,0
+        LD (06008H),HL
+        LD HL,06000H
+        CALL U_SUM
+        LD HL,0
+        OR A
+        SBC HL,DE
+        LD (06008H),HL
+        LD HL,4
+        LD (U_LBA),HL
+        LD A,(U_BOOT)
+        LD C,A
+        LD B,014H
+        LD HL,06000H
+        CALL U_IO
+        JP NZ,CF_FAILED
+        LD A,(U_BOOT)
+        LD C,A
+        LD B,013H
+        LD HL,06200H
+        CALL U_IO
+        JP NZ,CF_FAILED
+        LD HL,06000H
+        LD DE,06200H
+        LD BC,512
+CF_VERIFY:
+        LD A,(DE)
+        CP (HL)
+        JP NZ,CF_FAILED
+        INC HL
+        INC DE
+        DEC BC
+        LD A,B
+        OR C
+        JP NZ,CF_VERIFY
+        LD DE,CF_SAVED
+        JP U_PUTS
+CF_SGET:
+        LD (U_REQ),A
+        CALL U_GET
+        JP NZ,CF_FAILED
+        LD A,(U_REQ+1)
+        RET
+CF_FAILED:
+        LD DE,CF_ERROR
+        CALL U_PUTS
+        JP 0
+CF_USAGE:
+        LD DE,CF_HELP
+        CALL U_PUTS
+        JP 0
+CF_FLAGS: DB 0
+CF_NEW: DB 0FFH
+CF_DRIVE: DB 0
+CF_TARGET: DB 1
+CF_PTR: DW 0
+CF_SHOWOPT: DB '/SHOW',0
+CF_LOGOPT: DB '/LOGICAL=',0
+CF_UNITOPT: DB '/UNIT=',0
+CF_UNBOPT: DB '/UNBIND',0
+CF_SAVEOPT: DB '/SAVE',0
+CF_BWHDR: DB 'BWCF',3,4
+CF_TITLE: DB 'BetterCP/M RomWBW block configuration',13,10,'$'
+CF_COLON: DB ': ', '$'
+CF_UNITLABEL: DB 'HBIOS unit ', '$'
+CF_UNBOUND: DB 'unbound','$'
+CF_CHANGED: DB 'B: binding updated.',13,10,'$'
+CF_SAVED: DB 'Block configuration saved and verified.',13,10,'$'
+CF_ERROR: DB 'CONFIG failed; requested mapping/save was not completed.',13,10,'$'
+CF_HELP: DB 'CONFIG [/SHOW] [/LOGICAL=B|C|D /UNIT=n | /LOGICAL=B|C|D /UNBIND] [/SAVE]',13,10
+        DB 'Fixed hd512, slice zero. A: is protected. Close files before rebinding a drive.',13,10,'$'
+        INCLUDE utility.inc
+        END

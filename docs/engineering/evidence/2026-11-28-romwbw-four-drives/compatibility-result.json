@@ -1,0 +1,2197 @@
+{
+  "status": "PASS",
+  "suite_revision": "a9a878fcd2e36698c7e856654a85847a004fdd20",
+  "system_sha256": "876f5a4a806743fc24dce17d8dfa3deaa2c454b6be2ccc6476314fb5cdc98020",
+  "scope": "Unmodified automatic groups on A:/B:/C:/D:, including distinct C: and full-allocation/full-directory D: fixtures; manual and external cards remain separate.",
+  "groups": {
+    "CPUTEST": {
+      "status": "PASS",
+      "command": "CPUTEST /ALL",
+      "expected_passes": 2,
+      "cross_sha256": "d642327b638400d55c81bdafeda35f9b6d3eafe6907629b48e57d7205a074fdb",
+      "full_sha256": "dc6b88161166e17af4a2014a1438736bdad9bfcc32693fcf6dde1e917867bc0f",
+      "program_sha256": "18ed2c9fb3beaa98dcedfb985199016f5ff2fd38338f6cdf294f5e91e30dfa9b",
+      "summary": [
+        2,
+        0,
+        0
+      ],
+      "rows": {
+        "0623": [
+          "P",
+          "R",
+          "Register, ALU, memory, stack and CALL/RET signatures agreed"
+        ],
+        "0624": [
+          "P",
+          "R",
+          "ADC, INR carry preservation and DAA semantics agreed"
+        ],
+        "0626": [
+          "O",
+          "N",
+          "Undocumented processor behavior is not guaranteed"
+        ],
+        "0625": [
+          "-",
+          "S",
+          "Z80 extensions are outside the generic CP/M claim"
+        ],
+        "0627": [
+          "-",
+          "S",
+          "Timing and interrupt topology require a hardware profile"
+        ]
+      },
+      "qualified_passes": 2,
+      "transcript_sha256": "bedb1e4721f415489fa4b4c5378daaf2535eaca208244b8c2dba6d2797af370a"
+    },
+    "ECOTEST": {
+      "status": "PASS",
+      "command": "ECOTEST /GROUP:REQUIRED",
+      "expected_passes": 1,
+      "cross_sha256": "d642327b638400d55c81bdafeda35f9b6d3eafe6907629b48e57d7205a074fdb",
+      "full_sha256": "dc6b88161166e17af4a2014a1438736bdad9bfcc32693fcf6dde1e917867bc0f",
+      "program_sha256": "110c1326b49a32c87608790e302102a8743081aef10479118d26e4197ecdd28c",
+      "summary": [
+        1,
+        0,
+        0
+      ],
+      "rows": {
+        "0513": [
+          "P",
+          "R",
+          "Missing OPEN=FFh; sequential READ returned 00h then EOF 01h"
+        ],
+        "0569": [
+          "-",
+          "R",
+          "Run resident command semantic-set transcript"
+        ],
+        "0575": [
+          "-",
+          "R",
+          "Run SAVE one-page mapping transcript"
+        ],
+        "0577": [
+          "-",
+          "R",
+          "Run TYPE byte-stream transcript"
+        ],
+        "0579": [
+          "-",
+          "R",
+          "Run ordinary resident-command recovery transcript"
+        ]
+      },
+      "qualified_passes": 1,
+      "transcript_sha256": "a82fdbcc7b3032b790abbeee2364cc430f4bfa0fff59af3162168f2b49a96080"
+    },
+    "DISKTEST": {
+      "status": "PASS",
+      "command": "DISKTEST /SAFE",
+      "expected_passes": 7,
+      "cross_sha256": "d642327b638400d55c81bdafeda35f9b6d3eafe6907629b48e57d7205a074fdb",
+      "full_sha256": "dc6b88161166e17af4a2014a1438736bdad9bfcc32693fcf6dde1e917867bc0f",
+      "program_sha256": "7457e73a227282547b510b45c63741c7a93bc0d6429bbb3efae4c38385837d1b",
+      "summary": [
+        7,
+        0,
+        0
+      ],
+      "rows": {
+        "0155": [
+          "P",
+          "R",
+          "Function 13 preserved user number"
+        ],
+        "0373": [
+          "P",
+          "R",
+          "Function 28 protected current disk"
+        ],
+        "0374": [
+          "P",
+          "R",
+          "Protection ended after disk reset"
+        ],
+        "0375": [
+          "P",
+          "R",
+          "Function 29 returned R/O vector"
+        ],
+        "0376": [
+          "P",
+          "R",
+          "Vector bit 1 represented drive B"
+        ],
+        "0377": [
+          "P",
+          "R",
+          "Function 28 set drive-B vector bit"
+        ],
+        "0378": [
+          "P",
+          "R",
+          "Function 13 cleared R/O vector"
+        ]
+      },
+      "qualified_passes": 7,
+      "transcript_sha256": "fca16d249bf1f62b58ee1b4fb178bc7f058153989de29d27a3d8a02b45977932"
+    },
+    "CCPTEST": {
+      "status": "PASS",
+      "command": "CCPTEST /GROUP:REQUIRED",
+      "expected_passes": 12,
+      "cross_sha256": "d642327b638400d55c81bdafeda35f9b6d3eafe6907629b48e57d7205a074fdb",
+      "full_sha256": "dc6b88161166e17af4a2014a1438736bdad9bfcc32693fcf6dde1e917867bc0f",
+      "program_sha256": "df97481f57a92c3c900e6b39d3fe4dd425f4280cde6c07ea99aeac78bf34419c",
+      "summary": [
+        12,
+        0,
+        0
+      ],
+      "rows": {
+        "0002": [
+          "P",
+          "R",
+          "Transient program entered at 0100h"
+        ],
+        "0004": [
+          "P",
+          "R",
+          "BDOS/TPA ceiling lies above program"
+        ],
+        "0007": [
+          "P",
+          "R",
+          "Entry default-drive byte is in range"
+        ],
+        "0010": [
+          "P",
+          "R",
+          "BIOS scratch ends before FCB at 005Ch"
+        ],
+        "0013": [
+          "-",
+          "R",
+          "Run: CCPTEST /0013 B:ALPHA.TXT"
+        ],
+        "0019": [
+          "P",
+          "R",
+          "Command tail begins with SPACE"
+        ],
+        "0025": [
+          "-",
+          "R",
+          "Run: CCPTEST /0025"
+        ],
+        "0028": [
+          "-",
+          "R",
+          "Run: CCPTEST /0028"
+        ],
+        "0475": [
+          "-",
+          "R",
+          "Run: CCPTEST /0475"
+        ],
+        "0477": [
+          "-",
+          "R",
+          "Run: CCPTEST /0477"
+        ],
+        "0479": [
+          "-",
+          "R",
+          "Run: CCPTEST /0479"
+        ],
+        "0480": [
+          "-",
+          "R",
+          "Run: CCPTEST /0480"
+        ],
+        "0481": [
+          "-",
+          "R",
+          "Run: CCPTEST /0481"
+        ],
+        "0482": [
+          "-",
+          "R",
+          "Run: CCPTEST /0482"
+        ],
+        "0483": [
+          "-",
+          "R",
+          "Run: CCPTEST /0483"
+        ],
+        "0484": [
+          "-",
+          "R",
+          "Run: CCPTEST /0484"
+        ],
+        "0485": [
+          "-",
+          "R",
+          "Run: CCPTEST /0485"
+        ],
+        "0486": [
+          "-",
+          "R",
+          "Run: CCPTEST /0486"
+        ],
+        "0487": [
+          "-",
+          "R",
+          "Run: CCPTEST /0487"
+        ],
+        "0488": [
+          "-",
+          "R",
+          "Run: CCPTEST /0488"
+        ],
+        "0489": [
+          "-",
+          "R",
+          "Run: CCPTEST /0489"
+        ],
+        "0492": [
+          "P",
+          "R",
+          "CCPTEST image executed at 0100h"
+        ],
+        "0493": [
+          "-",
+          "R",
+          "Run: CCPTEST /0493"
+        ],
+        "0494": [
+          "-",
+          "R",
+          "Run: CCPTEST /0494"
+        ],
+        "0495": [
+          "-",
+          "R",
+          "Run: CCPTEST /0495"
+        ],
+        "0496": [
+          "P",
+          "R",
+          "Sequential COM image fully loaded"
+        ],
+        "0497": [
+          "P",
+          "R",
+          "Final image marker was present"
+        ],
+        "0499": [
+          "P",
+          "R",
+          "Loaded image stayed below BDOS"
+        ],
+        "0501": [
+          "-",
+          "R",
+          "Run: CCPTEST /0501"
+        ],
+        "0502": [
+          "P",
+          "R",
+          "CCP restored default DMA at 0080h"
+        ],
+        "0503": [
+          "-",
+          "R",
+          "Run: CCPTEST /0503"
+        ],
+        "0504": [
+          "-",
+          "R",
+          "Run: CCPTEST /0504"
+        ],
+        "0534": [
+          "P",
+          "R",
+          "Complete transient image received"
+        ],
+        "0538": [
+          "P",
+          "R",
+          "Loader left DMA at 0080h"
+        ],
+        "0540": [
+          "-",
+          "R",
+          "Run: CCPTEST /0540"
+        ],
+        "0570": [
+          "-",
+          "R",
+          "Run: CCPTEST /0570"
+        ],
+        "0572": [
+          "-",
+          "R",
+          "Run: CCPTEST /0572"
+        ],
+        "0574": [
+          "-",
+          "R",
+          "Run: CCPTEST /0574"
+        ],
+        "0578": [
+          "-",
+          "R",
+          "Run: CCPTEST /0578"
+        ],
+        "0620": [
+          "-",
+          "R",
+          "Run: CCPTEST /0620"
+        ],
+        "0621": [
+          "-",
+          "R",
+          "Run: CCPTEST /0621"
+        ]
+      },
+      "qualified_passes": 12,
+      "transcript_sha256": "174ac3069a2901471e369df396bbc327af595812c146da200e83a84b4ccd59bd"
+    },
+    "ENTRYTST": {
+      "status": "PASS",
+      "command": "ENTRYTST /GROUP:REQUIRED",
+      "expected_passes": 25,
+      "cross_sha256": "d642327b638400d55c81bdafeda35f9b6d3eafe6907629b48e57d7205a074fdb",
+      "full_sha256": "dc6b88161166e17af4a2014a1438736bdad9bfcc32693fcf6dde1e917867bc0f",
+      "program_sha256": "f85ca4616e34a2264423b25285b0c0731a950bb4825ca7b75b04cde1396063de",
+      "summary": [
+        25,
+        0,
+        0
+      ],
+      "rows": {
+        "0001": [
+          "P",
+          "R",
+          "Program began at 0100h"
+        ],
+        "0003": [
+          "P",
+          "R",
+          "TPA lower boundary is 0100h"
+        ],
+        "0005": [
+          "P",
+          "R",
+          "JMP at 0000h is warm start"
+        ],
+        "0006": [
+          "P",
+          "R",
+          "IOBYTE resides at 0003h"
+        ],
+        "0008": [
+          "P",
+          "R",
+          "JMP at 0005h is BDOS gateway"
+        ],
+        "0009": [
+          "P",
+          "R",
+          "Page-zero gateway roles present"
+        ],
+        "0011": [
+          "P",
+          "R",
+          "First default FCB is at 005Ch"
+        ],
+        "0014": [
+          "-",
+          "R",
+          "Use /0014 A:AB*.C?M"
+        ],
+        "0015": [
+          "-",
+          "R",
+          "Use /0015 mixed.txt"
+        ],
+        "0017": [
+          "P",
+          "R",
+          "Tail count read from 0080h"
+        ],
+        "0018": [
+          "P",
+          "R",
+          "Tail text begins at 0081h"
+        ],
+        "0020": [
+          "-",
+          "R",
+          "Use /0020 mixed Case; tail must uppercase"
+        ],
+        "0023": [
+          "P",
+          "R",
+          "Entry DMA was 0080h"
+        ],
+        "0024": [
+          "P",
+          "R",
+          "Tail and default DMA overlap"
+        ],
+        "0026": [
+          "-",
+          "R",
+          "Run ENTRYTST /0026 manually"
+        ],
+        "0027": [
+          "-",
+          "R",
+          "Run ENTRYTST /0027 manually"
+        ],
+        "0509": [
+          "-",
+          "R",
+          "Run ENTRYTST /0509 manually"
+        ],
+        "0537": [
+          "P",
+          "R",
+          "BDOS ready at transient entry"
+        ],
+        "0589": [
+          "P",
+          "R",
+          "BDOS ceiling lies above program"
+        ],
+        "0590": [
+          "-",
+          "R",
+          "Run ENTRYTST /0590 manually"
+        ],
+        "0593": [
+          "-",
+          "R",
+          "Run ENTRYTST /0593 manually"
+        ],
+        "0595": [
+          "-",
+          "R",
+          "Run ENTRYTST /0595 manually"
+        ],
+        "0598": [
+          "P",
+          "R",
+          "WBOOT vector present at 0000h"
+        ],
+        "0599": [
+          "P",
+          "R",
+          "Function 31 returned a DPB"
+        ],
+        "0600": [
+          "-",
+          "R",
+          "Run ENTRYTST /0600 manually"
+        ],
+        "0602": [
+          "P",
+          "R",
+          "Function 40 consumed scratch FCB"
+        ],
+        "0603": [
+          "P",
+          "R",
+          "Intervening records were zero"
+        ],
+        "0605": [
+          "P",
+          "R",
+          "Function 40 returned success"
+        ],
+        "0606": [
+          "-",
+          "R",
+          "Run ENTRYTST /0606 manually"
+        ],
+        "0607": [
+          "-",
+          "R",
+          "Run ENTRYTST /0607 manually"
+        ],
+        "0608": [
+          "P",
+          "R",
+          "IOBYTE reassignment was visible"
+        ],
+        "0609": [
+          "P",
+          "R",
+          "IOBYTE read/write was coherent"
+        ],
+        "0610": [
+          "P",
+          "R",
+          "Other IOBYTE fields preserved"
+        ],
+        "0612": [
+          "-",
+          "R",
+          "Run ENTRYTST /0612 manually"
+        ],
+        "0613": [
+          "P",
+          "R",
+          "Disk parameter block available"
+        ],
+        "0614": [
+          "P",
+          "R",
+          "DPB block mask/limits coherent"
+        ],
+        "0615": [
+          "P",
+          "R",
+          "Logical disk structures followed"
+        ],
+        "0617": [
+          "P",
+          "R",
+          "Active DPH/DPB contract followed"
+        ]
+      },
+      "qualified_passes": 25,
+      "transcript_sha256": "32bba1e21416f05881b86a3dbb45363a30f53dfb0b4d1d0ca63c3e8986191577"
+    },
+    "BIOSTEST": {
+      "status": "PASS",
+      "command": "BIOSTEST /SAFE",
+      "expected_passes": 5,
+      "cross_sha256": "d642327b638400d55c81bdafeda35f9b6d3eafe6907629b48e57d7205a074fdb",
+      "full_sha256": "dc6b88161166e17af4a2014a1438736bdad9bfcc32693fcf6dde1e917867bc0f",
+      "program_sha256": "e62a67529cbef91d7177028668644882c8d1ea4ec753894880f71c16a3b3f922",
+      "summary": [
+        5,
+        0,
+        0
+      ],
+      "rows": {
+        "0423": [
+          "-",
+          "S",
+          "No baseline Function 34 assertion"
+        ],
+        "0424": [
+          "-",
+          "R",
+          "Use SCRATCH /BLANK and two controlled disks"
+        ],
+        "0425": [
+          "-",
+          "R",
+          "Needs DPB-derived ALV and controlled files"
+        ],
+        "0426": [
+          "-",
+          "R",
+          "Needs controlled empty disk"
+        ],
+        "0427": [
+          "-",
+          "R",
+          "Needs controlled one-record lifecycle"
+        ],
+        "0428": [
+          "O",
+          "N",
+          "Fixed address/lifetime is not portable"
+        ],
+        "0429": [
+          "O",
+          "N",
+          "Applications must not depend on ALV writes"
+        ],
+        "0430": [
+          "O",
+          "N",
+          "Post-Function-28 ALV accuracy may vary"
+        ],
+        "0431": [
+          "-",
+          "R",
+          "Needs two configured drives and DPB decode"
+        ],
+        "0432": [
+          "-",
+          "R",
+          "Shared or distinct valid DPBs accepted"
+        ],
+        "0433": [
+          "-",
+          "R",
+          "Needs guarded modify, re-query, and restore"
+        ],
+        "0434": [
+          "O",
+          "N",
+          "Fixed DPB address/lifetime is not portable"
+        ],
+        "0435": [
+          "-",
+          "X",
+          "Run only when OPT-FN37 is claimed"
+        ],
+        "0437": [
+          "O",
+          "N",
+          "Reader/device provider behavior may vary"
+        ],
+        "0439": [
+          "-",
+          "R",
+          "Needs declared punch provider"
+        ],
+        "0441": [
+          "O",
+          "N",
+          "Character-output return values may vary"
+        ],
+        "0443": [
+          "P",
+          "R",
+          "Function 7/8 and 0003h were coherent; restored"
+        ],
+        "0445": [
+          "-",
+          "R",
+          "Needs declared routes at multiple IOBYTE values"
+        ],
+        "0447": [
+          "O",
+          "N",
+          "No initialization side effect is guaranteed"
+        ],
+        "0448": [
+          "-",
+          "R",
+          "Needs device provider and DMA sentinels"
+        ],
+        "0449": [
+          "-",
+          "R",
+          "Needs direct BIOS disk-call sequence"
+        ],
+        "0450": [
+          "-",
+          "R",
+          "Needs configured/absent drives and deferred I/O"
+        ],
+        "0451": [
+          "P",
+          "R",
+          "Current DPH pointers and Function 31 agreed"
+        ],
+        "0452": [
+          "O",
+          "N",
+          "Fixed DPH/private workspace is not portable"
+        ],
+        "0453": [
+          "-",
+          "R",
+          "Needs boundary tracks with nonzero OFF"
+        ],
+        "0454": [
+          "-",
+          "R",
+          "Needs controlled nonidentity XLT"
+        ],
+        "0455": [
+          "O",
+          "N",
+          "Table or equivalent algorithm is accepted"
+        ],
+        "0456": [
+          "-",
+          "R",
+          "Needs application/directory DMA tracing"
+        ],
+        "0457": [
+          "-",
+          "R",
+          "Needs successful and injected-fault transfers"
+        ],
+        "0458": [
+          "-",
+          "R",
+          "Needs controlled WRITE type-code lifecycle"
+        ],
+        "0459": [
+          "-",
+          "S",
+          "Physical mapping is outside the public contract"
+        ],
+        "0460": [
+          "O",
+          "N",
+          "Nested disk-call state is not guaranteed"
+        ],
+        "0461": [
+          "P",
+          "R",
+          "Found 17 consecutive public JMP vectors"
+        ],
+        "0462": [
+          "O",
+          "N",
+          "No fixed BIOS vector address is portable"
+        ],
+        "0463": [
+          "P",
+          "R",
+          "BIOS base derived only from WBOOT gateway"
+        ],
+        "0464": [
+          "-",
+          "R",
+          "Needs cold-start state validation"
+        ],
+        "0465": [
+          "-",
+          "R",
+          "Needs programmed warm-restart validation"
+        ],
+        "0466": [
+          "-",
+          "R",
+          "Needs controlled gateway reconstruction test"
+        ],
+        "0467": [
+          "-",
+          "S",
+          "Boot implementation is outside public contract"
+        ],
+        "0468": [
+          "-",
+          "R",
+          "Needs queued character and status transitions"
+        ],
+        "0469": [
+          "-",
+          "R",
+          "Needs controlled raw console input"
+        ],
+        "0470": [
+          "-",
+          "R",
+          "Needs captured bytes at each output vector"
+        ],
+        "0471": [
+          "-",
+          "R",
+          "Needs reader and absent-device provider"
+        ],
+        "0472": [
+          "-",
+          "X",
+          "Needs declared LISTST result profile"
+        ],
+        "0473": [
+          "-",
+          "R",
+          "Needs direct/BDOS character comparison"
+        ],
+        "0622": [
+          "P",
+          "R",
+          "Modified code executed at two TPA locations"
+        ]
+      },
+      "qualified_passes": 5,
+      "transcript_sha256": "eac3c657a2439c20ae3d18cd2a1f531d3956f52e2ffc39c1a606dad329fbd7e3"
+    },
+    "ERRTEST": {
+      "status": "PASS",
+      "command": "ERRTEST /SAFE",
+      "expected_passes": 5,
+      "cross_sha256": "d642327b638400d55c81bdafeda35f9b6d3eafe6907629b48e57d7205a074fdb",
+      "full_sha256": "dc6b88161166e17af4a2014a1438736bdad9bfcc32693fcf6dde1e917867bc0f",
+      "program_sha256": "c100c2213a561da1fba7b68c02ca53283f044902ca195e8f3cfcb1f7c7b692b0",
+      "summary": [
+        5,
+        0,
+        0
+      ],
+      "rows": {
+        "0404": [
+          "P",
+          "R",
+          "One record returned 00h; following sequential EOF returned 01h"
+        ],
+        "0406": [
+          "P",
+          "R",
+          "Random record 0 returned 00h; record 1 returned EOF 01h"
+        ],
+        "0407": [
+          "P",
+          "R",
+          "Random write returned 00h; record 10000h returned 06h"
+        ],
+        "0408": [
+          "P",
+          "R",
+          "Missing Open, then Make/Close/Rename/Delete codes agreed"
+        ],
+        "0582": [
+          "P",
+          "R",
+          "All controlled logical failures returned without intervention"
+        ],
+        "0405": [
+          "-",
+          "R",
+          "Run /0405 with controlled sequential-write refusals"
+        ],
+        "0516": [
+          "-",
+          "R",
+          "Run /0516 on directory-full and allocation-full fixtures"
+        ],
+        "0390": [
+          "-",
+          "R",
+          "Run /0390 with controlled physical read fault"
+        ],
+        "0391": [
+          "-",
+          "R",
+          "Run /0391 with controlled physical write fault"
+        ],
+        "0392": [
+          "-",
+          "R",
+          "Run /0392 with retry-counting fault provider"
+        ],
+        "0393": [
+          "-",
+          "R",
+          "Run /0393 with physical and logical refusal fixtures"
+        ],
+        "0394": [
+          "-",
+          "R",
+          "Run /0394 with controlled bad-sector provider"
+        ],
+        "0581": [
+          "-",
+          "R",
+          "Run /0581 with physical fault and console capture"
+        ],
+        "0395": [
+          "-",
+          "R",
+          "Run /0395 and choose Ignore at physical error"
+        ],
+        "0396": [
+          "-",
+          "R",
+          "Run /0396 and choose Abort at physical error"
+        ],
+        "0397": [
+          "-",
+          "R",
+          "Run /0397; retained card checks restarted environment"
+        ],
+        "0586": [
+          "-",
+          "R",
+          "Run /0586; retained card checks caller abandonment"
+        ],
+        "0587": [
+          "-",
+          "R",
+          "Run /0587; retained card checks usable CCP recovery"
+        ],
+        "0246": [
+          "-",
+          "X",
+          "Run /0246 with CPM-DISKERR-INT read-fault provider"
+        ],
+        "0283": [
+          "-",
+          "X",
+          "Run /0283 with CPM-DISKERR-INT write-fault provider"
+        ],
+        "0314": [
+          "-",
+          "X",
+          "Run /0314 with delete/rename fault provider"
+        ],
+        "0354": [
+          "-",
+          "X",
+          "Run /0354 with random-I/O fault provider"
+        ],
+        "0385": [
+          "-",
+          "X",
+          "Run /0385 with DRI-PROTECT-INT provider"
+        ],
+        "0387": [
+          "-",
+          "X",
+          "Run /0387 with DRI-DIAG-PRES capture"
+        ],
+        "0389": [
+          "-",
+          "X",
+          "Run /0389 with REMOVABLE-MEDIA provider"
+        ],
+        "0411": [
+          "-",
+          "X",
+          "Run /0411 with DRI-DIAG-PRES bad-sector capture"
+        ],
+        "0512": [
+          "-",
+          "X",
+          "Run /0512 with declared CCP-LIFECYCLE profile"
+        ],
+        "0580": [
+          "-",
+          "X",
+          "Run /0580 with DRI-RES-PRES capture"
+        ],
+        "0398": [
+          "O",
+          "N",
+          "Ignored physical-error result is not guaranteed"
+        ],
+        "0399": [
+          "O",
+          "N",
+          "DMA after ignored physical read is not guaranteed"
+        ],
+        "0400": [
+          "O",
+          "N",
+          "Persistence after ignored write is not guaranteed"
+        ],
+        "0401": [
+          "O",
+          "N",
+          "Make persistence after physical error is not guaranteed"
+        ],
+        "0402": [
+          "O",
+          "N",
+          "Close persistence after physical error is not guaranteed"
+        ],
+        "0403": [
+          "O",
+          "N",
+          "Physical-write atomicity is not guaranteed"
+        ],
+        "0412": [
+          "O",
+          "N",
+          "Accepted Ignore characters are implementation-dependent"
+        ],
+        "0514": [
+          "O",
+          "N",
+          "A failed transfer does not validate DMA contents"
+        ],
+        "0583": [
+          "O",
+          "N",
+          "Ignored search data is not validation"
+        ],
+        "0584": [
+          "O",
+          "N",
+          "Ignored directory update is not persistence"
+        ],
+        "0585": [
+          "O",
+          "N",
+          "Post-ignore state has no continuation guarantee"
+        ],
+        "0618": [
+          "O",
+          "N",
+          "Damaged-directory recovery behavior is not guaranteed"
+        ],
+        "0386": [
+          "-",
+          "S",
+          "Resident handler internals are outside public contract"
+        ],
+        "0409": [
+          "-",
+          "S",
+          "DRI permanent-error internals are outside public contract"
+        ],
+        "0410": [
+          "-",
+          "S",
+          "z80pack private status values are outside public contract"
+        ]
+      },
+      "qualified_passes": 5,
+      "transcript_sha256": "0a1639e1498184e4bbe90044215934ce4eb445e1bcad9b49baba93f7546f5880"
+    },
+    "DIRTEST": {
+      "status": "PASS",
+      "command": "DIRTEST /SAFE",
+      "expected_passes": 49,
+      "cross_sha256": "d642327b638400d55c81bdafeda35f9b6d3eafe6907629b48e57d7205a074fdb",
+      "full_sha256": "dc6b88161166e17af4a2014a1438736bdad9bfcc32693fcf6dde1e917867bc0f",
+      "program_sha256": "46d3c4e58f275140b228034e169e1cba4150568003dc4a32af76f6531bc4f7bd",
+      "summary": [
+        49,
+        0,
+        0
+      ],
+      "rows": {
+        "0196": [
+          "P",
+          "R",
+          "Search slot=01; next=01"
+        ],
+        "0198": [
+          "P",
+          "R",
+          "Attribute search=03; next=00"
+        ],
+        "0200": [
+          "P",
+          "R",
+          "Explicit result=00; next=01"
+        ],
+        "0202": [
+          "P",
+          "R",
+          "Users found mask=03"
+        ],
+        "0204": [
+          "P",
+          "R",
+          "First=00; next=01"
+        ],
+        "0206": [
+          "P",
+          "R",
+          "First=00; next=FF"
+        ],
+        "0208": [
+          "P",
+          "R",
+          "Search=00; next=42"
+        ],
+        "0210": [
+          "P",
+          "R",
+          "First DMA=00; next=01"
+        ],
+        "0212": [
+          "P",
+          "R",
+          "Repeat first=00; next=01"
+        ],
+        "0285": [
+          "P",
+          "R",
+          "Delete=00; next=FF"
+        ],
+        "0286": [
+          "P",
+          "R",
+          "Delete/non-target=00; next=02"
+        ],
+        "0287": [
+          "P",
+          "R",
+          "Wildcard/nonmatch=00; next=03"
+        ],
+        "0288": [
+          "P",
+          "R",
+          "Matches before/after=02; next=00"
+        ],
+        "0289": [
+          "P",
+          "R",
+          "Delete result/remaining=00; next=00"
+        ],
+        "0290": [
+          "P",
+          "R",
+          "Absent delete=FF; next=00"
+        ],
+        "0291": [
+          "P",
+          "R",
+          "Delete/search=00; next=FF"
+        ],
+        "0294": [
+          "P",
+          "R",
+          "Drive before/after=00; next=00"
+        ],
+        "0295": [
+          "P",
+          "R",
+          "User0 delete/user1 search=00; next=02"
+        ],
+        "0298": [
+          "P",
+          "R",
+          "Rename/search=00; next=01"
+        ],
+        "0299": [
+          "P",
+          "R",
+          "Rename/old search=00; next=FF"
+        ],
+        "0300": [
+          "P",
+          "R",
+          "Same-drive rename/search=00; next=01"
+        ],
+        "0301": [
+          "P",
+          "R",
+          "Rename/size records=00; next=81"
+        ],
+        "0302": [
+          "P",
+          "R",
+          "Rename result=00; next=00"
+        ],
+        "0303": [
+          "P",
+          "R",
+          "Missing-source rename=FF; next=00"
+        ],
+        "0304": [
+          "P",
+          "R",
+          "Old/new search=FF; next=01"
+        ],
+        "0305": [
+          "P",
+          "R",
+          "Rename/read=00; next=00"
+        ],
+        "0306": [
+          "P",
+          "R",
+          "User1 rename/user0 search=00; next=FF"
+        ],
+        "0307": [
+          "P",
+          "R",
+          "Default drive before/after=00; next=00"
+        ],
+        "0356": [
+          "P",
+          "R",
+          "Read-only type byte=D4; next=4D"
+        ],
+        "0357": [
+          "P",
+          "R",
+          "System type bytes=54; next=CD"
+        ],
+        "0358": [
+          "P",
+          "R",
+          "Coexisting type bytes=D4; next=CD"
+        ],
+        "0360": [
+          "P",
+          "R",
+          "Function30/search slot=00; next=01"
+        ],
+        "0361": [
+          "P",
+          "R",
+          "Set/clear type byte=D4; next=54"
+        ],
+        "0362": [
+          "P",
+          "R",
+          "All-extents result/type=00; next=D4"
+        ],
+        "0363": [
+          "P",
+          "R",
+          "Function30 result=00; next=00"
+        ],
+        "0364": [
+          "P",
+          "R",
+          "Missing attribute result=FF; next=00"
+        ],
+        "0366": [
+          "P",
+          "R",
+          "Open/type indicator=01; next=D4"
+        ],
+        "0367": [
+          "P",
+          "R",
+          "Make/type indicator=01; next=D4"
+        ],
+        "0542": [
+          "P",
+          "R",
+          "Enumerated extents=02; next=00"
+        ],
+        "0543": [
+          "P",
+          "R",
+          "Visible matching extents=02; next=00"
+        ],
+        "0545": [
+          "P",
+          "R",
+          "Search first/next=00; next=01"
+        ],
+        "0546": [
+          "P",
+          "R",
+          "Query between searches=00; next=01"
+        ],
+        "0559": [
+          "P",
+          "R",
+          "User0/user1 search=00; next=00"
+        ],
+        "0560": [
+          "P",
+          "R",
+          "Set/restored user=01; next=00"
+        ],
+        "0561": [
+          "P",
+          "R",
+          "Same FCB user0/user1=00; next=00"
+        ],
+        "0562": [
+          "P",
+          "R",
+          "User0 absent/user1 found=FF; next=01"
+        ],
+        "0563": [
+          "P",
+          "R",
+          "Made user1/user0 lookup=01; next=FF"
+        ],
+        "0564": [
+          "P",
+          "R",
+          "Scoped delete/result mask=00; next=0F"
+        ],
+        "0566": [
+          "P",
+          "R",
+          "Public result/directory entries=00; next=02"
+        ]
+      },
+      "qualified_passes": 49,
+      "transcript_sha256": "509c2390f9fbbd4e6d6e4c1bf99cb5e434544dc37e61862510c3f7baef266bfa"
+    },
+    "BDOSTEST": {
+      "status": "PASS",
+      "command": "BDOSTEST /GROUP:REQUIRED",
+      "expected_passes": 56,
+      "cross_sha256": "d642327b638400d55c81bdafeda35f9b6d3eafe6907629b48e57d7205a074fdb",
+      "full_sha256": "dc6b88161166e17af4a2014a1438736bdad9bfcc32693fcf6dde1e917867bc0f",
+      "program_sha256": "6cb0b0b08ec2e6d121ede892ea6431d821724402e8b3787509d86cc8dba729dc",
+      "summary": [
+        56,
+        0,
+        0
+      ],
+      "rows": {
+        "0035": [
+          "P",
+          "R",
+          "C=12 selected version (22h)"
+        ],
+        "0036": [
+          "P",
+          "R",
+          "E=0 selected drive A"
+        ],
+        "0037": [
+          "P",
+          "R",
+          "Fn 25 returned byte in A"
+        ],
+        "0038": [
+          "P",
+          "R",
+          "Fn 24 returned word in HL"
+        ],
+        "0039": [
+          "P",
+          "R",
+          "Normal return alias A=L"
+        ],
+        "0040": [
+          "P",
+          "R",
+          "Normal return alias B=H"
+        ],
+        "0041": [
+          "P",
+          "R",
+          "Selector range ends at Fn 40"
+        ],
+        "0042": [
+          "P",
+          "R",
+          "Fn 41 returned zero"
+        ],
+        "0043": [
+          "P",
+          "R",
+          "Caller stack restored"
+        ],
+        "0132": [
+          "P",
+          "R",
+          "Fn 13 reset disks; chose A"
+        ],
+        "0133": [
+          "P",
+          "R",
+          "Fn 13 cleared R/O vector"
+        ],
+        "0134": [
+          "P",
+          "R",
+          "Fn 13 selected drive A"
+        ],
+        "0135": [
+          "P",
+          "R",
+          "Fn 13 restored DMA at 0080h"
+        ],
+        "0136": [
+          "P",
+          "R",
+          "Fn 13 reset login vector"
+        ],
+        "0138": [
+          "P",
+          "R",
+          "Fn 14 E=1 selected drive B"
+        ],
+        "0139": [
+          "P",
+          "R",
+          "Drive numbering is zero based"
+        ],
+        "0140": [
+          "P",
+          "R",
+          "Fn 14 changed current drive"
+        ],
+        "0141": [
+          "P",
+          "R",
+          "Fn 14 logged selected drive"
+        ],
+        "0142": [
+          "P",
+          "R",
+          "Login vector accumulated A+B"
+        ],
+        "0143": [
+          "-",
+          "R",
+          "Prepare fixture with SCRATCH /BLANK"
+        ],
+        "0144": [
+          "P",
+          "R",
+          "FCB drive 0 used current disk"
+        ],
+        "0145": [
+          "P",
+          "R",
+          "Explicit FCB selected drive B"
+        ],
+        "0146": [
+          "P",
+          "R",
+          "Explicit FCB kept current drive"
+        ],
+        "0147": [
+          "P",
+          "R",
+          "Fn 24 returned login vector"
+        ],
+        "0148": [
+          "P",
+          "R",
+          "Login bits map A=0, B=1"
+        ],
+        "0149": [
+          "P",
+          "R",
+          "Set bit means drive logged"
+        ],
+        "0150": [
+          "P",
+          "R",
+          "Fn 25 returned current drive"
+        ],
+        "0188": [
+          "P",
+          "R",
+          "Search First accepted FCB in DE"
+        ],
+        "0189": [
+          "P",
+          "R",
+          "Search First began new scan"
+        ],
+        "0190": [
+          "P",
+          "R",
+          "Search success returned 0..3"
+        ],
+        "0191": [
+          "P",
+          "R",
+          "No match returned FFh"
+        ],
+        "0192": [
+          "P",
+          "R",
+          "Search copied entry to DMA"
+        ],
+        "0193": [
+          "P",
+          "R",
+          "Result selected 32-byte slot"
+        ],
+        "0194": [
+          "P",
+          "R",
+          "Search entry layout matched FCB"
+        ],
+        "0195": [
+          "P",
+          "R",
+          "Entry user number was zero"
+        ],
+        "0197": [
+          "P",
+          "R",
+          "Wildcard matched search names"
+        ],
+        "0199": [
+          "P",
+          "R",
+          "Drive 0 searched current disk"
+        ],
+        "0201": [
+          "P",
+          "R",
+          "Search First tolerated S2 input"
+        ],
+        "0203": [
+          "P",
+          "R",
+          "Search Next continued scan"
+        ],
+        "0205": [
+          "P",
+          "R",
+          "Search Next updated DMA slot"
+        ],
+        "0207": [
+          "P",
+          "R",
+          "Search First restarted scan"
+        ],
+        "0209": [
+          "P",
+          "R",
+          "DMA persisted for search"
+        ],
+        "0211": [
+          "P",
+          "R",
+          "Enumeration followed entries"
+        ],
+        "0414": [
+          "P",
+          "R",
+          "Fn 12 returned CP/M 2.2"
+        ],
+        "0415": [
+          "P",
+          "R",
+          "Fn 32 queried user number"
+        ],
+        "0416": [
+          "P",
+          "R",
+          "Fn 32 selected user 1"
+        ],
+        "0418": [
+          "P",
+          "R",
+          "Console status preserved DMA"
+        ],
+        "0419": [
+          "P",
+          "R",
+          "Identity calls preserved DMA"
+        ],
+        "0420": [
+          "-",
+          "R",
+          "Needs buffered-input session"
+        ],
+        "0518": [
+          "P",
+          "R",
+          "Drive, user, login state read"
+        ],
+        "0519": [
+          "-",
+          "R",
+          "BIOS resource check is manual"
+        ],
+        "0520": [
+          "P",
+          "R",
+          "Fn 26 persisted until reset"
+        ],
+        "0521": [
+          "P",
+          "R",
+          "Drive/user state independent"
+        ],
+        "0525": [
+          "P",
+          "R",
+          "Fn 40 valid; Fn 41 unsupported"
+        ],
+        "0526": [
+          "P",
+          "R",
+          "Gateway at 0005h accepted call"
+        ],
+        "0527": [
+          "P",
+          "R",
+          "C and DE carried selector/input"
+        ],
+        "0528": [
+          "P",
+          "R",
+          "Result aliases matched A/L B/H"
+        ],
+        "0529": [
+          "P",
+          "R",
+          "Unsupported call returned zero"
+        ],
+        "0531": [
+          "P",
+          "R",
+          "Returning call balanced stack"
+        ]
+      },
+      "qualified_passes": 56,
+      "transcript_sha256": "86fb89a22cbc83325f117a3f6a0f206e90654e375adcc35e7c64a0bff2160a85"
+    },
+    "FILETEST": {
+      "status": "PASS",
+      "command": "FILETEST /GROUP:REQUIRED",
+      "expected_passes": 68,
+      "cross_sha256": "d642327b638400d55c81bdafeda35f9b6d3eafe6907629b48e57d7205a074fdb",
+      "full_sha256": "dc6b88161166e17af4a2014a1438736bdad9bfcc32693fcf6dde1e917867bc0f",
+      "program_sha256": "a07880af68acf8282557a084a0e346d4cde7f0c762206601895f76270ff2efe5",
+      "summary": [
+        68,
+        0,
+        0
+      ],
+      "rows": {
+        "0156": [
+          "P",
+          "R",
+          "Prereq/Open=00; FCB/I/O state=7F"
+        ],
+        "0157": [
+          "P",
+          "R",
+          "Prereq/Open=00; FCB/I/O state=82"
+        ],
+        "0158": [
+          "P",
+          "R",
+          "Prereq/Open=00; FCB/I/O state=03"
+        ],
+        "0159": [
+          "P",
+          "R",
+          "Prereq/Open=01; FCB/I/O state=03"
+        ],
+        "0160": [
+          "P",
+          "R",
+          "Prereq/Open=01; FCB/I/O state=03"
+        ],
+        "0161": [
+          "P",
+          "R",
+          "Prereq/Open=00; FCB/I/O state=C4"
+        ],
+        "0162": [
+          "P",
+          "R",
+          "Prereq/Open=02; FCB/I/O state=1F"
+        ],
+        "0164": [
+          "P",
+          "R",
+          "Prereq/Open=02; FCB/I/O state=80"
+        ],
+        "0165": [
+          "P",
+          "R",
+          "Open=01; RC=01"
+        ],
+        "0166": [
+          "P",
+          "R",
+          "Prereq/Open=02; FCB/I/O state=17"
+        ],
+        "0167": [
+          "P",
+          "R",
+          "Read returns=00,00,00; CR=03"
+        ],
+        "0168": [
+          "P",
+          "R",
+          "Prereq/Open=00; FCB/I/O state=01"
+        ],
+        "0169": [
+          "P",
+          "R",
+          "Current=02; explicit=00; drive B->B"
+        ],
+        "0170": [
+          "P",
+          "R",
+          "Prereq/Open=01; FCB/I/O state=01"
+        ],
+        "0171": [
+          "P",
+          "R",
+          "Open=FF; FCB guards unchanged"
+        ],
+        "0172": [
+          "P",
+          "R",
+          "Prereq/Open=01; FCB/I/O state=00"
+        ],
+        "0173": [
+          "P",
+          "R",
+          "Prereq/Open=01; FCB/I/O state=00"
+        ],
+        "0174": [
+          "P",
+          "R",
+          "Prereq/Open=02; FCB/I/O state=00"
+        ],
+        "0175": [
+          "P",
+          "R",
+          "Prereq/Open=02; FCB/I/O state=00"
+        ],
+        "0176": [
+          "P",
+          "R",
+          "Prereq/Open=01; FCB/I/O state=01"
+        ],
+        "0177": [
+          "P",
+          "R",
+          "Prereq/Open=00; FCB/I/O state=00"
+        ],
+        "0178": [
+          "P",
+          "R",
+          "Prereq/Open=02; FCB/I/O state=00"
+        ],
+        "0179": [
+          "P",
+          "R",
+          "Prereq/Open=01; FCB/I/O state=00"
+        ],
+        "0180": [
+          "P",
+          "R",
+          "Prereq/Open=00; FCB/I/O state=00"
+        ],
+        "0181": [
+          "P",
+          "R",
+          "Prereq/Open=00; FCB/I/O state=FF"
+        ],
+        "0219": [
+          "P",
+          "R",
+          "Prereq/Open=01; read/state=00"
+        ],
+        "0220": [
+          "P",
+          "R",
+          "Prereq/Open=01; read/state=00"
+        ],
+        "0221": [
+          "P",
+          "R",
+          "Prereq/Open=00; read/state=00"
+        ],
+        "0222": [
+          "P",
+          "R",
+          "Prereq/Open=01; read/state=00"
+        ],
+        "0223": [
+          "P",
+          "R",
+          "Prereq/Open=01; read/state=00"
+        ],
+        "0224": [
+          "P",
+          "R",
+          "Prereq/Open=01; read/state=00"
+        ],
+        "0226": [
+          "P",
+          "R",
+          "Prereq/Open=00; read/state=02"
+        ],
+        "0227": [
+          "P",
+          "R",
+          "Prereq/Open=00; read/state=03"
+        ],
+        "0228": [
+          "P",
+          "R",
+          "Prereq/Open=03; read/state=80"
+        ],
+        "0229": [
+          "P",
+          "R",
+          "Prereq/Open=02; read/state=00"
+        ],
+        "0230": [
+          "P",
+          "R",
+          "Prereq/Open=02; read/state=01"
+        ],
+        "0231": [
+          "P",
+          "R",
+          "Prereq/Open=02; read/state=02"
+        ],
+        "0232": [
+          "P",
+          "R",
+          "Prereq/Open=01; read/state=01"
+        ],
+        "0234": [
+          "P",
+          "R",
+          "Prereq/Open=03; read/state=01"
+        ],
+        "0235": [
+          "P",
+          "R",
+          "Prereq/Open=03; read/state=01"
+        ],
+        "0236": [
+          "P",
+          "R",
+          "Prereq/Open=03; read/state=01"
+        ],
+        "0237": [
+          "P",
+          "R",
+          "Prereq/Open=03; read/state=01"
+        ],
+        "0239": [
+          "P",
+          "R",
+          "Prereq/Open=00; read/state=03"
+        ],
+        "0242": [
+          "P",
+          "R",
+          "Prereq/Open=00; read/state=01"
+        ],
+        "0243": [
+          "P",
+          "R",
+          "Prereq/Open=00; read/state=00"
+        ],
+        "0248": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0249": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0250": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=01"
+        ],
+        "0251": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0252": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0253": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=FF"
+        ],
+        "0254": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=02"
+        ],
+        "0259": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0260": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0261": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0262": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0263": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0264": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0266": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0267": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0268": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0269": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0271": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0272": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0273": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ],
+        "0274": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=FF"
+        ],
+        "0278": [
+          "P",
+          "R",
+          "Prereq=01; Make/write=00"
+        ],
+        "0279": [
+          "P",
+          "R",
+          "Prereq=02; Make/write=00"
+        ]
+      },
+      "qualified_passes": 68,
+      "transcript_sha256": "17a23a24482b2b7db5847f69d125241ba8d093980eedd09df1721f259a5825f3"
+    },
+    "RANDTEST": {
+      "status": "PASS",
+      "command": "RANDTEST /SAFE",
+      "expected_passes": 39,
+      "cross_sha256": "d642327b638400d55c81bdafeda35f9b6d3eafe6907629b48e57d7205a074fdb",
+      "full_sha256": "dc6b88161166e17af4a2014a1438736bdad9bfcc32693fcf6dde1e917867bc0f",
+      "program_sha256": "041bddda388acdf9284566ab7c410ca5a520198b78a3973ba1af1d84a329f2c0",
+      "summary": [
+        39,
+        0,
+        0
+      ],
+      "rows": {
+        "0317": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0318": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0319": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0320": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0321": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0322": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0323": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0324": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0326": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0327": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0328": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0329": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0330": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0331": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=01"
+        ],
+        "0332": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=FF"
+        ],
+        "0333": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=06"
+        ],
+        "0335": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0336": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0337": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0338": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0339": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0340": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0341": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0342": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0343": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0344": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0345": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=06"
+        ],
+        "0346": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=02"
+        ],
+        "0347": [
+          "P",
+          "R",
+          "Prereq/Open=01; random-I/O=02"
+        ],
+        "0348": [
+          "P",
+          "R",
+          "Prereq/Open=01; random-I/O=02"
+        ],
+        "0349": [
+          "P",
+          "R",
+          "Prereq/Open=01; random-I/O=02"
+        ],
+        "0350": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=02"
+        ],
+        "0351": [
+          "P",
+          "R",
+          "Prereq/Open=02; random-I/O=00"
+        ],
+        "0550": [
+          "P",
+          "R",
+          "Prereq=02; lifecycle=00"
+        ],
+        "0551": [
+          "P",
+          "R",
+          "Prereq=02; lifecycle=00"
+        ],
+        "0553": [
+          "P",
+          "R",
+          "Prereq=02; lifecycle=00"
+        ],
+        "0555": [
+          "P",
+          "R",
+          "Prereq=02; lifecycle=00"
+        ],
+        "0556": [
+          "P",
+          "R",
+          "Prereq=00; lifecycle=00"
+        ],
+        "0557": [
+          "P",
+          "R",
+          "Prereq=00; lifecycle=02"
+        ]
+      },
+      "qualified_passes": 39,
+      "transcript_sha256": "5e4d3346ca244c8698f0f75bfc2d1f45af3470d77ea5c495092e5924ec889ac5"
+    }
+  },
+  "raw_passes": 269,
+  "qualified_passes": 269
+}

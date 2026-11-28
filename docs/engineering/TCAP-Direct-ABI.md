@@ -67,6 +67,16 @@ preserves renderer registers/flags. Raw input uses the same bound BIOS's raw
 monitor vector. Neither path re-enters the active personality. Equivalent short
 branches and fixed bound-vector calls preserve the existing TCAP memory limits.
 
+The RomWBW adapter uses native MCON 1.0 capability 32 (bit 5), with the
+exact private checked-system binding. Each integrated renderer calls WB_TXA,
+the protected BIOS leaf that preserves AF/BC/DE/HL around HBIOS character
+output to unit zero. It neither uses a host I/O port nor re-enters BDOS or the
+monitor router. The leaf replaces unused halt code; the BIOS allocation and
+default 56 KiB COM capacity do not grow or shrink. ADM3A and VT52 retain the
+1,280-byte complete-path limit; ANSI retains the 1,792-byte limit. A module
+with the cpmsim capability is rejected even with the same private build ID.
+Console route 1 remains the supported default, as on Altair/Cromemco.
+
 The loader's successful admission does not imply that a utility has admitted the
 current console route. The client checks the route again before each operation.
 

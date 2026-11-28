@@ -126,6 +126,8 @@ The fixed component records cover CCP, BDOS and BIOS. CPX/RSX facility identitie
 
 ## 181 — Runtime disk configuration, ABI 5
 
+The RomWBW engineering target separately advertises [block-device ABI 6](../engineering/RomWBW-Block-Device-Interface.md). Validate discovery before selecting either record layout; the ABI-5 floppy fields below do not describe RomWBW hard disks.
+
 C=181, B=operation, DE=request except discovery. For operations requiring a request, reserve a complete 80-byte block wholly within owned TPA at or above 0100h. HL=0 success, 1 invalid/error, 2 unsupported or a controller-specific nonzero error; A mirrors L. Discovery instead returns a descriptor pointer in HL. IX and caller SP are preserved; other registers/flags are scratch. Error codes overlap validation/controller domains, so retain the operation context.
 
 | B | Operation | Request content |

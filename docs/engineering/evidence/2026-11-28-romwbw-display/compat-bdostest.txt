@@ -1,0 +1,96 @@
+[DISK] Validated disk0: <workspace>/build/romwbw-bound-compatibility/bdostest/system.img (8519680 bytes)
+[DISK] Validated disk1: <workspace>/build/romwbw-bound-compatibility/bdostest/fixtures.img (8519680 bytes)
+CPU mode: Z80
+RomWBW mode: 512KB ROM + 512KB RAM, bank switching enabled
+Auto-boot: configured NVRAM for '2' (this run only)
+Console escape: none - every key goes to the guest (sim> unreachable)
+Instruction limit: 40000000000 - the run stops there with exit status 124 (--max-instructions=0 for none)
+RomWBW v3.5.1 (from <workspace>/build/romwbw-emulator/emu_avw.rom)
+Starting execution at 0x0000 in ROM bank 0
+
+
+RetroBrew SBC [SBC_simh_std] Boot Loader
+NV Switches Found
+
+AutoBoot in 0 Seconds (<esc> aborts, <enter> now)...
+
+Booting Disk Unit 2, Slice 0, Sector 0x00000000...
+
+Volume "BETTERCPM HBIOS " [0x1000-0x1200, entry @ 0x1000]...
+A0> A0> _ A0> A0> C_ A0> CA0> CO_ A0> COA0> CON_ A0> CONA0> CONF_ A0> CONFA0> CONFI_ A0> CONFIA0> CONFIG_ A0> CONFIGA0> CONFIG _ A0> CONFIG A0> CONFIG /_ A0> CONFIG /A0> CONFIG /L_ A0> CONFIG /LA0> CONFIG /LO_ A0> CONFIG /LOA0> CONFIG /LOG_ A0> CONFIG /LOGA0> CONFIG /LOGI_ A0> CONFIG /LOGIA0> CONFIG /LOGIC_ A0> CONFIG /LOGICA0> CONFIG /LOGICA_ A0> CONFIG /LOGICAA0> CONFIG /LOGICAL_ A0> CONFIG /LOGICALA0> CONFIG /LOGICAL=_ A0> CONFIG /LOGICAL=A0> CONFIG /LOGICAL=B_ A0> CONFIG /LOGICAL=BA0> CONFIG /LOGICAL=B _ A0> CONFIG /LOGICAL=B A0> CONFIG /LOGICAL=B /_ A0> CONFIG /LOGICAL=B /A0> CONFIG /LOGICAL=B /U_ A0> CONFIG /LOGICAL=B /UA0> CONFIG /LOGICAL=B /UN_ A0> CONFIG /LOGICAL=B /UNA0> CONFIG /LOGICAL=B /UNI_ A0> CONFIG /LOGICAL=B /UNIA0> CONFIG /LOGICAL=B /UNIT_ A0> CONFIG /LOGICAL=B /UNITA0> CONFIG /LOGICAL=B /UNIT=_ A0> CONFIG /LOGICAL=B /UNIT=A0> CONFIG /LOGICAL=B /UNIT=3_ A0> CONFIG /LOGICAL=B /UNIT=3A0> CONFIG /LOGICAL=B /UNIT=3
+B: binding updated.
+BetterCP/M RomWBW block configuration
+A: HBIOS unit 2
+B: HBIOS unit 3
+
+A0> A0> _ A0> A0> B_ A0> BA0> B:_ A0> B:A0> B:
+
+B0> B0> _ B0> B0> B_ B0> BB0> BD_ B0> BDB0> BDO_ B0> BDOB0> BDOS_ B0> BDOSB0> BDOST_ B0> BDOSTB0> BDOSTE_ B0> BDOSTEB0> BDOSTES_ B0> BDOSTESB0> BDOSTEST_ B0> BDOSTESTB0> BDOSTEST _ B0> BDOSTEST B0> BDOSTEST /_ B0> BDOSTEST /B0> BDOSTEST /G_ B0> BDOSTEST /GB0> BDOSTEST /GR_ B0> BDOSTEST /GRB0> BDOSTEST /GRO_ B0> BDOSTEST /GROB0> BDOSTEST /GROU_ B0> BDOSTEST /GROUB0> BDOSTEST /GROUP_ B0> BDOSTEST /GROUPB0> BDOSTEST /GROUP:_ B0> BDOSTEST /GROUP:B0> BDOSTEST /GROUP:R_ B0> BDOSTEST /GROUP:RB0> BDOSTEST /GROUP:RE_ B0> BDOSTEST /GROUP:REB0> BDOSTEST /GROUP:REQ_ B0> BDOSTEST /GROUP:REQB0> BDOSTEST /GROUP:REQU_ B0> BDOSTEST /GROUP:REQUB0> BDOSTEST /GROUP:REQUI_ B0> BDOSTEST /GROUP:REQUIB0> BDOSTEST /GROUP:REQUIR_ B0> BDOSTEST /GROUP:REQUIRB0> BDOSTEST /GROUP:REQUIRE_ B0> BDOSTEST /GROUP:REQUIREB0> BDOSTEST /GROUP:REQUIRED_ B0> BDOSTEST /GROUP:REQUIREDB0> BDOSTEST /GROUP:REQUIRED
+
+BDOSTEST
+ITEM  S  C  OBSERVED
+----  -  -  ----------------------------------------------------------
+0035  P  R  C=12 selected version (22h)
+0036  P  R  E=0 selected drive A
+0037  P  R  Fn 25 returned byte in A
+0038  P  R  Fn 24 returned word in HL
+0039  P  R  Normal return alias A=L
+0040  P  R  Normal return alias B=H
+0041  P  R  Selector range ends at Fn 40
+0042  P  R  Fn 41 returned zero
+0043  P  R  Caller stack restored
+0132  P  R  Fn 13 reset disks; chose A
+0133  P  R  Fn 13 cleared R/O vector
+0134  P  R  Fn 13 selected drive A
+0135  P  R  Fn 13 restored DMA at 0080h
+0136  P  R  Fn 13 reset login vector
+0138  P  R  Fn 14 E=1 selected drive B
+0139  P  R  Drive numbering is zero based
+0140  P  R  Fn 14 changed current drive
+0141  P  R  Fn 14 logged selected drive
+0142  P  R  Login vector accumulated A+B
+0143  -  R  Prepare fixture with SCRATCH /BLANK
+0144  P  R  FCB drive 0 used current disk
+0145  P  R  Explicit FCB selected drive B
+0146  P  R  Explicit FCB kept current drive
+0147  P  R  Fn 24 returned login vector
+0148  P  R  Login bits map A=0, B=1
+0149  P  R  Set bit means drive logged
+0150  P  R  Fn 25 returned current drive
+0188  P  R  Search First accepted FCB in DE
+0189  P  R  Search First began new scan
+0190  P  R  Search success returned 0..3
+0191  P  R  No match returned FFh
+0192  P  R  Search copied entry to DMA
+0193  P  R  Result selected 32-byte slot
+0194  P  R  Search entry layout matched FCB
+0195  P  R  Entry user number was zero
+0197  P  R  Wildcard matched search names
+0199  P  R  Drive 0 searched current disk
+0201  P  R  Search First tolerated S2 input
+0203  P  R  Search Next continued scan
+0205  P  R  Search Next updated DMA slot
+0207  P  R  Search First restarted scan
+0209  P  R  DMA persisted for search
+0211  P  R  Enumeration followed entries
+0414  P  R  Fn 12 returned CP/M 2.2
+0415  P  R  Fn 32 queried user number
+0416  P  R  Fn 32 selected user 1
+0418  P  R  Console status preserved DMA
+0419  P  R  Identity calls preserved DMA
+0420  -  R  Needs buffered-input session
+0518  P  R  Drive, user, login state read
+0519  -  R  BIOS resource check is manual
+0520  P  R  Fn 26 persisted until reset
+0521  P  R  Drive/user state independent
+0525  P  R  Fn 40 valid; Fn 41 unsupported
+0526  P  R  Gateway at 0005h accepted call
+0527  P  R  C and DE carried selector/input
+0528  P  R  Result aliases matched A/L B/H
+0529  P  R  Unsupported call returned zero
+0531  P  R  Returning call balanced stack
+
+Summary: 56 pass, 0 fail, 0 error, 0 observations
+3 manual REQUIRED procedures were listed but not run.
+
+B0> B0> _

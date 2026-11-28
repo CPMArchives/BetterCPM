@@ -1,0 +1,48 @@
+; Host truncates this disposable image after READY, while code is in memory.
+        INCLUDE layout.inc
+        ASEG
+        ORG 0100H
+        LD SP,01F00H
+        LD HL,04000H
+        LD DE,04001H
+        LD BC,127
+        LD (HL),055H
+        LDIR
+        LD BC,04000H
+        CALL LY_BIOS+36
+        LD BC,1039
+        CALL LY_BIOS+30
+        LD BC,63
+        CALL LY_BIOS+33
+        LD DE,READY
+        LD C,9
+        CALL 5
+        LD C,1
+        CALL 5
+        CALL LY_BIOS+39
+        OR A
+        JR Z,FAILED
+        LD HL,04000H
+        LD B,128
+VERIFY:
+        LD A,(HL)
+        CP 055H
+        JR NZ,FAILED
+        INC HL
+        DJNZ VERIFY
+        LD BC,0
+        CALL LY_BIOS+42
+        OR A
+        JR Z,FAILED
+        LD DE,PASSMSG
+        JR REPORT
+FAILED:
+        LD DE,FAILMSG
+REPORT:
+        LD C,9
+        CALL 5
+        JP 0
+READY: DB 'ROMWBW IO FAULT READY',13,10,'$'
+PASSMSG: DB 'ROMWBW IO FAULT PASS',13,10,'$'
+FAILMSG: DB 'ROMWBW IO FAULT FAIL',13,10,'$'
+        END

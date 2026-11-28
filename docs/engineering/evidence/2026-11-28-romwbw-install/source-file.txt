@@ -1,0 +1,30 @@
+[DISK] Validated disk0: $WORKTREE/build/romwbw-block-complete-install/source-file.img (8519680 bytes)
+[DISK] Validated disk1: $WORKTREE/build/romwbw-block-complete-install/source-file-target.img (8519680 bytes)
+CPU mode: Z80
+RomWBW mode: 512KB ROM + 512KB RAM, bank switching enabled
+Auto-boot: configured NVRAM for '2' (this run only)
+Console escape: ^E - reserved by the emulator, the guest never sees it (--escape=none to disable)
+Instruction limit: 4000000000 - the run stops there with exit status 124 (--max-instructions=0 for none)
+RomWBW v3.5.1 (from $WORKTREE/build/romwbw-emulator/emu_avw.rom)
+Starting execution at 0x0000 in ROM bank 0
+
+
+RetroBrew SBC [SBC_simh_std] Boot Loader
+NV Switches Found
+
+AutoBoot in 0 Seconds (<esc> aborts, <enter> now)...
+
+Booting Disk Unit 2, Slice 0, Sector 0x00000000...
+
+Volume "BETTERCPM HBIOS " [0x1000-0x1200, entry @ 0x1000]...
+A0> A0> _ A0> A0> C_ A0> CA0> CO_ A0> COA0> CON_ A0> CONA0> CONF_ A0> CONFA0> CONFI_ A0> CONFIA0> CONFIG_ A0> CONFIGA0> CONFIG _ A0> CONFIG A0> CONFIG /_ A0> CONFIG /A0> CONFIG /L_ A0> CONFIG /LA0> CONFIG /LO_ A0> CONFIG /LOA0> CONFIG /LOG_ A0> CONFIG /LOGA0> CONFIG /LOGI_ A0> CONFIG /LOGIA0> CONFIG /LOGIC_ A0> CONFIG /LOGICA0> CONFIG /LOGICA_ A0> CONFIG /LOGICAA0> CONFIG /LOGICAL_ A0> CONFIG /LOGICALA0> CONFIG /LOGICAL=_ A0> CONFIG /LOGICAL=A0> CONFIG /LOGICAL=B_ A0> CONFIG /LOGICAL=BA0> CONFIG /LOGICAL=B _ A0> CONFIG /LOGICAL=B A0> CONFIG /LOGICAL=B /_ A0> CONFIG /LOGICAL=B /A0> CONFIG /LOGICAL=B /U_ A0> CONFIG /LOGICAL=B /UA0> CONFIG /LOGICAL=B /UN_ A0> CONFIG /LOGICAL=B /UNA0> CONFIG /LOGICAL=B /UNI_ A0> CONFIG /LOGICAL=B /UNIA0> CONFIG /LOGICAL=B /UNIT_ A0> CONFIG /LOGICAL=B /UNITA0> CONFIG /LOGICAL=B /UNIT=_ A0> CONFIG /LOGICAL=B /UNIT=A0> CONFIG /LOGICAL=B /UNIT=3_ A0> CONFIG /LOGICAL=B /UNIT=3A0> CONFIG /LOGICAL=B /UNIT=3
+B: binding updated.
+BetterCP/M RomWBW block configuration
+A: HBIOS unit 2
+B: HBIOS unit 3
+
+A0> A0> _ A0> A0> S_ A0> SA0> SY_ A0> SYA0> SYS_ A0> SYSA0> SYSG_ A0> SYSGA0> SYSGE_ A0> SYSGEA0> SYSGEN_ A0> SYSGENA0> SYSGEN _ A0> SYSGEN A0> SYSGEN B_ A0> SYSGEN BA0> SYSGEN B:_ A0> SYSGEN B:A0> SYSGEN B:
+SYSGEN B: validating empty target and matched system...
+SYSGEN failed; destination is not an installed system.
+
+A0> A0> _

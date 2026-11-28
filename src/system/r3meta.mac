@@ -516,6 +516,18 @@ RXM_BAD:
         OR      A
         RET
 RXM_LEGACY:
+        IF PL_WBW EQ 1
+        ; Native callbacks contain absolute protected BIOS leaf addresses.
+        ; R3CARR has already checked the ID for class 1. Public class 0 must
+        ; not gain access merely by declaring this platform capability.
+        LD HL,(RXM_BASE)
+        LD DE,15
+        ADD HL,DE
+        LD A,(HL)
+        DEC A
+        JR NZ,RXM_MBAD
+        LD B,32                        ; HBIOS character transport
+        ELSE
         IF PL_CROM EQ 1
         LD B,16                        ; Cromemco console backend
         ELSE
@@ -534,6 +546,7 @@ RXM_LEGACY:
         ENDIF
         ENDIF                         ; Altair backend selection
         ENDIF                         ; Cromemco backend selection
+        ENDIF                         ; RomWBW backend selection
         LD      HL,(RXM_DATA)
         LD      DE,8
         ADD     HL,DE

@@ -1,0 +1,442 @@
+; Private fixed-block installer. Destination must be an empty mounted B:.
+        INCLUDE layout.inc
+        INCLUDE profile.inc
+        ASEG
+        ORG 0100H
+        LD SP,01F00H
+        CALL U_CHECK
+        LD E,0FFH
+        LD C,32
+        CALL 5
+        OR A
+        JP NZ,SG_USAGE
+        LD A,(0080H)
+        LD E,A
+        LD D,0
+        LD HL,0081H
+        ADD HL,DE
+        LD (HL),0
+        LD HL,0081H
+SG_SPACE:
+        LD A,(HL)
+        CP ' '
+        JR NZ,SG_ARG
+        INC HL
+        JR SG_SPACE
+SG_ARG:
+        AND 0DFH
+        CP 'B'
+        JP NZ,SG_USAGE
+        INC HL
+        LD A,(HL)
+        CP ':'
+        JP NZ,SG_USAGE
+        INC HL
+SG_END:
+        LD A,(HL)
+        OR A
+        JR Z,SG_START
+        CP ' '
+        JP NZ,SG_USAGE
+        INC HL
+        JR SG_END
+SG_START:
+        LD A,1
+        LD (U_REQ),A
+        CALL U_GET
+        JP NZ,SG_FAIL
+        LD A,(U_REQ+1)
+        CP 0FFH
+        JP Z,SG_FAIL
+        LD (SG_UNIT),A
+        LD DE,SG_TITLE
+        CALL U_PUTS
+        ; All directory entries must be E5; refuse disks with any files/users.
+        LD HL,256
+        LD (U_LBA),HL
+SG_EMPTY:
+        LD A,(SG_UNIT)
+        LD C,A
+        LD B,013H
+        LD HL,03000H
+        CALL U_IO
+        JP NZ,SG_FAIL
+        LD HL,03000H
+        LD DE,32
+        LD B,16
+SG_DIR:
+        LD A,(HL)
+        CP 0E5H
+        JP NZ,SG_NONEM
+        ADD HL,DE
+        DJNZ SG_DIR
+        LD HL,(U_LBA)
+        INC HL
+        LD (U_LBA),HL
+        LD DE,288
+        OR A
+        SBC HL,DE
+        JR NZ,SG_EMPTY
+        ; Verify build-bound reserved system bytes before writing destination.
+        LD HL,0
+        LD (U_LBA),HL
+        LD HL,0FFFFH
+        LD (SG_CRC),HL
+SG_KERN:
+        LD A,(U_BOOT)
+        LD C,A
+        LD B,013H
+        LD HL,03000H
+        CALL U_IO
+        JP NZ,SG_FAIL
+        LD HL,(U_LBA)
+        LD A,H
+        OR A
+        JR NZ,SG_KCRC
+        LD A,L
+        CP 4
+        JR Z,SG_KZERO
+        OR A
+        JR Z,SG_KST
+        CP 64
+        JR NZ,SG_KCRC
+SG_KST:
+        LD HL,03080H
+        LD DE,03081H
+        LD BC,255
+        LD (HL),0
+        LDIR
+        JR SG_KCRC
+SG_KZERO:
+        CALL SG_ZERO
+SG_KCRC:
+        LD HL,03000H
+        LD BC,512
+        LD DE,(SG_CRC)
+        CALL U_CRC
+        LD (SG_CRC),DE
+        LD HL,(U_LBA)
+        INC HL
+        LD (U_LBA),HL
+        LD A,H
+        CP 1
+        JR NZ,SG_KERN
+        LD HL,SG_SYSCRC
+        OR A
+        SBC HL,DE
+        JP NZ,SG_FAIL
+        XOR A
+        LD (SG_PHASE),A
+        CALL SG_FILES                    ; authenticate source files / learn self CRC
+        ; Invalidate destination boot metadata before the first modification.
+        LD A,1
+        LD (SG_DIRTY),A
+        CALL SG_ZERO
+        LD HL,2
+        LD (U_LBA),HL
+        LD A,(SG_UNIT)
+        LD C,A
+        LD B,014H
+        LD HL,03000H
+        CALL U_IO
+        JP NZ,SG_FAIL
+        LD A,1
+        LD (SG_PHASE),A
+        CALL SG_FILES                    ; create/copy, never overwrite existing files
+        LD A,2
+        LD (SG_PHASE),A
+        CALL SG_FILES                    ; independently reopen/read every installed file
+        LD HL,0
+        LD (U_LBA),HL
+SG_COPY:
+        LD HL,(U_LBA)
+        LD A,H
+        OR A
+        JR NZ,SG_READS
+        LD A,L
+        CP 2
+        JR Z,SG_NEXT                     ; boot metadata is the final commit
+SG_READS:
+        LD A,(U_BOOT)
+        LD C,A
+        LD B,013H
+        LD HL,03000H
+        CALL U_IO
+        JP NZ,SG_FAIL
+        LD HL,(U_LBA)
+        LD A,H
+        OR A
+        JR NZ,SG_PUTS
+        LD A,L
+        CP 4
+        JR NZ,SG_PUTS
+        CALL SG_CFG                      ; installed disk starts with B unbound
+SG_PUTS:
+        CALL SG_WRITE
+SG_NEXT:
+        LD HL,(U_LBA)
+        INC HL
+        LD (U_LBA),HL
+        LD A,H
+        CP 1
+        JR NZ,SG_COPY
+        LD HL,2
+        LD (U_LBA),HL
+        LD A,(U_BOOT)
+        LD C,A
+        LD B,013H
+        LD HL,03000H
+        CALL U_IO
+        JP NZ,SG_FAIL
+        CALL SG_WRITE
+        LD DE,SG_OK
+        CALL U_PUTS
+        JP 0
+SG_WRITE:
+        LD A,(SG_UNIT)
+        LD C,A
+        LD B,014H
+        LD HL,03000H
+        CALL U_IO
+        JP NZ,SG_FAIL
+        LD A,(SG_UNIT)
+        LD C,A
+        LD B,013H
+        LD HL,03200H
+        CALL U_IO
+        JP NZ,SG_FAIL
+        LD HL,03000H
+        LD DE,03200H
+        LD BC,512
+SG_VSEC:
+        LD A,(DE)
+        CP (HL)
+        JP NZ,SG_FAIL
+        INC HL
+        INC DE
+        DEC BC
+        LD A,B
+        OR C
+        JR NZ,SG_VSEC
+        RET
+SG_ZERO:
+        LD HL,03000H
+        LD DE,03001H
+        LD BC,511
+        LD (HL),0
+        LDIR
+        RET
+SG_CFG:
+        LD A,(03007H)
+        PUSH AF
+        CALL SG_ZERO
+        LD HL,SG_HEAD
+        LD DE,03000H
+        LD BC,8
+        LDIR
+        POP AF
+        LD (03007H),A
+        LD HL,0FFFFH
+        LD (0300AH),HL
+        LD HL,03000H
+        CALL U_SUM
+        LD HL,0
+        OR A
+        SBC HL,DE
+        LD (03008H),HL
+        RET
+; Three passes over an identical manifest: preflight A, copy A->B, verify B.
+SG_FILES:
+        LD HL,SG_LIST
+        LD (SG_PTR),HL
+        LD A,SG_COUNT
+        LD (SG_LEFT),A
+SG_FILE:
+        LD HL,SG_SRC
+        LD DE,SG_SRC+1
+        LD BC,71
+        LD (HL),0
+        LDIR
+        LD HL,(SG_PTR)
+        LD DE,SG_SRC+1
+        LD BC,11
+        LDIR
+        LD HL,(SG_PTR)
+        LD DE,SG_DST+1
+        LD BC,11
+        LDIR
+        LD A,1
+        LD (SG_SRC),A
+        INC A
+        LD (SG_DST),A
+        LD DE,SG_SRC
+        LD A,(SG_PHASE)
+        CP 2
+        JR NZ,SG_OPEN
+        LD DE,SG_DST
+SG_OPEN:
+        LD (SG_FCB),DE
+        LD C,15
+        CALL 5
+        INC A
+        JP Z,SG_FAIL
+        LD A,(SG_PHASE)
+        CP 1
+        JR NZ,SG_INIT
+        LD DE,SG_DST
+        LD C,22
+        CALL 5
+        INC A
+        JP Z,SG_FAIL
+SG_INIT:
+        LD DE,03000H
+        LD C,26
+        CALL 5
+        LD HL,0FFFFH
+        LD (SG_CRC),HL
+        LD HL,0
+        LD (SG_NREC),HL
+SG_READ:
+        LD DE,(SG_FCB)
+        LD C,20
+        CALL 5
+        OR A
+        JR Z,SG_DATA
+        CP 1
+        JP NZ,SG_FAIL
+        JR SG_CLOSE
+SG_DATA:
+        LD HL,03000H
+        LD DE,(SG_CRC)
+        LD BC,128
+        CALL U_CRC
+        LD (SG_CRC),DE
+        LD HL,(SG_NREC)
+        INC HL
+        LD (SG_NREC),HL
+        LD A,(SG_PHASE)
+        CP 1
+        JR NZ,SG_READ
+        LD DE,SG_DST
+        LD C,21
+        CALL 5
+        OR A
+        JP NZ,SG_FAIL
+        JR SG_READ
+SG_CLOSE:
+        LD DE,(SG_FCB)
+        LD C,16
+        CALL 5
+        INC A
+        JP Z,SG_FAIL
+        LD A,(SG_PHASE)
+        CP 1
+        JR NZ,SG_FCRC
+        LD DE,SG_DST
+        LD C,16
+        CALL 5
+        INC A
+        JP Z,SG_FAIL
+SG_FCRC:
+        LD HL,(SG_PTR)
+        LD DE,15
+        ADD HL,DE
+        LD A,(SG_PHASE)
+        OR A
+        JR NZ,SG_TEST
+        LD A,(HL)
+        OR A
+        JR Z,SG_LEARN
+SG_TEST:
+        LD HL,(SG_PTR)
+        LD DE,11
+        ADD HL,DE
+        LD DE,SG_CRC
+        LD B,4
+SG_TESTB:
+        LD A,(DE)
+        CP (HL)
+        JP NZ,SG_FAIL
+        INC HL
+        INC DE
+        DJNZ SG_TESTB
+SG_LEARN:
+        LD HL,(SG_PTR)
+        LD DE,11
+        ADD HL,DE
+        EX DE,HL
+        LD HL,SG_CRC
+        LD BC,4
+        LDIR
+        LD HL,(SG_PTR)
+        LD DE,16
+        ADD HL,DE
+        LD (SG_PTR),HL
+        LD A,(SG_LEFT)
+        DEC A
+        LD (SG_LEFT),A
+        JP NZ,SG_FILE
+        RET
+SG_NONEM:
+        LD DE,SG_NONMT
+        CALL U_PUTS
+        JP 0
+SG_FAIL:
+        ; Target was initially empty. Delete only our explicit manifest names.
+        LD A,(SG_DIRTY)
+        OR A
+        JR Z,SG_REPORT
+        LD HL,SG_LIST
+        LD (SG_PTR),HL
+        LD A,SG_COUNT
+        LD (SG_LEFT),A
+SG_CLEAN:
+        LD HL,SG_DST
+        LD DE,SG_DST+1
+        LD BC,35
+        LD (HL),0
+        LDIR
+        LD HL,(SG_PTR)
+        LD DE,SG_DST+1
+        LD BC,11
+        LDIR
+        LD A,2
+        LD (SG_DST),A
+        LD DE,SG_DST
+        LD C,19
+        CALL 5
+        LD HL,(SG_PTR)
+        LD DE,16
+        ADD HL,DE
+        LD (SG_PTR),HL
+        LD A,(SG_LEFT)
+        DEC A
+        LD (SG_LEFT),A
+        JR NZ,SG_CLEAN
+SG_REPORT:
+        LD DE,SG_ERROR
+        CALL U_PUTS
+        JP 0
+SG_USAGE:
+        LD DE,SG_HELP
+        CALL U_PUTS
+        JP 0
+SG_PTR: DW 0
+SG_FCB: DW 0
+SG_LEFT: DB 0
+SG_UNIT: DB 0
+SG_PHASE: DB 0
+SG_DIRTY: DB 0
+SG_CRC: DW 0FFFFH
+SG_NREC: DW 0
+SG_SRC: DS 36
+SG_DST: DS 36
+SG_HEAD: DB 'BWCF',3,4,255,095H
+SG_TITLE: DB 'SYSGEN B: validating empty target and matched system...',13,10,'$'
+SG_NONMT: DB 'SYSGEN refused: destination B: is not empty.',13,10,'$'
+SG_ERROR: DB 'SYSGEN failed; destination is not an installed system.',13,10,'$'
+SG_OK: DB 'ROMWBW SYSGEN INSTALL PASS',13,10,'$'
+SG_HELP: DB 'SYSGEN B:  Run in user 0; install matched system on an empty hd512 B:.',13,10,'$'
+        INCLUDE installer.inc
+        INCLUDE utility.inc
+        END
